@@ -23,15 +23,18 @@ The build-process (using setup.py) is 3-phased
 ## PREREQUISITES
 ### Prerequisites for building binary packages
 * Python 3.6
-* jinja2
-* cython
-* numpy
+* Jinja2
+* Cython
+* Numpy
 * A C++ compiler with C++11 support
 * Intel(R) Threading Building Blocks (Intel(R) TBB) (https://www.threadingbuildingblocks.org/)
+  * You can use the pre-built conda package from Intel's test channel on anaconda.org (see below)
 * Intel(R) Concurrent Collections (Intel(R) CnC) version 1.2.200 or later (https://github.com/icnc/icnc)
-  * for python conda can automatically use the pre-built package from anaconda cloud (see below)
+  * You can use the pre-built conda package from Intel's test channel on anaconda.org (see below)
 * Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL) version 2018 (https://github.com/01org/daal)
+  * You can use the pre-built conda package from Intel's test channel on anaconda.org (see below)
 * Intel(R) MPI
+  * You can use the conda package from Intel's test channel on anaconda.org (see below)
 
 ### Setting up a build environment
 The easiest path for getting cython, DAAL, TBB, CnC etc. is by creating a conda environment and setting environment variables:
@@ -42,16 +45,6 @@ export CNCROOT=$CONDA_PREFIX
 export TBBROOT=$CONDA_PREFIX
 export DAALROOT=$CONDA_PREFIX
 ```
-
-#### Intel(R) CnC
-*Note: When using conda, the pre-built package from Intel's test channel on anaconda.org (-c intel/label/test) is available (either online or for download).
-```
-CNC_VERSION=1.2.200
-git clone https://github.com/icnc/icnc v$CNC_VERSION
-python make_kit.py -r $CNC_VERSION --mpi=<root-of-intel-mpi-install>/intel64 --itac=NONE
-```
-This creates a ready-to-use CnC install at kit.pkg/cnc/1.2.200
-For more details please visit https://github.com/icnc/icnc.
 
 ## BUILDING DAAL4PY
 Requires Intel(R) DAAL, Intel(R) TBB and Intel(R) CnC being properly setup, e.g. DAALROOT, TBBROOT and CNCROOT being set.
