@@ -16,7 +16,6 @@ Please see GettingStartedHLDAAL.pdf for details.
 # Building packages
 ## VARIABLES
 * DAAL4PY_VERSION: package version
-* R: path to R [R only]
 
 ## OVERVIEW
 The build-process (using setup.py) is 2-phased

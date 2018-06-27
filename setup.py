@@ -120,7 +120,7 @@ def getpyexts():
         ela.append('-IGNORE:4197')
 
     return cythonize([Extension('_daal4py',
-                                [os.path.abspath('daal4py/daal4py.cpp'),
+                                [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')],
                                 include_dirs=include_dir_plat + [np.get_include()],
