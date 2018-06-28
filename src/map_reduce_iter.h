@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2014-2017 Intel Corporation
+* Copyright 2014-2018 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -241,7 +241,7 @@ namespace mapReduceIter {
         static typename Algo::iomstep2Master__final_type::result_type
         compute(const TableOrFList & input, const TableOrFList & input2, Algo & algo)
         {
-            algo._assignFlag = "false";
+            algo._assignFlag = false;
             int pid = CnC::tuner_base::myPid();
             int nblocks = 1;
             if(! (input.table || input.file.size())) {

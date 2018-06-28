@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2018 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,21 @@
 # limitations under the License.
 #******************************************************************************/
 
+###############################################################################
+# Top level code for generating code for building daal4py
+# - Uses parse.py to read in DAAL C++ headers files.
+# - Extracts necessary information like enum values, namespaces, templates etc
+# - Uses wrapper_gen.py to generate code
+#   - C++ code to construct objects and call algorithms (shared and distributed memory)
+#   - Cython code to generate python API
+###############################################################################
+
 import glob, os, re
 from pprint import pformat, pprint
 from os.path import join as jp
 from collections import defaultdict, OrderedDict
-from .parse import parse_header
 from jinja2 import Template
+from .parse import parse_header
 from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 
@@ -28,33 +37,8 @@ try:
 except NameError:
     basestring = str
 
-def first_non_default(value):
-    """
-    Returns first element in value which does not contain "default".
-    If value is/has only a single element it is returned in any case.
-    Otherwise assumes a list/tuple contains at least one non-default element.
-    """
-    if isinstance(value, (list, tuple)):
-        if len(value) == 1:
-            return value[0]
-        for x in value:
-            if 'default' not in x:
-                return x
-        print(value)
-        assert False
-    return value
-
 def cpp2hl(cls):
     return cls.replace('::', '_')
-
-###############################################################################
-# Managing SWIG interface files (jinja templates).
-# - Uses parse.py to read in C++ headers files.
-# - reads in an existing config for each namespace and compares it to what it
-#   found in the C++ headers
-# - Converts resulting data strucutures into SWIG consumable files
-#   this requries some recursive searching and expansion
-###############################################################################
 
 ###############################################################################
 def cleanup_ns(fname, ns):
@@ -84,6 +68,7 @@ def cleanup_ns(fname, ns):
 ###############################################################################
 ###############################################################################
 def splitns(x):
+    '''Split string at last '::' '''
     tmp_ = x.rsplit('::', 1)
     if len(tmp_) == 1:
         return ('', x)
@@ -93,49 +78,6 @@ def splitns(x):
 def get_parent(ns):
     tmp = ns.rsplit('::', 1)
     return tmp[0] if len(tmp) > 1 else 'daal'
-
-###############################################################################
-###############################################################################
-def compare(ns, a, b, allowed_diffs, ignores):
-    """
-    Helper function comparing two configs.
-    Iterating through all keys in config a and checks if the same exists in b.
-    Certain fields are skipped.
-    A Warning message will be printed for each difference found.
-    """
-    cfga = a[0]
-    cfgb = b[0]
-    # go through all entries in a
-    for x in cfga:
-        if x not in ['package', 'module', 'namespace', 'deps', 'renames', 'computes', 'ignore',]:
-            if not cfga[x]:
-                continue
-            # check if in b
-            if x in cfgb:
-                # go through all sub-entries
-                for y in cfga[x]:
-                    found = False
-                    # we need to account for our special '!' syntax for jinja processing
-                    for yy in ([y, y.strip('!'), y+'!', '!'+y] if isinstance(y, basestring) else [y]):
-                        if yy in cfgb[x]:
-                            if isinstance(cfga[x],dict) and (not isinstance(cfgb[x],dict) or cfga[x][y] != cfgb[x][yy]):
-                                if '::'.join([ns, x, y.strip('!')]) not in allowed_diffs:
-                                    # value is not identical and it's not in allowed diffs
-                                    print(b[1] + ':0: Warning: ' + x + '->' + y + ': ' + str(cfga[x][y]) + ' differs')
-                                    print(a[1] + ':0: Warning: from what is defined here')
-                            found = True
-                            break;
-                    if not found and y not in ignores and '::'.join([ns, x, str(y)]) not in allowed_diffs:
-                        # key not found in b
-                        print(b[1] + ':0: Warning: ' + x + '->' + str(y) + ' not found for ' + ns)
-                        print(a[1] + ':0: Warning: but it is defined here')
-            else:
-                if '::'.join([ns, x]) not in allowed_diffs:
-                    # key not found in b and not in allowed diffs
-                    print(b[1] + ':0: Warning: ' + x + ' not found for ' + ns)
-                    print(a[1] + ':0: Warning: but it is defined here')
-
-###############################################################################
 
 ###############################################################################
 class namespace(object):
@@ -153,203 +95,9 @@ class namespace(object):
 
 
 ###############################################################################
-    def resolve_methods(self, ns, namespace_dict):
-        """
-        Find and return first list of Method enum in namespace hierachy.
-        Getting called assumes the ns needs methods and so will find in parents
-        if there are none in the ns itself.
-        """
-        if 'Method' in self.enums:
-            # this ns has its own definition of methods
-            pfx = '' if ns == self.name else 'daal::' + self.name + '::'
-
-            rev = defaultdict(list)
-            for m in self.enums['Method']:
-                rev[self.enums['Method'][m]].append(pfx + m)
-            res = sorted(rev[''])
-            del rev['']
-            for m in rev:
-                if m.isdigit():
-                    res.append(sorted(rev[m]) if len(rev[m]) > 1 else rev[m][0])
-                elif 'default' in m:
-                    res.append(sorted(list(rev[m]) + [pfx + m]))
-                else:
-                    print(rev)
-                    assert False
-            return list(res)
-
-        # we do not have methods in this namespace
-        # let's find them in our parents
-        split_ns = splitns(self.name)[0]
-        if len(split_ns) > 1 and split_ns[0] in namespace_dict:
-            return namespace_dict[split_ns[0]].resolve_methods(ns, namespace_dict)
-        else:
-            return []
-
-
-###############################################################################
-    def resolve_deps(self, namespace_dict, deps):
-        """Performs one recursive pass through dependences from #include directives.
-           Adds dependent namespaces to its list of deps and return it."""
-        # let's determine which namespace have the include files a given ns needs to #define as USE_*
-        #   also determine the interface files to be imported
-        for inc in self.includes:
-            # check which namespace the #included file belongs to
-            for ns2 in namespace_dict:
-                if inc in namespace_dict[ns2].headers:
-                    if ns2 not in ['daal', 'algorithms', 'services', 'data_management', self.name]:
-                        # we found the namespace -> add once
-                        deps[self.name].add(ns2)
-                        # we also add all the deps that
-                        for n in deps[ns2]:
-                            deps[self.name].add(n)
-                    break
-        return deps[self.name]
-
-
-###############################################################################
-    def resolve_computes(self, namespace_dict):
-        """
-        Determine which compute wrappers are needed and return dict.
-        The values are strings with the standard jinja macro calls.
-        """
-        computes = {}
-        # Determine the compute() wrappers we need
-        #  (e.g. if there are Batch, Online, Distributed algorithms)
-        if 'Batch' in self.classes:
-            computes['Batch'] = '{{add_compute("Batch")}}'
-        if 'Online' in self.classes:
-            computes['Online'] = '{{add_compute2(ns, cfg, "Online")}}'
-        if 'Distributed' in self.classes:
-            computes['Distributed'] = '{{add_compute2(ns, cfg, "Distributed")}}'
-        return computes
-
-
-###############################################################################
-    def format_setgets(self):
-        """
-        Returns a list of strings with SWIG %rename directives, one for each set/get method.
-        The new name is generated from the argument types.
-        """
-        rs = []
-        for c in self.classes:
-            if len(self.classes[c].setgets) and isinstance(self.classes[c].setgets, (list, tuple)):
-                for r in self.classes[c].setgets:
-                    rs.append('%rename(' + r[0] + r[2].replace('Id', '') + ') /*' + r[1] + '*/ daal::{{ns}}::interface1::' + c + '::' + r[3])
-        return rs
-
-
-###############################################################################
-    def as_iface(self, namespace_dict, deps):
-        """returns a dict in the iface-tmpl format for our i.tmpl files"""
-        cfg = {
-            'classes'   : [c for c in self.classes if not self.classes[c].template_args],
-            'computes'  : self.resolve_computes(namespace_dict),
-            'deps'      : list(deps),
-            'includes'  : self.headers,
-            'module'    : splitns(self.name)[0],
-            'namespace' : self.name,
-            'package'   : splitns(self.name)[0].replace('::', '.'),
-            'renames'   : self.format_setgets(),
-            'steps'     : ['daal::' + x for x in self.steps],
-            'templates' : {c: self.classes[c].template_args for c in self.classes if self.classes[c].template_args and not self.classes[c].partial},
-        }
-        for c in self.classes:
-            cfg['templates'].update({f[0]: f[1] for f in self.classes[c].templates})
-        if self.need_methods:
-            cfg['methods'] = self.resolve_methods(self.name, namespace_dict)
-            if not len(cfg['methods']):
-                print(self.name)
-                assert False
-            # if the methods are from a parent, we assume they are all from the same ns.
-            # we need to prepend the parent's fully qualified namespace to each
-            # method template parameter.
-            if '::' in cfg['methods'][0]:
-                tmp = splitns(cfg['methods'][0])[0]
-                for t in cfg['templates']:
-                    for a in cfg['templates'][t]:
-                        if a[0] == 'method' and len(a[2]):
-                            a[2] = tmp + '::' + a[2]
-        # template default values get resolved to the first non-default-name of the same
-        # enum value
-        for tmpl in cfg['templates']:
-            for tmplarg in cfg['templates'][tmpl]:
-                if len(tmplarg) >= 3 and tmplarg[1] in cfg and 'default' in tmplarg[2]:
-                    for val in cfg[tmplarg[1]]:
-                        if tmplarg[2] == val:
-                            break
-                        if isinstance(val, (tuple, list)) and tmplarg[2] in val:
-                            tmplarg[2] = first_non_default(val)
-                            break
-
-        d = []
-        for k in cfg:
-            if len(cfg[k]) == 0:
-                d.append(k)
-        for k in d:
-            del cfg[k]
-
-        return cfg
-
-
-###############################################################################
-    def from_iface(self, fname):
-        if not os.path.isfile(fname):
-            return None
-        cfgstr = None
-        with open(fname, "r") as f:
-            for l in f:
-                if cfgstr != None:
-                    if '%}' in l:
-                        cfgstr = cfgstr.strip()
-                        if cfgstr[0] != '{':
-                            cfgstr = '{' + cfgstr
-                        if '}' in l.replace('%}', ''):
-                            cfgstr += '}'
-                        return eval(cfgstr, {'fptypes': 'fptypes', 'cmodes': 'cmodes', 'ntypes': 'ntypes', 'stypes': 'stypes'})
-                    else:
-                        cfgstr += l
-                elif '{% set cfg =' in l:
-                    cfgstr = ''
-        return None
-
-
-###############################################################################
-    def is_empty(self):
-        return not any(len(x) > 0 for x in [self.classes, self.enums, self.steps])
-
-
-###############################################################################
-    def write(self, cfg, fname):
-        #print("Writing " + fname)
-        with open(fname, 'w') as template_file:
-            template_file.write('cfg =\n')
-            pprint(cfg, stream=template_file, width=110)
-
-###############################################################################
-    def write_update(self, cfg, fname):
-        if not os.path.isfile(fname):
-            return
-        #print("Updating " + fname)
-        cfgstr = False
-        o = ''
-        with open(fname, "r") as f:
-            for l in f:
-                if cfgstr:
-                    if '%}' in l:
-                        o += '{% set cfg =\n' + pformat(cfg, width=110) + '\n%}\n\n'
-                        cfgstr = False
-                elif '{% set cfg =' in l:
-                    cfgstr = True
-                else:
-                    o += l
-        with open(fname, 'w') as f:
-            f.write(o)
-
-###############################################################################
 ###############################################################################
 class cython_interface(object):
-    """collecting and generating data for SWIG"""
+    """collecting and generating data for code generation"""
 
     # classes/functions we generally ignore
     ignores = ['AlgorithmContainerIface', 'AnalysisContainerIface',
@@ -361,30 +109,16 @@ class cython_interface(object):
                'allocateNumericTableImpl', 'allocateImpl',
                'setPartialResultStorage', 'addPartialResultStorage',]
 
-    # file we ignore/skip
+    # files we ignore/skip
     ignore_files = ['daal_shared_ptr.h', 'daal.h', 'daal_win.h', 'algorithm_base_mode_batch.h',
                     'algorithm_base.h', 'algorithm.h', 'ridge_regression_types.h', 'kdtree_knn_classification_types.h',
                     'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h',
                     'multi_class_classifier_types.h']
 
-    # allowed diffs
-    # matched against $namespace::$symbol; $symbol can be be a class, template or key in our config
-    allowed_diffs = ['algorithms::implicit_als::training::init::templates::Distributed',
-                     'algorithms::implicit_als::training::templates::Distributed',
-                     'algorithms::implicit_als::training::templates::Batch',
-                     'algorithms::multi_class_classifier::prediction::templates::Batch',
-                     'algorithms::implicit_als::training::stages',
-                     'algorithms::implicit_als::training::dmethods',
-                     'algorithms::implicit_als::training::bmethods',
-                     'algorithms::kmeans::init::templates::Distributed',
-                     'algorithms::kmeans::init::s1methods',
-                     'algorithms::kmeans::init::s2mmethods',
-                     'algorithms::kmeans::init::s2l34methods',
-                     'algorithms::kmeans::init::s5methods',]
-
-    ignore_ns = ['daal', 'algorithms', 'services', 'data_management']
-
-    # default value indicators
+    # default values for all types
+    # we replace all default values given in DAAL with these.
+    # Our generated code will detect these and then let DAAL handle setting defaults
+    # Note: we assume default bool is always false.
     defaults = {'double': 'NaN64',
                 'float': 'NaN32',
                 'int': '-1',
@@ -410,8 +144,8 @@ class cython_interface(object):
     def read(self):
         """
         Walk through each directory in the root dir and read in C++ headers.
-        Creating a namespace dictionary. Of course, the it needs to go through every header file to find out
-        what namespace it is affiliated with. Once it does this, we have a dictionary where the key is the namespace
+        Creating a namespace dictionary. Of course, it needs to go through every header file to find out
+        what namespace it is affiliated with. Once done, we have a dictionary where the key is the namespace
         and the values are namespace class objects. These objects carry all information as extracted by parse.py.
         """
         for (dirpath, dirnames, filenames) in os.walk(self.include_root):
@@ -422,6 +156,7 @@ class cython_interface(object):
                         parsed_data = parse_header(header, cython_interface.ignores)
 
                     ns = cleanup_ns(fname, parsed_data['ns'])
+                    # Now let's update the namespace; more than one file might constribute to the same ns
                     if ns:
                         if ns not in self.namespace_dict:
                             self.namespace_dict[ns] = namespace(ns)
@@ -441,65 +176,12 @@ class cython_interface(object):
 
 
 ###############################################################################
-    def digest(self):
-        """
-        1. Process raw data in our namespace_dict.
-        """
-        # sort include files to put *_types file first in list
-        for ns in self.namespace_dict:
-            self.namespace_dict[ns].headers.sort(key=lambda x: x if '_types' not in x else '_')
-
-
-
-###############################################################################
-    def write_and_compare(self, newdir, olddir, update=None):
-        """
-        Write the extract data into files with extension as newdir/*.i.tmpl.new.
-        Then compare with corresponding file in dir "olddir".
-        """
-        # let's recursively resolve all dependences between namespaces
-        all_deps = defaultdict(set)
-        added = 1
-        while added > 0:
-            added = 0
-            for ns in self.namespace_dict:
-                oldcnt = len(all_deps[ns])
-                all_deps[ns] = self.namespace_dict[ns].resolve_deps(self.namespace_dict, all_deps)
-                added += len(all_deps[ns]) - oldcnt
-        for ns in self.namespace_dict:
-            nso = self.namespace_dict[ns]
-            newcfg = nso.as_iface(self.namespace_dict, all_deps[ns])
-            newfname = jp(newdir, ns.replace('::', '__') + '.i.tmpl.new')
-            nso.write(newcfg, newfname)
-            if ns in cython_interface.ignore_ns:
-                continue
-            oldfname = jp(olddir, ns.replace('::', '__') + '.i.tmpl')
-            oldcfg = nso.from_iface(oldfname)
-            if oldcfg:
-                # compare both ways
-                compare(ns, (newcfg, newfname), (oldcfg, oldfname), cython_interface.allowed_diffs, [])
-                compare(ns, (oldcfg, oldfname), (newcfg, newfname), cython_interface.allowed_diffs, cython_interface.ignores)
-            elif not nso.is_empty():
-                print('Error: Could not find file ' + oldfname + ' or config in file.')
-            if update and update in newcfg:
-                if oldcfg:
-                    u = {}
-                    u[update] = newcfg[update]
-                    oldcfg.update(u)
-                    nso.write_update(oldcfg, oldfname)
-                else:
-                    print('Warning: no config for ' + oldfname)
-
-
-
-###############################################################################
-###############################################################################
-# HLAPI/postprocessing starts here
-
+# Postprocessing starts here
 ###############################################################################
     def get_ns(self, ns, c, attrs=['classes', 'enums', 'typedefs']):
         """
         Find class c starting in namespace ns.
+        We search all entries given in attrs - not only 'classes'.
         c can have qualified namespaces in its name.
         We go up to all enclosing namespaces of ns until we find c (e.g. current-namespace::c)
         or we reached the global namespace.
@@ -571,7 +253,11 @@ class cython_interface(object):
         """
         Return triplet (type, {'stdtype'|'enum'|'tm'|'class'|'?'}, namespace) to be used in the interface
         for given type 't'.
-        Returns 'tm' if a SWIG typemap exists.
+            'stdtype' means 't' is a standard data type understood by cython and plain C++
+            'enum' means 't' is a C/C++ enumeration
+            'tm' means we provide a type-map for 't' elsewhere
+            'class' means 't' is a regular C++ class
+            '?' means we do not know what 't' is
         For classes, we also add lookups in namespaces that DAAL C++ API finds through "using".
         """
         tns, tname = splitns(t)
@@ -655,24 +341,6 @@ class cython_interface(object):
         else:
             ret = (self.get_ns(ns, res.split('<')[0]), tmp[1])
         return ret
-        # if not res:
-        #     assert False
-        #     for parent in self.namespace_dict[ns].classes[cls].parent:
-        #         pns = ns
-        #         # we need to cut off leading daal::
-        #         sanep = parent.split()[-1].replace('daal::', '')
-        #         parentclass = splitns(sanep)[1]
-        #         pns = self.get_ns(pns, sanep)
-        #         res = self.get_result(pns, parentclass)
-        #         if res:
-        #             return res
-        #     return None
-        # m = re.match(r'.+SharedPtr<\s*((\w|::)+)>.*', res[0])
-        # if m:
-        #     rclass = m.group(1)
-        #     assert False
-        # else:
-        #     rclass = res[0]
 
 
 ###############################################################################
@@ -840,8 +508,10 @@ class cython_interface(object):
                                   'pargs': None})
 
             # A parameter can be a specialized template. Sigh.
-            # we need to provide specialized template classes for them
-            # at some point we might have other things that influence this (like result or input).
+            # we need to provide specialized template classes for them.
+            # We do this by creating a list for templates, for specializations the list-length is >1
+            # and the first entry is the base/"real" template spec, following entries are specializations.
+            # At some point we might have other things that influence this (like result or input).
             # for now, we only check for Parameter specializations
             decl_opt, decl_req , call_opt, call_req = [], [], [], []
             for td in tdecl:
@@ -884,8 +554,6 @@ class cython_interface(object):
                                 if hlt_type == 'enum':
                                     if len(self.namespace_dict[hlt_ns].enums[llt]) > 1:
                                         pval = '(' + hlt_ns + '::' + llt + ')string2enum_' + hlt_ns.replace(':', '_') + '[' + tmp + ']'
-                                #elif llt == 'bool':
-                                #    pval = 'string2bool(' + tmp + ')'
                                 else:
                                     pval = tmp
                                 if pval != None:
@@ -905,7 +573,7 @@ class cython_interface(object):
                             else:
                                 print('// Warning: parameter member ' + p + ' of ' + ns + ' is no stdtype, no enum and has no typemap. Ignored.')
 
-            # endfor
+            # endfor td in tdecl
 
             # Now let's get the input arguments (provided to input class/object of algos)
             iargs_decl = []
@@ -972,12 +640,14 @@ class cython_interface(object):
 
         Then generate maps for each algo mapping string arguments to C++ enum values.
 
-        Next prepares parsed data for code generation (e.g. setting up dicst for jinja).
+        Next prepares parsed data for code generation (e.g. setting up dicts for jinja).
 
         Finally generates
-          - type-converters, converting C++ types to native type (python-dict, R named list...)
+          - Result/Model classes and their properties
           - algo-wrappers
           - initialization
+
+        We generate strings for a C++ header, a C++ file and a cython file.
         """
         tmaps, wrappers, hlapi, dtypes = '', '', '', ''
         algoconfig = {}
@@ -1031,6 +701,8 @@ class cython_interface(object):
         fts = wg.gen_footers(dtypes)
 
         pyx_end += fts[1]
+        # we add a comment with tables providing parameters for each algorithm
+        # might be useful for generating docu
         cpp_end += fts[0] + '\n/*\n'
         for algo in hlargs:
             if len(hlargs[algo]):
@@ -1040,42 +712,20 @@ class cython_interface(object):
                     cpp_end += ','.join([str(x).rsplit('::')[-1] for x in a]).replace('const', '').replace('&', '').strip() + '\n'
                 cpp_end += '\n'
         cpp_end += '\n*/\n'
+        # Finally combine the different sections and return the 3 strings
         return(hds[0] + cpp_map + cpp_begin + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
 
-###############################################################################
-###############################################################################
-"""
-FIXME
-- template template and jinja macros need to work with all the data we extract
-  - like generating imports and '#define USE_*' from deps
-  - when producing the first versions for all the algorithms
-    - think about simplifications, like converting all method values to lists
-- almost everything we do manually in the template bodies should be moved
-  to the cfg dicts, this allows much easier changes to all files.
-  Moreover it will improve what we can do to compare C++ and our templates
-- see which sections we currently do not compare and include in comparison
-- some manual add_compute stuff can probably be simplified with the new tuple syntax
-  for templates (see kmeans__init).
-"""
 
 ###############################################################################
 ###############################################################################
 ###############################################################################
 ###############################################################################
-
-description = """
-A tool to create cython interface files for HLAPI of DAAL.
-Extracting necessary data and creating internal data structures.
-See parse.py for details about C++ parsing.
-See wrappers.py for necessary configuration that can not be auto-extracted.
-See wrapper_gen.py for code generation (cython and C++).
-"""
 
 def gen_daal4py(daalroot, outdir):
     iface = cython_interface(jp(daalroot, 'include', 'algorithms'))
     iface.read()
-    cpp_h, cpp_cpp, pyx_file = iface.hlapi('', ['pca',
-                                                'kmeans',
+    cpp_h, cpp_cpp, pyx_file = iface.hlapi('', ['kmeans',
+                                                'pca',
                                                 'svd',
                                                 'multinomial_naive_bayes',
                                                 'linear_regression',
@@ -1098,12 +748,18 @@ def gen_daal4py(daalroot, outdir):
 if __name__ == "__main__":
     import argparse
 
-    argParser = argparse.ArgumentParser(prog="gen_hlapi.py",
+    description = """A tool to create cython interface files for HLAPI of DAAL (aka daal4py).
+    Extracting necessary data and creating internal data structures.
+    See parse.py for details about C++ parsing.
+    See wrappers.py for necessary configuration that can not be auto-extracted.
+    See wrapper_gen.py for code generation (cython and C++).
+    """
+
+    argParser = argparse.ArgumentParser(prog="gen_daal4py.py",
                                         description=description,
                                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    argParser.add_argument('--hlapi',    default=None, choices=['R', 'Python'], help="creates high level API for given language")
-    argParser.add_argument('--daalroot', default=None,                          help="DAAL root directory (reads include dir in there)")
-    argParser.add_argument('--outdir',   default='build',                       help="Output directory to store wrapper files to")
+    argParser.add_argument('--daalroot', required=True,   help="DAAL root directory (reads include dir in there)")
+    argParser.add_argument('--outdir',   default='build', help="Output directory to store wrapper files to")
     
 
     args = argParser.parse_args()

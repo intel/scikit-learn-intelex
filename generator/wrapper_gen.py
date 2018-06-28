@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2018 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +14,41 @@
 # limitations under the License.
 #******************************************************************************/
 
-# We use some functions which accept PyObject* to convert the python objects manually
-# Similarly, we creat PyObjects manually in some C++ functions (e.g. nd-arrays).
+###############################################################################
+# The code generator.
+# We define jinja2 templates to generate code for all the DAAL algorithms and their
+# Result and Model objects. Most macros work on one namespace and expect expect
+# values/variables in their env. If not specificied otherwise, we assume we can
+# use the following
+#          {{ns}}:            current C++ namespace
+#          {{algo}}:          algo name (as seen in API)
+#          {{args_decl}}:     non-template arguments for wrapper function
+#          {{args_call}}:     non-template arguments to pass on
+#          {{input_args}}:    args for setting input
+#          {{template_decl}}: template parameters for declaration
+#          {{template_args}}: template arguments mapping to their possible values
+#          {{params_req}}:    dict of required parameters and their values
+#          {{params_opt}}:    dict of parameters and their values
+#          {{step_specs}}:    distributed spec
+#          {{map_result}}:    Result enum id for getting partial result (can be FULLPARTIAL)
+#          {{iface}}:         Interface manager
+#          {{result_map}}:    Type information about result type of given algo
+#
+# The code here is of course highly dependent on manual code that can be found in ../src.
+# For example, we pretend we know how distributed algorithm interfaces look like and work.
+#
+# Also, we use some functions which accept PyObject* to convert the python objects manually
+# Similarly, we create PyObjects manually in some C++ functions (e.g. nd-arrays).
+###############################################################################
+# FIXME remove remaining args/code for distributed computation if none available
+# FIXME a revision from scratch would be helpful...
 
 import jinja2
 from collections import OrderedDict
 from pprint import pprint
 import re
 
+###############################################################################
 # generic utility functions/defs needed by generated code
 cython_header = '''
 # distutils: language = c++
@@ -42,15 +69,19 @@ npc.import_array()
 cdef extern from "daal4py_cpp.h":
     cdef cppclass NumericTablePtr:
         pass
-    ctypedef NumericTablePtr data_management_NumericTablePtr
 
     cdef cppclass data_management_DataCollectionPtr:
         pass
 
+    ctypedef NumericTablePtr data_management_NumericTablePtr
+
+
 cdef class data_management_datacollection:
     cdef data_management_DataCollectionPtr * c_ptr
+
     def __dealloc__(self):
         del self.c_ptr
+
 
 cdef extern from "daal4py.h":
     cdef const double NaN64
@@ -65,11 +96,13 @@ cdef extern from "daal4py.h":
         TableOrFList(PyObject *) except +
         pass
 
+
 cdef extern from "daal4py_cpp.h":
     cdef void c_daalinit(bool spmd, int flag) except +
     cdef void c_daalfini() except +
     cdef size_t c_num_procs() except +
     cdef size_t c_my_procid() except +
+
 
 def daalinit(spmd = False, flag = 0):
     c_daalinit(spmd, flag)
@@ -87,7 +120,9 @@ cdef extern from "daal4py.h":
     cdef B * sppcast[B, D](B * b, D * d)
 '''
 
+###############################################################################
 # generates result/model classes
+# Generates c++ and cython code together, separated by "CPP<->CY"
 # requires {{enum_gets}}    list of triplets of members accessed via get(ns, name, type)
 #          {{named_gets}}   list of pairs(name, type) of members accessed via type var = getName()
 #          {{class_type}}   C++ class
@@ -109,16 +144,10 @@ inline {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({{cla
 }
 {% endfor %}
 CPP<->CY
-#cdef extern from "daal.h" namespace "{{splitname[0]}}":
-#    cdef cppclass {{splitname[-1]}}:
-#        pass
-#    ctypedef {{splitname[-1]}} {{class_type|flat|strip(' *')}}
 cdef extern from "daal4py_cpp.h":
     cdef cppclass {{class_type|flat|strip(' *')}}:
         pass
 {% if not class_type.startswith('daal::'+ns) %}
-#    ctypedef {{class_type|flat|strip(' *')}} {{(ns+'::'+splitname[-1])|flat|strip(' *')}}
-#    cdef cppclass {{(ns+'::'+splitname[-1])|flat|strip(' *')}}
 {% endif %}
 cdef extern from "daal4py_cpp.h":
 {% for m in enum_gets %}
@@ -127,7 +156,6 @@ cdef extern from "daal4py_cpp.h":
 {% for m in named_gets %}
     cdef {{m[0]|d2cy}} get_{{flatname}}_{{m[1]}}({{class_type|flat}} obj_) except +
 {% endfor %}
-
 
 cdef class {{flatname.replace('Ptr', '')|lower}}:
     cdef {{class_type|flat}} c_ptr
@@ -170,10 +198,10 @@ class {{iface_name}}__iface__ : public algo_manager__iface__
 public:
     typedef {{iface_type}} {{iface_name}}Ptr_type;
     virtual {{iface_name}}Ptr_type * get_ptr() {return NULL;}
-//    operator {{iface_type}}*() {return get_ptr();}
 };
 
-#define c_{{iface_name}}__iface__ daal::services::SharedPtr< {{iface_name}}__iface__ >
+typedef daal::services::SharedPtr< {{iface_name}}__iface__ > c_{{iface_name}}__iface__;
+
 static {{iface_type}} to_daal(c_{{iface_name}}__iface__ * t) {return t ? *((*t)->get_ptr()) : {{iface_type}}();}
 {% endmacro %}
 """
@@ -185,7 +213,9 @@ gen_cython_iface_macro = """
 cdef extern from "daal4py_cpp.h":
     cdef cppclass c_{{iface_name}}__iface__:
         pass
+
     ctypedef c_{{iface_name}}__iface__ c_{{iface_type|flat|strip(' *')}};
+
 
 cdef class {{iface_name|lower}}__iface__:
     cdef c_{{iface_name}}__iface__ * c_ptr
@@ -198,6 +228,8 @@ cdef class {{iface_name|lower}}__iface__:
 {% endmacro %}
 """
 
+# macro generating typedefs in manager classes, e.g. algo and result types
+# note that we will have multiple result types in dist-mode: each step has its own
 gen_typedefs_macro = """
 {% macro gen_typedefs(ns, template_decl, template_args, mode="Batch", suffix="b", step_spec=None) %}
 {% set disttarg = (step_spec.name.rsplit('__', 1)[0] + ', ') if step_spec.name else "" %}
@@ -218,6 +250,9 @@ gen_typedefs_macro = """
 {%- endmacro %}
 """
 
+# macro for generate an algorithm instance with name algo$suffix
+# This can also be used for steps of distributed mode
+# set sp=True if you want a shared pointer
 gen_inst_algo = """
 {% macro gen_inst(ns, params_req, params_opt, suffix="", step_spec=None, sp=False) %}
 {% set algo = 'algo' + suffix %}
@@ -239,6 +274,7 @@ auto algo{{suffix}} = new services::SharedPtr< {{algo}}_type >(new {{algo}}_type
 {%- endmacro %}
 """
 
+# macro to generate the bocy of a compute function (batch and distributed)
 gen_compute_macro = gen_inst_algo + """
 {% macro gen_compute(ns, input_args, params_req, params_opt, suffix="", step_spec=None, tonative=True, iomtype=None) %}
 {% set iom = iomtype if iomtype else "iom"+suffix+"_type" %}
@@ -303,23 +339,11 @@ gen_compute_macro = gen_inst_algo + """
 algo_iface_template = """
 struct {{algo}}__iface__ : public {{iface[0] if iface[0] else 'algo_manager'}}__iface__
 {
-    virtual {{result_maps.class_type}} * compute({{(',\n'+' '*(34+result_maps.class_type|length)).join(iargs_decl|cppdecl)}}) {assert(false);}
+    virtual {{result_map.class_type}} * compute({{(',\n'+' '*(34+result_map.class_type|length)).join(iargs_decl|cppdecl)}}) {assert(false);}
 };
 """
 
-# generates wrapper for managing distributed and batch modes
-# requires {{ns}}:            namespace
-#          {{algo}}:          algo name
-#          {{args_decl}}:     non-template arguments for wrapper function
-#          {{args_call}}:     non-template arguments to pass on
-#          {{input_args}}:    args for setting input
-#          {{template_decl}}: template parameters for declaration
-#          {{template_args}}: template arguments mapping to their possible values
-#          {{params_req}}:    dict of required parameters and their values
-#          {{params_opt}}:    dict of parameters and their values
-#          {{step_specs}}:     distributed spec
-#          {{map_result}}:    Result enum id for getting partial result (can be FULLPARTIAL)
-#          {{iface}}:         Interface manager
+# generates "manager" class for managing distributed and batch modes of a given algo
 manager_wrapper_template = gen_typedefs_macro + gen_compute_macro + """
 {% if base %}
 // The type used in cython
@@ -442,41 +466,47 @@ template<{% for x in template_decl %}{{template_decl[x]['template_decl'] + ' ' +
 {% endif %}
 """
 
-# generates HLAPI parent class wrapper (provides compute for all its template specializations)
-# requires {{ns}}:            namespace
-#          {{algo}}:          algo name
-#          {{iargs_decl}}:    declare arguments for function
-#          {{iargs_call}}:    call arguments for function
-#          {{iface}}:         Interface manager
+# generates cython class wrappers for given algo
+# also generates defs for __iface__ class
 parent_wrapper_template = """
 cdef extern from "daal4py.h":
+    # declare the C++ equivalent of the __iface__ class, providing de-templatized access to compute
     cdef cppclass {{algo}}__iface__:
-        {{result_maps.class_type|flat}} compute({{(',\n'+' '*(29+algo|length)).join(iargs_decl|d2ext)}}) except +
+        {{result_map.class_type|flat}} compute({{(',\n'+' '*(29+algo|length)).join(iargs_decl|d2ext)}}) except +
 
+    # declare the C++ equivalent of the manager__iface__ class, e.g. the the shared_ptr
     cdef cppclass c_{{algo}}_manager__iface__{{'(c_'+iface[0]+'__iface__)' if iface[0] else ''}}:
         # Emulating SharedPtr with operator*
         {{algo}}__iface__ operator*()
 
+
 cdef extern from "daal4py_cpp.h":
+    # declare the C++ construction function. Returns the manager__iface__ for access to de-templatized compute
     cdef c_{{algo}}_manager__iface__ * mk_{{algo}}({{pargs_decl|cy_ext_decl(pargs_call, template_decl, 45+2*(algo|length))}}) except +
 
+
+# this is our actual algorithm class for Python
 cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
+    # Init simply forwards to the C++ construction function
     def __cinit__(self,
                   {{pargs_decl|cy_decl(pargs_call, template_decl, 18)}}):
         self.c_ptr = sppcast(self.c_ptr, mk_{{algo}}({{pargs_decl|cy_call(pargs_call, template_decl, 45+(algo|length))}}))
 
 {% if not iface[0] %}
+    # the C++ manager__iface__ (de-templatized)
     cdef c_{{algo}}_manager__iface__ * c_ptr
 
     def __dealloc__(self):
         del self.c_ptr
 {% endif %}
+    # compute simply forwards to the C++ de-templatized manager__iface__::compute
     def compute(self,
 {% for a in iargs_call %}
 {{' '*16 + a|cydecl(args_decl[loop.index0]) + ('):' if loop.last else ',')}}
 {% endfor %}
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
-        res = {{result_maps.class_type.replace('Ptr', '')|d2cy(False)|lower}}()
+        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
+        res = {{result_map.class_type.replace('Ptr', '')|d2cy(False)|lower}}()
         res.c_ptr = deref(deref(algo)).compute(
 {%- for a in iargs_call -%}
 {{('' if loop.first else ' '*47) + a|cycall(iargs_decl[loop.index0]) + (')' if loop.last else ',')}}
@@ -484,12 +514,9 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         return res
 """
 
-# generates HLAPI wrapper for one algorithm
-# requires {{ns}}:            namespace
-#          {{algo}}:          algo name
-#          {{args_decl}}:     non-template arguments for wrapper function
-#          {{template_decl}}: template arguments spec (name -> (type, values, default))
-#          {{dist}}:          boolean: dist mode exists for this algo or not
+# generates the C++ algorithm construction function
+# it all it does is dispatching to the template managers from given arguments
+# tfactory is a recursive jinja2 macro to handle any number of template args
 algo_wrapper_template = """
 {% macro tfactory(tmpl_spec, prefix, pcallargs, dist=False, args=[], indent=4) %}
 {{" "*indent}}if( false ) {;}
@@ -510,7 +537,7 @@ algo_wrapper_template = """
 {% endfor %}
 {%- endmacro %}
 
-daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 35+2*(algo|length))}})
+daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 45+2*(algo|length))}})
 {
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', pargs_call, dist=dist)}}
@@ -550,6 +577,8 @@ void * compute_{{algo}}(daal::services::SharedPtr< {{algo}}__iface__ > * algo,
 };
 """
 
+# We need to register all possible context types to CnC
+# As the algos are templetized we need to do this for all template-instantiations of algo managers.
 algo_types_template = """
 {% macro tfactory(tmpl_spec, prefix, args=[]) %}
 {% for a in tmpl_spec[0][1]['values'] %}
@@ -622,9 +651,13 @@ size_t c_my_procid()
 '''
 
 ##################################################################################
-##################################################################################
+# A set of jinja2 filters to convert arguments, types etc which where extracted
+# from DAAL C++ headers to cython syntax and/or C++ for our own code
 ##################################################################################
 def flat(t, cpp=True):
+    '''Flatten C++ name, leaving only what's needed to disambiguate names.
+       E.g. stripping of leading namespaces and replaceing :: with _
+    '''
     def _flat(ty):
         def __flat(typ):
             nn = typ.split('::')
@@ -647,6 +680,10 @@ def d2ext(ty, cpp=True):
     return [flt(x) for x in ty] if isinstance(ty,list) else flt(ty)
 
 def gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt):
+    '''Generate list of arguments/paramters from algorithm arguments/paramters.
+       Brings required and optional arguments in the right order and
+       applies a filter
+    '''
     r = ''
     for a in range(len(pargs_decl)):
         if '=' not in pargs_decl[a]:
@@ -832,7 +869,7 @@ class wrapper_gen(object):
         
         jparams = cfg['params'].copy()
         jparams['model_maps'] = cfg['model_typemap']
-        jparams['result_maps'] = cfg['result_typemap']
+        jparams['result_map'] = cfg['result_typemap']
         jparams['pargs_decl'] = jparams['decl_req'] + jparams['decl_opt']
         jparams['args_decl']  = jparams['iargs_decl'] + jparams['pargs_decl']
         jparams['pargs_call'] = jparams['call_req'] + jparams['call_opt']
@@ -887,4 +924,3 @@ class wrapper_gen(object):
             t = jenv.from_string(init_template)
             cpp = re.sub(r'[\n\s]+CnC::I', '\n        CnC::I', t.render(**jparams)) + '\n'
         return (cpp, '')
-
