@@ -28,10 +28,10 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <p>With this API your Python programs can use Intel(R) DAAL algorithms in just one line:</p>
-<pre><code>kmeans_init(data, 10, t_method="plusPlusDense")
+<pre><code>kmeans_init(data, 10, method="plusPlusDense").compute('data.csv')
 </code></pre>
 <p>You can even run this on a cluster by simple adding a keyword-parameter</p>
-<pre><code>kmeans_init(data, 10, t_method="plusPlusDense", distributed=TRUE)
+<pre><code>kmeans_init(data, 10, method="plusPlusDense", distributed=TRUE).compute(list_of_files)
 </code></pre>
 <p><strong><em>This is a technical preview, not a product. Intel might decide to discontinue this project at any time.</em></strong></p>
 <h2>
