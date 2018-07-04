@@ -1,40 +1,33 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>DAAL4PY by SAT</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/github-dark.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/main.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="DAAL4PY : A convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>DAAL4PY</title>
   </head>
+
   <body>
 
-      <header>
-        <h1>DAAL4PY</h1>
-        <p>A convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)</p>
-      </header>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.intel.com/SAT/daal4py">View on GitHub</a>
 
-      <div id="banner">
-        <span id="logo"></span>
+          <h1 id="project_title">DAAL4PY</h1>
+          <h2 id="project_tagline">A convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)</h2>
 
-        <a href="https://github.intel.com/SAT/daal4py" class="button fork"><strong>View On GitHub</strong></a>
-      </div><!-- end banner -->
+        </header>
+    </div>
 
-    <div class="wrapper">
-      <nav>
-        <ul></ul>
-      </nav>
-      <section>
-        <h1>
-<a id="daal4py---convenient-python-api-to-intelr-data-analytics-acceleration-library-intelr-daal" class="anchor" href="#daal4py---convenient-python-api-to-intelr-data-analytics-acceleration-library-intelr-daal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>daal4py - Convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)</h1>
-<p>With this API your Python programs can use Intel(R) DAAL algorithms in just one line:</p>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>With this API your Python programs can use Intel(R) DAAL algorithms in just one line:</p>
 <pre><code>kmeans_init(data, 10, t_method="plusPlusDense")
 </code></pre>
 <p>You can even run this on a cluster by simple adding a keyword-parameter</p>
@@ -43,13 +36,60 @@
 <p><strong><em>This is a technical preview, not a product. Intel might decide to discontinue this project at any time.</em></strong></p>
 <h2>
 <a id="overview" class="anchor" href="#overview" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>OVERVIEW</h2>
+<p>All algorithms work the same way:</p>
+<ol>
+<li>Instantiate and parametrize</li>
+<li>Run/compute on input data</li>
+</ol>
+<p>The below tables list the accepted arguments. Those with no default (None) are required arguments. All other arguments with defaults are optional and can be provided as keyword arguments (like optarg=77).
+Each algorithm returns a class-like object with properties as its result.</p>
+<p>For algorithms with training and prediction, simply extract the 'model' property from the result returned by the training and pass it in as the (second) input argument.</p>
+<p>Note that all input objects and the result/model properties are native types, e.g. standard types (integer, float, numpy arrays, ...). Additionally, if you provide the name of a csv-file as an input argument daal4py will work on the entire file content.</p>
+<h2>
+<a id="multiprocessingdistributed-processing" class="anchor" href="#multiprocessingdistributed-processing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>MULTIPROCESSING/DISTRIBUTED PROCESSING</h2>
+<p>Some algorithms can work on several processes (distributed). Currently the following algorithms support distribution:
+•	pca
+•	svd
+•	linear_regression_training
+•	multinomial_naive_bayes_training
+•	kmeans and kmeans_init</p>
+<p>The provided binaries use the Intel® MPI library.</p>
+<p>Note: Distribution needs to be initialized with a call to daalinit() and before exiting the program a call to daalfini() is required.</p>
+<h3>
+<a id="spv-single-process-view" class="anchor" href="#spv-single-process-view" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>SPV: Single Process View</h3>
+<p>The Single-Process-View (SVP) mode lets you program as if you had a single process. Distribution is done under the hood. This mode works like as follows:</p>
+<ol>
+<li>Your program begins with <code>daalinit()</code>
+</li>
+<li>Provide several arrays or csv-files (like one per process). This represents the partitioning of your data.</li>
+<li>When calling an algorithm add the argument <code>distributed=True</code>.</li>
+</ol>
+<h3>
+<a id="spmd-single-program-multiple-data" class="anchor" href="#spmd-single-program-multiple-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>SPMD: Single Program Multiple Data</h3>
+<p>You can also program in SPMD-style, e.g. like the usual MPI style. You do not need mpi4py for daal4py/daal4r, but you can use it of course if required. Any of the above algorithms return a the usable result on all processes. Note: daal4py provides <code>my_procid()</code> and <code>num_procs()</code> to able to properly work in SPMD mode. This mode works like as follows:</p>
+<ol>
+<li>Your program begins with <code>daalinit(spmd=True)</code>
+</li>
+<li>Provide the same number of arrays or csv-files per process. This represents the partitioning of your data.</li>
+<li>When calling an algorithm add the argument <code>distributed=True</code>.</li>
+</ol>
+<h3>
+<a id="starting-processes" class="anchor" href="#starting-processes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Starting Processes</h3>
+<p>Currently we support the MPI used by Intel® Concurrent Collections (Intel CnC), which is usually Intel® MPI Library. Just use mpirun as usual and set the communication-protocol to MPI like this</p>
+<pre><code>mpirun –genv DIST_CNC=MPI –n &lt;num-procs&gt; python &lt;your-program&gt;
+</code></pre>
       </section>
-      <footer>
-        <p>Project maintained by <a href="https://github.intel.com/SAT">SAT</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">DAAL4PY maintained by <a href="https://github.intel.com/SAT">SAT</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+
     
+
   </body>
 </html>
