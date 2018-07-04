@@ -339,7 +339,7 @@ extern "C"
 void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data, size_t * dims, char dtype)
 {
     *data = NULL;
-    if( ptr ) {
+    if(ptr && ptr->get()) {
         dims[0] = (*ptr)->getNumberOfRows();
         dims[1] = (*ptr)->getNumberOfColumns();
         switch(dtype) {

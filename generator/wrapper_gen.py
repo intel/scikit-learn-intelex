@@ -97,6 +97,10 @@ cdef extern from "daal4py.h":
         pass
 
 
+NAN64 = NaN64
+NAN32 = NaN32
+
+
 cdef extern from "daal4py_cpp.h":
     cdef void c_daalinit(bool spmd, int flag) except +
     cdef void c_daalfini() except +
@@ -122,7 +126,7 @@ cdef extern from "daal4py.h":
 
 ###############################################################################
 # generates result/model classes
-# Generates c++ and cython code together, separated by "CPP<->CY"
+# Generates header, c++ and cython code together, separated by "%SNIP%
 # requires {{enum_gets}}    list of triplets of members accessed via get(ns, name, type)
 #          {{named_gets}}   list of pairs(name, type) of members accessed via type var = getName()
 #          {{class_type}}   C++ class
@@ -132,18 +136,25 @@ typemap_wrapper_template = """
 typedef {{class_type}} {{class_type|flat|strip(' *')}};
 {% if enum_gets or named_gets %}
 {% for m in enum_gets %}
-inline {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
+extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_);
+{% endfor %}
+{% for m in named_gets %}
+extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_);
+{% endfor %}
+%SNIP%
+{% for m in enum_gets %}
+extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
 {
     return RAW< {{m[2]}} >()((*obj_)->get({{m[0]}}::{{m[1]}}));
 }
 {% endfor %}
 {% for m in named_gets %}
-inline {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
+extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
 {
     return RAW< {{m[0]}} >()((*obj_)->get{{m[1]}}());
 }
 {% endfor %}
-CPP<->CY
+%SNIP%
 cdef extern from "daal4py_cpp.h":
     cdef cppclass {{class_type|flat|strip(' *')}}:
         pass
@@ -178,7 +189,8 @@ cdef class {{flatname.replace('Ptr', '')|lower}}:
 {% endif %}
 {% endfor %}
 {% else %}
-CPP<->CY
+%SNIP%
+%SNIP%
 {% endif %}
 {% if not class_type.startswith('daal::'+ns) %}
 cdef extern from "daal4py_cpp.h":
@@ -274,7 +286,7 @@ auto algo{{suffix}} = new services::SharedPtr< {{algo}}_type >(new {{algo}}_type
 {%- endmacro %}
 """
 
-# macro to generate the bocy of a compute function (batch and distributed)
+# macro to generate the body of a compute function (batch and distributed)
 gen_compute_macro = gen_inst_algo + """
 {% macro gen_compute(ns, input_args, params_req, params_opt, suffix="", step_spec=None, tonative=True, iomtype=None) %}
 {% set iom = iomtype if iomtype else "iom"+suffix+"_type" %}
@@ -350,7 +362,7 @@ manager_wrapper_template = gen_typedefs_macro + gen_compute_macro + """
 typedef daal::services::SharedPtr< {{algo}}__iface__ > c_{{algo}}_manager__iface__;
 
 // The algo creation function
-extern daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 52+2*(algo|length))}});
+extern "C" daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 52+2*(algo|length))}});
 {% endif %}
 
 {% if template_decl  %}
@@ -537,7 +549,7 @@ algo_wrapper_template = """
 {% endfor %}
 {%- endmacro %}
 
-daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 45+2*(algo|length))}})
+extern "C" daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 56+2*(algo|length))}})
 {
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', pargs_call, dist=dist)}}
@@ -547,32 +559,19 @@ daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_decl|cpp_de
    return new services::SharedPtr< {{algo}}__iface__ >(new {{algo}}_manager({{', '.join(pargs_call)}}, distributed));
 {% endif %}
 }
-"""
 
-hpat_compute = """
-void * compute_{{algo}}(daal::services::SharedPtr< {{algo}}__iface__ > * algo,
-{% for a in iargs_decl %}
-{% set comma = ')' if loop.last else ',' %}
-{% if "TableOrFList" in a %}
-{% set an = a.rsplit('=', 1)[0].strip().rsplit(' ', 1)[-1] %}
-{{' '*(16+(algo|length))}}double * {{an}}_p, size_t {{an}}_d1, size_t {{an}}_d2{{comma}}
-{% else %}
-{{' '*(16+(algo|length)) + a.rsplit('=', 1)[0]}}{{comma}}
-{% endif %}
-{% endfor %}
+extern "C" void * compute_{{algo}}({{(',\n'+' '*(27+algo|length)).join(['daal::services::SharedPtr< '+algo+'__iface__ > * algo']+iargs_decl|hpatdecl)}})
 {
-    (*algo)->_staynative = true;
     void * res = (*algo)->compute(
 {% for a in iargs_decl %}
 {% set comma = ');' if loop.last else ',' %}
 {% set an = a.rsplit('=', 1)[0].strip().rsplit(' ', 1)[-1] %}
 {% if "TableOrFList" in a %}
-{{' '*34}}TableOrFList(daal::data_management::HomogenNumericTable< double >::create({{an}}_p, {{an}}_d2, {{an}}_d1)){{comma}}
+{{' '*34}}new TableOrFList(daal::data_management::HomogenNumericTable< double >::create({{an}}_p, {{an}}_d2, {{an}}_d1)){{comma}}
 {% else %}
 {{' '*34 + an}}{{comma}}
 {% endif %}
 {% endfor %}
-    (*algo)->_staynative = false;
     return res;
 };
 """
@@ -752,6 +751,15 @@ def cpp_decl(pargs_decl, pargs_call, template_decl, indent):
         return cppdecl(typ)
     return gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt)
 
+def hpatdecl(ty):
+    def flt(typ):
+        if "TableOrFList" in typ:
+            an = typ.rsplit('=', 1)[0].strip().rsplit(' ', 1)[-1]
+            return 'double * ' + an + '_p, size_t ' + an + '_d1, size_t ' + an + '_d2'
+        if 'Ptr' in typ:
+            typ = flat(typ, True)
+        return typ.split('=')[0].replace('const', '').strip()
+    return [flt(x) for x in ty] if isinstance(ty, list) else flt(ty)
 
 jenv = jinja2.Environment(trim_blocks=True)
 jenv.filters['match'] = lambda a, x : [x for x in a if s in x]
@@ -765,6 +773,7 @@ jenv.filters['cy_decl'] = cy_decl
 jenv.filters['cy_call'] = cy_call
 jenv.filters['cppdecl'] = cppdecl
 jenv.filters['cpp_decl'] = cpp_decl
+jenv.filters['hpatdecl'] = hpatdecl
 jenv.filters['strip'] = lambda s, c : s.strip(c)
 
 class wrapper_gen(object):
@@ -821,8 +830,8 @@ class wrapper_gen(object):
         if len(jparams) > 0:
             jparams['ns'] = ns
             t = jenv.from_string(typemap_wrapper_template)
-            return (t.render(**jparams) + '\n').split('CPP<->CY')
-        return '', ''
+            return (t.render(**jparams) + '\n').split('%SNIP%')
+        return '', '', ''
 
 
     ##################################################################################
@@ -839,8 +848,8 @@ class wrapper_gen(object):
         if len(jparams) > 0:
             jparams['ns'] = ns
             t = jenv.from_string(typemap_wrapper_template)
-            return (t.render(**jparams) + '\n').split('CPP<->CY')
-        return '', ''
+            return (t.render(**jparams) + '\n').split('%SNIP%')
+        return '', '', ''
 
     ##################################################################################
     def gen_wrapper(self, ns, algo):
@@ -855,13 +864,14 @@ class wrapper_gen(object):
         Handling single-phased algos only which are not part of a multi-phased algo
         """
         cfg = self.algocfg[ns + '::' + algo]
-        cpp_begin, cpp_end, pyx_begin, pyx_end, typesstr = '', '', '', '', ''
+        cpp_begin, pyx_begin, pyx_end, typesstr = '', '', '', ''
         hlargs = []
         
-        cpp_map, pyx_map = self.gen_modelmaps(ns, algo)
-        a, b = self.gen_resultmaps(ns, algo)
+        cpp_map, cpp_end, pyx_map = self.gen_modelmaps(ns, algo)
+        a, b, c = self.gen_resultmaps(ns, algo)
         cpp_map += a
-        pyx_map += b
+        cpp_end += b
+        pyx_map += c
 
         if len(cfg['params']) == 0:
             return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr, hlargs)

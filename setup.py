@@ -19,6 +19,7 @@
 import os
 import subprocess
 import sys
+import time
 from distutils.core import *
 from distutils      import sysconfig
 from setuptools     import setup, Extension
@@ -39,7 +40,7 @@ if npyver == 9:
 if npyver < 9:
     sys.exit("Error: Detected numpy {}. The minimum requirement is 1.9, and >= 1.10 is strongly recommended".format(np.__version__))
 
-
+d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2018.%Y%m%d.%H%M%S')
 daal_root = os.environ['DAALROOT']
 cnc_root = os.environ['CNCROOT']
 tbb_root = os.environ['TBBROOT']
@@ -150,7 +151,7 @@ gen_pyx(os.path.abspath('./build'))
 setup(  name        = "daal4py",
         description = "Higher Level Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)",
         author      = "Intel",
-        version     = "{{DAAL4PY_VERSION}}",
+        version     = d4p_version,
         classifiers=[
             'Development Status :: 4 - ALPHA',
             'Environment :: Console',
