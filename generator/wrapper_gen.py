@@ -351,6 +351,8 @@ gen_compute_macro = gen_inst_algo + """
 algo_iface_template = """
 struct {{algo}}__iface__ : public {{iface[0] if iface[0] else 'algo_manager'}}__iface__
 {
+    bool _distributed;
+    {{algo}}__iface__(bool d=false) : _distributed(d) {}
     virtual {{result_map.class_type}} * compute({{(',\n'+' '*(34+result_map.class_type|length)).join(iargs_decl|cppdecl)}}) {assert(false);}
 };
 """
@@ -377,20 +379,20 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 {% endfor %}
 {% for i in iargs_decl %}    {{' _'.join((i|cppdecl(True)).replace('&', '').strip().rsplit(' ', 1))}};
 {% endfor %}
-    const bool _distributed;
 
     {{algo}}_manager({{(',\n'+' '*(13+algo|length)).join((pargs_decl + ['bool distributed = false'])|cppdecl)}})
-        : {{algo}}__iface__()
+        : {{algo}}__iface__(distributed)
 {% for i in pargs_call %}
         , _{{i}}({{i}})
 {% endfor %}
-        , _distributed(distributed)
     {}
 
 #ifdef _DIST_
     {{algo}}_manager() :
-{% for i in args_call %}        _{{i}}(){{'' if loop.last else ',\n'}}{% endfor %}
-        , _distributed(true)
+        {{algo}}__iface__(true)
+{% for i in args_call %}
+        , _{{i}}()
+{% endfor %}
     {}
 #endif
 
@@ -562,6 +564,9 @@ extern "C" daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_
 
 extern "C" void * compute_{{algo}}({{(',\n'+' '*(27+algo|length)).join(['daal::services::SharedPtr< '+algo+'__iface__ > * algo']+iargs_decl|hpatdecl)}})
 {
+#ifdef _DIST_
+    (*algo)->_distributed = c_num_procs() > 0;
+#endif
     void * res = (*algo)->compute(
 {% for a in iargs_decl %}
 {% set comma = ');' if loop.last else ',' %}
