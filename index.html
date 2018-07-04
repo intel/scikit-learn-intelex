@@ -47,12 +47,14 @@ Each algorithm returns a class-like object with properties as its result.</p>
 <p>Note that all input objects and the result/model properties are native types, e.g. standard types (integer, float, numpy arrays, ...). Additionally, if you provide the name of a csv-file as an input argument daal4py will work on the entire file content.</p>
 <h2>
 <a id="multiprocessingdistributed-processing" class="anchor" href="#multiprocessingdistributed-processing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>MULTIPROCESSING/DISTRIBUTED PROCESSING</h2>
-<p>Some algorithms can work on several processes (distributed). Currently the following algorithms support distribution:
-•	pca
-•	svd
-•	linear_regression_training
-•	multinomial_naive_bayes_training
-•	kmeans and kmeans_init</p>
+<p>Some algorithms can work on several processes (distributed). Currently the following algorithms support distribution:</p>
+<ul>
+<li>pca</li>
+<li>svd</li>
+<li>linear_regression_training</li>
+<li>multinomial_naive_bayes_training</li>
+<li>kmeans and kmeans_init</li>
+</ul>
 <p>The provided binaries use the Intel® MPI library.</p>
 <p>Note: Distribution needs to be initialized with a call to daalinit() and before exiting the program a call to daalfini() is required.</p>
 <h3>
