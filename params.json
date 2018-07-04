@@ -1,0 +1,6 @@
+{
+  "name": "DAAL4PY",
+  "tagline": "A convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)",
+  "body": "# daal4py - Convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)\r\n\r\n\r\nWith this API your Python programs can use Intel(R) DAAL algorithms in just one line:\r\n```\r\nkmeans_init(data, 10, t_method=\"plusPlusDense\")\r\n```\r\nYou can even run this on a cluster by simple adding a keyword-parameter\r\n```\r\nkmeans_init(data, 10, t_method=\"plusPlusDense\", distributed=TRUE)\r\n```\r\n\r\n**_This is a technical preview, not a product. Intel might decide to discontinue this project at any time._**\r\n\r\n## OVERVIEW",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
