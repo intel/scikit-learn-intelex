@@ -544,17 +544,16 @@ class cython_interface(object):
                     hlts = {}
                     jparams['params_opt'] = OrderedDict()
                     for p in parms:
-                        tmp = splitns(p)[1]
-                        if not tmp.startswith('_') and (ns not in ignore or tmp not in ignore[ns]):
-                            hlt = self.to_hltype(ns, parms[p])
+                        pns, tmp = splitns(p)
+                        if not tmp.startswith('_') and (pns not in ignore or tmp not in ignore[pns]):
+                            hlt = self.to_hltype(pns, parms[p])
                             if hlt and hlt[1] in ['stdtype', 'enum', 'tm']:
                                 (hlt, hlt_type, hlt_ns) = hlt
                                 llt = splitns(parms[p])[1]
                                 needed = True
                                 pval = None
                                 if hlt_type == 'enum':
-                                    if len(self.namespace_dict[hlt_ns].enums[llt]) > 1:
-                                        pval = '(' + hlt_ns + '::' + llt + ')string2enum_' + hlt_ns.replace(':', '_') + '[' + tmp + ']'
+                                    pval = '(' + hlt_ns + '::' + llt + ')string2enum_' + hlt_ns.replace(':', '_') + '[' + tmp + ']'
                                 else:
                                     pval = tmp
                                 if pval != None:
@@ -566,13 +565,13 @@ class cython_interface(object):
                                     else:
                                         td['params_opt'][tmp] = pval
                                         prm = tmp
-                                        dflt = defaults[ns][prm] if ns in defaults and prm in defaults[ns] else self.defaults[thetype]
+                                        dflt = defaults[pns][prm] if pns in defaults and prm in defaults[pns] else self.defaults[thetype]
                                         decl_opt.append(' '.join(['const', thetype, prm, '=', dflt]))
                                         call_opt.append(prm)
                                 else:
-                                    print('// Warning: do not know what to do with ' + ns + ' ' + p)
+                                    print('// Warning: do not know what to do with ' + pns + ' : ' + p + '(' + parms[p] + ')')
                             else:
-                                print('// Warning: parameter member ' + p + ' of ' + ns + ' is no stdtype, no enum and has no typemap. Ignored.')
+                                print('// Warning: parameter member ' + p + ' of ' + pns + ' is no stdtype, no enum and has no typemap. Ignored.')
 
             # endfor td in tdecl
 
