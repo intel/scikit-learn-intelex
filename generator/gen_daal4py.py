@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header
-from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces
+from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 
 try:
@@ -400,7 +400,7 @@ class cython_interface(object):
                 print('// Warning: could not determine Result attributes for ' + ns)
         elif res:
             jparams = {'class_type': 'daal::' + res[0] + '::' + res[1] + 'Ptr',}
-        else:
+        elif ns not in no_warn or 'Result' not in no_warn[ns]:
             print('// Warning: no result found for ' + ns)
         return jparams
 
@@ -519,24 +519,25 @@ class cython_interface(object):
                     # this is a "real" template for which we need a body
                     td['params_req'] = OrderedDict()
                     td['params_opt'] = OrderedDict()
-                    pargs_exp = ','.join([splitns(x)[1] for x in td['pargs']]) if td['pargs'] else ''
+                    td['params_get'] = 'parameter'
+                    pargs_exp = '<' + ','.join([splitns(x)[1] for x in td['pargs']]) + '>' if td['pargs'] else ''
                     cls = mode + pargs_exp
-                    p = self.get_all_attrs(ns, cls, 'members')
-                    if p and any(x.endswith('parameter') for x in p):
-                        if 'ParameterType' in self.namespace_dict[ns].classes[cls].typedefs:
-                            p = self.get_class_for_typedef(ns, cls, 'ParameterType')
-                            if td['pargs'] != None:
-                                p = (p[0], p1[1] + pargs_exp)
-                            parms = self.get_all_attrs(p[0], p[1], 'members') if p else None
-                            if not parms:
-                                print('// Warning: no members of "parameter" found for ' + str(p))
-                                continue
-                        else:
-                            print(' '.join(['// Warning: no "ParameterType" defined for', ns, '::', cls]))
+                    if 'ParameterType' in self.namespace_dict[ns].classes[cls].typedefs:
+                        p = self.get_class_for_typedef(ns, cls, 'ParameterType')
+                        if td['pargs'] != None:
+                            p = (p[0], p[1] + pargs_exp)
+                        parms = self.get_all_attrs(p[0], p[1], 'members') if p else None
+                        if not parms:
+                            print('// Warning: no members of "parameter" found for ' + str(p))
                             continue
                     else:
-                        print(' '.join(['// Warning: no parameter member defined for', ns, '::', mode]))
+                        tmp = '::'.join([ns, cls])
+                        if tmp not in no_warn or 'ParameterType' not in no_warn[tmp]:
+                            print(' '.join(['// Warning: no "ParameterType" defined for', ns, '::', cls]))
                         continue
+                    p = self.get_all_attrs(ns, cls, 'members')
+                    if not p or not any(x.endswith('parameter') for x in p):
+                        td['params_get'] = 'parameter()'
 
                     # now we have a dict with all members of our parameter: params
                     # we need to inspect one by one
@@ -595,7 +596,7 @@ class cython_interface(object):
                             i = reqi
                             reqi += 1
                             dflt = ''
-                        if ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels']:
+                        if ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable']:
                             itype = 'TableOrFList *'
                         iargs_decl.insert(i, 'const ' + itype + ' ' + iname + dflt)
                         iargs_call.insert(i, iname)
@@ -662,11 +663,20 @@ class cython_interface(object):
             self.expand_typedefs(ns)
             if not ns.startswith('algorithms::neural_networks'):
                 if not any(ns.endswith(x) for x in ['objective_function', 'iterative_solver']):
-                    tmp = ns.rsplit('::', 2)
-                    if any(ns.endswith(x) for x in ['prediction', 'training', 'init', 'transform']):
-                        func = '_'.join(tmp[1:])
+                    nn = ns.split('::')
+                    if nn[0] == 'daal':
+                        if nn[1] == 'algorithms':
+                            func = '_'.join(nn[2:])
+                        else:
+                            func = '_'.join(nn[1:])
+                    elif nn[0] == 'algorithms':
+                        func = '_'.join(nn[1:])
                     else:
-                        func = tmp[-1]
+                        func = '_'.join(nn)
+                    #if any(ns.endswith(x) for x in ['prediction', 'training', 'init', 'transform']):
+                    #    func = '_'.join(tmp[1:])
+                    #else:
+                    #    func = tmp[-1]
                     algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func))
         
         # and now we can finally generate the code
@@ -734,6 +744,7 @@ def gen_daal4py(daalroot, outdir):
                                                 'svm',
                                                 'kernel_function',
                                                 'multi_class_classifier',
+                                                'gbt',
     ]
                                            # 'ridge_regression',
     )

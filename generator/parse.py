@@ -300,6 +300,7 @@ class class_template_parser(object):
                     targs = m.group(4).split(',')
                     targs = [a.strip('<> ') for a in targs if not any(ta[0] in a.lower() for ta in ctxt.template)]
                     ctxt.curr_class += '<' + ', '.join(targs) + '>'
+                    # print('Found specialization ' + ctxt.curr_class + '\n  File "' + ctxt.header+'", line '+str(ctxt.n))
                     ctxt.gdict['classes'][ctxt.curr_class] = cpp_class(ctxt.curr_class, ctxt.template, parent=parents, partial=True)
                 else:
                     ctxt.gdict['classes'][ctxt.curr_class] = cpp_class(ctxt.curr_class, ctxt.template, parent=parents)
@@ -333,13 +334,14 @@ class class_template_parser(object):
 ###############################################################################
 class pcontext(object):
     """Parsing context to keep state between lines"""
-    def __init__(self, gdict, ignores):
+    def __init__(self, gdict, ignores, header):
         self.gdict = gdict
         self.ignores = ignores
         self.enum = False
         self.curr_class = False
         self.template = False
         self.access = False
+        self.header = header
 
 
 ###############################################################################
@@ -358,7 +360,7 @@ def parse_header(header, ignores):
                     'enums': defaultdict(lambda: defaultdict(lambda: '')),
                     'typedefs': {},
                 })
-    ctxt = pcontext(gdict, ignores)
+    ctxt = pcontext(gdict, ignores, header.name)
     parsers = [ns_parser(), include_parser(), eos_parser(), typedef_parser(), enum_parser(), access_parser(), step_parser(), setget_parser(), result_parser(), member_parser(), class_template_parser()]
 
     # go line by line

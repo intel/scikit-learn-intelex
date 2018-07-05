@@ -29,6 +29,7 @@
 #          {{template_args}}: template arguments mapping to their possible values
 #          {{params_req}}:    dict of required parameters and their values
 #          {{params_opt}}:    dict of parameters and their values
+#          {{params_get}}:    parameter struct getter
 #          {{step_specs}}:    distributed spec
 #          {{map_result}}:    Result enum id for getting partial result (can be FULLPARTIAL)
 #          {{iface}}:         Interface manager
@@ -266,7 +267,7 @@ gen_typedefs_macro = """
 # This can also be used for steps of distributed mode
 # set sp=True if you want a shared pointer
 gen_inst_algo = """
-{% macro gen_inst(ns, params_req, params_opt, suffix="", step_spec=None, sp=False) %}
+{% macro gen_inst(ns, params_req, params_opt, params_get, suffix="", step_spec=None, sp=False) %}
 {% set algo = 'algo' + suffix %}
 {% if step_spec.construct %}
 {% set ctor = '(' + step_spec.construct + ')' %}
@@ -281,7 +282,7 @@ auto algo{{suffix}} = new services::SharedPtr< {{algo}}_type >(new {{algo}}_type
 {{algo}}_type {{algo + ctor}};
 {% endif %}
 {% if params_opt|length %}
-        init_parameters({{('(*' + algo + ')->') if sp else (algo + '.')}}parameter);
+        init_parameters({{('(*' + algo + ')->') if sp else (algo + '.')}}{{params_get}});
 {% endif %}
 {%- endmacro %}
 """
@@ -294,7 +295,7 @@ gen_compute_macro = gen_inst_algo + """
 {% if step_spec.addinput %}
 (const std::vector< typename {{iom}}::input1_type > & input{{', ' + step_spec.extrainput if step_spec.extrainput else ''}})
     {
-        {{gen_inst(ns, params_req, params_opt, suffix, step_spec)}}
+        {{gen_inst(ns, params_req, params_opt, params_get, suffix, step_spec)}}
         int nr = 0, i = 0;
         for(auto data = input.begin(); data != input.end(); ++data, ++i) {
             if(*data) {
@@ -306,7 +307,7 @@ gen_compute_macro = gen_inst_algo + """
 {% else %}
 ({% for ia in step_spec.input %}const typename {{iom}}::input{{loop.index}}_type & input{{loop.index}}{{'' if loop.last else ', '}}{% endfor %}{{', ' + step_spec.extrainput if step_spec.extrainput else ''}})
     {
-        {{gen_inst(ns, params_req, params_opt, suffix, step_spec)}}
+        {{gen_inst(ns, params_req, params_opt, params_get, suffix, step_spec)}}
 {% for ia in step_spec.input %}
         if(input{{loop.index}}) algo{{suffix}}.input.set({{step_spec.setinput[loop.index0]}}, to_daal(input{{loop.index}}));
 {% endfor %}
@@ -317,7 +318,7 @@ gen_compute_macro = gen_inst_algo + """
 {% else %}
 ()
     {
-        {{gen_inst(ns, params_req, params_opt, suffix, step_spec)}}
+        {{gen_inst(ns, params_req, params_opt, params_get, suffix, step_spec)}}
 {% for ia in input_args %}
 {% if "TableOrFList" in ia[2] %}
         if(!_{{ia[1]}}->table && _{{ia[1]}}->file.size()) _{{ia[1]}}->table = readCSV(_{{ia[1]}}->file);
@@ -409,7 +410,7 @@ private:
 {% for ifc in iface if ifc %}
     virtual {{ifc}}__iface__::{{ifc}}Ptr_type * get_ptr()
     {
-        {{gen_inst(ns, params_req, params_opt, suffix="b", sp=True)}}
+        {{gen_inst(ns, params_req, params_opt, params_get, suffix="b", sp=True)}}
         return sppcast(({{ifc}}__iface__::{{ifc}}Ptr_type*)0, algob);
     }
 {% endfor %}
@@ -433,7 +434,7 @@ public:
     static const int NI = {{step_specs[0].inputnames|length}};
 
 private:
-    typename iomb_type::result_type distributed() // iom{{step_specs[-1].name}}_type::result_type 
+    typename iomb_type::result_type distributed() // iom{{step_specs[-1].name}}_type::result_type
     {
         return {{pattern}}::{{pattern}}< {{algo}}_manager< {{', '.join(template_args)}} > >::compute(to_daal(_{{'), to_daal(_'.join(step_specs[0].inputnames)}}), *this);
     }
@@ -665,22 +666,30 @@ def flat(t, cpp=True):
     def _flat(ty):
         def __flat(typ):
             nn = typ.split('::')
-            if any(x in nn for x in ['training', 'prediction', 'init']):
-                r = '_'.join(nn[-3:])
+            if nn[0] == 'daal':
+                if nn[1] == 'algorithms':
+                    r = '_'.join(nn[2:])
+                else:
+                    r = '_'.join(nn[1:])
+            elif nn[0] == 'algorithms':
+                r = '_'.join(nn[1:])
             else:
-                r = '_'.join(nn[-2:])
+                r = '_'.join(nn)
             return ('c_' if cpp and typ.endswith('__iface__') else '') + r + (' *' if cpp and any(typ.endswith(x) for x in ['__iface__', 'Ptr']) else '')
         ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'services::SharedPtr<kernel_function::KernelIface>')
         ty = re.sub(r'(daal::)?services::SharedPtr<([^>]+)>', r'\2__iface__', ty)
         return ' '.join([__flat(x).replace('const', '') for x in ty.split(' ')])
     return [_flat(x) for x in t] if isinstance(t,list) else _flat(t)
 
-def d2cy(t, cpp=True):
-    return flat(t, cpp)
+def d2cy(ty, cpp=True):
+    def flt(t, cpp):
+        return flat(t, cpp).replace('lambda', 'lambda_')
+    return [flt(x,cpp) for x in ty] if isinstance(ty,list) else flt(ty,cpp)
+
 
 def d2ext(ty, cpp=True):
     def flt(t):
-        return flat(t, cpp).split('=')[0].strip()
+        return flat(t, cpp).split('=')[0].strip().replace('lambda', 'lambda_')
     return [flt(x) for x in ty] if isinstance(ty,list) else flt(ty)
 
 def gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt):
@@ -735,7 +744,7 @@ def cycall(arg, typ):
         return arg + '.c_ptr if ' + arg + ' != None else <' + flat(typ.rsplit('=', 1)[0].strip().rsplit(' ', 1)[0]) + '>0'
     if 'std::string' in typ:
         return 'to_std_string(<PyObject *>' + arg + ')'
-    return arg
+    return arg.replace('lambda', 'lambda_')
 
 def cy_call(pargs_decl, pargs_call, template_decl, indent):
     def flt(arg, typ):
@@ -801,7 +810,7 @@ class wrapper_gen(object):
             cpp += t.render({}) + '\n'
 
         return (cpp, cython_header + pyx)
-    
+
     def gen_hlargs(self, template_decl, args_decl):
         """
         Generates a list of tuples, one for each HLAPI argument: (name, type, default)
@@ -824,7 +833,7 @@ class wrapper_gen(object):
                 res.append((tmp2[1], tmp2[0], tmp1[1]))
         return res
 
-    
+
     ##################################################################################
     def gen_modelmaps(self, ns, algo):
         """
@@ -871,7 +880,7 @@ class wrapper_gen(object):
         cfg = self.algocfg[ns + '::' + algo]
         cpp_begin, pyx_begin, pyx_end, typesstr = '', '', '', ''
         hlargs = []
-        
+
         cpp_map, cpp_end, pyx_map = self.gen_modelmaps(ns, algo)
         a, b, c = self.gen_resultmaps(ns, algo)
         cpp_map += a
@@ -881,7 +890,7 @@ class wrapper_gen(object):
         if len(cfg['params']) == 0:
             return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr, hlargs)
 
-        
+
         jparams = cfg['params'].copy()
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
@@ -901,6 +910,7 @@ class wrapper_gen(object):
             jparams['template_args'] = td['template_args']
             jparams['params_req'] = td['params_req']
             jparams['params_opt'] = td['params_opt']
+            jparams['params_get'] = td['params_get']
             # Very simple for specializations
             # but how do we pass only the required args to them from the wrapper?
             # we could have the full input list, but that doesn't work for required parameters
@@ -929,7 +939,7 @@ class wrapper_gen(object):
 
         return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr, hlargs)
 
-    
+
     ##################################################################################
     def gen_footers(self, subscriptions):
         """ generate code for initing  CnC.

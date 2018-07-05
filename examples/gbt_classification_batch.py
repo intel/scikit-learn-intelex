@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py SVM example for shared memory systems
+# daal4py Gradient Bossting Classification example for shared memory systems
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
@@ -24,27 +24,26 @@ from numpy import loadtxt, allclose
 if __name__ == "__main__":
 
     # input data file
-    infile = "./data/batch/svm_two_class_train_dense.csv"
+    infile = "./data/batch/df_classification_train.csv"
 
-    # Configure a SVM object to use rbf kernel (and adjusting cachesize)
-    kern = d4p.kernel_function_rbf()  # need an object that lives when creating talgo
-    talgo = d4p.svm_training(kernel=kern, cacheSize=600000000)
+    # Configure a training object (5 classes)
+    talgo = d4p.gbt_classification_training(5)
     
-    # Read data. Let's use features per observation
-    data   = loadtxt(infile, delimiter=',', usecols=range(20))
-    labels = loadtxt(infile, delimiter=',', usecols=range(20,21))
+    # Read data. Let's use 3 features per observation
+    data   = loadtxt(infile, delimiter=',', usecols=range(3))
+    labels = loadtxt(infile, delimiter=',', usecols=range(3,4))
     labels.shape = (labels.size, 1) # must be a 2d array
     tresult = talgo.compute(data, labels)
 
     # Now let's do some prediction
-    palgo = d4p.svm_prediction()
+    palgo = d4p.gbt_classification_prediction(5)
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/svm_two_class_test_dense.csv", delimiter=',', usecols=range(20))
+    pdata = loadtxt("./data/batch/df_classification_test.csv", delimiter=',', usecols=range(3))
     # now predict using the model from the training above
     presult = palgo.compute(pdata, tresult.model)
 
     # Prediction result provides prediction
-    assert(presult.prediction.shape == (data.shape[0], 1))
+    assert(presult.prediction.shape == (pdata.shape[0], 1))
 
     print('All looks good!')
     d4p.daalfini()

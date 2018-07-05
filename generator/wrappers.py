@@ -39,6 +39,12 @@ required = {
     'algorithms::multi_class_classifier::prediction': {
         'Batch': [('nClasses', 'size_t')],
     },
+    'algorithms::gbt::classification::training': {
+        'Batch': [('nClasses', 'size_t')],
+    },
+    'algorithms::gbt::classification::prediction': {
+        'Batch': [('nClasses', 'size_t')],
+    },
 }
 
 # Some parameters/inputs are not used when C++ datastrcutures are shared across
@@ -49,6 +55,8 @@ ignore = {
     'algorithms::multi_class_classifier::training': ['weights'],
     'algorithms::multinomial_naive_bayes::training': ['weights'],
     'algorithms::kmeans::init': ['nRowsTotal', 'offset',],
+    'algorithms::gbt::regression::training': ['dependentVariables'],
+    'algorithms::gbt::classification::training': ['weights',],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -255,3 +263,19 @@ specialized = {
         },
     }
 }
+
+no_warn = {
+    'algorithms::classifier': ['Result',],
+    'algorithms::gbt': ['Result',],
+    'algorithms::gbt::classification': ['Result',],
+    'algorithms::gbt::regression': ['Result',],
+    'algorithms::gbt::training': ['Result',],
+    'algorithms::linear_model': ['Result',],
+    'algorithms::linear_regression': ['Result',],
+    'algorithms::multi_class_classifier': ['Result',],
+    'algorithms::multinomial_naive_bayes': ['Result',],
+    'algorithms::svm': ['Result',],
+    'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
+    'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
+    'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
+};
