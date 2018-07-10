@@ -46,6 +46,9 @@ export TBBROOT=$CONDA_PREFIX
 export DAALROOT=$CONDA_PREFIX
 ```
 
+## C++ compatiblity
+The CnC binary packages on the intel channel are compiled with g++ version 4.8. For using newer compilers, globally #define macro ```_GLIBCXX_USE_CXX11_ABI=0``` when compiling daal4py or compiler CnC with the newer compiler.
+
 ## BUILDING DAAL4PY
 Requires Intel(R) DAAL, Intel(R) TBB and Intel(R) CnC being properly setup, e.g. DAALROOT, TBBROOT and CNCROOT being set.
 ```
