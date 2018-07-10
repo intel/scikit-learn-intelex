@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # read test data (with same #features)
     pdata = loadtxt("./data/batch/linear_regression_test.csv", delimiter=',', usecols=range(9))
     # now predict using the model from the training above
-    presult = d4p.linear_regression_prediction().compute(pdata, tresult.model)
+    presult = palgo.compute(pdata, tresult.model)
 
     # The prediction reulst provides prediction
     assert presult.prediction.shape == (pdata.shape[0], dep_data.shape[1])
