@@ -254,6 +254,8 @@ struct dimMap {
     template< typename T >
     void serialize(CnC::serializer & ser, daal::services::SharedPtr< T > & ptr)
     {
+        {CnC::Internal::Speaker s; s << "aösldkfaösldfk";}
+        assert(dynamic_cast< daal::data_management::SerializationIface * >(ptr.get()));
         serialize_si(ser, reinterpret_cast< daal::services::SharedPtr< daal::data_management::SerializationIface > & >(ptr));
     }
 

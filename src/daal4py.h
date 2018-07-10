@@ -44,6 +44,12 @@ bool use_default(const daal::services::SharedPtr<T> & attr)
     return attr.get() == NULL;
 }
 
+template< typename T >
+bool use_default(const T * attr)
+{
+    return attr == NULL;
+}
+
 inline bool use_default(const std::string & attr)
 {
     return attr.length() == 0;
@@ -79,9 +85,8 @@ inline bool string2bool(const std::string & s)
 class algo_manager__iface__
 {
 public:
-    inline algo_manager__iface__() : _staynative(false) {}
+    inline algo_manager__iface__() {}
     inline virtual ~algo_manager__iface__() {}
-    bool _staynative;
 };
 
 #if 0
@@ -131,13 +136,6 @@ void * get_nt_data_ptr(const daal::data_management::NumericTablePtr * ptr)
 {
     auto dptr = dynamic_cast< const data_management::HomogenNumericTable< T >* >((*ptr).get());
     return dptr ? reinterpret_cast< void* >(dptr->getArraySharedPtr().get()) : NULL;
-}
-
-template< typename B, typename D >
-B * sppcast(B *, D * d)
-{
-    static_assert(std::is_base_of<typename B::ElementType, typename D::ElementType>::value, "Cannot cast to non-parent type.");
-    return reinterpret_cast<B*>(d);
 }
 
 static std::string to_std_string(PyObject * o)

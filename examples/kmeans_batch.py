@@ -28,8 +28,9 @@ if __name__ == "__main__":
     nClusters = 10
     maxIter = 25
 
-    # configure a kmeans-init
-    initalgo = d4p.kmeans_init(nClusters, method="plusPlusDense")
+    # configure a kmeans-init using mt19937 RNG
+    engine = d4p.engines_mt19937()
+    initalgo = d4p.kmeans_init(nClusters, method="randomDense", engine=engine)
     # Load the data
     data = loadtxt(infile, delimiter=',')
     # compute initial centroids

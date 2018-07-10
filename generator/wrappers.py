@@ -47,6 +47,13 @@ required = {
     },
 }
 
+# Some algorithms have no public constructors and need to be instantiated with 'create'
+# (for whatever reason)
+no_constructor = [
+    'algorithms::engines::mt19937::Batch',
+    'algorithms::engines::mcg59::Batch',
+]
+
 # Some parameters/inputs are not used when C++ datastrcutures are shared across
 # different algos (like training and prediction)
 # List them here for the 'ignoring' algos.
@@ -65,6 +72,8 @@ ifaces = {
     'kernel_function::KernelIface': 'daal::algorithms::kernel_function::KernelIfacePtr',
     'classifier::prediction::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::prediction::Batch>',
     'classifier::training::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::training::Batch>',
+    'engines::BatchBase': 'daal::algorithms::engines::EnginePtr',
+#    'engines::BatchBase': 'daal::services::SharedPtr<daal::algorithms::engines::BatchBase>',
 }
 
 # By default input arguments have no default value (e.g. they are required).
@@ -278,4 +287,6 @@ no_warn = {
     'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
+    'algorithms::engines::mt19937::Batch': ['ParameterType',],
+    'algorithms::engines::mcg59::Batch': ['ParameterType',],
 };

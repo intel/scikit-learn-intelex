@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header
-from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn
+from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 
 try:
@@ -119,17 +119,15 @@ class cython_interface(object):
     # we replace all default values given in DAAL with these.
     # Our generated code will detect these and then let DAAL handle setting defaults
     # Note: we assume default bool is always false.
-    defaults = {'double': 'NaN64',
-                'float': 'NaN32',
-                'int': '-1',
-                'long': '-1',
-                'size_t': '-1',
-                'bool': 'False',
-                #'std::string' : '""',
-                'std::string &' : '""',
-                'daal::data_management::NumericTablePtr': 'None', # 'data_management::NumericTablePtr()',
-            }
-    defaults.update({v: 'None' for v in ifaces.values()}) #v+'()
+    defaults = defaultdict(lambda: None)
+    defaults.update({'double': 'NaN64',
+                     'float': 'NaN32',
+                     'int': '-1',
+                     'long': '-1',
+                     'size_t': '-1',
+                     'bool': 'False',
+                     #'std::string' : '""',
+                     'std::string &' : '""',})
 
     done = []
 
@@ -251,11 +249,10 @@ class cython_interface(object):
 ###############################################################################
     def to_hltype(self, ns, t):
         """
-        Return triplet (type, {'stdtype'|'enum'|'tm'|'class'|'?'}, namespace) to be used in the interface
+        Return triplet (type, {'stdtype'|'enum'|'class'|'?'}, namespace) to be used in the interface
         for given type 't'.
             'stdtype' means 't' is a standard data type understood by cython and plain C++
             'enum' means 't' is a C/C++ enumeration
-            'tm' means we provide a type-map for 't' elsewhere
             'class' means 't' is a regular C++ class
             '?' means we do not know what 't' is
         For classes, we also add lookups in namespaces that DAAL C++ API finds through "using".
@@ -267,13 +264,13 @@ class cython_interface(object):
             return ('bool', 'stdtype', '')
         if t.endswith('ModelPtr'):
             thens = self.get_ns(ns, t, attrs=['typedefs'])
-            return ('daal::' + thens + '::ModelPtr', 'tm', tns)
+            return ('daal::' + thens + '::ModelPtr', 'class', tns)
         if t in ['data_management::NumericTablePtr',] or t in ifaces.values():
-            return ('daal::' + t, 'tm', tns)
+            return ('daal::' + t, 'class', tns)
         tt = re.sub(r'(?<!daal::)services::SharedPtr', r'daal::services::SharedPtr', t)
         tt = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', tt)
         if tt in ifaces.values():
-            return (tt, 'tm', tns)
+            return (tt, 'class', tns)
         tns = self.get_ns(ns, t)
         if tns:
             tt = tns + '::' + tname
@@ -363,7 +360,7 @@ class cython_interface(object):
             assert inp in self.namespace_dict[ins].enums
             hlt = self.to_hltype(ns, attrs[i])
             if hlt:
-                if hlt[1] in ['stdtype', 'enum', 'tm']:
+                if hlt[1] in ['stdtype', 'enum', 'class']:
                     for e in self.namespace_dict[ins].enums[inp]:
                         if not any(e in x for x in explist):
                             explist.append((ins, e, hlt[0]))
@@ -547,7 +544,7 @@ class cython_interface(object):
                         pns, tmp = splitns(p)
                         if not tmp.startswith('_') and (pns not in ignore or tmp not in ignore[pns]):
                             hlt = self.to_hltype(pns, parms[p])
-                            if hlt and hlt[1] in ['stdtype', 'enum', 'tm']:
+                            if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                                 (hlt, hlt_type, hlt_ns) = hlt
                                 llt = splitns(parms[p])[1]
                                 needed = True
@@ -566,12 +563,12 @@ class cython_interface(object):
                                         td['params_opt'][tmp] = pval
                                         prm = tmp
                                         dflt = defaults[pns][prm] if pns in defaults and prm in defaults[pns] else self.defaults[thetype]
-                                        decl_opt.append(' '.join(['const', thetype, prm, '=', dflt]))
+                                        decl_opt.append(' '.join(['const', thetype, prm, '=', str(dflt)]))
                                         call_opt.append(prm)
                                 else:
                                     print('// Warning: do not know what to do with ' + pns + ' : ' + p + '(' + parms[p] + ')')
                             else:
-                                print('// Warning: parameter member ' + p + ' of ' + pns + ' is no stdtype, no enum and has no typemap. Ignored.')
+                                print('// Warning: parameter member ' + p + ' of ' + pns + ' is no stdtype, no enum and not a DAAl class. Ignored.')
 
             # endfor td in tdecl
 
@@ -595,7 +592,8 @@ class cython_interface(object):
                             i = reqi
                             reqi += 1
                             dflt = ''
-                        if ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable']:
+                        if 'NumericTablePtr' in itype:
+                            #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
                             itype = 'TableOrFList *'
                         iargs_decl.insert(i, 'const ' + itype + ' ' + iname + dflt)
                         iargs_call.insert(i, iname)
@@ -623,6 +621,7 @@ class cython_interface(object):
             'sparams': tdecl,
             'model_typemap': self.prepare_modelmaps(ns),
             'result_typemap': self.prepare_resultmaps(ns),
+            'create': '::create' if '::'.join([ns, mode]) in no_constructor else ''
         }
         if ns in has_dist:
             retjp['dist'] = has_dist[ns]
@@ -744,8 +743,9 @@ def gen_daal4py(daalroot, outdir):
                                                 'kernel_function',
                                                 'multi_class_classifier',
                                                 'gbt',
+                                                'engine',
     ]
-                                           # 'ridge_regression',
+                                           # 'ridge_regression', parametertype is a template without any need
     )
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:
         f.write(cpp_h)

@@ -120,9 +120,6 @@ def num_procs():
 
 def my_procid():
     return c_my_procid()
-
-cdef extern from "daal4py.h":
-    cdef B * sppcast[B, D](B * b, D * d)
 '''
 
 ###############################################################################
@@ -170,6 +167,9 @@ cdef extern from "daal4py_cpp.h":
 {% endfor %}
 
 cdef class {{flatname.replace('Ptr', '')|lower}}:
+    '''
+    Properties:
+    '''
     cdef {{class_type|flat}} c_ptr
     def __cinit__(self):
         pass
@@ -181,10 +181,13 @@ cdef class {{flatname.replace('Ptr', '')|lower}}:
     @property
     def {{m[1]}}(self):
 {% if 'Ptr' in rtype and 'NumericTablePtr' not in rtype %}
-        res = {{(rtype.strip(' *&')|flat|strip(' *')).replace('Ptr', '')|lower}}()
+{% set frtype=(rtype.strip(' *&')|flat|strip(' *')).replace('Ptr', '')|lower %}
+        ':type: {{frtype}}'
+        res = {{frtype}}()
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return res
 {% else %}
+        ':type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}'
         res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return {{'<object>make_nda(res)' if 'NumericTablePtr' in rtype else 'res'}}
 {% endif %}
@@ -209,13 +212,14 @@ gen_cpp_iface_macro = """
 class {{iface_name}}__iface__ : public algo_manager__iface__
 {
 public:
+    typedef {{iface_type}} daal_type;
     typedef {{iface_type}} {{iface_name}}Ptr_type;
-    virtual {{iface_name}}Ptr_type * get_ptr() {return NULL;}
+    virtual {{iface_name}}Ptr_type get_ptr() = 0; //{return {{iface_name}}Ptr_type();}
 };
 
-typedef daal::services::SharedPtr< {{iface_name}}__iface__ > c_{{iface_name}}__iface__;
+typedef {{iface_name}}__iface__ c_{{iface_name}}__iface__;
 
-static {{iface_type}} to_daal(c_{{iface_name}}__iface__ * t) {return t ? *((*t)->get_ptr()) : {{iface_type}}();}
+static {{iface_type}} to_daal(c_{{iface_name}}__iface__ * t) {return t ? t->get_ptr() : {{iface_type}}();}
 {% endmacro %}
 """
 
@@ -227,7 +231,7 @@ cdef extern from "daal4py_cpp.h":
     cdef cppclass c_{{iface_name}}__iface__:
         pass
 
-    ctypedef c_{{iface_name}}__iface__ c_{{iface_type|flat|strip(' *')}};
+#    ctypedef c_{{iface_name}}__iface__ c_{{iface_type|flat|strip(' *')}};
 
 
 cdef class {{iface_name|lower}}__iface__:
@@ -267,22 +271,25 @@ gen_typedefs_macro = """
 # This can also be used for steps of distributed mode
 # set sp=True if you want a shared pointer
 gen_inst_algo = """
-{% macro gen_inst(ns, params_req, params_opt, params_get, suffix="", step_spec=None, sp=False) %}
+{% macro gen_inst(ns, params_req, params_opt, params_get, create, suffix="", step_spec=None, sp=False) %}
 {% set algo = 'algo' + suffix %}
 {% if step_spec.construct %}
-{% set ctor = '(' + step_spec.construct + ')' %}
+{% set ctor = create + '(' + step_spec.construct + ')' %}
 {% elif params_req|length > 0  %}
-{% set ctor = ('(_' + ', _'.join(params_req.values()) + ')').replace('(_)', '()') %}
+{% set ctor = create + ('(_' + ', _'.join(params_req.values()) + ')').replace('(_)', '()') %}
 {% else %}
-{% set ctor = '' %}
+{% set ctor = create + '()' %}
 {% endif %}
 {% if sp %}
-auto algo{{suffix}} = new services::SharedPtr< {{algo}}_type >(new {{algo}}_type{{ctor}});
+services::SharedPtr< {{algo}}_type > algo{{suffix}}({{'' if create else 'new'}} {{algo}}_type{{ctor}});
+{% elif create %}
+auto {{algo}} = {{algo}}_type{{ctor}};
 {% else %}
-{{algo}}_type {{algo + ctor}};
+auto {{algo}}_obj = {{algo}}_type{{ctor}};
+        {{algo}}_type * {{algo}} = &{{algo}}_obj;
 {% endif %}
 {% if params_opt|length %}
-        init_parameters({{('(*' + algo + ')->') if sp else (algo + '.')}}{{params_get}});
+        init_parameters({{algo}}->{{params_get}});
 {% endif %}
 {%- endmacro %}
 """
@@ -295,11 +302,11 @@ gen_compute_macro = gen_inst_algo + """
 {% if step_spec.addinput %}
 (const std::vector< typename {{iom}}::input1_type > & input{{', ' + step_spec.extrainput if step_spec.extrainput else ''}})
     {
-        {{gen_inst(ns, params_req, params_opt, params_get, suffix, step_spec)}}
+        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix, step_spec)}}
         int nr = 0, i = 0;
         for(auto data = input.begin(); data != input.end(); ++data, ++i) {
             if(*data) {
-                algo{{suffix}}.input.add({{step_spec.addinput}}, to_daal(*data));
+                algo{{suffix}}->input.add({{step_spec.addinput}}, to_daal(*data));
                 ++nr;
             }
         }
@@ -307,42 +314,42 @@ gen_compute_macro = gen_inst_algo + """
 {% else %}
 ({% for ia in step_spec.input %}const typename {{iom}}::input{{loop.index}}_type & input{{loop.index}}{{'' if loop.last else ', '}}{% endfor %}{{', ' + step_spec.extrainput if step_spec.extrainput else ''}})
     {
-        {{gen_inst(ns, params_req, params_opt, params_get, suffix, step_spec)}}
+        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix, step_spec)}}
 {% for ia in step_spec.input %}
-        if(input{{loop.index}}) algo{{suffix}}.input.set({{step_spec.setinput[loop.index0]}}, to_daal(input{{loop.index}}));
+        if(input{{loop.index}}) algo{{suffix}}->input.set({{step_spec.setinput[loop.index0]}}, to_daal(input{{loop.index}}));
 {% endfor %}
 {% endif %}
 {% if step_spec.staticinput %}{% for ia in step_spec.staticinput %}
-        if(! use_default(_{{ia[1]}})) algo{{suffix}}.input.set({{ia[0]}}, to_daal(_{{ia[1]}}));
+        if(! use_default(_{{ia[1]}})) algo{{suffix}}->input.set({{ia[0]}}, to_daal(_{{ia[1]}}));
 {% endfor %}{% endif %}
 {% else %}
 ()
     {
-        {{gen_inst(ns, params_req, params_opt, params_get, suffix, step_spec)}}
+        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix, step_spec)}}
 {% for ia in input_args %}
 {% if "TableOrFList" in ia[2] %}
         if(!_{{ia[1]}}->table && _{{ia[1]}}->file.size()) _{{ia[1]}}->table = readCSV(_{{ia[1]}}->file);
-        if(_{{ia[1]}}->table) algo{{suffix}}.input.set({{ia[0]}}, _{{ia[1]}}->table);
+        if(_{{ia[1]}}->table) algo{{suffix}}->input.set({{ia[0]}}, _{{ia[1]}}->table);
 {% else %}
-        if(_{{ia[1]}}) algo{{suffix}}.input.set({{ia[0]}}, to_daal(_{{ia[1]}}));
+        if(_{{ia[1]}}) algo{{suffix}}->input.set({{ia[0]}}, to_daal(_{{ia[1]}}));
 {% endif %}
 {% endfor %}
 {% endif %}
 
-        algo{{suffix}}.compute();
+        algo{{suffix}}->compute();
 {% if step_spec %}
         if({{iom}}::needsFini()) {
-            algo{{suffix}}.finalizeCompute();
+            algo{{suffix}}->finalizeCompute();
         }
 {% endif %}
 {% if tonative %}
-        auto daalres = {{iom}}::getResult(algo{{suffix}});
+        auto daalres = {{iom}}::getResult(*algo{{suffix}});
         int gc = 0;
         NTYPE res = native_type(daalres, gc);
         TMGC(gc);
         return res;
 {% else %}
-        return {{iom}}::getResult(algo{{suffix}});
+        return {{iom}}::getResult(*algo{{suffix}});
 {% endif %}
     }
 {%- endmacro %}
@@ -354,7 +361,7 @@ struct {{algo}}__iface__ : public {{iface[0] if iface[0] else 'algo_manager'}}__
 {
     bool _distributed;
     {{algo}}__iface__(bool d=false) : _distributed(d) {}
-    virtual {{result_map.class_type}} * compute({{(',\n'+' '*(34+result_map.class_type|length)).join(iargs_decl|cppdecl)}}) {assert(false);}
+    virtual {{result_map.class_type}} * compute({{(',\n'+' '*(23+(result_map.class_type|length))).join(iargs_decl|cppdecl)}}) {assert(false);}
 };
 """
 
@@ -362,29 +369,28 @@ struct {{algo}}__iface__ : public {{iface[0] if iface[0] else 'algo_manager'}}__
 manager_wrapper_template = gen_typedefs_macro + gen_compute_macro + """
 {% if base %}
 // The type used in cython
-typedef daal::services::SharedPtr< {{algo}}__iface__ > c_{{algo}}_manager__iface__;
+typedef {{algo}}__iface__  c_{{algo}}_manager__iface__;
 
 // The algo creation function
-extern "C" daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 52+2*(algo|length))}});
+extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 52+2*(algo|length))}});
 {% endif %}
 
 {% if template_decl  %}
 template<{% for x in template_decl %}{{template_decl[x]['template_decl'] + ' ' + x + ('' if loop.last else ', ')}}{% endfor %}>
 {% endif %}
 struct {{algo}}_manager{% if template_decl and template_args and template_decl|length != template_args|length %}<{{', '.join(template_args)}}>{% endif %} : public {{algo}}__iface__
-// {{'c_'+iface[0] if iface[0] else 'algo'}}__iface__
 {% if template_args %}
 {
 {{gen_typedefs(ns, template_decl, template_args, mode="Batch")}}
-{% for i in pargs_decl %}    {{' _'.join((i|cppdecl(True)).replace('&', '').strip().rsplit(' ', 1))}};
+{% for i in pargs_decl %}    {{' _'.join((i|cppdecl(True)).replace('&', '').strip().replace('__iface__ *', '__iface__::daal_type').rsplit(' ', 1))}};
 {% endfor %}
-{% for i in iargs_decl %}    {{' _'.join((i|cppdecl(True)).replace('&', '').strip().rsplit(' ', 1))}};
+{% for i in iargs_decl %}    {{' _'.join((i|cppdecl(True)).replace('&', '').strip().replace('__iface__ *', '__iface__::daal_type').rsplit(' ', 1))}};
 {% endfor %}
 
     {{algo}}_manager({{(',\n'+' '*(13+algo|length)).join((pargs_decl + ['bool distributed = false'])|cppdecl)}})
         : {{algo}}__iface__(distributed)
 {% for i in pargs_call %}
-        , _{{i}}({{i}})
+        , _{{i}}({{'to_daal('+i+')' if '__iface__' in (pargs_decl[loop.index0]|cppdecl(True)) else i}})
 {% endfor %}
     {}
 
@@ -408,10 +414,10 @@ private:
 {% endif %}
 
 {% for ifc in iface if ifc %}
-    virtual {{ifc}}__iface__::{{ifc}}Ptr_type * get_ptr()
+    virtual {{ifc}}__iface__::{{ifc}}Ptr_type get_ptr()
     {
-        {{gen_inst(ns, params_req, params_opt, params_get, suffix="b", sp=True)}}
-        return sppcast(({{ifc}}__iface__::{{ifc}}Ptr_type*)0, algob);
+        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="b", sp=True)}}
+        return algob;
     }
 {% endfor %}
 
@@ -438,9 +444,12 @@ private:
     {
         return {{pattern}}::{{pattern}}< {{algo}}_manager< {{', '.join(template_args)}} > >::compute(to_daal(_{{'), to_daal(_'.join(step_specs[0].inputnames)}}), *this);
     }
+#endif
+{% endif %}
 
 public:
-    void serialize(CnC::serializer & ser)
+#ifdef _DIST_
+    virtual void serialize(CnC::serializer & ser)
     {
         ser
 {% for i in pargs_call %}            & _{{i.rsplit('=', 1)[0]}}
@@ -448,7 +457,6 @@ public:
     }
 #endif
 
-{% endif %}
 public:
     typename iomb_type::result_type * compute({{(',\n'+' '*46).join(iargs_decl|cppdecl)}})
     {
@@ -471,7 +479,10 @@ template<{% for x in template_decl %}{{template_decl[x]['template_decl'] + ' ' +
 {% endif %}
     static inline void serialize(serializer & ser, {{algo}}_manager{% if template_args|length %}<{{', '.join(template_args)}}>{% endif %} *& t)
     {
-        ser & chunk< {{algo}}_manager{% if template_args|length %}<{{', '.join(template_args)}}>{% endif %} >(t, 1);
+        int sz = ser.is_packing() && t == NULL ? 0 : 1;
+        ser & sz;
+        if(sz) ser & chunk< {{algo}}_manager{% if template_args|length %}<{{', '.join(template_args)}}>{% endif %} >(t, sz);
+        else if(ser.is_unpacking()) t = NULL;
     }
 }
 #endif
@@ -485,14 +496,9 @@ template<{% for x in template_decl %}{{template_decl[x]['template_decl'] + ' ' +
 # also generates defs for __iface__ class
 parent_wrapper_template = """
 cdef extern from "daal4py.h":
-    # declare the C++ equivalent of the __iface__ class, providing de-templatized access to compute
-    cdef cppclass {{algo}}__iface__:
-        {{result_map.class_type|flat}} compute({{(',\n'+' '*(29+algo|length)).join(iargs_decl|d2ext)}}) except +
-
-    # declare the C++ equivalent of the manager__iface__ class, e.g. the the shared_ptr
+    # declare the C++ equivalent of the manager__iface__ class, providing de-templatized access to compute
     cdef cppclass c_{{algo}}_manager__iface__{{'(c_'+iface[0]+'__iface__)' if iface[0] else ''}}:
-        # Emulating SharedPtr with operator*
-        {{algo}}__iface__ operator*()
+        {{result_map.class_type|flat}} compute({{(',\n'+' '*(29+algo|length)).join(iargs_decl|d2ext)}}) except +
 
 
 cdef extern from "daal4py_cpp.h":
@@ -502,10 +508,14 @@ cdef extern from "daal4py_cpp.h":
 
 # this is our actual algorithm class for Python
 cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
+    '''
+    {{algo}}
+    {{pargs_decl|cy_decl(pargs_call, template_decl, 18)|sphinx}}
+    '''
     # Init simply forwards to the C++ construction function
     def __cinit__(self,
                   {{pargs_decl|cy_decl(pargs_call, template_decl, 18)}}):
-        self.c_ptr = sppcast(self.c_ptr, mk_{{algo}}({{pargs_decl|cy_call(pargs_call, template_decl, 45+(algo|length))}}))
+        self.c_ptr = mk_{{algo}}({{pargs_decl|cy_call(pargs_call, template_decl, 45+(algo|length))}})
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)
@@ -522,7 +532,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         res = {{result_map.class_type.replace('Ptr', '')|d2cy(False)|lower}}()
-        res.c_ptr = deref(deref(algo)).compute(
+        res.c_ptr = deref(algo).compute(
 {%- for a in iargs_call -%}
 {{('' if loop.first else ' '*47) + a|cycall(iargs_decl[loop.index0]) + (')' if loop.last else ',')}}
 {% endfor %}
@@ -543,7 +553,7 @@ algo_wrapper_template = """
 {% endif %}
 {% if tmpl_spec|length == 1 %}
 {% set algo_type = prefix + '<' + ', '.join(args+[a]) + ' >' %}
-{{" "*(indent+4)}}return new services::SharedPtr< {{algo}}__iface__ >(new {{algo_type}}({{', '.join(pcallargs + ['distributed'])}}));
+{{" "*(indent+4)}}return new {{algo_type}}({{', '.join(pcallargs + ['distributed'])}});
 {{" "*(indent)}}}
 {% else %}
 {{tfactory(tmpl_spec[1:], prefix, pcallargs, dist, args+[a], indent+4)}}
@@ -552,23 +562,22 @@ algo_wrapper_template = """
 {% endfor %}
 {%- endmacro %}
 
-extern "C" daal::services::SharedPtr< {{algo}}__iface__ > * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 56+2*(algo|length))}})
+extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 56+2*(algo|length))}})
 {
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', pargs_call, dist=dist)}}
-  throw std::invalid_argument("no equivalent(s) for C++ template argument(s)");
-  return new services::SharedPtr< {{algo}}__iface__ >();
+    throw std::invalid_argument("no equivalent(s) for C++ template argument(s)");
 {% else %}
-   return new services::SharedPtr< {{algo}}__iface__ >(new {{algo}}_manager({{', '.join(pargs_call)}}, distributed));
+    return new {{algo}}_manager({{', '.join(pargs_call)}}, distributed);
 {% endif %}
 }
 
-extern "C" void * compute_{{algo}}({{(',\n'+' '*(27+algo|length)).join(['daal::services::SharedPtr< '+algo+'__iface__ > * algo']+iargs_decl|hpatdecl)}})
+extern "C" void * compute_{{algo}}({{(',\n'+' '*(27+algo|length)).join([algo+'__iface__ * algo']+iargs_decl|hpatdecl)}})
 {
 #ifdef _DIST_
-    (*algo)->_distributed = c_num_procs() > 0;
+    algo->_distributed = c_num_procs() > 0;
 #endif
-    void * res = (*algo)->compute(
+    void * res = algo->compute(
 {% for a in iargs_decl %}
 {% set comma = ');' if loop.last else ',' %}
 {% set an = a.rsplit('=', 1)[0].strip().rsplit(' ', 1)[-1] %}
@@ -584,6 +593,8 @@ extern "C" void * compute_{{algo}}({{(',\n'+' '*(27+algo|length)).join(['daal::s
 
 # We need to register all possible context types to CnC
 # As the algos are templetized we need to do this for all template-instantiations of algo managers.
+# For ifaces we need to construct derived classes from iface pointers.
+# For this we use CnC factory as well, so need register the algo_managers, too.
 algo_types_template = """
 {% macro tfactory(tmpl_spec, prefix, args=[]) %}
 {% for a in tmpl_spec[0][1]['values'] %}
@@ -677,6 +688,7 @@ def flat(t, cpp=True):
                 r = '_'.join(nn)
             return ('c_' if cpp and typ.endswith('__iface__') else '') + r + (' *' if cpp and any(typ.endswith(x) for x in ['__iface__', 'Ptr']) else '')
         ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'services::SharedPtr<kernel_function::KernelIface>')
+        ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', 'services::SharedPtr<engines::BatchBase>', ty)
         ty = re.sub(r'(daal::)?services::SharedPtr<([^>]+)>', r'\2__iface__', ty)
         return ' '.join([__flat(x).replace('const', '') for x in ty.split(' ')])
     return [_flat(x) for x in t] if isinstance(t,list) else _flat(t)
@@ -775,6 +787,24 @@ def hpatdecl(ty):
         return typ.split('=')[0].replace('const', '').strip()
     return [flt(x) for x in ty] if isinstance(ty, list) else flt(ty)
 
+def sphinx(st):
+    def flt(s):
+        lst = s.rsplit('=', 1)
+        rstr = '[, ' if len(lst) > 1 else ', '
+        oval = ' = ' + lst[1].strip() + ']' if len(lst) > 1 else ''
+        dflt = ' [optional, default: '+lst[1].strip()+']' if len(lst) > 1 else ''
+        llst = lst[0].split()
+        if len(llst) == 1:
+            return (rstr + lst[0].strip() +': str' + oval, '   :param str ' + lst[0].strip() + ':' + dflt)
+        elif len(llst) == 2:
+            return (rstr + llst[1].strip() + ': ' + llst[0].strip() + oval, '   :param ' + llst[0].strip() + ' ' + llst[1].strip() + ':' + dflt)
+        else:
+            assert False, 'oops' + s
+
+    all = [flt(x) for x in st.split(',')]
+#    return '(' + ''.join([x[0] for x in all]).strip(' ,') + ')\n\n       ' + '\n'.join([x[1] for x in all]).strip(' ,')
+    return '\n   ' + '\n'.join([x[1] for x in all]).strip(' ,')
+
 jenv = jinja2.Environment(trim_blocks=True)
 jenv.filters['match'] = lambda a, x : [x for x in a if s in x]
 jenv.filters['d2cy'] = d2cy
@@ -789,6 +819,7 @@ jenv.filters['cppdecl'] = cppdecl
 jenv.filters['cpp_decl'] = cpp_decl
 jenv.filters['hpatdecl'] = hpatdecl
 jenv.filters['strip'] = lambda s, c : s.strip(c)
+jenv.filters['sphinx'] = sphinx
 
 class wrapper_gen(object):
     def __init__(self, ac, ifaces):
@@ -843,6 +874,7 @@ class wrapper_gen(object):
         jparams = self.algocfg[ns + '::' + algo]['model_typemap']
         if len(jparams) > 0:
             jparams['ns'] = ns
+            jparams['algo'] = algo
             t = jenv.from_string(typemap_wrapper_template)
             return (t.render(**jparams) + '\n').split('%SNIP%')
         return '', '', ''
@@ -861,6 +893,7 @@ class wrapper_gen(object):
         jparams = self.algocfg[ns + '::' + algo]['result_typemap']
         if len(jparams) > 0:
             jparams['ns'] = ns
+            jparams['algo'] = algo
             t = jenv.from_string(typemap_wrapper_template)
             return (t.render(**jparams) + '\n').split('%SNIP%')
         return '', '', ''
@@ -892,6 +925,7 @@ class wrapper_gen(object):
 
 
         jparams = cfg['params'].copy()
+        jparams['create'] = cfg['create']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
         jparams['pargs_decl'] = jparams['decl_req'] + jparams['decl_opt']
