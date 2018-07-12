@@ -50,7 +50,7 @@ All algorithms work the same way:
 The below tables list the accepted arguments. Those with no default (None) are required arguments. All other arguments with defaults are optional and can be provided as keyword arguments (like ``optarg=77``).
 Each algorithm returns a class-like object with properties as its result.
 
-For algorithms with training and prediction, simply extract the ``model`` property from the result returned by the training and pass it in as the (second) input argument. 
+For algorithms with training and prediction, simply extract the ``model`` property from the result returned by the training and pass it in as the (second) input argument.
 
 Note that all input objects and the result/model properties are native types, e.g. standard types (integer, float, numpy arrays, ...). Additionally, if you provide the name of a csv-file as an input argument daal4py will work on the entire file content.
 

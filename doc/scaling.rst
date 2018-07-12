@@ -7,10 +7,11 @@ following algorithms support distribution:
 - pca
 - svd
 - linear_regression_training
+- ridge_regression_training
 - multinomial_naive_bayes_training
 - kmeans and kmeans_init
 
-The provided binaries use the Intel® MPI library. 
+The provided binaries use the Intel® MPI library.
 
 Note: Distribution needs to be initialized with a call to daalinit() and before exiting the program a call to daalfini() is required.
 
