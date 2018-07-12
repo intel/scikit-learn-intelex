@@ -1,3 +1,19 @@
+/*******************************************************************************
+* Copyright 2014-2018 Intel Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
+
 #define NO_IMPORT_ARRAY
 #include "daal4py.h"
 
@@ -361,4 +377,15 @@ void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data
     // ptr==NULL: no input data
     dims[0] = dims[1] = 0;
     return;
+}
+
+int64_t string2enum(const std::string& str, std::map< std::string, int64_t > & strmap)
+{
+    int64_t r = 0;
+    std::size_t current, previous = 0;
+    while((current = str.find('|', previous)) != std::string::npos) {
+        r |= strmap[str.substr(previous, current - previous)];
+        previous = current + 1;
+    }
+    return (r | strmap[str.substr(previous, current - previous)]);
 }

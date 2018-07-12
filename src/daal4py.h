@@ -65,6 +65,11 @@ inline bool use_default(const size_t & attr)
     return (long)attr == (long)-1;
 }
 
+inline bool use_default(const DAAL_UINT64 & attr)
+{
+    return (long)attr == (long)-1;
+}
+
 inline bool use_default(const double & attr)
 {
     return attr != attr;
@@ -137,6 +142,8 @@ void * get_nt_data_ptr(const daal::data_management::NumericTablePtr * ptr)
     auto dptr = dynamic_cast< const data_management::HomogenNumericTable< T >* >((*ptr).get());
     return dptr ? reinterpret_cast< void* >(dptr->getArraySharedPtr().get()) : NULL;
 }
+
+extern int64_t string2enum(const std::string& str, std::map< std::string, int64_t > & strmap);
 
 static std::string to_std_string(PyObject * o)
 {

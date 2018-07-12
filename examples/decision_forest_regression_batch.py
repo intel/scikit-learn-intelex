@@ -16,33 +16,35 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Gradient Bossting Regression example for shared memory systems
+# daal4py Decision Forest Regression example for shared memory systems
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
 
-    # input data file
     infile = "./data/batch/df_regression_train.csv"
 
-    # Configure a training object
-    train_algo = d4p.gbt_regression_training()
+    # Configure a Linear regression training object
+    train_algo = d4p.decision_forest_regression_training(nTrees=100, varImportance='MDA_Raw', bootstrap=True,
+                                                    resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation')
     
-    # Read data. Let's use 3 features per observation
-    data   = loadtxt(infile, delimiter=',', usecols=range(13))
-    deps = loadtxt(infile, delimiter=',', usecols=range(13,14))
-    deps.shape = (deps.size, 1) # must be a 2d array
-    train_result = train_algo.compute(data, deps)
+    # Read data. Let's have 13 independent, and 1 dependent variables (for each observation)
+    indep_data = loadtxt(infile, delimiter=',', usecols=range(13))
+    dep_data   = loadtxt(infile, delimiter=',', usecols=range(13,14))
+    dep_data.shape = (dep_data.size, 1) # must be a 2d array
+    # Now train/compute, the result provides the model for prediction
+    train_result = train_algo.compute(indep_data, dep_data)
+    # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
     # Now let's do some prediction
-    predict_algo = d4p.gbt_regression_prediction()
+    predict_algo = d4p.decision_forest_regression_prediction()
     # read test data (with same #features)
     pdata = loadtxt("./data/batch/df_regression_test.csv", delimiter=',', usecols=range(13))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
-    # Prediction result provides prediction
-    assert(predict_result.prediction.shape == (pdata.shape[0], 1))
+    # The prediction reulst provides prediction
+    assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
 
     print('All looks good!')

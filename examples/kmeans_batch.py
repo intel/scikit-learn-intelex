@@ -30,18 +30,18 @@ if __name__ == "__main__":
 
     # configure a kmeans-init using mt19937 RNG
     engine = d4p.engines_mt19937()
-    initalgo = d4p.kmeans_init(nClusters, method="randomDense", engine=engine)
+    initrain_algo = d4p.kmeans_init(nClusters, method="randomDense", engine=engine)
     # Load the data
     data = loadtxt(infile, delimiter=',')
     # compute initial centroids
-    initresult = initalgo.compute(data)
+    initrain_result = initrain_algo.compute(data)
     # The results provides the initial centroids
-    assert initresult.centroids.shape[0] == nClusters
+    assert initrain_result.centroids.shape[0] == nClusters
 
     # configure kmeans main object: we also request the cluster assignments
     algo = d4p.kmeans(nClusters, maxIter, assignFlag=True)
     # compute the clusters/centroids
-    result = algo.compute(data, initresult.centroids)
+    result = algo.compute(data, initrain_result.centroids)
     
     # Note: we could have done this in just one line:
     # d4p.kmeans(nClusters, maxIter, assignFlag=True).compute(data, d4p.kmeans_init(nClusters, method="plusPlusDense").compute(data).centroids)

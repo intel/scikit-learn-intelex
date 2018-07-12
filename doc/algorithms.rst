@@ -2,6 +2,54 @@
 Algorithms
 ##########
 
+Decision Forest
+---------------
+Decision Forest Classification
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: daal4py.decision_forest_classification_training
+.. autoclass:: daal4py.decision_forest_classification_training_result
+   :members:
+.. autoclass:: daal4py.decision_forest_classification_prediction
+.. autoclass:: daal4py.classifier_prediction_result
+   :members:
+.. autoclass:: daal4py.decision_forest_classification_model
+   :members:
+
+Decision Tree Regression
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: daal4py.decision_forest_regression_training
+.. autoclass:: daal4py.decision_forest_regression_training_result
+   :members:
+.. autoclass:: daal4py.decision_forest_regression_prediction
+.. autoclass:: daal4py.decision_forest_regression_prediction_result
+   :members:
+.. autoclass:: daal4py.decision_forest_regression_model
+   :members:
+ 
+Decision Tree
+-------------
+Decision Tree Classification
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: daal4py.decision_tree_classification_training
+.. autoclass:: daal4py.decision_tree_classification_training_result
+   :members:
+.. autoclass:: daal4py.decision_tree_classification_prediction
+.. autoclass:: daal4py.classifier_prediction_result
+   :members:
+.. autoclass:: daal4py.decision_tree_classification_model
+   :members:
+
+Decision Tree Regression
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: daal4py.decision_forest_regression_training
+.. autoclass:: daal4py.decision_forest_regression_training_result
+   :members:
+.. autoclass:: daal4py.decision_forest_regression_prediction
+.. autoclass:: daal4py.decision_forest_regression_prediction_result
+   :members:
+.. autoclass:: daal4py.decision_forest_regression_model
+   :members:
+
 Gradient Boosting
 -----------------
 Gradient Boosting Classification

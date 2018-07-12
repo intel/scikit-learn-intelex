@@ -27,24 +27,24 @@ if __name__ == "__main__":
     infile = "./data/batch/svm_two_class_train_dense.csv"
 
     # Configure a SVM object to use rbf kernel (and adjusting cachesize)
-    kern = d4p.kernel_function_rbf()  # need an object that lives when creating talgo
-    talgo = d4p.svm_training(kernel=kern, cacheSize=600000000)
+    kern = d4p.kernel_function_rbf()  # need an object that lives when creating train_algo
+    train_algo = d4p.svm_training(kernel=kern, cacheSize=600000000)
     
     # Read data. Let's use features per observation
     data   = loadtxt(infile, delimiter=',', usecols=range(20))
     labels = loadtxt(infile, delimiter=',', usecols=range(20,21))
     labels.shape = (labels.size, 1) # must be a 2d array
-    tresult = talgo.compute(data, labels)
+    train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
-    palgo = d4p.svm_prediction()
+    predict_algo = d4p.svm_prediction()
     # read test data (with same #features)
     pdata = loadtxt("./data/batch/svm_two_class_test_dense.csv", delimiter=',', usecols=range(20))
     # now predict using the model from the training above
-    presult = palgo.compute(pdata, tresult.model)
+    predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    assert(presult.prediction.shape == (data.shape[0], 1))
+    assert(predict_result.prediction.shape == (data.shape[0], 1))
 
     print('All looks good!')
     d4p.daalfini()

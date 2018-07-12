@@ -1,30 +1,50 @@
 .. daal4py documentation master file, created by
-   sphinx-quickstart on Mon Jul  9 08:04:40 2018.
+   sphinx-quick-start on Mon Jul  9 08:04:40 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
 ################################################
-Fast and Scalabale Machine Learning With DAAL4PY
+Fast and Scalable Machine Learning With DAAL4PY
 ################################################
 
-It's easy
----------
-Wth this API your Python programs can use Intel(R) DAAL algorithms in just one
-line:
-
-``kmeans_init(data, 10, method="plusPlusDense").compute('data.csv')``
-
-You can even run this on a cluster by simple adding a keyword-parameter
-
-``kmeans_init(data, 10, method="plusPlusDense", distributed=TRUE).compute(list_of_files)``
+Make your Machine Learning algorithms lightning fast.
+Easily and efficiently scale them out to clusters of workstations.
 
 **This is a technical preview, not a product. Intel might decide to discontinue this project at any time.**
+
+It's Easy
+---------
+A daal4py machine learning algorithm gets constructed with a rich set of
+parameters. Let's assume we want to find the initial set of centroids for kmeans.
+We create an algorithm and configure it for 10 clusters using the 'PlusPlus' method::
+
+    kmi = kmeans_init(10, method="plusPlusDense")
+
+Assuming we have all our data in a CSV file we can now call it::
+
+    result = kmi.compute('data.csv')
+
+Our result will hold the computed centroids in the 'centroids' attribute::
+
+    print(result.centroids)
+
+You can even run this on a cluster by simple adding initializing/finalizing the
+network and adding a keyword-parameter::
+
+    daalinit()
+    kmeans_init(10, method="plusPlusDense", distributed=TRUE).compute(list_of_files)
+    daalfini()
+
+It's Fast
+---------
+.. image:: d4p-linreg-scale.jpg
+.. image:: d4p-kmeans-scale.jpg
 
 Overview
 --------
 All algorithms work the same way:
 
-1. Instantiate and parametrize
+1. Instantiate and parameterize
 2. Run/compute on input data
 
 The below tables list the accepted arguments. Those with no default (None) are required arguments. All other arguments with defaults are optional and can be provided as keyword arguments (like ``optarg=77``).

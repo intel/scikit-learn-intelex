@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Gradient Bossting Classification example for shared memory systems
+# daal4py Decision Forest Classification example for shared memory systems
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
@@ -27,16 +27,18 @@ if __name__ == "__main__":
     infile = "./data/batch/df_classification_train.csv"
 
     # Configure a training object (5 classes)
-    train_algo = d4p.gbt_classification_training(5)
+    train_algo = d4p.decision_forest_classification_training(5, nTrees=10, minObservationsInLeafNode=8, #featuresPerNode=5,
+                                                        varImportance='MDI', bootstrap=True, resultsToCompute='computeOutOfBagError')
     
     # Read data. Let's use 3 features per observation
     data   = loadtxt(infile, delimiter=',', usecols=range(3))
     labels = loadtxt(infile, delimiter=',', usecols=range(3,4))
     labels.shape = (labels.size, 1) # must be a 2d array
     train_result = train_algo.compute(data, labels)
+    # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
     # Now let's do some prediction
-    predict_algo = d4p.gbt_classification_prediction(5)
+    predict_algo = d4p.decision_forest_classification_prediction(5)
     # read test data (with same #features)
     pdata = loadtxt("./data/batch/df_classification_test.csv", delimiter=',', usecols=range(3))
     # now predict using the model from the training above

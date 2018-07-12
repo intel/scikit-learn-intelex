@@ -45,6 +45,15 @@ required = {
     'algorithms::gbt::classification::prediction': {
         'Batch': [('nClasses', 'size_t')],
     },
+    'algorithms::decision_tree::classification::training': {
+        'Batch': [('nClasses', 'size_t')],
+    },
+    'algorithms::decision_forest::classification::training': {
+        'Batch': [('nClasses', 'size_t')],
+    },
+    'algorithms::decision_forest::classification::prediction': {
+        'Batch': [('nClasses', 'size_t')],
+    },
 }
 
 # Some algorithms have no public constructors and need to be instantiated with 'create'
@@ -57,6 +66,7 @@ no_constructor = [
 # Some parameters/inputs are not used when C++ datastrcutures are shared across
 # different algos (like training and prediction)
 # List them here for the 'ignoring' algos.
+# Also lists input set/gets to ignore
 ignore = {
     'algorithms::svm::training': ['weights'],
     'algorithms::multi_class_classifier::training': ['weights'],
@@ -64,6 +74,10 @@ ignore = {
     'algorithms::kmeans::init': ['nRowsTotal', 'offset',],
     'algorithms::gbt::regression::training': ['dependentVariables'],
     'algorithms::gbt::classification::training': ['weights',],
+    'algorithms::decision_tree::classification::training': ['weights',],
+    'algorithms::decision_forest::classification::training': ['weights',],
+    'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId',],
+    'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -92,6 +106,14 @@ defaults = {
     },
 }
 
+# In some cases we the whole C++ busines is too complex and we need to provide
+# types manually.
+fallbacks = {
+    'algorithms::pca': {
+        'ParameterType': 'algorithms::pca::BaseBatchParameter',
+    }
+}
+
 # The distributed algorithm configuration parameters
 # Note that all have defaults and so are optional.
 # In particular note that the name of a single input argument defaults to data.
@@ -107,10 +129,11 @@ SSpec = namedtuple('step_spec', ['input',        # array of input types
                                  'staticinput',  # array of inputs that come from user and are unpartitioned
                                  'name',         # step1Local, step2Local, step3Master, ...
                                  'construct',    # args to algo constructor if non-default
+                                 'params',       # indicates if init_paramters should be called
                                  'inputnames',   # array of names of input args, aligned with 'input'
                              ]
 )
-SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-1) + (['data'],)
+SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-2) + (True, ['data'],)
 
 # We list all algos with distributed versions here.
 # The indivdual dicts get passed to jinja as global vars (as-is).
@@ -124,12 +147,14 @@ has_dist = {
                              input     = ['data_management::NumericTablePtr'],
                              output    = 'services::SharedPtr< algorithms::pca::PartialResult< method > >',
                              iomanager = 'PartialIOManager',
-                             setinput  = ['algorithms::pca::data']),
+                             setinput  = ['algorithms::pca::data'],
+                             params    = False),
                        SSpec(name      = 'step2Master',
                              input     = ['services::SharedPtr< algorithms::pca::PartialResult< method > >'],
                              output    = 'algorithms::pca::ResultPtr',
                              iomanager = 'IOManager',
-                             addinput  = 'algorithms::pca::partialResults')
+                             addinput  = 'algorithms::pca::partialResults',
+                             params    = False)
                    ],
     },
     'algorithms::multinomial_naive_bayes::training' : {
@@ -275,18 +300,26 @@ specialized = {
 
 no_warn = {
     'algorithms::classifier': ['Result',],
+    'algorithms::decision_forest': ['Result',],
+    'algorithms::decision_forest::classification': ['Result',],
+    'algorithms::decision_forest::regression': ['Result',],
+    'algorithms::decision_forest::regression::prediction::Batch': ['ParameterType',],
+    'algorithms::decision_forest::training': ['Result',],
+    'algorithms::decision_tree': ['Result',],
+    'algorithms::decision_tree::classification': ['Result',],
+    'algorithms::decision_tree::regression': ['Result',],
+    'algorithms::engines::mcg59::Batch': ['ParameterType',],
+    'algorithms::engines::mt19937::Batch': ['ParameterType',],
     'algorithms::gbt': ['Result',],
     'algorithms::gbt::classification': ['Result',],
     'algorithms::gbt::regression': ['Result',],
     'algorithms::gbt::training': ['Result',],
     'algorithms::linear_model': ['Result',],
     'algorithms::linear_regression': ['Result',],
+    'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
     'algorithms::multi_class_classifier': ['Result',],
     'algorithms::multinomial_naive_bayes': ['Result',],
-    'algorithms::svm': ['Result',],
-    'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
-    'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
-    'algorithms::engines::mt19937::Batch': ['ParameterType',],
-    'algorithms::engines::mcg59::Batch': ['ParameterType',],
+    'algorithms::svm': ['Result',],
+    'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
 };

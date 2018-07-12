@@ -36,6 +36,11 @@ The build-process (using setup.py) is 3-phased
 * Intel(R) MPI
   * You can use the conda package from Intel's test channel on anaconda.org (see below)
 
+### Prerequisites for creating documentation
+* sphinx
+* sphinx_rtd_theme
+
+
 ### Setting up a build environment
 The easiest path for getting cython, DAAL, TBB, CnC etc. is by creating a conda environment and setting environment variables:
 ```
@@ -47,7 +52,7 @@ export DAALROOT=$CONDA_PREFIX
 ```
 
 ### C++ compatibility
-The CnC binary packages on the intel channel are compiled with g++ version 4.8. For using newer compilers, globally #define macro ```_GLIBCXX_USE_CXX11_ABI=0``` when compiling daal4py or compiler CnC with the newer compiler.
+The CnC binary packages on the intel channel are compiled with g++ version 4.8. For using newer compilers, globally #define macro ```_GLIBCXX_USE_CXX11_ABI=0``` when compiling daal4py or compile CnC with the newer compiler.
 
 ## Building daal4py
 Requires Intel(R) DAAL, Intel(R) TBB and Intel(R) CnC being properly setup, e.g. DAALROOT, TBBROOT and CNCROOT being set.
@@ -63,3 +68,8 @@ python setup.py install
 
 ## VARIABLES
 * DAAL4PY_VERSION: package version
+
+## Building documentation
+1. Install daal4py into your python environment
+2. ```cd doc && make html```
+3. The documentation will be in ```doc/_build/html```

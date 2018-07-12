@@ -16,7 +16,10 @@ Note: Distribution needs to be initialized with a call to daalinit() and before 
 
 Distributed Single Process View (DSPV)
 --------------------------------------
-The distributed-Single-Process-View (DSVP) mode lets you program as if you had a single process. Distribution is done under the hood. This mode works like as follows:
+The distributed-Single-Process-View (DSVP) mode lets you program as if you had a
+single process. Distribution is done under the hood. This mode works like as
+follows:
+
 1. Your program begins with ``daalinit()``
 2. Provide several arrays or csv-files (like one per process). This represents the partitioning of your data.
 3. When calling an algorithm add the argument ``distributed=True``.
@@ -39,4 +42,4 @@ Currently we support the MPI used by Intel® Concurrent Collections (Intel CnC),
 which is usually Intel® MPI Library. Just use mpirun as usual and set the
 communication-protocol to MPI like this
 
-``mpirun genv DIST_CNC=MPI n <num-procs> python <your-program>``
+``mpirun genv DIST_CNC=MPI -n <num-procs> python <your-program>``

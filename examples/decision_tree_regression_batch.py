@@ -16,28 +16,33 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Linear Regression example for shared memory systems
+# daal4py Decision Tree Regression example for shared memory systems
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
 
-    infile = "./data/batch/linear_regression_train.csv"
+    infile = "./data/batch/decision_tree_train.csv"
+    prunefile = "./data/batch/decision_tree_prune.csv"
 
     # Configure a Linear regression training object
-    train_algo = d4p.linear_regression_training()
+    train_algo = d4p.decision_tree_regression_training()
     
-    # Read data. Let's have 9 independent, and 2 dependent variables (for each observation)
-    indep_data = loadtxt(infile, delimiter=',', usecols=range(9))
-    dep_data   = loadtxt(infile, delimiter=',', usecols=range(9,11))
+    # Read data. Let's have 5 independent, and 1 dependent variables (for each observation)
+    indep_data = loadtxt(infile, delimiter=',', usecols=range(5))
+    dep_data   = loadtxt(infile, delimiter=',', usecols=range(5,6))
+    prune_indep = loadtxt(prunefile, delimiter=',', usecols=range(5))
+    prune_dep = loadtxt(prunefile, delimiter=',', usecols=range(5,6))
+    dep_data.shape = (dep_data.size, 1) # must be a 2d array
+    prune_dep.shape = (prune_dep.size, 1) # must be a 2d array
     # Now train/compute, the result provides the model for prediction
-    train_result = train_algo.compute(indep_data, dep_data)
+    train_result = train_algo.compute(indep_data, dep_data, prune_indep, prune_dep)
 
     # Now let's do some prediction
-    predict_algo = d4p.linear_regression_prediction()
+    predict_algo = d4p.decision_tree_regression_prediction()
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/linear_regression_test.csv", delimiter=',', usecols=range(9))
+    pdata = loadtxt("./data/batch/decision_tree_test.csv", delimiter=',', usecols=range(5))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

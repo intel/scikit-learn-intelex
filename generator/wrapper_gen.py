@@ -102,6 +102,10 @@ NAN64 = NaN64
 NAN32 = NaN32
 
 
+cdef extern from "daal.h":
+    ctypedef unsigned long long DAAL_UINT64
+
+
 cdef extern from "daal4py_cpp.h":
     cdef void c_daalinit(bool spmd, int flag) except +
     cdef void c_daalfini() except +
@@ -288,8 +292,10 @@ auto {{algo}} = {{algo}}_type{{ctor}};
 auto {{algo}}_obj = {{algo}}_type{{ctor}};
         {{algo}}_type * {{algo}} = &{{algo}}_obj;
 {% endif %}
-{% if params_opt|length %}
+{% if (step_spec == None or step_spec.params) and params_get and params_opt|length %}
         init_parameters({{algo}}->{{params_get}});
+{% else %}
+        // skipping parameter initialization
 {% endif %}
 {%- endmacro %}
 """
@@ -405,7 +411,8 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 
 private:
 {% if params_opt|length %}
-    void init_parameters(typename algob_type::ParameterType & parameter)
+    template< typename PType >
+    void init_parameters(PType & parameter)
     {
 {% for p in params_opt %}
         if(! use_default(_{{p}})) parameter.{{p}} = to_daal({{params_opt[p].replace(p, '_'+p)}});

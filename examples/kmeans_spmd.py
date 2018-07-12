@@ -34,7 +34,7 @@ if __name__ == "__main__":
     maxIter = 25
 
     # configure a kmeans-init
-    initalgo = d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True)
+    initrain_algo = d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True)
     # Load the data
     data = loadtxt(infile, delimiter=',')
     # now slice the data, it would have been better to read only what we need, of course...
@@ -42,14 +42,14 @@ if __name__ == "__main__":
     data = data[rpp*d4p.my_procid():rpp*d4p.my_procid()+rpp,:]
 
     # compute initial centroids
-    initresult = initalgo.compute(data)
+    initrain_result = initrain_algo.compute(data)
     # The results provides the initial centroids
-    assert initresult.centroids.shape[0] == nClusters
+    assert initrain_result.centroids.shape[0] == nClusters
 
     # configure kmeans main object
     algo = d4p.kmeans(nClusters, maxIter, distributed=True)
     # compute the clusters/centroids
-    result = algo.compute(data, initresult.centroids)
+    result = algo.compute(data, initrain_result.centroids)
     
     # Note: we could have done this in just one line:
     # d4p.kmeans(nClusters, maxIter, assignFlag=True, distributed=True).compute(data, d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True).compute(data).centroids)

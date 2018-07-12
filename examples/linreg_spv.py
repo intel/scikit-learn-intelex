@@ -32,7 +32,7 @@ if __name__ == "__main__":
     infiles = ["./data/distributed/linear_regression_train_" + str(x) + ".csv" for x in range(1,5)]
 
     # Configure a Linear regression training object
-    talgo = d4p.linear_regression_training(distributed=True)
+    train_algo = d4p.linear_regression_training(distributed=True)
     
     # Read data. Let's have 9 independent, and 2 dependent variables (for each observation)
     indep_data = [loadtxt(x, delimiter=',', usecols=range(9)) for x in infiles]
@@ -40,17 +40,17 @@ if __name__ == "__main__":
     # Note, providing a list of files instead also distributes the file read!
     
     # Now train/compute, the result provides the model for prediction
-    tresult = talgo.compute(indep_data, dep_data)
+    train_result = train_algo.compute(indep_data, dep_data)
 
     # Now let's do some prediction (it runs only on a single node)
-    palgo = d4p.linear_regression_prediction(distributed=True)
+    predict_algo = d4p.linear_regression_prediction(distributed=True)
     # read test data (with same #features)
     pdata = loadtxt("./data/distributed/linear_regression_test.csv", delimiter=',', usecols=range(9))
     # now predict using the model from the training above
-    presult = d4p.linear_regression_prediction().compute(pdata, tresult.model)
+    predict_result = d4p.linear_regression_prediction().compute(pdata, train_result.model)
     
-    # The prediction reulst provides prediction
-    assert presult.prediction.shape == (pdata.shape[0], dep_data[0].shape[1])
+    # The prediction result provides prediction
+    assert predict_result.prediction.shape == (pdata.shape[0], dep_data[0].shape[1])
 
     print('All looks good!')
     d4p.daalfini()

@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Gradient Bossting Classification example for shared memory systems
+# daal4py Decision Tree Classification example for shared memory systems
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
@@ -24,21 +24,25 @@ from numpy import loadtxt, allclose
 if __name__ == "__main__":
 
     # input data file
-    infile = "./data/batch/df_classification_train.csv"
+    infile = "./data/batch/decision_tree_train.csv"
+    prunefile = "./data/batch/decision_tree_prune.csv"
 
     # Configure a training object (5 classes)
-    train_algo = d4p.gbt_classification_training(5)
+    train_algo = d4p.decision_tree_classification_training(5)
     
-    # Read data. Let's use 3 features per observation
-    data   = loadtxt(infile, delimiter=',', usecols=range(3))
-    labels = loadtxt(infile, delimiter=',', usecols=range(3,4))
+    # Read data. Let's use 5 features per observation
+    data   = loadtxt(infile, delimiter=',', usecols=range(5))
+    labels = loadtxt(infile, delimiter=',', usecols=range(5,6))
+    prunedata = loadtxt(prunefile, delimiter=',', usecols=range(5))
+    prunelabels = loadtxt(prunefile, delimiter=',', usecols=range(5,6))
     labels.shape = (labels.size, 1) # must be a 2d array
-    train_result = train_algo.compute(data, labels)
+    prunelabels.shape = (prunelabels.size, 1) # must be a 2d array
+    train_result = train_algo.compute(data, labels, prunedata, prunelabels)
 
     # Now let's do some prediction
-    predict_algo = d4p.gbt_classification_prediction(5)
+    predict_algo = d4p.decision_tree_classification_prediction()
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/df_classification_test.csv", delimiter=',', usecols=range(3))
+    pdata = loadtxt("./data/batch/decision_tree_test.csv", delimiter=',', usecols=range(5))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
