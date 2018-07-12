@@ -16,9 +16,9 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py SVD example for distributed memory systems; Single Process View mode
+# daal4py SVD example for distributed memory systems; Distributed Single Process View mode
 # run like this:
-#    mpirun -genv DIST_CNC=MPI -n 4 python ./svd_spv.py
+#    mpirun -genv DIST_CNC=MPI -n 4 python ./svd_dspv.py
 
 import daal4py as d4p
 from numpy import loadtxt, allclose

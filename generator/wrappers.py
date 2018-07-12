@@ -78,6 +78,7 @@ ignore = {
     'algorithms::decision_forest::classification::training': ['weights',],
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId',],
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',],
+    'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -192,6 +193,26 @@ has_dist = {
                              addinput    = 'algorithms::linear_regression::training::partialModels')
                    ],
     },
+    'algorithms::ridge_regression::training' : {
+        'pattern': 'mapReduce',
+        'step_specs': [SSpec(name      = 'step1Local',
+                             input       = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
+                             inputnames  = ['data', 'dependentVariables'],
+                             output      = 'services::SharedPtr< algorithms::ridge_regression::training::PartialResult >',
+                             iomanager   = 'PartialIOManager2',
+                             setinput    = ['algorithms::ridge_regression::training::data', 'algorithms::ridge_regression::training::dependentVariables'],),
+                       SSpec(name      = 'step2Master',
+                             input       = ['services::SharedPtr< algorithms::ridge_regression::training::PartialResult >'],
+                             output      = 'algorithms::ridge_regression::training::PartialResultPtr',
+                             iomanager   = 'PartialIOManager',
+                             addinput    = 'algorithms::ridge_regression::training::partialModels'),
+                       SSpec(name      = 'step2Master__final',
+                             input       = ['services::SharedPtr< algorithms::ridge_regression::training::PartialResult >'],
+                             output      = 'algorithms::ridge_regression::training::ResultPtr',
+                             iomanager   = 'IOManager',
+                             addinput    = 'algorithms::ridge_regression::training::partialModels')
+                   ],
+    },
     'algorithms::svd' : {
         'pattern': 'applyGather',
         'step_specs': [SSpec(name      = 'step1Local',
@@ -295,7 +316,29 @@ specialized = {
                 },
             ],
         },
-    }
+    },
+    'algorithms::ridge_regression::prediction': {
+        'Batch': {
+            'tmpl_decl': OrderedDict([
+                ('fptype', {
+                    'template_decl': 'typename',
+                    'default': 'double',
+                    'values': ['double', 'float']
+                }),
+                ('method', {
+                    'template_decl': 'algorithms::ridge_regression::prediction::Method',
+                    'default': 'algorithms::ridge_regression::prediction::defaultDense',
+                    'values': ['algorithms::ridge_regression::prediction::defaultDense',]
+                }),
+            ]),
+            'specs': [
+                {
+                    'template_decl': ['fptype'],
+                    'expl': OrderedDict([('method', 'algorithms::ridge_regression::prediction::defaultDense')]),
+                },
+            ],
+        },
+    },
 }
 
 no_warn = {
@@ -317,6 +360,8 @@ no_warn = {
     'algorithms::linear_model': ['Result',],
     'algorithms::linear_regression': ['Result',],
     'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
+    'algorithms::ridge_regression': ['Result',],
+    'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
     'algorithms::multi_class_classifier': ['Result',],
     'algorithms::multinomial_naive_bayes': ['Result',],
     'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],

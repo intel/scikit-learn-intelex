@@ -349,19 +349,24 @@ class cython_interface(object):
 
         res =  self.namespace_dict[ns].classes[cls].typedefs[td]
         tmp = splitns(res)
+        ret = None
         if res.endswith('Type'):
             # this is a dirty hack: we assume there are no typedefs *Type outside classes
             assert res.endswith(td)
-            ret = self.get_class_for_typedef(self.get_ns(ns, tmp[0]), splitns(tmp[0])[1], td)
+            ret = self.get_class_for_typedef(self.get_ns(ns, tmp[0]), splitns(tmp[0])[1], tmp[1])
+            if not ret and '<' in tmp[0]:
+                n = tmp[0].split('<', 1)[0]
+                ret = self.get_class_for_typedef(self.get_ns(ns, n), splitns(n)[1], tmp[1])
         else:
-            ret = (self.get_ns(ns, res.split('<')[0]), tmp[1])
-        if ret[1] not in self.namespace_dict[ns].classes and '<' in ret[1]:
-            # a template, sigh
+            ret = tmp
+        if ret and ret[1] not in self.namespace_dict[ret[0]].classes and '<' in ret[1]:
+            # Probably a template, sigh
             # For now, let's just cut off the template paramters.
             # Let's hope we don't need anything more sophisticated (like if there are actually specializations...)
-            c = ret[1].split('<', 1)[0]
+            c = ret[1].split('<', 1)[0] if ret else res.split('<')[0]
             n = self.get_ns(ns, c)
-            ret = (n, c) if n else None
+            ret = (n, splitns(c)[1]) if n else None
+            # ret = (self.get_ns(ns, res.split('<')[0]), tmp[1])
         return ret
 
 
@@ -592,7 +597,6 @@ class cython_interface(object):
                     else:
                         td['params_get'] = None
                         continue
-
                     # now we have a dict with all members of our parameter: params
                     # we need to inspect one by one
                     hlts = {}
@@ -807,6 +811,7 @@ def gen_daal4py(daalroot, outdir, warn_all=False):
                                             'engine',
                                             'decision_tree',
                                             'decision_forest',
+                                            'ridge_regression',
     ])
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:

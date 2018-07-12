@@ -27,8 +27,8 @@ if __name__ == "__main__":
     infile = "./data/batch/df_classification_train.csv"
 
     # Configure a training object (5 classes)
-    train_algo = d4p.decision_forest_classification_training(5, nTrees=10, minObservationsInLeafNode=8, #featuresPerNode=5,
-                                                        varImportance='MDI', bootstrap=True, resultsToCompute='computeOutOfBagError')
+    train_algo = d4p.decision_forest_classification_training(5, nTrees=10, minObservationsInLeafNode=8, featuresPerNode=3,
+                                                             varImportance='MDI', bootstrap=True, resultsToCompute='computeOutOfBagError')
     
     # Read data. Let's use 3 features per observation
     data   = loadtxt(infile, delimiter=',', usecols=range(3))

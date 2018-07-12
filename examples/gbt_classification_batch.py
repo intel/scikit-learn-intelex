@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     # Configure a training object (5 classes)
     train_algo = d4p.gbt_classification_training(5)
-    
+
     # Read data. Let's use 3 features per observation
     data   = loadtxt(infile, delimiter=',', usecols=range(3))
     labels = loadtxt(infile, delimiter=',', usecols=range(3,4))

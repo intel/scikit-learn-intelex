@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Linear Regression example for shared memory systems
+# daal4py Ridge Regression example for shared memory systems
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
@@ -25,19 +25,19 @@ if __name__ == "__main__":
 
     infile = "./data/batch/linear_regression_train.csv"
 
-    # Configure a Linear regression training object
-    train_algo = d4p.linear_regression_training()
+    # Configure a Ridge regression training object
+    train_algo = d4p.ridge_regression_training()
     
-    # Read data. Let's have 9 independent, and 2 dependent variables (for each observation)
-    indep_data = loadtxt(infile, delimiter=',', usecols=range(9))
-    dep_data   = loadtxt(infile, delimiter=',', usecols=range(9,11))
+    # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
+    indep_data = loadtxt(infile, delimiter=',', usecols=range(10))
+    dep_data   = loadtxt(infile, delimiter=',', usecols=range(10,12))
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
 
     # Now let's do some prediction
-    predict_algo = d4p.linear_regression_prediction()
+    predict_algo = d4p.ridge_regression_prediction()
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/linear_regression_test.csv", delimiter=',', usecols=range(9))
+    pdata = loadtxt("./data/batch/linear_regression_test.csv", delimiter=',', usecols=range(10))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

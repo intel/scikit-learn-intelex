@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py K-Means example for distributed memory systems; Single Process View mode
+# daal4py K-Means example for distributed memory systems; Distributed Single Process View mode
 # run like this:
 #    mpirun -genv DIST_CNC=MPI -n 4 python ./kmeans_spmd.py
 
