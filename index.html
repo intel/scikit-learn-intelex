@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fast and Scalabale Machine Learning With DAAL4PY &mdash; daal4py 0.3 documentation</title>
+  <title>Fast and Scalable Machine Learning With DAAL4PY &mdash; daal4py 0.3 documentation</title>
   
 
   
@@ -126,7 +126,7 @@
     
       <li><a href="#">Docs</a> &raquo;</li>
         
-      <li>Fast and Scalabale Machine Learning With DAAL4PY</li>
+      <li>Fast and Scalable Machine Learning With DAAL4PY</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -145,22 +145,45 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="fast-and-scalabale-machine-learning-with-daal4py">
-<h1>Fast and Scalabale Machine Learning With DAAL4PY<a class="headerlink" href="#fast-and-scalabale-machine-learning-with-daal4py" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="it-s-easy">
-<h2>It’s easy<a class="headerlink" href="#it-s-easy" title="Permalink to this headline">¶</a></h2>
-<p>Wth this API your Python programs can use Intel(R) DAAL algorithms in just one
-line:</p>
-<p><code class="docutils literal notranslate"><span class="pre">kmeans_init(data,</span> <span class="pre">10,</span> <span class="pre">method=&quot;plusPlusDense&quot;).compute('data.csv')</span></code></p>
-<p>You can even run this on a cluster by simple adding a keyword-parameter</p>
-<p><code class="docutils literal notranslate"><span class="pre">kmeans_init(data,</span> <span class="pre">10,</span> <span class="pre">method=&quot;plusPlusDense&quot;,</span> <span class="pre">distributed=TRUE).compute(list_of_files)</span></code></p>
+  <div class="section" id="fast-and-scalable-machine-learning-with-daal4py">
+<h1>Fast and Scalable Machine Learning With DAAL4PY<a class="headerlink" href="#fast-and-scalable-machine-learning-with-daal4py" title="Permalink to this headline">¶</a></h1>
+<p>Make your Machine Learning algorithms lightning fast.
+Easily and efficiently scale them out to clusters of workstations.</p>
 <p><strong>This is a technical preview, not a product. Intel might decide to discontinue this project at any time.</strong></p>
+<div class="section" id="it-s-easy">
+<h2>It’s Easy<a class="headerlink" href="#it-s-easy" title="Permalink to this headline">¶</a></h2>
+<p>A daal4py machine learning algorithm gets constructed with a rich set of
+parameters. Let’s assume we want to find the initial set of centroids for kmeans.
+We create an algorithm and configure it for 10 clusters using the ‘PlusPlus’ method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Assuming we have all our data in a CSV file we can now call it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s1">&#39;data.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Our result will hold the computed centroids in the ‘centroids’ attribute:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">centroids</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can even run this on a cluster by simple adding initializing/finalizing the
+network and adding a keyword-parameter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">daalinit</span><span class="p">()</span>
+<span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="n">TRUE</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">list_of_files</span><span class="p">)</span>
+<span class="n">daalfini</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="it-s-fast">
+<h2>It’s Fast<a class="headerlink" href="#it-s-fast" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/d4p-linreg-scale.jpg" src="_images/d4p-linreg-scale.jpg" />
+<img alt="_images/d4p-kmeans-scale.jpg" src="_images/d4p-kmeans-scale.jpg" />
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>All algorithms work the same way:</p>
 <ol class="arabic simple">
-<li>Instantiate and parametrize</li>
+<li>Instantiate and parameterize</li>
 <li>Run/compute on input data</li>
 </ol>
 <p>The below tables list the accepted arguments. Those with no default (None) are required arguments. All other arguments with defaults are optional and can be provided as keyword arguments (like <code class="docutils literal notranslate"><span class="pre">optarg=77</span></code>).

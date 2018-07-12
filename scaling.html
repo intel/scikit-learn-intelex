@@ -166,10 +166,14 @@ following algorithms support distribution:</p>
 <p>Note: Distribution needs to be initialized with a call to daalinit() and before exiting the program a call to daalfini() is required.</p>
 <div class="section" id="distributed-single-process-view-dspv">
 <h2>Distributed Single Process View (DSPV)<a class="headerlink" href="#distributed-single-process-view-dspv" title="Permalink to this headline">¶</a></h2>
-<p>The distributed-Single-Process-View (DSVP) mode lets you program as if you had a single process. Distribution is done under the hood. This mode works like as follows:
-1. Your program begins with <code class="docutils literal notranslate"><span class="pre">daalinit()</span></code>
-2. Provide several arrays or csv-files (like one per process). This represents the partitioning of your data.
-3. When calling an algorithm add the argument <code class="docutils literal notranslate"><span class="pre">distributed=True</span></code>.</p>
+<p>The distributed-Single-Process-View (DSVP) mode lets you program as if you had a
+single process. Distribution is done under the hood. This mode works like as
+follows:</p>
+<ol class="arabic simple">
+<li>Your program begins with <code class="docutils literal notranslate"><span class="pre">daalinit()</span></code></li>
+<li>Provide several arrays or csv-files (like one per process). This represents the partitioning of your data.</li>
+<li>When calling an algorithm add the argument <code class="docutils literal notranslate"><span class="pre">distributed=True</span></code>.</li>
+</ol>
 </div>
 <div class="section" id="single-program-multiple-data-spmd">
 <h2>Single Program Multiple Data (SPMD)<a class="headerlink" href="#single-program-multiple-data-spmd" title="Permalink to this headline">¶</a></h2>
@@ -189,7 +193,7 @@ mode. This mode works like as follows:</p>
 <p>Currently we support the MPI used by Intel® Concurrent Collections (Intel CnC),
 which is usually Intel® MPI Library. Just use mpirun as usual and set the
 communication-protocol to MPI like this</p>
-<p><code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">genv</span> <span class="pre">DIST_CNC=MPI</span> <span class="pre">n</span> <span class="pre">&lt;num-procs&gt;</span> <span class="pre">python</span> <span class="pre">&lt;your-program&gt;</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">genv</span> <span class="pre">DIST_CNC=MPI</span> <span class="pre">-n</span> <span class="pre">&lt;num-procs&gt;</span> <span class="pre">python</span> <span class="pre">&lt;your-program&gt;</span></code></p>
 </div>
 </div>
 
