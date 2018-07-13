@@ -28,11 +28,18 @@ Our result will hold the computed centroids in the 'centroids' attribute::
 
     print(result.centroids)
 
+The full example could look like this::
+
+    from daal4py import kmeans_init
+    result = kmeans_init(10, method="plusPlusDense").compute('data.csv')
+    print(result.centroids)
+
 You can even run this on a cluster by simple adding initializing/finalizing the
 network and adding a keyword-parameter::
 
+    from daal4py import daalinit, daalfini, kmeans_init
     daalinit()
-    kmeans_init(10, method="plusPlusDense", distributed=TRUE).compute(list_of_files)
+    kmeans_init(10, method="plusPlusDense", distributed=True).compute(list_of_files)
     daalfini()
 
 It's Fast

@@ -16,19 +16,19 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Naive Bayes Classification example for distributed memory systems; SPMD mode
+# daal4py Naive Bayes Classification example for distributed memory systems; Distributed Single Process View mode
 # run like this:
-#    mpirun -genv DIST_CNC=MPI -n 4 python ./naivebayes_spmd.py
+#    mpirun -genv DIST_CNC=MPI -n 4 python ./naive_bayes_dspv.py
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
 
-    # Initialize SPMD mode
-    d4p.daalinit(spmd=True)
+    # Initialize SPV mode
+    d4p.daalinit()
 
-    # Each process gets its own data
+    # input data file
     infile = "./data/batch/naivebayes_train_dense.csv"
 
     # Configure a training object (20 classes)
@@ -41,18 +41,15 @@ if __name__ == "__main__":
     tresult = talgo.compute(data, labels)
 
     # Now let's do some prediction
-    # It runs only on a single node
-    if d4p.my_procid() == 0:
-        palgo = d4p.multinomial_naive_bayes_prediction(20)
-        # read test data (with same #features)
-        pdata = loadtxt("./data/batch/naivebayes_test_dense.csv", delimiter=',', usecols=range(20))
-        # now predict using the model from the training above
-        presult = palgo.compute(pdata, tresult.model)
+    palgo = d4p.multinomial_naive_bayes_prediction(20)
+    # read test data (with same #features)
+    pdata = loadtxt("./data/batch/naivebayes_test_dense.csv", delimiter=',', usecols=range(20))
+    # now predict using the model from the training above
+    presult = palgo.compute(pdata, tresult.model)
 
-        # Prediction result provides prediction
-        assert(presult.prediction.shape == (pdata.shape[0], 1))
+    # Prediction result provides prediction
+    assert(presult.prediction.shape == (pdata.shape[0], 1))
 
-        print('All looks good!')
-
+    print('All looks good!')
     d4p.daalfini()
 
