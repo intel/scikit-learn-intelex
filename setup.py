@@ -147,7 +147,6 @@ def gen_pyx(odir):
 
 gen_pyx(os.path.abspath('./build'))
 
-
 # daal setup
 setup(  name        = "daal4py",
         description = "Higher Level Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)",

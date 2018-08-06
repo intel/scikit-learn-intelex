@@ -10,8 +10,6 @@ Fast and Scalable Machine Learning With DAAL4PY
 Make your Machine Learning algorithms lightning fast.
 Easily and efficiently scale them out to clusters of workstations.
 
-**This is a technical preview, not a product. Intel might decide to discontinue this project at any time.**
-
 It's Easy
 ---------
 A daal4py machine learning algorithm gets constructed with a rich set of
