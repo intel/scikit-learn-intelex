@@ -149,7 +149,6 @@
 <h1>Fast and Scalable Machine Learning With DAAL4PY<a class="headerlink" href="#fast-and-scalable-machine-learning-with-daal4py" title="Permalink to this headline">¶</a></h1>
 <p>Make your Machine Learning algorithms lightning fast.
 Easily and efficiently scale them out to clusters of workstations.</p>
-<p><strong>This is a technical preview, not a product. Intel might decide to discontinue this project at any time.</strong></p>
 <div class="section" id="it-s-easy">
 <h2>It’s Easy<a class="headerlink" href="#it-s-easy" title="Permalink to this headline">¶</a></h2>
 <p>A daal4py machine learning algorithm gets constructed with a rich set of
@@ -166,18 +165,45 @@ We create an algorithm and configure it for 10 clusters using the ‘PlusPlus’
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">centroids</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The full example could look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">kmeans_init</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s1">&#39;data.csv&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">centroids</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>You can even run this on a cluster by simple adding initializing/finalizing the
 network and adding a keyword-parameter:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">daalinit</span><span class="p">()</span>
-<span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="n">TRUE</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">list_of_files</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
+<span class="n">daalinit</span><span class="p">()</span>
+<span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">list_of_files</span><span class="p">)</span>
 <span class="n">daalfini</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="it-s-fast">
 <h2>It’s Fast<a class="headerlink" href="#it-s-fast" title="Permalink to this headline">¶</a></h2>
+<p>Besides superior (e.g. close to native C++ Intel DAAL) performance on a single
+node, the distribution mechanics of daal4py provides excellent strong and weak
+scaling. It nicely handles distributing a fixed input size on increasing
+clusters sizes
+(strong scaling: orange) which addresses possible response time requirements. It also scales with
+growing input size (weak scaling: yellow) which is needed if the data no longer fits
+into memory of a single node.</p>
+<div class="figure" id="id1">
 <img alt="_images/d4p-linreg-scale.jpg" src="_images/d4p-linreg-scale.jpg" />
+<p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed linear regression
+of 1.14 TB of data in less than 2 seconds and 91.55 GB of data in
+less than 74 milliseconds.</span></p>
+</div>
+<div class="figure" id="id2">
 <img alt="_images/d4p-kmeans-scale.jpg" src="_images/d4p-kmeans-scale.jpg" />
+<p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed K-Means (10
+clusters) of 2.93 TB of data in 108.8 seconds and 35.76 GB of data
+in 5.26 seconds.</span></p>
+</div>
+<p>Configuration: Intel(R) Xeon(R) Gold 6148 CPU &#64; 2.40GHz, EIST/Turbo on 2
+sockets, 20 cores per socket, 192 GB RAM, 16 nodes connected with Infiniband,
+Oracle Linux Server release 7.4, using 64-bit floating point numbers</p>
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
@@ -197,9 +223,9 @@ Each algorithm returns a class-like object with properties as its result.</p>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#distributed-single-process-view-dspv">Distributed Single Process View (DSPV)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scaling.html#it-s-easy">It’s Easy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scaling.html#single-program-multiple-data-spmd">Single Program Multiple Data (SPMD)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#starting-processes">Starting Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scaling.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a><ul>

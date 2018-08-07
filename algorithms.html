@@ -84,7 +84,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#decision-forest-classification">Decision Forest Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decision-tree-classification">Decision Tree Classification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gradient-boosting-classification">Gradient Boosting Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gradient-boosted-classification">Gradient Boosted Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multinomial-naive-bayes">Multinomial Naive Bayes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#support-vector-machine-svm">Support Vector Machine (SVM)</a></li>
 </ul>
@@ -92,13 +92,21 @@
 <li class="toctree-l2"><a class="reference internal" href="#regression">Regression</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#decision-forest-regression">Decision Forest Regression</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decision-tree-regression">Decision Tree Regression</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gradient-boosting-regression">Gradient Boosting Regression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gradient-boosted-regression">Gradient Boosted Regression</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linear-regression">Linear Regression</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ridge-regression">Ridge Regression</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#k-means-clustering">K-Means Clustering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#outlier-detection">Outlier Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#k-means-clustering">K-Means Clustering</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#k-means-initialization">K-Means Initialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#k-means">K-Means</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#outlier-detection">Outlier Detection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multivariate-outlier-detection">Multivariate Outlier Detection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#univariate-outlier-detection">Univariate Outlier Detection</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#principal-component-analysis-pca">Principal Component Analysis (PCA)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#singular-value-decomposition-svd">Singular Value Decomposition (SVD)</a></li>
 </ul>
@@ -171,8 +179,15 @@
 <h1>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="classification">
 <h2>Classification<a class="headerlink" href="#classification" title="Permalink to this headline">¶</a></h2>
+<p>See also <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-classification">Intel DAAL Classification</a>.</p>
 <div class="section" id="decision-forest-classification">
 <h3>Decision Forest Classification<a class="headerlink" href="#decision-forest-classification" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-forest-2">Intel DAAL Classification Decision Forest</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/decision_forest_classification_batch.py">Single-Process Decision Forest Classification</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.decision_forest_classification_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_forest_classification_training</code><a class="headerlink" href="#daal4py.decision_forest_classification_training" title="Permalink to this definition">¶</a></dt>
@@ -339,6 +354,12 @@
 </div>
 <div class="section" id="decision-tree-classification">
 <h3>Decision Tree Classification<a class="headerlink" href="#decision-tree-classification" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-tree-2">Intel DAAL Classification Decision Tree</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/decision_tree_classification_batch.py">Single-Process Decision Tree Classification</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.decision_tree_classification_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_tree_classification_training</code><a class="headerlink" href="#daal4py.decision_tree_classification_training" title="Permalink to this definition">¶</a></dt>
@@ -460,8 +481,14 @@
 </dd></dl>
 
 </div>
-<div class="section" id="gradient-boosting-classification">
-<h3>Gradient Boosting Classification<a class="headerlink" href="#gradient-boosting-classification" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="gradient-boosted-classification">
+<h3>Gradient Boosted Classification<a class="headerlink" href="#gradient-boosted-classification" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-tree-2">Intel DAAL Classification Gradient Boosted Tree</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/gradient_boosted_classification_batch.py">Single-Process Gradient Boosted Classification</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.gbt_classification_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">gbt_classification_training</code><a class="headerlink" href="#daal4py.gbt_classification_training" title="Permalink to this definition">¶</a></dt>
@@ -593,6 +620,14 @@
 </div>
 <div class="section" id="multinomial-naive-bayes">
 <h3>Multinomial Naive Bayes<a class="headerlink" href="#multinomial-naive-bayes" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-naive-bayes-classifier">Intel DAAL Naive Bayes</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/naive_bayes_batch.py">Single-Process Naive Bayes</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/naive_bayes_dspv.py">Multi-Process (DSPV) Naive Bayes</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/naive_bayes_spmd.py">Multi-Process (SPMD) Naive Bayes</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.multinomial_naive_bayes_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">multinomial_naive_bayes_training</code><a class="headerlink" href="#daal4py.multinomial_naive_bayes_training" title="Permalink to this definition">¶</a></dt>
@@ -751,6 +786,12 @@
 </div>
 <div class="section" id="support-vector-machine-svm">
 <h3>Support Vector Machine (SVM)<a class="headerlink" href="#support-vector-machine-svm" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-support-vector-machine-classifier">Intel DAAL SVM</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svm_batch.py">Single-Process SVM</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.svm_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">svm_training</code><a class="headerlink" href="#daal4py.svm_training" title="Permalink to this definition">¶</a></dt>
@@ -935,8 +976,15 @@
 </div>
 <div class="section" id="regression">
 <h2>Regression<a class="headerlink" href="#regression" title="Permalink to this headline">¶</a></h2>
+<p>See also <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-regression">Intel DAAL Regression</a>.</p>
 <div class="section" id="decision-forest-regression">
 <h3>Decision Forest Regression<a class="headerlink" href="#decision-forest-regression" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-forest-1">Intel DAAL Regression Decision Forest</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/decision_forest_regression_batch.py">Single-Process Decision Forest Regression</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.decision_forest_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_forest_regression_training</code><a class="headerlink" href="#daal4py.decision_forest_regression_training" title="Permalink to this definition">¶</a></dt>
@@ -1088,6 +1136,12 @@
 </div>
 <div class="section" id="decision-tree-regression">
 <h3>Decision Tree Regression<a class="headerlink" href="#decision-tree-regression" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-tree-1">Intel DAAL Regression Decision Tree</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/decision_tree_regression_batch.py">Single-Process Decision Tree Regression</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.decision_tree_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_tree_regression_training</code><a class="headerlink" href="#daal4py.decision_tree_regression_training" title="Permalink to this definition">¶</a></dt>
@@ -1192,8 +1246,14 @@
 </dd></dl>
 
 </div>
-<div class="section" id="gradient-boosting-regression">
-<h3>Gradient Boosting Regression<a class="headerlink" href="#gradient-boosting-regression" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="gradient-boosted-regression">
+<h3>Gradient Boosted Regression<a class="headerlink" href="#gradient-boosted-regression" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-tree-1">Intel DAAL Regression Gradient Boosted Tree</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/gradient_boosted_regression_batch.py">Single-Process Boosted Regression Regression</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.gbt_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">gbt_regression_training</code><a class="headerlink" href="#daal4py.gbt_regression_training" title="Permalink to this definition">¶</a></dt>
@@ -1310,6 +1370,14 @@
 </div>
 <div class="section" id="linear-regression">
 <h3>Linear Regression<a class="headerlink" href="#linear-regression" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-linear-and-ridge-regressions-computation">Intel DAAL Linear and Ridge Regression</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/linear_regression_batch.py">Single-Process Linear Regression</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/linear_regression_dspv.py">Multi-Process (DSPV) Linear Regression</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/linear_regression_spmd.py">Multi-Process (SPMD) Linear Regression</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.linear_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">linear_regression_training</code><a class="headerlink" href="#daal4py.linear_regression_training" title="Permalink to this definition">¶</a></dt>
@@ -1463,6 +1531,14 @@
 </div>
 <div class="section" id="ridge-regression">
 <h3>Ridge Regression<a class="headerlink" href="#ridge-regression" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-linear-and-ridge-regressions-computation">Intel DAAL Linear and Ridge Regression</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/ridge_regression_batch.py">Single-Process Ridge Regression</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/ridge_regression_dspv.py">Multi-Process (DSPV) Ridge Regression</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/ridge_regression_spmd.py">Multi-Process (SPMD) Ridge Regression</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.ridge_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">ridge_regression_training</code><a class="headerlink" href="#daal4py.ridge_regression_training" title="Permalink to this definition">¶</a></dt>
@@ -1618,6 +1694,67 @@
 </div>
 <div class="section" id="k-means-clustering">
 <h2>K-Means Clustering<a class="headerlink" href="#k-means-clustering" title="Permalink to this headline">¶</a></h2>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-k-means-clustering">Intel DAAL K-Means-Clustering</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/kmeans_batch.py">Single-Process K-Means</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/kmeans_dspv.py">Multi-Process (DSPV) K-Means</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/kmeans_spmd.py">Multi-Process (SPMD) K-Means</a></li>
+</ul>
+<div class="section" id="k-means-initialization">
+<h3>K-Means Initialization<a class="headerlink" href="#k-means-initialization" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-initialization">Intel DAAL K-Means Initialization</a></p>
+<dl class="class">
+<dt id="daal4py.kmeans_init">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kmeans_init</code><a class="headerlink" href="#daal4py.kmeans_init" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>kmeans_init</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>nClusters</strong> (<em>size_t</em>) – </li>
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>seed</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>oversamplingFactor</strong> (<em>double</em>) – [optional, default: NaN64]</li>
+<li><strong>nRounds</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.kmeans_init_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kmeans_init_result</code><a class="headerlink" href="#daal4py.kmeans_init_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.kmeans_init_result.centroids">
+<code class="descname">centroids</code><a class="headerlink" href="#daal4py.kmeans_init_result.centroids" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="k-means">
+<h3>K-Means<a class="headerlink" href="#k-means" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-computation">Intel DAAL K-Means Computation</a></p>
 <dl class="class">
 <dt id="daal4py.kmeans">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kmeans</code><a class="headerlink" href="#daal4py.kmeans" title="Permalink to this definition">¶</a></dt>
@@ -1715,53 +1852,18 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="daal4py.kmeans_init">
-<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kmeans_init</code><a class="headerlink" href="#daal4py.kmeans_init" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>kmeans_init</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>nClusters</strong> (<em>size_t</em>) – </li>
-<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
-<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>seed</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>oversamplingFactor</strong> (<em>double</em>) – [optional, default: NaN64]</li>
-<li><strong>nRounds</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="class">
-<dt id="daal4py.kmeans_init_result">
-<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kmeans_init_result</code><a class="headerlink" href="#daal4py.kmeans_init_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Properties:</p>
-<dl class="attribute">
-<dt id="daal4py.kmeans_init_result.centroids">
-<code class="descname">centroids</code><a class="headerlink" href="#daal4py.kmeans_init_result.centroids" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
+</div>
 </div>
 <div class="section" id="outlier-detection">
 <h2>Outlier Detection<a class="headerlink" href="#outlier-detection" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="multivariate-outlier-detection">
+<h3>Multivariate Outlier Detection<a class="headerlink" href="#multivariate-outlier-detection" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-multivariate-outlier-detection">Intel DAAL Multivariate Outlier Detection</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/multivariate_outlier_batch.py">Single-Process Multivariate Outlier Detection</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.multivariate_outlier_detection">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">multivariate_outlier_detection</code><a class="headerlink" href="#daal4py.multivariate_outlier_detection" title="Permalink to this definition">¶</a></dt>
@@ -1801,6 +1903,15 @@
 
 </dd></dl>
 
+</div>
+<div class="section" id="univariate-outlier-detection">
+<h3>Univariate Outlier Detection<a class="headerlink" href="#univariate-outlier-detection" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-univariate-outlier-detection">Intel DAAL Univariate Outlier Detection</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/univariate_outlier_batch.py">Single-Process Univariate Outlier Detection</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.univariate_outlier_detection">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">univariate_outlier_detection</code><a class="headerlink" href="#daal4py.univariate_outlier_detection" title="Permalink to this definition">¶</a></dt>
@@ -1841,8 +1952,17 @@
 </dd></dl>
 
 </div>
+</div>
 <div class="section" id="principal-component-analysis-pca">
 <h2>Principal Component Analysis (PCA)<a class="headerlink" href="#principal-component-analysis-pca" title="Permalink to this headline">¶</a></h2>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis">Intel DAAL PCA</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_batch.py">Single-Process PCA</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_dspv.py">Multi-Process (DSPV) PCA</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_spmd.py">Multi-Process (SPMD) PCA</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.pca">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca</code><a class="headerlink" href="#daal4py.pca" title="Permalink to this definition">¶</a></dt>
@@ -1927,6 +2047,14 @@
 </div>
 <div class="section" id="singular-value-decomposition-svd">
 <h2>Singular Value Decomposition (SVD)<a class="headerlink" href="#singular-value-decomposition-svd" title="Permalink to this headline">¶</a></h2>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition">Intel DAAL SVD</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_batch.py">Single-Process SVD</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_dspv.py">Multi-Process (DSPV) SVD</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_spmd.py">Multi-Process (SPMD) SVD</a></li>
+</ul>
 <dl class="class">
 <dt id="daal4py.svd">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">svd</code><a class="headerlink" href="#daal4py.svd" title="Permalink to this definition">¶</a></dt>
