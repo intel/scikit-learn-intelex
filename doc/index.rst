@@ -42,8 +42,30 @@ network and adding a keyword-parameter::
 
 It's Fast
 ---------
-.. image:: d4p-linreg-scale.jpg
-.. image:: d4p-kmeans-scale.jpg
+Besides superior (e.g. close to native C++ Intel DAAL) performance on a single
+node, the distribution mechanics of daal4py provides excellent strong and weak
+scaling. It nicely handles distributing a fixed input size on increasing
+clusters sizes
+(strong scaling: orange) which addresses possible response time requirements. It also scales with
+growing input size (weak scaling: yellow) which is needed if the data no longer fits
+into memory of a single node.
+
+.. figure:: d4p-linreg-scale.jpg
+
+	    On a 32-node cluster (1280 cores) daal4py computed linear regression
+	    of 1.14 TB of data in less than 2 seconds and 91.55 GB of data in
+	    less than 74 milliseconds.
+
+.. figure:: d4p-kmeans-scale.jpg
+
+	    On a 32-node cluster (1280 cores) daal4py computed K-Means (10
+	    clusters) of 2.93 TB of data in 108.8 seconds and 35.76 GB of data
+	    in 5.26 seconds.
+
+
+Configuration: Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz, EIST/Turbo on 2
+sockets, 20 cores per socket, 192 GB RAM, 16 nodes connected with Infiniband,
+Oracle Linux Server release 7.4, using 64-bit floating point numbers
 
 Overview
 --------
