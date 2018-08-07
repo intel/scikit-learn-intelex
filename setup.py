@@ -65,7 +65,7 @@ DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
-        cflags = ['-fstack-protector', '-fPIC', '-D_DIST_', '-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security', '-g', '-O0']
+        cflags = ['-fstack-protector', '-fPIC', '-D_DIST_', '-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',] # '-g', '-O0']
         if IS_LIN:
             return cflags
         elif IS_MAC:
@@ -75,7 +75,7 @@ def get_sdl_cflags():
 
 def get_sdl_ldflags():
     if IS_LIN:
-        return ['-Wl,-z,noexecstack', '-Wl,-z,relro', '-Wl,-z,now',]# '-s']
+        return ['-Wl,-z,noexecstack', '-Wl,-z,relro', '-Wl,-z,now', '-s']
     elif IS_MAC:
         return []
     elif IS_WIN:

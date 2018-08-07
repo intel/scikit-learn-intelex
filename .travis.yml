@@ -29,4 +29,4 @@ install:
 
 script:
   # Your test script goes here
-  cd examples && ./run_all.sh
+  - cd examples && I_MPI_SHM_LMT=shm ./run_all.sh
