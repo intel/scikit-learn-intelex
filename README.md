@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.com/IntelPython/daal4py.svg?branch=master)](https://travis-ci.com/IntelPython/daal4py)
 # daal4py - Convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)
+[![Build Status](https://travis-ci.com/IntelPython/daal4py.svg?branch=master)](https://travis-ci.com/IntelPython/daal4py)
 
 With this API your Python programs can use Intel(R) DAAL algorithms in just one line:
 ```
