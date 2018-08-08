@@ -67,6 +67,11 @@ Configuration: Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz, EIST/Turbo on 2
 sockets, 20 cores per socket, 192 GB RAM, 16 nodes connected with Infiniband,
 Oracle Linux Server release 7.4, using 64-bit floating point numbers
 
+Getting daal4py
+---------------
+daal4py is distributed as source only. Sources and build instructions are
+available at https://github.com/IntelPython/daal4py.
+
 Overview
 --------
 All algorithms work the same way:
