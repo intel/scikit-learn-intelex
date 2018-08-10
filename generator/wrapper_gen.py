@@ -48,6 +48,7 @@ import jinja2
 from collections import OrderedDict
 from pprint import pprint
 import re
+from .wrappers import hpat_types
 
 ###############################################################################
 # generic utility functions/defs needed by generated code
@@ -66,6 +67,8 @@ from cpython.ref cimport PyObject
 from cython.operator cimport dereference as deref
 
 npc.import_array()
+
+hpat_spec = []
 
 cdef extern from "daal4py_cpp.h":
     cdef cppclass NumericTablePtr:
@@ -133,7 +136,7 @@ def my_procid():
 #          {{named_gets}}   list of pairs(name, type) of members accessed via type var = getName()
 #          {{class_type}}   C++ class
 typemap_wrapper_template = """
-{% set flatname = class_type|flat|strip(' *') %}
+{% set flatname = (class_type|flat|strip(' *')|lower).replace('ptr', '') %}
 {% set splitname = class_type.rsplit('::', 1) %}
 typedef {{class_type}} {{class_type|flat|strip(' *')}};
 {% if enum_gets or named_gets %}
@@ -170,7 +173,7 @@ cdef extern from "daal4py_cpp.h":
     cdef {{m[0]|d2cy}} get_{{flatname}}_{{m[1]}}({{class_type|flat}} obj_) except +
 {% endfor %}
 
-cdef class {{flatname.replace('Ptr', '')|lower}}:
+cdef class {{flatname}}:
     '''
     Properties:
     '''
@@ -196,6 +199,15 @@ cdef class {{flatname.replace('Ptr', '')|lower}}:
         return {{'<object>make_nda(res)' if 'NumericTablePtr' in rtype else 'res'}}
 {% endif %}
 {% endfor %}
+
+hpat_spec.append({
+    'pyclass': {{flatname}},
+    'c_name' : '{{flatname}}',
+    'attrs'  : [
+{% for m in enum_gets+named_gets %}
+                ('{{m[1]}}', '{{m[1]|d2hpat(m[2], flatname) if m in enum_gets else m[1]|d2hpat(m[0], flatname)}}'),
+{% endfor %}
+]})
 {% else %}
 %SNIP%
 %SNIP%
@@ -204,8 +216,14 @@ cdef class {{flatname.replace('Ptr', '')|lower}}:
 cdef extern from "daal4py_cpp.h":
     ctypedef {{class_type|flat(False)}} {{(ns+'::'+splitname[-1])|flat|strip(' *')}}
 
-{{(ns+'::'+splitname[-1]).replace('Ptr', '')|flat|lower|strip(' *')}} = ({{flatname.replace('Ptr', '')|lower}})
+{% set alias = (ns+'::'+splitname[-1]).replace('Ptr', '')|flat|lower|strip(' *') %}
+{% set actual = flatname %}
+{{alias}} = {{actual}}
 
+hpat_spec.append({
+    'c_name' : '{{alias}}',
+    'alias' : '{{actual}}',
+})
 {% endif %}
 """
 
@@ -237,8 +255,8 @@ cdef extern from "daal4py_cpp.h":
 
 #    ctypedef c_{{iface_name}}__iface__ c_{{iface_type|flat|strip(' *')}};
 
-
-cdef class {{iface_name|lower}}__iface__:
+{% set inl = iface_name|lower + '__iface__' %}
+cdef class {{inl}}:
     cdef c_{{iface_name}}__iface__ * c_ptr
 
     def __cinit__(self):
@@ -246,6 +264,12 @@ cdef class {{iface_name|lower}}__iface__:
 
     def __dealloc__(self):
         del self.c_ptr
+
+
+hpat_spec.append({
+    'pyclass'     : {{inl}},
+    'c_name'      : '{{inl}}',
+})
 {% endmacro %}
 """
 
@@ -573,7 +597,7 @@ extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, tem
 {
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', pargs_call, dist=dist)}}
-    throw std::invalid_argument("no equivalent(s) for C++ template argument(s)");
+    throw std::invalid_argument("no equivalent(s) for C++ template argument(s) in mk_{{algo}}");
 {% else %}
     return new {{algo}}_manager({{', '.join(pargs_call)}}, distributed);
 {% endif %}
@@ -671,6 +695,16 @@ size_t c_my_procid()
 } // extern "C"
 #endif //_DIST_
 
+'''
+
+# generate a D4PSpec
+hpat_spec_template = '''
+hpat_spec.append({
+    'pyclass'     : {{algo}},
+    'c_name'      : '{{algo}}',
+    'params'      : [{{pargs_decl|hpat_spec(pargs_call, template_decl, 21)}}],
+    'input_types' : {{iargs_decl|hpat_input_spec(step_specs[0].inputdists if step_specs else None)}},
+})
 '''
 
 ##################################################################################
@@ -784,15 +818,47 @@ def cpp_decl(pargs_decl, pargs_call, template_decl, indent):
         return cppdecl(typ)
     return gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt)
 
+def d2hpat(arg, ty, fn):
+    def flt(arg, t):
+        rtype = d2cy(t)
+        if fn in hpat_types and arg in hpat_types[fn]:
+            return hpat_types[fn][arg]
+        return 'dtable_type' if 'NumericTablePtr' in rtype else rtype.replace('ModelPtr', 'model').replace(' ', '')
+    return [flt(x,y) for x,y in zip(arg, ty)] if isinstance(ty,list) else flt(arg, ty)
+
 def hpatdecl(ty):
     def flt(typ):
         if "TableOrFList" in typ:
             an = typ.rsplit('=', 1)[0].strip().rsplit(' ', 1)[-1]
             return 'double * ' + an + '_p, size_t ' + an + '_d1, size_t ' + an + '_d2'
         if 'Ptr' in typ:
-            typ = flat(typ, True)
+            typ = flat(typ)
         return typ.split('=')[0].replace('const', '').strip()
     return [flt(x) for x in ty] if isinstance(ty, list) else flt(ty)
+
+def hpat_input_spec(ty, dists):
+    def flt(typ, dist):
+        an = typ.rsplit('=', 1)[0].strip().rsplit(' ', 1)[-1]
+        if "TableOrFList" in typ:
+            return (an, 'dtable_type', dist)
+        if 'Ptr' in typ:
+            typ = flat(typ, False)
+        return (an, typ.replace('const', '').strip().split()[0].replace('ModelPtr', 'model'), dist)
+
+    if dists == None:
+        dists = ['REP'] * len(ty)
+    assert len(dists) == len(ty)
+    return [flt(x,y) for x,y in zip(ty, dists)]
+
+def hpat_spec(pargs_decl, pargs_call, template_decl, indent):
+    def flt(arg, typ):
+        if 'Ptr' in typ:
+            typ = flat(typ, False)
+        st = typ.split('=')
+        ref = '&' if '&' in st[0] else ('*' if '*' in st[0] else '')
+        ret = "'{}', '{}'".format(arg.replace('lambda', 'lambda_'), st[0].replace('const', '').strip().split()[0].lower()+ref)
+        return '({}, {})'.format(ret, st[1]) if len(st) > 1 else '({})'.format(ret)
+    return gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt)
 
 def sphinx(st):
     def flt(s):
@@ -824,7 +890,10 @@ jenv.filters['cy_decl'] = cy_decl
 jenv.filters['cy_call'] = cy_call
 jenv.filters['cppdecl'] = cppdecl
 jenv.filters['cpp_decl'] = cpp_decl
+jenv.filters['d2hpat'] = d2hpat
 jenv.filters['hpatdecl'] = hpatdecl
+jenv.filters['hpat_spec'] = hpat_spec
+jenv.filters['hpat_input_spec'] = hpat_input_spec
 jenv.filters['strip'] = lambda s, c : s.strip(c)
 jenv.filters['sphinx'] = sphinx
 
@@ -965,6 +1034,8 @@ class wrapper_gen(object):
             t = jenv.from_string(manager_wrapper_template)
             cpp_begin += t.render(**jparams) + '\n'
             if td['pargs'] == None:
+                t = jenv.from_string(hpat_spec_template)
+                pyx_begin += t.render(**jparams) + '\n'
                 # this is our actual API wrapper, only once per template (covering all its specializations)
                 # the parent class
                 t = jenv.from_string(parent_wrapper_template)

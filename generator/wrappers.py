@@ -130,11 +130,12 @@ SSpec = namedtuple('step_spec', ['input',        # array of input types
                                  'staticinput',  # array of inputs that come from user and are unpartitioned
                                  'name',         # step1Local, step2Local, step3Master, ...
                                  'construct',    # args to algo constructor if non-default
-                                 'params',       # indicates if init_paramters should be called
+                                 'params',       # indicates if init_parameters should be called
                                  'inputnames',   # array of names of input args, aligned with 'input'
+                                 'inputdists',   # array of distributions (hpat) of input args, aligned with 'input'
                              ]
 )
-SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-2) + (True, ['data'],)
+SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-3) + (True, ['data'], ['OneD'])
 
 # We list all algos with distributed versions here.
 # The indivdual dicts get passed to jinja as global vars (as-is).
@@ -165,7 +166,8 @@ has_dist = {
                              output     = 'services::SharedPtr< algorithms::multinomial_naive_bayes::training::PartialResult >',
                              iomanager  = 'PartialIOManager2',
                              setinput   = ['algorithms::classifier::training::data', 'algorithms::classifier::training::labels'],
-                             inputnames = ['data', 'labels']),
+                             inputnames = ['data', 'labels'],
+                             inputdists = ['OneD', 'OneD']),
                        SSpec(name      = 'step2Master',
                              input      = ['services::SharedPtr< algorithms::multinomial_naive_bayes::training::PartialResult >'],
                              output     = 'algorithms::multinomial_naive_bayes::training::ResultPtr',
@@ -178,6 +180,7 @@ has_dist = {
         'step_specs': [SSpec(name      = 'step1Local',
                              input       = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
                              inputnames  = ['data', 'dependentVariables'],
+                             inputdists  = ['OneD', 'OneD'],
                              output      = 'services::SharedPtr< algorithms::linear_regression::training::PartialResult >',
                              iomanager   = 'PartialIOManager2',
                              setinput    = ['algorithms::linear_regression::training::data', 'algorithms::linear_regression::training::dependentVariables'],),
@@ -198,6 +201,7 @@ has_dist = {
         'step_specs': [SSpec(name      = 'step1Local',
                              input       = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
                              inputnames  = ['data', 'dependentVariables'],
+                             inputdists  = ['OneD', 'OneD'],
                              output      = 'services::SharedPtr< algorithms::ridge_regression::training::PartialResult >',
                              iomanager   = 'PartialIOManager2',
                              setinput    = ['algorithms::ridge_regression::training::data', 'algorithms::ridge_regression::training::dependentVariables'],),
@@ -237,7 +241,6 @@ has_dist = {
                              setinput  = ['algorithms::kmeans::init::data'],
                              output    = 'algorithms::kmeans::init::PartialResultPtr',
                              iomanager = 'PartialIOManager',
-                             inputnames = ['data'],
                              construct = '_nClusters, nRowsTotal, offset'),
                        SSpec(name      = 'step2Master',
                              input     = ['algorithms::kmeans::init::PartialResultPtr'],
@@ -272,6 +275,7 @@ has_dist = {
                              input     = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
                              setinput  = ['algorithms::kmeans::data', 'algorithms::kmeans::inputCentroids'],
                              inputnames = ['data', 'inputCentroids'],
+                             inputdists  = ['OneD', 'REP'],
                              output    = 'algorithms::kmeans::PartialResultPtr',
                              iomanager = 'PartialIOManager2',
                              construct = '_nClusters, false',),
@@ -367,4 +371,13 @@ no_warn = {
     'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::svm': ['Result',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
-};
+}
+
+# we need to be more specific about numeric table types for the lowering phase in HPAT
+# We provide specific types here
+hpat_types = {
+    'kmeans_result': {
+        'assignments': 'itable_type',
+        'nIterations': 'itable_type',
+    },
+}
