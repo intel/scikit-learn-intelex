@@ -1,7 +1,13 @@
-# daal4py - Convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)
+# daal4py - A Convenient Python API to the Intel® Data Analytics Acceleration Library (Intel® DAAL)
 [![Build Status](https://travis-ci.com/IntelPython/daal4py.svg?branch=master)](https://travis-ci.com/IntelPython/daal4py)
 
-With this API your Python programs can use Intel(R) DAAL algorithms in just one line:
+A simplified API to Intel® DAAL that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel® DAAL for either direct usage or integration into one's own framework.  
+
+- [Documentation](https://intelpython.github.io/daal4py/)
+- [Source Code](https://github.com/IntelPython/daal4py/tree/master/src)
+- [About Intel® DAAL](https://software.intel.com/en-us/intel-daal)
+
+With this daal4py API, your Python programs can use Intel® DAAL algorithms in just one line:
 ```
 kmeans_init(data, 10, t_method="plusPlusDense")
 ```
