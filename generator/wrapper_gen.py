@@ -704,6 +704,7 @@ hpat_spec.append({
     'c_name'      : '{{algo}}',
     'params'      : [{{pargs_decl|hpat_spec(pargs_call, template_decl, 21)}}],
     'input_types' : {{iargs_decl|hpat_input_spec(step_specs[0].inputdists if step_specs else None)}},
+    'result_dist' : {{"'REP'" if step_specs else "'OneD'"}}
 })
 '''
 
@@ -846,7 +847,7 @@ def hpat_input_spec(ty, dists):
         return (an, typ.replace('const', '').strip().split()[0].replace('ModelPtr', 'model'), dist)
 
     if dists == None:
-        dists = ['REP'] * len(ty)
+        dists = ['REP' if 'model' in x else 'OneD' for x in ty]
     assert len(dists) == len(ty)
     return [flt(x,y) for x,y in zip(ty, dists)]
 
