@@ -1,0 +1,38 @@
+{% set version = time.strftime('0.2018.%Y%m%d.%H%M') %}
+{% set buildnumber = 1 %}
+
+package:
+    name: daal4py
+    version: {{version}}
+
+source:
+    path: ..
+    #git_url: https://github.com/IntelPython/daal4py.git
+
+requirements:
+    build:
+        - python
+        - setuptools
+        - numpy >=1.13
+        - tbb-devel
+        - cnc >=1.2.300
+        - daal-devel >=2018.0.1
+        - cython
+        - jinja2
+    run:
+        - python
+        - numpy >=1.13
+        - tbb
+        - cnc >=1.2.300
+        - daal >=2018.0.1
+
+build:
+    number: {{buildnumber}}
+
+test:
+    imports:
+        - daal4py
+
+about:
+    license: Apache 2.0
+    license_file: LICENSE
