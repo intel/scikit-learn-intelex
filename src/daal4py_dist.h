@@ -45,7 +45,7 @@ struct IOManager
 // this serializes our entire batch/final result
     static result_type getResult(A & algo)
     {
-        return algo.getResult();
+        return daal::services::staticPointerCast<typename result_type::ElementType>(algo.getResult());
     }
     static bool needsFini()
     {
@@ -103,7 +103,7 @@ struct PartialIOManager
 
     static result_type getResult(A & algo)
     {
-        return algo.getPartialResult();
+        return daal::services::staticPointerCast<typename result_type::ElementType>(algo.getPartialResult());
     }
     static bool needsFini()
     {

@@ -44,7 +44,7 @@ if __name__ == "__main__":
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
-    # The prediction reulst provides prediction
+    # The prediction result provides prediction
     assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
 
     print('All looks good!')

@@ -16,6 +16,7 @@
 
 #define NO_IMPORT_ARRAY
 #include "daal4py.h"
+#include <cstdint>
 
 // ************************************************************************************
 // ************************************************************************************
@@ -279,66 +280,87 @@ TableOrFList::TableOrFList(PyObject * input)
     }
 }
 
+template<typename T, int NPTYPE>
+static PyObject * _make_nda(daal::data_management::NumericTablePtr * ptr)
+{
+    auto dptr = dynamic_cast< daal::data_management::HomogenNumericTable< T >* >((*ptr).get());
+    if(dptr) {
+        npy_intp dims[2] = {static_cast<npy_intp>((*ptr)->getNumberOfRows()), static_cast<npy_intp>((*ptr)->getNumberOfColumns())};
+        daal::services::SharedPtr< T > data_tmp(dptr->getArraySharedPtr());
+        PyObject* obj = PyArray_SimpleNewFromData(2, dims, NPTYPE, (void*)data_tmp.get());
+        if (!obj) throw std::invalid_argument("conversion to numpy array failed");
+        set_sp_base((PyArrayObject*)obj, data_tmp);
+        return obj;
+    }
+    return NULL;
+}
 
 PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
 {
     if(!ptr || !(*ptr).get()) return Py_None;
-    npy_intp dims[2] = {static_cast<npy_intp>((*ptr)->getNumberOfRows()), static_cast<npy_intp>((*ptr)->getNumberOfColumns())};
-    {
-        auto dptr = dynamic_cast< daal::data_management::HomogenNumericTable< double >* >((*ptr).get());
-        if(dptr) {
-            daal::services::SharedPtr< double > data_tmp(dptr->getArraySharedPtr());
-            PyObject* obj = PyArray_SimpleNewFromData(2, dims, NPY_FLOAT64, (void*)data_tmp.get());
-            if (!obj) throw std::invalid_argument("conversion to numpy array failed");
-            set_sp_base((PyArrayObject*)obj, data_tmp);
-            return obj;
-        }
-    }
-    {
-        auto dptr = dynamic_cast< daal::data_management::HomogenNumericTable< int >* >((*ptr).get());
-        if(dptr) {
-            daal::services::SharedPtr< int > data_tmp(dptr->getArraySharedPtr());
-            PyObject* obj = PyArray_SimpleNewFromData(2, dims, NPY_INT, (void*)data_tmp.get());
-            if (!obj) throw std::invalid_argument("conversion to numpy array failed");
-            set_sp_base((PyArrayObject*)obj, data_tmp);
-            return obj;
-        }
-    }
-    {
-        auto dptr = dynamic_cast< daal::data_management::HomogenNumericTable< float >* >((*ptr).get());
-        if(dptr) {
-            daal::services::SharedPtr< float > data_tmp(dptr->getArraySharedPtr());
-            PyObject* obj = PyArray_SimpleNewFromData(2, dims, NPY_FLOAT32, (void*)data_tmp.get());
-            if (!obj) throw std::invalid_argument("conversion to numpy array failed");
-            set_sp_base((PyArrayObject*)obj, data_tmp);
-            return obj;
-        }
-    }
+
+    PyObject * res = NULL;
+
+    if((res = _make_nda<double,   NPY_FLOAT64>(ptr)) != NULL) return res;
+    if((res = _make_nda<float,    NPY_FLOAT32>(ptr)) != NULL) return res;
+    if((res = _make_nda<int32_t,  NPY_INT32>  (ptr)) != NULL) return res;
+    if((res = _make_nda<uint32_t, NPY_UINT32> (ptr)) != NULL) return res;
+    if((res = _make_nda<int64_t,  NPY_INT64>  (ptr)) != NULL) return res;
+    if((res = _make_nda<uint64_t, NPY_UINT64> (ptr)) != NULL) return res;
+
     throw std::invalid_argument("Encountered unsupported table type.");
+}
+
+template<typename T, int NPTYPE>
+static daal::data_management::NumericTable * _make_nt(PyObject * nda)
+{
+    int is_new_object = 0;
+    PyArrayObject* array = obj_to_array_contiguous_allow_conversion(nda, NPTYPE, &is_new_object);
+    if (!array || !require_dimensions(array,2) || !require_contiguous(array) || !require_native(array)) {
+        throw std::invalid_argument("Conversion to DAAL NumericTable failed");
+    }
+    // we provide the SharedPtr with a deleter which decrements the pyref
+    daal::data_management::NumericTable * ptr = new data_management::HomogenNumericTable<T>(daal::services::SharedPtr<T>((T*)array_data(array),
+                                                                                                                         NumpyDeleter(array)),
+                                                                                            (size_t)array_size(array,1),
+                                                                                            (size_t)array_size(array,0));
+    // we need it increment the ref-count if we use the input array in-place
+    // if we copied/converted it we already own our own reference
+    if((PyObject*)array == nda) Py_INCREF(array);
+
+    return ptr;
 }
 
 daal::data_management::NumericTablePtr * make_nt(PyObject * nda)
 {
-    auto ret = new daal::data_management::NumericTablePtr();
     if(nda == Py_None) {
-        (*ret).reset();
+        new daal::data_management::NumericTablePtr();
     } else {
-        int is_new_object = 0;
-        PyArrayObject* array = obj_to_array_contiguous_allow_conversion(nda, NPY_FLOAT64, &is_new_object);
-        if (!array || !require_dimensions(array,2) || !require_contiguous(array) || !require_native(array)) {
-            throw std::invalid_argument("Conversion to DAAL NumericTable failed");
+        daal::data_management::NumericTable * ptr = NULL;
+
+        switch(array_type(nda)) {
+        case NPY_UINT32:
+            ptr = _make_nt<uint32_t, NPY_UINT32>(nda);
+            break;
+        case NPY_INT32:
+            ptr = _make_nt<int32_t, NPY_INT32>(nda);
+            break;
+        case NPY_UINT64:
+            ptr = _make_nt<uint64_t, NPY_UINT64>(nda);
+            break;
+        case NPY_INT64:
+            ptr = _make_nt<int64_t, NPY_INT64>(nda);
+            break;
+        case NPY_FLOAT32:
+            ptr = _make_nt<float, NPY_FLOAT32>(nda);
+            break;
+        default:
+            ptr = _make_nt<double, NPY_FLOAT64>(nda);
         }
-        // we provide the SharedPtr with a deleter which decrements the pyref
-        (*ret).reset(new data_management::HomogenNumericTable<double>(daal::services::SharedPtr<double>((double*)array_data(array),
-                                                                                                        NumpyDeleter(array)),
-                                                                      (size_t)array_size(array,1),
-                                                                      (size_t)array_size(array,0)));
-        // we need it increment the ref-count if we use the input array in-place
-        // if we copied/converted it we already own our own reference
-        if((PyObject*)array == nda) Py_INCREF(array);
+
+        return new daal::data_management::NumericTablePtr(ptr);
     }
 }
-
 
 const daal::data_management::NumericTablePtr readCSV(const std::string& fname)
 {

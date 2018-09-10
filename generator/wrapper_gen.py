@@ -43,6 +43,7 @@
 ###############################################################################
 # FIXME remove remaining args/code for distributed computation if none available
 # FIXME a revision from scratch would be helpful...
+# FIXME GC of Tables etc (shared-pointer objcetss are new'ed!)
 
 import jinja2
 from collections import OrderedDict
@@ -183,12 +184,12 @@ cdef class {{flatname}}:
     def __dealloc__(self):
         del self.c_ptr
 {% for m in enum_gets+named_gets %}
-{% set rtype = m[2]|d2cy if m in enum_gets else m[0]|d2cy %}
+{% set rtype = m[2]|d2cy(False) if m in enum_gets else m[0]|d2cy(False) %}
 
     @property
     def {{m[1]}}(self):
-{% if 'Ptr' in rtype and 'NumericTablePtr' not in rtype %}
-{% set frtype=(rtype.strip(' *&')|flat|strip(' *')).replace('Ptr', '')|lower %}
+{% if ('Ptr' in rtype and 'NumericTablePtr' not in rtype) or '__iface__' in rtype %}
+{% set frtype=(rtype.strip(' *&')|flat(False)|strip(' *')).replace('Ptr', '')|lower %}
         ':type: {{frtype}}'
         res = {{frtype}}()
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr)
@@ -297,19 +298,19 @@ gen_typedefs_macro = """
 
 # macro for generate an algorithm instance with name algo$suffix
 # This can also be used for steps of distributed mode
-# set sp=True if you want a shared pointer
+# set member=True if you want a init a member var (shared pointer)
 gen_inst_algo = """
-{% macro gen_inst(ns, params_req, params_opt, params_get, create, suffix="", step_spec=None, sp=False) %}
+{% macro gen_inst(ns, params_req, params_opt, params_get, create, suffix="", step_spec=None, member=False) %}
 {% set algo = 'algo' + suffix %}
 {% if step_spec.construct %}
 {% set ctor = create + '(' + step_spec.construct + ')' %}
 {% elif params_req|length > 0  %}
-{% set ctor = create + ('(_' + ', _'.join(params_req.values()) + ')').replace('(_)', '()') %}
+{% set ctor = create + ('(to_daal(_' + '), to_daal(_'.join(params_req.values()) + '))') %}
 {% else %}
 {% set ctor = create + '()' %}
 {% endif %}
-{% if sp %}
-services::SharedPtr< {{algo}}_type > algo{{suffix}}({{'' if create else 'new'}} {{algo}}_type{{ctor}});
+{% if member %}
+_algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
 {% elif create %}
 auto {{algo}} = {{algo}}_type{{ctor}};
 {% else %}
@@ -317,7 +318,7 @@ auto {{algo}}_obj = {{algo}}_type{{ctor}};
         {{algo}}_type * {{algo}} = &{{algo}}_obj;
 {% endif %}
 {% if (step_spec == None or step_spec.params) and params_get and params_opt|length %}
-        init_parameters({{algo}}->{{params_get}});
+        init_parameters({{('_' if member else '')+algo}}->{{params_get}});
 {% else %}
         // skipping parameter initialization
 {% endif %}
@@ -353,9 +354,10 @@ gen_compute_macro = gen_inst_algo + """
         if(! use_default(_{{ia[1]}})) algo{{suffix}}->input.set({{ia[0]}}, to_daal(_{{ia[1]}}));
 {% endfor %}{% endif %}
 {% else %}
-()
+(bool setup_only = false)
     {
-        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix, step_spec)}}
+        auto algo{{suffix}} = _algo{{suffix}};
+
 {% for ia in input_args %}
 {% if "TableOrFList" in ia[2] %}
         if(!_{{ia[1]}}->table && _{{ia[1]}}->file.size()) _{{ia[1]}}->table = readCSV(_{{ia[1]}}->file);
@@ -364,6 +366,8 @@ gen_compute_macro = gen_inst_algo + """
         if(_{{ia[1]}}) algo{{suffix}}->input.set({{ia[0]}}, to_daal(_{{ia[1]}}));
 {% endif %}
 {% endfor %}
+
+        if(setup_only) return typename iomb_type::result_type();
 {% endif %}
 
         algo{{suffix}}->compute();
@@ -373,7 +377,7 @@ gen_compute_macro = gen_inst_algo + """
         }
 {% endif %}
 {% if tonative %}
-        auto daalres = {{iom}}::getResult(*algo{{suffix}});
+        typename iomb_type::result_type daalres({{iom}}::getResult(*algo{{suffix}});
         int gc = 0;
         NTYPE res = native_type(daalres, gc);
         TMGC(gc);
@@ -391,7 +395,8 @@ struct {{algo}}__iface__ : public {{iface[0] if iface[0] else 'algo_manager'}}__
 {
     bool _distributed;
     {{algo}}__iface__(bool d=false) : _distributed(d) {}
-    virtual {{result_map.class_type}} * compute({{(',\n'+' '*(23+(result_map.class_type|length))).join(iargs_decl|cppdecl)}}) {assert(false);}
+    virtual {{result_map.class_type}} * compute({{(',\n'+' '*(23+(result_map.class_type|length))).join(iargs_decl|cppdecl)}},
+                                                bool setup_only = false) {assert(false);}
 };
 """
 
@@ -416,13 +421,17 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 {% endfor %}
 {% for i in iargs_decl %}    {{' _'.join((i|cppdecl(True)).replace('&', '').strip().replace('__iface__ *', '__iface__::daal_type').rsplit(' ', 1))}};
 {% endfor %}
+    daal::services::SharedPtr< algob_type > _algob;
 
     {{algo}}_manager({{(',\n'+' '*(13+algo|length)).join((pargs_decl + ['bool distributed = false'])|cppdecl)}})
         : {{algo}}__iface__(distributed)
 {% for i in pargs_call %}
         , _{{i}}({{'to_daal('+i+')' if '__iface__' in (pargs_decl[loop.index0]|cppdecl(True)) else i}})
 {% endfor %}
-    {}
+        , _algob()
+    {
+        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="b", member=True)}}
+    }
 
 #ifdef _DIST_
     {{algo}}_manager() :
@@ -430,7 +439,10 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 {% for i in args_call %}
         , _{{i}}()
 {% endfor %}
-    {}
+        , _algob()
+    {
+        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="b", member=True)}}
+    }
 #endif
 
 private:
@@ -447,8 +459,7 @@ private:
 {% for ifc in iface if ifc %}
     virtual {{ifc}}__iface__::{{ifc}}Ptr_type get_ptr()
     {
-        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="b", sp=True)}}
-        return algob;
+        return _algob;
     }
 {% endfor %}
 
@@ -489,16 +500,17 @@ public:
 #endif
 
 public:
-    typename iomb_type::result_type * compute({{(',\n'+' '*46).join(iargs_decl|cppdecl)}})
+    typename iomb_type::result_type * compute({{(',\n'+' '*46).join(iargs_decl|cppdecl)}},
+                                              bool setup_only = false)
     {
 {% for i in iargs_call %}        _{{i}} = {{i}};
 {% endfor %}
 
 #ifdef _DIST_
-        typename iomb_type::result_type daalres = {{'_distributed ? distributed() : batch();' if dist else 'batch();'}}
+        typename iomb_type::result_type daalres = {{'_distributed ? distributed() : batch(setup_only);' if dist else 'batch(setup_only);'}}
         return new typename iomb_type::result_type(daalres);
 #else
-        return new typename iomb_type::result_type(batch());
+        return new typename iomb_type::result_type(batch(setup_only));
 #endif
     }
 };
@@ -529,11 +541,12 @@ parent_wrapper_template = """
 cdef extern from "daal4py.h":
     # declare the C++ equivalent of the manager__iface__ class, providing de-templatized access to compute
     cdef cppclass c_{{algo}}_manager__iface__{{'(c_'+iface[0]+'__iface__)' if iface[0] else ''}}:
-        {{result_map.class_type|flat}} compute({{(',\n'+' '*(29+algo|length)).join(iargs_decl|d2ext)}}) except +
+        {{result_map.class_type|flat}} compute({{(',\n'+' '*(29+algo|length)).join(iargs_decl|d2ext)}},
+        {{' '*(21+algo|length)}}const bool setup_only) except +
 
 
 cdef extern from "daal4py_cpp.h":
-    # declare the C++ construction function. Returns the manager__iface__ for access to de-templatized compute
+    # declare the C++ construction function. Returns the manager__iface__ for access to de-templatized constructor
     cdef c_{{algo}}_manager__iface__ * mk_{{algo}}({{pargs_decl|cy_ext_decl(pargs_call, template_decl, 45+2*(algo|length))}}) except +
 
 
@@ -565,9 +578,23 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         res = {{result_map.class_type.replace('Ptr', '')|d2cy(False)|lower}}()
         res.c_ptr = deref(algo).compute(
 {%- for a in iargs_call -%}
-{{('' if loop.first else ' '*47) + a|cycall(iargs_decl[loop.index0]) + (')' if loop.last else ',')}}
+{{('' if loop.first else ' '*40) + a|cycall(iargs_decl[loop.index0]) + (', False)' if loop.last else ',')}}
 {% endfor %}
         return res
+
+{% if add_setup %}
+    # setup forwards to the C++ de-templatized manager__iface__::compute(..., setup_only=true)
+    def setup(self,
+{% for a in iargs_call %}
+{{' '*14 + a|cydecl(args_decl[loop.index0]) + ('):' if loop.last else ',')}}
+{% endfor %}
+        algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
+        deref(algo).compute(
+{%- for a in iargs_call -%}
+{{('' if loop.first else ' '*28) + a|cycall(iargs_decl[loop.index0]) + (', True)' if loop.last else ',')}}
+{% endfor %}
+        return None
+{% endif %}
 """
 
 # generates the C++ algorithm construction function
@@ -731,6 +758,7 @@ def flat(t, cpp=True):
             return ('c_' if cpp and typ.endswith('__iface__') else '') + r + (' *' if cpp and any(typ.endswith(x) for x in ['__iface__', 'Ptr']) else '')
         ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'services::SharedPtr<kernel_function::KernelIface>')
         ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', 'services::SharedPtr<engines::BatchBase>', ty)
+        ty = re.sub(r'(daal::)?(algorithms::)?(sum_of_functions::)?BatchPtr', 'services::SharedPtr<sum_of_functions::Batch>', ty)
         ty = re.sub(r'(daal::)?services::SharedPtr<([^>]+)>', r'\2__iface__', ty)
         return ' '.join([__flat(x).replace('const', '') for x in ty.split(' ')])
     return [_flat(x) for x in t] if isinstance(t,list) else _flat(t)
@@ -1003,6 +1031,7 @@ class wrapper_gen(object):
 
         jparams = cfg['params'].copy()
         jparams['create'] = cfg['create']
+        jparams['add_setup'] = cfg['add_setup']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
         jparams['pargs_decl'] = jparams['decl_req'] + jparams['decl_opt']

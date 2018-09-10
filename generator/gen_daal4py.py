@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header
-from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks
+from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks, add_setup
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 
 try:
@@ -394,7 +394,7 @@ class cython_interface(object):
             if hlt:
                 if hlt[1] in ['stdtype', 'enum', 'class']:
                     for e in self.namespace_dict[ins].enums[inp]:
-                        if not any(e in x for x in explist):
+                        if not any(e in x for x in explist) and (ins not in ignore or e not in ignore[ins]):
                             explist.append((ins, e, hlt[0]))
                 else:
                     print("// Warning: ignoring " + ns + " " + str(hlt))
@@ -682,7 +682,8 @@ class cython_interface(object):
             'sparams': tdecl,
             'model_typemap': self.prepare_modelmaps(ns),
             'result_typemap': self.prepare_resultmaps(ns),
-            'create': '::create' if '::'.join([ns, mode]) in no_constructor else ''
+            'create': '::create' if '::'.join([ns, mode]) in no_constructor else '',
+            'add_setup': True if ns in add_setup else False,
         }
         if ns in has_dist:
             retjp['dist'] = has_dist[ns]
@@ -812,6 +813,7 @@ def gen_daal4py(daalroot, outdir, warn_all=False):
                                             'decision_tree',
                                             'decision_forest',
                                             'ridge_regression',
+                                            'optimization_solver',
     ])
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:

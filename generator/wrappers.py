@@ -54,16 +54,42 @@ required = {
     'algorithms::decision_forest::classification::prediction': {
         'Batch': [('nClasses', 'size_t')],
     },
+    'algorithms::optimization_solver::mse': {
+        'Batch': [('numberOfTerms', 'size_t')],
+    },
+    'algorithms::optimization_solver::logistic_loss': {
+        'Batch': [('numberOfTerms', 'size_t')],
+    },
+    'algorithms::optimization_solver::cross_entropy_loss': {
+        'Batch': [('nClasses', 'size_t'), ('numberOfTerms', 'size_t')],
+    },
+    'algorithms::optimization_solver::sgd': {
+        'Batch': [('function', 'algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+    },
+    'algorithms::optimization_solver::lbfgs': {
+        'Batch': [('function', 'algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+    },
+    'algorithms::optimization_solver::adagrad': {
+        'Batch': [('function', 'algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+    },
 }
 
 # Some algorithms have no public constructors and need to be instantiated with 'create'
 # (for whatever reason)
 no_constructor = [
     'algorithms::engines::mt19937::Batch',
+    'algorithms::engines::mt2203::Batch',
     'algorithms::engines::mcg59::Batch',
 ]
 
-# Some parameters/inputs are not used when C++ datastrcutures are shared across
+# Some algorithms require a setup function, to provide input without actual compute
+add_setup = [
+    'algorithms::optimization_solver::mse',
+    'algorithms::optimization_solver::logistic_loss',
+    'algorithms::optimization_solver::cross_entropy_loss',
+]
+
+# Some parameters/inputs are not used when C++ datastructures are shared across
 # different algos (like training and prediction)
 # List them here for the 'ignoring' algos.
 # Also lists input set/gets to ignore
@@ -75,20 +101,27 @@ ignore = {
     'algorithms::gbt::regression::training': ['dependentVariables'],
     'algorithms::gbt::classification::training': ['weights',],
     'algorithms::decision_tree::classification::training': ['weights',],
-    'algorithms::decision_forest::classification::training': ['weights',],
-    'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId',],
+    'algorithms::decision_forest::classification::training': ['weights', 'updatedEngine',],
+    'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', 'updatedEngine',],
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',],
     'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',],
+    'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
+                                             'pastUpdateVector', 'pastWorkValue'],
+    'algorithms::optimization_solver::lbfgs': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
+                                               'correctionPairs', 'correctionIndices', 'averageArgumentLIterations',],
+    'algorithms::optimization_solver::adagrad': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
+                                                 'gradientSquareSum'],
+    'algorithms::optimization_solver::objective_function': ['argument',],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
-# Mapping iface name to fully qualified DAAL type as shared pointer
+# Mapping iface class to fully qualified DAAL type as shared pointer
 ifaces = {
     'kernel_function::KernelIface': 'daal::algorithms::kernel_function::KernelIfacePtr',
     'classifier::prediction::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::prediction::Batch>',
     'classifier::training::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::training::Batch>',
     'engines::BatchBase': 'daal::algorithms::engines::EnginePtr',
-#    'engines::BatchBase': 'daal::services::SharedPtr<daal::algorithms::engines::BatchBase>',
+    'optimization_solver::sum_of_functions::Batch': 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr',
 }
 
 # By default input arguments have no default value (e.g. they are required).
@@ -371,6 +404,7 @@ no_warn = {
     'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::svm': ['Result',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
+    'algorithms::optimization_solver': ['Result',],
 }
 
 # we need to be more specific about numeric table types for the lowering phase in HPAT
