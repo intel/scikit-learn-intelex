@@ -18,15 +18,6 @@
 #define _HLAPI_H_INCLUDED_
 
 #include <daal.h>
-#include <algorithms/optimization_solver/objective_function/logistic_loss_batch.h>
-#include <algorithms/optimization_solver/objective_function/logistic_loss_types.h>
-#include <algorithms/optimization_solver/objective_function/cross_entropy_loss_batch.h>
-#include <algorithms/optimization_solver/objective_function/cross_entropy_loss_types.h>
-#include <algorithms/engines/mcg59/mcg59.h>
-#include <algorithms/engines/mcg59/mcg59_types.h>
-#include <algorithms/engines/engine_family.h>
-#include <algorithms/engines/mt2203/mt2203.h>
-#include <algorithms/engines/mt2203/mt2203_types.h>
 
 #include <iostream>
 #include <stdexcept>

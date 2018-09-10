@@ -148,8 +148,9 @@ class cython_interface(object):
         """
         for (dirpath, dirnames, filenames) in os.walk(self.include_root):
             for filename in filenames:
-                if filename.endswith('.h') and not any(filename.endswith(x) for x in cython_interface.ignore_files):
+                if filename.endswith('.h') and not 'neural_networks' in dirpath and not any(filename.endswith(x) for x in cython_interface.ignore_files):
                     fname = jp(dirpath,filename)
+                    print('reading ' +  fname)
                     with open(fname, "r") as header:
                         parsed_data = parse_header(header, cython_interface.ignores)
 
