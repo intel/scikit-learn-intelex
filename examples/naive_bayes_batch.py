@@ -16,32 +16,34 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Linear Regression example for shared memory systems
+# daal4py Naive Bayes Classification example for shared memory systems
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
 
-    infile = "./data/batch/linear_regression_train.csv"
+    # input data file
+    infile = "./data/batch/naivebayes_train_dense.csv"
 
-    # Configure a Linear regression training object
-    train_algo = d4p.linear_regression_training()
+    # Configure a training object (20 classes)
+    talgo = d4p.multinomial_naive_bayes_training(20)
     
-    # Read data. Let's have 9 independent, and 2 dependent variables (for each observation)
-    indep_data = loadtxt(infile, delimiter=',', usecols=range(9))
-    dep_data   = loadtxt(infile, delimiter=',', usecols=range(9,11))
-    # Now train/compute, the result provides the model for prediction
-    train_result = train_algo.compute(indep_data, dep_data)
+    # Read data. Let's use 20 features per observation
+    data   = loadtxt(infile, delimiter=',', usecols=range(20))
+    labels = loadtxt(infile, delimiter=',', usecols=range(20,21))
+    labels.shape = (labels.size, 1) # must be a 2d array
+    tresult = talgo.compute(data, labels)
 
     # Now let's do some prediction
-    predict_algo = d4p.linear_regression_prediction()
+    palgo = d4p.multinomial_naive_bayes_prediction(20)
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/linear_regression_test.csv", delimiter=',', usecols=range(9))
+    pdata = loadtxt("./data/batch/naivebayes_test_dense.csv", delimiter=',', usecols=range(20))
     # now predict using the model from the training above
-    predict_result = predict_algo.compute(pdata, train_result.model)
+    presult = palgo.compute(pdata, tresult.model)
 
-    # The prediction result provides prediction
-    assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
+    # Prediction result provides prediction
+    assert(presult.prediction.shape == (pdata.shape[0], 1))
 
     print('All looks good!')
+

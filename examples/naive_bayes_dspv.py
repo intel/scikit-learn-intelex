@@ -16,33 +16,40 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Gradient Bossting Classification example for shared memory systems
+# daal4py Naive Bayes Classification example for distributed memory systems; Distributed Single Process View mode
+# run like this:
+#    mpirun -genv DIST_CNC=MPI -n 4 python ./naive_bayes_dspv.py
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
 
-    # input data file
-    infile = "./data/batch/df_classification_train.csv"
+    # Initialize SPV mode
+    d4p.daalinit()
 
-    # Configure a training object (5 classes)
-    train_algo = d4p.gbt_classification_training(5)
+    # input data file
+    infile = "./data/batch/naivebayes_train_dense.csv"
+
+    # Configure a training object (20 classes)
+    talgo = d4p.multinomial_naive_bayes_training(20)
     
-    # Read data. Let's use 3 features per observation
-    data   = loadtxt(infile, delimiter=',', usecols=range(3))
-    labels = loadtxt(infile, delimiter=',', usecols=range(3,4))
+    # Read data. Let's use 20 features per observation
+    data   = loadtxt(infile, delimiter=',', usecols=range(20))
+    labels = loadtxt(infile, delimiter=',', usecols=range(20,21))
     labels.shape = (labels.size, 1) # must be a 2d array
-    train_result = train_algo.compute(data, labels)
+    tresult = talgo.compute(data, labels)
 
     # Now let's do some prediction
-    predict_algo = d4p.gbt_classification_prediction(5)
+    palgo = d4p.multinomial_naive_bayes_prediction(20)
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/df_classification_test.csv", delimiter=',', usecols=range(3))
+    pdata = loadtxt("./data/batch/naivebayes_test_dense.csv", delimiter=',', usecols=range(20))
     # now predict using the model from the training above
-    predict_result = predict_algo.compute(pdata, train_result.model)
+    presult = palgo.compute(pdata, tresult.model)
 
     # Prediction result provides prediction
-    assert(predict_result.prediction.shape == (pdata.shape[0], 1))
+    assert(presult.prediction.shape == (pdata.shape[0], 1))
 
     print('All looks good!')
+    d4p.daalfini()
+

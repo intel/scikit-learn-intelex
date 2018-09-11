@@ -75,7 +75,7 @@ def get_sdl_cflags():
 
 def get_sdl_ldflags():
     if IS_LIN:
-        return ['-Wl,-z,noexecstack', '-Wl,-z,relro', '-Wl,-z,now',]# '-s']
+        return ['-Wl,-z,noexecstack', '-Wl,-z,relro', '-Wl,-z,now',] # '-s']
     elif IS_MAC:
         return []
     elif IS_WIN:
@@ -122,7 +122,7 @@ def getpyexts():
 
     return cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
-                                 os.path.abspath('src/tree_visitor.cpp'),
+#                                 os.path.abspath('src/tree_visitor.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')],
                                 include_dirs=include_dir_plat + [np.get_include()],
@@ -146,7 +146,6 @@ def gen_pyx(odir):
     gen_daal4py(daal_root, odir)
 
 gen_pyx(os.path.abspath('./build'))
-
 
 # daal setup
 setup(  name        = "daal4py",

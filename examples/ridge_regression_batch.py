@@ -16,31 +16,28 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Decision Forest Regression example for shared memory systems
+# daal4py Ridge Regression example for shared memory systems
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
 
-    infile = "./data/batch/df_regression_train.csv"
+    infile = "./data/batch/linear_regression_train.csv"
 
-    # Configure a Linear regression training object
-    train_algo = d4p.decision_forest_regression_training(nTrees=100, varImportance='MDA_Raw', bootstrap=True,
-                                                    resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation')
+    # Configure a Ridge regression training object
+    train_algo = d4p.ridge_regression_training()
     
-    # Read data. Let's have 13 independent, and 1 dependent variables (for each observation)
-    indep_data = loadtxt(infile, delimiter=',', usecols=range(13))
-    dep_data   = loadtxt(infile, delimiter=',', usecols=range(13,14))
-    dep_data.shape = (dep_data.size, 1) # must be a 2d array
+    # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
+    indep_data = loadtxt(infile, delimiter=',', usecols=range(10))
+    dep_data   = loadtxt(infile, delimiter=',', usecols=range(10,12))
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
-    # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
     # Now let's do some prediction
-    predict_algo = d4p.decision_forest_regression_prediction()
+    predict_algo = d4p.ridge_regression_prediction()
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/df_regression_test.csv", delimiter=',', usecols=range(13))
+    pdata = loadtxt("./data/batch/linear_regression_test.csv", delimiter=',', usecols=range(10))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

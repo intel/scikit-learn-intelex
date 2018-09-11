@@ -18,6 +18,7 @@
 #define _HLAPI_H_INCLUDED_
 
 #include <daal.h>
+
 #include <iostream>
 #include <stdexcept>
 #include <vector>

@@ -16,35 +16,41 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Decision Forest Regression example for shared memory systems
+# daal4py Linear Regression example for distributed memory systems; Distributed Single Process View mode
+# run like this:
+#    mpirun -genv DIST_CNC=MPI -n 4 python ./linreg_dspv.py
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
 
-    infile = "./data/batch/df_regression_train.csv"
+    # Initialize SPV mode
+    d4p.daalinit()
+    
+    # We need partioned input data, like from multiple files
+    infiles = ["./data/distributed/linear_regression_train_" + str(x) + ".csv" for x in range(1,5)]
 
     # Configure a Linear regression training object
-    train_algo = d4p.decision_forest_regression_training(nTrees=100, varImportance='MDA_Raw', bootstrap=True,
-                                                    resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation')
+    train_algo = d4p.linear_regression_training(distributed=True)
     
-    # Read data. Let's have 13 independent, and 1 dependent variables (for each observation)
-    indep_data = loadtxt(infile, delimiter=',', usecols=range(13))
-    dep_data   = loadtxt(infile, delimiter=',', usecols=range(13,14))
-    dep_data.shape = (dep_data.size, 1) # must be a 2d array
+    # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
+    indep_data = [loadtxt(x, delimiter=',', usecols=range(10)) for x in infiles]
+    dep_data   = [loadtxt(x, delimiter=',', usecols=range(10,12)) for x in infiles]
+    # Note, providing a list of files instead also distributes the file read!
+    
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
-    # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
-    # Now let's do some prediction
-    predict_algo = d4p.decision_forest_regression_prediction()
+    # Now let's do some prediction (it runs only on a single node)
+    predict_algo = d4p.linear_regression_prediction(distributed=True)
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/df_regression_test.csv", delimiter=',', usecols=range(13))
+    pdata = loadtxt("./data/distributed/linear_regression_test.csv", delimiter=',', usecols=range(10))
     # now predict using the model from the training above
-    predict_result = predict_algo.compute(pdata, train_result.model)
-
+    predict_result = d4p.linear_regression_prediction().compute(pdata, train_result.model)
+    
     # The prediction result provides prediction
-    assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
+    assert predict_result.prediction.shape == (pdata.shape[0], dep_data[0].shape[1])
 
     print('All looks good!')
+    d4p.daalfini()

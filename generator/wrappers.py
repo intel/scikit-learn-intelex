@@ -54,16 +54,42 @@ required = {
     'algorithms::decision_forest::classification::prediction': {
         'Batch': [('nClasses', 'size_t')],
     },
+    'algorithms::optimization_solver::mse': {
+        'Batch': [('numberOfTerms', 'size_t')],
+    },
+    'algorithms::optimization_solver::logistic_loss': {
+        'Batch': [('numberOfTerms', 'size_t')],
+    },
+    'algorithms::optimization_solver::cross_entropy_loss': {
+        'Batch': [('nClasses', 'size_t'), ('numberOfTerms', 'size_t')],
+    },
+    'algorithms::optimization_solver::sgd': {
+        'Batch': [('function', 'algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+    },
+    'algorithms::optimization_solver::lbfgs': {
+        'Batch': [('function', 'algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+    },
+    'algorithms::optimization_solver::adagrad': {
+        'Batch': [('function', 'algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+    },
 }
 
 # Some algorithms have no public constructors and need to be instantiated with 'create'
 # (for whatever reason)
 no_constructor = [
     'algorithms::engines::mt19937::Batch',
+    'algorithms::engines::mt2203::Batch',
     'algorithms::engines::mcg59::Batch',
 ]
 
-# Some parameters/inputs are not used when C++ datastrcutures are shared across
+# Some algorithms require a setup function, to provide input without actual compute
+add_setup = [
+    'algorithms::optimization_solver::mse',
+    'algorithms::optimization_solver::logistic_loss',
+    'algorithms::optimization_solver::cross_entropy_loss',
+]
+
+# Some parameters/inputs are not used when C++ datastructures are shared across
 # different algos (like training and prediction)
 # List them here for the 'ignoring' algos.
 # Also lists input set/gets to ignore
@@ -75,19 +101,28 @@ ignore = {
     'algorithms::gbt::regression::training': ['dependentVariables'],
     'algorithms::gbt::classification::training': ['weights',],
     'algorithms::decision_tree::classification::training': ['weights',],
-    'algorithms::decision_forest::classification::training': ['weights',],
-    'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId',],
+    'algorithms::decision_forest::classification::training': ['weights', 'updatedEngine',],
+    'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', 'updatedEngine',],
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',],
+    'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',],
+    'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
+                                             'pastUpdateVector', 'pastWorkValue'],
+    'algorithms::optimization_solver::lbfgs': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
+                                               'correctionPairs', 'correctionIndices', 'averageArgumentLIterations',],
+    'algorithms::optimization_solver::adagrad': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
+                                                 'gradientSquareSum'],
+    'algorithms::optimization_solver::objective_function': [],
+    'algorithms::optimization_solver::iterative_solver': [],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
-# Mapping iface name to fully qualified DAAL type as shared pointer
+# Mapping iface class to fully qualified DAAL type as shared pointer
 ifaces = {
     'kernel_function::KernelIface': 'daal::algorithms::kernel_function::KernelIfacePtr',
     'classifier::prediction::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::prediction::Batch>',
     'classifier::training::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::training::Batch>',
     'engines::BatchBase': 'daal::algorithms::engines::EnginePtr',
-#    'engines::BatchBase': 'daal::services::SharedPtr<daal::algorithms::engines::BatchBase>',
+    'optimization_solver::sum_of_functions::Batch': 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr',
 }
 
 # By default input arguments have no default value (e.g. they are required).
@@ -129,11 +164,12 @@ SSpec = namedtuple('step_spec', ['input',        # array of input types
                                  'staticinput',  # array of inputs that come from user and are unpartitioned
                                  'name',         # step1Local, step2Local, step3Master, ...
                                  'construct',    # args to algo constructor if non-default
-                                 'params',       # indicates if init_paramters should be called
+                                 'params',       # indicates if init_parameters should be called
                                  'inputnames',   # array of names of input args, aligned with 'input'
+                                 'inputdists',   # array of distributions (hpat) of input args, aligned with 'input'
                              ]
 )
-SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-2) + (True, ['data'],)
+SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-3) + (True, ['data'], ['OneD'])
 
 # We list all algos with distributed versions here.
 # The indivdual dicts get passed to jinja as global vars (as-is).
@@ -164,7 +200,8 @@ has_dist = {
                              output     = 'services::SharedPtr< algorithms::multinomial_naive_bayes::training::PartialResult >',
                              iomanager  = 'PartialIOManager2',
                              setinput   = ['algorithms::classifier::training::data', 'algorithms::classifier::training::labels'],
-                             inputnames = ['data', 'labels']),
+                             inputnames = ['data', 'labels'],
+                             inputdists = ['OneD', 'OneD']),
                        SSpec(name      = 'step2Master',
                              input      = ['services::SharedPtr< algorithms::multinomial_naive_bayes::training::PartialResult >'],
                              output     = 'algorithms::multinomial_naive_bayes::training::ResultPtr',
@@ -177,6 +214,7 @@ has_dist = {
         'step_specs': [SSpec(name      = 'step1Local',
                              input       = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
                              inputnames  = ['data', 'dependentVariables'],
+                             inputdists  = ['OneD', 'OneD'],
                              output      = 'services::SharedPtr< algorithms::linear_regression::training::PartialResult >',
                              iomanager   = 'PartialIOManager2',
                              setinput    = ['algorithms::linear_regression::training::data', 'algorithms::linear_regression::training::dependentVariables'],),
@@ -190,6 +228,27 @@ has_dist = {
                              output      = 'algorithms::linear_regression::training::ResultPtr',
                              iomanager   = 'IOManager',
                              addinput    = 'algorithms::linear_regression::training::partialModels')
+                   ],
+    },
+    'algorithms::ridge_regression::training' : {
+        'pattern': 'mapReduce',
+        'step_specs': [SSpec(name      = 'step1Local',
+                             input       = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
+                             inputnames  = ['data', 'dependentVariables'],
+                             inputdists  = ['OneD', 'OneD'],
+                             output      = 'services::SharedPtr< algorithms::ridge_regression::training::PartialResult >',
+                             iomanager   = 'PartialIOManager2',
+                             setinput    = ['algorithms::ridge_regression::training::data', 'algorithms::ridge_regression::training::dependentVariables'],),
+                       SSpec(name      = 'step2Master',
+                             input       = ['services::SharedPtr< algorithms::ridge_regression::training::PartialResult >'],
+                             output      = 'algorithms::ridge_regression::training::PartialResultPtr',
+                             iomanager   = 'PartialIOManager',
+                             addinput    = 'algorithms::ridge_regression::training::partialModels'),
+                       SSpec(name      = 'step2Master__final',
+                             input       = ['services::SharedPtr< algorithms::ridge_regression::training::PartialResult >'],
+                             output      = 'algorithms::ridge_regression::training::ResultPtr',
+                             iomanager   = 'IOManager',
+                             addinput    = 'algorithms::ridge_regression::training::partialModels')
                    ],
     },
     'algorithms::svd' : {
@@ -216,7 +275,6 @@ has_dist = {
                              setinput  = ['algorithms::kmeans::init::data'],
                              output    = 'algorithms::kmeans::init::PartialResultPtr',
                              iomanager = 'PartialIOManager',
-                             inputnames = ['data'],
                              construct = '_nClusters, nRowsTotal, offset'),
                        SSpec(name      = 'step2Master',
                              input     = ['algorithms::kmeans::init::PartialResultPtr'],
@@ -251,6 +309,7 @@ has_dist = {
                              input     = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
                              setinput  = ['algorithms::kmeans::data', 'algorithms::kmeans::inputCentroids'],
                              inputnames = ['data', 'inputCentroids'],
+                             inputdists  = ['OneD', 'REP'],
                              output    = 'algorithms::kmeans::PartialResultPtr',
                              iomanager = 'PartialIOManager2',
                              construct = '_nClusters, false',),
@@ -295,7 +354,29 @@ specialized = {
                 },
             ],
         },
-    }
+    },
+    'algorithms::ridge_regression::prediction': {
+        'Batch': {
+            'tmpl_decl': OrderedDict([
+                ('fptype', {
+                    'template_decl': 'typename',
+                    'default': 'double',
+                    'values': ['double', 'float']
+                }),
+                ('method', {
+                    'template_decl': 'algorithms::ridge_regression::prediction::Method',
+                    'default': 'algorithms::ridge_regression::prediction::defaultDense',
+                    'values': ['algorithms::ridge_regression::prediction::defaultDense',]
+                }),
+            ]),
+            'specs': [
+                {
+                    'template_decl': ['fptype'],
+                    'expl': OrderedDict([('method', 'algorithms::ridge_regression::prediction::defaultDense')]),
+                },
+            ],
+        },
+    },
 }
 
 no_warn = {
@@ -317,9 +398,21 @@ no_warn = {
     'algorithms::linear_model': ['Result',],
     'algorithms::linear_regression': ['Result',],
     'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
+    'algorithms::ridge_regression': ['Result',],
+    'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
     'algorithms::multi_class_classifier': ['Result',],
     'algorithms::multinomial_naive_bayes': ['Result',],
     'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::svm': ['Result',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
-};
+    'algorithms::optimization_solver': ['Result',],
+}
+
+# we need to be more specific about numeric table types for the lowering phase in HPAT
+# We provide specific types here
+hpat_types = {
+    'kmeans_result': {
+        'assignments': 'itable_type',
+        'nIterations': 'itable_type',
+    },
+}
