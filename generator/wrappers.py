@@ -111,7 +111,8 @@ ignore = {
                                                'correctionPairs', 'correctionIndices', 'averageArgumentLIterations',],
     'algorithms::optimization_solver::adagrad': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
                                                  'gradientSquareSum'],
-    'algorithms::optimization_solver::objective_function': ['argument',],
+    'algorithms::optimization_solver::objective_function': [],
+    'algorithms::optimization_solver::iterative_solver': [],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
