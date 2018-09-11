@@ -721,29 +721,23 @@ class cython_interface(object):
         algos = [x for x in self.namespace_dict if any(y in x for y in algo_patterns)] if algo_patterns else self.namespace_dict
         algos = [x for x in algos if not any(y in x for y in ['quality_metric', 'transform'])]
 
-        # we first extract and prepare the data (input, parameters, results, template spec)
-        # some algo need to combine several configs, like kmeans needs kmeans::init
+        # First expand typedefs
         for ns in algos + ['algorithms::classifier', 'algorithms::linear_model',]:
-            # expand typedefs
             self.expand_typedefs(ns)
+        # Next, extract and prepare the data (input, parameters, results, template spec)
         for ns in algos + ['algorithms::classifier', 'algorithms::linear_model',]:
-            if True or not ns.startswith('algorithms::neural_networks'):
-                if not ignored(ns):
-                    nn = ns.split('::')
-                    if nn[0] == 'daal':
-                        if nn[1] == 'algorithms':
-                            func = '_'.join(nn[2:])
-                        else:
-                            func = '_'.join(nn[1:])
-                    elif nn[0] == 'algorithms':
-                        func = '_'.join(nn[1:])
+            if not ignored(ns):
+                nn = ns.split('::')
+                if nn[0] == 'daal':
+                    if nn[1] == 'algorithms':
+                        func = '_'.join(nn[2:])
                     else:
-                        func = '_'.join(nn)
-                    #if any(ns.endswith(x) for x in ['prediction', 'training', 'init', 'transform']):
-                    #    func = '_'.join(tmp[1:])
-                    #else:
-                    #    func = tmp[-1]
-                    algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func))
+                        func = '_'.join(nn[1:])
+                elif nn[0] == 'algorithms':
+                    func = '_'.join(nn[1:])
+                else:
+                    func = '_'.join(nn)
+                algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func))
 
         # and now we can finally generate the code
         wg = wrapper_gen(algoconfig, {cpp2hl(i): ifaces[i] for i in ifaces})
