@@ -395,8 +395,9 @@ struct {{algo}}__iface__ : public {{iface[0] if iface[0] else 'algo_manager'}}__
 {
     bool _distributed;
     {{algo}}__iface__(bool d=false) : _distributed(d) {}
-    virtual {{result_map.class_type}} * compute({{(',\n'+' '*(23+(result_map.class_type|length))).join(iargs_decl|cppdecl)}},
-                                                bool setup_only = false) {assert(false);}
+{% set indent = 23+(result_map.class_type|length) %}
+    virtual {{result_map.class_type}} * compute({{(',\n'+' '*indent).join(iargs_decl|cppdecl)}},
+{{' '*indent}}bool setup_only = false) {assert(false);}
 };
 """
 
@@ -407,7 +408,7 @@ manager_wrapper_template = gen_typedefs_macro + gen_compute_macro + """
 typedef {{algo}}__iface__  c_{{algo}}_manager__iface__;
 
 // The algo creation function
-extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 52+2*(algo|length))}});
+extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 27+2*(algo|length))}});
 {% endif %}
 
 {% if template_decl  %}
@@ -541,13 +542,14 @@ parent_wrapper_template = """
 cdef extern from "daal4py.h":
     # declare the C++ equivalent of the manager__iface__ class, providing de-templatized access to compute
     cdef cppclass c_{{algo}}_manager__iface__{{'(c_'+iface[0]+'__iface__)' if iface[0] else ''}}:
-        {{result_map.class_type|flat}} compute({{(',\n'+' '*(29+algo|length)).join(iargs_decl|d2ext)}},
-        {{' '*(21+algo|length)}}const bool setup_only) except +
+{% set indent = 17+(result_map.class_type|flat|length) %}
+        {{result_map.class_type|flat}} compute({{(',\n'+' '*indent).join(iargs_decl|d2ext)}},
+{{' '*indent}}const bool setup_only) except +
 
 
 cdef extern from "daal4py_cpp.h":
     # declare the C++ construction function. Returns the manager__iface__ for access to de-templatized constructor
-    cdef c_{{algo}}_manager__iface__ * mk_{{algo}}({{pargs_decl|cy_ext_decl(pargs_call, template_decl, 45+2*(algo|length))}}) except +
+    cdef c_{{algo}}_manager__iface__ * mk_{{algo}}({{pargs_decl|cy_ext_decl(pargs_call, template_decl, 35+2*(algo|length))}}) except +
 
 
 # this is our actual algorithm class for Python
@@ -559,7 +561,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # Init simply forwards to the C++ construction function
     def __cinit__(self,
                   {{pargs_decl|cy_decl(pargs_call, template_decl, 18)}}):
-        self.c_ptr = mk_{{algo}}({{pargs_decl|cy_call(pargs_call, template_decl, 45+(algo|length))}})
+        self.c_ptr = mk_{{algo}}({{pargs_decl|cy_call(pargs_call, template_decl, 25+(algo|length))}})
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)
@@ -720,6 +722,29 @@ size_t c_my_procid()
 }
 
 } // extern "C"
+
+#else // _DIST_
+
+extern "C" {
+void c_daalinit(bool spmd, int flag)
+{
+}
+
+void c_daalfini()
+{
+}
+
+size_t c_num_procs()
+{
+    return 1;
+}
+
+size_t c_my_procid()
+{
+    return 0;
+}
+} // extern "C"
+
 #endif //_DIST_
 
 '''
@@ -757,8 +782,8 @@ def flat(t, cpp=True):
                 r = '_'.join(nn)
             return ('c_' if cpp and typ.endswith('__iface__') else '') + r + (' *' if cpp and any(typ.endswith(x) for x in ['__iface__', 'Ptr']) else '')
         ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'services::SharedPtr<kernel_function::KernelIface>')
-        ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', 'services::SharedPtr<engines::BatchBase>', ty)
-        ty = re.sub(r'(daal::)?(algorithms::)?(sum_of_functions::)?BatchPtr', 'services::SharedPtr<sum_of_functions::Batch>', ty)
+        ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', r'services::SharedPtr<engines::BatchBase>', ty)
+        ty = re.sub(r'(?:daal::)?(?:algorithms::)?([^:]+::)BatchPtr', r'services::SharedPtr<\1Batch>', ty)
         ty = re.sub(r'(daal::)?services::SharedPtr<([^>]+)>', r'\2__iface__', ty)
         return ' '.join([__flat(x).replace('const', '') for x in ty.split(' ')])
     return [_flat(x) for x in t] if isinstance(t,list) else _flat(t)

@@ -29,31 +29,15 @@
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+// serialization of a TableOrFlist
 inline void serialize(CnC::serializer & ser, TableOrFList & obj)
 {
     ser & obj.table & obj.flist;
 }
 
-// this serializes our entire batch/final result
-template< typename A, typename I, typename O >
-struct IOManager
-{
-    typedef O result_type;
-    typedef I input1_type;
-    typedef std::tuple< input1_type > input_type;
-
-// this serializes our entire batch/final result
-    static result_type getResult(A & algo)
-    {
-        return daal::services::staticPointerCast<typename result_type::ElementType>(algo.getResult());
-    }
-    static bool needsFini()
-    {
-        return true;
-    }
-};
-
-// this serializes our entire batch/final result
+// Input/Output manager for simple algos with 2 inputs
+// abstracts from input/output types
+// also defines how to get results and finalize
 template< typename A, typename I1, typename I2, typename O >
 struct IOManager2 : public IOManager< A, I1, O >
 {
@@ -61,7 +45,9 @@ struct IOManager2 : public IOManager< A, I1, O >
     typedef std::tuple< I1, input2_type > input_type;
 };
 
-// this serializes our entire batch/final result
+// Input/Output manager for simple algos with 3 inputs
+// abstracts from input/output types
+// also defines how to get results and finalize
 template< typename A, typename I1, typename I2, typename I3, typename O >
 struct IOManager3 : public IOManager2< A, I1, I2, O >
 {
@@ -69,7 +55,9 @@ struct IOManager3 : public IOManager2< A, I1, I2, O >
     typedef std::tuple< I1, I2, input3_type > input_type;
 };
 
-// this serializes one element of the partial result
+// Input/Output manager for simple algos with 1 input and a single fixed result-component
+// abstracts from input/output types
+// also defines how to get results and finalize
 template<typename A, typename I, typename O, typename E, int P>
 struct IOManagerSingle : public IOManager< A, I, O >
 {
@@ -79,6 +67,9 @@ struct IOManagerSingle : public IOManager< A, I, O >
     }
 };
 
+// Input/Output manager for simple algos with 2 inputs and a single fixed result-component
+// abstracts from input/output types
+// also defines how to get results and finalize
 template<typename A, typename I1, typename I2, typename O, typename E, int P>
 struct IOManager2Single : public IOManagerSingle< A, I1, O, E, P >
 {
@@ -86,6 +77,9 @@ struct IOManager2Single : public IOManagerSingle< A, I1, O, E, P >
     typedef std::tuple< I1, I2 > input_type;
 };
 
+// Input/Output manager for simple algos with 3 inputs and a single fixed result-component
+// abstracts from input/output types
+// also defines how to get results and finalize
 template<typename A, typename I1, typename I2, typename I3, typename O, typename E, int P>
 struct IOManager3Single : public IOManager2Single< A, I1, I2, O, E, P >
 {
@@ -93,7 +87,10 @@ struct IOManager3Single : public IOManager2Single< A, I1, I2, O, E, P >
     typedef std::tuple< I1, I2, I3 > input_type;
 };
 
-// this serializes our entire partial result
+
+// Input/Output manager for intermediate steps with 1 input
+// abstracts from input/output types
+// also defines how to get results and finalize
 template<typename A, typename I, typename O>
 struct PartialIOManager
 {
@@ -111,7 +108,9 @@ struct PartialIOManager
     }
 };
 
-// this serializes our entire partial result, 2 input args
+// Input/Output manager for intermediate steps with 2 inputs
+// abstracts from input/output types
+// also defines how to get results and finalize
 template<typename A, typename I1, typename I2, typename O>
 struct PartialIOManager2 : public PartialIOManager< A, I1, O >
 {
@@ -119,7 +118,9 @@ struct PartialIOManager2 : public PartialIOManager< A, I1, O >
     typedef std::tuple< I1, I2 > input_type;
 };
 
-// this serializes our entire partial result, 3 input args
+// Input/Output manager for intermediate steps with 3 inputs
+// abstracts from input/output types
+// also defines how to get results and finalize
 template<typename A, typename I1, typename I2, typename I3, typename O>
 struct PartialIOManager3 : public PartialIOManager2< A, I1, I2, O >
 {
@@ -127,7 +128,9 @@ struct PartialIOManager3 : public PartialIOManager2< A, I1, I2, O >
     typedef std::tuple< I1, I2, I3 > input_type;
 };
 
-// this serializes one element of the partial result
+// Input/Output manager for intermediate steps with 1 input and a single fixed result-component
+// abstracts from input/output types
+// also defines how to get results and finalize
 template<typename A, typename I, typename O, typename E, int P>
 struct PartialIOManagerSingle : public PartialIOManager< A, I, O >
 {
@@ -137,7 +140,9 @@ struct PartialIOManagerSingle : public PartialIOManager< A, I, O >
     }
 };
 
-// this serializes one element of the partial result, 2 input args
+// Input/Output manager for intermediate steps with 2 inputs and a single fixed result-component
+// abstracts from input/output types
+// also defines how to get results and finalize
 template<typename A, typename I1, typename I2, typename O, typename E, int P>
 struct PartialIOManager2Single : public PartialIOManagerSingle< A, I1, O, E, P >
 {
@@ -145,7 +150,9 @@ struct PartialIOManager2Single : public PartialIOManagerSingle< A, I1, O, E, P >
     typedef std::tuple< I1, I2 > input_type;
 };
 
-// this serializes one element of the partial result, 3 input args
+// Input/Output manager for intermediate steps with 3 inputs and a single fixed result-component
+// abstracts from input/output types
+// also defines how to get results and finalize
 template<typename A, typename I1, typename I2, typename I3, typename O, typename E, int P>
 struct PartialIOManager3Single : public PartialIOManager2Single< A, I1, I2, O, E, P >
 {
@@ -155,13 +162,6 @@ struct PartialIOManager3Single : public PartialIOManager2Single< A, I1, I2, O, E
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-extern "C" {
-void c_daalinit(bool spmd=false, int flag=0);
-void c_daalfini();
-size_t c_num_procs();
-size_t c_my_procid();
-}
 
 #include "map_reduce.h"
 #include "map_reduce_iter.h"

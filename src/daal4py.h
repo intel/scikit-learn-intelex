@@ -31,6 +31,13 @@
 
 using namespace daal;
 
+extern "C" {
+void c_daalinit(bool spmd=false, int flag=0);
+void c_daalfini();
+size_t c_num_procs();
+size_t c_my_procid();
+}
+
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;
 
 template< typename T >
@@ -104,6 +111,25 @@ static inline NTYPE as_native_shared_ptr(services::SharedPtr< const algo_manager
     return ret;
 }
 #endif
+
+// Our Batch input/Output manager, abstracts from input/output types
+// also defines how to get results and finalize
+template< typename A, typename I, typename O >
+struct IOManager
+{
+    typedef O result_type;
+    typedef I input1_type;
+    typedef std::tuple< input1_type > input_type;
+
+    static result_type getResult(A & algo)
+    {
+        return daal::services::staticPointerCast<typename result_type::ElementType>(algo.getResult());
+    }
+    static bool needsFini()
+    {
+        return true;
+    }
+};
 
 struct TableOrFList
 {

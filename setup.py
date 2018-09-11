@@ -42,8 +42,22 @@ if npyver < 9:
 
 d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2018.%Y%m%d.%H%M%S')
 daal_root = os.environ['DAALROOT']
-cnc_root = os.environ['CNCROOT']
 tbb_root = os.environ['TBBROOT']
+
+no_dist = os.environ['NO_DIST'] if 'NO_DIST' in os.environ else False
+if no_dist in ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']:
+    print('\nDisabling support for distributed mode\n')
+    DIST_CFLAGS  = []
+    DIST_INCDIRS = []
+    DIST_LIBDIRS = []
+    DIST_LIBS    = []
+else:
+    cnc_root = os.environ['CNCROOT']
+    DIST_CFLAGS  = ['-D_DIST_',]  # '-D_GLIBCXX_USE_CXX11_ABI=0', '-DCNC_WITH_ITAC'
+    DIST_INCDIRS = [jp(cnc_root, 'include'),]  # itac_root + '/include']
+    DIST_LIBDIRS = [jp(cnc_root, 'lib', 'intel64'),]
+    DIST_LIBS    = ['cnc',]
+
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
 IS_MAC = False
@@ -65,17 +79,14 @@ DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
-        cflags = ['-fstack-protector', '-fPIC', '-D_DIST_', '-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security', '-g', '-O0']
-        if IS_LIN:
-            return cflags
-        elif IS_MAC:
-            return cflags + []
+        return DIST_CFLAGS + ['-fstack-protector', '-fPIC', '-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API',
+                              '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',]
     elif IS_WIN:
-        return ['-GS', '-D_DIST_']
+        return DIST_CFLAGS + ['-GS',]
 
 def get_sdl_ldflags():
     if IS_LIN:
-        return ['-Wl,-z,noexecstack', '-Wl,-z,relro', '-Wl,-z,now',] # '-s']
+        return ['-Wl,-z,noexecstack', '-Wl,-z,relro', '-Wl,-z,now',]
     elif IS_MAC:
         return []
     elif IS_WIN:
@@ -84,10 +95,9 @@ def get_sdl_ldflags():
 def get_type_defines():
     daal_type_defines = ['DAAL_ALGORITHM_FP_TYPE', 'DAAL_SUMMARY_STATISTICS_TYPE', 'DAAL_DATA_TYPE']
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
-#['-D_GLIBCXX_USE_CXX11_ABI=0'] + , '-DCNC_WITH_ITAC'
 
 def getpyexts():
-    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include', cnc_root + '/include', tbb_root + '/include',] # itac_root + '/include']
+    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',] + DIST_INCDIRS
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl']
     eca = get_type_defines()
     ela = []
@@ -108,28 +118,30 @@ def getpyexts():
         eca.append('-DUSE_CAPSULE')
 
     if IS_WIN:
-        libraries_plat = ['daal_thread', 'daal_core_dll', 'cnc']
+        libraries_plat = ['daal_thread', 'daal_core_dll']
     else:
-        libraries_plat = ['daal_core', 'daal_thread', 'cnc']
+        libraries_plat = ['daal_core', 'daal_thread']
+    libraries_plat += DIST_LIBS
 
     if IS_MAC:
         ela.append('-stdlib=libc++')
         ela.append("-Wl,-rpath,{}".format(jp(daal_root, lib_dir)))
-        ela.append("-Wl,-rpath,{}".format(jp(cnc_root, 'lib', 'intel64')))
+        for x in DIST_LIBDIRS:
+            ela.append("-Wl,-rpath,{}".format(x))
         ela.append("-Wl,-rpath,{}".format(jp(daal_root, '..', 'tbb', 'lib')))
     elif IS_WIN:
         ela.append('-IGNORE:4197')
 
     return cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
-#                                 os.path.abspath('src/tree_visitor.cpp'),
+                                 # os.path.abspath('src/tree_visitor.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')],
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
                                 libraries=libraries_plat,
-                                library_dirs=[jp(daal_root, lib_dir), jp(cnc_root, 'lib', 'intel64')],
+                                library_dirs=[jp(daal_root, lib_dir)] + DIST_LIBDIRS,
                                 language='c++')])
 
 cfg_vars = get_config_vars()
