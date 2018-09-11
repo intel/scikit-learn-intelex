@@ -93,6 +93,10 @@ class namespace(object):
         self.steps = set()
         self.children = set()
 
+###############################################################################
+def ignored(ns, a=None):
+    return ns in ignore and ((a != None and a in ignore[ns]) or (a == None and not ignore[ns]))
+
 
 ###############################################################################
 ###############################################################################
@@ -150,7 +154,7 @@ class cython_interface(object):
             for filename in filenames:
                 if filename.endswith('.h') and not 'neural_networks' in dirpath and not any(filename.endswith(x) for x in cython_interface.ignore_files):
                     fname = jp(dirpath,filename)
-                    print('reading ' +  fname)
+                    #print('reading ' +  fname)
                     with open(fname, "r") as header:
                         parsed_data = parse_header(header, cython_interface.ignores)
 
@@ -234,7 +238,7 @@ class cython_interface(object):
         tmp = getattr(self.namespace_dict[ns].classes[cls], attr)
         for a in tmp:
             n = a if '::' in a else ns + '::' + a
-            if ons not in ignore or n not in ignore[ons]:
+            if not ignored(ons, n):
                 pmembers[n] = tmp[a]
         for parent in self.namespace_dict[ns].classes[cls].parent:
             parentclass = cls
@@ -247,7 +251,7 @@ class cython_interface(object):
                 pms = self.get_all_attrs(pns, parentclass, attr, ons)
                 for x in pms:
                     # ignore duplicates from parents
-                    if (ons not in ignore or x not in ignore[ons]) and not any(x == y for y in pmembers):
+                    if not ignored(ons, x) and not any(x == y for y in pmembers):
                         pmembers[x] = pms[x]
         return pmembers
 
@@ -390,12 +394,12 @@ class cython_interface(object):
             assert ins in self.namespace_dict
             assert inp in self.namespace_dict[ins].enums
             hlt = self.to_hltype(ns, attrs[i])
-            if ns in ignore and '::'.join([ins, inp]) in ignore[ns]:
+            if ignored(ns, '::'.join([ins, inp])):
                 continue
             if hlt:
                 if hlt[1] in ['stdtype', 'enum', 'class']:
                     for e in self.namespace_dict[ins].enums[inp]:
-                        if not any(e in x for x in explist) and (ins not in ignore or e not in ignore[ins]):
+                        if not any(e in x for x in explist) and not ignored(ins, e):
                             explist.append((ins, e, hlt[0]))
                 else:
                     print("// Warning: ignoring " + ns + " " + str(hlt))
@@ -460,7 +464,7 @@ class cython_interface(object):
 ###############################################################################
     def expand_typedefs(self, ns):
         """
-        We expand all typedefs in classes/namespaces wihtout recursing
+        We expand all typedefs in classes/namespaces without recursing
         to outer scopes or namespaces.
         """
         def expand_td(typedefs):
@@ -604,7 +608,7 @@ class cython_interface(object):
                     jparams['params_opt'] = OrderedDict()
                     for p in parms:
                         pns, tmp = splitns(p)
-                        if not tmp.startswith('_') and (pns not in ignore or tmp not in ignore[pns]):
+                        if not tmp.startswith('_') and not ignored(pns, tmp):
                             hlt = self.to_hltype(pns, parms[p])
                             if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                                 (hlt, hlt_type, hlt_ns) = hlt
@@ -647,7 +651,7 @@ class cython_interface(object):
                 reqi = 0
                 for ins, iname, itype in expinputs[0]:
                     tmpi = iname
-                    if tmpi and (ns not in ignore or tmpi not in ignore[ns]):
+                    if tmpi and not ignored(ns, tmpi):
                         if ns in defaults and tmpi in defaults[ns]:
                             i = len(tmp_iargs_decl)
                             dflt = ' = ' + defaults[ns][tmpi]
@@ -717,28 +721,23 @@ class cython_interface(object):
         algos = [x for x in self.namespace_dict if any(y in x for y in algo_patterns)] if algo_patterns else self.namespace_dict
         algos = [x for x in algos if not any(y in x for y in ['quality_metric', 'transform'])]
 
-        # we first extract and prepare the data (input, parameters, results, template spec)
-        # some algo need to combine several configs, like kmeans needs kmeans::init
+        # First expand typedefs
         for ns in algos + ['algorithms::classifier', 'algorithms::linear_model',]:
-            # expand typedefs
             self.expand_typedefs(ns)
-            if not ns.startswith('algorithms::neural_networks'):
-                if not any(ns.endswith(x) for x in ['objective_function', 'iterative_solver']):
-                    nn = ns.split('::')
-                    if nn[0] == 'daal':
-                        if nn[1] == 'algorithms':
-                            func = '_'.join(nn[2:])
-                        else:
-                            func = '_'.join(nn[1:])
-                    elif nn[0] == 'algorithms':
-                        func = '_'.join(nn[1:])
+        # Next, extract and prepare the data (input, parameters, results, template spec)
+        for ns in algos + ['algorithms::classifier', 'algorithms::linear_model',]:
+            if not ignored(ns):
+                nn = ns.split('::')
+                if nn[0] == 'daal':
+                    if nn[1] == 'algorithms':
+                        func = '_'.join(nn[2:])
                     else:
-                        func = '_'.join(nn)
-                    #if any(ns.endswith(x) for x in ['prediction', 'training', 'init', 'transform']):
-                    #    func = '_'.join(tmp[1:])
-                    #else:
-                    #    func = tmp[-1]
-                    algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func))
+                        func = '_'.join(nn[1:])
+                elif nn[0] == 'algorithms':
+                    func = '_'.join(nn[1:])
+                else:
+                    func = '_'.join(nn)
+                algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func))
 
         # and now we can finally generate the code
         wg = wrapper_gen(algoconfig, {cpp2hl(i): ifaces[i] for i in ifaces})
