@@ -4,33 +4,43 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f,c: pandas.read_csv(f, usecols=c, delimiter=',').values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',').values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f,c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
 nFeatures = 6
 nClasses = 5
-    
+
+
 def main():
+    # read training data from file
     trainfile = "./data/batch/logreg_train.csv"
     train_data = read_csv(trainfile, range(nFeatures))
     train_dep_data = read_csv(trainfile, range(nFeatures, nFeatures + 1))
     nVectors = train_data.shape[0]
-    train_dep_data.shape = (nVectors, 1) # must be a 2d array
-    
-    train_alg = d4p.logistic_regression_training(nClasses = nClasses, penaltyL1 = 0.1, penaltyL2 = 0.1)
+    train_dep_data.shape = (nVectors, 1)  # must be a 2d array
+
+    # set parameters and train
+    train_alg = d4p.logistic_regression_training(nClasses=nClasses,
+                                                 penaltyL1=0.1,
+                                                 penaltyL2=0.1)
     train_result = train_alg.compute(train_data, train_dep_data)
-    
-    
+
+    # read testing data from file
     testfile = "./data/batch/logreg_test.csv"
     predict_data = read_csv(testfile, range(nFeatures))
-    
-    #predict_alg = d4p.logistic_regression_prediction(nClasses = nClasses, resultsToCompute = "computeClassesProbabilities|computeClassesLogProbabilities")
-    predict_alg = d4p.logistic_regression_prediction(nClasses = nClasses)
+
+    # set parameters and compute predictions
+    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
+                                                     resultsToCompute="computeClassesLabels|computeClassesProbabilities|computeClassesLogProbabilities")
     predict_result = predict_alg.compute(predict_data, train_result.model)
-    
-    assert predict_result.prediction.shape == (predict_data.shape[0], train_dep_data.shape[1])
+
+    # check that results are present
+    assert predict_result.prediction.shape == (predict_data.shape[0], train_dep_data.shape[1]) \
+        and predict_result.probabilities.shape == (predict_data.shape[0], nClasses) \
+        and predict_result.logProbabilities.shape == (predict_data.shape[0], nClasses)
+
 
 if __name__ == "__main__":
     main()
