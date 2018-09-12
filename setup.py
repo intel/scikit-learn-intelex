@@ -65,15 +65,18 @@ IS_LIN = False
 
 if 'linux' in sys.platform:
     IS_LIN = True
-    lib_dir = jp('lib', 'intel64_lin')
+    lib_dir = jp(daal_root, 'lib', 'intel64_lin')
 elif sys.platform == 'darwin':
     IS_MAC = True
-    lib_dir = 'lib'
+    lib_dir = jp(daal_root, 'lib')
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
-    lib_dir = jp('lib', 'intel64_win')
+    lib_dir = jp(daal_root, 'lib', 'intel64_win')
 else:
     assert False, sys.platform + ' not supported'
+
+if not IS_MAC:
+    daal_lib_dir = lib_dir if os.path.isdir(lib_dir) else os.path.dirname(lib_dir)
 
 DAAL_DEFAULT_TYPE = 'double'
 
@@ -125,7 +128,7 @@ def getpyexts():
 
     if IS_MAC:
         ela.append('-stdlib=libc++')
-        ela.append("-Wl,-rpath,{}".format(jp(daal_root, lib_dir)))
+        ela.append("-Wl,-rpath,{}".format(daal_lib_dir))
         for x in DIST_LIBDIRS:
             ela.append("-Wl,-rpath,{}".format(x))
         ela.append("-Wl,-rpath,{}".format(jp(daal_root, '..', 'tbb', 'lib')))
@@ -141,7 +144,7 @@ def getpyexts():
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
                                 libraries=libraries_plat,
-                                library_dirs=[jp(daal_root, lib_dir)] + DIST_LIBDIRS,
+                                library_dirs=[daal_lib_dir] + DIST_LIBDIRS,
                                 language='c++')])
 
 cfg_vars = get_config_vars()
