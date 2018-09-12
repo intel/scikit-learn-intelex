@@ -29,6 +29,12 @@
 
 #define NTYPE PyObject*
 
+#if PY_VERSION_HEX < 0x03000000
+#define PyUnicode_Check(_x) PyString_Check(_x)
+#define PyUnicode_AsUTF8(_x) PyString_AsString(_x)
+#define PyUnicode_FromString(_x) PyString_FromString(_x)
+#endif
+
 using namespace daal;
 
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;

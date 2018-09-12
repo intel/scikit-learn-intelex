@@ -584,7 +584,7 @@ class cython_interface(object):
                         parms = self.get_all_attrs(p[0], p[1], 'members', ns) if p else None
                         if not parms:
                             if ns in fallbacks and 'ParameterType' in fallbacks[ns]:
-                                parms = self.get_all_attrs(*splitns(fallbacks[ns]['ParameterType']), 'members', ns)
+                                parms = self.get_all_attrs(*(splitns(fallbacks[ns]['ParameterType']) + ['members', ns]))
                         tmp = '::'.join([ns, mode])
                         if not parms:
                             tmp = '::'.join([ns, mode])

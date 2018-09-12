@@ -18,6 +18,7 @@
 #include "daal4py.h"
 #include <cstdint>
 
+
 // ************************************************************************************
 // ************************************************************************************
 // Numpy type conversion code, taken from numpy.i (SWIG typemap-code)
@@ -205,9 +206,9 @@ void daalsp_free_cap(PyObject * cap)
     if (sp) delete sp;
 }
 #else
-void daalsp_free(PyObject * cap)
+void daalsp_free(void * cap)
 {
-    VSP * sp = (VSP*) PyCObject_AsVoidPtr(cap);
+    VSP * sp = (VSP*) PyCObject_AsVoidPtr(reinterpret_cast<PyObject *>(cap));
     if (sp) delete sp;
 }
 #endif
