@@ -39,9 +39,8 @@ def main():
     alg = d4p.low_order_moments()
     res = alg.compute(data)
 
-    # result provides minimum, maximum, sum, sum of squares,
-    # sum of squared difference from the means, mean,
-    # second order raw moment, variance, standard deviation, variation
+    # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
+    # mean, secondOrderRawMoment, variance, standardDeviation, variation
     assert res.minimum.shape == (1, data.shape[1])
     assert res.maximum.shape == (1, data.shape[1])
     assert res.sum.shape == (1, data.shape[1])
