@@ -58,7 +58,7 @@ def main():
 if __name__ == "__main__":
     res = main()
     # print results
-    print("\nMinimum:\n", res.minimum[0:5])
+    print("\nMinimum:\n", res.minimum)
     print("\nMaximum:\n", res.maximum)
     print("\nSum:\n", res.sum)
     print("\nSum of squares:\n", res.sumSquares)
