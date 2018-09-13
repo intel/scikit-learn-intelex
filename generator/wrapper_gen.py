@@ -81,6 +81,17 @@ cdef extern from "daal4py_cpp.h":
     ctypedef NumericTablePtr data_management_NumericTablePtr
 
 
+cdef extern from "pickling_support.h":
+    cdef object serialize_si(void *) nogil
+    cdef T* deserialize_si[T](object) nogil
+
+
+cpdef rebuild(class_constructor, state_data):
+    cls = class_constructor()
+    cls.__setstate__(state_data)
+    return cls
+
+
 cdef class data_management_datacollection:
     cdef data_management_DataCollectionPtr * c_ptr
 
@@ -200,6 +211,21 @@ cdef class {{flatname}}:
         return {{'<object>make_nda(res)' if 'NumericTablePtr' in rtype else 'res'}}
 {% endif %}
 {% endfor %}
+
+    def __setstate__(self, state):
+        if isinstance(state, bytes):
+           self.c_ptr = deserialize_si[{{class_type|flat|strip(' *')}}](state)
+        else:
+           raise ValueError("Invalid state .....")
+
+    def __getstate__(self):
+        bytes = serialize_si(self.c_ptr)
+        return bytes 
+
+    def __reduce__(self):
+        state_data = self.__getstate__()
+        return (rebuild, (self.__class__, state_data,))
+
 
 hpat_spec.append({
     'pyclass': {{flatname}},
