@@ -42,16 +42,16 @@ def main():
     # result provides minimum, maximum, sum, sum of squares,
     # sum of squared difference from the means, mean,
     # second order raw moment, variance, standard deviation, variation
-    assert res.minimum.shape == (1, 10) \
-        and res.maximum.shape == (1, 10) \
-        and res.sum.shape == (1, 10) \
-        and res.sumSquares.shape == (1, 10) \
-        and res.sumSquaresCentered.shape == (1, 10) \
-        and res.mean.shape == (1, 10) \
-        and res.secondOrderRawMoment.shape == (1, 10) \
-        and res.variance.shape == (1, 10) \
-        and res.standardDeviation.shape == (1, 10) \
-        and res.variation.shape == (1, 10)
+    assert res.minimum.shape == (1, data.shape[1])
+    assert res.maximum.shape == (1, data.shape[1])
+    assert res.sum.shape == (1, data.shape[1])
+    assert res.sumSquares.shape == (1, data.shape[1])
+    assert res.sumSquaresCentered.shape == (1, data.shape[1])
+    assert res.mean.shape == (1, data.shape[1])
+    assert res.secondOrderRawMoment.shape == (1, data.shape[1])
+    assert res.variance.shape == (1, data.shape[1])
+    assert res.standardDeviation.shape == (1, data.shape[1])
+    assert res.variation.shape == (1, data.shape[1])
 
 
 if __name__ == "__main__":
