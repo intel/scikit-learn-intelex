@@ -257,10 +257,10 @@ class cython_interface(object):
 
 
 ###############################################################################
-    def to_lltype(self, ns, t):
+    def to_lltype(self, t):
         """
         return low level (C++ type). Usually the same as input.
-         Only very specific casesneed a conversion.
+         Only very specific cases need a conversion.
         """
         if t in ['DAAL_UINT64']:
             return 'ResultToComputeId'
@@ -290,6 +290,9 @@ class cython_interface(object):
             return ('daal::' + thens + '::ModelPtr', 'class', tns)
         if t in ['data_management::NumericTablePtr',] or t in ifaces.values():
             return ('daal::' + t, 'class', tns)
+        if 'Batch' in self.namespace_dict[ns].classes and t in self.namespace_dict[ns].classes['Batch'].typedefs:
+            tns, tname = splitns(self.namespace_dict[ns].classes['Batch'].typedefs[t])
+            return (self.namespace_dict[ns].classes['Batch'].typedefs[t], 'class', tns)
         tt = re.sub(r'(?<!daal::)services::SharedPtr', r'daal::services::SharedPtr', t)
         tt = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', tt)
         if tt in ifaces.values():
@@ -612,7 +615,7 @@ class cython_interface(object):
                             hlt = self.to_hltype(pns, parms[p])
                             if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                                 (hlt, hlt_type, hlt_ns) = hlt
-                                llt = self.to_lltype(*splitns(parms[p]))
+                                llt = self.to_lltype(parms[p])
                                 needed = True
                                 pval = None
                                 if hlt_type == 'enum':
@@ -814,6 +817,7 @@ def gen_daal4py(daalroot, outdir, warn_all=False):
                                             'decision_forest',
                                             'ridge_regression',
                                             'optimization_solver',
+                                            'logistic_regression',
     ])
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:

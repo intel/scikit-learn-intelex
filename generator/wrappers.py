@@ -45,6 +45,12 @@ required = {
     'algorithms::gbt::classification::prediction': {
         'Batch': [('nClasses', 'size_t')],
     },
+    'algorithms::logistic_regression::training': {
+        'Batch': [('nClasses', 'size_t')],
+    },
+    'algorithms::logistic_regression::prediction': {
+        'Batch': [('nClasses', 'size_t')],
+    },
     'algorithms::decision_tree::classification::training': {
         'Batch': [('nClasses', 'size_t')],
     },
@@ -100,6 +106,7 @@ ignore = {
     'algorithms::kmeans::init': ['nRowsTotal', 'offset',],
     'algorithms::gbt::regression::training': ['dependentVariables'],
     'algorithms::gbt::classification::training': ['weights',],
+    'algorithms::logistic_regression::training': ['weights',],
     'algorithms::decision_tree::classification::training': ['weights',],
     'algorithms::decision_forest::classification::training': ['weights', 'updatedEngine',],
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', 'updatedEngine',],
@@ -123,6 +130,7 @@ ifaces = {
     'classifier::training::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::training::Batch>',
     'engines::BatchBase': 'daal::algorithms::engines::EnginePtr',
     'optimization_solver::sum_of_functions::Batch': 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr',
+    'optimization_solver::iterative_solver::Batch': 'daal::algorithms::optimization_solver::iterative_solver::BatchPtr',
 }
 
 # By default input arguments have no default value (e.g. they are required).
@@ -391,10 +399,12 @@ no_warn = {
     'algorithms::decision_tree::regression': ['Result',],
     'algorithms::engines::mcg59::Batch': ['ParameterType',],
     'algorithms::engines::mt19937::Batch': ['ParameterType',],
+    'algorithms::engines::mt2203::Batch': ['ParameterType',],
     'algorithms::gbt': ['Result',],
     'algorithms::gbt::classification': ['Result',],
     'algorithms::gbt::regression': ['Result',],
     'algorithms::gbt::training': ['Result',],
+    'algorithms::logistic_regression': ['Result',],
     'algorithms::linear_model': ['Result',],
     'algorithms::linear_regression': ['Result',],
     'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
