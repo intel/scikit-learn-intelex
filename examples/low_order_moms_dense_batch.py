@@ -52,7 +52,20 @@ def main():
     assert res.standardDeviation.shape == (1, data.shape[1])
     assert res.variation.shape == (1, data.shape[1])
 
+    return res
+
 
 if __name__ == "__main__":
-    main()
+    res = main()
+    # print results
+    print("\nMinimum:\n", res.minimum[0:5])
+    print("\nMaximum:\n", res.maximum)
+    print("\nSum:\n", res.sum)
+    print("\nSum of squares:\n", res.sumSquares)
+    print("\nSum of squared difference from the means:\n", res.sumSquaresCentered)
+    print("\nMean:\n", res.mean)
+    print("\nSecond order raw moment:\n", res.secondOrderRawMoment)
+    print("\nVariance:\n", res.variance)
+    print("\nStandard deviation:\n", res.standardDeviation)
+    print("\nVariation:\n", res.variation)
     print('All looks good!')
