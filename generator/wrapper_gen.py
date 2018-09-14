@@ -162,7 +162,7 @@ extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({
 {% for m in enum_gets %}
 extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
 {
-    return RAW< {{m[2]}} >()((*obj_)->get({{m[0]}}::{{m[1]}}));
+    return RAW< {{m[2]}} >()((*obj_)->get(daal::{{m[0]}}::{{m[1]}}));
 }
 {% endfor %}
 {% for m in named_gets %}
@@ -307,9 +307,9 @@ gen_typedefs_macro = """
 {% macro gen_typedefs(ns, template_decl, template_args, mode="Batch", suffix="b", step_spec=None) %}
 {% set disttarg = (step_spec.name.rsplit('__', 1)[0] + ', ') if step_spec.name else "" %}
 {% if template_decl|length > 0  %}
-    typedef {{ns}}::{{mode}}<{{disttarg + ', '.join(template_args)}}> algo{{suffix}}_type;
+    typedef daal::{{ns}}::{{mode}}<{{disttarg + ', '.join(template_args)}}> algo{{suffix}}_type;
 {% else %}
-    typedef {{ns}}::{{mode}} algo{{suffix}}_type;
+    typedef daal::{{ns}}::{{mode}} algo{{suffix}}_type;
 {% endif %}
 {% if step_spec %}
     typedef {{step_spec.iomanager}}< algo{{suffix}}_type, {{', '.join(step_spec.input)}}, {{step_spec.output}}{{(","+",".join(step_spec.iomargs)) if step_spec.iomargs else ""}} > iom{{suffix}}_type;
@@ -317,7 +317,7 @@ gen_typedefs_macro = """
 {% if iombatch %}
     typedef {{iombatch}} iom{{suffix}}_type;
 {% else %}
-    typedef IOManager< algo{{suffix}}_type, services::SharedPtr< typename algo{{suffix}}_type::InputType >, services::SharedPtr< typename algo{{suffix}}_type::ResultType > > iom{{suffix}}_type;
+    typedef IOManager< algo{{suffix}}_type, daal::services::SharedPtr< typename algo{{suffix}}_type::InputType >, daal::services::SharedPtr< typename algo{{suffix}}_type::ResultType > > iom{{suffix}}_type;
 {% endif %}
 {% endif %}
 {%- endmacro %}
@@ -424,7 +424,7 @@ struct {{algo}}__iface__ : public {{iface[0] if iface[0] else 'algo_manager'}}__
     {{algo}}__iface__(bool d=false) : _distributed(d) {}
 {% set indent = 23+(result_map.class_type|length) %}
     virtual {{result_map.class_type}} * compute({{(',\n'+' '*indent).join(iargs_decl|cppdecl)}},
-{{' '*indent}}bool setup_only = false) {assert(false);}
+{{' '*indent}}bool setup_only = false) {assert(false); return NULL;}
 };
 """
 
@@ -649,11 +649,12 @@ algo_wrapper_template = """
 {% endfor %}
 {%- endmacro %}
 
-extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 56+2*(algo|length))}})
+extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 37+2*(algo|length))}})
 {
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', pargs_call, dist=dist)}}
-    throw std::invalid_argument("no equivalent(s) for C++ template argument(s) in mk_{{algo}}");
+    std::cerr << "no equivalent(s) for C++ template argument(s) exist in mk_{{algo}}" << std::endl;
+    return NULL;
 {% else %}
     return new {{algo}}_manager({{', '.join(pargs_call)}}, distributed);
 {% endif %}
@@ -808,9 +809,9 @@ def flat(t, cpp=True):
             else:
                 r = '_'.join(nn)
             return ('c_' if cpp and typ.endswith('__iface__') else '') + r + (' *' if cpp and any(typ.endswith(x) for x in ['__iface__', 'Ptr']) else '')
-        ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'services::SharedPtr<kernel_function::KernelIface>')
-        ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', r'services::SharedPtr<engines::BatchBase>', ty)
-        ty = re.sub(r'(?:daal::)?(?:algorithms::)?([^:]+::)BatchPtr', r'services::SharedPtr<\1Batch>', ty)
+        ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'daal::services::SharedPtr<kernel_function::KernelIface>')
+        ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', r'daal::services::SharedPtr<engines::BatchBase>', ty)
+        ty = re.sub(r'(?:daal::)?(?:algorithms::)?([^:]+::)BatchPtr', r'daal::services::SharedPtr<\1Batch>', ty)
         ty = re.sub(r'(daal::)?services::SharedPtr<([^>]+)>', r'\2__iface__', ty)
         return ' '.join([__flat(x).replace('const', '') for x in ty.split(' ')])
     return [_flat(x) for x in t] if isinstance(t,list) else _flat(t)

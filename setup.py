@@ -44,20 +44,6 @@ d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ e
 daal_root = os.environ['DAALROOT']
 tbb_root = os.environ['TBBROOT']
 
-no_dist = os.environ['NO_DIST'] if 'NO_DIST' in os.environ else False
-if no_dist in ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']:
-    print('\nDisabling support for distributed mode\n')
-    DIST_CFLAGS  = []
-    DIST_INCDIRS = []
-    DIST_LIBDIRS = []
-    DIST_LIBS    = []
-else:
-    cnc_root = os.environ['CNCROOT']
-    DIST_CFLAGS  = ['-D_DIST_',]  # '-D_GLIBCXX_USE_CXX11_ABI=0', '-DCNC_WITH_ITAC'
-    DIST_INCDIRS = [jp(cnc_root, 'include'),]  # itac_root + '/include']
-    DIST_LIBDIRS = [jp(cnc_root, 'lib', 'intel64'),]
-    DIST_LIBS    = ['cnc',]
-
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
 IS_MAC = False
@@ -78,11 +64,26 @@ else:
 if not IS_MAC:
     daal_lib_dir = lib_dir if os.path.isdir(lib_dir) else os.path.dirname(lib_dir)
 
+no_dist = os.environ['NO_DIST'] if 'NO_DIST' in os.environ else False
+
+if no_dist in ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']:
+    print('\nDisabling support for distributed mode\n')
+    DIST_CFLAGS  = []
+    DIST_INCDIRS = []
+    DIST_LIBDIRS = []
+    DIST_LIBS    = []
+else:
+    cnc_root = os.environ['CNCROOT']
+    DIST_CFLAGS  = ['-D_DIST_',]  # '-D_GLIBCXX_USE_CXX11_ABI=0', '-DCNC_WITH_ITAC'
+    DIST_INCDIRS = [jp(cnc_root, 'include'),]  # itac_root + '/include']
+    DIST_LIBDIRS = [jp(cnc_root, 'lib', 'intel64'),]
+    DIST_LIBS    = ['cnc_vs14.0',] if IS_WIN else ['cnc',]
+
 DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
-        return DIST_CFLAGS + ['-fstack-protector', '-fPIC', '-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API',
+        return DIST_CFLAGS + ['-fstack-protector', '-fPIC',
                               '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',]
     elif IS_WIN:
         return DIST_CFLAGS + ['-GS',]
@@ -102,14 +103,14 @@ def get_type_defines():
 def getpyexts():
     include_dir_plat = [os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',] + DIST_INCDIRS
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl']
-    eca = get_type_defines()
+    eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API',] + get_type_defines()
     ela = []
 
     if using_intel and IS_WIN:
         include_dir_plat.append(jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
-        eca += ['-std=c++11', '-w']
+        eca += ['-std=c++11', '-w', '/MD']
     elif not using_intel and IS_WIN:
-        eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996']
+        eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/MD']
     else:
         eca += ['-std=c++11', '-w']
 
@@ -121,7 +122,7 @@ def getpyexts():
         eca.append('-DUSE_CAPSULE')
 
     if IS_WIN:
-        libraries_plat = ['daal_thread', 'daal_core_dll']
+        libraries_plat = ['daal_core_dll']
     else:
         libraries_plat = ['daal_core', 'daal_thread']
     libraries_plat += DIST_LIBS

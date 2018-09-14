@@ -224,8 +224,8 @@ namespace mapReduce {
         typedef TM tag_mgr_type;
         typedef typename tagger_type::step1_tag_type step1_tag_type;
         typedef typename tagger_type::step2_tag_type step2_tag_type;
-        typedef CnC::item_collection< step1_tag_type, data_management::NumericTablePtr, typename TM::s1i1_tuner_type > step1_input1_coll_type;
-        typedef CnC::item_collection< step1_tag_type, data_management::NumericTablePtr, typename TM::s1i2_tuner_type > step1_input2_coll_type;
+        typedef CnC::item_collection< step1_tag_type, daal::data_management::NumericTablePtr, typename TM::s1i1_tuner_type > step1_input1_coll_type;
+        typedef CnC::item_collection< step1_tag_type, daal::data_management::NumericTablePtr, typename TM::s1i2_tuner_type > step1_input2_coll_type;
         typedef CnC::item_collection< step2_tag_type, typename Ctxt::algo_type::iomstep2Master_type::input1_type, typename TM::tuner_type > step2_input_coll_type;
         typedef CnC::tag_collection< int, localTuner > finalizer_tag_coll_type;
         typedef CnC::step_collection< typename Ctxt::Fini, localTuner > finalizer_step_coll_type;
@@ -267,7 +267,7 @@ namespace mapReduce {
             : CnC::graph(ctxt, name),
               algo(a),
               nBlocks(numBlocks),
-              maxDepth(log2(mapReduce::get_power2(nBlocks))),
+              maxDepth(log2(get_power2(nBlocks))),
               tm(),
               ctrl_2(ctxt, "ctrl2", tm.tuner),
               ctrl_finalizer(ctxt, "ctrl_fini"),
@@ -316,7 +316,6 @@ namespace mapReduce {
         static int execute(const typename Context::tagger_type::step1_tag_type & tag, Context & ctxt);
     };
 
-    template<>
     template< typename TM >
     struct step1_impl< 1, TM >
     {
@@ -339,7 +338,6 @@ namespace mapReduce {
         }
     };
 
-    template<>
     template< typename TM >
     struct step1_impl< 2, TM >
     {
