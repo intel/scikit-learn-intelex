@@ -1,13 +1,14 @@
-#ifndef DAAL4PY_PICKLING_SUPPORT_INC_
-#define DAAL4PY_PICKLING_SUPPORT_INC_
+#ifndef DAAL4PY_PICKLING_INC_
+#define DAAL4PY_PICKLING_INC_
 
 #include "daal.h"
 #include "Python.h"
 
 template <typename T>
-PyObject *
-serialize_si(daal::services::SharedPtr< T > * ptr) 
+PyObject * serialize_si(daal::services::SharedPtr< T > * ptr) 
 {
+    if(!ptr || !(*ptr)) return NULL;
+
     daal::data_management::InputDataArchive dataArch;
 
     (daal::services::staticPointerCast<daal::data_management::SerializationIface>(*ptr))->serialize(dataArch);
@@ -19,9 +20,10 @@ serialize_si(daal::services::SharedPtr< T > * ptr)
 }
 
 template <typename T>
-T *
-deserialize_si(PyObject * py_bytes)
+T * deserialize_si(PyObject * py_bytes)
 {
+    if(!py_bytes || py_bytes == Py_None) return NULL;
+
     char* buf;
     Py_ssize_t buf_len;
     PyBytes_AsStringAndSize(py_bytes, &buf, &buf_len);
@@ -31,4 +33,4 @@ deserialize_si(PyObject * py_bytes)
     return new T(daal::services::staticPointerCast<typename T::ElementType >(dataArch.getAsSharedPtr()));
 }
 
-#endif
+#endif // DAAL4PY_PICKLING_INC_

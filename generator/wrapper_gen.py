@@ -81,7 +81,7 @@ cdef extern from "daal4py_cpp.h":
     ctypedef NumericTablePtr data_management_NumericTablePtr
 
 
-cdef extern from "pickling_support.h":
+cdef extern from "pickling.h":
     cdef object serialize_si(void *) nogil
     cdef T* deserialize_si[T](object) nogil
 
@@ -191,6 +191,7 @@ cdef class {{flatname}}:
     '''
     cdef {{class_type|flat}} c_ptr
     def __cinit__(self):
+        self.c_ptr = NULL
         pass
     def __dealloc__(self):
         del self.c_ptr
