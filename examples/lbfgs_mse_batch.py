@@ -57,7 +57,12 @@ def main():
     # The LBFGS result provides minimum and nIterations
     assert res.minimum.shape == inp.shape and res.nIterations[0][0] <= niters
 
+    return res
+
 
 if __name__ == "__main__":
-    main()
+    res = main()
+    print("\nExpected coefficients:\n", np.array([[11], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10]], dtype=np.float64))
+    print("\nResulting coefficients:\n", res.minimum)
+    print("\nNumber of iterations performed:\n", res.nIterations[0][0])
     print('All looks good!')

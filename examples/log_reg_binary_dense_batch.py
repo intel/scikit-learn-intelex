@@ -47,6 +47,8 @@ def main():
     # read testing data from file with 20 features per observation
     testfile = "./data/batch/binary_cls_test.csv"
     predict_data = read_csv(testfile, range(nFeatures))
+    predict_labels = read_csv(testfile, range(nFeatures, nFeatures + 1))
+    predict_labels.shape = (predict_data.shape[0], 1)
 
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses)
@@ -55,7 +57,11 @@ def main():
     # the prediction result provides prediction
     assert predict_result.prediction.shape == (predict_data.shape[0], train_labels.shape[1])
 
+    return (predict_result, predict_labels)
+
 
 if __name__ == "__main__":
-    main()
+    (predict_result, predict_labels) = main()
+    print("\nLogistic regression prediction results (first 10 rows):\n", predict_result.prediction[0:10])
+    print("\nGround truth (first 10 rows):\n", predict_labels[0:10])
     print('All looks good!')
