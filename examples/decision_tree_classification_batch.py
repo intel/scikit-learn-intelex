@@ -43,10 +43,14 @@ if __name__ == "__main__":
     predict_algo = d4p.decision_tree_classification_prediction()
     # read test data (with same #features)
     pdata = loadtxt("./data/batch/decision_tree_test.csv", delimiter=',', usecols=range(5))
+    plabels = loadtxt("./data/batch/decision_tree_test.csv", delimiter=',', usecols=range(5,6))
+    plabels.shape = (plabels.size, 1)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
+    print("\nDecision tree prediction results (first 20 rows):\n", predict_result.prediction[0:20])
+    print("\nGround truth (first 20 rows):\n", plabels[0:20])
     print('All looks good!')
