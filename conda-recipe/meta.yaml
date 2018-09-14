@@ -34,6 +34,15 @@ build:
 test:
     imports:
         - daal4py
+    source_files:
+        - examples/run_examples.py
+        - examples/*batch.py
+        - examples/data/batch
+        - examples/*spmd.py         [linux]
+        - examples/*dspv.py         [linux]
+        - examples/data/distributed [linux]
+    commands:
+        - cd examples && python run_examples.py
 
 about:
     license: Apache 2.0
