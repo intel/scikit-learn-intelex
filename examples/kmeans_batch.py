@@ -51,4 +51,7 @@ if __name__ == "__main__":
     assert result.assignments.shape == (data.shape[0], 1)
     assert result.nIterations <= maxIter
 
+    print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
+    print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
+    print("\nObjective function value:\n", result.objectiveFunction)
     print('All looks good!')
