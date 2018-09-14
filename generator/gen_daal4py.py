@@ -816,6 +816,7 @@ def gen_daal4py(daalroot, outdir, warn_all=False):
                                             'decision_tree',
                                             'decision_forest',
                                             'ridge_regression',
+                                            'moments',
                                             'optimization_solver',
                                             'logistic_regression',
     ])
