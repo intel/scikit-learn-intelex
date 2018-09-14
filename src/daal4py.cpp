@@ -1,18 +1,18 @@
 /*******************************************************************************
-* Copyright 2014-2018 Intel Corporation
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*******************************************************************************/
+ * Copyright 2014-2018 Intel Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 
 #define NO_IMPORT_ARRAY
 #include "daal4py.h"
@@ -246,10 +246,10 @@ TableOrFList::TableOrFList(PyObject * input)
                     throw std::invalid_argument("Array converstion failed.");
                 }
                 // we provide the SharedPtr with a deleter which decrements the pyref
-                this->tlist[i].reset(new data_management::HomogenNumericTable<double>(daal::services::SharedPtr<double>((double*)array_data(array),
-                                                                                                                        NumpyDeleter(array)),
-                                                                                     (size_t)array_size(array,1),
-                                                                                     (size_t)array_size(array,0)));
+                this->tlist[i].reset(new daal::data_management::HomogenNumericTable<double>(daal::services::SharedPtr<double>((double*)array_data(array),
+                                                                                                                              NumpyDeleter(array)),
+                                                                                            (size_t)array_size(array,1),
+                                                                                            (size_t)array_size(array,0)));
                 // we need it increment the ref-count if we use the input array in-place
                 // if we copied/converted it we already own our own reference
                 if((PyObject*)array == el) Py_INCREF(array);
@@ -271,10 +271,10 @@ TableOrFList::TableOrFList(PyObject * input)
             return;
         }
         // we provide the SharedPtr with a deleter which decrements the pyref
-        this->table.reset(new data_management::HomogenNumericTable<double>(daal::services::SharedPtr<double>((double*)array_data(array),
-                                                                                                             NumpyDeleter(array)),
-                                                                           (size_t)array_size(array,1),
-                                                                           (size_t)array_size(array,0)));
+        this->table.reset(new daal::data_management::HomogenNumericTable<double>(daal::services::SharedPtr<double>((double*)array_data(array),
+                                                                                                                   NumpyDeleter(array)),
+                                                                                 (size_t)array_size(array,1),
+                                                                                 (size_t)array_size(array,0)));
         // we need it increment the ref-count if we use the input array in-place
         // if we copied/converted it we already own our own reference
         if((PyObject*)array == input) Py_INCREF(array);
@@ -321,10 +321,10 @@ static daal::data_management::NumericTable * _make_nt(PyObject * nda)
         throw std::invalid_argument("Conversion to DAAL NumericTable failed");
     }
     // we provide the SharedPtr with a deleter which decrements the pyref
-    daal::data_management::NumericTable * ptr = new data_management::HomogenNumericTable<T>(daal::services::SharedPtr<T>((T*)array_data(array),
-                                                                                                                         NumpyDeleter(array)),
-                                                                                            (size_t)array_size(array,1),
-                                                                                            (size_t)array_size(array,0));
+    daal::data_management::NumericTable * ptr = new daal::data_management::HomogenNumericTable<T>(daal::services::SharedPtr<T>((T*)array_data(array),
+                                                                                                                               NumpyDeleter(array)),
+                                                                                                  (size_t)array_size(array,1),
+                                                                                                  (size_t)array_size(array,0));
     // we need it increment the ref-count if we use the input array in-place
     // if we copied/converted it we already own our own reference
     if((PyObject*)array == nda) Py_INCREF(array);
@@ -334,9 +334,7 @@ static daal::data_management::NumericTable * _make_nt(PyObject * nda)
 
 daal::data_management::NumericTablePtr * make_nt(PyObject * nda)
 {
-    if(nda == Py_None) {
-        new daal::data_management::NumericTablePtr();
-    } else {
+    if(nda && nda != Py_None) {
         daal::data_management::NumericTable * ptr = NULL;
 
         switch(array_type(nda)) {
@@ -361,14 +359,15 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * nda)
 
         return new daal::data_management::NumericTablePtr(ptr);
     }
+	return new daal::data_management::NumericTablePtr();
 }
 
 const daal::data_management::NumericTablePtr readCSV(const std::string& fname)
 {
-    data_management::FileDataSource< data_management::CSVFeatureManager >
+    daal::data_management::FileDataSource< daal::data_management::CSVFeatureManager >
         dataSource(fname,
-                   data_management::DataSource::doAllocateNumericTable,
-                   data_management::DataSource::doDictionaryFromContext);
+                   daal::data_management::DataSource::doAllocateNumericTable,
+                   daal::data_management::DataSource::doDictionaryFromContext);
     dataSource.loadDataBlock();
     return daal::data_management::NumericTablePtr(dataSource.getNumericTable());
 }
@@ -392,10 +391,10 @@ void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data
             *data = get_nt_data_ptr< int >(ptr);
             break;
         default:
-            throw std::invalid_argument("Invalid data type specified.");
+			std::cerr << "Invalid data type specified." << std::endl;
         }
         if(*data) return;
-        throw std::invalid_argument("Data type and table type are incompatible.");
+		std::cerr << "Data type and table type are incompatible." << std::endl;
     }
     // ptr==NULL: no input data
     dims[0] = dims[1] = 0;

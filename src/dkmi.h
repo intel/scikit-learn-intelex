@@ -22,7 +22,7 @@
 #include <array>
 #include <numeric>
 
-template< typename fptype, algorithms::kmeans::init::Method method >
+template< typename fptype, daal::algorithms::kmeans::init::Method method >
 struct kmeans_init_manager;
 
 namespace dkmi
@@ -163,15 +163,15 @@ namespace dkmi
     {};
 
     template<typename fptype>
-    struct dkmiContext< kmeans_init_manager< fptype, algorithms::kmeans::init::plusPlusDense > >
-        : public CnC::context< dkmiContext< kmeans_init_manager< fptype, algorithms::kmeans::init::plusPlusDense > > >
+    struct dkmiContext< kmeans_init_manager< fptype, daal::algorithms::kmeans::init::plusPlusDense > >
+        : public CnC::context< dkmiContext< kmeans_init_manager< fptype, daal::algorithms::kmeans::init::plusPlusDense > > >
     {
         typedef CnC::identityMap< block_tag >   step1_map;
         typedef step2Ctrl                       step2_map;
         typedef step3Ctrl                       step3_map;
         typedef CnC::identityMap< itBlock_tag > step4_map;
 
-        typedef kmeans_init_manager< fptype, algorithms::kmeans::init::plusPlusDense > manager_type;
+        typedef kmeans_init_manager< fptype, daal::algorithms::kmeans::init::plusPlusDense > manager_type;
         typedef readGraph< block_tag, localTuner, localTuner, localTuner, 1 > reader_type;
         typedef typename reader_type::in_coll_type read_input_coll_type;
 
@@ -265,7 +265,7 @@ namespace dkmi
         typename Context::manager_type::iomstep1Local_type::result_type res = ctxt.algo->run_step1Local(pData, pData->getNumberOfRows()*ctxt.nBlocks, pData->getNumberOfRows()*tag);
 
         if(res) {
-            step2Input_t c = res->get(algorithms::kmeans::init::partialCentroids);
+            step2Input_t c = res->get(daal::algorithms::kmeans::init::partialCentroids);
             if(c) ctxt.step2Input.put(1, c);
         }
         return 0;
@@ -283,8 +283,8 @@ namespace dkmi
 
         typename Context::manager_type::iomstep2Local_type::result_type res = ctxt.algo->run_step2Local(pData, localNodeData, step2Input);
 
-        ctxt.step2Result.put(tag, res->get(algorithms::kmeans::init::outputOfStep2ForStep3));
-        if(tag[0] == 1) localNodeData = res->get(algorithms::kmeans::init::internalResult);
+        ctxt.step2Result.put(tag, res->get(daal::algorithms::kmeans::init::outputOfStep2ForStep3));
+        if(tag[0] == 1) localNodeData = res->get(daal::algorithms::kmeans::init::internalResult);
         ctxt.localNodeData.put(tag, localNodeData);
         return 0;
     }
@@ -300,7 +300,7 @@ namespace dkmi
         typename Context::manager_type::iomstep3Master_type::result_type res = ctxt.algo->run_step3Master(inp);
 
         for(int i = 0; i < ctxt.nBlocks; ++i) {
-            daal::data_management::NumericTablePtr pTbl = res->get(algorithms::kmeans::init::outputOfStep3ForStep4, i); /* can be null */
+            daal::data_management::NumericTablePtr pTbl = res->get(daal::algorithms::kmeans::init::outputOfStep3ForStep4, i); /* can be null */
             if( pTbl ) {
                 ctxt.step4Input.put({tag, i}, pTbl);
                 return 0;
@@ -372,7 +372,7 @@ namespace dkmi
             auto pCentroids = applyGather::applyGather< manager_type, step1ApplyGather, applyGather::step2_default >::compute(input, algo);
             typename manager_type::iomb_type::result_type res(new typename manager_type::iomb_type::result_type::ElementType);
             if(CnC::tuner_base::myPid() == 0 || CnC::Internal::distributor::distributed_env()) {
-                res->set(algorithms::kmeans::init::centroids, pCentroids);
+                res->set(daal::algorithms::kmeans::init::centroids, pCentroids);
             }
             if(CnC::Internal::distributor::distributed_env()) CnC::Internal::distributor::unsafe_barrier();
             return res;
@@ -380,18 +380,18 @@ namespace dkmi
     };
 
     template< typename fptype >
-    struct dkmi< kmeans_init_manager< fptype, algorithms::kmeans::init::randomDense > >
-        : public dkmi_ag< kmeans_init_manager< fptype, algorithms::kmeans::init::randomDense > >
+    struct dkmi< kmeans_init_manager< fptype, daal::algorithms::kmeans::init::randomDense > >
+        : public dkmi_ag< kmeans_init_manager< fptype, daal::algorithms::kmeans::init::randomDense > >
     {};
     template< typename fptype >
-    struct dkmi< kmeans_init_manager< fptype, algorithms::kmeans::init::deterministicDense > >
-        : public dkmi_ag< kmeans_init_manager< fptype, algorithms::kmeans::init::deterministicDense > >
+    struct dkmi< kmeans_init_manager< fptype, daal::algorithms::kmeans::init::deterministicDense > >
+        : public dkmi_ag< kmeans_init_manager< fptype, daal::algorithms::kmeans::init::deterministicDense > >
     {};
 
     template<typename fptype>
-    struct dkmi< kmeans_init_manager< fptype, algorithms::kmeans::init::plusPlusDense > >
+    struct dkmi< kmeans_init_manager< fptype, daal::algorithms::kmeans::init::plusPlusDense > >
     {
-        typedef kmeans_init_manager< fptype, algorithms::kmeans::init::plusPlusDense > manager_type;
+        typedef kmeans_init_manager< fptype, daal::algorithms::kmeans::init::plusPlusDense > manager_type;
         typedef dkmiContext< manager_type > context_type;
 
         static typename manager_type::iomb_type::result_type
@@ -422,14 +422,14 @@ namespace dkmi
             }
             ctxt.wait();
             typename manager_type::iomb_type::result_type res(new typename manager_type::iomb_type::result_type::ElementType);
-            data_management::RowMergedNumericTable pCentroids;
+            daal::data_management::RowMergedNumericTable pCentroids;
             
             for(int i = 1; i <= algo._nClusters; ++i ) {
                 step2Input_t s2i;
                 ctxt.step2Input.get(i, s2i);
                 pCentroids.addNumericTable(s2i);
             }
-            res->set(algorithms::kmeans::init::centroids, data_management::convertToHomogen<double>(pCentroids));
+            res->set(daal::algorithms::kmeans::init::centroids, daal::data_management::convertToHomogen<double>(pCentroids));
             if(CnC::Internal::distributor::distributed_env()) CnC::Internal::distributor::unsafe_barrier();
 
             return res;

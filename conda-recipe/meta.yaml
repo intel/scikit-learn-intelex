@@ -17,6 +17,7 @@ requirements:
         - tbb-devel
         - cnc >=1.2.300
         - daal-devel >=2018.0.1
+        - daal-static >=2018.0.1   [win]
         - cython
         - jinja2
     run:
@@ -28,6 +29,7 @@ requirements:
 
 build:
     number: {{buildnumber}}
+    include_recipe: False
 
 test:
     imports:

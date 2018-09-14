@@ -18,6 +18,12 @@
 #define _HLAPI_H_INCLUDED_
 
 #include <daal.h>
+using daal::step1Local;
+using daal::step2Local;
+using daal::step3Local;
+using daal::step4Local;
+using daal::step2Master;
+using daal::step3Master;
 #include "daal_compat.h"
 
 #include <iostream>
@@ -26,6 +32,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
 #define NTYPE PyObject*
@@ -35,8 +42,6 @@
 #define PyUnicode_AsUTF8(_x) PyString_AsString(_x)
 #define PyUnicode_FromString(_x) PyString_FromString(_x)
 #endif
-
-using namespace daal;
 
 extern "C" {
 void c_daalinit(bool spmd=false, int flag=0);
@@ -80,10 +85,12 @@ inline bool use_default(const size_t & attr)
     return (long)attr == (long)-1;
 }
 
+#ifndef _WIN32
 inline bool use_default(const DAAL_UINT64 & attr)
 {
     return (long)attr == (long)-1;
 }
+#endif
 
 inline bool use_default(const double & attr)
 {
@@ -173,7 +180,7 @@ inline const TableOrFList & to_daal(TableOrFList * t) {return *t;}
 template< typename T >
 void * get_nt_data_ptr(const daal::data_management::NumericTablePtr * ptr)
 {
-    auto dptr = dynamic_cast< const data_management::HomogenNumericTable< T >* >((*ptr).get());
+    auto dptr = dynamic_cast< const daal::data_management::HomogenNumericTable< T >* >((*ptr).get());
     return dptr ? reinterpret_cast< void* >(dptr->getArraySharedPtr().get()) : NULL;
 }
 

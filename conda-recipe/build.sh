@@ -1,8 +1,9 @@
 #!/bin/bash
 
-if [ -n "$PY_VER" ] && [ "${PY_VER:0:1}" -lt "3" ]; then
-    ARG="--old-and-unmanageable"
+if [ "$PY3K" == "1" ]; then
+    ARGS=""
 else
-    ARG=""
+    ARGS="--old-and-unmanageable"
 fi
-DAAL4PY_VERSION=$PKG_VERSION CNCROOT=${PREFIX} TBBROOT=${PREFIX} DAALROOT=${PREFIX} ${PYTHON} setup.py install $ARG
+
+DAAL4PY_VERSION=$PKG_VERSION CNCROOT=${PREFIX} TBBROOT=${PREFIX} DAALROOT=${PREFIX} ${PYTHON} setup.py install $ARGS

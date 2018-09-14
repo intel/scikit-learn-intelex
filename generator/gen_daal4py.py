@@ -150,6 +150,7 @@ class cython_interface(object):
         what namespace it is affiliated with. Once done, we have a dictionary where the key is the namespace
         and the values are namespace class objects. These objects carry all information as extracted by parse.py.
         """
+        print('reading headers from ' + self.include_root)
         for (dirpath, dirnames, filenames) in os.walk(self.include_root):
             for filename in filenames:
                 if filename.endswith('.h') and not 'neural_networks' in dirpath and not any(filename.endswith(x) for x in cython_interface.ignore_files):
@@ -288,7 +289,7 @@ class cython_interface(object):
         if t.endswith('ModelPtr'):
             thens = self.get_ns(ns, t, attrs=['typedefs'])
             return ('daal::' + thens + '::ModelPtr', 'class', tns)
-        if t in ['data_management::NumericTablePtr',] or t in ifaces.values():
+        if t in ['data_management::NumericTablePtr'] or t in ifaces.values():
             return ('daal::' + t, 'class', tns)
         if 'Batch' in self.namespace_dict[ns].classes and t in self.namespace_dict[ns].classes['Batch'].typedefs:
             tns, tname = splitns(self.namespace_dict[ns].classes['Batch'].typedefs[t])
@@ -325,7 +326,7 @@ class cython_interface(object):
         if nns:
             nn = splitns(n)[1]
             if nn in self.namespace_dict[nns].enums:
-                return [nns + '::' + x for x in self.namespace_dict[nns].enums[nn]]
+                return [re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', nns + '::' + x) for x in self.namespace_dict[nns].enums[nn]]
             return ['unknown_' + nns + '_class_'+n]
         return ['unknown_'+n]
 
@@ -341,7 +342,7 @@ class cython_interface(object):
         if nns:
             nn = splitns(n)[1]
             if nn in self.namespace_dict[nns].enums:
-                return nns + '::' + nn
+                return re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', nns + '::' + nn)
             return 'unknown_' + nns + '_class_'+n
         return 'unknown_'+n
 
@@ -460,7 +461,8 @@ class cython_interface(object):
                 if not any(g.endswith(x) for x in ['SerializationTag',]):
                     gn = splitns(g)[1].replace('get', '')
                     if not any(gn == x[1] for x in jparams['named_gets']):
-                        jparams['named_gets'].append((huhu[g], gn))
+                        typ = re.sub(r'(?<!daal::)data_management', r'daal::data_management', huhu[g])
+                        jparams['named_gets'].append((typ, gn))
         return jparams
 
 
@@ -555,7 +557,8 @@ class cython_interface(object):
                                   'template_args': None,
                                   'pargs': None})
                     for s in v['specs']:
-                        tdecl.append({'template_decl': OrderedDict([(x, v['tmpl_decl'][x]) for x in s['template_decl']]),
+                        tdecl.append({'template_decl': OrderedDict([(re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', x),
+                                                                     v['tmpl_decl'][x]) for x in s['template_decl']]),
                                       'template_args': [s['expl'][x] if x in s['expl'] else x for x in v['tmpl_decl']],
                                       'pargs': [s['expl'][x] for x in s['expl']]})
                 else:
@@ -624,6 +627,7 @@ class cython_interface(object):
                                     pval = tmp
                                 if pval != None:
                                     thetype = (hlt if hlt else parms[p])
+                                    pval = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', pval)
                                     if tmp in jparams['params_req']:
                                         td['params_req'][tmp] = pval
                                         decl_req.append('const ' + thetype + ' ' + tmp)
@@ -645,7 +649,6 @@ class cython_interface(object):
             tmp_iargs_decl = []
             tmp_iargs_call = []
             tmp_input_args = []
-            setinputs = ''
             inp = self.get_class_for_typedef(ns, 'Batch', 'InputType')
             if not inp and 'Input' in self.namespace_dict[ns].classes:
                 inp = (ns, 'Input')
@@ -665,6 +668,7 @@ class cython_interface(object):
                         if 'NumericTablePtr' in itype:
                             #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
                             itype = 'TableOrFList *'
+                        ins = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', ins)
                         tmp_iargs_decl.insert(i, 'const ' + itype + ' ' + iname + dflt)
                         tmp_iargs_call.insert(i, iname)
                         tmp_input_args.insert(i, (ins + '::' + iname, iname, itype))
@@ -752,7 +756,7 @@ class cython_interface(object):
                 for e in  self.namespace_dict[ns].enums:
                     for v in self.namespace_dict[ns].enums[e]:
                         vv = ns + '::' + v
-                        cpp_begin += ' '*4 +'{"' + v + '", ' + vv + '},\n'
+                        cpp_begin += ' '*4 +'{"' + v + '", daal::' + vv + '},\n'
                 cpp_begin += '};\n\n'
 
         hlargs = {}
@@ -798,7 +802,6 @@ def gen_daal4py(daalroot, outdir, warn_all=False):
     global no_warn
     if warn_all:
         no_warn = {}
-
     iface = cython_interface(jp(daalroot, 'include', 'algorithms'))
     iface.read()
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(['kmeans',
