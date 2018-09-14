@@ -86,7 +86,7 @@ cdef extern from "pickling.h":
     cdef T* deserialize_si[T](object) nogil
 
 
-cpdef rebuild(class_constructor, state_data):
+cpdef _rebuild(class_constructor, state_data):
     cls = class_constructor()
     cls.__setstate__(state_data)
     return cls
@@ -225,7 +225,7 @@ cdef class {{flatname}}:
 
     def __reduce__(self):
         state_data = self.__getstate__()
-        return (rebuild, (self.__class__, state_data,))
+        return (_rebuild, (self.__class__, state_data,))
 
 
 hpat_spec.append({
