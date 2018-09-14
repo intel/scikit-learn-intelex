@@ -14,7 +14,7 @@ PyObject * serialize_si(daal::services::SharedPtr< T > * ptr)
     (daal::services::staticPointerCast<daal::data_management::SerializationIface>(*ptr))->serialize(dataArch);
 
     Py_ssize_t buf_len = dataArch.getSizeOfArchive();
-    daal::services::SharedPtr<byte> shr_ptr = dataArch.getArchiveAsArraySharedPtr();
+    daal::services::SharedPtr<daal::byte> shr_ptr = dataArch.getArchiveAsArraySharedPtr();
 
     return PyBytes_FromStringAndSize(reinterpret_cast<char *>(shr_ptr.get()), buf_len);
 }
