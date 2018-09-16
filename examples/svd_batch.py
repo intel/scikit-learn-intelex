@@ -40,4 +40,7 @@ if __name__ == "__main__":
     assert allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-07)
     assert allclose(result1.singularValues, result2.singularValues, atol=1e-07)
 
+    print("\nSingular values:\n", result1.singularValues)
+    print("\nRight orthogonal matrix V:\n", result1.rightSingularMatrix)
+    print("\nLeft orthogonal matrix U (first 10 rows):\n", result1.leftSingularMatrix[0:10])
     print('All looks good!')
