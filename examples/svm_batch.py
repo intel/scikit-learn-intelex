@@ -40,11 +40,15 @@ if __name__ == "__main__":
     predict_algo = d4p.svm_prediction()
     # read test data (with same #features)
     pdata = loadtxt("./data/batch/svm_two_class_test_dense.csv", delimiter=',', usecols=range(20))
+    plabels = loadtxt("./data/batch/svm_two_class_test_dense.csv", delimiter=',', usecols=range(20,21))
+    plabels.shape = (plabels.size, 1)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    assert(predict_result.prediction.shape == (data.shape[0], 1))
+    assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
+    print("\nSVM classification results (first 20 observations):\n", predict_result.prediction[0:20])
+    print("\nGround truth (first 20 observations):\n", plabels[0:20])
     print('All looks good!')
     d4p.daalfini()
