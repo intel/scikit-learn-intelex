@@ -27,7 +27,7 @@ if __name__ == "__main__":
     method = 'svdDense'
 
     # configure a PCA object
-    algo = d4p.pca(method=method)
+    algo = d4p.pca(method=method, resultsToCompute = "mean|variance|eigenvalue", isDeterministic = True)
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
@@ -39,7 +39,11 @@ if __name__ == "__main__":
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
     assert allclose(result1.eigenvalues, result2.eigenvalues)
     assert allclose(result1.eigenvectors, result2.eigenvectors)
-    assert result1.means == None and result2.means == None or allclose(result1.means, result2.means)
-    assert result1.variances == None and result2.variances == None or allclose(result1.variances, result2.variances)
+    assert allclose(result1.means, result2.means)
+    assert allclose(result1.variances, result2.variances)
 
+    print("\nEigenvalues:\n", result1.eigenvalues)
+    print("\nEigenvectors:\n", result1.eigenvectors)
+    print("\nMeans:\n", result1.means)
+    print("\nVariances:\n", result1.variances)
     print('All looks good!')
