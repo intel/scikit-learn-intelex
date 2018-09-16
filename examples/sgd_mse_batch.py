@@ -58,7 +58,11 @@ def main():
     # The SGD result provides minimum and nIterations
     assert res.minimum.shape == inp.shape and res.nIterations[0][0] <= niters
 
+    return res
+
 
 if __name__ == "__main__":
-    main()
+    res = main()
+    print("\nMinimum:\n", res.minimum)
+    print("\nNumber of iterations performed:\n", res.nIterations[0][0])
     print('All looks good!')
