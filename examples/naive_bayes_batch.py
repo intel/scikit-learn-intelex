@@ -39,11 +39,15 @@ if __name__ == "__main__":
     palgo = d4p.multinomial_naive_bayes_prediction(20)
     # read test data (with same #features)
     pdata = loadtxt("./data/batch/naivebayes_test_dense.csv", delimiter=',', usecols=range(20))
+    plabels = loadtxt("./data/batch/naivebayes_test_dense.csv", delimiter=',', usecols=range(20,21))
+    plabels.shape = (plabels.size, 1)
     # now predict using the model from the training above
     presult = palgo.compute(pdata, tresult.model)
 
     # Prediction result provides prediction
     assert(presult.prediction.shape == (pdata.shape[0], 1))
 
+    print("\nNaiveBayes classification results (first 20 observations):\n", presult.prediction[0:20])
+    print("\nGround truth (first 20 observations)\n", plabels[0:20])
     print('All looks good!')
 
