@@ -41,3 +41,7 @@ def main():
 
 if __name__ == "__main__":
     res = main()
+    np.set_printoptions(threshold=np.nan)
+    np.set_printoptions(linewidth=np.nan)
+    print("\nCorrelation distance (first 15 rows/columns):\n", res.correlationDistance[0:15,0:15])
+    print("All looks good!")
