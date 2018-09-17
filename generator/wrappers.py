@@ -416,6 +416,8 @@ no_warn = {
     'algorithms::svm': ['Result',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::optimization_solver': ['Result',],
+    'algorithms::cosine_distance::Batch': ['ParameterType',],
+    'algorithms::correlation_distance::Batch': ['ParameterType',],
 }
 
 # we need to be more specific about numeric table types for the lowering phase in HPAT

@@ -59,7 +59,6 @@ def main():
     # The AdaGrad result provides minimum and nIterations
     assert res.minimum.shape == inp.shape and res.nIterations[0][0] <= niters
 
-
 if __name__ == "__main__":
     main()
     print('All looks good!')

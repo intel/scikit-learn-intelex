@@ -2,6 +2,49 @@
 Algorithms
 ##########
 
+Principal Component Analysis (PCA)
+----------------------------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL PCA <https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis>`_
+
+Examples:
+
+- `Single-Process PCA <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_batch.py>`_
+- `Multi-Process (DSPV) PCA <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_dspv.py>`_
+- `Multi-Process (SPMD) PCA <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_spmd.py>`_
+
+.. autoclass:: daal4py.pca
+.. autoclass:: daal4py.pca_result
+   :members:
+
+Singular Value Decomposition (SVD)
+----------------------------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL SVD <https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition>`_
+
+Examples:
+
+- `Single-Process SVD <https://github.intel.com/SAT/daal4py/blob/master/examples/svd_batch.py>`_
+- `Multi-Process (DSPV) SVD <https://github.intel.com/SAT/daal4py/blob/master/examples/svd_dspv.py>`_
+- `Multi-Process (SPMD) SVD <https://github.intel.com/SAT/daal4py/blob/master/examples/svd_spmd.py>`_
+
+.. autoclass:: daal4py.svd
+.. autoclass:: daal4py.svd_result
+   :members:
+
+Moments of Low Order
+--------------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL Moments of Low Order <https://software.intel.com/en-us/daal-programming-guide-moments-of-low-order>`_
+
+Examples:
+
+- `Single-Process Low Order Moments <https://github.intel.com/SAT/daal4py/blob/master/examples/low_order_moments_dense_batch.py>`_
+
+.. autoclass:: daal4py.low_order_moments
+.. autoclass:: daal4py.low_order_moments_result
+   :members:
+
 Classification
 --------------
 See also `Intel DAAL Classification
@@ -102,6 +145,27 @@ Examples:
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.svm_model
+   :members:
+
+Logistic Regression
+^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Logistc Regression <https://software.intel.com/en-us/daal-programming-guide-logistic-regression>`_
+
+Examples:
+
+- `Single-Process Binary Class Logistic Regression
+  <https://github.intel.com/SAT/daal4py/blob/master/examples/logistic_regression_batch.py>`_
+- `Single-Process Logistic Regression
+  <https://github.intel.com/SAT/daal4py/blob/master/examples/logistic_regression_binary_batch.py>`_
+
+.. autoclass:: daal4py.logistic_regression_training
+.. autoclass:: daal4py.logistic_regression_training_result
+   :members:
+.. autoclass:: daal4py.logistic_regression_prediction
+.. autoclass:: daal4py.classifier_prediction_result
+   :members:
+.. autoclass:: daal4py.logistic_regression_model
    :members:
 
 Regression
@@ -263,32 +327,109 @@ Examples:
 .. autoclass:: daal4py.univariate_outlier_detection_result
    :members:
 
-Principal Component Analysis (PCA)
-----------------------------------
+Optimization Solvers
+--------------------
+Objective Functions
+^^^^^^^^^^^^^^^^^^^
+Mean Squared Error Algorithm (MSE)
+""""""""""""""""""""""""""""""""""
 Detailed description of parameters and semantics are described in
-`Intel DAAL PCA <https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis>`_
+`Intel DAAL MSE <https://software.intel.com/en-us/daal-programming-guide-mean-squared-error-algorithm>`_
+
+Examples:
+- `In Adagrad <https://github.intel.com/SAT/daal4py/blob/master/examples/adagrad_mse_batch.py>`_
+- `In LBFGS <https://github.intel.com/SAT/daal4py/blob/master/examples/lbfgs_mse_batch.py>`_
+- `In SGD <https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_mse_batch.py>`_
+
+.. autoclass:: daal4py.optimization_solver_mse
+.. autoclass:: daal4py.optimization_solver_mse_result
+   :members:
+
+Logistic Loss
+"""""""""""""
+Detailed description of parameters and semantics are described in
+`Intel DAAL Logistic Loss <https://software.intel.com/en-us/daal-programming-guide-logistic-loss>`_
+
+Examples:
+- `In SGD <https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`_
+
+.. autoclass:: daal4py.optimization_solver_logistic_loss
+.. autoclass:: daal4py.optimization_solver_logistic_loss_result
+   :members:
+ 
+Cross-entropy Loss
+""""""""""""""""""
+Detailed description of parameters and semantics are described in
+`Intel DAAL Cross Entropy Loss <https://software.intel.com/en-us/daal-programming-guide-cross-entropy-loss>`_
+
+.. autoclass:: daal4py.optimization_solver_cross_entropy_loss
+.. autoclass:: daal4py.optimization_solver_cross_entropy_loss_result
+   :members:
+
+Iterative Solvers
+^^^^^^^^^^^^^^^^^
+Stochastic Gradient Descent Algorithm
+"""""""""""""""""""""""""""""""""""""
+Detailed description of parameters and semantics are described in
+`Intel DAAL SGD <https://software.intel.com/en-us/daal-programming-guide-stochastic-gradient-descent-algorithm>`_
+
+Examples:
+- `Using Logistic Loss <https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`_
+- `Using MSE <https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_mse_batch.py>`_
+
+.. autoclass:: daal4py.optimization_solver_sgd
+.. autoclass:: daal4py.optimization_solver_sgd_result
+   :members:
+
+Limited-Memory Broyden-Fletcher-Goldfarb-Shanno Algorithm
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Detailed description of parameters and semantics are described in
+`Intel DAAL LBFGS <https://software.intel.com/en-us/daal-programming-guide-limited-memory-broyden-fletcher-goldfarb-shanno-algorithm>`_
+
+Examples:
+- `Using MSE <https://github.intel.com/SAT/daal4py/blob/master/examples/lbfgs_mse_batch.py>`_
+
+.. autoclass:: daal4py.optimization_solver_lbfgs
+.. autoclass:: daal4py.optimization_solver_lbfgs_result
+   :members:
+
+Adaptive Subgradient Method
+"""""""""""""""""""""""""""
+Detailed description of parameters and semantics are described in
+`Intel DAAL AdaGrad <https://software.intel.com/en-us/daal-programming-guide-adaptive-subgradient-method>`_
+
+Examples:
+- `Using MSE <https://github.intel.com/SAT/daal4py/blob/master/examples/adagrad_mse_batch.py>`_
+
+.. autoclass:: daal4py.optimization_solver_adagrad
+.. autoclass:: daal4py.optimization_solver_adagrad_result
+   :members:
+
+Distances
+---------
+Cosine Distance Matrix
+^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Cosine Distance <https://software.intel.com/en-us/daal-programming-guide-cosine-distance-matrix>`_
 
 Examples:
 
-- `Single-Process PCA <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_batch.py>`_
-- `Multi-Process (DSPV) PCA <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_dspv.py>`_
-- `Multi-Process (SPMD) PCA <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_spmd.py>`_
+- `Single-Process Cosine Distance <https://github.intel.com/SAT/daal4py/blob/master/examples/cosine_distance_batch.py>`_
 
-.. autoclass:: daal4py.pca
-.. autoclass:: daal4py.pca_result
+.. autoclass:: daal4py.cosine_distance
+.. autoclass:: daal4py.cosine_distance_result
    :members:
 
-Singular Value Decomposition (SVD)
-----------------------------------
+Correlation Distance Matrix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL SVD <https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition>`_
+`Intel DAAL Correlation Distance <https://software.intel.com/en-us/daal-programming-guide-correlation-distance-matrix>`_
 
 Examples:
 
-- `Single-Process SVD <https://github.intel.com/SAT/daal4py/blob/master/examples/svd_batch.py>`_
-- `Multi-Process (DSPV) SVD <https://github.intel.com/SAT/daal4py/blob/master/examples/svd_dspv.py>`_
-- `Multi-Process (SPMD) SVD <https://github.intel.com/SAT/daal4py/blob/master/examples/svd_spmd.py>`_
+- `Single-Process Correlation Distance <https://github.intel.com/SAT/daal4py/blob/master/examples/correlation_distance_batch.py>`_
 
-.. autoclass:: daal4py.svd
-.. autoclass:: daal4py.svd_result
+.. autoclass:: daal4py.correlation_distance
+.. autoclass:: daal4py.correlation_distance_result
    :members:
+

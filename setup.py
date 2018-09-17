@@ -61,8 +61,7 @@ elif sys.platform in ['win32', 'cygwin']:
 else:
     assert False, sys.platform + ' not supported'
 
-if not IS_MAC:
-    daal_lib_dir = lib_dir if os.path.isdir(lib_dir) else os.path.dirname(lib_dir)
+daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 
 no_dist = os.environ['NO_DIST'] if 'NO_DIST' in os.environ else False
 
