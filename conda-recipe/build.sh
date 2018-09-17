@@ -6,6 +6,6 @@ else
     ARGS="--old-and-unmanageable"
 fi
 
-NO_DIST=true
+export NO_DIST=1
 
 DAAL4PY_VERSION=$PKG_VERSION CNCROOT=${PREFIX} TBBROOT=${PREFIX} DAALROOT=${PREFIX} ${PYTHON} setup.py install $ARGS
