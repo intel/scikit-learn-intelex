@@ -281,35 +281,90 @@ TableOrFList::TableOrFList(PyObject * input)
     }
 }
 
+
+// Uses a shared pointer to a raw array (T*) for creating a nd-array
 template<typename T, int NPTYPE>
-static PyObject * _make_nda(daal::data_management::NumericTablePtr * ptr)
+static PyObject * _sp_to_nda(daal::services::SharedPtr< T > & sp, size_t nr, size_t nc)
+{
+    npy_intp dims[2] = {static_cast<npy_intp>(nr), static_cast<npy_intp>(nc)};
+    PyObject* obj = PyArray_SimpleNewFromData(2, dims, NPTYPE, (void*)sp.get());
+    if (!obj) throw std::invalid_argument("conversion to numpy array failed");
+    set_sp_base((PyArrayObject*)obj, sp);
+    return obj;
+}
+
+// get a block of Rows from NT and then craete nd-array from it
+// DAAL potentially makes a copy when creating the BlockDesriptor
+template<typename T, int NPTYPE>
+static PyObject * _make_nda_from_bd(daal::data_management::NumericTablePtr * ptr)
+{
+    daal::data_management::BlockDescriptor<T> block;
+    (*ptr)->getBlockOfRows(0, (*ptr)->getNumberOfRows(), daal::data_management::readOnly, block);
+    if(block.getNumberOfRows() != (*ptr)->getNumberOfRows() || block.getNumberOfColumns() != (*ptr)->getNumberOfRows()) {
+        std::cerr << "Getting data ptr as block-of-rows failed";
+        return NULL;
+    }
+    daal::services::SharedPtr< T > data_tmp = block.getBlockSharedPtr();
+    if(! data_tmp) {
+        std::cerr << "Unexpected null pointer from block descriptor.";
+        return NULL;
+    }
+    return _sp_to_nda<T, NPTYPE>(data_tmp, block.getNumberOfRows(), block.getNumberOfColumns());
+}
+
+// Most efficient conversion if NT is a HomogeNumericTable
+// We do not need to make a copy and can use the raw data pointer directly.
+template<typename T, int NPTYPE>
+static PyObject * _make_nda_from_homogen(daal::data_management::NumericTablePtr * ptr)
 {
     auto dptr = dynamic_cast< daal::data_management::HomogenNumericTable< T >* >((*ptr).get());
     if(dptr) {
-        npy_intp dims[2] = {static_cast<npy_intp>((*ptr)->getNumberOfRows()), static_cast<npy_intp>((*ptr)->getNumberOfColumns())};
         daal::services::SharedPtr< T > data_tmp(dptr->getArraySharedPtr());
-        PyObject* obj = PyArray_SimpleNewFromData(2, dims, NPTYPE, (void*)data_tmp.get());
-        if (!obj) throw std::invalid_argument("conversion to numpy array failed");
-        set_sp_base((PyArrayObject*)obj, data_tmp);
-        return obj;
+        return _sp_to_nda<T, NPTYPE>(data_tmp, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns());
     }
     return NULL;
 }
 
+// Convert a DAAL NT to a numpy nd-array
+// tries to avoid copying the data, instead we try to share the memory with DAAL
 PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
 {
-    if(!ptr || !(*ptr).get()) return Py_None;
+    if(!ptr
+       || !(*ptr).get()
+       || (*ptr)->getNumberOfRows() == 0
+       || (*ptr)->getNumberOfRows() == 0) return Py_None;
 
     PyObject * res = NULL;
 
-    if((res = _make_nda<double,   NPY_FLOAT64>(ptr)) != NULL) return res;
-    if((res = _make_nda<float,    NPY_FLOAT32>(ptr)) != NULL) return res;
-    if((res = _make_nda<int32_t,  NPY_INT32>  (ptr)) != NULL) return res;
-    if((res = _make_nda<uint32_t, NPY_UINT32> (ptr)) != NULL) return res;
-    if((res = _make_nda<int64_t,  NPY_INT64>  (ptr)) != NULL) return res;
-    if((res = _make_nda<uint64_t, NPY_UINT64> (ptr)) != NULL) return res;
+    // Try to convert from homogen/dense type as given in first column of NT
+    // first try HomogenNT, then via BlockDescriptor. The latter requires a copy.
+    switch((*(*ptr)->getDictionary())[0].indexType) {
+    case daal::data_management::data_feature_utils::DAAL_FLOAT64:
+        if((res = _make_nda_from_homogen<double, NPY_FLOAT64>(ptr)) != NULL) return res;
+        if((res = _make_nda_from_bd<double, NPY_FLOAT64>(ptr)) != NULL) return res;
+        break;
+    case daal::data_management::data_feature_utils::DAAL_FLOAT32:
+        if((res = _make_nda_from_homogen<double, NPY_FLOAT64>(ptr)) != NULL) return res;
+        if((res = _make_nda_from_bd<double, NPY_FLOAT64>(ptr)) != NULL) return res;
+        break;
+    case daal::data_management::data_feature_utils::DAAL_INT32_S:
+        if((res = _make_nda_from_homogen<int32_t, NPY_INT32>  (ptr)) != NULL) return res;
+        if((res = _make_nda_from_bd<int32_t, NPY_INT32>(ptr)) != NULL) return res;
+        break;
+    case daal::data_management::data_feature_utils::DAAL_INT32_U:
+        if((res = _make_nda_from_homogen<uint32_t, NPY_UINT32> (ptr)) != NULL) return res;
+        break;
+    case daal::data_management::data_feature_utils::DAAL_INT64_S:
+        if((res = _make_nda_from_homogen<int64_t, NPY_INT64>  (ptr)) != NULL) return res;
+        break;
+    case daal::data_management::data_feature_utils::DAAL_INT64_U:
+        if((res = _make_nda_from_homogen<uint64_t, NPY_UINT64> (ptr)) != NULL) return res;
+        break;
+    }
+    // Falling back to using block-desriptors and converting to double
+    if((res = _make_nda_from_bd<double, NPY_FLOAT64>(ptr)) != NULL) return res;
 
-    throw std::invalid_argument("Encountered unsupported table type.");
+    throw std::invalid_argument("Got unsupported table type.");
 }
 
 template<typename T, int NPTYPE>
