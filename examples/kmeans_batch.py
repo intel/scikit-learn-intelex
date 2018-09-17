@@ -24,12 +24,10 @@ from numpy import loadtxt, allclose
 if __name__ == "__main__":
 
     infile = "./data/batch/kmeans_dense.csv"
-    nClusters = 10
-    maxIter = 25
+    nClusters = 20
+    maxIter = 5
 
-    # configure a kmeans-init using mt19937 RNG
-    engine = d4p.engines_mt19937()
-    initrain_algo = d4p.kmeans_init(nClusters, method="randomDense", engine=engine)
+    initrain_algo = d4p.kmeans_init(nClusters, method="randomDense")
     # Load the data
     data = loadtxt(infile, delimiter=',')
     # compute initial centroids
