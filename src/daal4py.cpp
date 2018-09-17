@@ -344,7 +344,7 @@ PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
         if((res = _make_nda_from_bd<double, NPY_FLOAT64>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_FLOAT32:
-    if((res = _make_nda_from_homogen<double, NPY_FLOAT64>(ptr)) != NULL) return res;
+        if((res = _make_nda_from_homogen<double, NPY_FLOAT64>(ptr)) != NULL) return res;
         if((res = _make_nda_from_bd<double, NPY_FLOAT64>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT32_S:
@@ -355,10 +355,10 @@ PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
         if((res = _make_nda_from_homogen<uint32_t, NPY_UINT32> (ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT64_S:
-    if((res = _make_nda_from_homogen<int64_t, NPY_INT64>  (ptr)) != NULL) return res;
+        if((res = _make_nda_from_homogen<int64_t, NPY_INT64>  (ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT64_U:
-    if((res = _make_nda_from_homogen<uint64_t, NPY_UINT64> (ptr)) != NULL) return res;
+        if((res = _make_nda_from_homogen<uint64_t, NPY_UINT64> (ptr)) != NULL) return res;
         break;
     }
     // Falling back to using block-desriptors and converting to double
