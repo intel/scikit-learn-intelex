@@ -24,7 +24,6 @@ from numpy import loadtxt, allclose
 if __name__ == "__main__":
 
     infile = "./data/batch/kmeans_dense.csv"
-    method = 'svdDense'
     nClusters = 10
     maxIter = 25
 
