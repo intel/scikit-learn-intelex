@@ -27,7 +27,8 @@ if __name__ == "__main__":
     infile = "./data/batch/svm_two_class_train_dense.csv"
 
     # Configure a SVM object to use rbf kernel (and adjusting cachesize)
-    kern = d4p.kernel_function_rbf()  # need an object that lives when creating train_algo
+    #kern = d4p.kernel_function_rbf()  # need an object that lives when creating train_algo
+    kern = d4p.kernel_function_linear()
     train_algo = d4p.svm_training(kernel=kern, cacheSize=600000000)
     
     # Read data. Let's use features per observation
@@ -37,7 +38,7 @@ if __name__ == "__main__":
     train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
-    predict_algo = d4p.svm_prediction()
+    predict_algo = d4p.svm_prediction(kernel=kern)
     # read test data (with same #features)
     pdata = loadtxt("./data/batch/svm_two_class_test_dense.csv", delimiter=',', usecols=range(20))
     plabels = loadtxt("./data/batch/svm_two_class_test_dense.csv", delimiter=',', usecols=range(20,21))
