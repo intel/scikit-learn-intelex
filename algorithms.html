@@ -81,12 +81,16 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Algorithms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#principal-component-analysis-pca">Principal Component Analysis (PCA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#singular-value-decomposition-svd">Singular Value Decomposition (SVD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#moments-of-low-order">Moments of Low Order</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#decision-forest-classification">Decision Forest Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decision-tree-classification">Decision Tree Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gradient-boosted-classification">Gradient Boosted Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multinomial-naive-bayes">Multinomial Naive Bayes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#support-vector-machine-svm">Support Vector Machine (SVM)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logistic-regression">Logistic Regression</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#regression">Regression</a><ul>
@@ -107,8 +111,26 @@
 <li class="toctree-l3"><a class="reference internal" href="#univariate-outlier-detection">Univariate Outlier Detection</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#principal-component-analysis-pca">Principal Component Analysis (PCA)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#singular-value-decomposition-svd">Singular Value Decomposition (SVD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimization-solvers">Optimization Solvers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#objective-functions">Objective Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mean-squared-error-algorithm-mse">Mean Squared Error Algorithm (MSE)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#logistic-loss">Logistic Loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cross-entropy-loss">Cross-entropy Loss</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#iterative-solvers">Iterative Solvers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#stochastic-gradient-descent-algorithm">Stochastic Gradient Descent Algorithm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#limited-memory-broyden-fletcher-goldfarb-shanno-algorithm">Limited-Memory Broyden-Fletcher-Goldfarb-Shanno Algorithm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#adaptive-subgradient-method">Adaptive Subgradient Method</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#distances">Distances</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cosine-distance-matrix">Cosine Distance Matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#correlation-distance-matrix">Correlation Distance Matrix</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -177,6 +199,342 @@
             
   <div class="section" id="algorithms">
 <h1>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="principal-component-analysis-pca">
+<h2>Principal Component Analysis (PCA)<a class="headerlink" href="#principal-component-analysis-pca" title="Permalink to this headline">¶</a></h2>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis">Intel DAAL PCA</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_batch.py">Single-Process PCA</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_dspv.py">Multi-Process (DSPV) PCA</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_spmd.py">Multi-Process (SPMD) PCA</a></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.pca">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca</code><a class="headerlink" href="#daal4py.pca" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>pca</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “correlationDense”]</li>
+<li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>nComponents</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>isDeterministic</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.pca_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca_result</code><a class="headerlink" href="#daal4py.pca_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.pca_result.eigenvalues">
+<code class="descname">eigenvalues</code><a class="headerlink" href="#daal4py.pca_result.eigenvalues" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.pca_result.eigenvectors">
+<code class="descname">eigenvectors</code><a class="headerlink" href="#daal4py.pca_result.eigenvectors" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.pca_result.means">
+<code class="descname">means</code><a class="headerlink" href="#daal4py.pca_result.means" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.pca_result.variances">
+<code class="descname">variances</code><a class="headerlink" href="#daal4py.pca_result.variances" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="singular-value-decomposition-svd">
+<h2>Singular Value Decomposition (SVD)<a class="headerlink" href="#singular-value-decomposition-svd" title="Permalink to this headline">¶</a></h2>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition">Intel DAAL SVD</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_batch.py">Single-Process SVD</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_dspv.py">Multi-Process (DSPV) SVD</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_spmd.py">Multi-Process (SPMD) SVD</a></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.svd">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">svd</code><a class="headerlink" href="#daal4py.svd" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>svd</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>leftSingularMatrix</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>rightSingularMatrix</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.svd_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">svd_result</code><a class="headerlink" href="#daal4py.svd_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.svd_result.leftSingularMatrix">
+<code class="descname">leftSingularMatrix</code><a class="headerlink" href="#daal4py.svd_result.leftSingularMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.svd_result.rightSingularMatrix">
+<code class="descname">rightSingularMatrix</code><a class="headerlink" href="#daal4py.svd_result.rightSingularMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.svd_result.singularValues">
+<code class="descname">singularValues</code><a class="headerlink" href="#daal4py.svd_result.singularValues" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="moments-of-low-order">
+<h2>Moments of Low Order<a class="headerlink" href="#moments-of-low-order" title="Permalink to this headline">¶</a></h2>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-moments-of-low-order">Intel DAAL Moments of Low Order</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/low_order_moments_dense_batch.py">Single-Process Low Order Moments</a></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.low_order_moments">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">low_order_moments</code><a class="headerlink" href="#daal4py.low_order_moments" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>low_order_moments</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>estimatesToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.low_order_moments_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">low_order_moments_result</code><a class="headerlink" href="#daal4py.low_order_moments_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.maximum">
+<code class="descname">maximum</code><a class="headerlink" href="#daal4py.low_order_moments_result.maximum" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.mean">
+<code class="descname">mean</code><a class="headerlink" href="#daal4py.low_order_moments_result.mean" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.minimum">
+<code class="descname">minimum</code><a class="headerlink" href="#daal4py.low_order_moments_result.minimum" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.secondOrderRawMoment">
+<code class="descname">secondOrderRawMoment</code><a class="headerlink" href="#daal4py.low_order_moments_result.secondOrderRawMoment" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.standardDeviation">
+<code class="descname">standardDeviation</code><a class="headerlink" href="#daal4py.low_order_moments_result.standardDeviation" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.sum">
+<code class="descname">sum</code><a class="headerlink" href="#daal4py.low_order_moments_result.sum" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.sumSquares">
+<code class="descname">sumSquares</code><a class="headerlink" href="#daal4py.low_order_moments_result.sumSquares" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.sumSquaresCentered">
+<code class="descname">sumSquaresCentered</code><a class="headerlink" href="#daal4py.low_order_moments_result.sumSquaresCentered" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.variance">
+<code class="descname">variance</code><a class="headerlink" href="#daal4py.low_order_moments_result.variance" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.low_order_moments_result.variation">
+<code class="descname">variation</code><a class="headerlink" href="#daal4py.low_order_moments_result.variation" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="classification">
 <h2>Classification<a class="headerlink" href="#classification" title="Permalink to this headline">¶</a></h2>
 <p>See also <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-classification">Intel DAAL Classification</a>.</p>
@@ -965,6 +1323,172 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="logistic-regression">
+<h3>Logistic Regression<a class="headerlink" href="#logistic-regression" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic-regression">Intel DAAL Logistc Regression</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/logistic_regression_batch.py">Single-Process Binary Class Logistic Regression</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/logistic_regression_binary_batch.py">Single-Process Logistic Regression</a></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.logistic_regression_training">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">logistic_regression_training</code><a class="headerlink" href="#daal4py.logistic_regression_training" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>logistic_regression_training</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>nClasses</strong> (<em>size_t</em>) – </li>
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: NaN32]</li>
+<li><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: NaN32]</li>
+<li><strong>optimizationSolver</strong> (<em>optimization_solver_iterative_solver_batch__iface__</em>) – [optional, default: None]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.logistic_regression_training_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">logistic_regression_training_result</code><a class="headerlink" href="#daal4py.logistic_regression_training_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.logistic_regression_training_result.model">
+<code class="descname">model</code><a class="headerlink" href="#daal4py.logistic_regression_training_result.model" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">logistic_regression_model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.logistic_regression_prediction">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">logistic_regression_prediction</code><a class="headerlink" href="#daal4py.logistic_regression_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>logistic_regression_prediction</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>nClasses</strong> (<em>size_t</em>) – </li>
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">classifier_prediction_result</code></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt>
+<code class="descname">prediction</code></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.logistic_regression_model">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">logistic_regression_model</code><a class="headerlink" href="#daal4py.logistic_regression_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.logistic_regression_model.Beta">
+<code class="descname">Beta</code><a class="headerlink" href="#daal4py.logistic_regression_model.Beta" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.logistic_regression_model.InterceptFlag">
+<code class="descname">InterceptFlag</code><a class="headerlink" href="#daal4py.logistic_regression_model.InterceptFlag" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.logistic_regression_model.NFeatures">
+<code class="descname">NFeatures</code><a class="headerlink" href="#daal4py.logistic_regression_model.NFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">size_t</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.logistic_regression_model.NumberOfBetas">
+<code class="descname">NumberOfBetas</code><a class="headerlink" href="#daal4py.logistic_regression_model.NumberOfBetas" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">size_t</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.logistic_regression_model.NumberOfFeatures">
+<code class="descname">NumberOfFeatures</code><a class="headerlink" href="#daal4py.logistic_regression_model.NumberOfFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">size_t</td>
 </tr>
 </tbody>
 </table>
@@ -1953,31 +2477,156 @@
 
 </div>
 </div>
-<div class="section" id="principal-component-analysis-pca">
-<h2>Principal Component Analysis (PCA)<a class="headerlink" href="#principal-component-analysis-pca" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="optimization-solvers">
+<h2>Optimization Solvers<a class="headerlink" href="#optimization-solvers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="objective-functions">
+<h3>Objective Functions<a class="headerlink" href="#objective-functions" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="mean-squared-error-algorithm-mse">
+<h4>Mean Squared Error Algorithm (MSE)<a class="headerlink" href="#mean-squared-error-algorithm-mse" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis">Intel DAAL PCA</a></p>
-<p>Examples:</p>
-<ul class="simple">
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_batch.py">Single-Process PCA</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_dspv.py">Multi-Process (DSPV) PCA</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_spmd.py">Multi-Process (SPMD) PCA</a></li>
-</ul>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-mean-squared-error-algorithm">Intel DAAL MSE</a></p>
+<p>Examples:
+- <a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/adagrad_mse_batch.py">In Adagrad</a>
+- <a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/lbfgs_mse_batch.py">In LBFGS</a>
+- <a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_mse_batch.py">In SGD</a></p>
 <dl class="class">
-<dt id="daal4py.pca">
-<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca</code><a class="headerlink" href="#daal4py.pca" title="Permalink to this definition">¶</a></dt>
+<dt id="daal4py.optimization_solver_mse">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_mse</code><a class="headerlink" href="#daal4py.optimization_solver_mse" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
-<div>pca</div></blockquote>
+<div>optimization_solver_mse</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>numberOfTerms</strong> (<em>size_t</em>) – </li>
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
-<li><strong>method</strong> (<em>str</em>) – [optional, default: “correlationDense”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
 <li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
-<li><strong>nComponents</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>isDeterministic</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.optimization_solver_mse_result">
+<code class="descclassname">daal4py.</code><code class="descname">optimization_solver_mse_result</code><a class="headerlink" href="#daal4py.optimization_solver_mse_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">_daal4py.optimization_solver_objective_function_result</span></code></p>
+</dd></dl>
+
+</div>
+<div class="section" id="logistic-loss">
+<h4>Logistic Loss<a class="headerlink" href="#logistic-loss" title="Permalink to this headline">¶</a></h4>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic-loss">Intel DAAL Logistic Loss</a></p>
+<p>Examples:
+- <a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_logistic_loss_batch.py">In SGD</a></p>
+<dl class="class">
+<dt id="daal4py.optimization_solver_logistic_loss">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_logistic_loss</code><a class="headerlink" href="#daal4py.optimization_solver_logistic_loss" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>optimization_solver_logistic_loss</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>numberOfTerms</strong> (<em>size_t</em>) – </li>
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: NaN32]</li>
+<li><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: NaN32]</li>
+<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.optimization_solver_logistic_loss_result">
+<code class="descclassname">daal4py.</code><code class="descname">optimization_solver_logistic_loss_result</code><a class="headerlink" href="#daal4py.optimization_solver_logistic_loss_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">_daal4py.optimization_solver_objective_function_result</span></code></p>
+</dd></dl>
+
+</div>
+<div class="section" id="cross-entropy-loss">
+<h4>Cross-entropy Loss<a class="headerlink" href="#cross-entropy-loss" title="Permalink to this headline">¶</a></h4>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-cross-entropy-loss">Intel DAAL Cross Entropy Loss</a></p>
+<dl class="class">
+<dt id="daal4py.optimization_solver_cross_entropy_loss">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_cross_entropy_loss</code><a class="headerlink" href="#daal4py.optimization_solver_cross_entropy_loss" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>optimization_solver_cross_entropy_loss</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>nClasses</strong> (<em>size_t</em>) – </li>
+<li><strong>numberOfTerms</strong> (<em>size_t</em>) – </li>
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: NaN32]</li>
+<li><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: NaN32]</li>
+<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.optimization_solver_cross_entropy_loss_result">
+<code class="descclassname">daal4py.</code><code class="descname">optimization_solver_cross_entropy_loss_result</code><a class="headerlink" href="#daal4py.optimization_solver_cross_entropy_loss_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">_daal4py.optimization_solver_objective_function_result</span></code></p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="iterative-solvers">
+<h3>Iterative Solvers<a class="headerlink" href="#iterative-solvers" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="stochastic-gradient-descent-algorithm">
+<h4>Stochastic Gradient Descent Algorithm<a class="headerlink" href="#stochastic-gradient-descent-algorithm" title="Permalink to this headline">¶</a></h4>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-stochastic-gradient-descent-algorithm">Intel DAAL SGD</a></p>
+<p>Examples:
+- <a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_logistic_loss_batch.py">Using Logistic Loss</a>
+- <a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_mse_batch.py">Using MSE</a></p>
+<dl class="class">
+<dt id="daal4py.optimization_solver_sgd">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_sgd</code><a class="headerlink" href="#daal4py.optimization_solver_sgd" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>optimization_solver_sgd</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>function</strong> (<em>optimization_solver_sum_of_functions_batch__iface__</em>) – </li>
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>learningRateSequence</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>seed</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
+<li><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]</li>
+<li><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
@@ -1987,12 +2636,12 @@
 </dd></dl>
 
 <dl class="class">
-<dt id="daal4py.pca_result">
-<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca_result</code><a class="headerlink" href="#daal4py.pca_result" title="Permalink to this definition">¶</a></dt>
+<dt id="daal4py.optimization_solver_sgd_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_sgd_result</code><a class="headerlink" href="#daal4py.optimization_solver_sgd_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="attribute">
-<dt id="daal4py.pca_result.eigenvalues">
-<code class="descname">eigenvalues</code><a class="headerlink" href="#daal4py.pca_result.eigenvalues" title="Permalink to this definition">¶</a></dt>
+<dt id="daal4py.optimization_solver_sgd_result.minimum">
+<code class="descname">minimum</code><a class="headerlink" href="#daal4py.optimization_solver_sgd_result.minimum" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2004,34 +2653,8 @@
 </dd></dl>
 
 <dl class="attribute">
-<dt id="daal4py.pca_result.eigenvectors">
-<code class="descname">eigenvectors</code><a class="headerlink" href="#daal4py.pca_result.eigenvectors" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="daal4py.pca_result.means">
-<code class="descname">means</code><a class="headerlink" href="#daal4py.pca_result.means" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="daal4py.pca_result.variances">
-<code class="descname">variances</code><a class="headerlink" href="#daal4py.pca_result.variances" title="Permalink to this definition">¶</a></dt>
+<dt id="daal4py.optimization_solver_sgd_result.nIterations">
+<code class="descname">nIterations</code><a class="headerlink" href="#daal4py.optimization_solver_sgd_result.nIterations" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2045,30 +2668,37 @@
 </dd></dl>
 
 </div>
-<div class="section" id="singular-value-decomposition-svd">
-<h2>Singular Value Decomposition (SVD)<a class="headerlink" href="#singular-value-decomposition-svd" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="limited-memory-broyden-fletcher-goldfarb-shanno-algorithm">
+<h4>Limited-Memory Broyden-Fletcher-Goldfarb-Shanno Algorithm<a class="headerlink" href="#limited-memory-broyden-fletcher-goldfarb-shanno-algorithm" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition">Intel DAAL SVD</a></p>
-<p>Examples:</p>
-<ul class="simple">
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_batch.py">Single-Process SVD</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_dspv.py">Multi-Process (DSPV) SVD</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_spmd.py">Multi-Process (SPMD) SVD</a></li>
-</ul>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-limited-memory-broyden-fletcher-goldfarb-shanno-algorithm">Intel DAAL LBFGS</a></p>
+<p>Examples:
+- <a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/lbfgs_mse_batch.py">Using MSE</a></p>
 <dl class="class">
-<dt id="daal4py.svd">
-<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">svd</code><a class="headerlink" href="#daal4py.svd" title="Permalink to this definition">¶</a></dt>
+<dt id="daal4py.optimization_solver_lbfgs">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_lbfgs</code><a class="headerlink" href="#daal4py.optimization_solver_lbfgs" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
-<div>svd</div></blockquote>
+<div>optimization_solver_lbfgs</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>function</strong> (<em>optimization_solver_sum_of_functions_batch__iface__</em>) – </li>
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>leftSingularMatrix</strong> (<em>str</em>) – [optional, default: “”]</li>
-<li><strong>rightSingularMatrix</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>m</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>L</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>seed</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
+<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>correctionPairBatchSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>correctionPairBatchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>stepLengthSequence</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]</li>
+<li><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
@@ -2078,12 +2708,12 @@
 </dd></dl>
 
 <dl class="class">
-<dt id="daal4py.svd_result">
-<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">svd_result</code><a class="headerlink" href="#daal4py.svd_result" title="Permalink to this definition">¶</a></dt>
+<dt id="daal4py.optimization_solver_lbfgs_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_lbfgs_result</code><a class="headerlink" href="#daal4py.optimization_solver_lbfgs_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="attribute">
-<dt id="daal4py.svd_result.leftSingularMatrix">
-<code class="descname">leftSingularMatrix</code><a class="headerlink" href="#daal4py.svd_result.leftSingularMatrix" title="Permalink to this definition">¶</a></dt>
+<dt id="daal4py.optimization_solver_lbfgs_result.minimum">
+<code class="descname">minimum</code><a class="headerlink" href="#daal4py.optimization_solver_lbfgs_result.minimum" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2095,8 +2725,64 @@
 </dd></dl>
 
 <dl class="attribute">
-<dt id="daal4py.svd_result.rightSingularMatrix">
-<code class="descname">rightSingularMatrix</code><a class="headerlink" href="#daal4py.svd_result.rightSingularMatrix" title="Permalink to this definition">¶</a></dt>
+<dt id="daal4py.optimization_solver_lbfgs_result.nIterations">
+<code class="descname">nIterations</code><a class="headerlink" href="#daal4py.optimization_solver_lbfgs_result.nIterations" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="adaptive-subgradient-method">
+<h4>Adaptive Subgradient Method<a class="headerlink" href="#adaptive-subgradient-method" title="Permalink to this headline">¶</a></h4>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-adaptive-subgradient-method">Intel DAAL AdaGrad</a></p>
+<p>Examples:
+- <a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/adagrad_mse_batch.py">Using MSE</a></p>
+<dl class="class">
+<dt id="daal4py.optimization_solver_adagrad">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_adagrad</code><a class="headerlink" href="#daal4py.optimization_solver_adagrad" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>optimization_solver_adagrad</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>function</strong> (<em>optimization_solver_sum_of_functions_batch__iface__</em>) – </li>
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>learningRate</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]</li>
+<li><strong>seed</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
+<li><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]</li>
+<li><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.optimization_solver_adagrad_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_adagrad_result</code><a class="headerlink" href="#daal4py.optimization_solver_adagrad_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.optimization_solver_adagrad_result.minimum">
+<code class="descname">minimum</code><a class="headerlink" href="#daal4py.optimization_solver_adagrad_result.minimum" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2108,8 +2794,8 @@
 </dd></dl>
 
 <dl class="attribute">
-<dt id="daal4py.svd_result.singularValues">
-<code class="descname">singularValues</code><a class="headerlink" href="#daal4py.svd_result.singularValues" title="Permalink to this definition">¶</a></dt>
+<dt id="daal4py.optimization_solver_adagrad_result.nIterations">
+<code class="descname">nIterations</code><a class="headerlink" href="#daal4py.optimization_solver_adagrad_result.nIterations" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2122,6 +2808,107 @@
 
 </dd></dl>
 
+</div>
+</div>
+</div>
+<div class="section" id="distances">
+<h2>Distances<a class="headerlink" href="#distances" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="cosine-distance-matrix">
+<h3>Cosine Distance Matrix<a class="headerlink" href="#cosine-distance-matrix" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-cosine-distance-matrix">Intel DAAL Cosine Distance</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/cosine_distance_batch.py">Single-Process Cosine Distance</a></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.cosine_distance">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">cosine_distance</code><a class="headerlink" href="#daal4py.cosine_distance" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>cosine_distance</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.cosine_distance_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">cosine_distance_result</code><a class="headerlink" href="#daal4py.cosine_distance_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.cosine_distance_result.cosineDistance">
+<code class="descname">cosineDistance</code><a class="headerlink" href="#daal4py.cosine_distance_result.cosineDistance" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="correlation-distance-matrix">
+<h3>Correlation Distance Matrix<a class="headerlink" href="#correlation-distance-matrix" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-correlation-distance-matrix">Intel DAAL Correlation Distance</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/correlation_distance_batch.py">Single-Process Correlation Distance</a></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.correlation_distance">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">correlation_distance</code><a class="headerlink" href="#daal4py.correlation_distance" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>correlation_distance</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.correlation_distance_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">correlation_distance_result</code><a class="headerlink" href="#daal4py.correlation_distance_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.correlation_distance_result.correlationDistance">
+<code class="descname">correlationDistance</code><a class="headerlink" href="#daal4py.correlation_distance_result.correlationDistance" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 </div>
 
