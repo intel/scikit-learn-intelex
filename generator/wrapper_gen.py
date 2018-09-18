@@ -217,7 +217,7 @@ cdef class {{flatname}}:
 {% endfor %}
 
 {% if derived %}
-    cdef _get_derived_or_{{flatname}}(self):
+    cdef _get_most_derived(self):
 {% for m in derived %}
 {% set dertype = m|d2cy %}
         cdef {{m|d2cy}} tmp_ptr{{loop.index}} = dynamicPointerPtrCast[{{m|d2cy(False)}}, {{class_type|flat(False)}}](self.c_ptr)
@@ -228,7 +228,7 @@ cdef class {{flatname}}:
             return res{{loop.index}}
 {% endfor %}
 {% else %}
-    cdef _get_derived_or_{{flatname}}(self):
+    cdef _get_most_derived(self):
         return self
 {% endif %}
 
@@ -240,7 +240,7 @@ cdef class {{flatname}}:
         res = {{frtype}}()
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr, {{m[3]}})
 {% if '_model' in frtype %}
-        return res._get_derived_or_{{flatname}}()
+        return res._get_most_derived()
 {% else %}
         return res
 {% endif %}
