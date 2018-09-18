@@ -598,30 +598,35 @@ class cython_interface(object):
                     td['params_get'] = 'parameter'
                     pargs_exp = '<' + ','.join([splitns(x)[1] for x in td['pargs']]) + '>' if td['pargs'] else ''
                     cls = mode + pargs_exp
-                    if 'ParameterType' in self.namespace_dict[ns].classes[cls].typedefs:
-                        p = self.get_class_for_typedef(ns, cls, 'ParameterType')
-                        parms = self.get_all_attrs(p[0], p[1], 'members', ns) if p else None
-                        if not parms:
-                            if ns in fallbacks and 'ParameterType' in fallbacks[ns]:
-                                parms = self.get_all_attrs(*(splitns(fallbacks[ns]['ParameterType']) + ['members', ns]))
-                        tmp = '::'.join([ns, mode])
-                        if not parms:
+                    fcls = '::'.join([ns, cls])
+                    # Special mode were we have no parameters/constructor, but a create method
+                    if fcls in no_constructor:
+                        parms = no_constructor[fcls]
+                    else:
+                        if 'ParameterType' in self.namespace_dict[ns].classes[cls].typedefs:
+                            p = self.get_class_for_typedef(ns, cls, 'ParameterType')
+                            parms = self.get_all_attrs(p[0], p[1], 'members', ns) if p else None
+                            if not parms:
+                                if ns in fallbacks and 'ParameterType' in fallbacks[ns]:
+                                    parms = self.get_all_attrs(*(splitns(fallbacks[ns]['ParameterType']) + ['members', ns]))
+                            tmp = '::'.join([ns, mode])
+                            if not parms:
+                                tmp = '::'.join([ns, mode])
+                                if tmp not in no_warn or 'ParameterType' not in no_warn[tmp]:
+                                    print('// Warning: no members of "ParameterType" found for ' + tmp)
+                        else:
                             tmp = '::'.join([ns, mode])
                             if tmp not in no_warn or 'ParameterType' not in no_warn[tmp]:
-                                print('// Warning: no members of "ParameterType" found for ' + tmp)
-                    else:
-                        tmp = '::'.join([ns, mode])
-                        if tmp not in no_warn or 'ParameterType' not in no_warn[tmp]:
-                            print('// Warning: no "ParameterType" defined for ' + tmp)
-                        parms = None
-                    if parms:
-                        p = self.get_all_attrs(ns, cls, 'members')
-                        if not p or not any(x.endswith('parameter') for x in p):
-                            td['params_get'] = 'parameter()'
-                    else:
-                        td['params_get'] = None
-                        continue
-                    # now we have a dict with all members of our parameter: params
+                                print('// Warning: no "ParameterType" defined for ' + tmp)
+                                parms = None
+                        if parms:
+                            p = self.get_all_attrs(ns, cls, 'members')
+                            if not p or not any(x.endswith('parameter') for x in p):
+                                td['params_get'] = 'parameter()'
+                        else:
+                            td['params_get'] = None
+                            continue
+                    # now we have a dict with all members of our parameter: parms
                     # we need to inspect one by one
                     hlts = {}
                     jparams['params_opt'] = OrderedDict()
@@ -700,14 +705,16 @@ class cython_interface(object):
         else:
             jparams = {}
             tdecl = []
+
         # here we know parameters, inputs etc for each
         # let's store this
+        fcls = '::'.join([ns, mode])
         retjp = {
             'params': jparams,
             'sparams': tdecl,
             'model_typemap': self.prepare_modelmaps(ns),
             'result_typemap': self.prepare_resultmaps(ns),
-            'create': '::create' if '::'.join([ns, mode]) in no_constructor else '',
+            'create': no_constructor[fcls] if fcls in no_constructor else '',
             'add_setup': True if ns in add_setup else False,
         }
         if ns in has_dist:
