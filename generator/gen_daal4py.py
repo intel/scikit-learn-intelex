@@ -421,6 +421,7 @@ class cython_interface(object):
           - native_type: returns native representation of its argument
           - TMGC(n): deals with GC(refcounting for given number of references (R)
         Looks up return type and then target-language independently creates lists of its content.
+        We have not yet added support for 'get_methods'.
         """
         jparams = {}
         res = self.get_class_for_typedef(ns, 'Batch', 'ResultType')
@@ -433,6 +434,7 @@ class cython_interface(object):
                 jparams = {'class_type': 'daal::' + res[0] + '::' + res[1] + 'Ptr',
                            'enum_gets': attrs[0],
                            'named_gets': [],
+                           'get_methods': [],
                        }
             else:
                 print('// Warning: could not determine Result attributes for ' + ns)
@@ -448,6 +450,7 @@ class cython_interface(object):
         """
         Return string from typemap_wrapper_template for given Model.
         uses entries from 'gets' in Model class def to fill 'named_gets'.
+        It also fills 'get_methods' for getters which require arguments.
         """
         jparams = {}
         if mname in self.namespace_dict[ns].classes:
@@ -455,14 +458,24 @@ class cython_interface(object):
             jparams = {'class_type': 'daal::' + ns + '::ModelPtr',
                        'enum_gets': [],
                        'named_gets': [],
+                       'get_methods': [],
                    }
             huhu = self.get_all_attrs(ns, mname, 'gets')
             for g in huhu:
-                if not any(g.endswith(x) for x in ['SerializationTag',]):
+                # We have a few get-methods accepting parameters, we map them separately
+                if(type(huhu[g]) in [list,tuple]):
+                    rtyp, ptyp, pnm = huhu[g]
                     gn = splitns(g)[1].replace('get', '')
-                    if not any(gn == x[1] for x in jparams['named_gets']):
-                        typ = re.sub(r'(?<!daal::)data_management', r'daal::data_management', huhu[g])
-                        jparams['named_gets'].append((typ, gn))
+                    if '::' in rtyp:
+                        tns, ttyp = splitns(rtyp)
+                        rtyp = '::'.join(['daal::'+self.get_ns(ns, rtyp), ttyp])
+                    jparams['get_methods'].append((rtyp, gn, ptyp, pnm))
+                else:
+                    if not any(g.endswith(x) for x in ['SerializationTag',]):
+                        gn = splitns(g)[1].replace('get', '')
+                        if not any(gn == x[1] for x in jparams['named_gets']):
+                            typ = re.sub(r'(?<!daal::)data_management', r'daal::data_management', huhu[g])
+                            jparams['named_gets'].append((typ, gn))
         return jparams
 
 
