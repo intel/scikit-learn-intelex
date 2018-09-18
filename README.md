@@ -34,12 +34,14 @@ The build-process (using setup.py) is 3-phased
 * A C++ compiler with C++11 support
 * Intel(R) Threading Building Blocks (Intel(R) TBB) version 2018.0.4 or later (https://www.threadingbuildingblocks.org/)
   * You can use the pre-built conda package from Intel's channel or conda-forge channel on anaconda.org (see below)
+  * Needed for distributed mode. You can disable support for distributed mode by setting NO_DIST to '1' or 'yes'
 * Intel(R) Concurrent Collections (Intel(R) CnC) version 1.2.300 or later (https://github.com/icnc/icnc)
   * You can use the pre-built conda package from Intel's test channel on anaconda.org (see below)
 * Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL) version 2018.0.3 or later (https://github.com/01org/daal)
   * You can use the pre-built conda package from Intel channel on anaconda.org (see below)
 * MPICH
   * You can use the pre-built conda package conda-forge channel on anaconda.org (see below)
+  * Needed for distributed mode. You can disable support for distributed mode by setting NO_DIST to '1' or 'yes'
 
 ### Prerequisites for creating documentation
 * sphinx
@@ -71,8 +73,9 @@ Requires Intel(R) DAAL, Intel(R) TBB and Intel(R) CnC being properly setup, e.g.
 python setup.py install
 ```
 
-## VARIABLES
-* DAAL4PY_VERSION: package version
+## Configuring the build with environment variables
+* DAAL4PY_VERSION: sets package version
+* NO_DIST: set to '1', 'yes' or alike to build without support for distributed mode
 
 ## Building documentation
 1. Install daal4py into your python environment

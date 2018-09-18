@@ -150,6 +150,7 @@ class cython_interface(object):
         what namespace it is affiliated with. Once done, we have a dictionary where the key is the namespace
         and the values are namespace class objects. These objects carry all information as extracted by parse.py.
         """
+        print('reading headers from ' + self.include_root)
         for (dirpath, dirnames, filenames) in os.walk(self.include_root):
             for filename in filenames:
                 if filename.endswith('.h') and not 'neural_networks' in dirpath and not any(filename.endswith(x) for x in cython_interface.ignore_files):
@@ -257,10 +258,10 @@ class cython_interface(object):
 
 
 ###############################################################################
-    def to_lltype(self, ns, t):
+    def to_lltype(self, t):
         """
         return low level (C++ type). Usually the same as input.
-         Only very specific casesneed a conversion.
+         Only very specific cases need a conversion.
         """
         if t in ['DAAL_UINT64']:
             return 'ResultToComputeId'
@@ -288,8 +289,11 @@ class cython_interface(object):
         if t.endswith('ModelPtr'):
             thens = self.get_ns(ns, t, attrs=['typedefs'])
             return ('daal::' + thens + '::ModelPtr', 'class', tns)
-        if t in ['data_management::NumericTablePtr',] or t in ifaces.values():
+        if t in ['data_management::NumericTablePtr'] or t in ifaces.values():
             return ('daal::' + t, 'class', tns)
+        if 'Batch' in self.namespace_dict[ns].classes and t in self.namespace_dict[ns].classes['Batch'].typedefs:
+            tns, tname = splitns(self.namespace_dict[ns].classes['Batch'].typedefs[t])
+            return (self.namespace_dict[ns].classes['Batch'].typedefs[t], 'class', tns)
         tt = re.sub(r'(?<!daal::)services::SharedPtr', r'daal::services::SharedPtr', t)
         tt = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', tt)
         if tt in ifaces.values():
@@ -322,7 +326,7 @@ class cython_interface(object):
         if nns:
             nn = splitns(n)[1]
             if nn in self.namespace_dict[nns].enums:
-                return [nns + '::' + x for x in self.namespace_dict[nns].enums[nn]]
+                return [re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', nns + '::' + x) for x in self.namespace_dict[nns].enums[nn]]
             return ['unknown_' + nns + '_class_'+n]
         return ['unknown_'+n]
 
@@ -338,7 +342,7 @@ class cython_interface(object):
         if nns:
             nn = splitns(n)[1]
             if nn in self.namespace_dict[nns].enums:
-                return nns + '::' + nn
+                return re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', nns + '::' + nn)
             return 'unknown_' + nns + '_class_'+n
         return 'unknown_'+n
 
@@ -417,6 +421,7 @@ class cython_interface(object):
           - native_type: returns native representation of its argument
           - TMGC(n): deals with GC(refcounting for given number of references (R)
         Looks up return type and then target-language independently creates lists of its content.
+        We have not yet added support for 'get_methods'.
         """
         jparams = {}
         res = self.get_class_for_typedef(ns, 'Batch', 'ResultType')
@@ -429,6 +434,7 @@ class cython_interface(object):
                 jparams = {'class_type': 'daal::' + res[0] + '::' + res[1] + 'Ptr',
                            'enum_gets': attrs[0],
                            'named_gets': [],
+                           'get_methods': [],
                        }
             else:
                 print('// Warning: could not determine Result attributes for ' + ns)
@@ -444,6 +450,7 @@ class cython_interface(object):
         """
         Return string from typemap_wrapper_template for given Model.
         uses entries from 'gets' in Model class def to fill 'named_gets'.
+        It also fills 'get_methods' for getters which require arguments.
         """
         jparams = {}
         if mname in self.namespace_dict[ns].classes:
@@ -451,13 +458,24 @@ class cython_interface(object):
             jparams = {'class_type': 'daal::' + ns + '::ModelPtr',
                        'enum_gets': [],
                        'named_gets': [],
+                       'get_methods': [],
                    }
             huhu = self.get_all_attrs(ns, mname, 'gets')
             for g in huhu:
-                if not any(g.endswith(x) for x in ['SerializationTag',]):
+                # We have a few get-methods accepting parameters, we map them separately
+                if(type(huhu[g]) in [list,tuple]):
+                    rtyp, ptyp, pnm = huhu[g]
                     gn = splitns(g)[1].replace('get', '')
-                    if not any(gn == x[1] for x in jparams['named_gets']):
-                        jparams['named_gets'].append((huhu[g], gn))
+                    if '::' in rtyp:
+                        tns, ttyp = splitns(rtyp)
+                        rtyp = '::'.join(['daal::'+self.get_ns(ns, rtyp), ttyp])
+                    jparams['get_methods'].append((rtyp, gn, ptyp, pnm))
+                else:
+                    if not any(g.endswith(x) for x in ['SerializationTag',]):
+                        gn = splitns(g)[1].replace('get', '')
+                        if not any(gn == x[1] for x in jparams['named_gets']):
+                            typ = re.sub(r'(?<!daal::)data_management', r'daal::data_management', huhu[g])
+                            jparams['named_gets'].append((typ, gn))
         return jparams
 
 
@@ -552,7 +570,8 @@ class cython_interface(object):
                                   'template_args': None,
                                   'pargs': None})
                     for s in v['specs']:
-                        tdecl.append({'template_decl': OrderedDict([(x, v['tmpl_decl'][x]) for x in s['template_decl']]),
+                        tdecl.append({'template_decl': OrderedDict([(re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', x),
+                                                                     v['tmpl_decl'][x]) for x in s['template_decl']]),
                                       'template_args': [s['expl'][x] if x in s['expl'] else x for x in v['tmpl_decl']],
                                       'pargs': [s['expl'][x] for x in s['expl']]})
                 else:
@@ -579,30 +598,35 @@ class cython_interface(object):
                     td['params_get'] = 'parameter'
                     pargs_exp = '<' + ','.join([splitns(x)[1] for x in td['pargs']]) + '>' if td['pargs'] else ''
                     cls = mode + pargs_exp
-                    if 'ParameterType' in self.namespace_dict[ns].classes[cls].typedefs:
-                        p = self.get_class_for_typedef(ns, cls, 'ParameterType')
-                        parms = self.get_all_attrs(p[0], p[1], 'members', ns) if p else None
-                        if not parms:
-                            if ns in fallbacks and 'ParameterType' in fallbacks[ns]:
-                                parms = self.get_all_attrs(*splitns(fallbacks[ns]['ParameterType']), 'members', ns)
-                        tmp = '::'.join([ns, mode])
-                        if not parms:
+                    fcls = '::'.join([ns, cls])
+                    # Special mode were we have no parameters/constructor, but a create method
+                    if fcls in no_constructor:
+                        parms = no_constructor[fcls]
+                    else:
+                        if 'ParameterType' in self.namespace_dict[ns].classes[cls].typedefs:
+                            p = self.get_class_for_typedef(ns, cls, 'ParameterType')
+                            parms = self.get_all_attrs(p[0], p[1], 'members', ns) if p else None
+                            if not parms:
+                                if ns in fallbacks and 'ParameterType' in fallbacks[ns]:
+                                    parms = self.get_all_attrs(*(splitns(fallbacks[ns]['ParameterType']) + ['members', ns]))
+                            tmp = '::'.join([ns, mode])
+                            if not parms:
+                                tmp = '::'.join([ns, mode])
+                                if tmp not in no_warn or 'ParameterType' not in no_warn[tmp]:
+                                    print('// Warning: no members of "ParameterType" found for ' + tmp)
+                        else:
                             tmp = '::'.join([ns, mode])
                             if tmp not in no_warn or 'ParameterType' not in no_warn[tmp]:
-                                print('// Warning: no members of "ParameterType" found for ' + tmp)
-                    else:
-                        tmp = '::'.join([ns, mode])
-                        if tmp not in no_warn or 'ParameterType' not in no_warn[tmp]:
-                            print('// Warning: no "ParameterType" defined for ' + tmp)
-                        parms = None
-                    if parms:
-                        p = self.get_all_attrs(ns, cls, 'members')
-                        if not p or not any(x.endswith('parameter') for x in p):
-                            td['params_get'] = 'parameter()'
-                    else:
-                        td['params_get'] = None
-                        continue
-                    # now we have a dict with all members of our parameter: params
+                                print('// Warning: no "ParameterType" defined for ' + tmp)
+                                parms = None
+                        if parms:
+                            p = self.get_all_attrs(ns, cls, 'members')
+                            if not p or not any(x.endswith('parameter') for x in p):
+                                td['params_get'] = 'parameter()'
+                        else:
+                            td['params_get'] = None
+                            continue
+                    # now we have a dict with all members of our parameter: parms
                     # we need to inspect one by one
                     hlts = {}
                     jparams['params_opt'] = OrderedDict()
@@ -612,7 +636,7 @@ class cython_interface(object):
                             hlt = self.to_hltype(pns, parms[p])
                             if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                                 (hlt, hlt_type, hlt_ns) = hlt
-                                llt = self.to_lltype(*splitns(parms[p]))
+                                llt = self.to_lltype(parms[p])
                                 needed = True
                                 pval = None
                                 if hlt_type == 'enum':
@@ -621,6 +645,7 @@ class cython_interface(object):
                                     pval = tmp
                                 if pval != None:
                                     thetype = (hlt if hlt else parms[p])
+                                    pval = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', pval)
                                     if tmp in jparams['params_req']:
                                         td['params_req'][tmp] = pval
                                         decl_req.append('const ' + thetype + ' ' + tmp)
@@ -642,7 +667,6 @@ class cython_interface(object):
             tmp_iargs_decl = []
             tmp_iargs_call = []
             tmp_input_args = []
-            setinputs = ''
             inp = self.get_class_for_typedef(ns, 'Batch', 'InputType')
             if not inp and 'Input' in self.namespace_dict[ns].classes:
                 inp = (ns, 'Input')
@@ -662,6 +686,7 @@ class cython_interface(object):
                         if 'NumericTablePtr' in itype:
                             #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
                             itype = 'TableOrFList *'
+                        ins = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', ins)
                         tmp_iargs_decl.insert(i, 'const ' + itype + ' ' + iname + dflt)
                         tmp_iargs_call.insert(i, iname)
                         tmp_input_args.insert(i, (ins + '::' + iname, iname, itype))
@@ -680,14 +705,16 @@ class cython_interface(object):
         else:
             jparams = {}
             tdecl = []
+
         # here we know parameters, inputs etc for each
         # let's store this
+        fcls = '::'.join([ns, mode])
         retjp = {
             'params': jparams,
             'sparams': tdecl,
             'model_typemap': self.prepare_modelmaps(ns),
             'result_typemap': self.prepare_resultmaps(ns),
-            'create': '::create' if '::'.join([ns, mode]) in no_constructor else '',
+            'create': no_constructor[fcls] if fcls in no_constructor else '',
             'add_setup': True if ns in add_setup else False,
         }
         if ns in has_dist:
@@ -749,7 +776,7 @@ class cython_interface(object):
                 for e in  self.namespace_dict[ns].enums:
                     for v in self.namespace_dict[ns].enums[e]:
                         vv = ns + '::' + v
-                        cpp_begin += ' '*4 +'{"' + v + '", ' + vv + '},\n'
+                        cpp_begin += ' '*4 +'{"' + v + '", daal::' + vv + '},\n'
                 cpp_begin += '};\n\n'
 
         hlargs = {}
@@ -795,7 +822,6 @@ def gen_daal4py(daalroot, outdir, warn_all=False):
     global no_warn
     if warn_all:
         no_warn = {}
-
     iface = cython_interface(jp(daalroot, 'include', 'algorithms'))
     iface.read()
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(['kmeans',
@@ -813,7 +839,10 @@ def gen_daal4py(daalroot, outdir, warn_all=False):
                                             'decision_tree',
                                             'decision_forest',
                                             'ridge_regression',
+                                            'moments',
                                             'optimization_solver',
+                                            'logistic_regression',
+                                            'distance',
     ])
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:

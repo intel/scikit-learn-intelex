@@ -85,10 +85,10 @@ public:
 
     // we do not support this for now, we do not want to encourage use of
     // methods that require copying. If needed, it should live on a higher level IF.
-    services::SharedPtr<daal::byte> getArchiveAsArraySharedPtr() const DAAL_C11_OVERRIDE
+    daal::services::SharedPtr<daal::byte> getArchiveAsArraySharedPtr() const DAAL_C11_OVERRIDE
     {
         assert(false);
-        return services::SharedPtr<daal::byte>();
+        return daal::services::SharedPtr<daal::byte>();
     }
 
     // we do not support this for now, we do not want to encourage use of
@@ -231,7 +231,7 @@ struct dimMap {
                 // Create a data archive to serialize the numeric table
                 // we use our own DataArchive to avoid double/triple copying
                 // by directly serializing into our serializer
-                data_management::InputDataArchive dataArch(new CnC::DataArchive(ser));
+                daal::data_management::InputDataArchive dataArch(new CnC::DataArchive(ser));
                 /* Serialize the numeric table into the data archive */
                 ptr->serialize(dataArch);
             }
