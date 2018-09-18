@@ -53,13 +53,13 @@ into memory of a single node.
 .. figure:: d4p-linreg-scale.jpg
 
 	    On a 32-node cluster (1280 cores) daal4py computed linear regression
-	    of 1.14 TB of data in less than 2 seconds and 91.55 GB of data in
+	    of 2.86 TB of data in less than 2 seconds and 91.55 GB of data in
 	    less than 74 milliseconds.
 
 .. figure:: d4p-kmeans-scale.jpg
 
 	    On a 32-node cluster (1280 cores) daal4py computed K-Means (10
-	    clusters) of 2.93 TB of data in 108.8 seconds and 35.76 GB of data
+	    clusters) of 1.12 TB of data in 108.8 seconds and 35.76 GB of data
 	    in 5.26 seconds.
 
 

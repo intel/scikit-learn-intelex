@@ -15,17 +15,17 @@ requirements:
         - setuptools
         - numpy >=1.13
         - tbb-devel
-        - cnc >=1.2.300
         - daal-devel >=2018.0.1
-        - daal-static >=2018.0.1   [win]
+        - daal-static >=2018.0.1   # [win]
         - cython
         - jinja2
+#        - cnc >=1.2.300
     run:
         - python
         - numpy >=1.13
         - tbb
-        - cnc >=1.2.300
         - daal >=2018.0.1
+#        - cnc >=1.2.300
 
 build:
     number: {{buildnumber}}
@@ -34,6 +34,15 @@ build:
 test:
     imports:
         - daal4py
+    source_files:
+        - examples/run_examples.py
+        - examples/*batch.py
+        - examples/data/batch
+#        - examples/*spmd.py
+#        - examples/*dspv.py
+#        - examples/data/distributed
+    commands:
+        - cd examples && python run_examples.py
 
 about:
     license: Apache 2.0

@@ -210,6 +210,12 @@ class setget_parser(object):
             if mgs:
                 ctxt.gdict['classes'][ctxt.curr_class].gets[mgs.group(4)] = mgs.group(1)
                 return True
+            # some get-methods accept an argument!
+            # We support only a single argument for now, and only simple types like int, size_t etc, no refs, no pointers
+            mgs = re.match(r'\s*(?:virtual\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*((?:\w|_)+)\s+((?:\w|_)+)\s*\)', l)
+            if mgs and mgs.group(4) not in ['getResult', 'getInput']:
+                ctxt.gdict['classes'][ctxt.curr_class].gets[mgs.group(4)] = (mgs.group(1), mgs.group(5), mgs.group(6))
+                return True
         return False
 
 
