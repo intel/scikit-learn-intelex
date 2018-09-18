@@ -49,6 +49,8 @@ if __name__ == "__main__":
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
+    print("\nVariable importance results:\n", train_result.variableImportance)
+    print("\nOOB error:\n", train_result.outOfBagError)
     print("\nDecision forest prediction results (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
     print('All looks good!')
