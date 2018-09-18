@@ -41,9 +41,8 @@ def main():
     train_labels.shape = (train_data.shape[0], 1)  # must be a 2d array
 
     # set parameters and train
-    train_alg = d4p.logistic_regression_training(nClasses=nClasses)
+    train_alg = d4p.logistic_regression_training(nClasses=nClasses, interceptFlag=True)
     train_result = train_alg.compute(train_data, train_labels)
-    print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
 
     # read testing data from file with 20 features per observation
     testfile = "./data/batch/binary_cls_test.csv"
@@ -58,11 +57,12 @@ def main():
     # the prediction result provides prediction
     assert predict_result.prediction.shape == (predict_data.shape[0], train_labels.shape[1])
 
-    return (predict_result, predict_labels)
+    return (train_result, predict_result, predict_labels)
 
 
 if __name__ == "__main__":
-    (predict_result, predict_labels) = main()
+    (train_result, predict_result, predict_labels) = main()
+    print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
     print("\nLogistic regression prediction results (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", predict_labels[0:10])
     print('All looks good!')

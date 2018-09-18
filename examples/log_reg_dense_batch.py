@@ -43,9 +43,9 @@ def main():
     # set parameters and train
     train_alg = d4p.logistic_regression_training(nClasses=nClasses,
                                                  penaltyL1=0.1,
-                                                 penaltyL2=0.1)
+                                                 penaltyL2=0.1,
+                                                 interceptFlag=True)
     train_result = train_alg.compute(train_data, train_labels)
-    print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
 
     # read testing data from file with 6 features per observation
     testfile = "./data/batch/logreg_test.csv"
@@ -63,11 +63,12 @@ def main():
     assert predict_result.probabilities.shape == (predict_data.shape[0], nClasses)
     assert predict_result.logProbabilities.shape == (predict_data.shape[0], nClasses)
 
-    return (predict_result, predict_labels)
+    return (train_result, predict_result, predict_labels)
 
 
 if __name__ == "__main__":
-    (predict_result, predict_labels) = main()
+    (train_result, predict_result, predict_labels) = main()
+    print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
     print("\nLogistic regression prediction results (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", predict_labels[0:10])
     print("\nLogistic regression prediction probabilities (first 10 rows):\n", predict_result.probabilities[0:10])
