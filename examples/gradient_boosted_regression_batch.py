@@ -22,12 +22,13 @@ import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
+    maxIterations = 40
 
     # input data file
     infile = "./data/batch/df_regression_train.csv"
 
     # Configure a training object
-    train_algo = d4p.gbt_regression_training()
+    train_algo = d4p.gbt_regression_training(maxIterations=maxIterations)
     
     # Read data. Let's use 3 features per observation
     data   = loadtxt(infile, delimiter=',', usecols=range(13))

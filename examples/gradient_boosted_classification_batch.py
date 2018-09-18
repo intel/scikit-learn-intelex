@@ -22,12 +22,15 @@ import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
-
+    nFeatures = 3
+    nClasses = 5
+    maxIterations = 40
+    minObservationsInLeafNode = 8
     # input data file
     infile = "./data/batch/df_classification_train.csv"
 
     # Configure a training object (5 classes)
-    train_algo = d4p.gbt_classification_training(5)
+    train_algo = d4p.gbt_classification_training(nClasses=nClasses, maxIterations=maxIterations, minObservationsInLeafNode=minObservationsInLeafNode, featuresPerNode=nFeatures)
 
     # Read data. Let's use 3 features per observation
     data   = loadtxt(infile, delimiter=',', usecols=range(3))
