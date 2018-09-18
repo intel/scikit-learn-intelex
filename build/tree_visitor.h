@@ -55,7 +55,7 @@ public:
     NodeDepthCountClassificationNodeVisitor();
     virtual bool onLeafNode(const daal::algorithms::tree_utils::classification::LeafNodeDescriptor &desc);
     virtual bool onSplitNode(const daal::algorithms::tree_utils::classification::SplitNodeDescriptor &desc);
-protected:
+//protected:
     size_t n_nodes;
     size_t depth;
     size_t n_leaf_nodes;
@@ -97,14 +97,15 @@ protected:
 // we will have different model types, so it's a template
 // Note: the caller will own the memory of the 2 returned arrays!
 template<typename M>
-TreeState _getTreeState(M & model, size_t i, size_t n_classes)
+TreeState _getTreeState(M & model, size_t iTree, size_t n_classes)
 {
     // First count nodes
     NodeDepthCountClassificationNodeVisitor ncv;
-    model.traverseDFS(i, ncv);
+    (*model)->traverseDFS(iTree, ncv);
     // then do the final tree traversal
     toSKLearnTreeObjectVisitor tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
-    model.traverseDFS(i, tsv);
+    (*model)->traverseDFS(iTree, tsv);
+    printf("DEBUG C: %zu, %zu, %zu, %zu\n", TreeState(tsv).max_depth, TreeState(tsv).node_count, TreeState(tsv).leaf_count, TreeState(tsv).class_count);
     return TreeState(tsv);
 }
 

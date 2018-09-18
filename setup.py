@@ -122,7 +122,8 @@ def getpyexts():
 
     return cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
-#                                 os.path.abspath('src/tree_visitor.cpp'),
+#                                 os.path.abspath('src/gettree.pyx'),
+                                 os.path.abspath('build/tree_visitor.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')],
                                 include_dirs=include_dir_plat + [np.get_include()],
