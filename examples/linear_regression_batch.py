@@ -26,7 +26,7 @@ if __name__ == "__main__":
     infile = "./data/batch/linear_regression_train.csv"
 
     # Configure a Linear regression training object
-    train_algo = d4p.linear_regression_training()
+    train_algo = d4p.linear_regression_training(interceptFlag=True)
     
     # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
     indep_data = loadtxt(infile, delimiter=',', usecols=range(10))
