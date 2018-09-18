@@ -21,8 +21,8 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-if __name__ == "__main__":
 
+def main():
     # input data file
     infile = "./data/batch/df_classification_train.csv"
 
@@ -49,6 +49,11 @@ if __name__ == "__main__":
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
+    return (train_result, predict_result, plabels)
+
+
+if __name__ == "__main__":
+    (train_result, predict_result, plabels) = main()
     print("\nVariable importance results:\n", train_result.variableImportance)
     print("\nOOB error:\n", train_result.outOfBagError)
     print("\nDecision forest prediction results (first 10 rows):\n", predict_result.prediction[0:10])
