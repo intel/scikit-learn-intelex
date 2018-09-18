@@ -43,6 +43,7 @@ def main():
     # set parameters and train
     train_alg = d4p.logistic_regression_training(nClasses=nClasses)
     train_result = train_alg.compute(train_data, train_labels)
+    print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
 
     # read testing data from file with 20 features per observation
     testfile = "./data/batch/binary_cls_test.csv"

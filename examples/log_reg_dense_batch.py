@@ -45,6 +45,7 @@ def main():
                                                  penaltyL1=0.1,
                                                  penaltyL2=0.1)
     train_result = train_alg.compute(train_data, train_labels)
+    print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
 
     # read testing data from file with 6 features per observation
     testfile = "./data/batch/logreg_test.csv"
