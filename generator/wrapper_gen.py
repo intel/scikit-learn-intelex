@@ -158,6 +158,9 @@ extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({
 {% for m in named_gets %}
 extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_);
 {% endfor %}
+{% for m in get_methods %}
+extern "C" {{m[0]}} * get_{{flatname}}_{{m[1]}}({{class_type}} *, {{m[2]}});
+{% endfor %}
 %SNIP%
 {% for m in enum_gets %}
 extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
@@ -171,10 +174,17 @@ extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({
     return RAW< {{m[0]}} >()((*obj_)->get{{m[1]}}());
 }
 {% endfor %}
+{% for m in get_methods %}
+extern "C" {{m[0]}} * get_{{flatname}}_{{m[1]}}({{class_type}} * obj_, {{m[2]}} {{m[3]}})
+{
+    return new {{m[0]}}((*obj_)->get{{m[1]}}({{m[3]}}));
+}
+{% endfor %}
 %SNIP%
 cdef extern from "daal4py_cpp.h":
     cdef cppclass {{class_type|flat|strip(' *')}}:
         pass
+
 {% if not class_type.startswith('daal::'+ns) %}
 {% endif %}
 cdef extern from "daal4py_cpp.h":
@@ -183,6 +193,9 @@ cdef extern from "daal4py_cpp.h":
 {% endfor %}
 {% for m in named_gets %}
     cdef {{m[0]|d2cy}} get_{{flatname}}_{{m[1]}}({{class_type|flat}} obj_) except +
+{% endfor %}
+{% for m in get_methods %}
+    cdef {{(m[0]|d2cy)}} get_{{flatname}}_{{m[1]}}({{class_type|flat}} obj_, {{m[2]}} {{m[3]}}) except +
 {% endfor %}
 
 cdef class {{flatname}}:
@@ -211,6 +224,15 @@ cdef class {{flatname}}:
         res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return {{'<object>make_nda(res)' if 'NumericTablePtr' in rtype else 'res'}}
 {% endif %}
+{% endfor %}
+
+{% for m in get_methods %}
+{% set frtype = m[0].replace('Ptr', '')|d2cy(False)|lower %}
+    def {{m[1]|d2cy(False)}}(self, {{m[2]|d2cy(False)}} {{m[3]}}):
+        ':type: {{frtype}}'
+        res = {{frtype}}()
+        res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr, {{m[3]}})
+        return res
 {% endfor %}
 
     def __setstate__(self, state):
@@ -331,10 +353,12 @@ gen_inst_algo = """
 {% set algo = 'algo' + suffix %}
 {% if step_spec.construct %}
 {% set ctor = create + '(' + step_spec.construct + ')' %}
+{% elif create  %}
+{% set ctor = ('::create(_' + ', _'.join(create.keys()) + ')').replace('(_)', '()') %}
 {% elif params_req|length > 0  %}
-{% set ctor = create + ('(to_daal(_' + '), to_daal(_'.join(params_req.values()) + '))') %}
+{% set ctor = ('(to_daal(_' + '), to_daal(_'.join(params_req.values()) + '))') %}
 {% else %}
-{% set ctor = create + '()' %}
+{% set ctor = '()' %}
 {% endif %}
 {% if member %}
 _algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
@@ -344,7 +368,7 @@ auto {{algo}} = {{algo}}_type{{ctor}};
 auto {{algo}}_obj = {{algo}}_type{{ctor}};
         {{algo}}_type * {{algo}} = &{{algo}}_obj;
 {% endif %}
-{% if (step_spec == None or step_spec.params) and params_get and params_opt|length %}
+{% if (step_spec == None or step_spec.params) and params_get and params_opt|length and not create %}
         init_parameters({{('_' if member else '')+algo}}->{{params_get}});
 {% else %}
         // skipping parameter initialization
@@ -474,7 +498,7 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 #endif
 
 private:
-{% if params_opt|length %}
+{% if params_opt|length and not create %}
     template< typename PType >
     void init_parameters(PType & parameter)
     {
