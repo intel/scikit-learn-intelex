@@ -82,11 +82,11 @@ required = {
 
 # Some algorithms have no public constructors and need to be instantiated with 'create'
 # (for whatever reason)
-no_constructor = [
-    'algorithms::engines::mt19937::Batch',
-    'algorithms::engines::mt2203::Batch',
-    'algorithms::engines::mcg59::Batch',
-]
+no_constructor = {
+    'algorithms::engines::mt19937::Batch': {'seed': 'size_t'},
+    'algorithms::engines::mt2203::Batch': {'seed': 'size_t'},
+    'algorithms::engines::mcg59::Batch': {'seed': 'size_t'},
+}
 
 # Some algorithms require a setup function, to provide input without actual compute
 add_setup = [
@@ -149,7 +149,7 @@ defaults = {
     },
 }
 
-# In some cases we the whole C++ busines is too complex and we need to provide
+# In some cases we the whole C++ business is too complex and we need to provide
 # types manually.
 fallbacks = {
     'algorithms::pca': {

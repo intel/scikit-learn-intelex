@@ -326,10 +326,12 @@ gen_inst_algo = """
 {% set algo = 'algo' + suffix %}
 {% if step_spec.construct %}
 {% set ctor = create + '(' + step_spec.construct + ')' %}
+{% elif create  %}
+{% set ctor = ('::create(_' + ', _'.join(create.keys()) + ')').replace('(_)', '()') %}
 {% elif params_req|length > 0  %}
-{% set ctor = create + ('(to_daal(_' + '), to_daal(_'.join(params_req.values()) + '))') %}
+{% set ctor = ('(to_daal(_' + '), to_daal(_'.join(params_req.values()) + '))') %}
 {% else %}
-{% set ctor = create + '()' %}
+{% set ctor = '()' %}
 {% endif %}
 {% if member %}
 _algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
@@ -339,7 +341,7 @@ auto {{algo}} = {{algo}}_type{{ctor}};
 auto {{algo}}_obj = {{algo}}_type{{ctor}};
         {{algo}}_type * {{algo}} = &{{algo}}_obj;
 {% endif %}
-{% if (step_spec == None or step_spec.params) and params_get and params_opt|length %}
+{% if (step_spec == None or step_spec.params) and params_get and params_opt|length and not create %}
         init_parameters({{('_' if member else '')+algo}}->{{params_get}});
 {% else %}
         // skipping parameter initialization
@@ -469,7 +471,7 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 #endif
 
 private:
-{% if params_opt|length %}
+{% if params_opt|length and not create %}
     template< typename PType >
     void init_parameters(PType & parameter)
     {
