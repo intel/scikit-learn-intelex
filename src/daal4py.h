@@ -208,6 +208,6 @@ template<class T, class U>
 T* dynamicPointerPtrCast(U *r)
 {
     T tmp = daal::services::dynamicPointerCast<typename T::ElementType>(*r);
-    return tmp ? reinterpret_cast<T*>(r) : NULL;
+    return tmp ? new T(*reinterpret_cast<T*>(r)) : NULL;
 }
 #endif // _HLAPI_H_INCLUDED_
