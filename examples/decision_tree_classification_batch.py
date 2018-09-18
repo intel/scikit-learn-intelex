@@ -21,8 +21,8 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-if __name__ == "__main__":
 
+def main():
     # input data file
     infile = "./data/batch/decision_tree_train.csv"
     prunefile = "./data/batch/decision_tree_prune.csv"
@@ -51,6 +51,11 @@ if __name__ == "__main__":
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
+    return (predict_result, plabels)
+
+
+if __name__ == "__main__":
+    (predict_result, plabels) = main()
     print("\nDecision tree prediction results (first 20 rows):\n", predict_result.prediction[0:20])
     print("\nGround truth (first 20 rows):\n", plabels[0:20])
     print('All looks good!')

@@ -21,8 +21,8 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-if __name__ == "__main__":
 
+def main():
     infile = "./data/batch/kmeans_dense.csv"
     nClusters = 20
     maxIter = 5
@@ -48,6 +48,11 @@ if __name__ == "__main__":
     assert result.assignments.shape == (data.shape[0], 1)
     assert result.nIterations <= maxIter
 
+    return result
+
+
+if __name__ == "__main__":
+    result = main()
     print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
     print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
     print("\nObjective function value:\n", result.objectiveFunction)

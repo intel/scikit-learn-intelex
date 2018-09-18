@@ -21,8 +21,8 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-if __name__ == "__main__":
 
+def main():
     infile = "./data/batch/svd.csv"
 
     # configure a SVD object
@@ -40,6 +40,11 @@ if __name__ == "__main__":
     assert allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-07)
     assert allclose(result1.singularValues, result2.singularValues, atol=1e-07)
 
+    return result1
+
+
+if __name__ == "__main__":
+    result1 = main()
     print("\nSingular values:\n", result1.singularValues)
     print("\nRight orthogonal matrix V:\n", result1.rightSingularMatrix)
     print("\nLeft orthogonal matrix U (first 10 rows):\n", result1.leftSingularMatrix[0:10])

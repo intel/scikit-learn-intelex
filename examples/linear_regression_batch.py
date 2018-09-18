@@ -21,8 +21,8 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-if __name__ == "__main__":
 
+def main():
     infile = "./data/batch/linear_regression_train.csv"
 
     # Configure a Linear regression training object
@@ -44,6 +44,12 @@ if __name__ == "__main__":
 
     # The prediction result provides prediction
     assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
+
+    return (train_result, predict_result, ptdata)
+
+
+if __name__ == "__main__":
+    (train_result, predict_result, ptdata) = main()
     print("\nLinear Regression coefficients:\n", train_result.model.Beta)
     print("\nLinear Regression prediction results: (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", ptdata[0:10])

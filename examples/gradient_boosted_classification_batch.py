@@ -21,7 +21,8 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-if __name__ == "__main__":
+
+def main():
     nFeatures = 3
     nClasses = 5
     maxIterations = 40
@@ -50,6 +51,11 @@ if __name__ == "__main__":
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
+    return (predict_result, plabels)
+
+
+if __name__ == "__main__":
+    (predict_result, plabels) = main()
     print("\nGradient boosted trees prediction results (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
     print('All looks good!')

@@ -21,8 +21,8 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-if __name__ == "__main__":
 
+def main():
     infile = "./data/batch/pca_normalized.csv"
     method = 'svdDense'
 
@@ -42,6 +42,11 @@ if __name__ == "__main__":
     assert allclose(result1.means, result2.means)
     assert allclose(result1.variances, result2.variances)
 
+    return result1
+
+
+if __name__ == "__main__":
+    result1 = main()
     print("\nEigenvalues:\n", result1.eigenvalues)
     print("\nEigenvectors:\n", result1.eigenvectors)
     print("\nMeans:\n", result1.means)
