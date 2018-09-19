@@ -31,15 +31,20 @@ except:
 
 
 def main():
+    # Input file
     infile = "./data/batch/outlierdetection.csv"
 
+    # Retrieve the data from the input file
     data = read_csv(infile, range(3))
 
+    # Create an algorithm to detect outliers (univariate)
     algorithm = d4p.univariate_outlier_detection()
 
+    # Compute outliers and get the computed results
     res = algorithm.compute(data, None, None, None)
 
     return (data, res)
+
 
 if __name__ == "__main__":
     (data, res) = main()
