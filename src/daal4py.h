@@ -203,4 +203,11 @@ extern daal::data_management::NumericTablePtr * make_nt(PyObject * nda);
 
 extern const daal::data_management::NumericTablePtr readCSV(const std::string& fname);
 
+
+template<class T, class U>
+T* dynamicPointerPtrCast(U *r)
+{
+    T tmp = daal::services::dynamicPointerCast<typename T::ElementType>(*r);
+    return tmp ? new T(*reinterpret_cast<T*>(r)) : NULL;
+}
 #endif // _HLAPI_H_INCLUDED_
