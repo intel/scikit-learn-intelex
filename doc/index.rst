@@ -2,7 +2,7 @@
 Fast, Scalable and Easy Machine Learning With DAAL4PY
 #####################################################
 
-Daal4py makes your Python Machine Learning algorithms lightning fast and easy
+Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
 to use. It provides highly configurable Machine Learning kernels, some of which
 can be easily and efficiently scaled out to clusters of workstations.
 Internally it uses Intel(R) DAAL (Intel(R) Data Analytics Acceleration
