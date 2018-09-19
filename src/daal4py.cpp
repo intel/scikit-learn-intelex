@@ -278,6 +278,8 @@ TableOrFList::TableOrFList(PyObject * input)
         // we need it increment the ref-count if we use the input array in-place
         // if we copied/converted it we already own our own reference
         if((PyObject*)array == input) Py_INCREF(array);
+    } else {
+        std::cerr << "Got type '" << Py_TYPE(input)->tp_name << "' when expecting string or array or list of strings/arrays. Treating as None." << std::endl;
     }
 }
 

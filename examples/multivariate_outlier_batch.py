@@ -33,13 +33,13 @@ except:
 
 def main():
     infile = "./data/batch/outlierdetection.csv"
-    
+
     data = read_csv(infile, range(3))
-    
+
     algorithm = d4p.multivariate_outlier_detection()
-    
-    res = algorithm.compute(data, 1, 1, 1)
-    
+
+    res = algorithm.compute(data, None, None, None)
+
     return (data, res)
 
 
