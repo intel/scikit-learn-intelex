@@ -356,7 +356,7 @@ Examples:
 .. autoclass:: daal4py.optimization_solver_logistic_loss
 .. autoclass:: daal4py.optimization_solver_logistic_loss_result
    :members:
-      
+ 
 Cross-entropy Loss
 """"""""""""""""""
 Detailed description of parameters and semantics are described in
