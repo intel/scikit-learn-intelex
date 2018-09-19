@@ -112,6 +112,7 @@ cdef extern from "daal4py.h":
         TableOrFList(PyObject *) except +
         pass
 
+    T* dynamicPointerPtrCast[T,U](U*)
 
 NAN64 = NaN64
 NAN32 = NaN32
@@ -139,6 +140,7 @@ def num_procs():
 
 def my_procid():
     return c_my_procid()
+
 '''
 
 ###############################################################################
@@ -226,13 +228,37 @@ cdef class {{flatname}}:
 {% endif %}
 {% endfor %}
 
+{% if derived %}
+    cdef _get_most_derived(self):
+{% for m in derived %}
+{% set dertype = m|d2cy %}
+        cdef {{m|d2cy}} tmp_ptr{{loop.index}} = dynamicPointerPtrCast[{{m|d2cy(False)}}, {{class_type|flat(False)}}](self.c_ptr)
+        cdef {{m.replace('Ptr', '')|d2cy(False)|lower}} res{{loop.index}}
+        if tmp_ptr{{loop.index}}:
+            res{{loop.index}} = {{m.replace('Ptr', '')|d2cy(False)|lower}}()
+            res{{loop.index}}.c_ptr = tmp_ptr{{loop.index}}
+            return res{{loop.index}}
+{% endfor %}
+{% else %}
+    cdef _get_most_derived(self):
+        return self
+{% endif %}
+
 {% for m in get_methods %}
 {% set frtype = m[0].replace('Ptr', '')|d2cy(False)|lower %}
     def {{m[1]|d2cy(False)}}(self, {{m[2]|d2cy(False)}} {{m[3]}}):
+{% if 'Ptr' in m[0] %}
         ':type: {{frtype}}'
         res = {{frtype}}()
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr, {{m[3]}})
+{% if '_model' in frtype %}
+        return res._get_most_derived()
+{% else %}
         return res
+{% endif %}
+{% else %}
+        return get_{{flatname}}_{{m[1]}}(self.c_ptr, {{m[3]}})
+{% endif %}
 {% endfor %}
 
     def __setstate__(self, state):
