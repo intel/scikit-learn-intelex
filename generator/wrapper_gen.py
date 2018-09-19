@@ -147,11 +147,14 @@ extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({
 {% for m in named_gets %}
 extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_);
 {% endfor %}
+{% for m in get_methods %}
+extern "C" {{m[0]}} * get_{{flatname}}_{{m[1]}}({{class_type}} *, {{m[2]}});
+{% endfor %}
 %SNIP%
 {% for m in enum_gets %}
 extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
 {
-    return RAW< {{m[2]}} >()((*obj_)->get({{m[0]}}::{{m[1]}}));
+    return RAW< {{m[2]}} >()((*obj_)->get(daal::{{m[0]}}::{{m[1]}}));
 }
 {% endfor %}
 {% for m in named_gets %}
@@ -160,10 +163,17 @@ extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({
     return RAW< {{m[0]}} >()((*obj_)->get{{m[1]}}());
 }
 {% endfor %}
+{% for m in get_methods %}
+extern "C" {{m[0]}} * get_{{flatname}}_{{m[1]}}({{class_type}} * obj_, {{m[2]}} {{m[3]}})
+{
+    return new {{m[0]}}((*obj_)->get{{m[1]}}({{m[3]}}));
+}
+{% endfor %}
 %SNIP%
 cdef extern from "daal4py_cpp.h":
     cdef cppclass {{class_type|flat|strip(' *')}}:
         pass
+
 {% if not class_type.startswith('daal::'+ns) %}
 {% endif %}
 cdef extern from "daal4py_cpp.h":
@@ -172,6 +182,9 @@ cdef extern from "daal4py_cpp.h":
 {% endfor %}
 {% for m in named_gets %}
     cdef {{m[0]|d2cy}} get_{{flatname}}_{{m[1]}}({{class_type|flat}} obj_) except +
+{% endfor %}
+{% for m in get_methods %}
+    cdef {{(m[0]|d2cy)}} get_{{flatname}}_{{m[1]}}({{class_type|flat}} obj_, {{m[2]}} {{m[3]}}) except +
 {% endfor %}
 
 cdef class {{flatname}}:
@@ -199,6 +212,15 @@ cdef class {{flatname}}:
         res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return {{'<object>make_nda(res)' if 'NumericTablePtr' in rtype else 'res'}}
 {% endif %}
+{% endfor %}
+
+{% for m in get_methods %}
+{% set frtype = m[0].replace('Ptr', '')|d2cy(False)|lower %}
+    def {{m[1]|d2cy(False)}}(self, {{m[2]|d2cy(False)}} {{m[3]}}):
+        ':type: {{frtype}}'
+        res = {{frtype}}()
+        res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr, {{m[3]}})
+        return res
 {% endfor %}
 
 hpat_spec.append({
@@ -280,9 +302,9 @@ gen_typedefs_macro = """
 {% macro gen_typedefs(ns, template_decl, template_args, mode="Batch", suffix="b", step_spec=None) %}
 {% set disttarg = (step_spec.name.rsplit('__', 1)[0] + ', ') if step_spec.name else "" %}
 {% if template_decl|length > 0  %}
-    typedef {{ns}}::{{mode}}<{{disttarg + ', '.join(template_args)}}> algo{{suffix}}_type;
+    typedef daal::{{ns}}::{{mode}}<{{disttarg + ', '.join(template_args)}}> algo{{suffix}}_type;
 {% else %}
-    typedef {{ns}}::{{mode}} algo{{suffix}}_type;
+    typedef daal::{{ns}}::{{mode}} algo{{suffix}}_type;
 {% endif %}
 {% if step_spec %}
     typedef {{step_spec.iomanager}}< algo{{suffix}}_type, {{', '.join(step_spec.input)}}, {{step_spec.output}}{{(","+",".join(step_spec.iomargs)) if step_spec.iomargs else ""}} > iom{{suffix}}_type;
@@ -290,7 +312,7 @@ gen_typedefs_macro = """
 {% if iombatch %}
     typedef {{iombatch}} iom{{suffix}}_type;
 {% else %}
-    typedef IOManager< algo{{suffix}}_type, services::SharedPtr< typename algo{{suffix}}_type::InputType >, services::SharedPtr< typename algo{{suffix}}_type::ResultType > > iom{{suffix}}_type;
+    typedef IOManager< algo{{suffix}}_type, daal::services::SharedPtr< typename algo{{suffix}}_type::InputType >, daal::services::SharedPtr< typename algo{{suffix}}_type::ResultType > > iom{{suffix}}_type;
 {% endif %}
 {% endif %}
 {%- endmacro %}
@@ -304,10 +326,12 @@ gen_inst_algo = """
 {% set algo = 'algo' + suffix %}
 {% if step_spec.construct %}
 {% set ctor = create + '(' + step_spec.construct + ')' %}
+{% elif create  %}
+{% set ctor = ('::create(_' + ', _'.join(create.keys()) + ')').replace('(_)', '()') %}
 {% elif params_req|length > 0  %}
-{% set ctor = create + ('(to_daal(_' + '), to_daal(_'.join(params_req.values()) + '))') %}
+{% set ctor = ('(to_daal(_' + '), to_daal(_'.join(params_req.values()) + '))') %}
 {% else %}
-{% set ctor = create + '()' %}
+{% set ctor = '()' %}
 {% endif %}
 {% if member %}
 _algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
@@ -317,7 +341,7 @@ auto {{algo}} = {{algo}}_type{{ctor}};
 auto {{algo}}_obj = {{algo}}_type{{ctor}};
         {{algo}}_type * {{algo}} = &{{algo}}_obj;
 {% endif %}
-{% if (step_spec == None or step_spec.params) and params_get and params_opt|length %}
+{% if (step_spec == None or step_spec.params) and params_get and params_opt|length and not create %}
         init_parameters({{('_' if member else '')+algo}}->{{params_get}});
 {% else %}
         // skipping parameter initialization
@@ -395,8 +419,9 @@ struct {{algo}}__iface__ : public {{iface[0] if iface[0] else 'algo_manager'}}__
 {
     bool _distributed;
     {{algo}}__iface__(bool d=false) : _distributed(d) {}
-    virtual {{result_map.class_type}} * compute({{(',\n'+' '*(23+(result_map.class_type|length))).join(iargs_decl|cppdecl)}},
-                                                bool setup_only = false) {assert(false);}
+{% set indent = 23+(result_map.class_type|length) %}
+    virtual {{result_map.class_type}} * compute({{(',\n'+' '*indent).join(iargs_decl|cppdecl)}},
+{{' '*indent}}bool setup_only = false) {assert(false); return NULL;}
 };
 """
 
@@ -407,7 +432,7 @@ manager_wrapper_template = gen_typedefs_macro + gen_compute_macro + """
 typedef {{algo}}__iface__  c_{{algo}}_manager__iface__;
 
 // The algo creation function
-extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 52+2*(algo|length))}});
+extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 27+2*(algo|length))}});
 {% endif %}
 
 {% if template_decl  %}
@@ -446,7 +471,7 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 #endif
 
 private:
-{% if params_opt|length %}
+{% if params_opt|length and not create %}
     template< typename PType >
     void init_parameters(PType & parameter)
     {
@@ -541,13 +566,14 @@ parent_wrapper_template = """
 cdef extern from "daal4py.h":
     # declare the C++ equivalent of the manager__iface__ class, providing de-templatized access to compute
     cdef cppclass c_{{algo}}_manager__iface__{{'(c_'+iface[0]+'__iface__)' if iface[0] else ''}}:
-        {{result_map.class_type|flat}} compute({{(',\n'+' '*(29+algo|length)).join(iargs_decl|d2ext)}},
-        {{' '*(21+algo|length)}}const bool setup_only) except +
+{% set indent = 17+(result_map.class_type|flat|length) %}
+        {{result_map.class_type|flat}} compute({{(',\n'+' '*indent).join(iargs_decl|d2ext)}},
+{{' '*indent}}const bool setup_only) except +
 
 
 cdef extern from "daal4py_cpp.h":
     # declare the C++ construction function. Returns the manager__iface__ for access to de-templatized constructor
-    cdef c_{{algo}}_manager__iface__ * mk_{{algo}}({{pargs_decl|cy_ext_decl(pargs_call, template_decl, 45+2*(algo|length))}}) except +
+    cdef c_{{algo}}_manager__iface__ * mk_{{algo}}({{pargs_decl|cy_ext_decl(pargs_call, template_decl, 35+2*(algo|length))}}) except +
 
 
 # this is our actual algorithm class for Python
@@ -559,7 +585,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # Init simply forwards to the C++ construction function
     def __cinit__(self,
                   {{pargs_decl|cy_decl(pargs_call, template_decl, 18)}}):
-        self.c_ptr = mk_{{algo}}({{pargs_decl|cy_call(pargs_call, template_decl, 45+(algo|length))}})
+        self.c_ptr = mk_{{algo}}({{pargs_decl|cy_call(pargs_call, template_decl, 25+(algo|length))}})
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)
@@ -620,11 +646,12 @@ algo_wrapper_template = """
 {% endfor %}
 {%- endmacro %}
 
-extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 56+2*(algo|length))}})
+extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 37+2*(algo|length))}})
 {
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', pargs_call, dist=dist)}}
-    throw std::invalid_argument("no equivalent(s) for C++ template argument(s) in mk_{{algo}}");
+    std::cerr << "no equivalent(s) for C++ template argument(s) exist in mk_{{algo}}" << std::endl;
+    return NULL;
 {% else %}
     return new {{algo}}_manager({{', '.join(pargs_call)}}, distributed);
 {% endif %}
@@ -720,6 +747,29 @@ size_t c_my_procid()
 }
 
 } // extern "C"
+
+#else // _DIST_
+
+extern "C" {
+void c_daalinit(bool spmd, int flag)
+{
+}
+
+void c_daalfini()
+{
+}
+
+size_t c_num_procs()
+{
+    return 1;
+}
+
+size_t c_my_procid()
+{
+    return 0;
+}
+} // extern "C"
+
 #endif //_DIST_
 
 '''
@@ -756,9 +806,9 @@ def flat(t, cpp=True):
             else:
                 r = '_'.join(nn)
             return ('c_' if cpp and typ.endswith('__iface__') else '') + r + (' *' if cpp and any(typ.endswith(x) for x in ['__iface__', 'Ptr']) else '')
-        ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'services::SharedPtr<kernel_function::KernelIface>')
-        ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', 'services::SharedPtr<engines::BatchBase>', ty)
-        ty = re.sub(r'(daal::)?(algorithms::)?(sum_of_functions::)?BatchPtr', 'services::SharedPtr<sum_of_functions::Batch>', ty)
+        ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'daal::services::SharedPtr<kernel_function::KernelIface>')
+        ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', r'daal::services::SharedPtr<engines::BatchBase>', ty)
+        ty = re.sub(r'(?:daal::)?(?:algorithms::)?([^:]+::)BatchPtr', r'daal::services::SharedPtr<\1Batch>', ty)
         ty = re.sub(r'(daal::)?services::SharedPtr<([^>]+)>', r'\2__iface__', ty)
         return ' '.join([__flat(x).replace('const', '') for x in ty.split(' ')])
     return [_flat(x) for x in t] if isinstance(t,list) else _flat(t)

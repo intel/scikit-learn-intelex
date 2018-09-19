@@ -22,8 +22,8 @@ struct readGraph : public CnC::graph
 {
     typedef std::array< std::string, NI > input_type;
     typedef CnC::item_collection< Tag, input_type, RTuner > in_coll_type;
-    typedef CnC::item_collection< Tag, data_management::NumericTablePtr, OTuner1 > out_coll1_type;
-    typedef CnC::item_collection< Tag, data_management::NumericTablePtr, OTuner2 > out_coll2_type;
+    typedef CnC::item_collection< Tag, daal::data_management::NumericTablePtr, OTuner1 > out_coll1_type;
+    typedef CnC::item_collection< Tag, daal::data_management::NumericTablePtr, OTuner2 > out_coll2_type;
     typedef CnC::identityMap< Tag > step0_map;
 
     struct step0 {

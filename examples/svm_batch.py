@@ -46,5 +46,6 @@ if __name__ == "__main__":
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (data.shape[0], 1))
 
+    print(predict_result.prediction)
     print('All looks good!')
     d4p.daalfini()

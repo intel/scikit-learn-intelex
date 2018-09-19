@@ -18,6 +18,13 @@
 #define _HLAPI_H_INCLUDED_
 
 #include <daal.h>
+using daal::step1Local;
+using daal::step2Local;
+using daal::step3Local;
+using daal::step4Local;
+using daal::step2Master;
+using daal::step3Master;
+#include "daal_compat.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -25,11 +32,23 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
 #define NTYPE PyObject*
 
-using namespace daal;
+#if PY_VERSION_HEX < 0x03000000
+#define PyUnicode_Check(_x) PyString_Check(_x)
+#define PyUnicode_AsUTF8(_x) PyString_AsString(_x)
+#define PyUnicode_FromString(_x) PyString_FromString(_x)
+#endif
+
+extern "C" {
+void c_daalinit(bool spmd=false, int flag=0);
+void c_daalfini();
+size_t c_num_procs();
+size_t c_my_procid();
+}
 
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;
 
@@ -66,10 +85,12 @@ inline bool use_default(const size_t & attr)
     return (long)attr == (long)-1;
 }
 
+#ifndef _WIN32
 inline bool use_default(const DAAL_UINT64 & attr)
 {
     return (long)attr == (long)-1;
 }
+#endif
 
 inline bool use_default(const double & attr)
 {
@@ -104,6 +125,25 @@ static inline NTYPE as_native_shared_ptr(services::SharedPtr< const algo_manager
     return ret;
 }
 #endif
+
+// Our Batch input/Output manager, abstracts from input/output types
+// also defines how to get results and finalize
+template< typename A, typename I, typename O >
+struct IOManager
+{
+    typedef O result_type;
+    typedef I input1_type;
+    typedef std::tuple< input1_type > input_type;
+
+    static result_type getResult(A & algo)
+    {
+        return daal::services::staticPointerCast<typename result_type::ElementType>(algo.getResult());
+    }
+    static bool needsFini()
+    {
+        return true;
+    }
+};
 
 struct TableOrFList
 {
@@ -140,7 +180,7 @@ inline const TableOrFList & to_daal(TableOrFList * t) {return *t;}
 template< typename T >
 void * get_nt_data_ptr(const daal::data_management::NumericTablePtr * ptr)
 {
-    auto dptr = dynamic_cast< const data_management::HomogenNumericTable< T >* >((*ptr).get());
+    auto dptr = dynamic_cast< const daal::data_management::HomogenNumericTable< T >* >((*ptr).get());
     return dptr ? reinterpret_cast< void* >(dptr->getArraySharedPtr().get()) : NULL;
 }
 

@@ -45,6 +45,12 @@ required = {
     'algorithms::gbt::classification::prediction': {
         'Batch': [('nClasses', 'size_t')],
     },
+    'algorithms::logistic_regression::training': {
+        'Batch': [('nClasses', 'size_t')],
+    },
+    'algorithms::logistic_regression::prediction': {
+        'Batch': [('nClasses', 'size_t')],
+    },
     'algorithms::decision_tree::classification::training': {
         'Batch': [('nClasses', 'size_t')],
     },
@@ -64,23 +70,23 @@ required = {
         'Batch': [('nClasses', 'size_t'), ('numberOfTerms', 'size_t')],
     },
     'algorithms::optimization_solver::sgd': {
-        'Batch': [('function', 'algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+        'Batch': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
     },
     'algorithms::optimization_solver::lbfgs': {
-        'Batch': [('function', 'algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+        'Batch': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
     },
     'algorithms::optimization_solver::adagrad': {
-        'Batch': [('function', 'algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+        'Batch': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
     },
 }
 
 # Some algorithms have no public constructors and need to be instantiated with 'create'
 # (for whatever reason)
-no_constructor = [
-    'algorithms::engines::mt19937::Batch',
-    'algorithms::engines::mt2203::Batch',
-    'algorithms::engines::mcg59::Batch',
-]
+no_constructor = {
+    'algorithms::engines::mt19937::Batch': {'seed': 'size_t'},
+    'algorithms::engines::mt2203::Batch': {'seed': 'size_t'},
+    'algorithms::engines::mcg59::Batch': {'seed': 'size_t'},
+}
 
 # Some algorithms require a setup function, to provide input without actual compute
 add_setup = [
@@ -100,6 +106,7 @@ ignore = {
     'algorithms::kmeans::init': ['nRowsTotal', 'offset',],
     'algorithms::gbt::regression::training': ['dependentVariables'],
     'algorithms::gbt::classification::training': ['weights',],
+    'algorithms::logistic_regression::training': ['weights',],
     'algorithms::decision_tree::classification::training': ['weights',],
     'algorithms::decision_forest::classification::training': ['weights', 'updatedEngine',],
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', 'updatedEngine',],
@@ -123,6 +130,7 @@ ifaces = {
     'classifier::training::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::training::Batch>',
     'engines::BatchBase': 'daal::algorithms::engines::EnginePtr',
     'optimization_solver::sum_of_functions::Batch': 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr',
+    'optimization_solver::iterative_solver::Batch': 'daal::algorithms::optimization_solver::iterative_solver::BatchPtr',
 }
 
 # By default input arguments have no default value (e.g. they are required).
@@ -130,18 +138,18 @@ ifaces = {
 # default value (for each algorithm).
 defaults = {
     'algorithms::multivariate_outlier_detection': {
-        'location': 'data_management::NumericTablePtr()',
-        'scatter': 'data_management::NumericTablePtr()',
-        'threshold': 'data_management::NumericTablePtr()',
+        'location': 'daal::data_management::NumericTablePtr()',
+        'scatter': 'daal::data_management::NumericTablePtr()',
+        'threshold': 'daal::data_management::NumericTablePtr()',
     },
     'algorithms::univariate_outlier_detection': {
-        'location': 'data_management::NumericTablePtr()',
-        'scatter': 'data_management::NumericTablePtr()',
-        'threshold': 'data_management::NumericTablePtr()',
+        'location': 'daal::data_management::NumericTablePtr()',
+        'scatter': 'daal::data_management::NumericTablePtr()',
+        'threshold': 'daal::data_management::NumericTablePtr()',
     },
 }
 
-# In some cases we the whole C++ busines is too complex and we need to provide
+# In some cases we the whole C++ business is too complex and we need to provide
 # types manually.
 fallbacks = {
     'algorithms::pca': {
@@ -180,150 +188,150 @@ has_dist = {
     'algorithms::pca' : {
         'pattern': 'applyGather',
         'step_specs': [SSpec(name      = 'step1Local',
-                             input     = ['data_management::NumericTablePtr'],
-                             output    = 'services::SharedPtr< algorithms::pca::PartialResult< method > >',
+                             input     = ['daal::data_management::NumericTablePtr'],
+                             output    = 'daal::services::SharedPtr< daal::algorithms::pca::PartialResult< method > >',
                              iomanager = 'PartialIOManager',
-                             setinput  = ['algorithms::pca::data'],
+                             setinput  = ['daal::algorithms::pca::data'],
                              params    = False),
                        SSpec(name      = 'step2Master',
-                             input     = ['services::SharedPtr< algorithms::pca::PartialResult< method > >'],
-                             output    = 'algorithms::pca::ResultPtr',
+                             input     = ['daal::services::SharedPtr< daal::algorithms::pca::PartialResult< method > >'],
+                             output    = 'daal::algorithms::pca::ResultPtr',
                              iomanager = 'IOManager',
-                             addinput  = 'algorithms::pca::partialResults',
+                             addinput  = 'daal::algorithms::pca::partialResults',
                              params    = False)
                    ],
     },
     'algorithms::multinomial_naive_bayes::training' : {
         'pattern': 'applyGather',
         'step_specs': [SSpec(name      = 'step1Local',
-                             input      = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
-                             output     = 'services::SharedPtr< algorithms::multinomial_naive_bayes::training::PartialResult >',
+                             input      = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
+                             output     = 'daal::services::SharedPtr< daal::algorithms::multinomial_naive_bayes::training::PartialResult >',
                              iomanager  = 'PartialIOManager2',
-                             setinput   = ['algorithms::classifier::training::data', 'algorithms::classifier::training::labels'],
+                             setinput   = ['daal::algorithms::classifier::training::data', 'daal::algorithms::classifier::training::labels'],
                              inputnames = ['data', 'labels'],
                              inputdists = ['OneD', 'OneD']),
                        SSpec(name      = 'step2Master',
-                             input      = ['services::SharedPtr< algorithms::multinomial_naive_bayes::training::PartialResult >'],
-                             output     = 'algorithms::multinomial_naive_bayes::training::ResultPtr',
+                             input      = ['daal::services::SharedPtr< daal::algorithms::multinomial_naive_bayes::training::PartialResult >'],
+                             output     = 'daal::algorithms::multinomial_naive_bayes::training::ResultPtr',
                              iomanager  = 'IOManager',
-                             addinput   = 'algorithms::multinomial_naive_bayes::training::partialModels')
+                             addinput   = 'daal::algorithms::multinomial_naive_bayes::training::partialModels')
                    ],
     },
     'algorithms::linear_regression::training' : {
         'pattern': 'mapReduce',
         'step_specs': [SSpec(name      = 'step1Local',
-                             input       = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
+                             input       = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              inputnames  = ['data', 'dependentVariables'],
                              inputdists  = ['OneD', 'OneD'],
-                             output      = 'services::SharedPtr< algorithms::linear_regression::training::PartialResult >',
+                             output      = 'daal::services::SharedPtr< daal::algorithms::linear_regression::training::PartialResult >',
                              iomanager   = 'PartialIOManager2',
-                             setinput    = ['algorithms::linear_regression::training::data', 'algorithms::linear_regression::training::dependentVariables'],),
+                             setinput    = ['daal::algorithms::linear_regression::training::data', 'daal::algorithms::linear_regression::training::dependentVariables'],),
                        SSpec(name      = 'step2Master',
-                             input       = ['services::SharedPtr< algorithms::linear_regression::training::PartialResult >'],
-                             output      = 'algorithms::linear_regression::training::PartialResultPtr',
+                             input       = ['daal::services::SharedPtr< daal::algorithms::linear_regression::training::PartialResult >'],
+                             output      = 'daal::algorithms::linear_regression::training::PartialResultPtr',
                              iomanager   = 'PartialIOManager',
-                             addinput    = 'algorithms::linear_regression::training::partialModels'),
+                             addinput    = 'daal::algorithms::linear_regression::training::partialModels'),
                        SSpec(name      = 'step2Master__final',
-                             input       = ['services::SharedPtr< algorithms::linear_regression::training::PartialResult >'],
-                             output      = 'algorithms::linear_regression::training::ResultPtr',
+                             input       = ['daal::services::SharedPtr< daal::algorithms::linear_regression::training::PartialResult >'],
+                             output      = 'daal::algorithms::linear_regression::training::ResultPtr',
                              iomanager   = 'IOManager',
-                             addinput    = 'algorithms::linear_regression::training::partialModels')
+                             addinput    = 'daal::algorithms::linear_regression::training::partialModels')
                    ],
     },
     'algorithms::ridge_regression::training' : {
         'pattern': 'mapReduce',
         'step_specs': [SSpec(name      = 'step1Local',
-                             input       = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
+                             input       = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              inputnames  = ['data', 'dependentVariables'],
                              inputdists  = ['OneD', 'OneD'],
-                             output      = 'services::SharedPtr< algorithms::ridge_regression::training::PartialResult >',
+                             output      = 'daal::services::SharedPtr< daal::algorithms::ridge_regression::training::PartialResult >',
                              iomanager   = 'PartialIOManager2',
-                             setinput    = ['algorithms::ridge_regression::training::data', 'algorithms::ridge_regression::training::dependentVariables'],),
+                             setinput    = ['daal::algorithms::ridge_regression::training::data', 'daal::algorithms::ridge_regression::training::dependentVariables'],),
                        SSpec(name      = 'step2Master',
-                             input       = ['services::SharedPtr< algorithms::ridge_regression::training::PartialResult >'],
-                             output      = 'algorithms::ridge_regression::training::PartialResultPtr',
+                             input       = ['daal::services::SharedPtr< daal::algorithms::ridge_regression::training::PartialResult >'],
+                             output      = 'daal::algorithms::ridge_regression::training::PartialResultPtr',
                              iomanager   = 'PartialIOManager',
-                             addinput    = 'algorithms::ridge_regression::training::partialModels'),
+                             addinput    = 'daal::algorithms::ridge_regression::training::partialModels'),
                        SSpec(name      = 'step2Master__final',
-                             input       = ['services::SharedPtr< algorithms::ridge_regression::training::PartialResult >'],
-                             output      = 'algorithms::ridge_regression::training::ResultPtr',
+                             input       = ['daal::services::SharedPtr< daal::algorithms::ridge_regression::training::PartialResult >'],
+                             output      = 'daal::algorithms::ridge_regression::training::ResultPtr',
                              iomanager   = 'IOManager',
-                             addinput    = 'algorithms::ridge_regression::training::partialModels')
+                             addinput    = 'daal::algorithms::ridge_regression::training::partialModels')
                    ],
     },
     'algorithms::svd' : {
         'pattern': 'applyGather',
         'step_specs': [SSpec(name      = 'step1Local',
-                             input     = ['data_management::NumericTablePtr'],
-                             output    = 'data_management::DataCollectionPtr',
+                             input     = ['daal::data_management::NumericTablePtr'],
+                             output    = 'daal::data_management::DataCollectionPtr',
                              iomanager = 'PartialIOManagerSingle',
-                             setinput  = ['algorithms::svd::data'],
-                             iomargs   = ['algorithms::svd::PartialResultId', 'algorithms::svd::outputOfStep1ForStep2']),
+                             setinput  = ['daal::algorithms::svd::data'],
+                             iomargs   = ['daal::algorithms::svd::PartialResultId', 'daal::algorithms::svd::outputOfStep1ForStep2']),
                        SSpec(name      = 'step2Master',
-                             input     = ['data_management::DataCollectionPtr'],
-                             output    = 'algorithms::svd::ResultPtr',
+                             input     = ['daal::data_management::DataCollectionPtr'],
+                             output    = 'daal::algorithms::svd::ResultPtr',
                              iomanager = 'IOManager',
-                             addinput  = 'algorithms::svd::inputOfStep2FromStep1, i')
+                             addinput  = 'daal::algorithms::svd::inputOfStep2FromStep1, i')
                    ],
     },
     'algorithms::kmeans::init' : {
-        #        'iombatch': 'IOManagerSingle< algob_type, services::SharedPtr< typename algob_type::InputType >, data_management::NumericTablePtr, algorithms::kmeans::init::ResultId, algorithms::kmeans::init::centroids >',
+        #        'iombatch': 'IOManagerSingle< algob_type, daal::services::SharedPtr< typename algob_type::InputType >, daal::data_management::NumericTablePtr, daal::algorithms::kmeans::init::ResultId, daal::algorithms::kmeans::init::centroids >',
         'pattern': 'dkmi',
         'step_specs': [SSpec(name      = 'step1Local',
-                             input     = ['data_management::NumericTablePtr'],
+                             input     = ['daal::data_management::NumericTablePtr'],
                              extrainput= 'size_t nRowsTotal, size_t offset',
-                             setinput  = ['algorithms::kmeans::init::data'],
-                             output    = 'algorithms::kmeans::init::PartialResultPtr',
+                             setinput  = ['daal::algorithms::kmeans::init::data'],
+                             output    = 'daal::algorithms::kmeans::init::PartialResultPtr',
                              iomanager = 'PartialIOManager',
                              construct = '_nClusters, nRowsTotal, offset'),
                        SSpec(name      = 'step2Master',
-                             input     = ['algorithms::kmeans::init::PartialResultPtr'],
-                             output    = 'data_management::NumericTablePtr',
+                             input     = ['daal::algorithms::kmeans::init::PartialResultPtr'],
+                             output    = 'daal::data_management::NumericTablePtr',
                              iomanager = 'IOManagerSingle',
-                             iomargs   = ['algorithms::kmeans::init::ResultId', 'algorithms::kmeans::init::centroids'],
-                             addinput  = 'algorithms::kmeans::init::partialResults'),
+                             iomargs   = ['daal::algorithms::kmeans::init::ResultId', 'daal::algorithms::kmeans::init::centroids'],
+                             addinput  = 'daal::algorithms::kmeans::init::partialResults'),
                        SSpec(name      = 'step2Local',
-                             input     = ['data_management::NumericTablePtr', 'data_management::DataCollectionPtr', 'data_management::NumericTablePtr'],
-                             setinput  = ['algorithms::kmeans::init::data', 'algorithms::kmeans::init::internalInput', 'algorithms::kmeans::init::inputOfStep2'],
+                             input     = ['daal::data_management::NumericTablePtr', 'daal::data_management::DataCollectionPtr', 'daal::data_management::NumericTablePtr'],
+                             setinput  = ['daal::algorithms::kmeans::init::data', 'daal::algorithms::kmeans::init::internalInput', 'daal::algorithms::kmeans::init::inputOfStep2'],
                              inputnames = ['data', 'internalInput', 'inputOfStep2'],
-                             output    = 'algorithms::kmeans::init::DistributedStep2LocalPlusPlusPartialResultPtr',
+                             output    = 'daal::algorithms::kmeans::init::DistributedStep2LocalPlusPlusPartialResultPtr',
                              iomanager = 'PartialIOManager3',
                              construct = '_nClusters, input2 ? false : true'),
                        SSpec(name      = 'step3Master',
-                             input     = ['data_management::NumericTablePtr'],
-                             output    = 'algorithms::kmeans::init::DistributedStep3MasterPlusPlusPartialResultPtr',
+                             input     = ['daal::data_management::NumericTablePtr'],
+                             output    = 'daal::algorithms::kmeans::init::DistributedStep3MasterPlusPlusPartialResultPtr',
                              iomanager = 'PartialIOManager',
-                             addinput  = 'algorithms::kmeans::init::inputOfStep3FromStep2, i'),
+                             addinput  = 'daal::algorithms::kmeans::init::inputOfStep3FromStep2, i'),
                        SSpec(name      = 'step4Local',
-                             input     = ['data_management::NumericTablePtr', 'data_management::DataCollectionPtr', 'data_management::NumericTablePtr'],
-                             setinput  = ['algorithms::kmeans::init::data', 'algorithms::kmeans::init::internalInput', 'algorithms::kmeans::init::inputOfStep4FromStep3'],
+                             input     = ['daal::data_management::NumericTablePtr', 'daal::data_management::DataCollectionPtr', 'daal::data_management::NumericTablePtr'],
+                             setinput  = ['daal::algorithms::kmeans::init::data', 'daal::algorithms::kmeans::init::internalInput', 'daal::algorithms::kmeans::init::inputOfStep4FromStep3'],
                              inputnames = ['data', 'internalInput', 'inputOfStep4FromStep3'],
-                             output    = 'data_management::NumericTablePtr',
+                             output    = 'daal::data_management::NumericTablePtr',
                              iomanager = 'PartialIOManager3Single',
-                             iomargs   = ['algorithms::kmeans::init::DistributedStep4LocalPlusPlusPartialResultId', 'algorithms::kmeans::init::outputOfStep4']),
+                             iomargs   = ['daal::algorithms::kmeans::init::DistributedStep4LocalPlusPlusPartialResultId', 'daal::algorithms::kmeans::init::outputOfStep4']),
                    ],
     },
     'algorithms::kmeans' : {
         'pattern': 'mapReduceIter',
         'step_specs': [SSpec(name      = 'step1Local',
-                             input     = ['data_management::NumericTablePtr', 'data_management::NumericTablePtr'],
-                             setinput  = ['algorithms::kmeans::data', 'algorithms::kmeans::inputCentroids'],
+                             input     = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
+                             setinput  = ['daal::algorithms::kmeans::data', 'daal::algorithms::kmeans::inputCentroids'],
                              inputnames = ['data', 'inputCentroids'],
                              inputdists  = ['OneD', 'REP'],
-                             output    = 'algorithms::kmeans::PartialResultPtr',
+                             output    = 'daal::algorithms::kmeans::PartialResultPtr',
                              iomanager = 'PartialIOManager2',
                              construct = '_nClusters, false',),
                        SSpec(name      = 'step2Master',
-                             input     = ['algorithms::kmeans::PartialResultPtr'],
-                             output    = 'algorithms::kmeans::PartialResultPtr',
+                             input     = ['daal::algorithms::kmeans::PartialResultPtr'],
+                             output    = 'daal::algorithms::kmeans::PartialResultPtr',
                              iomanager = 'PartialIOManager',
-                             addinput  = 'algorithms::kmeans::partialResults',
+                             addinput  = 'daal::algorithms::kmeans::partialResults',
                              construct = '_nClusters',),
                        SSpec(name      = 'step2Master__final',
-                             input     = ['algorithms::kmeans::PartialResultPtr'],
-                             output    = 'algorithms::kmeans::ResultPtr',
+                             input     = ['daal::algorithms::kmeans::PartialResultPtr'],
+                             output    = 'daal::algorithms::kmeans::ResultPtr',
                              iomanager = 'IOManager',
-                             addinput  = 'algorithms::kmeans::partialResults',
+                             addinput  = 'daal::algorithms::kmeans::partialResults',
                              construct = '_nClusters',)
                    ],
     },
@@ -342,15 +350,15 @@ specialized = {
                     'values': ['double', 'float']
                 }),
                 ('method', {
-                    'template_decl': 'algorithms::linear_regression::prediction::Method',
-                    'default': 'algorithms::linear_regression::prediction::defaultDense',
-                    'values': ['algorithms::linear_regression::prediction::defaultDense',]
+                    'template_decl': 'daal::algorithms::linear_regression::prediction::Method',
+                    'default': 'daal::algorithms::linear_regression::prediction::defaultDense',
+                    'values': ['daal::algorithms::linear_regression::prediction::defaultDense',]
                 }),
             ]),
             'specs': [
                 {
                     'template_decl': ['fptype'],
-                    'expl': OrderedDict([('method', 'algorithms::linear_regression::prediction::defaultDense')]),
+                    'expl': OrderedDict([('method', 'daal::algorithms::linear_regression::prediction::defaultDense')]),
                 },
             ],
         },
@@ -364,15 +372,15 @@ specialized = {
                     'values': ['double', 'float']
                 }),
                 ('method', {
-                    'template_decl': 'algorithms::ridge_regression::prediction::Method',
-                    'default': 'algorithms::ridge_regression::prediction::defaultDense',
-                    'values': ['algorithms::ridge_regression::prediction::defaultDense',]
+                    'template_decl': 'daal::algorithms::ridge_regression::prediction::Method',
+                    'default': 'daal::algorithms::ridge_regression::prediction::defaultDense',
+                    'values': ['daal::algorithms::ridge_regression::prediction::defaultDense',]
                 }),
             ]),
             'specs': [
                 {
                     'template_decl': ['fptype'],
-                    'expl': OrderedDict([('method', 'algorithms::ridge_regression::prediction::defaultDense')]),
+                    'expl': OrderedDict([('method', 'daal::algorithms::ridge_regression::prediction::defaultDense')]),
                 },
             ],
         },
@@ -391,10 +399,12 @@ no_warn = {
     'algorithms::decision_tree::regression': ['Result',],
     'algorithms::engines::mcg59::Batch': ['ParameterType',],
     'algorithms::engines::mt19937::Batch': ['ParameterType',],
+    'algorithms::engines::mt2203::Batch': ['ParameterType',],
     'algorithms::gbt': ['Result',],
     'algorithms::gbt::classification': ['Result',],
     'algorithms::gbt::regression': ['Result',],
     'algorithms::gbt::training': ['Result',],
+    'algorithms::logistic_regression': ['Result',],
     'algorithms::linear_model': ['Result',],
     'algorithms::linear_regression': ['Result',],
     'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
@@ -406,6 +416,8 @@ no_warn = {
     'algorithms::svm': ['Result',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::optimization_solver': ['Result',],
+    'algorithms::cosine_distance::Batch': ['ParameterType',],
+    'algorithms::correlation_distance::Batch': ['ParameterType',],
 }
 
 # we need to be more specific about numeric table types for the lowering phase in HPAT
