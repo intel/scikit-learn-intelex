@@ -61,8 +61,7 @@ elif sys.platform in ['win32', 'cygwin']:
 else:
     assert False, sys.platform + ' not supported'
 
-if not IS_MAC:
-    daal_lib_dir = lib_dir if os.path.isdir(lib_dir) else os.path.dirname(lib_dir)
+daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 
 no_dist = os.environ['NO_DIST'] if 'NO_DIST' in os.environ else False
 
@@ -112,7 +111,7 @@ def getpyexts():
     elif not using_intel and IS_WIN:
         eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/MD']
     else:
-        eca += ['-std=c++11', '-w']
+        eca += ['-std=c++11', '-w', '-D_GLIBCXX_USE_CXX11_ABI=0']
 
     # Security flags
     eca += get_sdl_cflags()
@@ -135,6 +134,8 @@ def getpyexts():
         ela.append("-Wl,-rpath,{}".format(jp(daal_root, '..', 'tbb', 'lib')))
     elif IS_WIN:
         ela.append('-IGNORE:4197')
+    elif IS_LIN:
+        ela.append('-s')
 
     return cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),

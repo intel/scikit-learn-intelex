@@ -68,8 +68,10 @@ def run_all():
     if success != n:
         print('{}/{} examples passed, {} failed'.format(success,n, n - success))
         print('Error(s) occured. Logs can be found in ' + logdir)
+        return 4711
     else:
         print('{}/{} examples passed'.format(success,n))
+        return 0
 
 if __name__ == '__main__':
-    run_all()
+    sys.exit(run_all())
