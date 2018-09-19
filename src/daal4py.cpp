@@ -300,7 +300,7 @@ static PyObject * _make_nda_from_bd(daal::data_management::NumericTablePtr * ptr
 {
     daal::data_management::BlockDescriptor<T> block;
     (*ptr)->getBlockOfRows(0, (*ptr)->getNumberOfRows(), daal::data_management::readOnly, block);
-    if(block.getNumberOfRows() != (*ptr)->getNumberOfRows() || block.getNumberOfColumns() != (*ptr)->getNumberOfRows()) {
+    if(block.getNumberOfRows() != (*ptr)->getNumberOfRows() || block.getNumberOfColumns() != (*ptr)->getNumberOfColumns()) {
         std::cerr << "Getting data ptr as block-of-rows failed.\nExpected shape: "
                   << (*ptr)->getNumberOfRows() << "x" << (*ptr)->getNumberOfRows() << "\nBlock shape:"
                   << block.getNumberOfRows() << "x" <<  block.getNumberOfColumns() << std::endl;
