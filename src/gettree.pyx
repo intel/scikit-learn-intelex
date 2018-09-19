@@ -66,8 +66,8 @@ def getTreeState(model, i, n_classes):
     cdef TreeState cTreeState
     if isinstance(model, decision_forest_classification_model):
         cTreeState = getTreeState_df_classification_model(model, i, n_classes)
-    elif isinstance(model, decision_forest_regression_model):
-        cTreeState = getTreeState_df_regression_model(model, i, n_classes)
+#    elif isinstance(model, decision_forest_regression_model):
+#        cTreeState = getTreeState_df_regression_model(model, i, n_classes)
     else:
         assert(False), 'Incorrect model type: ' + str(type(model))
     #cdef TreeState p = _getTreeState(model.c_ptr, i, n_classes)
@@ -80,6 +80,6 @@ cdef TreeState getTreeState_df_classification_model(decision_forest_classificati
     return _getTreeState(model.c_ptr, i, n_classes)
 
 
-cdef TreeState getTreeState_df_regression_model(decision_forest_regression_model model, i, n_classes):
-    return _getTreeState(model.c_ptr, i, n_classes)
+#cdef TreeState getTreeState_df_regression_model(decision_forest_regression_model model, i, n_classes):
+#    return _getTreeState(model.c_ptr, i, n_classes)
 
