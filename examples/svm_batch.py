@@ -48,4 +48,3 @@ if __name__ == "__main__":
 
     print(predict_result.prediction)
     print('All looks good!')
-    d4p.daalfini()

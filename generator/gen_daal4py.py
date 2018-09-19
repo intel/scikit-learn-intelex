@@ -459,6 +459,7 @@ class cython_interface(object):
                        'enum_gets': [],
                        'named_gets': [],
                        'get_methods': [],
+                       'parent': model.parent,
                    }
             huhu = self.get_all_attrs(ns, mname, 'gets')
             for g in huhu:
@@ -723,6 +724,48 @@ class cython_interface(object):
         return {ns + '::' + mode : retjp}
 
 
+    def prepare_model_hierachy(self, cfg):
+        '''
+        Create a dict which lists all child classes for each Model.
+        Flatens the full hierachy for each Model.
+        '''
+        model_hierarchy = defaultdict(lambda: [])
+        for ns in cfg:
+            c = cfg[ns]
+            if c['model_typemap']:
+                for parent in c['model_typemap']['parent']:
+                    if 'algorithms::' not in parent:
+                        parent = 'algorithms::' + parent
+                    if 'daal::' not in parent:
+                        parent = 'daal::' + parent
+                    if not parent.endswith('Ptr'):
+                        parent = parent + 'Ptr'
+                    model_hierarchy[parent].append(c['model_typemap']['class_type'])
+
+        # We now have to exapand so that each ancestor holds a list of all its decendents
+        done = 0
+        while done == 0:
+            done = 0
+            adds = {}
+            for parent in model_hierarchy:
+                adds[parent] = []
+                c = model_hierarchy[parent]
+                for child in c:
+                    if child in model_hierarchy:
+                        gc = model_hierarchy[child]
+                        for gchild in gc:
+                            if gchild not in c:
+                                adds[parent].append(gchild)
+                                done = 1
+            for m in adds:
+                model_hierarchy[m] = adds[m] + model_hierarchy[m]
+
+        for m in model_hierarchy:
+            ns = splitns(m)[0].replace('daal::', '') + '::Batch'
+            if ns in cfg:
+                cfg[ns]['model_typemap']['derived'] = model_hierarchy[m]
+
+
     def hlapi(self, algo_patterns):
         """
         Generate high level wrappers for namespaces listed in algo_patterns (or all).
@@ -765,6 +808,8 @@ class cython_interface(object):
                 else:
                     func = '_'.join(nn)
                 algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func))
+
+        self.prepare_model_hierachy(algoconfig)
 
         # and now we can finally generate the code
         wg = wrapper_gen(algoconfig, {cpp2hl(i): ifaces[i] for i in ifaces})

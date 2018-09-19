@@ -1,14 +1,12 @@
-.. daal4py documentation master file, created by
-   sphinx-quick-start on Mon Jul  9 08:04:40 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+#####################################################
+Fast, Scalable and Easy Machine Learning With DAAL4PY
+#####################################################
 
-################################################
-Fast and Scalable Machine Learning With DAAL4PY
-################################################
-
-Make your Machine Learning algorithms lightning fast.
-Easily and efficiently scale them out to clusters of workstations.
+Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
+to use. It provides highly configurable Machine Learning kernels, some of which
+can be easily and efficiently scaled out to clusters of workstations.
+Internally it uses Intel(R) DAAL (Intel(R) Data Analytics Acceleration
+Library) to get best performance.
 
 It's Easy
 ---------
