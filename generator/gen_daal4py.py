@@ -822,7 +822,7 @@ def gen_daal4py(daalroot, outdir, warn_all=False):
         f.write(cpp_cpp)
 
 
-    with open(jp(outdir, 'gettree.pyx'), 'r') as f:
+    with open(jp('src', 'gettree.pyx'), 'r') as f:
         pyx_gettree = f.read()
 
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
