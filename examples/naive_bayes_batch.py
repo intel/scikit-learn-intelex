@@ -19,27 +19,36 @@
 # daal4py Naive Bayes Classification example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
+
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
 
 def main():
     # input data file
     infile = "./data/batch/naivebayes_train_dense.csv"
+    testfile = "./data/batch/naivebayes_test_dense.csv"
 
     # Configure a training object (20 classes)
     talgo = d4p.multinomial_naive_bayes_training(20)
     
     # Read data. Let's use 20 features per observation
-    data   = loadtxt(infile, delimiter=',', usecols=range(20))
-    labels = loadtxt(infile, delimiter=',', usecols=range(20,21))
+    data   = read_csv(infile, range(20))
+    labels = read_csv(infile, range(20,21))
     labels.shape = (labels.size, 1) # must be a 2d array
     tresult = talgo.compute(data, labels)
 
     # Now let's do some prediction
     palgo = d4p.multinomial_naive_bayes_prediction(20)
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/naivebayes_test_dense.csv", delimiter=',', usecols=range(20))
-    plabels = loadtxt("./data/batch/naivebayes_test_dense.csv", delimiter=',', usecols=range(20,21))
+    pdata = read_csv(testfile, range(20))
+    plabels = read_csv(testfile, range(20,21))
     plabels.shape = (plabels.size, 1)
     # now predict using the model from the training above
     presult = palgo.compute(pdata, tresult.model)

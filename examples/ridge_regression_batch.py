@@ -19,26 +19,35 @@
 # daal4py Ridge Regression example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
+
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
 
 def main():
     infile = "./data/batch/linear_regression_train.csv"
+    testfile = "./data/batch/linear_regression_test.csv"
 
     # Configure a Ridge regression training object
     train_algo = d4p.ridge_regression_training()
     
     # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
-    indep_data = loadtxt(infile, delimiter=',', usecols=range(10))
-    dep_data   = loadtxt(infile, delimiter=',', usecols=range(10,12))
+    indep_data = read_csv(infile, range(10))
+    dep_data   = read_csv(infile, range(10,12))
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
 
     # Now let's do some prediction
     predict_algo = d4p.ridge_regression_prediction()
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/linear_regression_test.csv", delimiter=',', usecols=range(10))
-    ptdata = loadtxt("./data/batch/linear_regression_test.csv", delimiter=',', usecols=range(10,12))
+    pdata = read_csv(testfile, range(10))
+    ptdata = read_csv(testfile, range(10,12))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

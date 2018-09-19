@@ -19,7 +19,15 @@
 # daal4py PCA example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
+
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
 
 def main():
@@ -33,14 +41,14 @@ def main():
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    data = loadtxt(infile, delimiter=',')
+    data = read_csv(infile, range(10))
     result2 = algo.compute(data)
 
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
-    assert allclose(result1.eigenvalues, result2.eigenvalues)
-    assert allclose(result1.eigenvectors, result2.eigenvectors)
-    assert allclose(result1.means, result2.means)
-    assert allclose(result1.variances, result2.variances)
+    assert np.allclose(result1.eigenvalues, result2.eigenvalues)
+    assert np.allclose(result1.eigenvectors, result2.eigenvectors)
+    assert np.allclose(result1.means, result2.means)
+    assert np.allclose(result1.variances, result2.variances)
 
     return result1
 

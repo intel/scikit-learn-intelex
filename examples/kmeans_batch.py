@@ -19,7 +19,15 @@
 # daal4py K-Means example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
+
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
 
 def main():
@@ -29,7 +37,7 @@ def main():
 
     initrain_algo = d4p.kmeans_init(nClusters, method="randomDense")
     # Load the data
-    data = loadtxt(infile, delimiter=',')
+    data = read_csv(infile, range(20))
     # compute initial centroids
     initrain_result = initrain_algo.compute(data)
     # The results provides the initial centroids

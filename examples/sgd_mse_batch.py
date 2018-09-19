@@ -25,10 +25,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f,c: pandas.read_csv(f, usecols=c, delimiter=',').values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f,c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
 
 def main():
