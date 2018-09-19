@@ -44,6 +44,9 @@ def main():
     # Compute outliers and get the computed results
     res = algorithm.compute(data, None, None, None)
 
+    # result provides weights
+    assert res.weights.shape == (data.shape[0], 1)
+
     return (data, res)
 
 
