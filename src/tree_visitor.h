@@ -47,26 +47,37 @@ struct skl_tree_node {
     {}
 };
 
+// We'd like the Models to have the descriptor typedefs in the class
+// For now we provide a meat-class to map Models to descriptors
+// Models might need an explicit instantiation providing visitor_type, leaf_desc_type and split_desc_type
+// This is the default template for models using regression visitors
+template< typename TNV >
+struct TNVT
+{
+    typedef daal::algorithms::tree_utils::regression::TreeNodeVisitor visitor_type;
+    typedef daal::algorithms::tree_utils::regression::LeafNodeDescriptor leaf_desc_type;
+    typedef daal::algorithms::tree_utils::regression::SplitNodeDescriptor split_desc_type;
+};
 
-typedef daal::algorithms::tree_utils::classification::TreeNodeVisitor ClassificationTreeNodeVisitor;
-typedef daal::algorithms::tree_utils::classification::SplitNodeDescriptor ClassificationSplitNodeDescriptor;
-typedef daal::algorithms::tree_utils::classification::LeafNodeDescriptor ClassificationLeafNodeDescriptor;
-
-typedef daal::algorithms::tree_utils::regression::TreeNodeVisitor RegressionTreeNodeVisitor;
-typedef daal::algorithms::tree_utils::regression::SplitNodeDescriptor RegressionSplitNodeDescriptor;
-typedef daal::algorithms::tree_utils::regression::LeafNodeDescriptor RegressionLeafNodeDescriptor;
-
+// Decision forest classification uses classification vistors
+template<>
+struct TNVT<daal::algorithms::decision_forest::classification::Model>
+{
+    typedef daal::algorithms::tree_utils::classification::TreeNodeVisitor visitor_type;
+    typedef daal::algorithms::tree_utils::classification::LeafNodeDescriptor leaf_desc_type;
+    typedef daal::algorithms::tree_utils::classification::SplitNodeDescriptor split_desc_type;
+};
 
 // our tree visitor for counting nodes
 // TODO: Needs to store leaf-node response, and split-node impurity/sample_counts values
-template<typename TreeNodeVisitor, typename SplitNodeDescriptor, typename LeafNodeDescriptor>
-class NodeDepthCountNodeVisitor : public TreeNodeVisitor
+template<typename M>
+class NodeDepthCountNodeVisitor : public TNVT<M>::visitor_type
 {
 public:
     NodeDepthCountNodeVisitor();
-    virtual bool onLeafNode(const LeafNodeDescriptor &desc);
-    virtual bool onSplitNode(const SplitNodeDescriptor &desc);
-//protected:
+    virtual bool onLeafNode(const typename TNVT<M>::leaf_desc_type &desc);
+    virtual bool onSplitNode(const typename TNVT<M>::split_desc_type &desc);
+
     size_t n_nodes;
     size_t depth;
     size_t n_leaf_nodes;
@@ -93,25 +104,19 @@ struct TreeState
 };
 
 // our tree visitor for getting tree state
-class toSKLearnClassificationTreeObjectVisitor : public daal::algorithms::tree_utils::classification::TreeNodeVisitor, public TreeState
+template<typename M>
+class toSKLearnTreeObjectVisitor : public TNVT<M>::visitor_type, public TreeState
 {
 public:
-    toSKLearnClassificationTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes);
-    virtual bool onSplitNode(const daal::algorithms::tree_utils::classification::SplitNodeDescriptor &desc);
-    virtual bool onLeafNode(const daal::algorithms::tree_utils::classification::LeafNodeDescriptor &desc);
+    toSKLearnTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes);
+    virtual bool onSplitNode(const typename TNVT<M>::split_desc_type &desc);
+    virtual bool onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc);
 protected:
-    size_t  node_id;
-    size_t  max_n_classes;
-    std::vector<ssize_t> parents;
-};
+    // implementation of inLeafNode for regression visitors
+    bool _onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::false_type);
+    // implementation of inLeafNode for classification visitors
+    bool _onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::true_type);
 
-class toSKLearnRegressionTreeObjectVisitor : public daal::algorithms::tree_utils::regression::TreeNodeVisitor, public TreeState
-{
-public:
-    toSKLearnRegressionTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes);
-    virtual bool onSplitNode(const daal::algorithms::tree_utils::regression::SplitNodeDescriptor &desc);
-    virtual bool onLeafNode(const daal::algorithms::tree_utils::regression::LeafNodeDescriptor &desc);
-protected:
     size_t  node_id;
     size_t  max_n_classes;
     std::vector<ssize_t> parents;
@@ -120,21 +125,134 @@ protected:
 // This is the function for getting the tree state which we use in cython
 // we will have different model types, so it's a template
 // Note: the caller will own the memory of the 2 returned arrays!
-template<typename TreeNodeVisitor, typename SplitNodeDescriptor, typename LeafNodeDescriptor, typename TreeObjectVisitor, typename ModelSptrPtr>
-TreeState _getTreeState(ModelSptrPtr model, size_t iTree, size_t n_classes)
+template<typename M>
+TreeState _getTreeState(M * model, size_t iTree, size_t n_classes)
 {
     // First count nodes
-    NodeDepthCountNodeVisitor<TreeNodeVisitor, SplitNodeDescriptor, LeafNodeDescriptor> ncv;
+    NodeDepthCountNodeVisitor<typename M::ElementType> ncv;
     (*model)->traverseDFS(iTree, ncv);
     // then do the final tree traversal
-    TreeObjectVisitor tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
+    toSKLearnTreeObjectVisitor<typename M::ElementType> tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
     (*model)->traverseDFS(iTree, tsv);
     //printf("DEBUG C: %zu, %zu, %zu, %zu\n", TreeState(tsv).max_depth, TreeState(tsv).node_count, TreeState(tsv).leaf_count, TreeState(tsv).class_count);
     return TreeState(tsv);
 }
 
 
-TreeState _getTreeStateClassification(daal::services::interface1::SharedPtr<daal::algorithms::decision_forest::classification::interface1::Model> *model, size_t iTree, size_t n_classes);
-TreeState _getTreeStateRegression(daal::services::interface1::SharedPtr<daal::algorithms::decision_forest::regression::interface1::Model> *model, size_t iTree, size_t n_classes);
+// ****************************************************
+// ****************************************************
+// Visitor implementation
+// ****************************************************
+// ****************************************************
+
+template<typename M>
+NodeDepthCountNodeVisitor<M>::NodeDepthCountNodeVisitor()
+    : n_nodes(0),
+      depth(0),
+      n_leaf_nodes(0)
+{}
+
+// TODO: Needs to store leaf-node response, and split-node impurity/sample_counts values
+template<typename M>
+bool NodeDepthCountNodeVisitor<M>::onLeafNode(const typename TNVT<M>::leaf_desc_type &desc)
+{
+    ++n_nodes;
+    ++n_leaf_nodes;
+    depth = std::max((const size_t)depth, desc.level);
+    return true;
+}
+
+template<typename M>
+bool NodeDepthCountNodeVisitor<M>::onSplitNode(const typename TNVT<M>::split_desc_type &desc)
+{
+    ++n_nodes;
+    depth = std::max((const size_t)depth, desc.level);
+    return true;
+}
+
+
+template<typename M>
+toSKLearnTreeObjectVisitor<M>::toSKLearnTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes)
+    : node_id(0),
+      parents(arange<ssize_t>(-1, _depth-1))
+{
+    node_count = _n_nodes;
+    max_depth = _depth;
+    leaf_count = _n_leafs;
+    class_count = _max_n_classes;
+    node_ar = new skl_tree_node[node_count];
+    value_ar = new double[node_count*1*class_count](); // DAAL only supports scalar responses for now
+}
+
+
+template<typename M>
+bool toSKLearnTreeObjectVisitor<M>::onSplitNode(const typename TNVT<M>::split_desc_type &desc)
+{
+    if(desc.level > 0) {
+        // has parents
+        ssize_t parent = parents[desc.level - 1];
+        if(node_ar[parent].left_child > 0) {
+            assert(node_ar[node_id].right_child < 0);
+            node_ar[parent].right_child = node_id;
+        } else {
+            node_ar[parent].left_child = node_id;
+        }
+    }
+
+    parents[desc.level] = node_id;
+    node_ar[node_id].feature = desc.featureIndex;
+    node_ar[node_id].threshold = desc.featureValue;
+    node_ar[node_id].impurity = desc.impurity;
+    node_ar[node_id].n_node_samples = desc.nNodeSampleCount;
+    node_ar[node_id].weighted_n_node_samples = desc.nNodeSampleCount;
+
+    // wrap-up
+    ++node_id;
+    return true;
+}
+
+template<typename M>
+bool toSKLearnTreeObjectVisitor<M>::onLeafNode(const typename TNVT<M>::leaf_desc_type &desc)
+{
+    // we use somewhat complicated C++'11 construct to determine if the descriptor is for classification
+    // The actual implementation is the overloaded _onLeafNode which depends on integral_constant types true_type or false_type
+    return _onLeafNode(desc,
+                       typename std::integral_constant<bool,
+                                                       std::is_base_of<daal::algorithms::tree_utils::classification::LeafNodeDescriptor,
+                                                       typename TNVT<M>::leaf_desc_type>::value>());
+}
+
+template<typename M>
+bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::false_type)
+{
+    assert(desc.level > 0);
+    if(desc.level) {
+        ssize_t parent = parents[desc.level - 1];
+        if(node_ar[parent].left_child > 0) {
+            assert(node_ar[node_id].right_child < 0);
+            node_ar[parent].right_child = node_id;
+        } else {
+            node_ar[parent].left_child = node_id;
+        }
+    }
+
+    node_ar[node_id].impurity = desc.impurity;
+    node_ar[node_id].n_node_samples = desc.nNodeSampleCount;
+    node_ar[node_id].weighted_n_node_samples = desc.nNodeSampleCount;
+
+    // wrap-up
+    ++node_id;
+    return true;
+}
+
+template<typename M>
+bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::true_type)
+{
+    _onLeafNode(desc, std::false_type());
+    // note that node_id has already been incremented
+    value_ar[(node_id-1)*1*class_count + desc.label] += desc.nNodeSampleCount;
+
+    return true;
+}
 
 #endif // _TREE_VISITOR_H_INCLUDED_

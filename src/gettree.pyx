@@ -29,9 +29,7 @@ cdef extern from "tree_visitor.h":
         size_t         leaf_count
         size_t         class_count
 
-    cdef TreeState _getTreeStateClassification(decision_forest_classification_ModelPtr * model, size_t i, size_t n_classes)
-    cdef TreeState _getTreeStateRegression(decision_forest_regression_ModelPtr * model, size_t i, size_t n_classes)
-
+    cdef TreeState _getTreeState[M](M * model, size_t i, size_t n_classes)
 
 NODE_DTYPE = np.dtype({
     'names': ['left_child', 'right_child', 'feature', 'threshold', 'impurity',
@@ -122,23 +120,18 @@ cdef class pyTreeState(object):
 
 
 def getTreeState(model, i, n_classes):
-    #state = getTreeState_decision_forest_classification_model(model, i, n_classes)
     cdef TreeState cTreeState
     if isinstance(model, decision_forest_classification_model):
-        cTreeState = getTreeState_df_classification_model(model, i, n_classes)
+        cTreeState = _getTreeState((<decision_forest_classification_model>model).c_ptr, i, n_classes)
+    elif isinstance(model, gbt_classification_model):
+        cTreeState = _getTreeState((<gbt_classification_model>model).c_ptr, i, n_classes)
     elif isinstance(model, decision_forest_regression_model):
-        cTreeState = getTreeState_df_regression_model(model, i, n_classes)
+        cTreeState = _getTreeState((<decision_forest_regression_model>model).c_ptr, i, n_classes)
+    elif isinstance(model, gbt_regression_model):
+        cTreeState = _getTreeState((<gbt_regression_model>model).c_ptr, i, n_classes)
     else:
         assert(False), 'Incorrect model type: ' + str(type(model))
     state = pyTreeState()
     state.set(&cTreeState)
     return state
-
-
-cdef TreeState getTreeState_df_classification_model(decision_forest_classification_model model, i, n_classes):
-    return _getTreeStateClassification(model.c_ptr, i, n_classes)
-
-
-cdef TreeState getTreeState_df_regression_model(decision_forest_regression_model model, i, n_classes):
-    return _getTreeStateRegression(model.c_ptr, i, n_classes)
 
