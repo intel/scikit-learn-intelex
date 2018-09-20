@@ -302,7 +302,7 @@ static PyObject * _make_nda_from_bd(daal::data_management::NumericTablePtr * ptr
     (*ptr)->getBlockOfRows(0, (*ptr)->getNumberOfRows(), daal::data_management::readOnly, block);
     if(block.getNumberOfRows() != (*ptr)->getNumberOfRows() || block.getNumberOfColumns() != (*ptr)->getNumberOfColumns()) {
         std::cerr << "Getting data ptr as block-of-rows failed.\nExpected shape: "
-                  << (*ptr)->getNumberOfRows() << "x" << (*ptr)->getNumberOfRows() << "\nBlock shape:"
+                  << (*ptr)->getNumberOfRows() << "x" << (*ptr)->getNumberOfColumns() << "\nBlock shape:"
                   << block.getNumberOfRows() << "x" <<  block.getNumberOfColumns() << std::endl;
         return NULL;
     }
@@ -346,8 +346,8 @@ PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
         if((res = _make_nda_from_bd<double, NPY_FLOAT64>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_FLOAT32:
-        if((res = _make_nda_from_homogen<double, NPY_FLOAT32>(ptr)) != NULL) return res;
-        if((res = _make_nda_from_bd<double, NPY_FLOAT32>(ptr)) != NULL) return res;
+        if((res = _make_nda_from_homogen<float, NPY_FLOAT32>(ptr)) != NULL) return res;
+        if((res = _make_nda_from_bd<float, NPY_FLOAT32>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT32_S:
         if((res = _make_nda_from_homogen<int32_t, NPY_INT32>  (ptr)) != NULL) return res;
