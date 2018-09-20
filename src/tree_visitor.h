@@ -48,29 +48,24 @@ struct skl_tree_node {
 };
 
 
-// our tree visitor for counting nodes
-// TODO: Needs to store leaf-node response, and split-node impurity/sample_counts values
-class NodeDepthCountClassificationNodeVisitor : public daal::algorithms::tree_utils::classification::TreeNodeVisitor
-{
-public:
-    NodeDepthCountClassificationNodeVisitor();
-    virtual bool onLeafNode(const daal::algorithms::tree_utils::classification::LeafNodeDescriptor &desc);
-    virtual bool onSplitNode(const daal::algorithms::tree_utils::classification::SplitNodeDescriptor &desc);
-//protected:
-    size_t n_nodes;
-    size_t depth;
-    size_t n_leaf_nodes;
-};
+typedef daal::algorithms::tree_utils::classification::TreeNodeVisitor ClassificationTreeNodeVisitor;
+typedef daal::algorithms::tree_utils::classification::SplitNodeDescriptor ClassificationSplitNodeDescriptor;
+typedef daal::algorithms::tree_utils::classification::LeafNodeDescriptor ClassificationLeafNodeDescriptor;
+
+typedef daal::algorithms::tree_utils::regression::TreeNodeVisitor RegressionTreeNodeVisitor;
+typedef daal::algorithms::tree_utils::regression::SplitNodeDescriptor RegressionSplitNodeDescriptor;
+typedef daal::algorithms::tree_utils::regression::LeafNodeDescriptor RegressionLeafNodeDescriptor;
 
 
 // our tree visitor for counting nodes
 // TODO: Needs to store leaf-node response, and split-node impurity/sample_counts values
-class NodeDepthCountRegressionNodeVisitor : public daal::algorithms::tree_utils::regression::TreeNodeVisitor
+template<typename TreeNodeVisitor, typename SplitNodeDescriptor, typename LeafNodeDescriptor>
+class NodeDepthCountNodeVisitor : public TreeNodeVisitor
 {
 public:
-    NodeDepthCountRegressionNodeVisitor();
-    virtual bool onLeafNode(const daal::algorithms::tree_utils::regression::LeafNodeDescriptor &desc);
-    virtual bool onSplitNode(const daal::algorithms::tree_utils::regression::SplitNodeDescriptor &desc);
+    NodeDepthCountNodeVisitor();
+    virtual bool onLeafNode(const LeafNodeDescriptor &desc);
+    virtual bool onSplitNode(const SplitNodeDescriptor &desc);
 //protected:
     size_t n_nodes;
     size_t depth;
@@ -97,19 +92,11 @@ struct TreeState
     size_t         class_count;
 };
 
-typedef daal::algorithms::tree_utils::classification::TreeNodeVisitor ClassificationTreeNodeVisitor
-typedef daal::algorithms::tree_utils::classification::SplitNodeDescriptor ClassificationSplitNodeDescriptor
-typedef daal::algorithms::tree_utils::classification::LeafNodeDescriptor ClassificationLeafNodeDescriptor
 // our tree visitor for getting tree state
-//class toSKLearnTreeObjectVisitor : public daal::algorithms::tree_utils::classification::TreeNodeVisitor, public TreeState
-
-
-
-//template<typename TreeNodeVisitor, SplitNodeDescriptor>
-class toSKLearnTreeObjectVisitor : public TreeNodeVisitor, public TreeState
+class toSKLearnClassificationTreeObjectVisitor : public daal::algorithms::tree_utils::classification::TreeNodeVisitor, public TreeState
 {
 public:
-    toSKLearnTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes);
+    toSKLearnClassificationTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes);
     virtual bool onSplitNode(const daal::algorithms::tree_utils::classification::SplitNodeDescriptor &desc);
     virtual bool onLeafNode(const daal::algorithms::tree_utils::classification::LeafNodeDescriptor &desc);
 protected:
@@ -130,18 +117,17 @@ protected:
     std::vector<ssize_t> parents;
 };
 
-
 // This is the function for getting the tree state which we use in cython
 // we will have different model types, so it's a template
 // Note: the caller will own the memory of the 2 returned arrays!
-template<typename T_NodeVisitor, typename T_TreeVisitor, typename T_ModelSptrPtr>
-TreeState _getTreeState(T_ModelSptrPtr model, size_t iTree, size_t n_classes)
+template<typename TreeNodeVisitor, typename SplitNodeDescriptor, typename LeafNodeDescriptor, typename TreeObjectVisitor, typename ModelSptrPtr>
+TreeState _getTreeState(ModelSptrPtr model, size_t iTree, size_t n_classes)
 {
     // First count nodes
-    T_NodeVisitor ncv;
+    NodeDepthCountNodeVisitor<TreeNodeVisitor, SplitNodeDescriptor, LeafNodeDescriptor> ncv;
     (*model)->traverseDFS(iTree, ncv);
     // then do the final tree traversal
-    T_TreeVisitor tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
+    TreeObjectVisitor tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
     (*model)->traverseDFS(iTree, tsv);
     //printf("DEBUG C: %zu, %zu, %zu, %zu\n", TreeState(tsv).max_depth, TreeState(tsv).node_count, TreeState(tsv).leaf_count, TreeState(tsv).class_count);
     return TreeState(tsv);

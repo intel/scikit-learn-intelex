@@ -17,14 +17,16 @@
 #define NO_IMPORT_ARRAY
 #include <tree_visitor.h>
 
-NodeDepthCountClassificationNodeVisitor::NodeDepthCountClassificationNodeVisitor()
+template<typename TreeNodeVisitor, typename SplitNodeDescriptor, typename LeafNodeDescriptor>
+NodeDepthCountNodeVisitor<TreeNodeVisitor, SplitNodeDescriptor, LeafNodeDescriptor>::NodeDepthCountNodeVisitor()
     : n_nodes(0),
       depth(0),
       n_leaf_nodes(0)
 {}
 
 // TODO: Needs to store leaf-node response, and split-node impurity/sample_counts values
-bool NodeDepthCountClassificationNodeVisitor::onLeafNode(const daal::algorithms::tree_utils::classification::LeafNodeDescriptor &desc)
+template<typename TreeNodeVisitor, typename SplitNodeDescriptor, typename LeafNodeDescriptor>
+bool NodeDepthCountNodeVisitor<TreeNodeVisitor, SplitNodeDescriptor, LeafNodeDescriptor>::onLeafNode(const LeafNodeDescriptor &desc)
 {
     ++n_nodes;
     ++n_leaf_nodes;
@@ -32,15 +34,16 @@ bool NodeDepthCountClassificationNodeVisitor::onLeafNode(const daal::algorithms:
     return true;
 }
 
-bool NodeDepthCountClassificationNodeVisitor::onSplitNode(const daal::algorithms::tree_utils::classification::SplitNodeDescriptor &desc)
+template<typename TreeNodeVisitor, typename SplitNodeDescriptor, typename LeafNodeDescriptor>
+bool NodeDepthCountNodeVisitor<TreeNodeVisitor, SplitNodeDescriptor, LeafNodeDescriptor>::onSplitNode(const SplitNodeDescriptor &desc)
 {
     ++n_nodes;
     depth = std::max((const size_t)depth, desc.level);
     return true;
 }
 
-    
-toSKLearnTreeObjectVisitor::toSKLearnTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes)
+
+toSKLearnClassificationTreeObjectVisitor::toSKLearnClassificationTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes)
     : node_id(0),
       parents(arange<ssize_t>(-1, _depth-1))
 {
@@ -52,7 +55,8 @@ toSKLearnTreeObjectVisitor::toSKLearnTreeObjectVisitor(size_t _depth, size_t _n_
     value_ar = new double[node_count*1*class_count](); // DAAL only supports scalar responses for now
 }
 
-bool toSKLearnTreeObjectVisitor::onSplitNode(const daal::algorithms::tree_utils::classification::SplitNodeDescriptor &desc)
+
+bool toSKLearnClassificationTreeObjectVisitor::onSplitNode(const daal::algorithms::tree_utils::classification::SplitNodeDescriptor &desc)
 {
     if(desc.level > 0) {
         // has parents
@@ -77,7 +81,7 @@ bool toSKLearnTreeObjectVisitor::onSplitNode(const daal::algorithms::tree_utils:
     return true;
 }
 
-bool toSKLearnTreeObjectVisitor::onLeafNode(const daal::algorithms::tree_utils::classification::LeafNodeDescriptor &desc)
+bool toSKLearnClassificationTreeObjectVisitor::onLeafNode(const daal::algorithms::tree_utils::classification::LeafNodeDescriptor &desc)
 {
     assert(desc.level > 0);
     if(desc.level) {
@@ -101,6 +105,31 @@ bool toSKLearnTreeObjectVisitor::onLeafNode(const daal::algorithms::tree_utils::
     return true;
 }
 
+toSKLearnRegressionTreeObjectVisitor::toSKLearnRegressionTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes)
+    : node_id(0),
+      parents(arange<ssize_t>(-1, _depth-1))
+{
+    node_count = _n_nodes;
+    max_depth = _depth;
+    leaf_count = _n_leafs;
+    class_count = _max_n_classes;
+    node_ar = new skl_tree_node[node_count];
+    value_ar = new double[node_count*1*class_count](); // DAAL only supports scalar responses for now
+}
+
+
+bool toSKLearnRegressionTreeObjectVisitor::onSplitNode(const daal::algorithms::tree_utils::regression::SplitNodeDescriptor &desc)
+{
+    assert(false);
+    return true;
+}
+
+bool toSKLearnRegressionTreeObjectVisitor::onLeafNode(const daal::algorithms::tree_utils::regression::LeafNodeDescriptor &desc)
+{
+    assert(false);
+    return true;
+}
+
 TreeState _getTreeStateClassification(daal::services::interface1::SharedPtr<daal::algorithms::decision_forest::classification::interface1::Model> * model, size_t iTree, size_t n_classes)
 {
     /* C++ knowledge challenge. Uncomment and try to explain.
@@ -112,11 +141,11 @@ TreeState _getTreeStateClassification(daal::services::interface1::SharedPtr<daal
     (*model)->traverseDFS(iTree, tsv);
     return TreeState(tsv);
     //*/
-    return _getTreeState<NodeDepthCountClassificationNodeVisitor, toSKLearnTreeObjectVisitor>(model, iTree, n_classes);
+    return _getTreeState<ClassificationTreeNodeVisitor, ClassificationSplitNodeDescriptor, ClassificationLeafNodeDescriptor, toSKLearnClassificationTreeObjectVisitor>(model, iTree, n_classes);
 }
 
-/*TreeState _getTreeStateRegression(daal::services::interface1::SharedPtr<daal::algorithms::decision_forest::regression::interface1::Model> *model, size_t iTree, size_t n_classes)
+TreeState _getTreeStateRegression(daal::services::interface1::SharedPtr<daal::algorithms::decision_forest::regression::interface1::Model> *model, size_t iTree, size_t n_classes)
 {
-    return _getTreeState<NodeDepthCountRegressionNodeVisitor, toSKLearnRegressionTreeObjectVisitor>(model, iTree, n_classes);
-}*/
+    return _getTreeState<RegressionTreeNodeVisitor, RegressionSplitNodeDescriptor, RegressionLeafNodeDescriptor, toSKLearnRegressionTreeObjectVisitor>(model, iTree, n_classes);
+}
 
