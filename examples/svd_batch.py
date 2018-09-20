@@ -47,6 +47,9 @@ def main():
     assert np.allclose(result1.leftSingularMatrix, result2.leftSingularMatrix, atol=1e-07)
     assert np.allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-07)
     assert np.allclose(result1.singularValues, result2.singularValues, atol=1e-07)
+    assert result1.singularValues.shape == (1, data.shape[1])
+    assert result1.rightSingularMatrix.shape == (data.shape[1], data.shape[1])
+    assert result1.leftSingularMatrix.shape == data.shape
 
     return result1
 

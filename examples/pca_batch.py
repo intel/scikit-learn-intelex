@@ -49,6 +49,11 @@ def main():
     assert np.allclose(result1.eigenvectors, result2.eigenvectors)
     assert np.allclose(result1.means, result2.means)
     assert np.allclose(result1.variances, result2.variances)
+    assert result1.eigenvalues.shape == (1, data.shape[1])
+    assert result1.eigenvectors.shape == (data.shape[1], data.shape[1])
+    assert result1.means.shape == (1, data.shape[1])
+    assert result1.variances.shape == (1, data.shape[1])
+
 
     return result1
 
