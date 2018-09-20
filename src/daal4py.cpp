@@ -225,65 +225,6 @@ void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
     PyArray_SetBaseObject(ary, cap);
 }
 
-
-TableOrFList::TableOrFList(PyObject * input)
-{
-    this->table.reset();
-    this->tlist.resize(0);
-    this->file.resize(0);
-    this->flist.resize(0);
-    if(input == Py_None) {
-        ;
-    } else if(PyList_Check(input) && PyList_Size(input) > 0) {
-        PyObject * first = PyList_GetItem(input, 0);
-        if(is_array(first)) {
-            this->tlist.resize(PyList_Size(input));
-            for(auto i = 0; i < this->tlist.size(); i++) {
-                int is_new_object = 0;
-                PyObject * el = PyList_GetItem(input, i);
-                PyArrayObject* array = obj_to_array_contiguous_allow_conversion(el, NPY_FLOAT64, &is_new_object);
-                if (!array || !require_dimensions(array,2) || !require_contiguous(array) || !require_native(array)) {
-                    throw std::invalid_argument("Array converstion failed.");
-                }
-                // we provide the SharedPtr with a deleter which decrements the pyref
-                this->tlist[i].reset(new daal::data_management::HomogenNumericTable<double>(daal::services::SharedPtr<double>((double*)array_data(array),
-                                                                                                                              NumpyDeleter(array)),
-                                                                                            (size_t)array_size(array,1),
-                                                                                            (size_t)array_size(array,0)));
-                // we need it increment the ref-count if we use the input array in-place
-                // if we copied/converted it we already own our own reference
-                if((PyObject*)array == el) Py_INCREF(array);
-            }
-        } else if(PyUnicode_Check(first)) {
-            this->flist.resize(PyList_Size(input));
-            for(auto i = 0; i < this->flist.size(); i++) {
-                this->flist[i] = PyUnicode_AsUTF8(PyList_GetItem(input, i));
-            }
-        }
-    } else if(PyUnicode_Check(input)) {
-        //        this->file = PyUnicode_AsUTF8AndSize(input, &size);
-        this->file = PyUnicode_AsUTF8(input);
-    } else if(is_array(input)) {
-        int is_new_object = 0;
-        PyArrayObject* array = obj_to_array_contiguous_allow_conversion(input, NPY_FLOAT64, &is_new_object);
-        if (!array || !require_dimensions(array,2) || !require_contiguous(array) || !require_native(array)) {
-            throw std::invalid_argument("Array converstion failed.");
-            return;
-        }
-        // we provide the SharedPtr with a deleter which decrements the pyref
-        this->table.reset(new daal::data_management::HomogenNumericTable<double>(daal::services::SharedPtr<double>((double*)array_data(array),
-                                                                                                                   NumpyDeleter(array)),
-                                                                                 (size_t)array_size(array,1),
-                                                                                 (size_t)array_size(array,0)));
-        // we need it increment the ref-count if we use the input array in-place
-        // if we copied/converted it we already own our own reference
-        if((PyObject*)array == input) Py_INCREF(array);
-    } else {
-        std::cerr << "Got type '" << Py_TYPE(input)->tp_name << "' when expecting string or array or list of strings/arrays. Treating as None." << std::endl;
-    }
-}
-
-
 // Uses a shared pointer to a raw array (T*) for creating a nd-array
 template<typename T, int NPTYPE>
 static PyObject * _sp_to_nda(daal::services::SharedPtr< T > & sp, size_t nr, size_t nc)
@@ -419,6 +360,41 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * nda)
         return new daal::data_management::NumericTablePtr(ptr);
     }
 	return new daal::data_management::NumericTablePtr();
+}
+
+TableOrFList::TableOrFList(PyObject * input)
+{
+    this->table.reset();
+    this->tlist.resize(0);
+    this->file.resize(0);
+    this->flist.resize(0);
+    if(input == Py_None) {
+        ;
+    } else if(PyList_Check(input) && PyList_Size(input) > 0) {
+        PyObject * first = PyList_GetItem(input, 0);
+        if(is_array(first)) {
+            this->tlist.resize(PyList_Size(input));
+            for(auto i = 0; i < this->tlist.size(); i++) {
+                auto tmp = make_nt(PyList_GetItem(input, i));
+                this->tlist[i] = *tmp;
+                delete tmp;
+            }
+        } else if(PyUnicode_Check(first)) {
+            this->flist.resize(PyList_Size(input));
+            for(auto i = 0; i < this->flist.size(); i++) {
+                this->flist[i] = PyUnicode_AsUTF8(PyList_GetItem(input, i));
+            }
+        }
+    } else if(PyUnicode_Check(input)) {
+        //        this->file = PyUnicode_AsUTF8AndSize(input, &size);
+        this->file = PyUnicode_AsUTF8(input);
+    } else if(is_array(input)) {
+        auto tmp = make_nt(input);
+        this->table = *tmp;
+        delete tmp;
+    } else {
+        std::cerr << "Got type '" << Py_TYPE(input)->tp_name << "' when expecting string or array or list of strings/arrays. Treating as None." << std::endl;
+    }
 }
 
 const daal::data_management::NumericTablePtr readCSV(const std::string& fname)

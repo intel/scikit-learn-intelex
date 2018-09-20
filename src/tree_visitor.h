@@ -112,6 +112,8 @@ public:
     virtual bool onSplitNode(const typename TNVT<M>::split_desc_type &desc);
     virtual bool onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc);
 protected:
+    // generic leaf node handling
+    bool _onLeafNode(const daal::algorithms::tree_utils::NodeDescriptor &desc);
     // implementation of inLeafNode for regression visitors
     bool _onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::false_type);
     // implementation of inLeafNode for classification visitors
@@ -216,16 +218,19 @@ bool toSKLearnTreeObjectVisitor<M>::onLeafNode(const typename TNVT<M>::leaf_desc
 {
     // we use somewhat complicated C++'11 construct to determine if the descriptor is for classification
     // The actual implementation is the overloaded _onLeafNode which depends on integral_constant types true_type or false_type
+    // we might want to make this dependent on a more meaningful type than bool
     return _onLeafNode(desc,
                        typename std::integral_constant<bool,
                                                        std::is_base_of<daal::algorithms::tree_utils::classification::LeafNodeDescriptor,
                                                        typename TNVT<M>::leaf_desc_type>::value>());
 }
 
+// stuff that is done for all leaf node types
 template<typename M>
-bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::false_type)
+bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const daal::algorithms::tree_utils::NodeDescriptor &desc)
 {
     assert(desc.level > 0);
+
     if(desc.level) {
         ssize_t parent = parents[desc.level - 1];
         if(node_ar[parent].left_child > 0) {
@@ -240,6 +245,17 @@ bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_des
     node_ar[node_id].n_node_samples = desc.nNodeSampleCount;
     node_ar[node_id].weighted_n_node_samples = desc.nNodeSampleCount;
 
+    return true;
+}
+
+template<typename M>
+bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::false_type)
+{
+    assert(class_count == 1);
+
+    _onLeafNode(desc);
+    value_ar[node_id*1*class_count] = desc.response;
+
     // wrap-up
     ++node_id;
     return true;
@@ -248,10 +264,12 @@ bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_des
 template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::true_type)
 {
-    _onLeafNode(desc, std::false_type());
+    _onLeafNode(desc);
     // note that node_id has already been incremented
-    value_ar[(node_id-1)*1*class_count + desc.label] += desc.nNodeSampleCount;
+    value_ar[node_id*1*class_count + desc.label] += desc.nNodeSampleCount;
 
+    // wrap-up
+    ++node_id;
     return true;
 }
 

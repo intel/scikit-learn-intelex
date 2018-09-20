@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Decision Forest Classification example for shared memory systems
+# daal4py Decision Forest Regression example for shared memory systems
 
 import math    
 import daal4py as d4p
@@ -38,17 +38,17 @@ if __name__ == "__main__":
     # input data file
     infile = "./data/batch/df_regression_train.csv"
 
-    # Configure a training object (5 classes)
+    # Configure a training object
     train_algo = d4p.decision_forest_regression_training(nTrees=2, minObservationsInLeafNode=8, featuresPerNode=13, varImportance="MDI",
-                                                             bootstrap=True, resultsToCompute="computeOutOfBagError")
+                                                         bootstrap=True, resultsToCompute="computeOutOfBagError")
 
     # Read data. Let's have 13 independent, and 1 dependent variables (for each observation)
     indep_data = loadtxt(infile, delimiter=',', usecols=range(13))
-    dep_data   = loadtxt(infile, delimiter=',', usecols=range(13,14))
-    dep_data.shape = (dep_data.size, 1) # must be a 2d array
-    # Now train/compute, the result provides the model for prediction
+    dep_data   = loadtxt(infile, delimiter=',', usecols=range(13,14)).reshape((-1, 1)) # must be a 2d array
+
+    # Now train/compute, the result provides the model for prediction, outOfBagError, outOfBagErrorPerObservation, variableImportance
     train_result = train_algo.compute(indep_data, dep_data)
 
-    state = d4p.getTreeState(train_result.model, 0, 5)
+    state = d4p.getTreeState(train_result.model, 0)
 
     printNodes(0, state.node_ar, state.value_ar, 0)

@@ -121,16 +121,16 @@ cdef class pyTreeState(object):
         return self.class_count
 
 
-def getTreeState(model, i, n_classes):
+def getTreeState(model, i, n_classes=1):
     cdef TreeState cTreeState
     if isinstance(model, decision_forest_classification_model):
         cTreeState = _getTreeState((<decision_forest_classification_model>model).c_ptr, i, n_classes)
     elif isinstance(model, gbt_classification_model):
         cTreeState = _getTreeState((<gbt_classification_model>model).c_ptr, i, n_classes)
     elif isinstance(model, decision_forest_regression_model):
-        cTreeState = _getTreeState((<decision_forest_regression_model>model).c_ptr, i, n_classes)
+        cTreeState = _getTreeState((<decision_forest_regression_model>model).c_ptr, i, 1)
     elif isinstance(model, gbt_regression_model):
-        cTreeState = _getTreeState((<gbt_regression_model>model).c_ptr, i, n_classes)
+        cTreeState = _getTreeState((<gbt_regression_model>model).c_ptr, i, 1)
     else:
         assert(False), 'Incorrect model type: ' + str(type(model))
     state = pyTreeState()
