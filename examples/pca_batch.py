@@ -19,27 +19,49 @@
 # daal4py PCA example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
 
-if __name__ == "__main__":
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
+
+def main():
     infile = "./data/batch/pca_normalized.csv"
     method = 'svdDense'
 
     # configure a PCA object
-    algo = d4p.pca(method=method)
+    algo = d4p.pca(method=method, resultsToCompute = "mean|variance|eigenvalue", isDeterministic = True)
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    data = loadtxt(infile, delimiter=',')
+    data = read_csv(infile, range(10))
     result2 = algo.compute(data)
 
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
-    assert allclose(result1.eigenvalues, result2.eigenvalues)
-    assert allclose(result1.eigenvectors, result2.eigenvectors)
-    assert result1.means == None and result2.means == None or allclose(result1.means, result2.means)
-    assert result1.variances == None and result2.variances == None or allclose(result1.variances, result2.variances)
+    assert np.allclose(result1.eigenvalues, result2.eigenvalues)
+    assert np.allclose(result1.eigenvectors, result2.eigenvectors)
+    assert np.allclose(result1.means, result2.means)
+    assert np.allclose(result1.variances, result2.variances)
+    assert result1.eigenvalues.shape == (1, data.shape[1])
+    assert result1.eigenvectors.shape == (data.shape[1], data.shape[1])
+    assert result1.means.shape == (1, data.shape[1])
+    assert result1.variances.shape == (1, data.shape[1])
 
+
+    return result1
+
+
+if __name__ == "__main__":
+    result1 = main()
+    print("\nEigenvalues:\n", result1.eigenvalues)
+    print("\nEigenvectors:\n", result1.eigenvectors)
+    print("\nMeans:\n", result1.means)
+    print("\nVariances:\n", result1.variances)
     print('All looks good!')

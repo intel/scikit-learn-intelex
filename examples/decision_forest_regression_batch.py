@@ -19,19 +19,28 @@
 # daal4py Decision Forest Regression example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
 
-if __name__ == "__main__":
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
+
+def main():
     infile = "./data/batch/df_regression_train.csv"
+    testfile = "./data/batch/df_regression_test.csv"
 
     # Configure a Linear regression training object
     train_algo = d4p.decision_forest_regression_training(nTrees=100, varImportance='MDA_Raw', bootstrap=True,
                                                     resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation')
     
     # Read data. Let's have 13 independent, and 1 dependent variables (for each observation)
-    indep_data = loadtxt(infile, delimiter=',', usecols=range(13))
-    dep_data   = loadtxt(infile, delimiter=',', usecols=range(13,14))
+    indep_data = read_csv(infile, range(13))
+    dep_data   = read_csv(infile, range(13,14))
     dep_data.shape = (dep_data.size, 1) # must be a 2d array
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
@@ -40,11 +49,22 @@ if __name__ == "__main__":
     # Now let's do some prediction
     predict_algo = d4p.decision_forest_regression_prediction()
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/df_regression_test.csv", delimiter=',', usecols=range(13))
+    pdata = read_csv(testfile, range(13))
+    ptdata = read_csv(testfile, range(13,14))
+    ptdata.shape = (ptdata.size, 1)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # The prediction result provides prediction
     assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
 
+    return (train_result, predict_result, ptdata)
+
+
+if __name__ == "__main__":
+    (train_result, predict_result, ptdata) = main()
+    print("\nVariable importance results:\n", train_result.variableImportance)
+    print("\nOOB error:\n", train_result.outOfBagError)
+    print("\nDecision forest prediction results (first 10 rows):\n", predict_result.prediction[0:10])
+    print("\nGround truth (first 10 rows):\n", ptdata[0:10])
     print('All looks good!')

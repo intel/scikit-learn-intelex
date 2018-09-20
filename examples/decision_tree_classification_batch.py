@@ -19,22 +19,31 @@
 # daal4py Decision Tree Classification example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
 
-if __name__ == "__main__":
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
+
+def main():
     # input data file
     infile = "./data/batch/decision_tree_train.csv"
     prunefile = "./data/batch/decision_tree_prune.csv"
+    testfile = "./data/batch/decision_tree_test.csv"
 
     # Configure a training object (5 classes)
     train_algo = d4p.decision_tree_classification_training(5)
     
     # Read data. Let's use 5 features per observation
-    data   = loadtxt(infile, delimiter=',', usecols=range(5))
-    labels = loadtxt(infile, delimiter=',', usecols=range(5,6))
-    prunedata = loadtxt(prunefile, delimiter=',', usecols=range(5))
-    prunelabels = loadtxt(prunefile, delimiter=',', usecols=range(5,6))
+    data   = read_csv(infile, range(5))
+    labels = read_csv(infile, range(5,6))
+    prunedata = read_csv(prunefile, range(5))
+    prunelabels = read_csv(prunefile, range(5,6))
     labels.shape = (labels.size, 1) # must be a 2d array
     prunelabels.shape = (prunelabels.size, 1) # must be a 2d array
     train_result = train_algo.compute(data, labels, prunedata, prunelabels)
@@ -42,11 +51,20 @@ if __name__ == "__main__":
     # Now let's do some prediction
     predict_algo = d4p.decision_tree_classification_prediction()
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/decision_tree_test.csv", delimiter=',', usecols=range(5))
+    pdata = read_csv(testfile, range(5))
+    plabels = read_csv(testfile, range(5,6))
+    plabels.shape = (plabels.size, 1)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
+    return (predict_result, plabels)
+
+
+if __name__ == "__main__":
+    (predict_result, plabels) = main()
+    print("\nDecision tree prediction results (first 20 rows):\n", predict_result.prediction[0:20])
+    print("\nGround truth (first 20 rows):\n", plabels[0:20])
     print('All looks good!')

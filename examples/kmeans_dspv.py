@@ -29,7 +29,6 @@ if __name__ == "__main__":
     d4p.daalinit()
 
     infile = "./data/distributed/kmeans_dense.csv"
-    method = 'svdDense'
     nClusters = 10
     maxIter = 25
 
