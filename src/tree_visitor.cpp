@@ -100,3 +100,23 @@ bool toSKLearnTreeObjectVisitor::onLeafNode(const daal::algorithms::tree_utils::
     ++node_id;
     return true;
 }
+
+TreeState _getTreeStateClassification(daal::services::interface1::SharedPtr<daal::algorithms::decision_forest::classification::interface1::Model> * model, size_t iTree, size_t n_classes)
+{
+    /* C++ knowledge challenge. Uncomment and try to explain.
+    // First count nodes
+    NodeDepthCountClassificationNodeVisitor ncv;
+    (*model)->TraverseDFS(iTree, ncv);
+    // then do the final tree traversal
+    toSKLearnClassificationTreeObjectVisitor tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
+    (*model)->traverseDFS(iTree, tsv);
+    return TreeState(tsv);
+    //*/
+    return _getTreeState<NodeDepthCountClassificationNodeVisitor, toSKLearnTreeObjectVisitor>(model, iTree, n_classes);
+}
+
+/*TreeState _getTreeStateRegression(daal::services::interface1::SharedPtr<daal::algorithms::decision_forest::regression::interface1::Model> *model, size_t iTree, size_t n_classes)
+{
+    return _getTreeState<NodeDepthCountRegressionNodeVisitor, toSKLearnRegressionTreeObjectVisitor>(model, iTree, n_classes);
+}*/
+

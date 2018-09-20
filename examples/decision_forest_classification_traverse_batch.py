@@ -23,13 +23,15 @@ import daal4py as d4p
 from numpy import loadtxt, allclose
 
 
-def printNodes(node, node_ar, level):
+def printNodes(node_id, node_ar, value_ar, level):
+    node = node_ar[node_id]
+    value = value_ar[node_id]
     if not math.isnan(node["threshold"]):
-        print(" " * level + "Level " + str(level) + ": Feature = " + str(node["feature"]) + ", threshold = " + str(node["threshold"]))
+        print(" " * level + "Level " + str(level) + ": Feature = " + str(node["feature"]) + ", threshold = " + str(node["threshold"]) + ", value = " + str(value))
     if node["left_child"] != -1:
-        printNodes(node_ar[node["left_child"]], node_ar, level + 1)
+        printNodes(node["left_child"], node_ar, value_ar, level + 1)
     if node["right_child"] != -1:
-        printNodes(node_ar[node["right_child"]], node_ar, level + 1)
+        printNodes(node["right_child"], node_ar, value_ar, level + 1)
 
 
 if __name__ == "__main__":    
@@ -48,4 +50,4 @@ if __name__ == "__main__":
 
     state = d4p.getTreeState(train_result.model, 0, 5)
 
-    printNodes(state.node_ar[0], state.node_ar, 0)
+    printNodes(0, state.node_ar, state.value_ar, 0)
