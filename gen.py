@@ -19,4 +19,4 @@ if __name__ == "__main__":
     argParser.add_argument('--wall', default=False, action='store_true', help="Emit all warnings")
 
     args = argParser.parse_args()
-    gen_daal4py(args.daalroot, args.outdir,args.wall)
+    gen_daal4py(args.daalroot, args.outdir, "v_develop", args.wall)

@@ -863,7 +863,7 @@ class cython_interface(object):
 ###############################################################################
 ###############################################################################
 
-def gen_daal4py(daalroot, outdir, warn_all=False):
+def gen_daal4py(daalroot, outdir, version, warn_all=False):
     global no_warn
     if warn_all:
         no_warn = {}
@@ -902,5 +902,8 @@ def gen_daal4py(daalroot, outdir, warn_all=False):
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
         f.write(pyx_file)
         f.write(pyx_gettree)
-
-
+        f.write('cdef extern from "daal.h":\n')
+        f.write('    cdef const long long INTEL_DAAL_VERSION\n')
+        f.write('    cdef const long long __INTEL_DAAL_BUILD_DATE\n\n')
+        f.write('__version__ = "{}"\n'.format(version))
+        f.write('__daal_version__ = "{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_BUILD_DATE)\n')
