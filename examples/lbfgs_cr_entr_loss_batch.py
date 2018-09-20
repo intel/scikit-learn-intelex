@@ -55,7 +55,7 @@ def main():
                                         stepLengthSequence=stepLengthSequence,
                                         nIterations=nIterations)
 
-    # do the cumputation
+    # do the computation
     nParameters = nClasses * (nFeatures + 1)
     initialPoint = np.full((nParameters, 1), 0.001, dtype=np.float64)
     res = alg.compute(initialPoint)
