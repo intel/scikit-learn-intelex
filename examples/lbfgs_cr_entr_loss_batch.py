@@ -36,7 +36,7 @@ def main():
     nClasses = 5
     nIterations = 1000
     stepLength = 1.0e-4
-    
+
     infile = "./data/batch/logreg_train.csv"
 
     # Read the data
@@ -45,22 +45,28 @@ def main():
     nVectors = data.shape[0]
     dep_data.shape = (nVectors, 1) # must be a 2d array
 
+    # configure a function
     func = d4p.optimization_solver_cross_entropy_loss(nClasses, nVectors)
     func.setup(data, dep_data, None)
 
-    #initialPoint = np.full((nParameters, 1), 0.001, dtype=np.float64)
+    # configure a algorithm
     stepLengthSequence = np.array([[stepLength]], dtype=np.float64)
     alg = d4p.optimization_solver_lbfgs(func,
                                         stepLengthSequence=stepLengthSequence,
                                         nIterations=nIterations)
 
+    # do the cumputation
     nParameters = nClasses * (nFeatures + 1)
     initialPoint = np.full((nParameters, 1), 0.001, dtype=np.float64)
     res = alg.compute(initialPoint)
 
+    # result provides minimum and nIterations
+    assert res.minimum.shape == (nParameters, 1)
+    assert res.nIterations[0][0] <= nIterations
+
     return res
 
-    
+
 if __name__ == "__main__":
     res = main()
     print("\nExpected coefficients:\n", np.array([[-2.277], [2.836], [14.985], [0.511], [7.510], [-2.831], [-5.814], [-0.033], [13.227], [-24.447], [3.730],
