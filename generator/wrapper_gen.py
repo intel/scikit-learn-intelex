@@ -331,7 +331,7 @@ hpat_spec.append({
 # accepts interface name and C++ type
 gen_cpp_iface_macro = """
 {% macro gen_cpp_iface(iface_name, iface_type) %}
-class {{iface_name}}__iface__ : public algo_manager__iface__
+class {{iface_name}}__iface__ : public {{parent|d2cy(False) if parent else 'algo_manager__iface__'}}
 {
 public:
     typedef {{iface_type}} daal_type;
@@ -350,13 +350,17 @@ static {{iface_type}} to_daal(c_{{iface_name}}__iface__ * t) {return t ? t->get_
 gen_cython_iface_macro = """
 {% macro gen_cython_iface(iface_name, iface_type) %}
 cdef extern from "daal4py_cpp.h":
-    cdef cppclass c_{{iface_name}}__iface__:
+    cdef cppclass c_{{iface_name}}__iface__{{'(c_'+parent|d2cy(False)+')' if parent else ''}}:
         pass
 
 #    ctypedef c_{{iface_name}}__iface__ c_{{iface_type|flat|strip(' *')}};
 
 {% set inl = iface_name|lower + '__iface__' %}
-cdef class {{inl}}:
+{% if parent %}
+cdef class {{inl}}({{parent|d2cy(False)|lower}}):
+    pass
+{% else %}
+cdef class {{inl}}():
     cdef c_{{iface_name}}__iface__ * c_ptr
 
     def __cinit__(self):
@@ -364,7 +368,7 @@ cdef class {{inl}}:
 
     def __dealloc__(self):
         del self.c_ptr
-
+{% endif %}
 
 hpat_spec.append({
     'pyclass'     : {{inl}},
@@ -1065,12 +1069,12 @@ class wrapper_gen(object):
         cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\ntypedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;"
         pyx = ''
         for i in self.ifaces:
-            tstr = gen_cython_iface_macro + '{{gen_cython_iface("' + i + '", "' + self.ifaces[i] + '")}}\n'
+            tstr = gen_cython_iface_macro + '{{gen_cython_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
             t = jenv.from_string(tstr)
-            pyx += t.render({}) + '\n'
-            tstr = gen_cpp_iface_macro + '{{gen_cpp_iface("' + i + '", "' + self.ifaces[i] + '")}}\n'
+            pyx += t.render({'parent': self.ifaces[i][1]}) + '\n'
+            tstr = gen_cpp_iface_macro + '{{gen_cpp_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
             t = jenv.from_string(tstr)
-            cpp += t.render({}) + '\n'
+            cpp += t.render({'parent': self.ifaces[i][1]}) + '\n'
 
         return (cpp, cython_header + pyx)
 
