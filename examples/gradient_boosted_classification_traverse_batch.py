@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Decision Forest Classification Tree Traversal example
+# daal4py Gradient Boosting Classification Tree Traversal example
 
 import math
 import daal4py as d4p
@@ -46,18 +46,15 @@ if __name__ == "__main__":
     infile = "./data/batch/df_classification_train.csv"
 
     # Configure a training object (5 classes)
-    nClasses = 5
-    train_algo = d4p.decision_forest_classification_training(nClasses=nClasses, nTrees=2, minObservationsInLeafNode=8, featuresPerNode=3, varImportance="MDI",
-                                                             bootstrap=True, resultsToCompute="computeOutOfBagError")
+    train_algo = d4p.gbt_classification_training(5)
 
-    # Read data. Let"s use 3 features per observation
-    data = loadtxt(infile, delimiter=",", usecols=range(3))
-    labels = loadtxt(infile, delimiter=",", usecols=range(3, 4))
+    # Read data. Let's use 3 features per observation
+    data = loadtxt(infile, delimiter=',', usecols=range(3))
+    labels = loadtxt(infile, delimiter=',', usecols=range(3, 4))
     labels.shape = (labels.size, 1)  # must be a 2d array
     train_result = train_algo.compute(data, labels)
-    # Training result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
     # Retrieve Tree State for 1 Tree as encoded in sklearn.ensamble.tree_.Tree
     treeId = 0
-    treeState = d4p.getTreeState(train_result.model, treeId, nClasses)
+    treeState = d4p.getTreeState(train_result.model, treeId)
     printTree(treeState.node_ar, treeState.value_ar)

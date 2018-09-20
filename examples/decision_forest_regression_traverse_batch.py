@@ -16,25 +16,32 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Decision Forest Regression example for shared memory systems
+# daal4py Decision Forest Regression Tree Traversal example
 
-import math    
+import math
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 
-def printNodes(node_id, node_ar, value_ar, level):
-    node = node_ar[node_id]
-    value = value_ar[node_id]
-    if not math.isnan(node["threshold"]):
-        print(" " * level + "Level " + str(level) + ": Feature = " + str(node["feature"]) + ", threshold = " + str(node["threshold"]) + ", value = " + str(value))
-    if node["left_child"] != -1:
-        printNodes(node["left_child"], node_ar, value_ar, level + 1)
-    if node["right_child"] != -1:
-        printNodes(node["right_child"], node_ar, value_ar, level + 1)
+def printTree(nodes, values):
+    def printNodes(node_id, nodes, values, level):
+        node = nodes[node_id]
+        value = values[node_id]
+        if not math.isnan(node["threshold"]):
+            print(" " * level + "Level " + str(level) + ": Feature = " + str(node["feature"]) + ", Threshold = " + str(node["threshold"]))
+        else:
+            print(" " * level + "Level " + str(level) + ", Value = " + str(value).replace(" ", ""))
+        if node["left_child"] != -1:
+            printNodes(node["left_child"], nodes, values, level + 1)
+        if node["right_child"] != -1:
+            printNodes(node["right_child"], nodes, values, level + 1)
+        return
+
+    printNodes(0, nodes, values, 0)
+    return
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     # input data file
     infile = "./data/batch/df_regression_train.csv"
 
@@ -44,11 +51,12 @@ if __name__ == "__main__":
 
     # Read data. Let's have 13 independent, and 1 dependent variables (for each observation)
     indep_data = loadtxt(infile, delimiter=',', usecols=range(13))
-    dep_data   = loadtxt(infile, delimiter=',', usecols=range(13,14)).reshape((-1, 1)) # must be a 2d array
+    dep_data = loadtxt(infile, delimiter=',', usecols=range(13, 14)).reshape((-1, 1))  # must be a 2d array
 
     # Now train/compute, the result provides the model for prediction, outOfBagError, outOfBagErrorPerObservation, variableImportance
     train_result = train_algo.compute(indep_data, dep_data)
 
-    state = d4p.getTreeState(train_result.model, 0)
-
-    printNodes(0, state.node_ar, state.value_ar, 0)
+    # Retrieve Tree State for 1 Tree as encoded in sklearn.ensamble.tree_.Tree
+    treeId = 0
+    treeState = d4p.getTreeState(train_result.model, treeId)
+    printTree(treeState.node_ar, treeState.value_ar)
