@@ -54,7 +54,8 @@ if __name__ == "__main__":
     deps.shape = (deps.size, 1)  # must be a 2d array
     train_result = train_algo.compute(data, deps)
 
-    # Retrieve Tree State for 1 Tree as encoded in sklearn.ensamble.tree_.Tree
-    treeId = 0
-    treeState = d4p.getTreeState(train_result.model, treeId)
-    printTree(treeState.node_ar, treeState.value_ar)
+    # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
+    for treeId in range(train_result.model.NumberOfTrees):
+        treeState = d4p.getTreeState(train_result.model, treeId)
+        printTree(treeState.node_ar, treeState.value_ar)
+    print('Traversed {} trees.'.format(train_result.model.NumberOfTrees))

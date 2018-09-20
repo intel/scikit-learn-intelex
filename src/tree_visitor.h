@@ -252,8 +252,6 @@ bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const daal::algorithms::tree_uti
 template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::false_type)
 {
-    assert(class_count == 1);
-
     _onLeafNode(desc);
     value_ar[node_id*1*class_count] = desc.response;
 
@@ -266,7 +264,6 @@ template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::true_type)
 {
     _onLeafNode(desc);
-    // note that node_id has already been incremented
     value_ar[node_id*1*class_count + desc.label] += desc.nNodeSampleCount;
 
     // wrap-up

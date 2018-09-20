@@ -164,6 +164,10 @@ extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({
 {% for m in get_methods %}
 extern "C" {{m[0]}} * get_{{flatname}}_{{m[1]}}({{class_type}} *, {{m[2]}});
 {% endfor %}
+{% if flatname.startswith('gbt_') and flatname.endswith('model') %}
+// FIXME
+extern "C" size_t get_{{flatname}}_numberOfTrees({{class_type}} * obj_);
+{% endif %}
 %SNIP%
 {% for m in enum_gets %}
 extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
@@ -183,6 +187,14 @@ extern "C" {{m[0]}} * get_{{flatname}}_{{m[1]}}({{class_type}} * obj_, {{m[2]}} 
     return new {{m[0]}}((*obj_)->get{{m[1]}}({{m[3]}}));
 }
 {% endfor %}
+{% if flatname.startswith('gbt_') and flatname.endswith('model') %}
+// FIXME
+extern "C" size_t get_{{flatname}}_numberOfTrees({{class_type}} * obj_)
+{
+    return (*obj_)->numberOfTrees();
+}
+{% endif %}
+
 %SNIP%
 cdef extern from "daal4py_cpp.h":
     cdef cppclass {{class_type|flat|strip(' *')}}:
@@ -200,6 +212,10 @@ cdef extern from "daal4py_cpp.h":
 {% for m in get_methods %}
     cdef {{(m[0]|d2cy)}} get_{{flatname}}_{{m[1]}}({{class_type|flat}} obj_, {{m[2]}} {{m[3]}}) except +
 {% endfor %}
+{% if flatname.startswith('gbt_')  and flatname.endswith('model') %}
+    # FIXME
+    cdef size_t get_{{flatname}}_numberOfTrees({{class_type|flat}} obj_) except +
+{% endif %}
 
 cdef class {{flatname}}:
     '''
@@ -228,6 +244,13 @@ cdef class {{flatname}}:
         return {{'<object>make_nda(res)' if 'NumericTablePtr' in rtype else 'res'}}
 {% endif %}
 {% endfor %}
+
+{% if flatname.startswith('gbt_') and flatname.endswith('model') %}
+    @property
+    def NumberOfTrees(self):
+        'FIXME'
+        return get_{{flatname}}_numberOfTrees(self.c_ptr)
+{% endif %}
 
 {% if derived %}
     cdef _get_most_derived(self):

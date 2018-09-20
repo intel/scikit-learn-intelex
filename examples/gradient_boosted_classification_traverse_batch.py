@@ -42,11 +42,12 @@ def printTree(nodes, values):
 
 
 if __name__ == "__main__":
+    nClasses = 5
     # input data file
     infile = "./data/batch/df_classification_train.csv"
 
     # Configure a training object (5 classes)
-    train_algo = d4p.gbt_classification_training(5)
+    train_algo = d4p.gbt_classification_training(nClasses)
 
     # Read data. Let's use 3 features per observation
     data = loadtxt(infile, delimiter=',', usecols=range(3))
@@ -54,7 +55,8 @@ if __name__ == "__main__":
     labels.shape = (labels.size, 1)  # must be a 2d array
     train_result = train_algo.compute(data, labels)
 
-    # Retrieve Tree State for 1 Tree as encoded in sklearn.ensamble.tree_.Tree
-    treeId = 0
-    treeState = d4p.getTreeState(train_result.model, treeId)
-    printTree(treeState.node_ar, treeState.value_ar)
+    # Retrieve and print all tress; encoded as in sklearn.ensamble.tree_.Tree
+    for treeId in range(train_result.model.NumberOfTrees):
+        treeState = d4p.getTreeState(train_result.model, treeId, nClasses)
+        printTree(treeState.node_ar, treeState.value_ar)
+    print('Traversed {} trees.'.format(train_result.model.NumberOfTrees))
