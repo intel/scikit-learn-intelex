@@ -114,12 +114,6 @@ cdef extern from "daal4py.h":
 
     T* dynamicPointerPtrCast[T,U](U*)
 
-    cdef const char * D4P_VERSION
-    cdef const long long INTEL_DAAL_VERSION
-    cdef const long long __INTEL_DAAL_BUILD_DATE
-
-__version__ = '{}'.format(D4P_VERSION)
-__daal_version__ = '{}_{}'.format(INTEL_DAAL_VERSION, __INTEL_DAAL_BUILD_DATE)
 
 NAN64 = NaN64
 NAN32 = NaN32

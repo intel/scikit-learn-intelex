@@ -160,7 +160,7 @@ def gen_pyx(odir):
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
-    gen_daal4py(daal_root, odir)
+    gen_daal4py(daal_root, odir, d4p_version)
 
 gen_pyx(os.path.abspath('./build'))
 
