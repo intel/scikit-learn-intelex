@@ -77,11 +77,13 @@ cdef class pyTreeState(object):
         arr.base = <PyObject*> self
         return arr
 
-    cdef np.ndarray _get_value_ndarray(self, void* values, size_t count):
-        cdef np.npy_intp shape[1]
+    cdef np.ndarray _get_value_ndarray(self, void* values, size_t count, size_t outputs, size_t class_counts):
+        cdef np.npy_intp shape[3]
         shape[0] = <np.npy_intp> count
+        shape[1] = <np.npy_intp> 1
+        shape[2] = <np.npy_intp> class_counts
         cdef np.ndarray arr
-        arr = PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, values)
+        arr = PyArray_SimpleNewFromData(3, shape, np.NPY_DOUBLE, values)
         Py_INCREF(self)
         arr.base = <PyObject*> self
         return arr
@@ -93,7 +95,7 @@ cdef class pyTreeState(object):
         self.leaf_count = treeState.leaf_count
         self.class_count = treeState.class_count
         self.node_ar = self._get_node_ndarray(<void*> treeState.node_ar, treeState.node_count)
-        self.value_ar = self._get_value_ndarray(<void*> treeState.value_ar, treeState.node_count)
+        self.value_ar = self._get_value_ndarray(<void*> treeState.value_ar, treeState.node_count, 1, treeState.class_count)
 
 
     @property
