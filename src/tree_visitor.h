@@ -20,6 +20,7 @@
 #include "daal4py.h"
 #include <daal.h>
 #include <vector>
+#include <algorithm>
 
 #define TERMINAL_NODE -1
 #define NO_FEATURE -2
