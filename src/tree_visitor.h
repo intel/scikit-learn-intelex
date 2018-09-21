@@ -52,7 +52,7 @@ struct skl_tree_node {
 // For now we provide a meat-class to map Models to descriptors
 // Models might need an explicit instantiation providing visitor_type, leaf_desc_type and split_desc_type
 // This is the default template for models using regression visitors
-template< typename TNV >
+template<typename M>
 struct TNVT
 {
     typedef daal::algorithms::tree_utils::regression::TreeNodeVisitor visitor_type;
@@ -68,6 +68,12 @@ struct TNVT<daal::algorithms::decision_forest::classification::Model>
     typedef daal::algorithms::tree_utils::classification::LeafNodeDescriptor leaf_desc_type;
     typedef daal::algorithms::tree_utils::classification::SplitNodeDescriptor split_desc_type;
 };
+
+// Decision tree classification uses classification vistors
+template<>
+struct TNVT<daal::algorithms::decision_tree::classification::Model>
+    : public TNVT<daal::algorithms::decision_forest::classification::Model>
+{};
 
 // our tree visitor for counting nodes
 // TODO: Needs to store leaf-node response, and split-node impurity/sample_counts values
@@ -125,7 +131,7 @@ protected:
     std::vector<ssize_t> parents;
 };
 
-// This is the function for getting the tree state which we use in cython
+// This is the function for getting the tree state from a forest which we use in cython
 // we will have different model types, so it's a template
 // Note: the caller will own the memory of the 2 returned arrays!
 template<typename M>
@@ -137,7 +143,23 @@ TreeState _getTreeState(M * model, size_t iTree, size_t n_classes)
     // then do the final tree traversal
     toSKLearnTreeObjectVisitor<typename M::ElementType> tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
     (*model)->traverseDFS(iTree, tsv);
-    //printf("DEBUG C: %zu, %zu, %zu, %zu\n", TreeState(tsv).max_depth, TreeState(tsv).node_count, TreeState(tsv).leaf_count, TreeState(tsv).class_count);
+
+    return TreeState(tsv);
+}
+
+// This is the function for getting the tree state frmo a tree which we use in cython
+// we will have different model types, so it's a template
+// Note: the caller will own the memory of the 2 returned arrays!
+template<typename M>
+TreeState _getTreeState(M * model, size_t n_classes)
+{
+    // First count nodes
+    NodeDepthCountNodeVisitor<typename M::ElementType> ncv;
+    (*model)->traverseDFS(ncv);
+    // then do the final tree traversal
+    toSKLearnTreeObjectVisitor<typename M::ElementType> tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
+    (*model)->traverseDFS(tsv);
+
     return TreeState(tsv);
 }
 
