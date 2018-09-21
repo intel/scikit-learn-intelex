@@ -17,6 +17,10 @@
 #ifndef _HLAPI_H_INCLUDED_
 #define _HLAPI_H_INCLUDED_
 
+#ifdef _WIN32
+#define NOMINMAX
+#endif
+
 #include <daal.h>
 using daal::step1Local;
 using daal::step2Local;

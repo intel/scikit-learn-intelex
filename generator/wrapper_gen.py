@@ -164,6 +164,10 @@ extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({
 {% for m in get_methods %}
 extern "C" {{m[0]}} * get_{{flatname}}_{{m[1]}}({{class_type}} *, {{m[2]}});
 {% endfor %}
+{% if (flatname.startswith('gbt_') or flatname.startswith('decision_forest')) and flatname.endswith('model') %}
+// FIXME
+extern "C" size_t get_{{flatname}}_numberOfTrees({{class_type}} * obj_);
+{% endif %}
 %SNIP%
 {% for m in enum_gets %}
 extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
@@ -183,6 +187,14 @@ extern "C" {{m[0]}} * get_{{flatname}}_{{m[1]}}({{class_type}} * obj_, {{m[2]}} 
     return new {{m[0]}}((*obj_)->get{{m[1]}}({{m[3]}}));
 }
 {% endfor %}
+{% if (flatname.startswith('gbt_') or flatname.startswith('decision_forest')) and flatname.endswith('model') %}
+// FIXME
+extern "C" size_t get_{{flatname}}_numberOfTrees({{class_type}} * obj_)
+{
+    return (*obj_)->numberOfTrees();
+}
+{% endif %}
+
 %SNIP%
 cdef extern from "daal4py_cpp.h":
     cdef cppclass {{class_type|flat|strip(' *')}}:
@@ -200,6 +212,10 @@ cdef extern from "daal4py_cpp.h":
 {% for m in get_methods %}
     cdef {{(m[0]|d2cy)}} get_{{flatname}}_{{m[1]}}({{class_type|flat}} obj_, {{m[2]}} {{m[3]}}) except +
 {% endfor %}
+{% if (flatname.startswith('gbt_') or flatname.startswith('decision_forest')) and flatname.endswith('model') %}
+    # FIXME
+    cdef size_t get_{{flatname}}_numberOfTrees({{class_type|flat}} obj_) except +
+{% endif %}
 
 cdef class {{flatname}}:
     '''
@@ -228,6 +244,13 @@ cdef class {{flatname}}:
         return {{'<object>make_nda(res)' if 'NumericTablePtr' in rtype else 'res'}}
 {% endif %}
 {% endfor %}
+
+{% if (flatname.startswith('gbt_') or flatname.startswith('decision_forest')) and flatname.endswith('model') %}
+    @property
+    def NumberOfTrees(self):
+        'FIXME'
+        return get_{{flatname}}_numberOfTrees(self.c_ptr)
+{% endif %}
 
 {% if derived %}
     cdef _get_most_derived(self):
@@ -308,7 +331,7 @@ hpat_spec.append({
 # accepts interface name and C++ type
 gen_cpp_iface_macro = """
 {% macro gen_cpp_iface(iface_name, iface_type) %}
-class {{iface_name}}__iface__ : public algo_manager__iface__
+class {{iface_name}}__iface__ : public {{parent|d2cy(False) if parent else 'algo_manager__iface__'}}
 {
 public:
     typedef {{iface_type}} daal_type;
@@ -327,13 +350,17 @@ static {{iface_type}} to_daal(c_{{iface_name}}__iface__ * t) {return t ? t->get_
 gen_cython_iface_macro = """
 {% macro gen_cython_iface(iface_name, iface_type) %}
 cdef extern from "daal4py_cpp.h":
-    cdef cppclass c_{{iface_name}}__iface__:
+    cdef cppclass c_{{iface_name}}__iface__{{'(c_'+parent|d2cy(False)+')' if parent else ''}}:
         pass
 
 #    ctypedef c_{{iface_name}}__iface__ c_{{iface_type|flat|strip(' *')}};
 
 {% set inl = iface_name|lower + '__iface__' %}
-cdef class {{inl}}:
+{% if parent %}
+cdef class {{inl}}({{parent|d2cy(False)|lower}}):
+    pass
+{% else %}
+cdef class {{inl}}():
     cdef c_{{iface_name}}__iface__ * c_ptr
 
     def __cinit__(self):
@@ -341,7 +368,7 @@ cdef class {{inl}}:
 
     def __dealloc__(self):
         del self.c_ptr
-
+{% endif %}
 
 hpat_spec.append({
     'pyclass'     : {{inl}},
@@ -1044,12 +1071,12 @@ class wrapper_gen(object):
         cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\ntypedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;"
         pyx = ''
         for i in self.ifaces:
-            tstr = gen_cython_iface_macro + '{{gen_cython_iface("' + i + '", "' + self.ifaces[i] + '")}}\n'
+            tstr = gen_cython_iface_macro + '{{gen_cython_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
             t = jenv.from_string(tstr)
-            pyx += t.render({}) + '\n'
-            tstr = gen_cpp_iface_macro + '{{gen_cpp_iface("' + i + '", "' + self.ifaces[i] + '")}}\n'
+            pyx += t.render({'parent': self.ifaces[i][1]}) + '\n'
+            tstr = gen_cpp_iface_macro + '{{gen_cpp_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
             t = jenv.from_string(tstr)
-            cpp += t.render({}) + '\n'
+            cpp += t.render({'parent': self.ifaces[i][1]}) + '\n'
 
         return (cpp, cython_header + pyx)
 

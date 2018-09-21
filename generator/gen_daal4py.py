@@ -289,14 +289,14 @@ class cython_interface(object):
         if t.endswith('ModelPtr'):
             thens = self.get_ns(ns, t, attrs=['typedefs'])
             return ('daal::' + thens + '::ModelPtr', 'class', tns)
-        if t in ['data_management::NumericTablePtr'] or t in ifaces.values():
+        if t in ['data_management::NumericTablePtr'] or any(t == x[0] for x in ifaces.values()):
             return ('daal::' + t, 'class', tns)
         if 'Batch' in self.namespace_dict[ns].classes and t in self.namespace_dict[ns].classes['Batch'].typedefs:
             tns, tname = splitns(self.namespace_dict[ns].classes['Batch'].typedefs[t])
             return (self.namespace_dict[ns].classes['Batch'].typedefs[t], 'class', tns)
         tt = re.sub(r'(?<!daal::)services::SharedPtr', r'daal::services::SharedPtr', t)
         tt = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', tt)
-        if tt in ifaces.values():
+        if any(tt == x[0] for x in ifaces.values()):
             return (tt, 'class', tns)
         tns = self.get_ns(ns, t)
         if tns:
@@ -894,8 +894,14 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False):
         f.write(cpp_h)
     with open(jp(outdir, 'daal4py_cpp.cpp'), 'w') as f:
         f.write(cpp_cpp)
+
+
+    with open(jp('src', 'gettree.pyx'), 'r') as f:
+        pyx_gettree = f.read()
+
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
         f.write(pyx_file)
+        f.write(pyx_gettree)
         f.write('cdef extern from "daal.h":\n')
         f.write('    cdef const long long INTEL_DAAL_VERSION\n')
         f.write('    cdef const long long __INTEL_DAAL_BUILD_DATE\n\n')

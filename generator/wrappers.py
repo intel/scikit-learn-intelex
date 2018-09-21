@@ -125,12 +125,13 @@ ignore = {
 # List of InterFaces, classes that can be arguments to other algorithms
 # Mapping iface class to fully qualified DAAL type as shared pointer
 ifaces = {
-    'kernel_function::KernelIface': 'daal::algorithms::kernel_function::KernelIfacePtr',
-    'classifier::prediction::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::prediction::Batch>',
-    'classifier::training::Batch': 'daal::services::SharedPtr<daal::algorithms::classifier::training::Batch>',
-    'engines::BatchBase': 'daal::algorithms::engines::EnginePtr',
-    'optimization_solver::sum_of_functions::Batch': 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr',
-    'optimization_solver::iterative_solver::Batch': 'daal::algorithms::optimization_solver::iterative_solver::BatchPtr',
+    'kernel_function::KernelIface': ('daal::algorithms::kernel_function::KernelIfacePtr', None),
+    'classifier::prediction::Batch': ('daal::services::SharedPtr<daal::algorithms::classifier::prediction::Batch>', None),
+    'classifier::training::Batch': ('daal::services::SharedPtr<daal::algorithms::classifier::training::Batch>', None),
+    'engines::BatchBase': ('daal::algorithms::engines::EnginePtr', None),
+    'engines::FamilyBatchBase': ('daal::algorithms::engines::EnginePtr', 'daal::algorithms::engines::EnginePtr'),
+    'optimization_solver::sum_of_functions::Batch': ('daal::algorithms::optimization_solver::sum_of_functions::BatchPtr', None),
+    'optimization_solver::iterative_solver::Batch': ('daal::algorithms::optimization_solver::iterative_solver::BatchPtr', None),
 }
 
 # By default input arguments have no default value (e.g. they are required).
