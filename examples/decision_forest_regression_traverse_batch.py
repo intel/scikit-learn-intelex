@@ -45,9 +45,9 @@ def printTree(nodes, values):
 if __name__ == "__main__":
     # First get our result and model
     (train_result, _, _) = df_regression()
-    # Retrieve Tree State for tree as encoded in sklearn.ensamble.tree_.Tree
-    treeId = 0
-    treeState = d4p.getTreeState(train_result.model, treeId)
-    # Now let printTree traverse the TreeState
-    printTree(treeState.node_ar, treeState.value_ar)
+    # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
+    for treeId in range(train_result.model.NumberOfTrees):
+        treeState = d4p.getTreeState(train_result.model, treeId)
+        printTree(treeState.node_ar, treeState.value_ar)
+    print('Traversed {} trees.'.format(train_result.model.NumberOfTrees))
     print('All looks good!')
