@@ -43,7 +43,6 @@
 ###############################################################################
 # FIXME remove remaining args/code for distributed computation if none available
 # FIXME a revision from scratch would be helpful...
-# FIXME GC of Tables etc (shared-pointer objcetss are new'ed!)
 
 import jinja2
 from collections import OrderedDict
@@ -534,6 +533,11 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 {% for i in pargs_call %}
         , _{{i}}({{'to_daal('+i+')' if '__iface__' in (pargs_decl[loop.index0]|cppdecl(True)) else i}})
 {% endfor %}
+{% for i in iargs_decl %}
+{% if '*' in i %}
+        , _{{iargs_call[loop.index0]}}(NULL)
+{% endif %}
+{% endfor %}
         , _algob()
     {
         {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="b", member=True)}}
@@ -545,11 +549,27 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 {% for i in args_call %}
         , _{{i}}()
 {% endfor %}
+{% for i in iargs_decl %}
+{% if '*' in i %}
+        , _{{iargs_call[loop.index0]}}(NULL)
+{% endif %}
+{% endfor %}
         , _algob()
     {
         {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="b", member=True)}}
     }
 #endif
+
+    ~{{algo}}_manager()
+    {
+{% for i in args_decl %}
+{% if 'TableOrFList' in i %}
+        delete _{{args_call[loop.index0]}};
+{% elif '*' in i %}
+        // ?? delete _{{args_call[loop.index0]}};
+{% endif %}
+{% endfor %}
+    }
 
 private:
 {% if params_opt|length and not create %}

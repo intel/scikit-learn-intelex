@@ -37,20 +37,18 @@ def main():
 
     # Configure a SVM object to use rbf kernel (and adjusting cachesize)
     kern = d4p.kernel_function_linear()  # need an object that lives when creating train_algo
-    train_algo = d4p.svm_training(kernel=kern, cacheSize=600000000)
+    train_algo = d4p.svm_training(doShrinking=True, kernel=kern, cacheSize=600000000)
     
     # Read data. Let's use features per observation
     data   = read_csv(infile, range(20))
-    labels = read_csv(infile, range(20,21))
-    labels.shape = (labels.size, 1) # must be a 2d array
+    labels = read_csv(infile, range(20,21)).reshape((-1, 1)) # must be a 2d array
     train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
     predict_algo = d4p.svm_prediction(kernel=kern)
     # read test data (with same #features)
     pdata = read_csv(testfile, range(20))
-    plabels = read_csv(testfile, range(20,21))
-    plabels.shape = (plabels.size, 1)
+    plabels = read_csv(testfile, range(20,21)).reshape((-1, 1)) # must be a 2d array
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

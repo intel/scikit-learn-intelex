@@ -37,12 +37,11 @@ def main():
     # read training data from file with nFeatures features per observation and 1 class label
     train_file = 'data/batch/svm_multi_class_train_dense.csv'
     train_data = read_csv(train_file, range(nFeatures))
-    train_labels = read_csv(train_file, range(nFeatures, nFeatures + 1))
-    train_labels.shape = (train_data.shape[0], 1)  # must be a 2d array
+    train_labels = read_csv(train_file, range(nFeatures, nFeatures + 1)).reshape((-1, 1)) # must be a 2d array
 
     # Create and configure algorithm object
     algorithm = d4p.multi_class_classifier_training(nClasses,
-                                                    training=d4p.svm_training(),
+                                                    training=d4p.svm_training(doShrinking=True),
                                                     prediction=d4p.svm_prediction())
     
     # Pass data to training. Training result provides model
@@ -54,12 +53,11 @@ def main():
     # Read data
     pred_file = 'data/batch/svm_multi_class_test_dense.csv'
     pred_data = read_csv(pred_file, range(nFeatures))
-    pred_labels = read_csv(pred_file, range(nFeatures, nFeatures + 1))
-    pred_labels.shape = (pred_data.shape[0], 1)  # must be a 2d array
+    pred_labels = read_csv(pred_file, range(nFeatures, nFeatures + 1)).reshape((-1, 1)) # must be a 2d array
     
     # Create an algorithm object to predict multi-class SVM values
     algorithm = d4p.multi_class_classifier_prediction(nClasses,
-                                                      training=d4p.svm_training(),
+                                                      training=d4p.svm_training(doShrinking=True),
                                                       prediction=d4p.svm_prediction())
     # Pass data to prediction. Prediction result provides prediction
     pred_result = algorithm.compute(pred_data, train_result.model)
