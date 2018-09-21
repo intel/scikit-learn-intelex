@@ -29,11 +29,11 @@ install:
   # create conda env with all our deps
   - conda create -q -n D4P -c intel -c intel/label/test -c conda-forge python=$TRAVIS_PYTHON_VERSION mpich cnc tbb-devel daal daal-include cython jinja2 numpy
   - source activate D4P
-  - DAALROOT=$CONDA_PREFIX CNCROOT=$CONDA_PREFIX TBBROOT=$CONDA_PREFIX python setup.py install
+  - NO_DIST=1 DAALROOT=$CONDA_PREFIX CNCROOT=$CONDA_PREFIX TBBROOT=$CONDA_PREFIX python setup.py install
 
 script:
   # Your test script goes here
   - which mpirun && mpirun -version
   # - echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
   # - export I_MPI_SHM_LMT=shm 
-  - cd examples && ./run_all.sh
+  - cd examples && python run_examples.py nodist
