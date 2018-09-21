@@ -124,14 +124,14 @@ cdef extern from "daal.h":
 
 
 cdef extern from "daal4py_cpp.h":
-    cdef void c_daalinit(bool spmd, int flag) except +
+    cdef void c_daalinit(bool spmd, int flag, int nthreads) except +
     cdef void c_daalfini() except +
     cdef size_t c_num_procs() except +
     cdef size_t c_my_procid() except +
 
 
-def daalinit(spmd = False, flag = 0):
-    c_daalinit(spmd, flag)
+def daalinit(spmd = False, flag = 0, nthreads = -1):
+    c_daalinit(spmd, flag, nthreads)
 
 def daalfini():
     c_daalfini()
@@ -802,8 +802,9 @@ static fini _fini;
 
 extern "C" {
 
-void c_daalinit(bool spmd, int flag)
+void c_daalinit(bool spmd, int flag, int nthreads)
 {
+    if(nthreads > 0) daal::services::Environment::getInstance()->setNumberOfThreads(nthreads);
     if(initer) delete initer;
     auto subscriber = [](){
 {{subscriptions.rstrip()}}
@@ -832,8 +833,9 @@ size_t c_my_procid()
 #else // _DIST_
 
 extern "C" {
-void c_daalinit(bool spmd, int flag)
+void c_daalinit(bool spmd, int flag, int nthreads)
 {
+    if(nthreads > 0) daal::services::Environment::getInstance()->setNumberOfThreads(nthreads);
 }
 
 void c_daalfini()

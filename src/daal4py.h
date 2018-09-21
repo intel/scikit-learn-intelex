@@ -48,7 +48,7 @@ using daal::step3Master;
 #endif
 
 extern "C" {
-void c_daalinit(bool spmd=false, int flag=0);
+void c_daalinit(bool spmd=false, int flag=0, int nthreads=-1);
 void c_daalfini();
 size_t c_num_procs();
 size_t c_my_procid();

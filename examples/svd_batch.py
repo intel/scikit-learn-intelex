@@ -19,10 +19,18 @@
 # daal4py SVD example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
 
-if __name__ == "__main__":
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
+
+def main():
     infile = "./data/batch/svd.csv"
 
     # configure a SVD object
@@ -32,12 +40,23 @@ if __name__ == "__main__":
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    data = loadtxt(infile, delimiter=',')
+    data = read_csv(infile, range(18))
     result2 = algo.compute(data)
 
     # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues
-    assert allclose(result1.leftSingularMatrix, result2.leftSingularMatrix, atol=1e-07)
-    assert allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-07)
-    assert allclose(result1.singularValues, result2.singularValues, atol=1e-07)
+    assert np.allclose(result1.leftSingularMatrix, result2.leftSingularMatrix, atol=1e-07)
+    assert np.allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-07)
+    assert np.allclose(result1.singularValues, result2.singularValues, atol=1e-07)
+    assert result1.singularValues.shape == (1, data.shape[1])
+    assert result1.rightSingularMatrix.shape == (data.shape[1], data.shape[1])
+    assert result1.leftSingularMatrix.shape == data.shape
 
+    return result1
+
+
+if __name__ == "__main__":
+    result1 = main()
+    print("\nSingular values:\n", result1.singularValues)
+    print("\nRight orthogonal matrix V:\n", result1.rightSingularMatrix)
+    print("\nLeft orthogonal matrix U (first 10 rows):\n", result1.leftSingularMatrix[0:10])
     print('All looks good!')

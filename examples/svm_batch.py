@@ -19,32 +19,49 @@
 # daal4py SVM example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
 
-if __name__ == "__main__":
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
+
+def main():
     # input data file
     infile = "./data/batch/svm_two_class_train_dense.csv"
+    testfile = "./data/batch/svm_two_class_test_dense.csv"
 
     # Configure a SVM object to use rbf kernel (and adjusting cachesize)
-    kern = d4p.kernel_function_rbf()  # need an object that lives when creating train_algo
+    kern = d4p.kernel_function_linear()  # need an object that lives when creating train_algo
     train_algo = d4p.svm_training(kernel=kern, cacheSize=600000000)
     
     # Read data. Let's use features per observation
-    data   = loadtxt(infile, delimiter=',', usecols=range(20))
-    labels = loadtxt(infile, delimiter=',', usecols=range(20,21))
+    data   = read_csv(infile, range(20))
+    labels = read_csv(infile, range(20,21))
     labels.shape = (labels.size, 1) # must be a 2d array
     train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
-    predict_algo = d4p.svm_prediction()
+    predict_algo = d4p.svm_prediction(kernel=kern)
     # read test data (with same #features)
-    pdata = loadtxt("./data/batch/svm_two_class_test_dense.csv", delimiter=',', usecols=range(20))
+    pdata = read_csv(testfile, range(20))
+    plabels = read_csv(testfile, range(20,21))
+    plabels.shape = (plabels.size, 1)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    assert(predict_result.prediction.shape == (data.shape[0], 1))
+    assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
-    print(predict_result.prediction)
+    return (predict_result, plabels)
+
+
+if __name__ == "__main__":
+    (predict_result, plabels) = main()
+    print("\nSVM classification results (first 20 observations):\n", predict_result.prediction[0:20])
+    print("\nGround truth (first 20 observations):\n", plabels[0:20])
     print('All looks good!')

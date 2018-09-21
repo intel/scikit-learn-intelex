@@ -25,10 +25,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f,c: pandas.read_csv(f, usecols=c, delimiter=',').values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f,c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
 
 def main():
@@ -58,7 +58,11 @@ def main():
     # The SGD result provides minimum and nIterations
     assert res.minimum.shape == inp.shape and res.nIterations[0][0] <= niters
 
+    return res
+
 
 if __name__ == "__main__":
-    main()
+    res = main()
+    print("\nMinimum:\n", res.minimum)
+    print("\nNumber of iterations performed:\n", res.nIterations[0][0])
     print('All looks good!')

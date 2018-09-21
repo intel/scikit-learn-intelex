@@ -19,20 +19,25 @@
 # daal4py K-Means example for shared memory systems
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
 
-if __name__ == "__main__":
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
 
+
+def main():
     infile = "./data/batch/kmeans_dense.csv"
-    method = 'svdDense'
-    nClusters = 10
-    maxIter = 25
+    nClusters = 20
+    maxIter = 5
 
-    # configure a kmeans-init using mt19937 RNG
-    engine = d4p.engines_mt19937()
-    initrain_algo = d4p.kmeans_init(nClusters, method="randomDense", engine=engine)
+    initrain_algo = d4p.kmeans_init(nClusters, method="randomDense")
     # Load the data
-    data = loadtxt(infile, delimiter=',')
+    data = read_csv(infile, range(20))
     # compute initial centroids
     initrain_result = initrain_algo.compute(data)
     # The results provides the initial centroids
@@ -51,4 +56,12 @@ if __name__ == "__main__":
     assert result.assignments.shape == (data.shape[0], 1)
     assert result.nIterations <= maxIter
 
+    return result
+
+
+if __name__ == "__main__":
+    result = main()
+    print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
+    print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
+    print("\nObjective function value:\n", result.objectiveFunction)
     print('All looks good!')
