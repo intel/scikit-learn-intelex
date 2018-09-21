@@ -22,6 +22,7 @@ import math
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
+from gradient_boosted_classification_batch import main as gbt_classification
 
 def printTree(nodes, values):
     def printNodes(node_id, nodes, values, level):
@@ -42,21 +43,11 @@ def printTree(nodes, values):
 
 
 if __name__ == "__main__":
-    nClasses = 5
-    # input data file
-    infile = "./data/batch/df_classification_train.csv"
-
-    # Configure a training object (5 classes)
-    train_algo = d4p.gbt_classification_training(nClasses)
-
-    # Read data. Let's use 3 features per observation
-    data = loadtxt(infile, delimiter=',', usecols=range(3))
-    labels = loadtxt(infile, delimiter=',', usecols=range(3, 4))
-    labels.shape = (labels.size, 1)  # must be a 2d array
-    train_result = train_algo.compute(data, labels)
-
-    # Retrieve and print all tress; encoded as in sklearn.ensamble.tree_.Tree
+    # First get our result and model
+    (train_result, _, _) = gbt_classification()
+    # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
     for treeId in range(train_result.model.NumberOfTrees):
-        treeState = d4p.getTreeState(train_result.model, treeId, nClasses)
+        treeState = d4p.getTreeState(train_result.model, treeId, 5)
         printTree(treeState.node_ar, treeState.value_ar)
     print('Traversed {} trees.'.format(train_result.model.NumberOfTrees))
+    print('All looks good!')

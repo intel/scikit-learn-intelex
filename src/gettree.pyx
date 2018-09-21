@@ -132,7 +132,7 @@ def getTreeState(model, i=0, n_classes=1):
         cTreeState = _getTreeState((<decision_forest_regression_model>model).c_ptr, i, 1)
     elif isinstance(model, gbt_regression_model):
         cTreeState = _getTreeState((<gbt_regression_model>model).c_ptr, i, 1)
-    if isinstance(model, decision_tree_classification_model):
+    elif isinstance(model, decision_tree_classification_model):
         cTreeState = _getTreeState((<decision_tree_classification_model>model).c_ptr, n_classes)
     elif isinstance(model, decision_tree_regression_model):
         cTreeState = _getTreeState((<decision_tree_regression_model>model).c_ptr, 1)

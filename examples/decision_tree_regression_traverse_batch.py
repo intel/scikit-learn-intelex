@@ -16,13 +16,13 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py Decision Forest Regression Tree Traversal example
+# daal4py Decision Tree Regression example for shared memory systems
 
 import math
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-from decision_forest_regression_batch import main as df_regression
+from decision_tree_regression_batch import main as dt_regression
 
 def printTree(nodes, values):
     def printNodes(node_id, nodes, values, level):
@@ -41,13 +41,12 @@ def printTree(nodes, values):
     printNodes(0, nodes, values, 0)
     return
 
-
 if __name__ == "__main__":
     # First get our result and model
-    (train_result, _, _) = df_regression()
+    (train_result, _, _) = dt_regression()
     # Retrieve Tree State for tree as encoded in sklearn.ensamble.tree_.Tree
     treeId = 0
-    treeState = d4p.getTreeState(train_result.model, treeId)
+    treeState = d4p.getTreeState(train_result.model, treeId, 5)
     # Now let printTree traverse the TreeState
     printTree(treeState.node_ar, treeState.value_ar)
     print('All looks good!')

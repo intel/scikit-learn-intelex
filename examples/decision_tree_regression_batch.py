@@ -60,11 +60,11 @@ def main():
     # The prediction result provides prediction
     assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
 
-    return (predict_result, ptdata)
+    return (train_result, predict_result, ptdata)
 
 
 if __name__ == "__main__":
-    (predict_result, ptdata) = main()
+    (train_result, predict_result, ptdata) = main()
     print("\nDecision tree prediction results (first 20 rows):\n", predict_result.prediction[0:20])
     print("\nGround truth (first 10 rows):\n", ptdata[0:20])
     print('All looks good!')
