@@ -4,7 +4,7 @@ if "%PY3K%"=="1" (
     set ARGS="--old-and-unmanageable"
 }
 
-rem set NO_DIST=1
+set NO_DIST=1
 
 set DAAL4PY_VERSION=%PKG_VERSION%
 set CNCROOT=%PREFIX%
