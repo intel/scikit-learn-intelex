@@ -536,6 +536,8 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 {% for i in iargs_decl %}
 {% if '*' in i %}
         , _{{iargs_call[loop.index0]}}(NULL)
+{% else %}
+        , _{{iargs_call[loop.index0]}}()
 {% endif %}
 {% endfor %}
         , _algob()
@@ -546,12 +548,14 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 #ifdef _DIST_
     {{algo}}_manager() :
         {{algo}}__iface__(true)
-{% for i in args_call %}
+{% for i in pargs_call %}
         , _{{i}}()
 {% endfor %}
 {% for i in iargs_decl %}
 {% if '*' in i %}
         , _{{iargs_call[loop.index0]}}(NULL)
+{% else %}
+        , _{{iargs_call[loop.index0]}}()
 {% endif %}
 {% endfor %}
         , _algob()

@@ -20,10 +20,10 @@
 #ifdef _WIN32
 #define NOMINMAX
 #endif
-#include <tuple>
 #include "daal4py.h"
 
 #ifdef _DIST_
+#include <tuple>
 #include "cnc4daal.h"
 
 //////////////////////////////////////////////////////////////

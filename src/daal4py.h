@@ -137,7 +137,7 @@ struct IOManager
 {
     typedef O result_type;
     typedef I input1_type;
-    typedef std::tuple< input1_type > input_type;
+    typedef input1_type input_type;
 
     static result_type getResult(A & algo)
     {
