@@ -111,7 +111,7 @@ def getpyexts():
     elif not using_intel and IS_WIN:
         eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/MD']
     else:
-        eca += ['-std=c++11', '-w', '-D_GLIBCXX_USE_CXX11_ABI=0']
+        eca += ['-std=c++11', '-w',]  # '-D_GLIBCXX_USE_CXX11_ABI=0']
 
     # Security flags
     eca += get_sdl_cflags()

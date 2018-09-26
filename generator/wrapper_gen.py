@@ -65,6 +65,7 @@ from libcpp.string cimport string as std_string
 from libcpp cimport bool
 from cpython.ref cimport PyObject
 from cython.operator cimport dereference as deref
+from libc.stdint cimport int64_t
 
 npc.import_array()
 
@@ -224,8 +225,12 @@ cdef class {{flatname}}:
     def __cinit__(self):
         self.c_ptr = NULL
         pass
+
     def __dealloc__(self):
         del self.c_ptr
+
+    def __init__(self, int64_t ptr=0):
+        self.c_ptr = <{{class_type|flat}}>ptr
 {% for m in enum_gets+named_gets %}
 {% set rtype = m[2]|d2cy(False) if m in enum_gets else m[0]|d2cy(False) %}
 
@@ -234,11 +239,15 @@ cdef class {{flatname}}:
 {% if ('Ptr' in rtype and 'NumericTablePtr' not in rtype) or '__iface__' in rtype %}
 {% set frtype=(rtype.strip(' *&')|flat(False)|strip(' *')).replace('Ptr', '')|lower %}
         ':type: {{frtype}}'
-        res = {{frtype}}()
+        if self.c_ptr == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
+        cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return res
 {% else %}
         ':type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}'
+        if self.c_ptr == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
         res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return {{'<object>make_nda(res)' if 'NumericTablePtr' in rtype else 'res'}}
 {% endif %}
@@ -248,31 +257,34 @@ cdef class {{flatname}}:
     @property
     def NumberOfTrees(self):
         'FIXME'
+        if self.c_ptr == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
         return get_{{flatname}}_numberOfTrees(self.c_ptr)
 {% endif %}
 
-{% if derived %}
     cdef _get_most_derived(self):
+{% if derived %}
 {% for m in derived %}
 {% set dertype = m|d2cy %}
+{% set cytype = m.replace('Ptr', '')|d2cy(False)|lower %}
         cdef {{m|d2cy}} tmp_ptr{{loop.index}} = dynamicPointerPtrCast[{{m|d2cy(False)}}, {{class_type|flat(False)}}](self.c_ptr)
-        cdef {{m.replace('Ptr', '')|d2cy(False)|lower}} res{{loop.index}}
+        cdef {{cytype}} res{{loop.index}}
         if tmp_ptr{{loop.index}}:
-            res{{loop.index}} = {{m.replace('Ptr', '')|d2cy(False)|lower}}()
+            res{{loop.index}} = {{cytype}}.__new__({{cytype}})
             res{{loop.index}}.c_ptr = tmp_ptr{{loop.index}}
             return res{{loop.index}}
 {% endfor %}
-{% else %}
-    cdef _get_most_derived(self):
-        return self
 {% endif %}
+        return self
 
 {% for m in get_methods %}
 {% set frtype = m[0].replace('Ptr', '')|d2cy(False)|lower %}
     def {{m[1]|d2cy(False)}}(self, {{m[2]|d2cy(False)}} {{m[3]}}):
+        ':type: {{frtype}} (or derived)'
+        if self.c_ptr == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
 {% if 'Ptr' in m[0] %}
-        ':type: {{frtype}}'
-        res = {{frtype}}()
+        cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr, {{m[3]}})
 {% if '_model' in frtype %}
         return res._get_most_derived()
@@ -291,8 +303,10 @@ cdef class {{flatname}}:
            raise ValueError("Invalid state .....")
 
     def __getstate__(self):
+        if self.c_ptr == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
         bytes = serialize_si(self.c_ptr)
-        return bytes 
+        return bytes
 
     def __reduce__(self):
         state_data = self.__getstate__()
@@ -704,9 +718,12 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 {% for a in iargs_call %}
 {{' '*16 + a|cydecl(args_decl[loop.index0]) + ('):' if loop.last else ',')}}
 {% endfor %}
+        if self.c_ptr == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
+{% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
-        res = {{result_map.class_type.replace('Ptr', '')|d2cy(False)|lower}}()
+        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
         res.c_ptr = deref(algo).compute(
 {%- for a in iargs_call -%}
 {{('' if loop.first else ' '*40) + a|cycall(iargs_decl[loop.index0]) + (', False)' if loop.last else ',')}}
@@ -719,6 +736,8 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 {% for a in iargs_call %}
 {{' '*14 + a|cydecl(args_decl[loop.index0]) + ('):' if loop.last else ',')}}
 {% endfor %}
+        if self.c_ptr == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
         deref(algo).compute(
 {%- for a in iargs_call -%}
