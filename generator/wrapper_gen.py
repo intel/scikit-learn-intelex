@@ -222,6 +222,7 @@ cdef class {{flatname}}:
     Properties:
     '''
     cdef {{class_type|flat}} c_ptr
+
     def __cinit__(self):
         self.c_ptr = NULL
         pass
@@ -231,6 +232,7 @@ cdef class {{flatname}}:
 
     def __init__(self, int64_t ptr=0):
         self.c_ptr = <{{class_type|flat}}>ptr
+
 {% for m in enum_gets+named_gets %}
 {% set rtype = m[2]|d2cy(False) if m in enum_gets else m[0]|d2cy(False) %}
 
@@ -311,6 +313,10 @@ cdef class {{flatname}}:
     def __reduce__(self):
         state_data = self.__getstate__()
         return (_rebuild, (self.__class__, state_data,))
+
+
+cdef api void * unbox_{{flatname}}(a):
+    return (<{{flatname}}>a).c_ptr
 
 
 hpat_spec.append({
@@ -713,6 +719,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     def __dealloc__(self):
         del self.c_ptr
 {% endif %}
+
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
     def compute(self,
 {% for a in iargs_call %}
