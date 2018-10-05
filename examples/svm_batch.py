@@ -24,10 +24,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main():
@@ -41,14 +41,14 @@ def main():
     
     # Read data. Let's use features per observation
     data   = read_csv(infile, range(20))
-    labels = read_csv(infile, range(20,21)).reshape((-1, 1)) # must be a 2d array
+    labels = read_csv(infile, range(20,21))
     train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
     predict_algo = d4p.svm_prediction(kernel=kern)
     # read test data (with same #features)
     pdata = read_csv(testfile, range(20))
-    plabels = read_csv(testfile, range(20,21)).reshape((-1, 1)) # must be a 2d array
+    plabels = read_csv(testfile, range(20,21))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

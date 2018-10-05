@@ -25,18 +25,25 @@ import os
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main():
+    data = read_csv(os.path.join('data', 'batch', 'distance.csv'), range(10))
+
     # Create algorithm to compute cosine distance (no parameters)
     algorithm = d4p.cosine_distance()
 
-    # Computed cosine distance
-    return algorithm.compute(os.path.join('data', 'batch', 'distance.csv'))
+    # Computed cosine distance with file or numpy array
+    res1 = algorithm.compute(os.path.join('data', 'batch', 'distance.csv'))
+    res2 = algorithm.compute(data)
+
+    assert np.allclose(res1.cosineDistance, res2.cosineDistance)
+
+    return res1
 
 
 if __name__ == "__main__":

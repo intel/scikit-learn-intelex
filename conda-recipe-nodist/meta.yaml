@@ -1,4 +1,4 @@
-{% set version = '0.2019.0.1' %}
+{% set version = '0.2019.1' %}
 {% set buildnumber = 1 %}
 
 package:
@@ -19,13 +19,11 @@ requirements:
         - daal-static >=2019.0.0   # [win]
         - cython
         - jinja2
-        #- cnc >=1.2.300
     run:
         - python
         - numpy >=1.13
         - tbb
         - daal >=2019.0.0
-        #- cnc >=1.2.300
 
 build:
     number: {{buildnumber}}
@@ -35,14 +33,11 @@ test:
     imports:
         - daal4py
     source_files:
-        - examples/run_examples.py
         - examples/*batch.py
         - examples/data/batch
-        #- examples/*spmd.py
-        #- examples/*dspv.py
-        #- examples/data/distributed
+        - tests
     commands:
-        - cd examples && python run_examples.py
+        - cd tests && python test_examples.py
 
 about:
     license: Apache 2.0

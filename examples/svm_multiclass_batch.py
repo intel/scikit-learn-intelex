@@ -24,10 +24,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main():
@@ -37,11 +37,11 @@ def main():
     # read training data from file with nFeatures features per observation and 1 class label
     train_file = 'data/batch/svm_multi_class_train_dense.csv'
     train_data = read_csv(train_file, range(nFeatures))
-    train_labels = read_csv(train_file, range(nFeatures, nFeatures + 1)).reshape((-1, 1)) # must be a 2d array
+    train_labels = read_csv(train_file, range(nFeatures, nFeatures + 1))
 
     # Create and configure algorithm object
-    algorithm = d4p.multi_class_classifier_training(nClasses,
-                                                    training=d4p.svm_training(doShrinking=True),
+    algorithm = d4p.multi_class_classifier_training(nClasses=nClasses,
+                                                    training=d4p.svm_training(),
                                                     prediction=d4p.svm_prediction())
     
     # Pass data to training. Training result provides model
@@ -53,7 +53,7 @@ def main():
     # Read data
     pred_file = 'data/batch/svm_multi_class_test_dense.csv'
     pred_data = read_csv(pred_file, range(nFeatures))
-    pred_labels = read_csv(pred_file, range(nFeatures, nFeatures + 1)).reshape((-1, 1)) # must be a 2d array
+    pred_labels = read_csv(pred_file, range(nFeatures, nFeatures + 1))
     
     # Create an algorithm object to predict multi-class SVM values
     algorithm = d4p.multi_class_classifier_prediction(nClasses,
@@ -63,11 +63,11 @@ def main():
     pred_result = algorithm.compute(pred_data, train_result.model)
     assert pred_result.prediction.shape == (train_data.shape[0], 1)
     
-    return (train_result, pred_result, pred_labels)
+    return (pred_result, pred_labels)
 
 
 if __name__ == "__main__":
-    train_res, pred_res, pred_labels = main()
+    (pred_res, pred_labels) = main()
 
     print("\nSVM classification results (first 20 observations):\n", pred_res.prediction[0:20])
     print("\nGround truth (first 20 observations):\n", pred_labels[0:20])

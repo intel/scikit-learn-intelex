@@ -28,6 +28,7 @@ using daal::step3Local;
 using daal::step4Local;
 using daal::step2Master;
 using daal::step3Master;
+using daal::services::LibraryVersionInfo;
 #include "daal_compat.h"
 
 #include <iostream>

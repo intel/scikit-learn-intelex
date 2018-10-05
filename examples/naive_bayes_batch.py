@@ -24,10 +24,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main():
@@ -41,7 +41,6 @@ def main():
     # Read data. Let's use 20 features per observation
     data   = read_csv(infile, range(20))
     labels = read_csv(infile, range(20,21))
-    labels.shape = (labels.size, 1) # must be a 2d array
     tresult = talgo.compute(data, labels)
 
     # Now let's do some prediction
@@ -49,7 +48,6 @@ def main():
     # read test data (with same #features)
     pdata = read_csv(testfile, range(20))
     plabels = read_csv(testfile, range(20,21))
-    plabels.shape = (plabels.size, 1)
     # now predict using the model from the training above
     presult = palgo.compute(pdata, tresult.model)
 

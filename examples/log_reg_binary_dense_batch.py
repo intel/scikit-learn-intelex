@@ -24,10 +24,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main():
@@ -38,7 +38,6 @@ def main():
     trainfile = "./data/batch/binary_cls_train.csv"
     train_data = read_csv(trainfile, range(nFeatures))
     train_labels = read_csv(trainfile, range(nFeatures, nFeatures + 1))
-    train_labels.shape = (train_data.shape[0], 1)  # must be a 2d array
 
     # set parameters and train
     train_alg = d4p.logistic_regression_training(nClasses=nClasses, interceptFlag=True)
@@ -48,7 +47,6 @@ def main():
     testfile = "./data/batch/binary_cls_test.csv"
     predict_data = read_csv(testfile, range(nFeatures))
     predict_labels = read_csv(testfile, range(nFeatures, nFeatures + 1))
-    predict_labels.shape = (predict_data.shape[0], 1)
 
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses)

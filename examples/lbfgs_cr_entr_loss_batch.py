@@ -25,10 +25,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main():
@@ -43,10 +43,9 @@ def main():
     data = read_csv(infile, range(nFeatures))
     dep_data = read_csv(infile, range(nFeatures, nFeatures + 1))
     nVectors = data.shape[0]
-    dep_data.shape = (nVectors, 1) # must be a 2d array
 
     # configure a function
-    func = d4p.optimization_solver_cross_entropy_loss(nClasses, nVectors)
+    func = d4p.optimization_solver_cross_entropy_loss(nClasses, nVectors, interceptFlag=True)
     func.setup(data, dep_data, None)
 
     # configure a algorithm

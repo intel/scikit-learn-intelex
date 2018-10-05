@@ -35,14 +35,13 @@ test:
     imports:
         - daal4py
     source_files:
-        - examples/run_examples.py
         - examples/*batch.py
-        - examples/data/batch
         - examples/*spmd.py
         - examples/*dspv.py
-        - examples/data/distributed
+        - examples/data
+        - tests
     commands:
-        - cd examples && python run_examples.py
+        - cd tests && python test_examples.py
 
 about:
     license: Apache 2.0

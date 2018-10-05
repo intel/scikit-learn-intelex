@@ -24,10 +24,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main():
@@ -35,7 +35,7 @@ def main():
     testfile = "./data/batch/linear_regression_test.csv"
 
     # Configure a Ridge regression training object
-    train_algo = d4p.ridge_regression_training()
+    train_algo = d4p.ridge_regression_training(interceptFlag=True)
     
     # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
     indep_data = read_csv(infile, range(10))

@@ -24,10 +24,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
 def main():
@@ -35,13 +35,12 @@ def main():
     testfile = "./data/batch/df_regression_test.csv"
 
     # Configure a Linear regression training object
-    train_algo = d4p.decision_forest_regression_training(nTrees=100, varImportance='MDA_Raw', bootstrap=True,
+    train_algo = d4p.decision_forest_regression_training(nTrees=100, varImportance='MDA_Raw', bootstrap=True, engine = d4p.engines_mt2203(seed=777),
                                                     resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation')
     
     # Read data. Let's have 13 independent, and 1 dependent variables (for each observation)
     indep_data = read_csv(infile, range(13))
     dep_data   = read_csv(infile, range(13,14))
-    dep_data.shape = (dep_data.size, 1) # must be a 2d array
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
     # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
@@ -51,7 +50,6 @@ def main():
     # read test data (with same #features)
     pdata = read_csv(testfile, range(13))
     ptdata = read_csv(testfile, range(13,14))
-    ptdata.shape = (ptdata.size, 1)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

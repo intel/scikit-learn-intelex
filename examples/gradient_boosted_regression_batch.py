@@ -24,10 +24,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None).values
+    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32).values
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',')
+    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
 def main():
@@ -43,7 +43,6 @@ def main():
     # Read data. Let's use 3 features per observation
     data = read_csv(infile, range(13))
     deps = read_csv(infile, range(13,14))
-    deps.shape = (deps.size, 1) # must be a 2d array
     train_result = train_algo.compute(data, deps)
 
     # Now let's do some prediction
@@ -51,7 +50,6 @@ def main():
     # read test data (with same #features)
     pdata = read_csv(testfile, range(13))
     ptdata = read_csv(testfile, range(13,14))
-    ptdata.shape = (ptdata.size, 1)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
