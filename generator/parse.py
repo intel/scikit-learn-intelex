@@ -283,7 +283,7 @@ class class_template_parser(object):
                     tatmp = ta.split('=')
                     tatmp2 = tatmp[0].split()
                     if len(tatmp2) > 1:
-                        tmpltmp = [tatmp2[1].strip('<> '), tatmp2[0].strip('<> '), tatmp[-1].strip() if len(tatmp) > 1 else '']
+                        tmpltmp = [tatmp2[1].strip('<> '), tatmp2[0].strip('<> '), tatmp[-1].strip('<> ') if len(tatmp) > 1 else '']
                     else:
                         tmpltmp = [ta, '', '']
                 tmplargs.append(tmpltmp)
