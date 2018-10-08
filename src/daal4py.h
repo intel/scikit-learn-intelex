@@ -118,6 +118,9 @@ class algo_manager__iface__
 public:
     inline algo_manager__iface__() {}
     inline virtual ~algo_manager__iface__() {}
+    // We don't want any manager to be copied
+    algo_manager__iface__(const algo_manager__iface__ &) = delete;
+    void operator=(const algo_manager__iface__ &) = delete;
 };
 
 #if 0
@@ -155,8 +158,10 @@ struct TableOrFList
     std::string                            file;
     std::vector< daal::data_management::NumericTablePtr > tlist;
     std::vector< std::string >             flist;
-    inline TableOrFList(daal::data_management::NumericTablePtr t) : table(t) {}
-    inline TableOrFList() {}
+    inline TableOrFList(daal::data_management::NumericTablePtr t)
+        : table(t), file(), tlist(), flist() {}
+    inline TableOrFList()
+        : table(), file(), tlist(), flist() {}
     TableOrFList(PyObject *);
     //operator daal::data_management::NumericTablePtr() const { return table; }
     //operator bool() const { return table or flist.size() > 0; }
