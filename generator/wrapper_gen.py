@@ -759,29 +759,26 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 # tfactory is a recursive jinja2 macro to handle any number of template args
 algo_wrapper_template = """
 {% macro tfactory(tmpl_spec, prefix, pcallargs, dist=False, args=[], indent=4) %}
-{{" "*indent}}if( false ) {;}
 {% for a in tmpl_spec[0][1]['values'] %}
-{% if tmpl_spec[0][1]['values']|length > 1 %}
-{{" "*indent}}else if({{tmpl_spec[0][0]}} == "{{a.rsplit('::',1)[-1]}}") {
-{% else %}
-{{" "*indent}}else {
-{% endif %}
+{{" "*indent}}if({{tmpl_spec[0][0]}} == "{{a.rsplit('::',1)[-1]}}") {
 {% if tmpl_spec|length == 1 %}
 {% set algo_type = prefix + '<' + ', '.join(args+[a]) + ' >' %}
 {{" "*(indent+4)}}return new {{algo_type}}({{', '.join(pcallargs + ['distributed'])}});
-{{" "*(indent)}}}
 {% else %}
 {{tfactory(tmpl_spec[1:], prefix, pcallargs, dist, args+[a], indent+4)}}
+{% endif %}
+{{" "*(indent)}}} else {% if loop.last %} {
+{{" "*(indent+4)}} std::cerr << "Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': '" << {{tmpl_spec[0][0]}} << "'" << std::endl;
 {{" "*(indent)}}}
 {% endif %}
 {% endfor %}
 {%- endmacro %}
 
-extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 37+2*(algo|length))}})
+extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 27+2*(algo|length))}})
 {
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', pargs_call, dist=dist)}}
-    std::cerr << "no equivalent(s) for C++ template argument(s) exist in mk_{{algo}}" << std::endl;
+    std::cerr << "Error: Could not construct {{algo}}." << std::endl;
     return NULL;
 {% else %}
     return new {{algo}}_manager({{', '.join(pargs_call)}}, distributed);

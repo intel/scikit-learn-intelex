@@ -164,7 +164,7 @@ class NumpyDeleter : public daal::services::DeleterIface
 public:
     // constructor to initialize with ndarray
     NumpyDeleter(PyArrayObject* a) : _ndarray(a) {}
-    // DeleterIface must be copy-constrible
+    // DeleterIface must be copy-constructible
     NumpyDeleter(const NumpyDeleter & o) : _ndarray(o._ndarray) {}
     // ref-count reached 0 -> decref reference to python object
     void operator() (const void *ptr) DAAL_C11_OVERRIDE
@@ -176,6 +176,8 @@ public:
         Py_DECREF(_ndarray);
         PyGILState_Release(gstate);
     }
+    // We don't want this to be copied
+    void operator=(const NumpyDeleter&) = delete;
 private:
     PyArrayObject* _ndarray;
 };
