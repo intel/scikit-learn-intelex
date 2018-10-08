@@ -239,7 +239,7 @@ namespace mapReduceIter {
         typedef mapRedIterContext< Algo > context_type;
 
         static typename Algo::iomstep2Master__final_type::result_type
-        compute(const TableOrFList & input, const TableOrFList & input2, Algo & algo)
+        compute(Algo & algo, const TableOrFList & input, const TableOrFList & input2)
         {
             algo._assignFlag = false;
             int pid = CnC::tuner_base::myPid();

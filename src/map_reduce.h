@@ -145,7 +145,7 @@ namespace mapReduce {
         }
         
         static typename Algo::iomstep2Master__final_type::result_type
-        compute(const TableOrFList & input, Algo & algo)
+        compute(Algo & algo, const TableOrFList & input)
         {
             int nblocks = 1;
             if(! (input.table || input.file.size())) {
@@ -173,7 +173,7 @@ namespace mapReduce {
         }
 
         static typename Algo::iomstep2Master__final_type::result_type
-        compute(const TableOrFList & input1, const TableOrFList & input2, Algo & algo)
+        compute(Algo & algo, const TableOrFList & input1, const TableOrFList & input2)
         {
             int nblocks = 1;
             if(! (input1.table || input1.file.size())) {

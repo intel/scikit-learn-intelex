@@ -347,7 +347,7 @@ namespace dkmi
         typedef dkmiContext< manager_type > context_type;
 
         static typename manager_type::iomb_type::result_type
-        compute(const TableOrFList & input, Manager & algo)
+        compute(Manager & algo, const TableOrFList & input)
         {
             throw std::logic_error("Distributed kmeans-init not implemented for given configuration");
         }
@@ -367,9 +367,9 @@ namespace dkmi
         typedef typename applyGather::applyGather< manager_type, step1ApplyGather, applyGather::step2_default >::context_type context_type;
 
         static typename manager_type::iomb_type::result_type
-        compute(const TableOrFList & input, manager_type & algo)
+        compute(manager_type & algo, const TableOrFList & input)
         {
-            auto pCentroids = applyGather::applyGather< manager_type, step1ApplyGather, applyGather::step2_default >::compute(input, algo);
+            auto pCentroids = applyGather::applyGather< manager_type, step1ApplyGather, applyGather::step2_default >::compute(algo, input);
             typename manager_type::iomb_type::result_type res(new typename manager_type::iomb_type::result_type::ElementType);
             if(CnC::tuner_base::myPid() == 0 || CnC::Internal::distributor::distributed_env()) {
                 res->set(daal::algorithms::kmeans::init::centroids, pCentroids);
@@ -395,7 +395,7 @@ namespace dkmi
         typedef dkmiContext< manager_type > context_type;
 
         static typename manager_type::iomb_type::result_type
-        compute(const TableOrFList & input, manager_type & algo)
+        compute(manager_type & algo, const TableOrFList & input)
         {
             int pid = CnC::tuner_base::myPid();
             int stride = CnC::Internal::distributor::distributed_env() ? CnC::tuner_base::numProcs() : 1;

@@ -644,7 +644,7 @@ public:
 private:
     typename iomb_type::result_type distributed() // iom{{step_specs[-1].name}}_type::result_type
     {
-        return {{pattern}}::{{pattern}}< {{algo}}_manager< {{', '.join(template_args)}} > >::compute(to_daal(_{{'), to_daal(_'.join(step_specs[0].inputnames)}}), *this);
+        return {{pattern}}::{{pattern}}< {{algo}}_manager< {{', '.join(template_args)}} > >::compute(*this, to_daal(_{{'), to_daal(_'.join(step_specs[0].inputnames)}}));
     }
 #endif
 {% endif %}
@@ -829,7 +829,7 @@ CnC::Internal::factory::subscribe< typename {{pattern}}::{{pattern}}< {{prefix +
 {% endfor %}
 {%- endmacro %}
 
-{% if step_specs %}
+{% if step_specs and pattern != 'map_reduce_star' %}
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager')}}
 {% else %}

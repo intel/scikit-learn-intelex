@@ -267,7 +267,7 @@ namespace mapReduce {
             : CnC::graph(ctxt, name),
               algo(a),
               nBlocks(numBlocks),
-              maxDepth(log2(get_power2(nBlocks))),
+              maxDepth(log2(mapReduce::get_power2(nBlocks))),
               tm(),
               ctrl_2(ctxt, "ctrl2", tm.tuner),
               ctrl_finalizer(ctxt, "ctrl_fini"),

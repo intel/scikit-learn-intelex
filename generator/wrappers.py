@@ -194,7 +194,7 @@ SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-3) + (True, ['data'],
 # Do we want to include the flow-spec in here?
 has_dist = {
     'algorithms::pca' : {
-        'pattern': 'applyGather',
+        'pattern': 'map_reduce_star',
         'step_specs': [SSpec(name      = 'step1Local',
                              input     = ['daal::data_management::NumericTablePtr'],
                              output    = 'daal::services::SharedPtr< daal::algorithms::pca::PartialResult< method > >',
@@ -210,7 +210,7 @@ has_dist = {
                    ],
     },
     'algorithms::multinomial_naive_bayes::training' : {
-        'pattern': 'applyGather',
+        'pattern': 'map_reduce_star',
         'step_specs': [SSpec(name      = 'step1Local',
                              input      = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              output     = 'daal::services::SharedPtr< daal::algorithms::multinomial_naive_bayes::training::PartialResult >',
@@ -268,7 +268,7 @@ has_dist = {
                    ],
     },
     'algorithms::svd' : {
-        'pattern': 'applyGather',
+        'pattern': 'map_reduce_star',
         'step_specs': [SSpec(name      = 'step1Local',
                              input     = ['daal::data_management::NumericTablePtr'],
                              output    = 'daal::data_management::DataCollectionPtr',

@@ -73,10 +73,10 @@ if no_dist in ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'Y
     DIST_LIBS    = []
 else:
     cnc_root = os.environ['CNCROOT']
-    DIST_CFLAGS  = ['-D_DIST_',]  # '-D_GLIBCXX_USE_CXX11_ABI=0', '-DCNC_WITH_ITAC'
+    DIST_CFLAGS  = ['-D_DIST_=4711',]  # '-D_GLIBCXX_USE_CXX11_ABI=0', '-DCNC_WITH_ITAC'
     DIST_INCDIRS = [jp(cnc_root, 'include'),]  # itac_root + '/include']
     DIST_LIBDIRS = [jp(cnc_root, 'lib', 'intel64'),]
-    DIST_LIBS    = ['cnc_vs14.0',] if IS_WIN else ['cnc',]
+    DIST_LIBS    = ['cnc_vs14.0', 'mpi'] if IS_WIN else ['cnc', 'mpi']
 
 DAAL_DEFAULT_TYPE = 'double'
 
