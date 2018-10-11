@@ -172,12 +172,11 @@ class Test(unittest.TestCase):
         result = get_results()
         self.assertTrue(np.allclose(result.rightSingularMatrix, testdata))
 
-    @unittest.skipIf(sys.platform != 'linux', reason="variations of results in non-linux OS")
     def test_svm_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "svm_batch.csv"), range(1))
         from svm_batch import main as get_results
         (predict_result, _) = get_results()
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
+        self.assertTrue(np.allclose(np.sign(predict_result.prediction), testdata))
 
     def test_svm_multiclass_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "svm_multiclass_batch.csv"), range(1))
