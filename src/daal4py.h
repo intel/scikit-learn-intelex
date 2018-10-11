@@ -163,9 +163,10 @@ struct TableOrFList
     inline TableOrFList()
         : table(), file(), tlist(), flist() {}
     TableOrFList(PyObject *);
-    //operator daal::data_management::NumericTablePtr() const { return table; }
-    //operator bool() const { return table or flist.size() > 0; }
 };
+
+// return input as DAAL numeric table.
+extern const daal::data_management::NumericTablePtr get_table(const TableOrFList & t);
 
 template< typename T >
 struct RAW
