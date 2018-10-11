@@ -167,10 +167,9 @@ class Test(unittest.TestCase):
         self.assertTrue(np.allclose(result.minimum, testdata))
 
     def test_svd_batch(self):
-        testdata = read_csv(os.path.join(unittest_data_path, "svd_batch.csv"), range(18))
         from svd_batch import main as get_results
-        result = get_results()
-        self.assertTrue(np.allclose(result.rightSingularMatrix, testdata))
+        (data, result) = get_results()
+        self.assertTrue(np.allclose(data, result.leftSingularMatrix@np.diag(result.singularValues[0])@result.rightSingularMatrix))
 
     def test_svm_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "svm_batch.csv"), range(1))
