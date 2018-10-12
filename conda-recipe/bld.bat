@@ -1,8 +1,8 @@
 if "%PY3K%"=="1" (
     set ARGS=""
-) else {
+) else (
     set ARGS="--old-and-unmanageable"
-}
+)
 
 rem set NO_DIST=1
 
