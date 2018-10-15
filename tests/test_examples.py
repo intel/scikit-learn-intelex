@@ -8,7 +8,7 @@ os.chdir(examples_path)
 
 import unittest
 import numpy as np
-from daal import __version__ as dv
+from daal4py import __version__ as dv
 daal_version = tuple(map(int, dv.split('.')))
 
 # let's try to use pandas' fast csv reader
