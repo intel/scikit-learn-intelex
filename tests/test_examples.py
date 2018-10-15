@@ -8,8 +8,8 @@ os.chdir(examples_path)
 
 import unittest
 import numpy as np
-from daal4py import __version__ as dv
-daal_version = tuple(map(int, dv.split('.')))
+from daal4py import __daal_link_version__ as dv
+daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
 # let's try to use pandas' fast csv reader
 try:
@@ -173,7 +173,7 @@ class Test(unittest.TestCase):
     def test_svd_batch(self):
         from svd_batch import main as get_results
         (data, result) = get_results()
-        self.assertTrue(np.allclose(data, result.leftSingularMatrix@np.diag(result.singularValues[0])@result.rightSingularMatrix))
+        self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
 
     def test_svm_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "svm_batch.csv"), range(1))

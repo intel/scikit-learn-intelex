@@ -51,7 +51,7 @@ def main():
     assert result1.rightSingularMatrix.shape == (data.shape[1], data.shape[1])
     assert result1.leftSingularMatrix.shape == data.shape
 
-    assert np.allclose(data, result1.leftSingularMatrix@np.diag(result1.singularValues[0])@result1.rightSingularMatrix)
+    assert np.allclose(data, np.matmul(np.matmul(result1.leftSingularMatrix,np.diag(result1.singularValues[0])),result1.rightSingularMatrix))
 
     return (data, result1)
 
