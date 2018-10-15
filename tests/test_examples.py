@@ -10,7 +10,6 @@ import unittest
 import numpy as np
 from daal4py import __daal_link_version__ as dv
 daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
-import sklearn.metrics
 
 # let's try to use pandas' fast csv reader
 try:
@@ -78,7 +77,8 @@ class Test(unittest.TestCase):
         testdata = read_csv(os.path.join(unittest_data_path, "gradient_boosted_regression_batch.csv"), range(1))
         from gradient_boosted_regression_batch import main as get_results
         (_, predict_result, _) = get_results()
-        self.assertTrue(sklearn.metrics.mean_squared_error(predict_result.prediction, testdata) < 1e-2)
+        #MSE
+        self.assertTrue(np.square(predict_result.prediction - testdata).mean() < 1e-2)
 
     def test_kmeans_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "kmeans_batch.csv"), range(20))
