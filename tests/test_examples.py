@@ -8,6 +8,8 @@ os.chdir(examples_path)
 
 import unittest
 import numpy as np
+from daal4py import __daal_link_version__ as dv
+daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
 # let's try to use pandas' fast csv reader
 try:
@@ -39,12 +41,14 @@ class Test(unittest.TestCase):
         r = result.cosineDistance
         self.assertTrue(np.allclose(np.array([[np.amin(r)],[np.amax(r)],[np.mean(r)],[np.average(r)]]), testdata))
 
+    @unittest.skipIf(daal_version < (2019, 1), "not supported in this library version")
     def test_decision_forest_classification_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "decision_forest_classification_batch.csv"), range(1))
         from decision_forest_classification_batch import main as get_results
         (_, predict_result, _) = get_results()
         self.assertTrue(np.allclose(predict_result.prediction, testdata))
 
+    @unittest.skipIf(daal_version < (2019, 1), "not supported in this library version")
     def test_decision_forest_regression_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "decision_forest_regression_batch.csv"), range(1))
         from decision_forest_regression_batch import main as get_results
@@ -69,12 +73,12 @@ class Test(unittest.TestCase):
         (_, predict_result, _) = get_results()
         self.assertTrue(np.allclose(predict_result.prediction, testdata))
 
-    @unittest.skipIf(sys.platform != 'linux', reason="variations of results in non-linux OS")
     def test_gradient_boosted_regression_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "gradient_boosted_regression_batch.csv"), range(1))
         from gradient_boosted_regression_batch import main as get_results
         (_, predict_result, _) = get_results()
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
+        #MSE
+        self.assertTrue(np.square(predict_result.prediction - testdata).mean() < 1e-2)
 
     def test_kmeans_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "kmeans_batch.csv"), range(20))
@@ -167,17 +171,15 @@ class Test(unittest.TestCase):
         self.assertTrue(np.allclose(result.minimum, testdata))
 
     def test_svd_batch(self):
-        testdata = read_csv(os.path.join(unittest_data_path, "svd_batch.csv"), range(18))
         from svd_batch import main as get_results
-        result = get_results()
-        self.assertTrue(np.allclose(result.rightSingularMatrix, testdata))
+        (data, result) = get_results()
+        self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
 
-    @unittest.skipIf(sys.platform != 'linux', reason="variations of results in non-linux OS")
     def test_svm_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "svm_batch.csv"), range(1))
         from svm_batch import main as get_results
         (predict_result, _) = get_results()
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
+        self.assertTrue(np.absolute(predict_result.prediction - testdata).max() < np.absolute(predict_result.prediction.max() - predict_result.prediction.min()) * 0.05)
 
     def test_svm_multiclass_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "svm_multiclass_batch.csv"), range(1))
