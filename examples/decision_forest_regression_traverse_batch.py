@@ -47,12 +47,12 @@ if __name__ == "__main__":
     daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
     if daal_version < (2019, 1):
         print("Need Intel DAAL 2019.1 or later")
-        return 0
-    # First get our result and model
-    (train_result, _, _) = df_regression()
-    # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
-    for treeId in range(train_result.model.NumberOfTrees):
-        treeState = d4p.getTreeState(train_result.model, treeId)
-        printTree(treeState.node_ar, treeState.value_ar)
-    print('Traversed {} trees.'.format(train_result.model.NumberOfTrees))
-    print('All looks good!')
+    else:
+        # First get our result and model
+        (train_result, _, _) = df_regression()
+        # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
+        for treeId in range(train_result.model.NumberOfTrees):
+            treeState = d4p.getTreeState(train_result.model, treeId)
+            printTree(treeState.node_ar, treeState.value_ar)
+        print('Traversed {} trees.'.format(train_result.model.NumberOfTrees))
+        print('All looks good!')
