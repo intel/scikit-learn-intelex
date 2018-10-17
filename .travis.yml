@@ -1,4 +1,5 @@
 # from https://conda.io/docs/user-guide/tasks/use-conda-with-travis-ci.html
+# FIXME: enable dist-mode
 sudo: required
 
 language: python
@@ -33,7 +34,8 @@ install:
 
 script:
   # Your test script goes here
-  - which mpirun && mpirun -version
+  # - which mpirun && mpirun -version
   # - echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
   # - export I_MPI_SHM_LMT=shm 
   - cd tests && python test_examples.py
+  - cd examples && python run_examples.py nodist
