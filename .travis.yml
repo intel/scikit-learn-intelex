@@ -38,4 +38,4 @@ script:
   # - echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
   # - export I_MPI_SHM_LMT=shm 
   - cd tests && python test_examples.py
-  - cd examples && python run_examples.py nodist
+  - cd ../examples && python run_examples.py nodist
