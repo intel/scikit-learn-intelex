@@ -60,6 +60,11 @@ def main():
 
 
 if __name__ == "__main__":
+    from daal4py import __daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    if daal_version < (2019, 1):
+        print("Need Intel DAAL 2019.1 or later")
+        return 0
     (train_result, predict_result, ptdata) = main()
     print("\nVariable importance results:\n", train_result.variableImportance)
     print("\nOOB error:\n", train_result.outOfBagError)
