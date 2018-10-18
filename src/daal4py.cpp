@@ -468,9 +468,9 @@ const daal::data_management::NumericTablePtr get_table(const TableOrFList & t)
 {
     if(t.table) return t.table;
     if(t.file.size()) return readCSV(t.file);
-    if(tlist.size()==1) return t.tlist[0];
-    if(flist.size()==1) return readCSV(t.flist[0]);
-    throw std::invalid_argument("one and only one input per process supported");
+    if(t.tlist.size() == 1) return t.tlist[0];
+    if(t.flist.size() == 1) return readCSV(t.flist[0]);
+    throw std::invalid_argument("one and only one input per process allowed");
     return daal::data_management::NumericTablePtr();
 }
 

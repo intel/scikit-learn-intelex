@@ -226,7 +226,7 @@ has_dist = {
                    ],
     },
     'algorithms::linear_regression::training' : {
-        'pattern': 'mapReduce',
+        'pattern': 'map_reduce_tree',
         'step_specs': [SSpec(name      = 'step1Local',
                              input       = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              inputnames  = ['data', 'dependentVariables'],
@@ -247,7 +247,7 @@ has_dist = {
                    ],
     },
     'algorithms::ridge_regression::training' : {
-        'pattern': 'mapReduce',
+        'pattern': 'map_reduce_tree',
         'step_specs': [SSpec(name      = 'step1Local',
                              input       = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              inputnames  = ['data', 'dependentVariables'],
@@ -342,6 +342,12 @@ has_dist = {
                              addinput  = 'daal::algorithms::kmeans::partialResults',
                              construct = '_nClusters',)
                    ],
+    },
+    'algorithms::logistic_regression::training' : {
+        'pattern': 'dist_custom',
+        'step_specs' : [],
+        'inputnames' : ['data', 'labels'],
+        'inputdists' : ['OneD', 'OneD'],
     },
 }
 

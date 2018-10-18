@@ -625,7 +625,7 @@ private:
 
     typename iomb_type::result_type batch{{gen_compute(ns, input_args, params_req, params_opt, suffix="b", iomtype=iombatch, tonative=False)}}
 
-{% if step_specs %}
+{% if step_specs is defined %}
 #ifdef _DIST_
     // Distributed computing
 public:
@@ -639,12 +639,13 @@ public:
 
 {% endfor %}
 
-    static const int NI = {{step_specs[0].inputnames|length}};
+{% set inp_names = step_specs[0].inputnames if (step_specs|length > 0) else inputnames %}
+    static const int NI = {{inp_names|length}};
 
 private:
-    typename iomb_type::result_type distributed() // iom{{step_specs[-1].name}}_type::result_type
+    typename iomb_type::result_type distributed()
     {
-        return {{pattern}}::{{pattern}}< {{algo}}_manager< {{', '.join(template_args)}} > >::compute(*this, to_daal(_{{'), to_daal(_'.join(step_specs[0].inputnames)}}));
+        return {{pattern}}::{{pattern}}< {{algo}}_manager< {{', '.join(template_args)}} > >::compute(*this, to_daal(_{{'), to_daal(_'.join(inp_names)}}));
     }
 #endif
 {% endif %}
@@ -674,7 +675,7 @@ public:
 #endif
     }
 };
-{% if step_specs %}
+{% if step_specs is defined %}
 #ifdef _DIST_
 namespace CnC {
 {% if template_decl|length > 0  %}
@@ -829,7 +830,7 @@ CnC::Internal::factory::subscribe< typename {{pattern}}::{{pattern}}< {{prefix +
 {% endfor %}
 {%- endmacro %}
 
-{% if step_specs and pattern != 'map_reduce_star' %}
+{% if step_specs is defined and pattern not in ['map_reduce_star', 'map_reduce_tree', 'dist_custom'] %}
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager')}}
 {% else %}
@@ -916,12 +917,17 @@ size_t c_my_procid()
 
 # generate a D4PSpec
 hpat_spec_template = '''
+{% if step_specs is defined %}
+{% set inp_dists = step_specs[0].inputdists if step_specs|length else inputdists %}
+{% else %}
+{% set inp_dists = None %}
+{% endif %}
 hpat_spec.append({
     'pyclass'     : {{algo}},
     'c_name'      : '{{algo}}',
     'params'      : [{{pargs_decl|hpat_spec(pargs_call, template_decl, 21)}}],
-    'input_types' : {{iargs_decl|hpat_input_spec(step_specs[0].inputdists if step_specs else None)}},
-    'result_dist' : {{"'REP'" if step_specs else "'OneD'"}}
+    'input_types' : {{iargs_decl|hpat_input_spec(inp_dists)}},
+    'result_dist' : {{"'REP'" if step_specs is defined else "'OneD'"}}
 })
 '''
 

@@ -25,8 +25,9 @@ template<typename Algo>
 class map_reduce_star
 {
 public:
+    template<typename ... Ts>
     typename Algo::iomstep2Master_type::result_type
-    static compute(Algo & algo, TableOrFList * data, TableOrFList * labels)
+    static map_reduce(Algo & algo, Ts& ... inputs)
     {
         int rank, nRanks;
         MPI_Comm_size(MPI_COMM_WORLD, &nRanks);
@@ -34,18 +35,19 @@ public:
 
         auto s1_result = algo.run_step1Local(inputs...);
         // gather all partial results
-        auto p_results = MPI::gather(rank, nRanks, s1_result);
+        auto p_results = MPI4DAAL::gather(rank, nRanks, s1_result);
         // call reduction on root
         typename Algo::iomstep2Master_type::result_type res;
         if(rank == 0) res = algo.run_step2Master(p_results);
         // bcast final result
-        return MPI::bcast(rank, nRanks, res);
+        return MPI4DAAL::bcast(rank, nRanks, res);
     }
 
     template<typename ... Ts>
     static typename Algo::iomstep2Master_type::result_type
     compute(Algo & algo, Ts& ... inputs)
     {
+        MPI4DAAL::init();
         return map_reduce(algo, get_table(inputs)...);
     }
 };

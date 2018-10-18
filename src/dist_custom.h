@@ -17,9 +17,6 @@
 #ifndef _DIST_CUSTOM_INCLUDED_
 #define _DIST_CUSTOM_INCLUDED_
 
-#include "mpi4daal.h"
-#include <algorithm>
-
 namespace dist_custom {
 
     template<typename Algo>

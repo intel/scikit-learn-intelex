@@ -24,10 +24,6 @@ import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
-
-    # Initialize SPMD mode
-    d4p.daalinit(spmd=True)
-
     # Each process gets its own data
     infile = "./data/distributed/svd_" + str(d4p.my_procid()+1) + ".csv"
 
@@ -44,7 +40,7 @@ if __name__ == "__main__":
     # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues
     # leftSingularMatrix not yet supported in dist mode
     assert result1.leftSingularMatrix == None and result2.leftSingularMatrix == None
-    assert allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-07)
+    assert allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-05)
     assert allclose(result1.singularValues, result2.singularValues, atol=1e-07)
 
     print('All looks good!')

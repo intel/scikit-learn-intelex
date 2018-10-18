@@ -19,8 +19,59 @@
 
 #include "mpi.h"
 
-struct MPI
+template<typename T> struct std2mpi;
+template<>struct std2mpi<double> { static const MPI_Datatype typ = MPI_DOUBLE; };
+template<>struct std2mpi<float> { static const MPI_Datatype typ = MPI_FLOAT; };
+template<>struct std2mpi<int> { static const MPI_Datatype typ = MPI_INT; };
+            
+struct MPI4DAAL
 {
+    static void init()
+    {
+        int is_initialized;
+        MPI_Initialized(&is_initialized);
+        if(!is_initialized) MPI_Init(NULL, NULL);
+    }
+    
+    static int nRanks()
+    {
+        int size;
+        MPI_Comm_size(MPI_COMM_WORLD, &size);
+        return size;
+    }
+    
+    static size_t rank()
+    {
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        return rank;
+    }
+
+    template<typename T>
+    static void send(const T& obj, int recpnt, int tag)
+    {
+        // Serialize the DAAL object into a data archive
+        daal::data_management::InputDataArchive in_arch;
+        obj->serialize(in_arch);
+        int mysize = in_arch.getSizeOfArchive();
+        // and send it away to our recipient
+        MPI_Send(&mysize, 1, MPI_INT, recpnt, tag, MPI_COMM_WORLD);
+        MPI_Send(in_arch.getArchiveAsArraySharedPtr().get(), mysize, MPI_CHAR, recpnt, tag, MPI_COMM_WORLD);
+    }
+    
+    template<typename T>
+    static T recv(int sender, int tag)
+    {
+        int sz(0);
+        MPI_Recv(&sz, 1, MPI_INT, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        daal::byte * buf = new daal::byte[sz];
+        MPI_Recv(buf, sz, MPI_CHAR, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        daal::data_management::OutputDataArchive out_arch(buf, sz);
+        T res = daal::services::dynamicPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
+        delete [] buf;
+        return res;
+    }
+
     template<typename T>
     static std::vector<T> gather(int rank, int nRanks, const T& p_res )
     {
@@ -85,15 +136,10 @@ struct MPI
         return obj;
     }
 
-    template<typename T> struct std2mpi;
-    template<>struct stdmpi<double> { const MPI_Datatype typ = MPI_DOUBLE; }
-    template<>struct stdmpi<float> { const MPI_Datatype typ = MPI_FLOAT; }
-    template<>struct stdmpi<int> { const MPI_Datatype typ = MPI_INT; }
-
     template<typename T>
-    void allreduce(T * buf, size_t n, MPI_Op op)
+    static void allreduce(T * buf, size_t n, MPI_Op op)
     {
-        MPI_Allreduce(MPI_IN_PLACE, buf, (int)n, stdmpi<T>::typ, MPI_COMM_WORLD);
+        MPI_Allreduce(MPI_IN_PLACE, buf, (int)n, std2mpi<T>::typ, op, MPI_COMM_WORLD);
     }
 };
 

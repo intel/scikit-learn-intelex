@@ -167,6 +167,9 @@ struct PartialIOManager3Single : public PartialIOManager2Single< A, I1, I2, O, E
 #include "map_reduce_iter.h"
 #include "apply_gather.h"
 #include "dkmi.h"
+#include "map_reduce_star.h"
+#include "map_reduce_tree.h"
+#include "dist_logistic_regression.h"
 
 #endif // _DIST_
 #endif // _HLAPI_DISTR_H_INCLUDED_

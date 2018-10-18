@@ -134,8 +134,8 @@ def getpyexts():
         ela.append("-Wl,-rpath,{}".format(jp(daal_root, '..', 'tbb', 'lib')))
     elif IS_WIN:
         ela.append('-IGNORE:4197')
-    elif IS_LIN:
-        ela.append('-s')
+    #elif IS_LIN:
+    #    ela.append('-s')
 
     return cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
