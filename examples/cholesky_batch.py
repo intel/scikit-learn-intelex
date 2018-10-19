@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py PCA example for shared memory systems
+# daal4py cholesky example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -31,33 +31,18 @@ except:
 
 
 def main():
-    dataFileName = "data/batch/pca_transform.csv"
-    nVectors = 4
-    nComponents = 2
+    infile = "./data/batch/cholesky.csv"
 
-    # read data
-    data = read_csv(dataFileName, range(3))
+    # configure a cholesky object
+    algo = d4p.cholesky()
     
-    # configure a PCA object and perform PCA
-    pca_algo = d4p.pca(method='svdDense', isDeterministic=True, resultsToCompute="mean|variance|eigenvalue")
-    pca_res = pca_algo.compute(data)
-
-    # Apply transform with whitening because means and eigenvalues are provided
-    pcatrans_algo = d4p.pca_transform(nComponents=nComponents)
-    pcatrans_res = pcatrans_algo.compute(data, pca_res.eigenvectors, pca_res.dataForTransform)
-    # pca_transform_result objects provides transformedData
-
-    return (pca_res, pcatrans_res)
+    # let's provide a file directly, not a table/array
+    return algo.compute(infile)
+    # cholesky result objects provide choleskyFactor
 
 
 if __name__ == "__main__":
-    pca_res, pcatrans_res = main()
-
-    # print PCA results
-    print("\nEigenvalues:\n", pca_res.eigenvalues)
-    print("\nEigenvectors:\n", pca_res.eigenvectors)
-    print("\nEigenvalues kv:\n", pca_res.dataForTransform['eigenvalue'])
-    print("\nMeans kv:\n", pca_res.dataForTransform['mean'])
-    print("\nVariances kv:\n", pca_res.dataForTransform['variance'])
-    # print results of tranform
-    print("\nTransformed data:", pcatrans_res.transformedData)
+    result = main()
+    print("\nFactor:\n", result.choleskyFactor)
+    print('All looks good!')
+    np.savetxt('c.csv', result.choleskyFactor, delimiter=',')

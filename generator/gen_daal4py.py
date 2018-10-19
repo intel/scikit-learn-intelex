@@ -905,6 +905,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False):
                                             'optimization_solver',
                                             'logistic_regression',
                                             'distance',
+                                            'cholesky',
     ])
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:

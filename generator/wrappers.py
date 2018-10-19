@@ -396,6 +396,7 @@ specialized = {
 
 no_warn = {
     'algorithms::classifier': ['Result',],
+    'algorithms::cholesky::Batch': ['ParameterType',],
     'algorithms::decision_forest': ['Result',],
     'algorithms::decision_forest::classification': ['Result',],
     'algorithms::decision_forest::regression': ['Result',],
