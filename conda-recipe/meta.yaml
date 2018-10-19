@@ -1,4 +1,4 @@
-{% set version = time.strftime('0.2018.%Y%m%d.%H%M') %}
+{% set version = time.strftime('0.2019.%Y%m%d.%H%M') %}
 {% set buildnumber = 1 %}
 
 package:
