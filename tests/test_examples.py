@@ -146,6 +146,12 @@ class Test(unittest.TestCase):
         (predict_result, _) = get_results()
         self.assertTrue(np.allclose(predict_result.prediction, testdata))
 
+    def test_cholesky_batch(self):
+        testdata = read_csv(os.path.join(unittest_data_path, "cholesky_batch.csv"), range(5))
+        from cholesky_batch import main as get_results
+        result = get_results()
+        self.assertTrue(np.allclose(result.choleskyFactor, testdata))
+
     def test_pca_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "pca_batch.csv"), range(10))
         from pca_batch import main as get_results
