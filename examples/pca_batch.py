@@ -54,7 +54,6 @@ def main():
     assert result1.means.shape == (1, data.shape[1])
     assert result1.variances.shape == (1, data.shape[1])
 
-
     return result1
 
 

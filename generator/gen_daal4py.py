@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header
-from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks, add_setup
+from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks, add_setup, enum_maps
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 
 try:
@@ -291,6 +291,8 @@ class cython_interface(object):
             return ('daal::' + thens + '::ModelPtr', 'class', tns)
         if t in ['data_management::NumericTablePtr'] or any(t == x[0] for x in ifaces.values()):
             return ('daal::' + t, 'class', tns)
+        if t.endswith('KeyValueDataCollectionPtr'):
+            return ('dict_NumericTablePtr', 'class', '')
         if 'Batch' in self.namespace_dict[ns].classes and t in self.namespace_dict[ns].classes['Batch'].typedefs:
             tns, tname = splitns(self.namespace_dict[ns].classes['Batch'].typedefs[t])
             return (self.namespace_dict[ns].classes['Batch'].typedefs[t], 'class', tns)
@@ -397,19 +399,22 @@ class cython_interface(object):
             assert ins
             assert ins in self.namespace_dict
             assert inp in self.namespace_dict[ins].enums
-            hlt = self.to_hltype(ns, attrs[i])
             if ignored(ns, '::'.join([ins, inp])):
                 continue
+            hlt = self.to_hltype(ns, attrs[i])
             if hlt:
                 if hlt[1] in ['stdtype', 'enum', 'class']:
                     for e in self.namespace_dict[ins].enums[inp]:
                         if not any(e in x for x in explist) and not ignored(ins, e):
-                            explist.append((ins, e, hlt[0]))
+                            if type(attrs[i]) in [list,tuple]:
+                                explist.append((ins, e, hlt[0], attrs[i][1]))
+                            else:
+                                explist.append((ins, e, hlt[0], None))
                 else:
                     print("// Warning: ignoring " + ns + " " + str(hlt))
                     ignlist.append((ins, i))
             else:
-                print("// Warning: could not find hlt for " + ns + ' ' + cls + " " + i + " " + attrs[i])
+                print("// Warning: could not find hlt for " + ns + ' ' + cls + " " + i + " " + str(attrs[i]))
         return (explist, ignlist)
 
 
@@ -641,7 +646,7 @@ class cython_interface(object):
                                 needed = True
                                 pval = None
                                 if hlt_type == 'enum':
-                                    pval = '(' + hlt_ns + '::' + llt + ')string2enum(' + tmp + ', s2e_' + hlt_ns.replace(':', '_') + ')'
+                                    pval = '(' + hlt_ns + '::' + llt + ')string2enum(' + tmp + ', s2e_' + hlt_ns.replace('::', '_') + ')'
                                 else:
                                     pval = tmp
                                 if pval != None:
@@ -674,7 +679,7 @@ class cython_interface(object):
             if inp:
                 expinputs = self.get_expand_attrs(inp[0], inp[1], 'sets')
                 reqi = 0
-                for ins, iname, itype in expinputs[0]:
+                for ins, iname, itype, optarg in expinputs[0]:
                     tmpi = iname
                     if tmpi and not ignored(ns, tmpi):
                         if ns in defaults and tmpi in defaults[ns]:
@@ -684,7 +689,7 @@ class cython_interface(object):
                             i = reqi
                             reqi += 1
                             dflt = ''
-                        if 'NumericTablePtr' in itype:
+                        if '::NumericTablePtr' in itype:
                             #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
                             itype = 'TableOrFList *'
                         ins = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', ins)
@@ -789,7 +794,7 @@ class cython_interface(object):
         algoconfig = {}
 
         algos = [x for x in self.namespace_dict if any(y in x for y in algo_patterns)] if algo_patterns else self.namespace_dict
-        algos = [x for x in algos if not any(y in x for y in ['quality_metric', 'transform'])]
+        algos = [x for x in algos if not any(y in x for y in ['quality_metric'])]
 
         # First expand typedefs
         for ns in algos + ['algorithms::classifier', 'algorithms::linear_model',]:
@@ -817,12 +822,24 @@ class cython_interface(object):
 
         for ns in algos:
             if ns.startswith('algorithms::') and not ns.startswith('algorithms::neural_networks') and self.namespace_dict[ns].enums:
-                cpp_begin += 'static std::map< std::string, int64_t > s2e_' + ns.replace(':', '_') + ' =\n{\n'
+                cpp_begin += 'static std::map< std::string, int64_t > s2e_' + ns.replace('::', '_') + ' =\n{\n'
                 for e in  self.namespace_dict[ns].enums:
                     for v in self.namespace_dict[ns].enums[e]:
                         vv = ns + '::' + v
                         cpp_begin += ' '*4 +'{"' + v + '", daal::' + vv + '},\n'
                 cpp_begin += '};\n\n'
+                # For enums that are used to access KeyValueDataCollections we need an inverse map
+                # value->string. Note this is enum-specific, we cannot have one for the ns because
+                # they might have duplicate values
+                for e in  self.namespace_dict[ns].enums:
+                    enm = '::'.join([ns, e])
+                    if enm in enum_maps:
+                        cpp_begin += 'static std::map< int64_t, std::string > e2s_' + ns.replace('::', '_') + '_' + enum_maps[enm] +' =\n{\n'
+                        for v in self.namespace_dict[ns].enums[e]:
+                            vv = ns + '::' + v
+                            cpp_begin += ' '*4 +'{daal::' + vv + ', "' + v + '"},\n'
+                        cpp_begin += '};\n\n'
+                        
 
         hlargs = {}
         for a in algoconfig:

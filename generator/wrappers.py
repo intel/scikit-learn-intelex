@@ -158,6 +158,12 @@ fallbacks = {
     }
 }
 
+# For enums that are used to access KeyValueDataCollections we need an inverse map
+# value->string.
+enum_maps = {
+    'algorithms::pca::ResultToComputeId' : 'result_dataForTransform',
+}
+
 # The distributed algorithm configuration parameters
 # Note that all have defaults and so are optional.
 # In particular note that the name of a single input argument defaults to data.

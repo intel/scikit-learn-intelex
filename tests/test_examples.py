@@ -152,6 +152,12 @@ class Test(unittest.TestCase):
         result = get_results()
         self.assertTrue(np.allclose(result.eigenvectors, testdata))
 
+    def test_pca_transform_batch(self):
+        testdata = read_csv(os.path.join(unittest_data_path, "pca_transform_batch.csv"), range(2))
+        from pca_transform_batch import main as get_results
+        _, result = get_results()
+        self.assertTrue(np.allclose(result.transformedData, testdata))
+
     def test_ridge_regression_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "ridge_regression_batch.csv"), range(2))
         from ridge_regression_batch import main as get_results

@@ -103,17 +103,23 @@ cdef extern from "daal4py.h":
     cdef const double NaN64
     cdef const float  NaN32
 
+    cdef cppclass TableOrFList :
+        TableOrFList(PyObject *) except +
+
+    cdef cppclass dict_NumericTablePtr:
+        pass
+
     cdef std_string to_std_string(PyObject * o) except +
 
     cdef PyObject * make_nda(NumericTablePtr * nt_ptr) except +
+    cdef PyObject * make_nda(dict_NumericTablePtr * nt_ptr, void *) except +
     cdef NumericTablePtr * make_nt(PyObject * nda) except +
+    cdef dict_NumericTablePtr * make_dnt(PyObject * nda, void *) except +
 
-    cdef cppclass TableOrFList :
-        TableOrFList(PyObject *) except +
-        pass
+    cdef T* dynamicPointerPtrCast[T,U](U*)
 
-    T* dynamicPointerPtrCast[T,U](U*)
-
+    cdef void * e2s_algorithms_pca_result_dataForTransform
+    cdef void * s2e_algorithms_pca_transform
 
 NAN64 = NaN64
 NAN32 = NaN32
@@ -251,7 +257,11 @@ cdef class {{flatname}}:
         if self.c_ptr == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
         res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
-        return {{'<object>make_nda(res)' if 'NumericTablePtr' in rtype else 'res'}}
+{% if 'NumericTablePtr' in rtype %}
+        return {{'<object>make_nda(res, e2s_algorithms_'+flatname+'_'+m[1]+')' if 'dict_NumericTablePtr' in rtype else '<object>make_nda(res)'}}
+{% else %}
+        return res
+{% endif %}
 {% endif %}
 {% endfor %}
 
@@ -733,7 +743,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
         res.c_ptr = deref(algo).compute(
 {%- for a in iargs_call -%}
-{{('' if loop.first else ' '*40) + a|cycall(iargs_decl[loop.index0]) + (', False)' if loop.last else ',')}}
+{{('' if loop.first else ' '*40) + a|cycall(iargs_decl[loop.index0], 's2e_algorithms_' + algo) + (', False)' if loop.last else ',')}}
 {% endfor %}
         return res
 
@@ -748,7 +758,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
         deref(algo).compute(
 {%- for a in iargs_call -%}
-{{('' if loop.first else ' '*28) + a|cycall(iargs_decl[loop.index0]) + (', True)' if loop.last else ',')}}
+{{('' if loop.first else ' '*28) + a|cycall(iargs_decl[loop.index0], 's2e_algorithms_' + algo) + (', True)' if loop.last else ',')}}
 {% endfor %}
         return None
 {% endif %}
@@ -997,9 +1007,11 @@ def cy_decl(pargs_decl, pargs_call, template_decl, indent):
         return cydecl(arg, typ)
     return gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt)
 
-def cycall(arg, typ):
+def cycall(arg, typ, s2e=None):
     if 'TableOrFList' in typ:
         return 'new TableOrFList(<PyObject *>' + arg + ')'
+    if 'dict_NumericTablePtr' in typ:
+        return 'make_dnt(<PyObject *>' + arg + ((', ' + s2e) if s2e else '') + ')'
     if 'NumericTablePtr' in typ:
         return 'make_nt(<PyObject *>' + arg + ')'
     if 'Ptr' in typ:

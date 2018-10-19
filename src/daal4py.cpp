@@ -17,7 +17,14 @@
 #define NO_IMPORT_ARRAY
 #include "daal4py.h"
 #include <cstdint>
+#include <Python.h>
 
+#if PY_VERSION_HEX >= 0x03000000
+#define PyString_Check(name) PyUnicode_Check(name)
+#define PyString_AsString(str) PyUnicode_AsUTF8(str)
+#define PyString_FromString(str) PyUnicode_FromString(str)
+#define PyString_FromStringAndSize(str, sz) PyUnicode_FromStringAndSize(str, sz)
+#endif
 
 // ************************************************************************************
 // ************************************************************************************
@@ -314,6 +321,35 @@ PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
     throw std::invalid_argument("Got unsupported table type.");
 }
 
+extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * dict, const std::map< int64_t, std::string > & id2str)
+{
+    PyObject *pydict = PyDict_New();
+    for(size_t i=0; i<(*dict)->size(); ++i) {
+        auto elem = (*dict)->getValueByIndex(i);
+        auto tbl = daal::services::dynamicPointerCast<daal::data_management::NumericTable>(elem);
+        // There can be NULL elements in collection
+        if(tbl || !elem) {
+            PyObject * obj = tbl ? make_nda(&tbl) : Py_None;
+            size_t key = (*dict)->getKeyByIndex(i);
+            auto strkey = id2str.find(key);
+            if(strkey != id2str.end()) {
+                PyObject * keyobj = PyString_FromString(strkey->second.c_str());
+                PyDict_SetItem(pydict, keyobj, obj);
+                Py_DECREF(keyobj);
+            } else {
+                Py_DECREF(pydict);
+                std::cerr << "Unexpected key '" << key << "' found in KeyValueDataCollectionPtr\n";
+                return Py_None;
+            }
+        } else {
+            Py_DECREF(pydict);
+            std::cerr << "Unexpected object found in KeyValueDataCollectionPtr, expected NULL or NumericTable\n";
+            return Py_None;
+        }
+    }
+    return pydict;
+}
+
 template<typename T, int NPTYPE>
 static daal::data_management::NumericTable * _make_nt(PyObject * nda)
 {
@@ -362,6 +398,35 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * nda)
         return new daal::data_management::NumericTablePtr(ptr);
     }
 	return new daal::data_management::NumericTablePtr();
+}
+
+extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, std::map< std::string, int64_t > & str2id)
+{
+    auto dc = new daal::data_management::KeyValueDataCollectionPtr(new daal::data_management::KeyValueDataCollection);
+    if(dict && dict != Py_None) {
+        if(PyDict_Check(dict)) {
+            PyObject *key, *value;
+            Py_ssize_t pos = 0;
+            while(PyDict_Next(dict, &pos, &key, &value)) {
+                const char *strkey = PyString_AsString(key);
+                auto keyid = str2id.find(strkey);
+                if(keyid != str2id.end()) {
+                    daal::data_management::NumericTablePtr * tbl = make_nt(value);
+                    if(tbl) {
+                        (**dc)[keyid->second] = daal::services::staticPointerCast<daal::data_management::SerializationIface>(*tbl);
+                    } else {
+                        std::cerr << "Unexpected object '" << Py_TYPE(value)->tp_name << "' found in dict, expected an array\n";
+                    }
+                    delete tbl;
+                } else {
+                    std::cerr << "Unexpected key '" << Py_TYPE(key)->tp_name << "' found in dict, expected a string\n";
+                }
+            }
+        } else {
+            std::cerr << "Unexpected object '" << Py_TYPE(dict)->tp_name << "' found, expected dict\n";
+        }
+    }
+    return dc;
 }
 
 TableOrFList::TableOrFList(PyObject * input)

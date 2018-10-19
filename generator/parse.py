@@ -82,6 +82,7 @@ class cpp_class(object):
         self.template_args = tpl  # list of template arguments as [name, values, default]
         self.members = OrderedDict() # dictionary mapping member names to their types
         self.sets = OrderedDict() # dictionary mapping set enum type to input type
+        self.arg_sets = OrderedDict() # dictionary mapping set enum type to input type and argument
         self.setgets = []         # set and get methods, formatted for %rename
         self.gets = {}            # getXXX methods and return type
         self.templates = []       # template member functions
@@ -198,13 +199,17 @@ class setget_parser(object):
             if mgs:
                 ctxt.gdict['classes'][ctxt.curr_class].setgets.append(l.strip(' ;'))
                 return True
-            mgs = re.match(r'(\s*)([^\(=\s]+\s+)((get|set)(\(((\w|:)+).*))', l)
+            mgs = re.match(r'(\s*)([^\(=\s]+\s+)((get|set)(\(((\w|:)+).*\)))', l)
             if mgs:
                 ctxt.gdict['classes'][ctxt.curr_class].setgets.append([mgs.group(4), mgs.group(2), mgs.group(6), mgs.group(3)])
+                # map input-enum to object-type and optional arg
+                # gets are easier to parse, we assume we have a set for every get
                 if mgs.group(4) == 'get':
-                    # map input-enum to object-type
-                    # gets are easier to parse, we assume we have a set for every get
-                    ctxt.gdict['classes'][ctxt.curr_class].sets[mgs.group(6).strip()] = mgs.group(2).strip()
+                    if(',' in mgs.group(3)):
+                        arg = mgs.group(3).strip(')').split(',')[1].strip().split(' ')
+                        ctxt.gdict['classes'][ctxt.curr_class].arg_sets[mgs.group(6).strip()] = (mgs.group(2).strip(), arg)
+                    else:
+                        ctxt.gdict['classes'][ctxt.curr_class].sets[mgs.group(6).strip()] = mgs.group(2).strip()
                 return True
             mgs = re.match(r'\s*(?:virtual\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*\)', l)
             if mgs:
