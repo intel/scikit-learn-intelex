@@ -123,6 +123,16 @@ cdef class pyTreeState(object):
 
 
 def getTreeState(model, i=0, n_classes=1):
+    '''
+Get decision tree from model.
+
+Please refer to scikit-learn for details about the tree layout. Try ``help(sklearn.tree._tree.Tree)`` or go to `Understanding the decision tree structure <http://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html#sphx-glr-auto-examples-tree-plot-unveil-tree-structure-py>`_.
+
+:param Model model: The input model
+:param int i: Only for forests: The index of the tree
+:param int n_classes: Only for classifiers: Number of classes
+:return: sklearn.tree._tree.Tree
+    '''
     cdef TreeState cTreeState
     if isinstance(model, decision_forest_classification_model):
         cTreeState = _getTreeState((<decision_forest_classification_model>model).c_ptr, i, n_classes)
