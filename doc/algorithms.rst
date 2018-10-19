@@ -17,6 +17,19 @@ Examples:
 .. autoclass:: daal4py.pca_result
    :members:
 
+Principal Component Analysis (PCA) Transform
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL PCA Transform <https://software.intel.com/en-us/daal-programming-guide-principal-components-analysis-transform>`_
+
+Examples:
+
+- `Single-Process PCA Transform <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_transform_batch.py>`_
+
+.. autoclass:: daal4py.pca_transform
+.. autoclass:: daal4py.pca_transform_result
+   :members:
+
 Singular Value Decomposition (SVD)
 ----------------------------------
 Detailed description of parameters and semantics are described in
@@ -433,3 +446,15 @@ Examples:
 .. autoclass:: daal4py.correlation_distance_result
    :members:
 
+Trees
+-----
+.. autofunction:: daal4py.getTreeState
+
+Examples:
+
+- `Decision Forest Regression <https://github.intel.com/SAT/daal4py/blob/master/examples/decision_forest_regression_traverse_batch.py>`_
+- `Decision Forest Classification <https://github.intel.com/SAT/daal4py/blob/master/examples/decision_forest_classification_traverse_batch.py>`_
+- `Decision Tree Regression <https://github.intel.com/SAT/daal4py/blob/master/examples/decision_tree_regression_traverse_batch.py>`_
+- `Decision Tree Classification <https://github.intel.com/SAT/daal4py/blob/master/examples/decision_tree_classification_traverse_batch.py>`_
+- `Gradient Boosted Trees Regression <https://github.intel.com/SAT/daal4py/blob/master/examples/gradient_boosted_regression_traverse_batch.py>`_
+- `Gradient Boosted Trees Classification <https://github.intel.com/SAT/daal4py/blob/master/examples/gradient_boosted_classification_traverse_batch.py>`_
