@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Algorithms &mdash; daal4py 0.3 documentation</title>
+  <title>Algorithms &mdash; daal4py 0.2019.2 documentation</title>
   
 
   
@@ -56,6 +56,10 @@
           
             
             
+              <div class="version">
+                0.2019
+              </div>
+            
           
 
           
@@ -81,7 +85,10 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Algorithms</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#principal-component-analysis-pca">Principal Component Analysis (PCA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#principal-component-analysis-pca">Principal Component Analysis (PCA)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#principal-component-analysis-pca-transform">Principal Component Analysis (PCA) Transform</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#singular-value-decomposition-svd">Singular Value Decomposition (SVD)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#moments-of-low-order">Moments of Low Order</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#classification">Classification</a><ul>
@@ -131,6 +138,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#correlation-distance-matrix">Correlation Distance Matrix</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#trees">Trees</a></li>
 </ul>
 </li>
 </ul>
@@ -237,6 +245,19 @@
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca_result</code><a class="headerlink" href="#daal4py.pca_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="attribute">
+<dt id="daal4py.pca_result.dataForTransform">
+<code class="descname">dataForTransform</code><a class="headerlink" href="#daal4py.pca_result.dataForTransform" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="daal4py.pca_result.eigenvalues">
 <code class="descname">eigenvalues</code><a class="headerlink" href="#daal4py.pca_result.eigenvalues" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
@@ -290,6 +311,55 @@
 
 </dd></dl>
 
+<div class="section" id="principal-component-analysis-pca-transform">
+<h3>Principal Component Analysis (PCA) Transform<a class="headerlink" href="#principal-component-analysis-pca-transform" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-principal-components-analysis-transform">Intel DAAL PCA Transform</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_transform_batch.py">Single-Process PCA Transform</a></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.pca_transform">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca_transform</code><a class="headerlink" href="#daal4py.pca_transform" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>pca_transform</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>nComponents</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.pca_transform_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca_transform_result</code><a class="headerlink" href="#daal4py.pca_transform_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.pca_transform_result.transformedData">
+<code class="descname">transformedData</code><a class="headerlink" href="#daal4py.pca_transform_result.transformedData" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 <div class="section" id="singular-value-decomposition-svd">
 <h2>Singular Value Decomposition (SVD)<a class="headerlink" href="#singular-value-decomposition-svd" title="Permalink to this headline">¶</a></h2>
@@ -707,6 +777,12 @@
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="daal4py.decision_forest_classification_model.NumberOfTrees">
+<code class="descname">NumberOfTrees</code><a class="headerlink" href="#daal4py.decision_forest_classification_model.NumberOfTrees" title="Permalink to this definition">¶</a></dt>
+<dd><p>FIXME</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -971,6 +1047,12 @@
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_classification_model.NumberOfTrees">
+<code class="descname">NumberOfTrees</code><a class="headerlink" href="#daal4py.gbt_classification_model.NumberOfTrees" title="Permalink to this definition">¶</a></dt>
+<dd><p>FIXME</p>
 </dd></dl>
 
 </dd></dl>
@@ -1655,6 +1737,12 @@
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="daal4py.decision_forest_regression_model.NumberOfTrees">
+<code class="descname">NumberOfTrees</code><a class="headerlink" href="#daal4py.decision_forest_regression_model.NumberOfTrees" title="Permalink to this definition">¶</a></dt>
+<dd><p>FIXME</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -1887,6 +1975,12 @@
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_regression_model.NumberOfTrees">
+<code class="descname">NumberOfTrees</code><a class="headerlink" href="#daal4py.gbt_regression_model.NumberOfTrees" title="Permalink to this definition">¶</a></dt>
+<dd><p>FIXME</p>
 </dd></dl>
 
 </dd></dl>
@@ -2910,6 +3004,41 @@
 
 </div>
 </div>
+<div class="section" id="trees">
+<h2>Trees<a class="headerlink" href="#trees" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="daal4py.getTreeState">
+<code class="descclassname">daal4py.</code><code class="descname">getTreeState</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.getTreeState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get decision tree from model.</p>
+<p>Please refer to scikit-learn for details about the tree layout. Try <code class="docutils literal notranslate"><span class="pre">help(sklearn.tree._tree.Tree)</span></code> or go to <a class="reference external" href="http://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html#sphx-glr-auto-examples-tree-plot-unveil-tree-structure-py">Understanding the decision tree structure</a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model</strong> (<em>Model</em>) – The input model</li>
+<li><strong>i</strong> (<em>int</em>) – Only for forests: The index of the tree</li>
+<li><strong>n_classes</strong> (<em>int</em>) – Only for classifiers: Number of classes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">sklearn.tree._tree.Tree</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/decision_forest_regression_traverse_batch.py">Decision Forest Regression</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/decision_forest_classification_traverse_batch.py">Decision Forest Classification</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/decision_tree_regression_traverse_batch.py">Decision Tree Regression</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/decision_tree_classification_traverse_batch.py">Decision Tree Classification</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/gradient_boosted_regression_traverse_batch.py">Gradient Boosted Trees Regression</a></li>
+<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/gradient_boosted_classification_traverse_batch.py">Gradient Boosted Trees Classification</a></li>
+</ul>
+</div>
 </div>
 
 
@@ -2952,7 +3081,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.3',
+            VERSION:'0.2019.2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
