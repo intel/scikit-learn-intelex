@@ -17,7 +17,7 @@ kmeans_init(data, 10, t_method="plusPlusDense", distributed=TRUE)
 ```
 # Getting Started
 
-daal4py is easily built from source with the majority of the necessary prerequisites available on conda.  The instructions below detail how to gather the prerequisites, setting one's build environment, and finally building and installing the completed package.  daal4py can be built for all three major platforms (Windows, Linux, macOS) with multi-node (distributed) support if necessary.  
+daal4py is easily built from source with the majority of the necessary prerequisites available on conda.  The instructions below detail how to gather the prerequisites, setting one's build environment, and finally building and installing the completed package.  daal4py can be built for all three major platforms (Windows, Linux, macOS) with multi-node (distributed) support if desired.  
 
 ## Build Overview
 The build-process (using setup.py) is 3-phased
