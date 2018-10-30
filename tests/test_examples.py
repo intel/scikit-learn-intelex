@@ -41,6 +41,11 @@ class Test(unittest.TestCase):
         r = result.cosineDistance
         self.assertTrue(np.allclose(np.array([[np.amin(r)],[np.amax(r)],[np.mean(r)],[np.average(r)]]), testdata))
 
+    def test_kdtree_knn_classification_batch(self):
+        from kdtree_knn_classification_batch import main as get_results
+        (_, predict_result, test_labels) = get_results()
+        self.assertTrue(np.count_nonzero(test_labels != predict_result.prediction) < 170)
+
     @unittest.skipIf(daal_version < (2019, 1), "not supported in this library version")
     def test_decision_forest_classification_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "decision_forest_classification_batch.csv"), range(1))

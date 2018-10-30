@@ -190,6 +190,8 @@ class cython_interface(object):
         We go up to all enclosing namespaces of ns until we find c (e.g. current-namespace::c)
         or we reached the global namespace.
         """
+        # first let's get rid of 'interface*'
+        c = re.sub(r'interface\d+::', r'', c)
         # we need to cut off leading daal::
         if c.startswith('daal::'):
             c = c[6:]
@@ -906,6 +908,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False):
                                             'logistic_regression',
                                             'distance',
                                             'cholesky',
+                                            'kdtree_knn_classification',
     ])
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:

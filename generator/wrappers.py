@@ -101,6 +101,7 @@ add_setup = [
 # Also lists input set/gets to ignore
 ignore = {
     'algorithms::svm::training': ['weights'],
+    'algorithms::kdtree_knn_classification::training': ['weights'],
     'algorithms::multi_class_classifier::training': ['weights'],
     'algorithms::multinomial_naive_bayes::training': ['weights'],
     'algorithms::kmeans::init': ['nRowsTotal', 'offset',],
@@ -415,6 +416,7 @@ no_warn = {
     'algorithms::logistic_regression': ['Result',],
     'algorithms::linear_model': ['Result',],
     'algorithms::linear_regression': ['Result',],
+    'algorithms::kdtree_knn_classification': ['Result',],
     'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
     'algorithms::ridge_regression': ['Result',],
     'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
