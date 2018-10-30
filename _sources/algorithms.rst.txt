@@ -9,12 +9,25 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process PCA <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_batch.py>`_
-- `Multi-Process (DSPV) PCA <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_dspv.py>`_
-- `Multi-Process (SPMD) PCA <https://github.intel.com/SAT/daal4py/blob/master/examples/pca_spmd.py>`_
+- `Single-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_batch.py>`_
+- `Multi-Process (DSPV) PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_dspv.py>`_
+- `Multi-Process (SPMD) PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`_
 
 .. autoclass:: daal4py.pca
 .. autoclass:: daal4py.pca_result
+   :members:
+
+Principal Component Analysis (PCA) Transform
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL PCA Transform <https://software.intel.com/en-us/daal-programming-guide-principal-components-analysis-transform>`_
+
+Examples:
+
+- `Single-Process PCA Transform <https://github.com/IntelPython/daal4py/blob/master/examples/pca_transform_batch.py>`_
+
+.. autoclass:: daal4py.pca_transform
+.. autoclass:: daal4py.pca_transform_result
    :members:
 
 Singular Value Decomposition (SVD)
@@ -24,9 +37,9 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process SVD <https://github.intel.com/SAT/daal4py/blob/master/examples/svd_batch.py>`_
-- `Multi-Process (DSPV) SVD <https://github.intel.com/SAT/daal4py/blob/master/examples/svd_dspv.py>`_
-- `Multi-Process (SPMD) SVD <https://github.intel.com/SAT/daal4py/blob/master/examples/svd_spmd.py>`_
+- `Single-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_batch.py>`_
+- `Multi-Process (DSPV) SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_dspv.py>`_
+- `Multi-Process (SPMD) SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
 
 .. autoclass:: daal4py.svd
 .. autoclass:: daal4py.svd_result
@@ -39,7 +52,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Low Order Moments <https://github.intel.com/SAT/daal4py/blob/master/examples/low_order_moments_dense_batch.py>`_
+- `Single-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py>`_
 
 .. autoclass:: daal4py.low_order_moments
 .. autoclass:: daal4py.low_order_moments_result
@@ -58,7 +71,7 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Decision Forest Classification
-  <https://github.intel.com/SAT/daal4py/blob/master/examples/decision_forest_classification_batch.py>`_
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_batch.py>`_
 
 .. autoclass:: daal4py.decision_forest_classification_training
 .. autoclass:: daal4py.decision_forest_classification_training_result
@@ -77,7 +90,7 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Decision Tree Classification
-  <https://github.intel.com/SAT/daal4py/blob/master/examples/decision_tree_classification_batch.py>`_
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_classification_batch.py>`_
 
 .. autoclass:: daal4py.decision_tree_classification_training
 .. autoclass:: daal4py.decision_tree_classification_training_result
@@ -96,7 +109,7 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Gradient Boosted Classification
-  <https://github.intel.com/SAT/daal4py/blob/master/examples/gradient_boosted_classification_batch.py>`_
+  <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_classification_batch.py>`_
 
 .. autoclass:: daal4py.gbt_classification_training
 .. autoclass:: daal4py.gbt_classification_training_result
@@ -115,9 +128,9 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Naive Bayes <https://github.intel.com/SAT/daal4py/blob/master/examples/naive_bayes_batch.py>`_
-- `Multi-Process (DSPV) Naive Bayes <https://github.intel.com/SAT/daal4py/blob/master/examples/naive_bayes_dspv.py>`_
-- `Multi-Process (SPMD) Naive Bayes <https://github.intel.com/SAT/daal4py/blob/master/examples/naive_bayes_spmd.py>`_
+- `Single-Process Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_batch.py>`_
+- `Multi-Process (DSPV) Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_dspv.py>`_
+- `Multi-Process (SPMD) Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py>`_
 
 .. autoclass:: daal4py.multinomial_naive_bayes_training
 .. autoclass:: daal4py.multinomial_naive_bayes_training_result
@@ -136,7 +149,7 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process SVM
-  <https://github.intel.com/SAT/daal4py/blob/master/examples/svm_batch.py>`_
+  <https://github.com/IntelPython/daal4py/blob/master/examples/svm_batch.py>`_
 
 .. autoclass:: daal4py.svm_training
 .. autoclass:: daal4py.svm_training_result
@@ -155,9 +168,9 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Binary Class Logistic Regression
-  <https://github.intel.com/SAT/daal4py/blob/master/examples/logistic_regression_batch.py>`_
+  <https://github.com/IntelPython/daal4py/blob/master/examples/log_reg_binary_dense_batch.py>`_
 - `Single-Process Logistic Regression
-  <https://github.intel.com/SAT/daal4py/blob/master/examples/logistic_regression_binary_batch.py>`_
+  <https://github.com/IntelPython/daal4py/blob/master/examples/log_reg_dense_batch.py>`_
 
 .. autoclass:: daal4py.logistic_regression_training
 .. autoclass:: daal4py.logistic_regression_training_result
@@ -181,7 +194,7 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Decision Forest Regression
-  <https://github.intel.com/SAT/daal4py/blob/master/examples/decision_forest_regression_batch.py>`_
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_batch.py>`_
 
 .. autoclass:: daal4py.decision_forest_regression_training
 .. autoclass:: daal4py.decision_forest_regression_training_result
@@ -200,7 +213,7 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Decision Tree Regression
-  <https://github.intel.com/SAT/daal4py/blob/master/examples/decision_tree_regression_batch.py>`_
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_regression_batch.py>`_
 
 .. autoclass:: daal4py.decision_tree_regression_training
 .. autoclass:: daal4py.decision_tree_regression_training_result
@@ -219,7 +232,7 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Boosted Regression Regression
-  <https://github.intel.com/SAT/daal4py/blob/master/examples/gradient_boosted_regression_batch.py>`_
+  <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_regression_batch.py>`_
 
 .. autoclass:: daal4py.gbt_regression_training
 .. autoclass:: daal4py.gbt_regression_training_result
@@ -237,9 +250,9 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Linear Regression <https://github.intel.com/SAT/daal4py/blob/master/examples/linear_regression_batch.py>`_
-- `Multi-Process (DSPV) Linear Regression <https://github.intel.com/SAT/daal4py/blob/master/examples/linear_regression_dspv.py>`_
-- `Multi-Process (SPMD) Linear Regression <https://github.intel.com/SAT/daal4py/blob/master/examples/linear_regression_spmd.py>`_
+- `Single-Process Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_batch.py>`_
+- `Multi-Process (DSPV) Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_dspv.py>`_
+- `Multi-Process (SPMD) Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py>`_
 
 .. autoclass:: daal4py.linear_regression_training
 .. autoclass:: daal4py.linear_regression_training_result
@@ -257,9 +270,9 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Ridge Regression <https://github.intel.com/SAT/daal4py/blob/master/examples/ridge_regression_batch.py>`_
-- `Multi-Process (DSPV) Ridge Regression <https://github.intel.com/SAT/daal4py/blob/master/examples/ridge_regression_dspv.py>`_
-- `Multi-Process (SPMD) Ridge Regression <https://github.intel.com/SAT/daal4py/blob/master/examples/ridge_regression_spmd.py>`_
+- `Single-Process Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_batch.py>`_
+- `Multi-Process (DSPV) Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_dspv.py>`_
+- `Multi-Process (SPMD) Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py>`_
 
 .. autoclass:: daal4py.ridge_regression_training
 .. autoclass:: daal4py.ridge_regression_training_result
@@ -277,9 +290,9 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process K-Means <https://github.intel.com/SAT/daal4py/blob/master/examples/kmeans_batch.py>`_
-- `Multi-Process (DSPV) K-Means <https://github.intel.com/SAT/daal4py/blob/master/examples/kmeans_dspv.py>`_
-- `Multi-Process (SPMD) K-Means <https://github.intel.com/SAT/daal4py/blob/master/examples/kmeans_spmd.py>`_
+- `Single-Process K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_batch.py>`_
+- `Multi-Process (DSPV) K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_dspv.py>`_
+- `Multi-Process (SPMD) K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_spmd.py>`_
 
 K-Means Initialization
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -308,7 +321,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Multivariate Outlier Detection <https://github.intel.com/SAT/daal4py/blob/master/examples/multivariate_outlier_batch.py>`_
+- `Single-Process Multivariate Outlier Detection <https://github.com/IntelPython/daal4py/blob/master/examples/multivariate_outlier_batch.py>`_
 
 .. autoclass:: daal4py.multivariate_outlier_detection
 .. autoclass:: daal4py.multivariate_outlier_detection_result
@@ -321,7 +334,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Univariate Outlier Detection <https://github.intel.com/SAT/daal4py/blob/master/examples/univariate_outlier_batch.py>`_
+- `Single-Process Univariate Outlier Detection <https://github.com/IntelPython/daal4py/blob/master/examples/univariate_outlier_batch.py>`_
 
 .. autoclass:: daal4py.univariate_outlier_detection
 .. autoclass:: daal4py.univariate_outlier_detection_result
@@ -337,9 +350,9 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL MSE <https://software.intel.com/en-us/daal-programming-guide-mean-squared-error-algorithm>`_
 
 Examples:
-- `In Adagrad <https://github.intel.com/SAT/daal4py/blob/master/examples/adagrad_mse_batch.py>`_
-- `In LBFGS <https://github.intel.com/SAT/daal4py/blob/master/examples/lbfgs_mse_batch.py>`_
-- `In SGD <https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_mse_batch.py>`_
+- `In Adagrad <https://github.com/IntelPython/daal4py/blob/master/examples/adagrad_mse_batch.py>`_
+- `In LBFGS <https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_mse_batch.py>`_
+- `In SGD <https://github.com/IntelPython/daal4py/blob/master/examples/sgd_mse_batch.py>`_
 
 .. autoclass:: daal4py.optimization_solver_mse
 .. autoclass:: daal4py.optimization_solver_mse_result
@@ -351,12 +364,12 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL Logistic Loss <https://software.intel.com/en-us/daal-programming-guide-logistic-loss>`_
 
 Examples:
-- `In SGD <https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`_
+- `In SGD <https://github.com/IntelPython/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`_
 
 .. autoclass:: daal4py.optimization_solver_logistic_loss
 .. autoclass:: daal4py.optimization_solver_logistic_loss_result
    :members:
- 
+
 Cross-entropy Loss
 """"""""""""""""""
 Detailed description of parameters and semantics are described in
@@ -374,8 +387,8 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL SGD <https://software.intel.com/en-us/daal-programming-guide-stochastic-gradient-descent-algorithm>`_
 
 Examples:
-- `Using Logistic Loss <https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`_
-- `Using MSE <https://github.intel.com/SAT/daal4py/blob/master/examples/sgd_mse_batch.py>`_
+- `Using Logistic Loss <https://github.com/IntelPython/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`_
+- `Using MSE <https://github.com/IntelPython/daal4py//blob/master/examples/sgd_mse_batch.py>`_
 
 .. autoclass:: daal4py.optimization_solver_sgd
 .. autoclass:: daal4py.optimization_solver_sgd_result
@@ -387,7 +400,7 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL LBFGS <https://software.intel.com/en-us/daal-programming-guide-limited-memory-broyden-fletcher-goldfarb-shanno-algorithm>`_
 
 Examples:
-- `Using MSE <https://github.intel.com/SAT/daal4py/blob/master/examples/lbfgs_mse_batch.py>`_
+- `Using MSE <https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_mse_batch.py>`_
 
 .. autoclass:: daal4py.optimization_solver_lbfgs
 .. autoclass:: daal4py.optimization_solver_lbfgs_result
@@ -399,7 +412,7 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL AdaGrad <https://software.intel.com/en-us/daal-programming-guide-adaptive-subgradient-method>`_
 
 Examples:
-- `Using MSE <https://github.intel.com/SAT/daal4py/blob/master/examples/adagrad_mse_batch.py>`_
+- `Using MSE <https://github.com/IntelPython/daal4py/blob/master/examples/adagrad_mse_batch.py>`_
 
 .. autoclass:: daal4py.optimization_solver_adagrad
 .. autoclass:: daal4py.optimization_solver_adagrad_result
@@ -414,7 +427,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Cosine Distance <https://github.intel.com/SAT/daal4py/blob/master/examples/cosine_distance_batch.py>`_
+- `Single-Process Cosine Distance <https://github.com/IntelPython/daal4py/blob/master/examples/cosine_distance_batch.py>`_
 
 .. autoclass:: daal4py.cosine_distance
 .. autoclass:: daal4py.cosine_distance_result
@@ -427,9 +440,21 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Correlation Distance <https://github.intel.com/SAT/daal4py/blob/master/examples/correlation_distance_batch.py>`_
+- `Single-Process Correlation Distance <https://github.com/IntelPython/daal4py/blob/master/examples/correlation_distance_batch.py>`_
 
 .. autoclass:: daal4py.correlation_distance
 .. autoclass:: daal4py.correlation_distance_result
    :members:
 
+Trees
+-----
+.. autofunction:: daal4py.getTreeState
+
+Examples:
+
+- `Decision Forest Regression <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_traverse_batch.py>`_
+- `Decision Forest Classification <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_traverse_batch.py>`_
+- `Decision Tree Regression <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_regression_traverse_batch.py>`_
+- `Decision Tree Classification <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_classification_traverse_batch.py>`_
+- `Gradient Boosted Trees Regression <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_regression_traverse_batch.py>`_
+- `Gradient Boosted Trees Classification <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_classification_traverse_batch.py>`_
