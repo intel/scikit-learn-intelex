@@ -161,7 +161,7 @@ def gen_pyx(odir):
         os.mkdir(odir)
     gen_daal4py(daal_root, odir, d4p_version)
 
-gen_pyx(os.path.abspath('./build'))
+#gen_pyx(os.path.abspath('./build'))
 
 # daal setup
 setup(  name        = "daal4py",

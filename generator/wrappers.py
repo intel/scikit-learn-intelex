@@ -320,7 +320,7 @@ has_dist = {
                    ],
     },
     'algorithms::kmeans' : {
-        'pattern': 'mapReduceIter',
+        'pattern': 'dist_custom',
         'step_specs': [SSpec(name      = 'step1Local',
                              input     = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              setinput  = ['daal::algorithms::kmeans::data', 'daal::algorithms::kmeans::inputCentroids'],

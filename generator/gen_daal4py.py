@@ -874,7 +874,7 @@ class cython_interface(object):
                 cpp_end += '\n'
         cpp_end += '\n*/\n'
         # Finally combine the different sections and return the 3 strings
-        return(hds[0] + cpp_map + cpp_begin + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
+        return(hds[0] + cpp_map + cpp_begin + fts[2] + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
 
 
 ###############################################################################

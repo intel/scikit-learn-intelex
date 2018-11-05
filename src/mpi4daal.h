@@ -23,7 +23,8 @@ template<typename T> struct std2mpi;
 template<>struct std2mpi<double> { static const MPI_Datatype typ = MPI_DOUBLE; };
 template<>struct std2mpi<float> { static const MPI_Datatype typ = MPI_FLOAT; };
 template<>struct std2mpi<int> { static const MPI_Datatype typ = MPI_INT; };
-            
+template<>struct std2mpi<bool> { static const MPI_Datatype typ = MPI_C_BOOL; };
+
 struct MPI4DAAL
 {
     static void init()
@@ -32,14 +33,14 @@ struct MPI4DAAL
         MPI_Initialized(&is_initialized);
         if(!is_initialized) MPI_Init(NULL, NULL);
     }
-    
+
     static int nRanks()
     {
         int size;
         MPI_Comm_size(MPI_COMM_WORLD, &size);
         return size;
     }
-    
+
     static size_t rank()
     {
         int rank;
@@ -58,7 +59,7 @@ struct MPI4DAAL
         MPI_Send(&mysize, 1, MPI_INT, recpnt, tag, MPI_COMM_WORLD);
         MPI_Send(in_arch.getArchiveAsArraySharedPtr().get(), mysize, MPI_CHAR, recpnt, tag, MPI_COMM_WORLD);
     }
-    
+
     template<typename T>
     static T recv(int sender, int tag)
     {
@@ -115,8 +116,17 @@ struct MPI4DAAL
         return all;
     }
 
+
     template<typename T>
-    static T bcast(int rank, int nRanks, T obj)
+    static T bcast(int rank, int nRanks, const T & obj)
+    {
+        T out = obj;
+        MPI_Bcast(&out, 1, std2mpi<T>::typ, 0, MPI_COMM_WORLD);
+        return out;
+    }
+
+    template<typename T>
+    static daal::services::SharedPtr<T> bcast(int rank, int nRanks, daal::services::SharedPtr<T> obj)
     {
         if(rank == 0) {
             // Serialize the partial result into a data archive
@@ -131,7 +141,7 @@ struct MPI4DAAL
             char * buff = new char[size];
             MPI_Bcast(buff, size, MPI_CHAR, 0, MPI_COMM_WORLD);
             daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff), size);
-            obj = daal::services::dynamicPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
+            obj = daal::services::dynamicPointerCast<T>(out_arch.getAsSharedPtr());
         }
         return obj;
     }

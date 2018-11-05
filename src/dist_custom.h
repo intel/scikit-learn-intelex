@@ -17,6 +17,8 @@
 #ifndef _DIST_CUSTOM_INCLUDED_
 #define _DIST_CUSTOM_INCLUDED_
 
+#include "daal4py_cpp.h"
+
 namespace dist_custom {
 
     template<typename Algo>

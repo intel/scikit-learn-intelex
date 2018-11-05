@@ -1288,4 +1288,4 @@ class wrapper_gen(object):
         if len(jparams) > 0:
             t = jenv.from_string(init_template)
             cpp = re.sub(r'[\n\s]+CnC::I', '\n        CnC::I', t.render(**jparams)) + '\n'
-        return (cpp, '')
+        return (cpp, '', '#include "dist_logistic_regression.h"\n#include "dist_kmeans.h"\n')
