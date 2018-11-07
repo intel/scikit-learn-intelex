@@ -141,5 +141,7 @@ Content
    :maxdepth: 2
    :caption: Contents:
 
+   About daal4py <index>
+   Supported Algorithms <algorithms>
+   examples
    scaling
-   algorithms
