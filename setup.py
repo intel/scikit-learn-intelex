@@ -41,9 +41,10 @@ if npyver < 9:
     sys.exit("Error: Detected numpy {}. The minimum requirement is 1.9, and >= 1.10 is strongly recommended".format(np.__version__))
 
 d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2019.%Y%m%d.%H%M%S')
+no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES'] else False
 daal_root = os.environ['DAALROOT']
 tbb_root = os.environ['TBBROOT']
-mpi_root = os.environ['MPIROOT']
+mpi_root = None if no_dist else os.environ['MPIROOT']
 
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
@@ -64,9 +65,8 @@ else:
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 
-no_dist = os.environ['NO_DIST'] if 'NO_DIST' in os.environ else False
 
-if no_dist in ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']:
+if no_dist :
     print('\nDisabling support for distributed mode\n')
     DIST_CFLAGS  = []
     DIST_INCDIRS = []
