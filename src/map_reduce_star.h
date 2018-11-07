@@ -29,9 +29,8 @@ public:
     typename Algo::iomstep2Master_type::result_type
     static map_reduce(Algo & algo, Ts& ... inputs)
     {
-        int rank, nRanks;
-        MPI_Comm_size(MPI_COMM_WORLD, &nRanks);
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        int rank = MPI4DAAL::rank();
+        int nRanks = MPI4DAAL::nRanks();
 
         auto s1_result = algo.run_step1Local(inputs...);
         // gather all partial results

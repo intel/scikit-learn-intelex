@@ -40,7 +40,7 @@ def get_exe_cmd(ex, nodist):
     elif nodist:
         return None
     else:
-        return 'mpirun -n 4 -genv DIST_CNC=MPI "' + sys.executable + '" "' + ex + '"'
+        return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
 
 def run_all(nodist=False):
     success = 0
@@ -49,7 +49,7 @@ def run_all(nodist=False):
         os.makedirs(logdir)
     for (dirpath, dirnames, filenames) in os.walk(exdir):
         for script in filenames:
-            if script.endswith('.py') and script not in ['run_examples.py', '__init__.py']:
+            if any(script.endswith(x) for x in ['spmd.py', 'batch.py']) and script not in ['run_examples.py', '__init__.py']:
                 n += 1
                 logfn = jp(logdir, script.replace('.py', '.res'))
                 with open(logfn, 'w') as logfile:

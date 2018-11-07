@@ -24,6 +24,9 @@ import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
+    # Initialize SPMD mode
+    d4p.daalinit()
+
     # Each process gets its own data
     infile = "./data/distributed/linear_regression_train_" + str(d4p.my_procid()+1) + ".csv"
 

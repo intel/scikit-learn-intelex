@@ -130,14 +130,14 @@ cdef extern from "daal.h":
 
 
 cdef extern from "daal4py_cpp.h":
-    cdef void c_daalinit(bool spmd, int flag, int nthreads) except +
+    cdef void c_daalinit(int nthreads) except +
     cdef void c_daalfini() except +
     cdef size_t c_num_procs() except +
     cdef size_t c_my_procid() except +
 
 
-def daalinit(spmd = False, flag = 0, nthreads = -1):
-    c_daalinit(spmd, flag, nthreads)
+def daalinit(nthreads = -1):
+    c_daalinit(nthreads)
 
 def daalfini():
     c_daalfini()
@@ -651,16 +651,6 @@ private:
 {% endif %}
 
 public:
-#ifdef _DIST_
-    virtual void serialize(CnC::serializer & ser)
-    {
-        ser
-{% for i in pargs_call %}            & _{{i.rsplit('=', 1)[0]}}
-{% endfor %};
-    }
-#endif
-
-public:
     typename iomb_type::result_type * compute({{(',\n'+' '*46).join(iargs_decl|cppdecl)}},
                                               bool setup_only = false)
     {
@@ -675,22 +665,6 @@ public:
 #endif
     }
 };
-{% if step_specs is defined %}
-#ifdef _DIST_
-namespace CnC {
-{% if template_decl|length > 0  %}
-template<{% for x in template_decl %}{{template_decl[x]['template_decl'] + ' ' + x + ('' if loop.last else ', ')}}{% endfor %}>
-{% endif %}
-    static inline void serialize(serializer & ser, {{algo}}_manager{% if template_args|length %}<{{', '.join(template_args)}}>{% endif %} *& t)
-    {
-        int sz = ser.is_packing() && t == NULL ? 0 : 1;
-        ser & sz;
-        if(sz) ser & chunk< {{algo}}_manager{% if template_args|length %}<{{', '.join(template_args)}}>{% endif %} >(t, sz);
-        else if(ser.is_unpacking()) t = NULL;
-    }
-}
-#endif
-{% endif %}
 {% else %}
 {};
 {% endif %}
@@ -814,106 +788,6 @@ extern "C" void * compute_{{algo}}({{(',\n'+' '*(27+algo|length)).join([algo+'__
     return res;
 };
 """
-
-# We need to register all possible context types to CnC
-# As the algos are templetized we need to do this for all template-instantiations of algo managers.
-# For ifaces we need to construct derived classes from iface pointers.
-# For this we use CnC factory as well, so need register the algo_managers, too.
-algo_types_template = """
-{% macro tfactory(tmpl_spec, prefix, args=[]) %}
-{% for a in tmpl_spec[0][1]['values'] %}
-{% if tmpl_spec|length == 1 %}
-CnC::Internal::factory::subscribe< typename {{pattern}}::{{pattern}}< {{prefix + '<' + ', '.join(args+[a]) + ' > >::context_type'}} >();
-{% else %}
-{{tfactory(tmpl_spec[1:], prefix, args+[a])}}
-{% endif %}
-{% endfor %}
-{%- endmacro %}
-
-{% if step_specs is defined and pattern not in ['map_reduce_star', 'map_reduce_tree', 'dist_custom'] %}
-{% if template_decl %}
-{{tfactory(template_decl.items()|list, algo+'_manager')}}
-{% else %}
-CnC::Internal::factory::subscribe< {{pattern}}::{{pattern}}< {{algo}}_manager >::context_type >();
-{% endif %}
-{% endif %}
-"""
-
-# Create initialization code.
-# Requries {{subscriptions}}
-init_template = '''
-typedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;
-
-#ifdef _DIST_
-typedef CnC::Internal::dist_init init_type;
-init_type * initer = NULL;
-
-struct fini
-{
-    ~fini()
-    {
-        if(initer) delete initer;
-        initer = NULL;
-    }
-};
-static fini _fini;
-
-extern "C" {
-
-void c_daalinit(bool spmd, int flag, int nthreads)
-{
-    if(nthreads > 0) daal::services::Environment::getInstance()->setNumberOfThreads(nthreads);
-    if(initer) delete initer;
-    auto subscriber = [](){
-{{subscriptions.rstrip()}}
-    };
-    initer = new init_type(subscriber, flag, spmd);
-}
-
-void c_daalfini()
-{
-    if(initer) delete initer;
-    initer = NULL;
-}
-
-size_t c_num_procs()
-{
-    return CnC::tuner_base::numProcs();
-}
-
-size_t c_my_procid()
-{
-    return CnC::tuner_base::myPid();
-}
-
-} // extern "C"
-
-#else // _DIST_
-
-extern "C" {
-void c_daalinit(bool spmd, int flag, int nthreads)
-{
-    if(nthreads > 0) daal::services::Environment::getInstance()->setNumberOfThreads(nthreads);
-}
-
-void c_daalfini()
-{
-}
-
-size_t c_num_procs()
-{
-    return 1;
-}
-
-size_t c_my_procid()
-{
-    return 0;
-}
-} // extern "C"
-
-#endif //_DIST_
-
-'''
 
 # generate a D4PSpec
 hpat_spec_template = '''
@@ -1273,19 +1147,11 @@ class wrapper_gen(object):
                 cpp_end += t.render(**jparams) + '\n'
                 hlargs += self.gen_hlargs(jparams['template_decl'], jparams['args_decl'])
 
-            t = jenv.from_string(algo_types_template)
-            typesstr += t.render(**jparams) + '\n'
             i = i+1
 
         return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr, hlargs)
 
 
     ##################################################################################
-    def gen_footers(self, subscriptions):
-        """ generate code for initing  CnC.
-            Requires list of CnC context subscriptions."""
-        jparams = {'subscriptions' : subscriptions}
-        if len(jparams) > 0:
-            t = jenv.from_string(init_template)
-            cpp = re.sub(r'[\n\s]+CnC::I', '\n        CnC::I', t.render(**jparams)) + '\n'
-        return (cpp, '', '#include "dist_logistic_regression.h"\n#include "dist_kmeans.h"\n')
+    def gen_footers(self):
+        return ('', '', '#include "dist_logistic_regression.h"\n#include "dist_kmeans_init.h"\n#include "dist_kmeans.h"\n')

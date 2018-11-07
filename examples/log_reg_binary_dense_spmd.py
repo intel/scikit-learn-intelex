@@ -61,9 +61,14 @@ def main():
     return (train_result, predict_result, predict_labels)
 
 if __name__ == "__main__":
+    # Initialize SPMD mode
+    d4p.daalinit()
+
     (train_result, predict_result, predict_labels) = main()
     if d4p.my_procid() == 0:
         print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
         print("\nLogistic regression prediction results (first 10 rows):\n", predict_result.prediction[0:10])
         print("\nGround truth (first 10 rows):\n", predict_labels[0:10])
         print('All looks good!')
+
+    d4p.daalfini()

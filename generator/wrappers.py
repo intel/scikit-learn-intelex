@@ -284,7 +284,7 @@ has_dist = {
     },
     'algorithms::kmeans::init' : {
         #        'iombatch': 'IOManagerSingle< algob_type, daal::services::SharedPtr< typename algob_type::InputType >, daal::data_management::NumericTablePtr, daal::algorithms::kmeans::init::ResultId, daal::algorithms::kmeans::init::centroids >',
-        'pattern': 'dkmi',
+        'pattern': 'dist_custom',
         'step_specs': [SSpec(name      = 'step1Local',
                              input     = ['daal::data_management::NumericTablePtr'],
                              extrainput= 'size_t nRowsTotal, size_t offset',

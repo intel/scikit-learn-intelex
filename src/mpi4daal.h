@@ -21,9 +21,14 @@
 
 template<typename T> struct std2mpi;
 template<>struct std2mpi<double> { static const MPI_Datatype typ = MPI_DOUBLE; };
-template<>struct std2mpi<float> { static const MPI_Datatype typ = MPI_FLOAT; };
-template<>struct std2mpi<int> { static const MPI_Datatype typ = MPI_INT; };
-template<>struct std2mpi<bool> { static const MPI_Datatype typ = MPI_C_BOOL; };
+template<>struct std2mpi<float>  { static const MPI_Datatype typ = MPI_FLOAT; };
+template<>struct std2mpi<int>    { static const MPI_Datatype typ = MPI_INT; };
+template<>struct std2mpi<bool>   { static const MPI_Datatype typ = MPI_C_BOOL; };
+template<>struct std2mpi<size_t> { static const MPI_Datatype typ = MPI_UNSIGNED_LONG; };
+
+template<typename T> bool not_empty(const daal::services::SharedPtr<T> & obj) { return obj; };
+template<typename T> bool not_empty(const daal::data_management::interface1::NumericTablePtr & obj) { return obj && obj->getNumberOfRows() && obj->getNumberOfColumns(); };
+
 
 struct MPI4DAAL
 {
@@ -32,6 +37,11 @@ struct MPI4DAAL
         int is_initialized;
         MPI_Initialized(&is_initialized);
         if(!is_initialized) MPI_Init(NULL, NULL);
+    }
+
+    static void fini()
+    {
+        MPI_Finalize();
     }
 
     static int nRanks()
@@ -51,13 +61,18 @@ struct MPI4DAAL
     template<typename T>
     static void send(const T& obj, int recpnt, int tag)
     {
-        // Serialize the DAAL object into a data archive
         daal::data_management::InputDataArchive in_arch;
-        obj->serialize(in_arch);
-        int mysize = in_arch.getSizeOfArchive();
+        int mysize(0);
+        // Serialize the DAAL object into a data archive
+        if(not_empty(obj)) {
+            obj->serialize(in_arch);
+            mysize = in_arch.getSizeOfArchive();
+        }
         // and send it away to our recipient
         MPI_Send(&mysize, 1, MPI_INT, recpnt, tag, MPI_COMM_WORLD);
-        MPI_Send(in_arch.getArchiveAsArraySharedPtr().get(), mysize, MPI_CHAR, recpnt, tag, MPI_COMM_WORLD);
+        if(mysize) {
+            MPI_Send(in_arch.getArchiveAsArraySharedPtr().get(), mysize, MPI_CHAR, recpnt, tag, MPI_COMM_WORLD);
+        }
     }
 
     template<typename T>
@@ -65,11 +80,14 @@ struct MPI4DAAL
     {
         int sz(0);
         MPI_Recv(&sz, 1, MPI_INT, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        daal::byte * buf = new daal::byte[sz];
-        MPI_Recv(buf, sz, MPI_CHAR, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        daal::data_management::OutputDataArchive out_arch(buf, sz);
-        T res = daal::services::dynamicPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
-        delete [] buf;
+        T res;
+        if(sz) {
+            daal::byte * buf = new daal::byte[sz];
+            MPI_Recv(buf, sz, MPI_CHAR, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            daal::data_management::OutputDataArchive out_arch(buf, sz);
+            res = daal::services::dynamicPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
+            delete [] buf;
+        }
         return res;
     }
 
@@ -87,12 +105,13 @@ struct MPI4DAAL
         int mysize = in_arch.getSizeOfArchive();
         MPI_Gather(&mysize, 1, MPI_INT, sizes, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        int tot_sz = 0;
+        int tot_sz = mysize;
         char * buff = NULL;
 
         if(rank == 0) {
-            for(int i = 0; i < nRanks; i++) {
-                offsets[i] = i > 0 ? sizes[i-1] : 0;
+            offsets[0] = 0;
+            for(int i = 1; i < nRanks; ++i) {
+                offsets[i] = offsets[i-1] + sizes[i-1];
                 tot_sz += sizes[i];
             }
             buff = new char[tot_sz];
@@ -118,30 +137,34 @@ struct MPI4DAAL
 
 
     template<typename T>
-    static T bcast(int rank, int nRanks, const T & obj)
+    static T bcast(int rank, int nRanks, const T & obj, int root=0)
     {
         T out = obj;
-        MPI_Bcast(&out, 1, std2mpi<T>::typ, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&out, 1, std2mpi<T>::typ, root, MPI_COMM_WORLD);
         return out;
     }
 
     template<typename T>
-    static daal::services::SharedPtr<T> bcast(int rank, int nRanks, daal::services::SharedPtr<T> obj)
+    static daal::services::SharedPtr<T> bcast(int rank, int nRanks, daal::services::SharedPtr<T> obj, int root=0)
     {
-        if(rank == 0) {
+        if(rank == root) {
             // Serialize the partial result into a data archive
             daal::data_management::InputDataArchive in_arch;
             obj->serialize(in_arch);
             int size = in_arch.getSizeOfArchive();
-            MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            MPI_Bcast(in_arch.getArchiveAsArraySharedPtr().get(), size, MPI_CHAR, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&size, 1, MPI_INT, root, MPI_COMM_WORLD);
+            if(size > 0) MPI_Bcast(in_arch.getArchiveAsArraySharedPtr().get(), size, MPI_CHAR, root, MPI_COMM_WORLD);
         } else {
             int size = 0;
-            MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            char * buff = new char[size];
-            MPI_Bcast(buff, size, MPI_CHAR, 0, MPI_COMM_WORLD);
-            daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff), size);
-            obj = daal::services::dynamicPointerCast<T>(out_arch.getAsSharedPtr());
+            MPI_Bcast(&size, 1, MPI_INT, root, MPI_COMM_WORLD);
+            if(size) {
+                char * buff = new char[size];
+                MPI_Bcast(buff, size, MPI_CHAR, root, MPI_COMM_WORLD);
+                daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff), size);
+                obj = daal::services::dynamicPointerCast<T>(out_arch.getAsSharedPtr());
+            } else {
+                obj.reset();
+            }
         }
         return obj;
     }
@@ -151,6 +174,50 @@ struct MPI4DAAL
     {
         MPI_Allreduce(MPI_IN_PLACE, buf, (int)n, std2mpi<T>::typ, op, MPI_COMM_WORLD);
     }
+
+    template<typename T>
+    static void exscan(T * buf, size_t n, MPI_Op op)
+    {
+        MPI_Exscan(MPI_IN_PLACE, buf, n, std2mpi<T>::typ, op, MPI_COMM_WORLD);
+    }
+
+#if 0 // untested
+    template<typename T>
+    static T scatter(int rank, int nRanks, const std::vector<T> & objs )
+    {
+        const int STAG = 7007;
+        T res;
+        if(rank == 0) {
+            size_t n = objs.size();
+            MPI_Request reqs = new MPI_Request[n*2];
+            for(size_t i = 1; i < n; ++i) {
+                // Serialize each obj into a data archive
+                daal::data_management::InputDataArchive in_arch;
+                int mysize(0);
+                if(not_empty(objs[i])) {
+                    objs[i]->serialize(in_arch);
+                    mysize = in_arch.getSizeOfArchive();
+                }
+                MPI_Isend(&mysize, 1, MPI_INT, i, tag, MPI_COMM_WORLD, &reqs[i]);
+                if(mysize) {
+                    // we send payload only if size>0
+                    MPI_Isend(in_arch.getArchiveAsArraySharedPtr().get(), mysize, MPI_CHAR, i, STAG, MPI_COMM_WORLD, &reqs[n+i]);
+                } else {
+                    reqs[n+i] = MPI_REQUEST_NULL;
+                }
+            }
+            // root returns its own object as-is
+            res = objs[0];
+            reqs[0] = req[n] = MPI_REQUEST_NULL;
+            MPI_Waitall(n*2, reqs, MPI_STATUSES_IGNORE);
+        } else {
+            res = recv<T>(0, STAG);
+        }
+
+        return res;
+    }
+#endif
+
 };
 
 #endif // _MPI4DAAL_INCLUDED_

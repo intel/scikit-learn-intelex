@@ -859,7 +859,7 @@ class cython_interface(object):
                     hlargs[ns] = tmp[7]
 
         hds = wg.gen_headers()
-        fts = wg.gen_footers(dtypes)
+        fts = wg.gen_footers()
 
         pyx_end += fts[1]
         # we add a comment with tables providing parameters for each algorithm

@@ -72,11 +72,10 @@ if no_dist in ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'Y
     DIST_LIBDIRS = []
     DIST_LIBS    = []
 else:
-    cnc_root = os.environ['CNCROOT']
-    DIST_CFLAGS  = ['-D_DIST_=4711',]  # '-D_GLIBCXX_USE_CXX11_ABI=0', '-DCNC_WITH_ITAC'
-    DIST_INCDIRS = [jp(cnc_root, 'include'),]  # itac_root + '/include']
-    DIST_LIBDIRS = [jp(cnc_root, 'lib', 'intel64'),]
-    DIST_LIBS    = ['cnc_vs14.0', 'mpi'] if IS_WIN else ['cnc', 'mpi']
+    DIST_CFLAGS  = ['-D_DIST_',]
+    DIST_INCDIRS = []
+    DIST_LIBDIRS = []
+    DIST_LIBS    = ['mpi']
 
 DAAL_DEFAULT_TYPE = 'double'
 
@@ -161,7 +160,7 @@ def gen_pyx(odir):
         os.mkdir(odir)
     gen_daal4py(daal_root, odir, d4p_version)
 
-#gen_pyx(os.path.abspath('./build'))
+gen_pyx(os.path.abspath('./build'))
 
 # daal setup
 setup(  name        = "daal4py",

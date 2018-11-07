@@ -27,12 +27,19 @@ class dist_custom< kmeans_manager< fptype, method > >
 {
 public:
     typedef kmeans_manager< fptype, method > Algo;
-    
+
+    /*
+      We basically iterate over a map_reduce_star.
+      Step1 requires 2 inputs: the data per node and the current centroids.
+      step2 combines in a reduce_star partial results of step1 and produces new centroids.
+      except for first iter we need to bcast centroids.
+      root detects convergence/end of iteration and bcasts to others
+     */
     template<typename T1, typename T2>
     typename Algo::iomstep2Master__final_type::result_type
     static map_reduce(Algo & algo, const T1& input1, const T2& input2)
     {
-        T2 inp2 = input2;
+        T2 centroids = input2;
         int rank = MPI4DAAL::rank();
         int nRanks = MPI4DAAL::nRanks();
         bool done = false;
@@ -43,8 +50,9 @@ public:
                                    ? typename Algo::algob_type::ParameterType(algo._nClusters, algo._maxIterations).accuracyThreshold
                                    : algo._accuracyThreshold;
         do {
+            if(iter) centroids = MPI4DAAL::bcast(rank, nRanks, centroids);
             ++iter;
-            auto s1_result = algo.run_step1Local(input1, inp2);
+            auto s1_result = algo.run_step1Local(input1, centroids);
             // reduce all partial results
             auto pres = map_reduce_tree::map_reduce_tree<Algo>::reduce(rank, nRanks, algo, s1_result);
             // finalize and check convergence/end of iteration
@@ -54,7 +62,7 @@ public:
                 if(iter < algo._maxIterations) {
                     double new_goal = fres->get(daal::algorithms::kmeans::goalFunction)->daal::data_management::NumericTable::getValue<double>(0, 0);
                     if(std::abs(goal - new_goal) > accuracyThreshold) {
-                        inp2 = fres->get(daal::algorithms::kmeans::centroids);
+                        centroids = fres->get(daal::algorithms::kmeans::centroids);
                         goal = new_goal;
                         continue;
                     }
@@ -68,7 +76,7 @@ public:
                                                                         daal::data_management::NumericTable::doAllocate, (int)iter));
                 fres->set(daal::algorithms::kmeans::nIterations, nittab);
             }
-        } while((done = MPI4DAAL::bcast(rank, nRanks, done)) == true);
+        } while((done = MPI4DAAL::bcast(rank, nRanks, done)) == false);
         // bcast final result
         return MPI4DAAL::bcast(rank, nRanks, fres);
     }
