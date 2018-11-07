@@ -19,13 +19,13 @@ requirements:
         - daal-static >=2019.0   # [win]
         - cython
         - jinja2
-	- mpi
+        - mpich
     run:
         - python
         - numpy >=1.13
         - tbb
         - daal >=2019.0
-	- mpi
+        - mpich
 
 build:
     number: {{buildnumber}}
@@ -35,12 +35,14 @@ test:
     imports:
         - daal4py
     source_files:
+        - examples/run_examples.py
         - examples/*batch.py
         - examples/*spmd.py
         - examples/data
         - tests
     commands:
-        - cd tests && python test_examples.py
+        - cd tests && python test_examples.py; cd ..
+        - cd examples && python run_examples.py
 
 about:
     license: Apache 2.0
