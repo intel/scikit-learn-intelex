@@ -40,9 +40,10 @@ if npyver == 9:
 if npyver < 9:
     sys.exit("Error: Detected numpy {}. The minimum requirement is 1.9, and >= 1.10 is strongly recommended".format(np.__version__))
 
-d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2018.%Y%m%d.%H%M%S')
+d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2019.%Y%m%d.%H%M%S')
 daal_root = os.environ['DAALROOT']
 tbb_root = os.environ['TBBROOT']
+mpi_root = os.environ['MPIROOT']
 
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
@@ -73,8 +74,8 @@ if no_dist in ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'Y
     DIST_LIBS    = []
 else:
     DIST_CFLAGS  = ['-D_DIST_',]
-    DIST_INCDIRS = []
-    DIST_LIBDIRS = []
+    DIST_INCDIRS = [jp(mpi_root, 'include')]
+    DIST_LIBDIRS = [jp(mpi_root, 'lib')]
     DIST_LIBS    = ['mpi']
 
 DAAL_DEFAULT_TYPE = 'double'
@@ -99,7 +100,7 @@ def get_type_defines():
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
 
 def getpyexts():
-    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',] + DIST_INCDIRS
+    include_dir_plat = set([os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',] + DIST_INCDIRS)
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-DD4P_VERSION="'+d4p_version+'"'] + get_type_defines()
     ela = []
@@ -133,14 +134,14 @@ def getpyexts():
         ela.append("-Wl,-rpath,{}".format(jp(daal_root, '..', 'tbb', 'lib')))
     elif IS_WIN:
         ela.append('-IGNORE:4197')
-    #elif IS_LIN:
-    #    ela.append('-s')
+    elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x] for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
+        ela.append('-s')
 
     return cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')],
-                                include_dirs=include_dir_plat + [np.get_include()],
+                                include_dirs=include_dir_plat.union([np.get_include()]),
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
                                 libraries=libraries_plat,

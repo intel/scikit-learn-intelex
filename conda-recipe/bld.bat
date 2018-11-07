@@ -7,8 +7,8 @@ if "%PY3K%"=="1" (
 rem set NO_DIST=1
 
 set DAAL4PY_VERSION=%PKG_VERSION%
-set CNCROOT=%PREFIX%
 set TBBROOT=%PREFIX%
+set MPIROOT=%PREFIX%
 set DAALROOT=%PREFIX%
 
 %PYTHON% setup.py install %ARGS%

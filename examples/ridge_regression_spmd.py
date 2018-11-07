@@ -18,7 +18,7 @@
 
 # daal4py Ridge Regression example for distributed memory systems; SPMD mode
 # run like this:
-#    mpirun -genv DIST_CNC=MPI -n 4 python ./ridge_regression_spmd.py
+#    mpirun -n 4 python ./ridge_regression_spmd.py
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
