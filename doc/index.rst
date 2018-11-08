@@ -11,14 +11,13 @@ Internally it uses Intel® DAAL (Intel® Data Analytics Acceleration
 Library) to deliver the  best performance.
 
 Designed for Data Scientists and Framework Designers
----------
+----------------------------------------------------
 daal4py was created to give data scientists the easist way to utilize Intel® DAAL's
 powerful machine learning building blocks directly in a high-productivity manner.
 A simplified API gives high-level abstractions to the user with minimal boilerplate,
 allowing for quick to write and easy to maintain code when utilizing Jupyter Notebooks.
 For scaling capabilities, daal4py also provides the ability to do distributed machine
-learning, giving a quick way to scale out without having to manually write the
-distributed wiring.
+learning, giving a quick way to scale out.
 
 For framework designers, daal4py's has been fashioned to be built under other
 frameworks from both an API and feature perspective.  The machine learning models split
@@ -28,19 +27,8 @@ associated primitives, allowing one to customize the behavior of the model itsel
 The daal4py package can be built with customized algorithm loadouts, allowing for a
 smaller footprint of dependencies when neessary.
 
-Daal4py's Design
----------
-The design of daal4py utilizes several different technologies to deliver Intel®
-DAAL performance in a flexible design to Data Scientists and Framework designers.
-The package uses Jinja templates to generate Cython-wrapped DAAL C++ headers, with
-Cython as a bridge between the generated DAAL code and the Python layer.
-This design allows for quicker development cycles and acts as a reference design
-to those looking to tailor their build of daal4py.  Cython also allows for better
-Python behavior, both for compatability to different frameworks and for
-pickling and serialization.
-
 API Design and usage
----------
+--------------------
 As an example of the type of API that would be used in a data science context,
 the linear regression workflow is showcased below::
 
@@ -88,8 +76,19 @@ network and adding a keyword-parameter::
     kmeans_init(10, method="plusPlusDense", distributed=True).compute(list_of_files)
     daalfini()
 
+Daal4py's Design
+----------------
+The design of daal4py utilizes several different technologies to deliver Intel®
+DAAL performance in a flexible design to Data Scientists and Framework designers.
+The package uses Jinja templates to generate Cython-wrapped DAAL C++ headers, with
+Cython as a bridge between the generated DAAL code and the Python layer.
+This design allows for quicker development cycles and acts as a reference design
+to those looking to tailor their build of daal4py.  Cython also allows for good
+Python behavior, both for compatability to different frameworks and for
+pickling and serialization.
+
 Built for Performance
----------
+---------------------
 Besides superior (e.g. close to native C++ Intel DAAL) performance on a single
 node, the distribution mechanics of daal4py provides excellent strong and weak
 scaling. It nicely handles distributing a fixed input size on increasing

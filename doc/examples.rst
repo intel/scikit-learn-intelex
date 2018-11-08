@@ -5,19 +5,18 @@ Examples
 Below are examples on how to utilize daal4py for various usage styles.
 
 Data Science examples
----------
+---------------------
 
 Jupyter Notebooks
 
 - `Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/daal4py_data_science.ipynb>`_
 
 General usage
----------
+-------------
 
 Principal Component Analysis (PCA) Transform
 
 - `Single-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_batch.py>`_
-- `Multi-Process (DSPV) PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_dspv.py>`_
 - `Multi-Process (SPMD) PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`_
 
 Singular Value Decomposition (SVD)
@@ -25,7 +24,6 @@ Singular Value Decomposition (SVD)
 - `Single-Process PCA Transform <https://github.com/IntelPython/daal4py/blob/master/examples/pca_transform_batch.py>`_
 
 - `Single-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_batch.py>`_
-- `Multi-Process (DSPV) SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_dspv.py>`_
 - `Multi-Process (SPMD) SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
 
 Moments of Low Order
@@ -50,7 +48,6 @@ Gradient Boosted Classification
 Multinomial Naive Bayes
 
 - `Single-Process Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_batch.py>`_
-- `Multi-Process (DSPV) Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_dspv.py>`_
 - `Multi-Process (SPMD) Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py>`_
 
 Support Vector Machine (SVM)
@@ -81,19 +78,16 @@ Gradient Boosted Regression
 Linear Regression
 
 - `Single-Process Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_batch.py>`_
-- `Multi-Process (DSPV) Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_dspv.py>`_
 - `Multi-Process (SPMD) Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py>`_
 
 Ridge Regression
 
 - `Single-Process Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_batch.py>`_
-- `Multi-Process (DSPV) Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_dspv.py>`_
 - `Multi-Process (SPMD) Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py>`_
 
 K-Means Clustering
 
 - `Single-Process K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_batch.py>`_
-- `Multi-Process (DSPV) K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_dspv.py>`_
 - `Multi-Process (SPMD) K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_spmd.py>`_
 
 Multivariate Outlier Detection
@@ -112,7 +106,7 @@ Optimization Solvers-Mean Squared Error Algorithm (MSE)
 
 Logistic Loss
 
-- `Logistic LossSGD <https://github.com/IntelPython/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`_
+- `Logistic Loss SGD <https://github.com/IntelPython/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`_
 
 Stochastic Gradient Descent Algorithm
 

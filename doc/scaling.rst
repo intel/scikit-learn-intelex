@@ -39,13 +39,9 @@ The provided binaries use the Intel® MPI library, but can also be compiled for 
 
 Single Program Multiple Data (SPMD)
 -----------------------------------
-The above described approach assume no awarenes of the distribution, it works as
-a Distributed Single Process View (DSPV). It has a inherent scalability bottleneck, because
-files/data always goes through a master node. Most processes in the network
-only serve as 'slaves'.
 
-To get around this bottleneck daal4py also provides a SPMD-mode, e.g. allows
-programming in the usual MPI style. No worries, you do not need mpi4py or alike
+daal4py provides a SPMD-mode, e.g. allows programming in the usual MPI style.
+No worries, you do not need mpi4py or alike
 for this (even though of course you are free to use it together with daal4py).
 
 Any of the above algorithms return a the usable result on all processes if the
@@ -78,30 +74,24 @@ The following algorithms support distribution:
 
 - PCA (pca)
 
-  - `DSPV PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_dspv.py>`_
   - `SPMD PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`_
 
 - SVD (svd)
 
-  - `DSPV SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_dspv.py>`_
   - `SPMD SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
 
 - Linear Regression Training (linear_regression_training)
 
-  - `DSPV Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_dspv.py>`_
   - `SPMD Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py>`_
 
 - Ridge Regression Training (ridge_regression_training)
 
-  - `DSPV Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_dspv.py>`_
   - `SPMD Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py>`_
 
 - Multinomial Naive Bayes Training (multinomial_naive_bayes_training)
 
-  - `DSPV Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_dspv.py>`_
   - `SPMD Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py>`_
 
 - K-Means (kmeans_init and kmeans)
 
-  - `DSPV K-Mmeans <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_dspv.py>`_
   - `SPMD K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_spmd.py>`_

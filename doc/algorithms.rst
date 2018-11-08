@@ -10,7 +10,6 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_batch.py>`_
-- `Multi-Process (DSPV) PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_dspv.py>`_
 - `Multi-Process (SPMD) PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`_
 
 .. autoclass:: daal4py.pca
@@ -38,7 +37,6 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_batch.py>`_
-- `Multi-Process (DSPV) SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_dspv.py>`_
 - `Multi-Process (SPMD) SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
 
 .. autoclass:: daal4py.svd
@@ -129,7 +127,6 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_batch.py>`_
-- `Multi-Process (DSPV) Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_dspv.py>`_
 - `Multi-Process (SPMD) Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py>`_
 
 .. autoclass:: daal4py.multinomial_naive_bayes_training
@@ -251,7 +248,6 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_batch.py>`_
-- `Multi-Process (DSPV) Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_dspv.py>`_
 - `Multi-Process (SPMD) Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py>`_
 
 .. autoclass:: daal4py.linear_regression_training
@@ -271,7 +267,6 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_batch.py>`_
-- `Multi-Process (DSPV) Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_dspv.py>`_
 - `Multi-Process (SPMD) Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py>`_
 
 .. autoclass:: daal4py.ridge_regression_training
@@ -291,7 +286,6 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_batch.py>`_
-- `Multi-Process (DSPV) K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_dspv.py>`_
 - `Multi-Process (SPMD) K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_spmd.py>`_
 
 K-Means Initialization
