@@ -17,6 +17,7 @@
 #ifndef _DIST_KMEANS_INCLUDED_
 #define _DIST_KMEANS_INCLUDED_
 
+#include <cmath>
 #include "dist_custom.h"
 #include "map_reduce_tree.h"
 
@@ -60,7 +61,7 @@ public:
                 fres = algo.run_step2Master__final(std::vector< typename Algo::iomstep2Master__final_type::input1_type >(1, pres));
                 // now check if we convered/reached max_iter
                 if(iter < algo._maxIterations) {
-                    double new_goal = fres->get(daal::algorithms::kmeans::goalFunction)->daal::data_management::NumericTable::getValue<double>(0, 0);
+                    double new_goal = fres->get(daal::algorithms::kmeans::goalFunction)->daal::data_management::NumericTable::template getValue<double>(0, 0);
                     if(std::abs(goal - new_goal) > accuracyThreshold) {
                         centroids = fres->get(daal::algorithms::kmeans::centroids);
                         goal = new_goal;

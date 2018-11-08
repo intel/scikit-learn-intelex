@@ -19,13 +19,15 @@ requirements:
         - daal-static >=2019.0   # [win]
         - cython
         - jinja2
-        - mpich
+        - mpich                  # [not win]
+        - impi-devel             # [win]
     run:
         - python
         - numpy >=1.13
         - tbb
         - daal >=2019.0
-        - mpich
+        - mpich                  # [not win]
+        - impi_rt                # [win]
 
 build:
     number: {{buildnumber}}

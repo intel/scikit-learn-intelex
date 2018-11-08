@@ -886,7 +886,10 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False):
     global no_warn
     if warn_all:
         no_warn = {}
-    iface = cython_interface(jp(daalroot, 'include', 'algorithms'))
+    ipath = jp(daalroot, 'include', 'algorithms')
+    assert os.path.isfile(jp(ipath, 'algorithm.h')) and os.path.isfile(jp(ipath, 'model.h')),\
+           "Path/$DAALROOT '"+ipath+"' doesn't seem host DAAL headers. Please provide correct daalroot."
+    iface = cython_interface(ipath)
     iface.read()
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(['kmeans',
                                             'pca',
