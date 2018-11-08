@@ -28,8 +28,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Algorithms" href="algorithms.html" />
-    <link rel="prev" title="Fast, Scalable and Easy Machine Learning With DAAL4PY" href="index.html" /> 
+    <link rel="prev" title="Examples" href="examples.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -84,13 +83,15 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">About daal4py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Scaling on Distributed Memory (Multiprocessing)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#it-s-easy">It’s Easy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#single-program-multiple-data-spmd">Single Program Multiple Data (SPMD)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
 </ul>
 
             
@@ -195,16 +196,12 @@ se standard MPI mechanics, like:</p>
 </div>
 <div class="section" id="single-program-multiple-data-spmd">
 <h2>Single Program Multiple Data (SPMD)<a class="headerlink" href="#single-program-multiple-data-spmd" title="Permalink to this headline">¶</a></h2>
-<p>The above described approach assume no awarenes of the distribution, it works as
-a Distributed Single Process View (DSPV). It has a inherent scalability bottleneck, because
-files/data always goes through a master node. Most processes in the network
-only serve as ‘slaves’.</p>
-<p>To get around this bottleneck daal4py also provides a SPMD-mode, e.g. allows
-programming in the usual MPI style. No worries, you do not need mpi4py or alike
+<p>daal4py provides a SPMD-mode, e.g. allows programming in the usual MPI style.
+No worries, you do not need mpi4py or alike
 for this (even though of course you are free to use it together with daal4py).</p>
 <p>Any of the above algorithms return a the usable result on all processes if the
 distribution engine was initialized for SPMD:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">daalinit</span><span class="p">(</span><span class="n">spmd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">daalinit</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>The only other difference to the above is that your program needs to tell each
@@ -217,7 +214,7 @@ this is usually done conditinally on the process id/rank. daal4py provides
 <p>Don’t forget to configure your algorithm with <code class="docutils literal notranslate"><span class="pre">distributed=True</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
 <span class="n">daalinit</span><span class="p">(</span><span class="n">spmd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="n">TRUE</span><span class="p">)</span>
+<span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s1">&#39;input-</span><span class="si">{}</span><span class="s1">.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">my_procid</span><span class="p">()))</span>
 <span class="n">daalfini</span><span class="p">()</span>
 </pre></div>
@@ -232,33 +229,27 @@ this is usually done conditinally on the process id/rank. daal4py provides
 <p>The following algorithms support distribution:</p>
 <ul class="simple">
 <li>PCA (pca)<ul>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_dspv.py">DSPV PCA</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/pca_spmd.py">SPMD PCA</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py">PCA</a></li>
 </ul>
 </li>
 <li>SVD (svd)<ul>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_dspv.py">DSPV SVD</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/svd_spmd.py">SPMD SVD</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py">SVD</a></li>
 </ul>
 </li>
 <li>Linear Regression Training (linear_regression_training)<ul>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/linear_regression_dspv.py">DSPV Linear Regression</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/linear_regression_spmd.py">SPMD Linear Regression</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py">Linear Regression</a></li>
 </ul>
 </li>
 <li>Ridge Regression Training (ridge_regression_training)<ul>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/ridge_regression_dspv.py">DSPV Ridge Regression</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/ridge_regression_spmd.py">SPMD Ridge Regression</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py">Ridge Regression</a></li>
 </ul>
 </li>
 <li>Multinomial Naive Bayes Training (multinomial_naive_bayes_training)<ul>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/naive_bayes_dspv.py">DSPV Naive Bayes</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/naive_bayes_spmd.py">SPMD Naive Bayes</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py">Naive Bayes</a></li>
 </ul>
 </li>
 <li>K-Means (kmeans_init and kmeans)<ul>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/kmeans_dspv.py">DSPV K-Mmeans</a></li>
-<li><a class="reference external" href="https://github.intel.com/SAT/daal4py/blob/master/examples/kmeans_spmd.py">SPMD K-Means</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_spmd.py">K-Means</a></li>
 </ul>
 </li>
 </ul>
@@ -273,10 +264,8 @@ this is usually done conditinally on the process id/rank. daal4py provides
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="algorithms.html" class="btn btn-neutral float-right" title="Algorithms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-      
-        <a href="index.html" class="btn btn-neutral" title="Fast, Scalable and Easy Machine Learning With DAAL4PY" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

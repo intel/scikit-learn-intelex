@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Scaling on Distributed Memory (Multiprocessing)" href="scaling.html" /> 
+    <link rel="next" title="Algorithms" href="algorithms.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -82,9 +82,11 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">About daal4py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
 </ul>
 
             
@@ -154,13 +156,46 @@
 <p>Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
 to use. It provides highly configurable Machine Learning kernels, some of which
 can be easily and efficiently scaled out to clusters of workstations.
-Internally it uses Intel(R) DAAL (Intel(R) Data Analytics Acceleration
-Library) to get best performance.</p>
-<div class="section" id="it-s-easy">
-<h2>It’s Easy<a class="headerlink" href="#it-s-easy" title="Permalink to this headline">¶</a></h2>
-<p>A daal4py machine learning algorithm gets constructed with a rich set of
-parameters. Let’s assume we want to find the initial set of centroids for kmeans.
-We create an algorithm and configure it for 10 clusters using the ‘PlusPlus’ method:</p>
+Internally it uses Intel® DAAL (Intel® Data Analytics Acceleration
+Library) to deliver the  best performance.</p>
+<div class="section" id="designed-for-data-scientists-and-framework-designers">
+<h2>Designed for Data Scientists and Framework Designers<a class="headerlink" href="#designed-for-data-scientists-and-framework-designers" title="Permalink to this headline">¶</a></h2>
+<p>daal4py was created to give data scientists the easist way to utilize Intel® DAAL’s
+powerful machine learning building blocks directly in a high-productivity manner.
+A simplified API gives high-level abstractions to the user with minimal boilerplate,
+allowing for quick to write and easy to maintain code when utilizing Jupyter Notebooks.
+For scaling capabilities, daal4py also provides the ability to do distributed machine
+learning, giving a quick way to scale out.</p>
+<p>For framework designers, daal4py’s has been fashioned to be built under other
+frameworks from both an API and feature perspective.  The machine learning models split
+the training and inference classes, allowing the model to be exported and serialized
+if desired.  This design also gives the flexibility to work directly with the model and
+associated primitives, allowing one to customize the behavior of the model itself.
+The daal4py package can be built with customized algorithm loadouts, allowing for a
+smaller footprint of dependencies when neessary.</p>
+</div>
+<div class="section" id="api-design-and-usage">
+<h2>API Design and usage<a class="headerlink" href="#api-design-and-usage" title="Permalink to this headline">¶</a></h2>
+<p>As an example of the type of API that would be used in a data science context,
+the linear regression workflow is showcased below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">daal4py</span> <span class="k">as</span> <span class="nn">d4p</span>
+<span class="c1"># train, test, and target are Pandas dataframes</span>
+
+<span class="n">d4p_lm</span> <span class="o">=</span> <span class="n">d4p</span><span class="o">.</span><span class="n">linear_regression_training</span><span class="p">(</span><span class="n">interceptFlag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">lm_trained</span> <span class="o">=</span> <span class="n">d4p_lm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+
+<span class="n">lm_predictor_component</span> <span class="o">=</span> <span class="n">d4p</span><span class="o">.</span><span class="n">linear_regression_prediction</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">lm_predictor_component</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">lm_trained</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the example above, it can be seen that model is divided into training and
+prediction.  This gives flexibility when writing custom grid searches and
+custom functions that modify model behavior or use it as a parameter.  Daal4py
+also allows for direct usage of NumPy arrays instead of DAAL’s NumericTables,
+which allow for better integration with the NumPy/SciPy stack.</p>
+<p>Daal4py machine learning algorithms are constructed with a rich set of
+parameters. Assuming we want to find the initial set of centroids for kmeans,
+we first create an algorithm and configure it for 10 clusters using the ‘PlusPlus’ method:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -178,7 +213,7 @@ We create an algorithm and configure it for 10 clusters using the ‘PlusPlus’
 <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">centroids</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You can even run this on a cluster by simple adding initializing/finalizing the
+<p>One can even run this on a cluster by simple adding initializing/finalizing the
 network and adding a keyword-parameter:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
 <span class="n">daalinit</span><span class="p">()</span>
@@ -187,8 +222,19 @@ network and adding a keyword-parameter:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="it-s-fast">
-<h2>It’s Fast<a class="headerlink" href="#it-s-fast" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="daal4py-s-design">
+<h2>Daal4py’s Design<a class="headerlink" href="#daal4py-s-design" title="Permalink to this headline">¶</a></h2>
+<p>The design of daal4py utilizes several different technologies to deliver Intel®
+DAAL performance in a flexible design to Data Scientists and Framework designers.
+The package uses Jinja templates to generate Cython-wrapped DAAL C++ headers, with
+Cython as a bridge between the generated DAAL code and the Python layer.
+This design allows for quicker development cycles and acts as a reference design
+to those looking to tailor their build of daal4py.  Cython also allows for good
+Python behavior, both for compatability to different frameworks and for
+pickling and serialization.</p>
+</div>
+<div class="section" id="built-for-performance">
+<h2>Built for Performance<a class="headerlink" href="#built-for-performance" title="Permalink to this headline">¶</a></h2>
 <p>Besides superior (e.g. close to native C++ Intel DAAL) performance on a single
 node, the distribution mechanics of daal4py provides excellent strong and weak
 scaling. It nicely handles distributing a fixed input size on increasing
@@ -214,12 +260,13 @@ Oracle Linux Server release 7.4, using 64-bit floating point numbers</p>
 </div>
 <div class="section" id="getting-daal4py">
 <h2>Getting daal4py<a class="headerlink" href="#getting-daal4py" title="Permalink to this headline">¶</a></h2>
-<p>daal4py is distributed as source only. Sources and build instructions are
+<p>daal4py is available on our Intel channel on Anaconda (<a class="reference external" href="https://anaconda.org/intel/daal4py">https://anaconda.org/intel/daal4py</a>)
+, and also from source. Sources and build instructions are
 available at <a class="reference external" href="https://github.com/IntelPython/daal4py">https://github.com/IntelPython/daal4py</a>.</p>
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>All algorithms work the same way:</p>
+<p>All algorithms in daal4py work the same way:</p>
 <ol class="arabic simple">
 <li>Instantiate and parameterize</li>
 <li>Run/compute on input data</li>
@@ -233,14 +280,18 @@ Each algorithm returns a class-like object with properties as its result.</p>
 <h2>Content<a class="headerlink" href="#content" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#it-s-easy">It’s Easy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#single-program-multiple-data-spmd">Single Program Multiple Data (SPMD)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">About daal4py</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#designed-for-data-scientists-and-framework-designers">Designed for Data Scientists and Framework Designers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-design-and-usage">API Design and usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#daal4py-s-design">Daal4py’s Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#built-for-performance">Built for Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-daal4py">Getting daal4py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#content">Content</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="algorithms.html#principal-component-analysis-pca">Principal Component Analysis (PCA)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="algorithms.html#singular-value-decomposition-svd">Singular Value Decomposition (SVD)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="algorithms.html#moments-of-low-order">Moments of Low Order</a></li>
@@ -251,6 +302,17 @@ Each algorithm returns a class-like object with properties as its result.</p>
 <li class="toctree-l2"><a class="reference internal" href="algorithms.html#optimization-solvers">Optimization Solvers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="algorithms.html#distances">Distances</a></li>
 <li class="toctree-l2"><a class="reference internal" href="algorithms.html#trees">Trees</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#data-science-examples">Data Science examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#general-usage">General usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scaling.html#it-s-easy">It’s Easy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scaling.html#single-program-multiple-data-spmd">Single Program Multiple Data (SPMD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scaling.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
 </ul>
 </li>
 </ul>
@@ -266,7 +328,7 @@ Each algorithm returns a class-like object with properties as its result.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="scaling.html" class="btn btn-neutral float-right" title="Scaling on Distributed Memory (Multiprocessing)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="algorithms.html" class="btn btn-neutral float-right" title="Algorithms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>
