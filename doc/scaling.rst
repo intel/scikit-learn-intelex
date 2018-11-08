@@ -47,7 +47,7 @@ for this (even though of course you are free to use it together with daal4py).
 Any of the above algorithms return a the usable result on all processes if the
 distribution engine was initialized for SPMD::
 
-  daalinit(spmd=True)
+  daalinit()
 
 The only other difference to the above is that your program needs to tell each
 process which file/array it should operate on. Like with other SPMD programs
@@ -60,7 +60,7 @@ Don't forget to configure your algorithm with ``distributed=True``::
 
   from daal4py import daalinit, daalfini, kmeans_init
   daalinit(spmd=True)
-  kmi = kmeans_init(10, method="plusPlusDense", distributed=TRUE)
+  kmi = kmeans_init(10, method="plusPlusDense", distributed=True)
   result = kmi.compute('input-{}.csv'.format(my_procid()))
   daalfini()
 
@@ -74,24 +74,24 @@ The following algorithms support distribution:
 
 - PCA (pca)
 
-  - `SPMD PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`_
+  - `PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`_
 
 - SVD (svd)
 
-  - `SPMD SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
+  - `SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
 
 - Linear Regression Training (linear_regression_training)
 
-  - `SPMD Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py>`_
+  - `Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py>`_
 
 - Ridge Regression Training (ridge_regression_training)
 
-  - `SPMD Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py>`_
+  - `Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py>`_
 
 - Multinomial Naive Bayes Training (multinomial_naive_bayes_training)
 
-  - `SPMD Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py>`_
+  - `Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py>`_
 
 - K-Means (kmeans_init and kmeans)
 
-  - `SPMD K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_spmd.py>`_
+  - `K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_spmd.py>`_
