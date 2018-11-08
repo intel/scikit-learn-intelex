@@ -54,6 +54,7 @@ from .wrappers import hpat_types
 # generic utility functions/defs needed by generated code
 cython_header = '''
 # distutils: language = c++
+#cython: language_level=2
 
 # Import the Python-level symbols of numpy
 import numpy as np
