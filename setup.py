@@ -76,8 +76,14 @@ else:
     DIST_CFLAGS  = ['-D_DIST_',]
     DIST_INCDIRS = [jp(mpi_root, 'include')]
     DIST_LIBDIRS = [jp(mpi_root, 'lib')]
-    DIST_LIBS    = ['mpi']
-
+    if IS_WIN:
+        if os.path.isfile(jp(mpi_root, 'lib', 'mpi.lib')):
+            DIST_LIBS    = ['mpi']
+        if os.path.isfile(jp(mpi_root, 'lib', 'impi.lib')):
+            DIST_LIBS    = ['impi']
+        assert DIST_LIBS, "Couldn't find MPI library"
+    else:
+        DIST_LIBS    = ['mpi']
 DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():

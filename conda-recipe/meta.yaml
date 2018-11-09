@@ -16,7 +16,7 @@ requirements:
         - numpy >=1.13
         - tbb-devel
         - daal-devel >=2019.0
-        - daal-static >=2019.0   # [win]
+#        - daal-static  # [win and daal < 2019.1]
         - cython
         - jinja2
         - mpich                  # [not win]

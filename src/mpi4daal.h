@@ -100,8 +100,8 @@ struct MPI4DAAL
 
         // gather all partial results
         // First get all sizes, then gather on root
-        int sizes[nRanks];
-        int offsets[nRanks];
+        int * sizes = new int[nRanks];
+        int * offsets = new int[nRanks];
         int mysize = in_arch.getSizeOfArchive();
         MPI_Gather(&mysize, 1, MPI_INT, sizes, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
@@ -131,6 +131,9 @@ struct MPI4DAAL
             }
             delete [] buff;
         }
+
+		delete [] sizes;
+		delete [] offsets;
 
         return all;
     }
