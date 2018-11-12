@@ -32,7 +32,6 @@ if __name__ == "__main__":
 
     # configure a PCA object to use svd instead of default correlation
     algo = d4p.pca(method='svdDense', distributed=True)
-    
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 

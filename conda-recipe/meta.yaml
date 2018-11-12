@@ -37,15 +37,11 @@ test:
     imports:
         - daal4py
     source_files:
-        - examples/run_all.sh
         - examples/run_examples.py
         - examples/*batch.py
         - examples/*spmd.py
         - examples/data
         - tests
-    commands:
-        - cd tests && python test_examples.py; cd ..
-        - cd examples && ./run_all.sh
 
 about:
     license: Apache 2.0

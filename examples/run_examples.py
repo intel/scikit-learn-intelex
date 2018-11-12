@@ -39,6 +39,8 @@ def get_exe_cmd(ex, nodist):
         return '"' + sys.executable + '" "' + ex + '"'
     elif nodist:
         return None
+    elif IS_WIN:
+        return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
     else:
         return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
 
