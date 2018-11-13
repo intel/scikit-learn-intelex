@@ -2,6 +2,9 @@ import os
 import sys
 import unittest
 
+if sys.platform in ['win32', 'cygwin']:
+    os.environ['PATH'] = ';'.join([os.environ['PATH'], os.path.join(os.environ['CONDA_PREFIX'], 'Library', 'bin', 'libfabric')])
+
 here = os.path.abspath(os.path.dirname(__file__))
 ex_dir = os.path.join(os.path.dirname(here), "examples")
 
