@@ -37,6 +37,7 @@ test:
     imports:
         - daal4py
     source_files:
+        - examples/__init__.py
         - examples/run_examples.py
         - examples/*batch.py
         - examples/*spmd.py
