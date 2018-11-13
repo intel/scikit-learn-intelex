@@ -6,7 +6,7 @@ if sys.platform in ['win32', 'cygwin']:
     os.environ['PATH'] = ';'.join([os.environ['PATH'], os.path.join(os.environ['CONDA_PREFIX'], 'Library', 'bin', 'libfabric')])
 
 here = os.path.abspath(os.path.dirname(__file__))
-ex_dir = os.path.join(os.path.dirname(here), "examples")
+ex_dir = os.path.join(here, "examples")
 
 from examples.run_examples import run_all
 from tests.test_examples import Test
