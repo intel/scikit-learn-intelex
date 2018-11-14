@@ -45,6 +45,11 @@ Gradient Boosted Classification
 - `Single-Process Gradient Boosted Classification
   <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_classification_batch.py>`_
 
+k-Nearest Neighbors (kNN)
+
+- `Single-Process kNN
+  <https://github.com/IntelPython/daal4py/blob/master/examples/kdtree_knn_classification_batch.py>`_
+
 Multinomial Naive Bayes
 
 - `Single-Process Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_batch.py>`_
