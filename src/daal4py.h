@@ -48,13 +48,14 @@ using daal::services::LibraryVersionInfo;
 #endif
 
 extern "C" {
-void c_daalinit(bool spmd=false, int flag=0, int nthreads=-1);
+void c_daalinit(int nthreads=-1);
 void c_daalfini();
 size_t c_num_procs();
 size_t c_my_procid();
 }
 
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;
+typedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;
 
 template< typename T >
 bool use_default(const daal::services::SharedPtr<T> * attr)
@@ -163,9 +164,10 @@ struct TableOrFList
     inline TableOrFList()
         : table(), file(), tlist(), flist() {}
     TableOrFList(PyObject *);
-    //operator daal::data_management::NumericTablePtr() const { return table; }
-    //operator bool() const { return table or flist.size() > 0; }
 };
+
+// return input as DAAL numeric table.
+extern const daal::data_management::NumericTablePtr get_table(const TableOrFList & t);
 
 template< typename T >
 struct RAW

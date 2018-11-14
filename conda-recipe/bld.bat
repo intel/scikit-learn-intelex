@@ -1,14 +1,9 @@
-if "%PY3K%"=="1" (
-    set ARGS=""
-) else (
-    set ARGS="--old-and-unmanageable"
-)
-
 rem set NO_DIST=1
 
 set DAAL4PY_VERSION=%PKG_VERSION%
-set CNCROOT=%PREFIX%
 set TBBROOT=%PREFIX%
+set MPIROOT=%PREFIX%\Library
 set DAALROOT=%PREFIX%
+set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
 
-%PYTHON% setup.py install %ARGS%
+%PYTHON% setup.py install

@@ -194,7 +194,7 @@ SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-3) + (True, ['data'],
 # Do we want to include the flow-spec in here?
 has_dist = {
     'algorithms::pca' : {
-        'pattern': 'applyGather',
+        'pattern': 'map_reduce_star',
         'step_specs': [SSpec(name      = 'step1Local',
                              input     = ['daal::data_management::NumericTablePtr'],
                              output    = 'daal::services::SharedPtr< daal::algorithms::pca::PartialResult< method > >',
@@ -210,7 +210,7 @@ has_dist = {
                    ],
     },
     'algorithms::multinomial_naive_bayes::training' : {
-        'pattern': 'applyGather',
+        'pattern': 'map_reduce_star',
         'step_specs': [SSpec(name      = 'step1Local',
                              input      = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              output     = 'daal::services::SharedPtr< daal::algorithms::multinomial_naive_bayes::training::PartialResult >',
@@ -226,7 +226,7 @@ has_dist = {
                    ],
     },
     'algorithms::linear_regression::training' : {
-        'pattern': 'mapReduce',
+        'pattern': 'map_reduce_tree',
         'step_specs': [SSpec(name      = 'step1Local',
                              input       = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              inputnames  = ['data', 'dependentVariables'],
@@ -247,7 +247,7 @@ has_dist = {
                    ],
     },
     'algorithms::ridge_regression::training' : {
-        'pattern': 'mapReduce',
+        'pattern': 'map_reduce_tree',
         'step_specs': [SSpec(name      = 'step1Local',
                              input       = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              inputnames  = ['data', 'dependentVariables'],
@@ -268,7 +268,7 @@ has_dist = {
                    ],
     },
     'algorithms::svd' : {
-        'pattern': 'applyGather',
+        'pattern': 'map_reduce_star',
         'step_specs': [SSpec(name      = 'step1Local',
                              input     = ['daal::data_management::NumericTablePtr'],
                              output    = 'daal::data_management::DataCollectionPtr',
@@ -284,7 +284,7 @@ has_dist = {
     },
     'algorithms::kmeans::init' : {
         #        'iombatch': 'IOManagerSingle< algob_type, daal::services::SharedPtr< typename algob_type::InputType >, daal::data_management::NumericTablePtr, daal::algorithms::kmeans::init::ResultId, daal::algorithms::kmeans::init::centroids >',
-        'pattern': 'dkmi',
+        'pattern': 'dist_custom',
         'step_specs': [SSpec(name      = 'step1Local',
                              input     = ['daal::data_management::NumericTablePtr'],
                              extrainput= 'size_t nRowsTotal, size_t offset',
@@ -320,7 +320,7 @@ has_dist = {
                    ],
     },
     'algorithms::kmeans' : {
-        'pattern': 'mapReduceIter',
+        'pattern': 'dist_custom',
         'step_specs': [SSpec(name      = 'step1Local',
                              input     = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr'],
                              setinput  = ['daal::algorithms::kmeans::data', 'daal::algorithms::kmeans::inputCentroids'],
@@ -342,6 +342,12 @@ has_dist = {
                              addinput  = 'daal::algorithms::kmeans::partialResults',
                              construct = '_nClusters',)
                    ],
+    },
+    'algorithms::logistic_regression::training' : {
+        'pattern': 'dist_custom',
+        'step_specs' : [],
+        'inputnames' : ['data', 'labels'],
+        'inputdists' : ['OneD', 'OneD'],
     },
 }
 

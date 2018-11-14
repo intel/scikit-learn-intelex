@@ -18,7 +18,7 @@
 
 # daal4py K-Means example for distributed memory systems; SPMD mode
 # run like this:
-#    mpirun -genv DIST_CNC=MPI -n 4 python ./kmeans_spmd.py
+#    mpirun -n 4 python ./kmeans_spmd.py
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
@@ -26,14 +26,14 @@ from numpy import loadtxt, allclose
 if __name__ == "__main__":
 
     # Initialize SPMD mode
-    d4p.daalinit(spmd=True)
+    d4p.daalinit()
 
     infile = "./data/distributed/kmeans_dense.csv"
     nClusters = 10
     maxIter = 25
 
     # configure a kmeans-init
-    initrain_algo = d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True)
+    init_algo = d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True)
     # Load the data
     data = loadtxt(infile, delimiter=',')
     # now slice the data, it would have been better to read only what we need, of course...
@@ -41,20 +41,21 @@ if __name__ == "__main__":
     data = data[rpp*d4p.my_procid():rpp*d4p.my_procid()+rpp,:]
 
     # compute initial centroids
-    initrain_result = initrain_algo.compute(data)
+    init_result = init_algo.compute(data)
     # The results provides the initial centroids
-    assert initrain_result.centroids.shape[0] == nClusters
+    assert init_result.centroids.shape[0] == nClusters
 
     # configure kmeans main object
     algo = d4p.kmeans(nClusters, maxIter, distributed=True)
     # compute the clusters/centroids
-    result = algo.compute(data, initrain_result.centroids)
+    result = algo.compute(data, init_result.centroids)
     
     # Note: we could have done this in just one line:
     # d4p.kmeans(nClusters, maxIter, assignFlag=True, distributed=True).compute(data, d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True).compute(data).centroids)
 
     # Kmeans result objects provide assignments (if requested), centroids, goalFunction, nIterations and objectiveFunction
     assert result.centroids.shape[0] == nClusters
+    print(result.nIterations, result.centroids[0], maxIter)
     # we'd need an extra call to kmeans.compute(10, 0) to get the assignments; getting assignments is not yet supported in dist mode
     assert result.assignments == None
     assert result.nIterations <= maxIter

@@ -18,15 +18,14 @@
 
 # daal4py Naive Bayes Classification example for distributed memory systems; SPMD mode
 # run like this:
-#    mpirun -genv DIST_CNC=MPI -n 4 python ./naive_bayes_spmd.py
+#    mpirun -n 4 python ./naive_bayes_spmd.py
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 if __name__ == "__main__":
-
     # Initialize SPMD mode
-    d4p.daalinit(spmd=True)
+    d4p.daalinit()
 
     # Each process gets its own data
     infile = "./data/batch/naivebayes_train_dense.csv"

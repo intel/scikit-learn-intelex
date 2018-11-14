@@ -464,6 +464,16 @@ TableOrFList::TableOrFList(PyObject * input)
     }
 }
 
+const daal::data_management::NumericTablePtr get_table(const TableOrFList & t)
+{
+    if(t.table) return t.table;
+    if(t.file.size()) return readCSV(t.file);
+    if(t.tlist.size() == 1) return t.tlist[0];
+    if(t.flist.size() == 1) return readCSV(t.flist[0]);
+    throw std::invalid_argument("one and only one input per process allowed");
+    return daal::data_management::NumericTablePtr();
+}
+
 const daal::data_management::NumericTablePtr readCSV(const std::string& fname)
 {
     daal::data_management::FileDataSource< daal::data_management::CSVFeatureManager >
@@ -513,3 +523,43 @@ int64_t string2enum(const std::string& str, std::map< std::string, int64_t > & s
     }
     return (r | strmap[str.substr(previous, current - previous)]);
 }
+
+
+#ifdef _DIST_
+#include "mpi4daal.h"
+#endif
+
+extern "C" {
+void c_daalinit(int nthreads)
+{
+    if(nthreads > 0) daal::services::Environment::getInstance()->setNumberOfThreads(nthreads);
+#ifdef _DIST_
+    MPI4DAAL::init();
+#endif
+}
+
+void c_daalfini()
+{
+#ifdef _DIST_
+    MPI4DAAL::fini();
+#endif
+}
+
+size_t c_num_procs()
+{
+#ifdef _DIST_
+    return MPI4DAAL::nRanks();
+#else
+    return 1;
+#endif
+}
+
+size_t c_my_procid()
+{
+#ifdef _DIST_
+    return MPI4DAAL::rank();
+#else
+    return 0;
+#endif
+}
+} // extern "C"

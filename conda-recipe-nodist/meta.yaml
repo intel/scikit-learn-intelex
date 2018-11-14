@@ -1,5 +1,5 @@
 {% set version = '0.2019.2' %}
-{% set buildnumber = 1 %}
+{% set buildnumber = 0 %}
 
 package:
     name: daal4py
@@ -15,15 +15,15 @@ requirements:
         - setuptools
         - numpy >=1.13
         - tbb-devel
-        - daal-devel >=2019.0.0
-        - daal-static >=2019.0.0   # [win]
+        - daal-devel >=2019.0
+#        - daal-static >=2019.0   # [win and daal < 2019.1]
         - cython
         - jinja2
     run:
         - python
         - numpy >=1.13
         - tbb
-        - daal >=2019.0.0
+        - daal >=2019.0
 
 build:
     number: {{buildnumber}}
@@ -36,8 +36,6 @@ test:
         - examples/*batch.py
         - examples/data/batch
         - tests
-    commands:
-        - cd tests && python test_examples.py
 
 about:
     license: Apache 2.0

@@ -6,7 +6,7 @@ language: python
 
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
-  #  - "2.7"
+  - "2.7"
   # - "3.5"
   - "3.6"
   
@@ -28,14 +28,14 @@ install:
   - conda info -a
 
   # create conda env with all our deps
-  - conda create -q -n D4P -c intel -c intel/label/test -c conda-forge python=$TRAVIS_PYTHON_VERSION mpich cnc tbb-devel daal daal-include cython jinja2 numpy
+  - conda create -q -n D4P -c intel -c conda-forge python=$TRAVIS_PYTHON_VERSION mpich tbb-devel daal daal-include cython jinja2 numpy
   - source activate D4P
-  - NO_DIST=1 DAALROOT=$CONDA_PREFIX CNCROOT=$CONDA_PREFIX TBBROOT=$CONDA_PREFIX python setup.py install
+  - DAALROOT=$CONDA_PREFIX TBBROOT=$CONDA_PREFIX MPIROOT=$CONDA_PREFIX python setup.py install
 
 script:
   # Your test script goes here
-  # - which mpirun && mpirun -version
+  - which mpirun && mpirun -version
   # - echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
   # - export I_MPI_SHM_LMT=shm 
-  - cd tests && python test_examples.py
-  - cd ../examples && python run_examples.py nodist
+  - cd tests && python test_examples.py; cd ..
+  - cd examples && python run_examples.py

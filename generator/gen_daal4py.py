@@ -859,7 +859,7 @@ class cython_interface(object):
                     hlargs[ns] = tmp[7]
 
         hds = wg.gen_headers()
-        fts = wg.gen_footers(dtypes)
+        fts = wg.gen_footers()
 
         pyx_end += fts[1]
         # we add a comment with tables providing parameters for each algorithm
@@ -874,7 +874,7 @@ class cython_interface(object):
                 cpp_end += '\n'
         cpp_end += '\n*/\n'
         # Finally combine the different sections and return the 3 strings
-        return(hds[0] + cpp_map + cpp_begin + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
+        return(hds[0] + cpp_map + cpp_begin + fts[2] + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
 
 
 ###############################################################################
@@ -886,7 +886,10 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False):
     global no_warn
     if warn_all:
         no_warn = {}
-    iface = cython_interface(jp(daalroot, 'include', 'algorithms'))
+    ipath = jp(daalroot, 'include', 'algorithms')
+    assert os.path.isfile(jp(ipath, 'algorithm.h')) and os.path.isfile(jp(ipath, 'model.h')),\
+           "Path/$DAALROOT '"+ipath+"' doesn't seem host DAAL headers. Please provide correct daalroot."
+    iface = cython_interface(ipath)
     iface.read()
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(['kmeans',
                                             'pca',

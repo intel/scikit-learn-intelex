@@ -3,20 +3,31 @@ Scaling on Distributed Memory (Multiprocessing)
 ###############################################
 It's Easy
 ---------
-Only very minimal changes are needed to your daal4py code to allow it running on
-a cluster of workstations. Initialize the distribution engine::
+daal4py operates in SPMD style (Single Program Multiple Data), which means your
+program is executed on several processes (e.g. similar to MPI).  The use of MPI is
+not required for daal4py's SPMD-mode to work, all necessary communication and
+synchronization happens under the hood of daal4py. It is possible to use daal4py and
+mpi4py in the same program, though.
+
+Only very minimal changes are needed to your daal4py code to allow daal4py to
+run on a cluster of workstations. Initialize the distribution engine::
 
   daalinit()
 
 Add the distribution parameter to the algorithm construction::
 
-  kmi = kmeans_init(10, method="plusPlusDense", distributed=TRUE)
+  kmi = kmeans_init(10, method="plusPlusDense", distributed=True)
 
-When calling the actual computation provide a list of input files or
-input arrays. The input list represents the partitioning of your data, e.g. each
-file/array will be processed on a separate process::
+When calling the actual computation each process expects an input file or input
+array. Your program needs to tell each process which file/array it should
+operate on. Like with other SPMD programs this is usually done conditinally on
+the process id/rank ('daal4py.my_procid()'). Assume we have one file for each
+process, all having the same prefix 'file' and being suffixed by a number. The
+code could then look like this::
 
-  result = kmi.compute([file1, file2, file3, file4])
+  result = kmi.compute("file{}.csv", daal4py.my_procid())
+
+The result of the computation will now be available on all processes.
 
 Finally stop the distribution engine::
 
@@ -26,47 +37,17 @@ That's all for the python code::
 
   from daal4py import daalinit, daalfini, kmeans_init
   daalinit()
-  kmi = kmeans_init(10, method="plusPlusDense", distributed=TRUE)
-  result = kmi.compute([file1, file2, file3, file4])
+  kmi = kmeans_init(10, method="plusPlusDense", distributed=True)
+  result = kmi.compute("file{}.csv", daal4py.my_procid())
   daalfini()
 
-To actually get it exectued on several processes
-se standard MPI mechanics, like::
+To actually get it exectuted on several processes use standard MPI mechanics,
+like::
 
   mpirun -n 4 python ./kmeans.py
 
-The provided binaries use the Intel® MPI library, but can also be compiled for MPICH.
-
-Single Program Multiple Data (SPMD)
------------------------------------
-
-daal4py provides a SPMD-mode, e.g. allows programming in the usual MPI style.
-No worries, you do not need mpi4py or alike
-for this (even though of course you are free to use it together with daal4py).
-
-Any of the above algorithms return a the usable result on all processes if the
-distribution engine was initialized for SPMD::
-
-  daalinit()
-
-The only other difference to the above is that your program needs to tell each
-process which file/array it should operate on. Like with other SPMD programs
-this is usually done conditinally on the process id/rank. daal4py provides
-``my_procid()`` and ``num_procs()`` to do exactly that::
-
-  result = kmi.compute('input-{}.csv'.format(my_procid()))
-
-Don't forget to configure your algorithm with ``distributed=True``::
-
-  from daal4py import daalinit, daalfini, kmeans_init
-  daalinit(spmd=True)
-  kmi = kmeans_init(10, method="plusPlusDense", distributed=True)
-  result = kmi.compute('input-{}.csv'.format(my_procid()))
-  daalfini()
-
-Runnign SPMD programs works the same way::
-
-  mpirun genv DIST_CNC=MPI -n <num-procs> python <your-program>
+The binaries provided by Intel use the Intel® MPI library, but
+daal4py can also be compiled for any other MPI implementation.
 
 Supported Algorithms and Examples
 ---------------------------------

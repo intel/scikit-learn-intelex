@@ -24,16 +24,9 @@
 
 #ifdef _DIST_
 #include <tuple>
-#include "cnc4daal.h"
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-// serialization of a TableOrFlist
-inline void serialize(CnC::serializer & ser, TableOrFList & obj)
-{
-    ser & obj.table & obj.flist;
-}
 
 // Input/Output manager for simple algos with 2 inputs
 // abstracts from input/output types
@@ -163,10 +156,9 @@ struct PartialIOManager3Single : public PartialIOManager2Single< A, I1, I2, O, E
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#include "map_reduce.h"
-#include "map_reduce_iter.h"
-#include "apply_gather.h"
-#include "dkmi.h"
+#include "map_reduce_star.h"
+#include "map_reduce_tree.h"
+#include "dist_custom.h"
 
 #endif // _DIST_
 #endif // _HLAPI_DISTR_H_INCLUDED_

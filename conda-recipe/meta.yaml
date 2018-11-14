@@ -1,5 +1,5 @@
-{% set version = time.strftime('0.2019.%Y%m%d.%H%M') %}
-{% set buildnumber = 1 %}
+{% set version = '0.2019.2' %}
+{% set buildnumber = 0 %}
 
 package:
     name: daal4py
@@ -15,17 +15,19 @@ requirements:
         - setuptools
         - numpy >=1.13
         - tbb-devel
-        - daal-devel >=2018.0.1
-        - daal-static >=2018.0.1   # [win]
+        - daal-devel >=2019.0
+#        - daal-static  # [win and daal < 2019.1]
         - cython
         - jinja2
-        - cnc >=1.2.300
+        - mpich                  # [not win]
+        - impi-devel             # [win]
     run:
         - python
         - numpy >=1.13
         - tbb
-        - daal >=2018.0.1
-        - cnc >=1.2.300
+        - daal >=2019.0
+        - mpich                  # [not win]
+        - impi_rt                # [win]
 
 build:
     number: {{buildnumber}}
@@ -35,13 +37,12 @@ test:
     imports:
         - daal4py
     source_files:
+        - examples/__init__.py
+        - examples/run_examples.py
         - examples/*batch.py
         - examples/*spmd.py
-        - examples/*dspv.py
         - examples/data
         - tests
-    commands:
-        - cd tests && python test_examples.py
 
 about:
     license: Apache 2.0
