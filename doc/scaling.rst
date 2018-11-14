@@ -3,14 +3,14 @@ Scaling on Distributed Memory (Multiprocessing)
 ###############################################
 It's Easy
 ---------
-daal4py operates in SPMD-mode (Single Programm Multiple Data), which means your
-program is executed on several process (e.g. simialar to MPI). Any of the
-distributed algorithms return a the usable result on all processes. No worries,
-you do not need mpi4py or alike for this (even though of course you are free to
-use it together with mpi(4py)). Only very minimal changes are needed to your
-daal4py code to allow daal4py to run on a cluster of workstations.
+daal4py operates in SPMD style (Single Program Multiple Data), which means your
+program is executed on several processes (e.g. similar to MPI).  The use of MPI is
+not required for daal4py's SPMD-mode to work, all necessary communication and
+synchronization happens under the hood of daal4py. It is possible to use daal4py and
+mpi4py in the same program, though.
 
-Initialize the distribution engine::
+Only very minimal changes are needed to your daal4py code to allow daal4py to
+run on a cluster of workstations. Initialize the distribution engine::
 
   daalinit()
 
@@ -26,6 +26,8 @@ process, all having the same prefix 'file' and being suffixed by a number. The
 code could then look like this::
 
   result = kmi.compute("file{}.csv", daal4py.my_procid())
+
+The result of the computation will now be available on all processes.
 
 Finally stop the distribution engine::
 
