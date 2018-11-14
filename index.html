@@ -217,7 +217,7 @@ we first create an algorithm and configure it for 10 clusters using the ‘PlusP
 network and adding a keyword-parameter:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
 <span class="n">daalinit</span><span class="p">()</span>
-<span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">list_of_files</span><span class="p">)</span>
+<span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">my_file</span><span class="p">)</span>
 <span class="n">daalfini</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -311,7 +311,6 @@ Each algorithm returns a class-like object with properties as its result.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="scaling.html#it-s-easy">It’s Easy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#single-program-multiple-data-spmd">Single Program Multiple Data (SPMD)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scaling.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
 </ul>
 </li>

@@ -88,7 +88,6 @@
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Scaling on Distributed Memory (Multiprocessing)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#it-s-easy">It’s Easy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#single-program-multiple-data-spmd">Single Program Multiple Data (SPMD)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
 </ul>
 </li>
@@ -160,21 +159,30 @@
 <h1>Scaling on Distributed Memory (Multiprocessing)<a class="headerlink" href="#scaling-on-distributed-memory-multiprocessing" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="it-s-easy">
 <h2>It’s Easy<a class="headerlink" href="#it-s-easy" title="Permalink to this headline">¶</a></h2>
-<p>Only very minimal changes are needed to your daal4py code to allow it running on
-a cluster of workstations. Initialize the distribution engine:</p>
+<p>daal4py operates in SPMD style (Single Program Multiple Data), which means your
+program is executed on several processes (e.g. similar to MPI).  The use of MPI is
+not required for daal4py’s SPMD-mode to work, all necessary communication and
+synchronization happens under the hood of daal4py. It is possible to use daal4py and
+mpi4py in the same program, though.</p>
+<p>Only very minimal changes are needed to your daal4py code to allow daal4py to
+run on a cluster of workstations. Initialize the distribution engine:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">daalinit</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Add the distribution parameter to the algorithm construction:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="n">TRUE</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>When calling the actual computation provide a list of input files or
-input arrays. The input list represents the partitioning of your data, e.g. each
-file/array will be processed on a separate process:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">([</span><span class="n">file1</span><span class="p">,</span> <span class="n">file2</span><span class="p">,</span> <span class="n">file3</span><span class="p">,</span> <span class="n">file4</span><span class="p">])</span>
+<p>When calling the actual computation each process expects an input file or input
+array. Your program needs to tell each process which file/array it should
+operate on. Like with other SPMD programs this is usually done conditinally on
+the process id/rank (‘daal4py.my_procid()’). Assume we have one file for each
+process, all having the same prefix ‘file’ and being suffixed by a number. The
+code could then look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s2">&quot;file</span><span class="si">{}</span><span class="s2">.csv&quot;</span><span class="p">,</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">my_procid</span><span class="p">())</span>
 </pre></div>
 </div>
+<p>The result of the computation will now be available on all processes.</p>
 <p>Finally stop the distribution engine:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">daalfini</span><span class="p">()</span>
 </pre></div>
@@ -182,47 +190,18 @@ file/array will be processed on a separate process:</p>
 <p>That’s all for the python code:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
 <span class="n">daalinit</span><span class="p">()</span>
-<span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="n">TRUE</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">([</span><span class="n">file1</span><span class="p">,</span> <span class="n">file2</span><span class="p">,</span> <span class="n">file3</span><span class="p">,</span> <span class="n">file4</span><span class="p">])</span>
+<span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s2">&quot;file</span><span class="si">{}</span><span class="s2">.csv&quot;</span><span class="p">,</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">my_procid</span><span class="p">())</span>
 <span class="n">daalfini</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>To actually get it exectued on several processes
-se standard MPI mechanics, like:</p>
+<p>To actually get it exectuted on several processes use standard MPI mechanics,
+like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpirun</span> <span class="o">-</span><span class="n">n</span> <span class="mi">4</span> <span class="n">python</span> <span class="o">./</span><span class="n">kmeans</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>The provided binaries use the Intel® MPI library, but can also be compiled for MPICH.</p>
-</div>
-<div class="section" id="single-program-multiple-data-spmd">
-<h2>Single Program Multiple Data (SPMD)<a class="headerlink" href="#single-program-multiple-data-spmd" title="Permalink to this headline">¶</a></h2>
-<p>daal4py provides a SPMD-mode, e.g. allows programming in the usual MPI style.
-No worries, you do not need mpi4py or alike
-for this (even though of course you are free to use it together with daal4py).</p>
-<p>Any of the above algorithms return a the usable result on all processes if the
-distribution engine was initialized for SPMD:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">daalinit</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>The only other difference to the above is that your program needs to tell each
-process which file/array it should operate on. Like with other SPMD programs
-this is usually done conditinally on the process id/rank. daal4py provides
-<code class="docutils literal notranslate"><span class="pre">my_procid()</span></code> and <code class="docutils literal notranslate"><span class="pre">num_procs()</span></code> to do exactly that:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s1">&#39;input-</span><span class="si">{}</span><span class="s1">.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">my_procid</span><span class="p">()))</span>
-</pre></div>
-</div>
-<p>Don’t forget to configure your algorithm with <code class="docutils literal notranslate"><span class="pre">distributed=True</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
-<span class="n">daalinit</span><span class="p">(</span><span class="n">spmd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s1">&#39;input-</span><span class="si">{}</span><span class="s1">.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">my_procid</span><span class="p">()))</span>
-<span class="n">daalfini</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Runnign SPMD programs works the same way:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpirun</span> <span class="n">genv</span> <span class="n">DIST_CNC</span><span class="o">=</span><span class="n">MPI</span> <span class="o">-</span><span class="n">n</span> <span class="o">&lt;</span><span class="n">num</span><span class="o">-</span><span class="n">procs</span><span class="o">&gt;</span> <span class="n">python</span> <span class="o">&lt;</span><span class="n">your</span><span class="o">-</span><span class="n">program</span><span class="o">&gt;</span>
-</pre></div>
-</div>
+<p>The binaries provided by Intel use the Intel® MPI library, but
+daal4py can also be compiled for any other MPI implementation.</p>
 </div>
 <div class="section" id="supported-algorithms-and-examples">
 <h2>Supported Algorithms and Examples<a class="headerlink" href="#supported-algorithms-and-examples" title="Permalink to this headline">¶</a></h2>
