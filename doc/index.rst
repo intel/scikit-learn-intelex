@@ -7,14 +7,50 @@ Fast, Scalable and Easy Machine Learning With DAAL4PY
 Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
 to use. It provides highly configurable Machine Learning kernels, some of which
 can be easily and efficiently scaled out to clusters of workstations.
-Internally it uses Intel(R) DAAL (Intel(R) Data Analytics Acceleration
-Library) to get best performance.
+Internally it uses Intel® DAAL (Intel® Data Analytics Acceleration
+Library) to deliver the  best performance.
 
-It's Easy
----------
-A daal4py machine learning algorithm gets constructed with a rich set of
-parameters. Let's assume we want to find the initial set of centroids for kmeans.
-We create an algorithm and configure it for 10 clusters using the 'PlusPlus' method::
+Designed for Data Scientists and Framework Designers
+----------------------------------------------------
+daal4py was created to give data scientists the easist way to utilize Intel® DAAL's
+powerful machine learning building blocks directly in a high-productivity manner.
+A simplified API gives high-level abstractions to the user with minimal boilerplate,
+allowing for quick to write and easy to maintain code when utilizing Jupyter Notebooks.
+For scaling capabilities, daal4py also provides the ability to do distributed machine
+learning, giving a quick way to scale out.
+
+For framework designers, daal4py's has been fashioned to be built under other
+frameworks from both an API and feature perspective.  The machine learning models split
+the training and inference classes, allowing the model to be exported and serialized
+if desired.  This design also gives the flexibility to work directly with the model and
+associated primitives, allowing one to customize the behavior of the model itself.
+The daal4py package can be built with customized algorithm loadouts, allowing for a
+smaller footprint of dependencies when neessary.
+
+API Design and usage
+--------------------
+As an example of the type of API that would be used in a data science context,
+the linear regression workflow is showcased below::
+
+    import daal4py as d4p
+    # train, test, and target are Pandas dataframes
+
+    d4p_lm = d4p.linear_regression_training(interceptFlag=True)
+    lm_trained = d4p_lm.compute(train.values, target.values)
+
+    lm_predictor_component = d4p.linear_regression_prediction()
+    result = lm_predictor_component.compute(test.values, lm_trained.model)
+
+In the example above, it can be seen that model is divided into training and
+prediction.  This gives flexibility when writing custom grid searches and
+custom functions that modify model behavior or use it as a parameter.  Daal4py
+also allows for direct usage of NumPy arrays instead of DAAL's NumericTables,
+which allow for better integration with the NumPy/SciPy stack.
+
+
+Daal4py machine learning algorithms are constructed with a rich set of
+parameters. Assuming we want to find the initial set of centroids for kmeans,
+we first create an algorithm and configure it for 10 clusters using the 'PlusPlus' method::
 
     kmi = kmeans_init(10, method="plusPlusDense")
 
@@ -32,7 +68,7 @@ The full example could look like this::
     result = kmeans_init(10, method="plusPlusDense").compute('data.csv')
     print(result.centroids)
 
-You can even run this on a cluster by simple adding initializing/finalizing the
+One can even run this on a cluster by simple adding initializing/finalizing the
 network and adding a keyword-parameter::
 
     from daal4py import daalinit, daalfini, kmeans_init
@@ -40,8 +76,19 @@ network and adding a keyword-parameter::
     kmeans_init(10, method="plusPlusDense", distributed=True).compute(list_of_files)
     daalfini()
 
-It's Fast
----------
+Daal4py's Design
+----------------
+The design of daal4py utilizes several different technologies to deliver Intel®
+DAAL performance in a flexible design to Data Scientists and Framework designers.
+The package uses Jinja templates to generate Cython-wrapped DAAL C++ headers, with
+Cython as a bridge between the generated DAAL code and the Python layer.
+This design allows for quicker development cycles and acts as a reference design
+to those looking to tailor their build of daal4py.  Cython also allows for good
+Python behavior, both for compatability to different frameworks and for
+pickling and serialization.
+
+Built for Performance
+---------------------
 Besides superior (e.g. close to native C++ Intel DAAL) performance on a single
 node, the distribution mechanics of daal4py provides excellent strong and weak
 scaling. It nicely handles distributing a fixed input size on increasing
@@ -69,12 +116,13 @@ Oracle Linux Server release 7.4, using 64-bit floating point numbers
 
 Getting daal4py
 ---------------
-daal4py is distributed as source only. Sources and build instructions are
+daal4py is available on our Intel channel on Anaconda (https://anaconda.org/intel/daal4py)
+, and also from source. Sources and build instructions are
 available at https://github.com/IntelPython/daal4py.
 
 Overview
 --------
-All algorithms work the same way:
+All algorithms in daal4py work the same way:
 
 1. Instantiate and parameterize
 2. Run/compute on input data
@@ -92,5 +140,7 @@ Content
    :maxdepth: 2
    :caption: Contents:
 
+   About daal4py <index>
+   Supported Algorithms <algorithms>
+   examples
    scaling
-   algorithms
