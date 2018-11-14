@@ -118,6 +118,26 @@ Examples:
 .. autoclass:: daal4py.gbt_classification_model
    :members:
 
+k-Nearest Neighbors (kNN)
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL k-Nearest Neighbors (kNN)
+<https://software.intel.com/en-us/daal-programming-guide-k-nearest-neighbors-knn-classifier>`_
+
+Examples:
+
+- `Single-Process kNN
+  <https://github.com/IntelPython/daal4py/blob/master/examples/kdtree_knn_classification_batch.py>`_
+
+.. autoclass:: daal4py.kdtree_knn_classification_training
+.. autoclass:: daal4py.kdtree_knn_classification_training_result
+   :members:
+.. autoclass:: daal4py.kdtree_knn_classification_prediction
+.. autoclass:: daal4py.classifier_prediction_result
+   :members:
+.. autoclass:: daal4py.kdtree_knn_classification_model
+   :members:
+
 Multinomial Naive Bayes
 ^^^^^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
