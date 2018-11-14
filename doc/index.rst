@@ -73,7 +73,7 @@ network and adding a keyword-parameter::
 
     from daal4py import daalinit, daalfini, kmeans_init
     daalinit()
-    kmeans_init(10, method="plusPlusDense", distributed=True).compute(list_of_files)
+    kmeans_init(10, method="plusPlusDense", distributed=True).compute(my_file)
     daalfini()
 
 Daal4py's Design
