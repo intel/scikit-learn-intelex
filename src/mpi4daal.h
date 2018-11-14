@@ -70,7 +70,7 @@ struct MPI4DAAL
         }
         // and send it away to our recipient
         MPI_Send(&mysize, 1, MPI_INT, recpnt, tag, MPI_COMM_WORLD);
-        if(mysize) {
+        if(mysize > 0) {
             MPI_Send(in_arch.getArchiveAsArraySharedPtr().get(), mysize, MPI_CHAR, recpnt, tag, MPI_COMM_WORLD);
         }
     }
@@ -81,11 +81,11 @@ struct MPI4DAAL
         int sz(0);
         MPI_Recv(&sz, 1, MPI_INT, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         T res;
-        if(sz) {
+        if(sz > 0) {
             daal::byte * buf = new daal::byte[sz];
             MPI_Recv(buf, sz, MPI_CHAR, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             daal::data_management::OutputDataArchive out_arch(buf, sz);
-            res = daal::services::dynamicPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
+            res = daal::services::staticPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
             delete [] buf;
         }
         return res;
@@ -127,7 +127,7 @@ struct MPI4DAAL
             for(int i=0; i<nRanks; ++i) {
                 // FIXME: This is super-inefficient, we need to write our own DatArchive to avoid extra copy
                 daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff+offsets[i]), sizes[i]);
-                all[i] = daal::services::dynamicPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
+                all[i] = daal::services::staticPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
             }
             delete [] buff;
         }
@@ -160,11 +160,11 @@ struct MPI4DAAL
         } else {
             int size = 0;
             MPI_Bcast(&size, 1, MPI_INT, root, MPI_COMM_WORLD);
-            if(size) {
+            if(size > 0) {
                 char * buff = new char[size];
                 MPI_Bcast(buff, size, MPI_CHAR, root, MPI_COMM_WORLD);
                 daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff), size);
-                obj = daal::services::dynamicPointerCast<T>(out_arch.getAsSharedPtr());
+                obj = daal::services::staticPointerCast<T>(out_arch.getAsSharedPtr());
             } else {
                 obj.reset();
             }
