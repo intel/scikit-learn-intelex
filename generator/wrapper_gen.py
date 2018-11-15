@@ -666,8 +666,13 @@ private:
 
     typename iomb_type::result_type * finalize()
     {
-        _algostream->finalizeCompute();
-        return new typename iomb_type::result_type(_algostream->getResult());
+        if(_distributed) throw std::invalid_argument("finalize() not supported in distributed mode");
+        if(_streaming) {
+            _algostream->finalizeCompute();
+            return new typename iomb_type::result_type(_algostream->getResult());
+        } else {
+            return new typename iomb_type::result_type(_algob->getResult());
+        }
     }
 
 {% endif %}
@@ -745,6 +750,8 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # Init simply forwards to the C++ construction function
     def __cinit__(self,
                   {{pargs_decl|cy_decl(pargs_call, template_decl, 18)}}):
+        if distributed and streaming:
+            raise ValueError('distributed streaming not supported')
         self.c_ptr = mk_{{algo}}({{pargs_decl|cy_call(pargs_call, template_decl, 25+(algo|length))}})
 
 {% if not iface[0] %}
