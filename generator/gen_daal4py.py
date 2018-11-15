@@ -727,6 +727,8 @@ class cython_interface(object):
         }
         if ns in has_dist:
             retjp['dist'] = has_dist[ns]
+        if 'Online' in self.namespace_dict[ns].classes and not ns.endswith('pca'):
+            retjp['streaming'] = True
 
         return {ns + '::' + mode : retjp}
 
