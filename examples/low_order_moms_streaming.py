@@ -26,8 +26,14 @@ try:
     import pandas
     read_csv = lambda f, c, s=0, n=None: pandas.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=np.float64).values
 except:
-    # fall back to numpy loadtxt
-    read_csv = lambda f, c, s=0, n=np.iinfo(np.int64).max: np.atleast_2d(np.engfromtxt(f, usecols=c, delimiter=',', skip_header=s, max_rows=n))
+    # fall back to numpy genfromtxt
+    def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
+        a = np.genfromtxt(f, usecols=c, delimiter=',', skip_header=s, max_rows=n)
+        if a.shape[0] == 0:
+            raise Exception("done")
+        if a.ndim == 1:
+            return a[:, np.newaxis]
+        return a
 
 
 def main():
