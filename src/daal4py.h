@@ -224,4 +224,11 @@ T* dynamicPointerPtrCast(U *r)
     T tmp = daal::services::dynamicPointerCast<typename T::ElementType>(*r);
     return tmp ? new T(*reinterpret_cast<T*>(r)) : NULL;
 }
+
+template<typename T>
+bool is_valid_ptrptr(T * o)
+{
+    return o != NULL && (*o).get() != NULL;
+}
+
 #endif // _HLAPI_H_INCLUDED_

@@ -118,6 +118,7 @@ cdef extern from "daal4py.h":
     cdef dict_NumericTablePtr * make_dnt(PyObject * nda, void *) except +
 
     cdef T* dynamicPointerPtrCast[T,U](U*)
+    cdef bool is_valid_ptrptr[T](T * o)
 
     cdef void * e2s_algorithms_pca_result_dataForTransform
     cdef void * s2e_algorithms_pca_transform
@@ -248,14 +249,14 @@ cdef class {{flatname}}:
 {% if ('Ptr' in rtype and 'NumericTablePtr' not in rtype) or '__iface__' in rtype %}
 {% set frtype=(rtype.strip(' *&')|flat(False)|strip(' *')).replace('Ptr', '')|lower %}
         ':type: {{frtype}}'
-        if self.c_ptr == NULL:
+        if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return res
 {% else %}
         ':type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}'
-        if self.c_ptr == NULL:
+        if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
 {% if 'NumericTablePtr' in rtype %}
@@ -270,7 +271,7 @@ cdef class {{flatname}}:
     @property
     def NumberOfTrees(self):
         'FIXME'
-        if self.c_ptr == NULL:
+        if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         return get_{{flatname}}_numberOfTrees(self.c_ptr)
 {% endif %}
@@ -294,7 +295,7 @@ cdef class {{flatname}}:
 {% set frtype = m[0].replace('Ptr', '')|d2cy(False)|lower %}
     def {{m[1]|d2cy(False)}}(self, {{m[2]|d2cy(False)}} {{m[3]}}):
         ':type: {{frtype}} (or derived)'
-        if self.c_ptr == NULL:
+        if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
 {% if 'Ptr' in m[0] %}
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
