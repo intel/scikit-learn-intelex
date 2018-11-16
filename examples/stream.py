@@ -43,7 +43,7 @@ def read_next(file, chunksize):
         yield a
 
 # get the generator
-rn = read_next("./data/streaming/svd.csv", 112)
+rn = read_next("./data/batch/svd.csv", 112)
 
 # creat a SVD algo object
 algo = d4p.svd(streaming=True)

@@ -38,7 +38,7 @@ except:
 
 def main():
     # read data from file
-    file = "./data/streaming/covcormoments_dense.csv"
+    file = "./data/batch/covcormoments_dense.csv"
 
     # Configure a low order moments object for streaming
     algo = d4p.low_order_moments(streaming=True)

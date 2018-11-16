@@ -38,8 +38,8 @@ except:
 
 def main():
     # input data file
-    infile = "./data/streaming/naivebayes_train_dense.csv"
-    testfile = "./data/streaming/naivebayes_test_dense.csv"
+    infile = "./data/batch/naivebayes_train_dense.csv"
+    testfile = "./data/batch/naivebayes_test_dense.csv"
 
     # Configure a training object (20 classes)
     train_algo = d4p.multinomial_naive_bayes_training(20, streaming=True)

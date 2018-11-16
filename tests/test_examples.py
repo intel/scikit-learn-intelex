@@ -109,6 +109,24 @@ class Test(unittest.TestCase):
         (_, predict_result, _) = get_results()
         self.assertTrue(np.allclose(predict_result.prediction, testdata))
 
+    def test_linear_regression_stream(self):
+        testdata = read_csv(os.path.join(unittest_data_path, "linear_regression_batch.csv"), range(2))
+        from linear_regression_streaming import main as get_results
+        (_, predict_result, _) = get_results()
+        self.assertTrue(np.allclose(predict_result.prediction, testdata))
+
+    def test_ridge_regression_batch(self):
+        testdata = read_csv(os.path.join(unittest_data_path, "ridge_regression_batch.csv"), range(2))
+        from ridge_regression_batch import main as get_results
+        (predict_result, _) = get_results()
+        self.assertTrue(np.allclose(predict_result.prediction, testdata))
+
+    def test_ridge_regression_stream(self):
+        testdata = read_csv(os.path.join(unittest_data_path, "ridge_regression_batch.csv"), range(2))
+        from ridge_regression_streaming import main as get_results
+        (predict_result, _) = get_results()
+        self.assertTrue(np.allclose(predict_result.prediction, testdata))
+
     def test_log_reg_binary_dense_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "log_reg_binary_dense_batch.csv"), range(1))
         from log_reg_binary_dense_batch import main as get_results
@@ -139,6 +157,24 @@ class Test(unittest.TestCase):
         ))
         self.assertTrue(np.allclose(r, testdata))
 
+    def test_low_order_moms_dense_stream(self):
+        testdata = read_csv(os.path.join(unittest_data_path, "low_order_moms_dense_batch.csv"), range(10))
+        from low_order_moms_streaming import main as get_results
+        res = get_results()
+        r = np.vstack((
+            res.minimum,
+            res.maximum,
+            res.sum,
+            res.sumSquares,
+            res.sumSquaresCentered,
+            res.mean,
+            res.secondOrderRawMoment,
+            res.variance,
+            res.standardDeviation,
+            res.variation
+        ))
+        self.assertTrue(np.allclose(r, testdata))
+
     def test_multivariate_outlier_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "multivariate_outlier_batch.csv"), range(1))
         from multivariate_outlier_batch import main as get_results
@@ -148,6 +184,12 @@ class Test(unittest.TestCase):
     def test_naive_bayes_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "naive_bayes_batch.csv"), range(1))
         from naive_bayes_batch import main as get_results
+        (predict_result, _) = get_results()
+        self.assertTrue(np.allclose(predict_result.prediction, testdata))
+
+    def test_naive_bayes_stream(self):
+        testdata = read_csv(os.path.join(unittest_data_path, "naive_bayes_batch.csv"), range(1))
+        from naive_bayes_streaming import main as get_results
         (predict_result, _) = get_results()
         self.assertTrue(np.allclose(predict_result.prediction, testdata))
 
@@ -169,12 +211,6 @@ class Test(unittest.TestCase):
         _, result = get_results()
         self.assertTrue(np.allclose(result.transformedData, testdata))
 
-    def test_ridge_regression_batch(self):
-        testdata = read_csv(os.path.join(unittest_data_path, "ridge_regression_batch.csv"), range(2))
-        from ridge_regression_batch import main as get_results
-        (predict_result, _) = get_results()
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
     def test_sgd_logistic_loss_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "sgd_logistic_loss_batch.csv"), range(1))
         from sgd_logistic_loss_batch import main as get_results
@@ -190,6 +226,14 @@ class Test(unittest.TestCase):
     def test_svd_batch(self):
         from svd_batch import main as get_results
         (data, result) = get_results()
+        self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
+
+    def test_svd_stream(self):
+        from svd_streaming import main as get_results
+        result = get_results()
+        data = np.loadtxt("./data/distributed/svd_1.csv", delimiter=',')
+        for f in ["./data/distributed/svd_{}.csv".format(i) for i in range(2,5)]:
+            data = np.append(data, np.loadtxt(f, delimiter=','), axis=0)
         self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
 
     def test_svm_batch(self):

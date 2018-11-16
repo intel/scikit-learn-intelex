@@ -37,8 +37,8 @@ except:
 
 
 def main():
-    infile = "./data/streaming/linear_regression_train.csv"
-    testfile = "./data/streaming/linear_regression_test.csv"
+    infile = "./data/batch/linear_regression_train.csv"
+    testfile = "./data/batch/linear_regression_test.csv"
 
     # Configure a Ridge regression training object for streaming
     train_algo = d4p.ridge_regression_training(interceptFlag=True, streaming=True)
