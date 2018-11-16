@@ -9,12 +9,12 @@ to costly (or not feasible in other ways). In other cases the data is simply too
 large to be loaded completely into memory. Or, the data might come in as an
 actual stream. daal4py's streaming mode allows you to process such data.
 
-Besides supporting certain use cases, streaming also allows overlapping I/O
+Besides supporting certain use cases, streaming also allows interleaving I/O
 operations with computation.
 
 daal4py's streaming mode is as easy as follows:
 
-1. When construction the algorithm configure it with ``streaming=True``::
+1. When constructing the algorithm configure it with ``streaming=True``::
 
      algo = daal4py.svd(streaming=True)
 2. Repeat calling ``compute(input-data)`` with chunks of your input (arrays or
@@ -22,7 +22,7 @@ daal4py's streaming mode is as easy as follows:
 
      for f in input_files:
          algo.compute(f)
-3. When done with inputting, calling ``finalize()`` will return the result::
+3. When done with inputting, call ``finalize()`` to obtain the result::
 
      result = algo.finalize()
 
