@@ -163,11 +163,11 @@ once. This might be because the data resides in multiple files and merging it is
 to costly (or not feasible in other ways). In other cases the data is simply too
 large to be loaded completely into memory. Or, the data might come in as an
 actual stream. daal4py’s streaming mode allows you to process such data.</p>
-<p>Besides supporting certain use cases, streaming also allows overlapping I/O
+<p>Besides supporting certain use cases, streaming also allows interleaving I/O
 operations with computation.</p>
 <p>daal4py’s streaming mode is as easy as follows:</p>
 <ol class="arabic">
-<li><p class="first">When construction the algorithm configure it with <code class="docutils literal notranslate"><span class="pre">streaming=True</span></code>:</p>
+<li><p class="first">When constructing the algorithm configure it with <code class="docutils literal notranslate"><span class="pre">streaming=True</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">algo</span> <span class="o">=</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">streaming</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -179,7 +179,7 @@ files):</p>
 </pre></div>
 </div>
 </li>
-<li><p class="first">When done with inputting, calling <code class="docutils literal notranslate"><span class="pre">finalize()</span></code> will return the result:</p>
+<li><p class="first">When done with inputting, call <code class="docutils literal notranslate"><span class="pre">finalize()</span></code> to obtain the result:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">algo</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
 </pre></div>
 </div>
