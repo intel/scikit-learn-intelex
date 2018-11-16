@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Algorithms" href="algorithms.html" /> 
+    <link rel="next" title="Scaling on Distributed Memory (Multiprocessing)" href="scaling.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -84,9 +84,10 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">About daal4py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaling.html">Distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a></li>
 </ul>
 
             
@@ -155,9 +156,9 @@
 <h1>Fast, Scalable and Easy Machine Learning With DAAL4PY<a class="headerlink" href="#fast-scalable-and-easy-machine-learning-with-daal4py" title="Permalink to this headline">¶</a></h1>
 <p>Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
 to use. It provides highly configurable Machine Learning kernels, some of which
-can be easily and efficiently scaled out to clusters of workstations.
-Internally it uses Intel® DAAL (Intel® Data Analytics Acceleration
-Library) to deliver the  best performance.</p>
+support streaming input data and/or can be easily and efficiently scaled out to
+clusters of workstations.  Internally it uses Intel® DAAL (Intel® Data Analytics
+Acceleration Library) to deliver the best performance.</p>
 <div class="section" id="designed-for-data-scientists-and-framework-designers">
 <h2>Designed for Data Scientists and Framework Designers<a class="headerlink" href="#designed-for-data-scientists-and-framework-designers" title="Permalink to this headline">¶</a></h2>
 <p>daal4py was created to give data scientists the easist way to utilize Intel® DAAL’s
@@ -165,7 +166,9 @@ powerful machine learning building blocks directly in a high-productivity manner
 A simplified API gives high-level abstractions to the user with minimal boilerplate,
 allowing for quick to write and easy to maintain code when utilizing Jupyter Notebooks.
 For scaling capabilities, daal4py also provides the ability to do distributed machine
-learning, giving a quick way to scale out.</p>
+learning, giving a quick way to scale out. Its streaming mode provides a
+felxible mechanism for processing large amounts of data and/or non-contiguous
+input data.</p>
 <p>For framework designers, daal4py’s has been fashioned to be built under other
 frameworks from both an API and feature perspective.  The machine learning models split
 the training and inference classes, allowing the model to be exported and serialized
@@ -213,12 +216,20 @@ we first create an algorithm and configure it for 10 clusters using the ‘PlusP
 <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">centroids</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>One can even run this on a cluster by simple adding initializing/finalizing the
-network and adding a keyword-parameter:</p>
+<p>One can even <a class="reference internal" href="scaling.html#distributed"><span class="std std-ref">run this on a cluster</span></a> by simply
+adding initializing/finalizing the network and adding a keyword-parameter:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
 <span class="n">daalinit</span><span class="p">()</span>
-<span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">my_file</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">my_file</span><span class="p">)</span>
 <span class="n">daalfini</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Last but not least, daal4py allows <a class="reference internal" href="streaming.html#streaming"><span class="std std-ref">getting input data from streams</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">svd</span>
+<span class="n">algo</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">streaming</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">stream_or_filelist</span><span class="p">:</span>
+    <span class="n">algo</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">algo</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -291,6 +302,15 @@ Each algorithm returns a class-like object with properties as its result.</p>
 <li class="toctree-l2"><a class="reference internal" href="#content">Content</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="scaling.html">Distribution</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scaling.html#it-s-easy">It’s Easy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scaling.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="streaming.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="algorithms.html#principal-component-analysis-pca">Principal Component Analysis (PCA)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="algorithms.html#singular-value-decomposition-svd">Singular Value Decomposition (SVD)</a></li>
@@ -309,11 +329,6 @@ Each algorithm returns a class-like object with properties as its result.</p>
 <li class="toctree-l2"><a class="reference internal" href="examples.html#general-usage">General usage</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#it-s-easy">It’s Easy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
-</ul>
-</li>
 </ul>
 </div>
 </div>
@@ -327,7 +342,7 @@ Each algorithm returns a class-like object with properties as its result.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="algorithms.html" class="btn btn-neutral float-right" title="Algorithms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="scaling.html" class="btn btn-neutral float-right" title="Scaling on Distributed Memory (Multiprocessing)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

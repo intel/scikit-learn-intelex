@@ -96,6 +96,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#decision-forest-classification">Decision Forest Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decision-tree-classification">Decision Tree Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gradient-boosted-classification">Gradient Boosted Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#k-nearest-neighbors-knn">k-Nearest Neighbors (kNN)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multinomial-naive-bayes">Multinomial Naive Bayes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#support-vector-machine-svm">Support Vector Machine (SVM)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#logistic-regression">Logistic Regression</a></li>
@@ -370,6 +371,7 @@
 <p>Examples:</p>
 <ul class="simple">
 <li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/svd_batch.py">Single-Process SVD</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/svd_streaming.py">Streaming SVD</a></li>
 <li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py">Multi-Process SVD</a></li>
 </ul>
 <dl class="class">
@@ -447,6 +449,7 @@
 <p>Examples:</p>
 <ul class="simple">
 <li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py">Single-Process Low Order Moments</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py">Streaming Low Order Moments</a></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.low_order_moments">
@@ -1059,6 +1062,135 @@
 </dd></dl>
 
 </div>
+<div class="section" id="k-nearest-neighbors-knn">
+<h3>k-Nearest Neighbors (kNN)<a class="headerlink" href="#k-nearest-neighbors-knn" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-k-nearest-neighbors-knn-classifier">Intel DAAL k-Nearest Neighbors (kNN)</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/kdtree_knn_classification_batch.py">Single-Process kNN</a></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.kdtree_knn_classification_training">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kdtree_knn_classification_training</code><a class="headerlink" href="#daal4py.kdtree_knn_classification_training" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>kdtree_knn_classification_training</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>k</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>seed</strong> (<em>int</em>) – [optional, default: -1]</li>
+<li><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
+<li><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.kdtree_knn_classification_training_result">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kdtree_knn_classification_training_result</code><a class="headerlink" href="#daal4py.kdtree_knn_classification_training_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.kdtree_knn_classification_training_result.model">
+<code class="descname">model</code><a class="headerlink" href="#daal4py.kdtree_knn_classification_training_result.model" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">kdtree_knn_classification_model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.kdtree_knn_classification_prediction">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kdtree_knn_classification_prediction</code><a class="headerlink" href="#daal4py.kdtree_knn_classification_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>kdtree_knn_classification_prediction</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
+<li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
+<li><strong>k</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>seed</strong> (<em>int</em>) – [optional, default: -1]</li>
+<li><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]</li>
+<li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
+<li><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]</li>
+<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">classifier_prediction_result</code></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt>
+<code class="descname">prediction</code></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.kdtree_knn_classification_model">
+<em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kdtree_knn_classification_model</code><a class="headerlink" href="#daal4py.kdtree_knn_classification_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.kdtree_knn_classification_model.NFeatures">
+<code class="descname">NFeatures</code><a class="headerlink" href="#daal4py.kdtree_knn_classification_model.NFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">size_t</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.kdtree_knn_classification_model.NumberOfFeatures">
+<code class="descname">NumberOfFeatures</code><a class="headerlink" href="#daal4py.kdtree_knn_classification_model.NumberOfFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">size_t</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="multinomial-naive-bayes">
 <h3>Multinomial Naive Bayes<a class="headerlink" href="#multinomial-naive-bayes" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
@@ -1066,6 +1198,7 @@
 <p>Examples:</p>
 <ul class="simple">
 <li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_batch.py">Single-Process Naive Bayes</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_streaming.py">Streaming Naive Bayes</a></li>
 <li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py">Multi-Process Naive Bayes</a></li>
 </ul>
 <dl class="class">
@@ -1993,6 +2126,7 @@
 <p>Examples:</p>
 <ul class="simple">
 <li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_batch.py">Single-Process Linear Regression</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_streaming.py">Streaming Linear Regression</a></li>
 <li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py">Multi-Process Linear Regression</a></li>
 </ul>
 <dl class="class">
@@ -2153,6 +2287,7 @@
 <p>Examples:</p>
 <ul class="simple">
 <li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_batch.py">Single-Process Ridge Regression</a></li>
+<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_streaming.py">Streaming Ridge Regression</a></li>
 <li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py">Multi-Process Ridge Regression</a></li>
 </ul>
 <dl class="class">
