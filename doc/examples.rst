@@ -24,11 +24,13 @@ Singular Value Decomposition (SVD)
 - `Single-Process PCA Transform <https://github.com/IntelPython/daal4py/blob/master/examples/pca_transform_batch.py>`_
 
 - `Single-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_batch.py>`_
+- `Streaming SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_streaming.py>`_
 - `Multi-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
 
 Moments of Low Order
 
 - `Single-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py>`_
+- `Streaming Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py>`_
 
 Decision Forest Classification
 
@@ -53,6 +55,7 @@ k-Nearest Neighbors (kNN)
 Multinomial Naive Bayes
 
 - `Single-Process Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_batch.py>`_
+- `Streaming Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_streaming.py>`_
 - `Multi-Process  Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py>`_
 
 Support Vector Machine (SVM)
@@ -83,11 +86,13 @@ Gradient Boosted Regression
 Linear Regression
 
 - `Single-Process Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_batch.py>`_
+- `Streaming Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_streaming.py>`_
 - `Multi-Process Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py>`_
 
 Ridge Regression
 
 - `Single-Process Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_batch.py>`_
+- `Streaming Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_streaming.py>`_
 - `Multi-Process Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py>`_
 
 K-Means Clustering

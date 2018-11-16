@@ -1,3 +1,5 @@
+.. _distributed:
+
 ###############################################
 Scaling on Distributed Memory (Multiprocessing)
 ###############################################
