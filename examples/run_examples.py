@@ -51,7 +51,7 @@ def run_all(nodist=False):
         os.makedirs(logdir)
     for (dirpath, dirnames, filenames) in os.walk(exdir):
         for script in filenames:
-            if any(script.endswith(x) for x in ['spmd.py', 'batch.py']) and script not in ['run_examples.py', '__init__.py']:
+            if any(script.endswith(x) for x in ['spmd.py', 'streaming.py', 'stream.py', 'batch.py']):
                 n += 1
                 logfn = jp(logdir, script.replace('.py', '.res'))
                 with open(logfn, 'w') as logfile:

@@ -33,8 +33,7 @@ test:
     imports:
         - daal4py
     source_files:
-        - examples/*batch.py
-        - examples/data/batch
+        - examples
         - tests
 
 about:

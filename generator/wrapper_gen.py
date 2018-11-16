@@ -118,6 +118,7 @@ cdef extern from "daal4py.h":
     cdef dict_NumericTablePtr * make_dnt(PyObject * nda, void *) except +
 
     cdef T* dynamicPointerPtrCast[T,U](U*)
+    cdef bool is_valid_ptrptr[T](T * o)
 
     cdef void * e2s_algorithms_pca_result_dataForTransform
     cdef void * s2e_algorithms_pca_transform
@@ -248,14 +249,14 @@ cdef class {{flatname}}:
 {% if ('Ptr' in rtype and 'NumericTablePtr' not in rtype) or '__iface__' in rtype %}
 {% set frtype=(rtype.strip(' *&')|flat(False)|strip(' *')).replace('Ptr', '')|lower %}
         ':type: {{frtype}}'
-        if self.c_ptr == NULL:
+        if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return res
 {% else %}
         ':type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}'
-        if self.c_ptr == NULL:
+        if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
 {% if 'NumericTablePtr' in rtype %}
@@ -270,7 +271,7 @@ cdef class {{flatname}}:
     @property
     def NumberOfTrees(self):
         'FIXME'
-        if self.c_ptr == NULL:
+        if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         return get_{{flatname}}_numberOfTrees(self.c_ptr)
 {% endif %}
@@ -294,7 +295,7 @@ cdef class {{flatname}}:
 {% set frtype = m[0].replace('Ptr', '')|d2cy(False)|lower %}
     def {{m[1]|d2cy(False)}}(self, {{m[2]|d2cy(False)}} {{m[3]}}):
         ':type: {{frtype}} (or derived)'
-        if self.c_ptr == NULL:
+        if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
 {% if 'Ptr' in m[0] %}
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
@@ -462,7 +463,7 @@ auto {{algo}}_obj = {{algo}}_type{{ctor}};
 
 # macro to generate the body of a compute function (batch and distributed)
 gen_compute_macro = gen_inst_algo + """
-{% macro gen_compute(ns, input_args, params_req, params_opt, suffix="", step_spec=None, tonative=True, iomtype=None) %}
+{% macro gen_compute(ns, input_args, params_req, params_opt, suffix="", step_spec=None, tonative=True, iomtype=None, setupmode=False) %}
 {% set iom = iomtype if iomtype else "iom"+suffix+"_type" %}
 {% if step_spec %}
 {% if step_spec.addinput %}
@@ -489,7 +490,11 @@ gen_compute_macro = gen_inst_algo + """
         if(! use_default(_{{ia[1]}})) algo{{suffix}}->input.set({{ia[0]}}, to_daal(_{{ia[1]}}));
 {% endfor %}{% endif %}
 {% else %}
+{% if setupmode %}
 (bool setup_only = false)
+{% else %}
+()
+{% endif %}
     {
         auto algo{{suffix}} = _algo{{suffix}};
 
@@ -501,8 +506,10 @@ gen_compute_macro = gen_inst_algo + """
         if(_{{ia[1]}}) algo{{suffix}}->input.set({{ia[0]}}, to_daal(_{{ia[1]}}));
 {% endif %}
 {% endfor %}
+{% if setupmode %}
 
         if(setup_only) return typename iomb_type::result_type();
+{% endif %}
 {% endif %}
 
         algo{{suffix}}->compute();
@@ -529,10 +536,14 @@ algo_iface_template = """
 struct {{algo}}__iface__ : public {{iface[0] if iface[0] else 'algo_manager'}}__iface__
 {
     bool _distributed;
-    {{algo}}__iface__(bool d=false) : _distributed(d) {}
+    bool _streaming;
+    {{algo}}__iface__(bool d=false, bool s=false) : _distributed(d), _streaming(s) {}
 {% set indent = 23+(result_map.class_type|length) %}
     virtual {{result_map.class_type}} * compute({{(',\n'+' '*indent).join(iargs_decl|cppdecl)}},
 {{' '*indent}}bool setup_only = false) {assert(false); return NULL;}
+{% if streaming is defined %}
+    virtual {{result_map.class_type}} * finalize() {assert(false); return NULL;}
+{% endif %}
 };
 """
 
@@ -559,8 +570,13 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 {% endfor %}
     daal::services::SharedPtr< algob_type > _algob;
 
-    {{algo}}_manager({{(',\n'+' '*(13+algo|length)).join((pargs_decl + ['bool distributed = false'])|cppdecl)}})
-        : {{algo}}__iface__(distributed)
+{% if streaming is defined %}
+{{gen_typedefs(ns, template_decl, template_args, mode="Online", suffix="stream")}}
+    daal::services::SharedPtr< algostream_type > _algostream;
+{% endif %}
+
+    {{algo}}_manager({{(',\n'+' '*(13+algo|length)).join((pargs_decl + ['bool distributed = false', 'bool streaming = false'])|cppdecl)}})
+        : {{algo}}__iface__(distributed, streaming)
 {% for i in pargs_call %}
         , _{{i}}({{'to_daal('+i+')' if '__iface__' in (pargs_decl[loop.index0]|cppdecl(True)) else i}})
 {% endfor %}
@@ -572,11 +588,21 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 {% endif %}
 {% endfor %}
         , _algob()
+{% if streaming is defined %}
+        , _algostream()
+{% endif %}
     {
+{% if streaming is defined %}
+      if(_streaming) {
+        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="stream", member=True)}}
+      } else
+{% endif %}
+      {
         {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="b", member=True)}}
+      }
     }
 
-#ifdef _DIST_
+#ifdef _DIST_0
     {{algo}}_manager() :
         {{algo}}__iface__(true)
 {% for i in pargs_call %}
@@ -590,8 +616,18 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
 {% endif %}
 {% endfor %}
         , _algob()
+{% if streaming is defined %}
+        , _algostream()
+{% endif %}
     {
+{% if streaming is defined %}
+      if(_streaming) {
+        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="stream", member=True)}}
+      } else
+{% endif %}
+      {
         {{gen_inst(ns, params_req, params_opt, params_get, create, suffix="b", member=True)}}
+      }
     }
 #endif
 
@@ -624,8 +660,23 @@ private:
     }
 {% endfor %}
 
-    typename iomb_type::result_type batch{{gen_compute(ns, input_args, params_req, params_opt, suffix="b", iomtype=iombatch, tonative=False)}}
+    typename iomb_type::result_type batch{{gen_compute(ns, input_args, params_req, params_opt, suffix="b", iomtype=iombatch, tonative=False, setupmode=True)}}
 
+{% if streaming is defined %}
+    typename iomb_type::result_type stream{{gen_compute(ns, input_args, params_req, params_opt, suffix="stream", iomtype=iombatch, tonative=False)}}
+
+    typename iomb_type::result_type * finalize()
+    {
+        if(_distributed) throw std::invalid_argument("finalize() not supported in distributed mode");
+        if(_streaming) {
+            _algostream->finalizeCompute();
+            return new typename iomb_type::result_type(_algostream->getResult());
+        } else {
+            return new typename iomb_type::result_type(_algob->getResult());
+        }
+    }
+
+{% endif %}
 {% if step_specs is defined %}
 #ifdef _DIST_
     // Distributed computing
@@ -658,11 +709,12 @@ public:
 {% for i in iargs_call %}        _{{i}} = {{i}};
 {% endfor %}
 
+{% set batchcall = '(_streaming ? stream() : batch(setup_only))' if streaming is defined else 'batch(setup_only)'%}
 #ifdef _DIST_
-        typename iomb_type::result_type daalres = {{'_distributed ? distributed() : batch(setup_only);' if dist else 'batch(setup_only);'}}
+        typename iomb_type::result_type daalres = {{'_distributed ? distributed() : ' + batchcall if dist else batchcall}};
         return new typename iomb_type::result_type(daalres);
 #else
-        return new typename iomb_type::result_type(batch(setup_only));
+        return new typename iomb_type::result_type({{batchcall}});
 #endif
     }
 };
@@ -680,6 +732,9 @@ cdef extern from "daal4py.h":
 {% set indent = 17+(result_map.class_type|flat|length) %}
         {{result_map.class_type|flat}} compute({{(',\n'+' '*indent).join(iargs_decl|d2ext)}},
 {{' '*indent}}const bool setup_only) except +
+{% if streaming is defined %}
+        {{result_map.class_type|flat}} finalize() except +
+{% endif %}
 
 
 cdef extern from "daal4py_cpp.h":
@@ -696,6 +751,8 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # Init simply forwards to the C++ construction function
     def __cinit__(self,
                   {{pargs_decl|cy_decl(pargs_call, template_decl, 18)}}):
+        if distributed and streaming:
+            raise ValueError('distributed streaming not supported')
         self.c_ptr = mk_{{algo}}({{pargs_decl|cy_call(pargs_call, template_decl, 25+(algo|length))}})
 
 {% if not iface[0] %}
@@ -723,6 +780,18 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 {% endfor %}
         return res
 
+{% if streaming is defined %}
+    # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
+    def finalize(self):
+        if self.c_ptr == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
+        algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
+        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
+        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
+        res.c_ptr = deref(algo).finalize()
+        return res
+{% endif %}
+
 {% if add_setup %}
     # setup forwards to the C++ de-templatized manager__iface__::compute(..., setup_only=true)
     def setup(self,
@@ -749,7 +818,7 @@ algo_wrapper_template = """
 {{" "*indent}}if({{tmpl_spec[0][0]}} == "{{a.rsplit('::',1)[-1]}}") {
 {% if tmpl_spec|length == 1 %}
 {% set algo_type = prefix + '<' + ', '.join(args+[a]) + ' >' %}
-{{" "*(indent+4)}}return new {{algo_type}}({{', '.join(pcallargs + ['distributed'])}});
+{{" "*(indent+4)}}return new {{algo_type}}({{', '.join(pcallargs + ['distributed', 'streaming'])}});
 {% else %}
 {{tfactory(tmpl_spec[1:], prefix, pcallargs, dist, args+[a], indent+4)}}
 {% endif %}
@@ -767,7 +836,7 @@ extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, tem
     std::cerr << "Error: Could not construct {{algo}}." << std::endl;
     return NULL;
 {% else %}
-    return new {{algo}}_manager({{', '.join(pargs_call)}}, distributed);
+    return new {{algo}}_manager({{', '.join(pargs_call)}}, distributed, streaming);
 {% endif %}
 }
 
@@ -863,7 +932,7 @@ def gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt):
     for a in range(len(pargs_decl)):
         if '=' in pargs_decl[a]:
             r += ' '*indent + flt(pargs_call[a], pargs_decl[a]) + ',\n'
-    return r.lstrip() + ' '*indent + flt('distributed', 'bool distributed = False')
+    return r.lstrip() + ' '*indent + flt('distributed', 'bool distributed = False') + ',\n' + ' '*indent + flt('streaming', 'bool streaming = False')
 
 def cy_ext_decl(pargs_decl, pargs_call, template_decl, indent):
     def flt(arg, typ):
@@ -1111,6 +1180,8 @@ class wrapper_gen(object):
         jparams['args_decl']  = jparams['iargs_decl'] + jparams['pargs_decl']
         jparams['pargs_call'] = jparams['call_req'] + jparams['call_opt']
         jparams['args_call']  = jparams['iargs_call'] + jparams['pargs_call']
+        if 'streaming' in cfg:
+            jparams['streaming'] = cfg['streaming']
         tdecl = cfg['sparams']
 
         t = jenv.from_string(algo_iface_template)
@@ -1134,6 +1205,8 @@ class wrapper_gen(object):
                 assert len(tdecl) == 1
                 jparams.update(cfg['dist'])
                 jparams['dist'] = True
+            if 'streaming' in cfg:
+                jparams['streaming'] = cfg['streaming']
             t = jenv.from_string(manager_wrapper_template)
             cpp_begin += t.render(**jparams) + '\n'
             if td['pargs'] == None:

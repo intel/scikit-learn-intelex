@@ -28,7 +28,7 @@ if __name__ == "__main__":
     d4p.daalinit()
 
     # Each process gets its own data
-    infile = "./data/distributed/svd_" + str(d4p.my_procid()+1) + ".csv"
+    infile = "./data/distributed/svd_{}.csv".format(d4p.my_procid()+1)
 
     # configure a SVD object
     algo = d4p.svd(distributed=True)

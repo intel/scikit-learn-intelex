@@ -6,9 +6,9 @@ Fast, Scalable and Easy Machine Learning With DAAL4PY
 
 Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
 to use. It provides highly configurable Machine Learning kernels, some of which
-can be easily and efficiently scaled out to clusters of workstations.
-Internally it uses Intel® DAAL (Intel® Data Analytics Acceleration
-Library) to deliver the  best performance.
+support streaming input data and/or can be easily and efficiently scaled out to
+clusters of workstations.  Internally it uses Intel® DAAL (Intel® Data Analytics
+Acceleration Library) to deliver the best performance.
 
 Designed for Data Scientists and Framework Designers
 ----------------------------------------------------
@@ -17,7 +17,9 @@ powerful machine learning building blocks directly in a high-productivity manner
 A simplified API gives high-level abstractions to the user with minimal boilerplate,
 allowing for quick to write and easy to maintain code when utilizing Jupyter Notebooks.
 For scaling capabilities, daal4py also provides the ability to do distributed machine
-learning, giving a quick way to scale out.
+learning, giving a quick way to scale out. Its streaming mode provides a
+felxible mechanism for processing large amounts of data and/or non-contiguous
+input data.
 
 For framework designers, daal4py's has been fashioned to be built under other
 frameworks from both an API and feature perspective.  The machine learning models split
@@ -68,13 +70,21 @@ The full example could look like this::
     result = kmeans_init(10, method="plusPlusDense").compute('data.csv')
     print(result.centroids)
 
-One can even run this on a cluster by simple adding initializing/finalizing the
-network and adding a keyword-parameter::
+One can even :ref:`run this on a cluster <distributed>` by simply
+adding initializing/finalizing the network and adding a keyword-parameter::
 
     from daal4py import daalinit, daalfini, kmeans_init
     daalinit()
-    kmeans_init(10, method="plusPlusDense", distributed=True).compute(my_file)
+    result = kmeans_init(10, method="plusPlusDense", distributed=True).compute(my_file)
     daalfini()
+
+Last but not least, daal4py allows :ref:`getting input data from streams <streaming>`::
+
+    from daal4py import svd
+    algo = svd(streaming=True)
+    for input in stream_or_filelist:
+        algo.compute(input)
+    result = algo.finalize()
 
 Daal4py's Design
 ----------------
@@ -141,6 +151,7 @@ Content
    :caption: Contents:
 
    About daal4py <index>
+   Distribution <scaling>
+   Streaming <streaming>
    Supported Algorithms <algorithms>
-   examples
-   scaling
+   Examples <examples>
