@@ -231,4 +231,28 @@ bool is_valid_ptrptr(T * o)
     return o != NULL && (*o).get() != NULL;
 }
 
+class ThreadAllow
+{
+    PyThreadState *_save;
+public:
+    ThreadAllow()
+    {
+        allow();
+    }
+    ~ThreadAllow()
+    {
+        disallow();
+    }
+    void allow()
+    {
+        _save = PyEval_SaveThread();
+    }
+    void disallow()
+    {
+        if(_save) {
+            PyEval_RestoreThread(_save);
+            _save = NULL;
+        }
+    }
+};
 #endif // _HLAPI_H_INCLUDED_
