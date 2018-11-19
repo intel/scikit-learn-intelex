@@ -496,6 +496,7 @@ gen_compute_macro = gen_inst_algo + """
 ()
 {% endif %}
     {
+        ThreadAllow _allow_;
         auto algo{{suffix}} = _algo{{suffix}};
 
 {% for ia in input_args %}
@@ -521,6 +522,8 @@ gen_compute_macro = gen_inst_algo + """
 {% if tonative %}
         typename iomb_type::result_type daalres({{iom}}::getResult(*algo{{suffix}});
         int gc = 0;
+{% if not step_spec %}        _allow.disallow();
+{% endif %}
         NTYPE res = native_type(daalres, gc);
         TMGC(gc);
         return res;
@@ -831,6 +834,7 @@ algo_wrapper_template = """
 
 extern "C" {{algo}}__iface__ * mk_{{algo}}({{pargs_decl|cpp_decl(pargs_call, template_decl, 27+2*(algo|length))}})
 {
+    ThreadAllow _allow_;
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', pargs_call, dist=dist)}}
     std::cerr << "Error: Could not construct {{algo}}." << std::endl;
