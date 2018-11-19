@@ -31,6 +31,7 @@ from jinja2 import Template
 from .parse import parse_header
 from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks, add_setup, enum_maps
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
+from .format import mk_var
 
 try:
     basestring
@@ -728,8 +729,9 @@ class cython_interface(object):
         if ns in has_dist:
             retjp['dist'] = has_dist[ns]
         if 'Online' in self.namespace_dict[ns].classes and not ns.endswith('pca'):
-            retjp['streaming'] = True
-
+            retjp['streaming'] = mk_var('bool streaming=false')
+        else:
+            retjp['streaming'] = mk_var('')
         return {ns + '::' + mode : retjp}
 
 
