@@ -48,7 +48,7 @@ FmtVar = namedtuple('formatted_variable',
                     ])
 FmtVar.__new__.__defaults__ = ('',) * len(FmtVar._fields)
 
-def mk_var(decl):
+def mk_var(decl=''):
     if decl == '':
         return FmtVar()
     d          = decl.rsplit('=', 1)

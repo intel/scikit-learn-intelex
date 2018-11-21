@@ -728,10 +728,13 @@ class cython_interface(object):
         }
         if ns in has_dist:
             retjp['dist'] = has_dist[ns]
+            retjp['distributed'] = mk_var('bool distributed=false')
+        else:
+            retjp['distributed'] = mk_var()
         if 'Online' in self.namespace_dict[ns].classes and not ns.endswith('pca'):
             retjp['streaming'] = mk_var('bool streaming=false')
         else:
-            retjp['streaming'] = mk_var('')
+            retjp['streaming'] = mk_var()
         return {ns + '::' + mode : retjp}
 
 
