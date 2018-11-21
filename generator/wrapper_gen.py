@@ -1206,5 +1206,8 @@ class wrapper_gen(object):
 
 
     ##################################################################################
-    def gen_footers(self):
-        return ('', '', '#ifdef _DIST_\n#include "dist_logistic_regression.h"\n#include "dist_kmeans_init.h"\n#include "dist_kmeans.h"\n#endif\n')
+    def gen_footers(self, no_dist=False, no_stream=False):
+        if no_dist:
+            return ('', '', '')
+        else:
+            return ('', '', '#include "dist_logistic_regression.h"\n#include "dist_kmeans_init.h"\n#include "dist_kmeans.h"\n')

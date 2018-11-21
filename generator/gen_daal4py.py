@@ -533,7 +533,7 @@ class cython_interface(object):
 
 
 ###############################################################################
-    def prepare_hlwrapper(self, ns, mode, func):
+    def prepare_hlwrapper(self, ns, mode, func, no_dist, no_stream):
         """
         Prepare data structures for generating high level wrappers.
 
@@ -726,12 +726,12 @@ class cython_interface(object):
             'create': no_constructor[fcls] if fcls in no_constructor else '',
             'add_setup': True if ns in add_setup else False,
         }
-        if ns in has_dist:
+        if not no_dist and ns in has_dist:
             retjp['dist'] = has_dist[ns]
             retjp['distributed'] = mk_var('bool distributed=false')
         else:
             retjp['distributed'] = mk_var()
-        if 'Online' in self.namespace_dict[ns].classes and not ns.endswith('pca'):
+        if not no_stream and  'Online' in self.namespace_dict[ns].classes and not ns.endswith('pca'):
             retjp['streaming'] = mk_var('bool streaming=false')
         else:
             retjp['streaming'] = mk_var()
@@ -780,7 +780,7 @@ class cython_interface(object):
                 cfg[ns]['model_typemap']['derived'] = model_hierarchy[m]
 
 
-    def hlapi(self, algo_patterns):
+    def hlapi(self, algo_patterns, no_dist=False, no_stream=False):
         """
         Generate high level wrappers for namespaces listed in algo_patterns (or all).
 
@@ -821,7 +821,7 @@ class cython_interface(object):
                     func = '_'.join(nn[1:])
                 else:
                     func = '_'.join(nn)
-                algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func))
+                algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func, no_dist, no_stream))
 
         self.prepare_model_hierachy(algoconfig)
 
@@ -866,7 +866,7 @@ class cython_interface(object):
                     hlargs[ns] = tmp[7]
 
         hds = wg.gen_headers()
-        fts = wg.gen_footers()
+        fts = wg.gen_footers(no_dist, no_stream)
 
         pyx_end += fts[1]
         # we add a comment with tables providing parameters for each algorithm
@@ -889,7 +889,7 @@ class cython_interface(object):
 ###############################################################################
 ###############################################################################
 
-def gen_daal4py(daalroot, outdir, version, warn_all=False):
+def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_stream=False):
     global no_warn
     if warn_all:
         no_warn = {}
@@ -898,6 +898,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False):
            "Path/$DAALROOT '"+ipath+"' doesn't seem host DAAL headers. Please provide correct daalroot."
     iface = cython_interface(ipath)
     iface.read()
+    print('Generating sources')
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(['kmeans',
                                             'pca',
                                             'svd',
@@ -919,7 +920,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False):
                                             'distance',
                                             'cholesky',
                                             'kdtree_knn_classification',
-    ])
+    ], no_dist, no_stream)
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:
         f.write(cpp_h)
