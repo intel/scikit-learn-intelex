@@ -13,11 +13,11 @@ matrix:
         - name: "OsX-Py2"
           os: osx
           language: generic
-          env: MINICONDA=Miniconda3-latest-MacOSX-x86_64
+          env: MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
         - name: "OsX-Py3"
           os: osx
           language: generic
-          env: MINICONDA=Miniconda3-latest-MacOSX-x86_64
+          env: MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
