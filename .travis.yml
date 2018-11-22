@@ -14,12 +14,14 @@ matrix:
           env:
             - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
+            - MACOSX_DEPLOYMENT_TARGET="10.9"
         - name: "OsX-Py3"
           os: osx
           osx_image: xcode8
           env:
             - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
+            - MACOSX_DEPLOYMENT_TARGET="10.9"
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
@@ -32,7 +34,7 @@ install:
   - conda info -a
 
   # create conda env with all our deps
-  - conda create -q -n D4P -c intel -c conda-forge python=$TRAVIS_PYTHON_VERSION mpich tbb-devel daal daal-include cython jinja2 numpy
+  - conda create -q -n D4P -c intel -c conda-forge mpich tbb-devel daal daal-include cython jinja2 numpy
   - source activate D4P
   - gcc -v
   - g++ -v
