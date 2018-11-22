@@ -35,11 +35,11 @@ else:
     logdir = jp(exdir, '_results', 'intel64')
 
 def get_exe_cmd(ex, nodist, nostream):
-    if 'batch' in ex:
+    if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
         return '"' + sys.executable + '" "' + ex + '"'
-    if not nostream and 'streaming' in ex:
+    if not nostream and ex.endswith('streaming.py'):
         return '"' + sys.executable + '" "' + ex + '"'
-    if not nodist and 'spmd' in ex:
+    if not nodist and ex.endswith('spmd.py'):
         if IS_WIN:
             return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
         else:
