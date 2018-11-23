@@ -429,7 +429,7 @@ extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * di
     return dc;
 }
 
-TableOrFList::TableOrFList(PyObject * input)
+table_or_flist::table_or_flist(PyObject * input)
 {
     this->table.reset();
     this->tlist.resize(0);
@@ -464,7 +464,7 @@ TableOrFList::TableOrFList(PyObject * input)
     }
 }
 
-const daal::data_management::NumericTablePtr get_table(const TableOrFList & t)
+const daal::data_management::NumericTablePtr get_table(const table_or_flist & t)
 {
     if(t.table) return t.table;
     if(t.file.size()) return readCSV(t.file);

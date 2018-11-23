@@ -133,7 +133,7 @@ namespace dist_custom {
         }
     
         static typename Algo::iomb_type::result_type
-        compute(Algo & algo, const TableOrFList & x, const TableOrFList & y)
+        compute(Algo & algo, const table_or_flist & x, const table_or_flist & y)
         {
             MPI4DAAL::init();
             return map_reduce(algo, get_table(x), get_table(y), 50 /* FIXME */, 0.00001 /* FIXME */);

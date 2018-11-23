@@ -14,66 +14,172 @@
 # limitations under the License.
 #******************************************************************************/
 
-from collections import namedtuple, defaultdict
+# Provides helper class to format variables (input args, template args and parameters)
+# Different syntax for C++, cython and python are precomputed.
+# wrapper_gen uses the precomputed attributes in jinja2 macros
 
-pydefaults = defaultdict(lambda: None)
+from collections import namedtuple, defaultdict
+import re
+
+# default values of paramters/inputs are set by daal itself.
+# We indicate with these defaults that we want to use daal's defaults
+pydefaults = defaultdict(lambda: 'None')
 pydefaults.update({'double': 'NaN64',
-                 'float': 'NaN32',
-                 'int': '-1',
-                 'long': '-1',
-                 'size_t': '-1',
-                 'bool': 'False',
-                 #'std::string' : '""',
-                 'std::string &' : '""',
+                   'float': 'NaN32',
+                   'int': '-1',
+                   'long': '-1',
+                   'size_t': '-1',
+                   'bool': 'False',
+                   'std::string' : '',
+                   #'std::string &' : '""',
 })
 
+# Same but when calling C++
+# We actually only need bool for distributed/streaming; the rest is handled in use_default
 cppdefaults = defaultdict(lambda: 'NULL')
 cppdefaults.update({'bool': 'false',})
 
 
-FmtVar = namedtuple('formatted_variable',
-                    ['name',      # variable's name
-                     'typ',       # type
-                     'default',   # default value
-                     'arg_cpp',   # use as argument to a C++ function call from C++
-                     'arg_cy',    # use as argument to a C++ function call in cython
-                     'arg_py',    # use as argument to a Python function call in cython
-                     'decl_dflt_cpp',  # use as var declaration in C++ with default value
-                     'decl_cpp',  # use as var declaration in C++ without default
-                     'decl_dflt_cy',   # use as C++ member/var declaration in Cython with default
-                     'decl_dflt_py',   # use as Python member/var declaration in Cython with default
-                     'decl_member',# use as member declaration in C++
-                     'arg_member',# use as member used in C++
-                     'init_member', # initializer for member var
-                    ])
-FmtVar.__new__.__defaults__ = ('',) * len(FmtVar._fields)
+def flat(typ):
+    '''Flatten C++ name, leaving only what's needed to disambiguate names.
+       E.g. stripping of leading namespaces and replaceing :: with _
+    '''
+    typ = typ.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'daal::services::SharedPtr<kernel_function::KernelIface>')
+    typ = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', r'daal::services::SharedPtr<engines::BatchBase>', typ)
+    typ = re.sub(r'(?:daal::)?(?:algorithms::)?([^:]+::)BatchPtr', r'daal::services::SharedPtr<\1Batch>', typ)
+    typ = re.sub(r'(daal::)?services::SharedPtr<([^>]+)>', r'\2__iface__', typ)
+    nn = typ.split('::')
+    if nn[0] == 'daal':
+        if nn[1] == 'algorithms':
+            r = '_'.join(nn[2:])
+        else:
+            r = '_'.join(nn[1:])
+    elif nn[0] == 'algorithms':
+        r = '_'.join(nn[1:])
+    else:
+        r = '_'.join(nn)
+    return r
 
-def mk_var(decl=''):
-    if decl == '':
-        return FmtVar()
-    d          = decl.rsplit('=', 1)
-    t, name    = d[0].strip().rsplit(' ', 1)
-    const      = 'const ' if 'const' in t else ''
-    ref        = '&' if any('&' in x for x in [t, name]) else ''
-    ptr        = '*' if any('*' in x for x in [t, name]) else ''
-    name       = name.replace('&', '').replace('*', '').strip()
-    typ        = t.replace('const', '').replace('&', '').replace('*', '').strip()
-    pydefault  = ' = {}'.format(pydefaults[typ]) if len(d) > 1 else ''
-    cppdefault = ' = {}'.format(cppdefaults[typ]) if len(d) > 1 else ''
-    assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
+def cy_callext(arg, typ_cy, typ_cyext, s2e=None):
+    '''Where needed decorate argument with conversion when calling C++ from cython'''
+    if 'table_or_flist' in typ_cy:
+        return 'new table_or_flist(<PyObject *>' + arg + ')'
+    if 'dict_numerictable' in typ_cy:
+        return 'make_dnt(<PyObject *>' + arg + ((', ' + s2e) if s2e else '') + ')'
+    if 'numerictable' in typ_cy:
+        return 'make_nt(<PyObject *>' + arg + ')'
+    if any(typ_cy.endswith(x) for x in ['__iface__', 'model']):
+        return arg + '.c_ptr if ' + arg + ' != None else <' + typ_cyext + ' *>0'
+    if 'std_string' in typ_cy:
+        return 'to_std_string(<PyObject *>' + arg + ')'
+    return arg
 
-    return FmtVar(name          = name,
-                  typ           = typ,
-                  arg_cpp       = name,
-                  arg_cy        = name,
-                  arg_py        = name,
-                  decl_dflt_cpp = '{}{}{} {}{}'.format(const, typ, ref if ref != '' else ptr, name, cppdefault),
-                  decl_cpp      = '{}{}{} {}'.format(const, typ, ref if ref != '' else ptr, name),
-                  decl_dflt_cy  = '{}{} {}{}'.format(typ, ref if ref != '' else ptr, name, pydefault),
-                  decl_dflt_py  = '{} {}{}'.format(typ, name, pydefault),
-                  decl_member   = '{}{} _{}'.format(typ, ref if ref != '' else ptr, name),
-                  arg_member    = '_{}'.format(name),
-                  init_member   = '_{0}({0})'.format(name),
-    )
+def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
+    '''Return an object with preformatted attributes for given argument.
+       Analyses, normalizes and formats types, names and members.
+       We can also craete an empty object, which can then be used in jinja2 filters without an extra condition.
+       emtpy/optional state is indicated by name==''
+    '''
+    class fmt_var(object):
+        def __init__(self, name, typ, const, dflt, inpt, algo):
+            d4pname = ''
+            if name:
+                value      = name.strip()
+                name       = value.rsplit('::', 1)[-1]
+                d4pname    = name.replace('lambda', 'lambda_') # we cannot use attr/var with that name, it's a python keyword
 
-                  
+                # Now look at the type, first see if it's a ref or ptr
+                if const:
+                    const  = const.strip() + ' '
+                ref        = '&' if '&' in typ else ''
+                ptr        = '*' if '*' in typ or any(typ.endswith(x) for x in ['Ptr', '__iface__']) else ''
+                # get rid of ref/ptr in type
+                realtyp    = typ.replace('&', '').replace('*', '').strip()
+                # string to enum dict for our algo, needed for converting python strings to C++ enums
+                s2e = 's2e_algorithms_{}'.format(algo)
+
+                # we try to identify enum types, which become strings in python
+                if '::' in realtyp and not any(x in realtyp for x in ['Ptr', 'std::']):
+                    typ = 'std::string'
+                    ref = '&'
+                    todaal_member = '({})string2enum(_{}, {})'.format(realtyp, d4pname, s2e)
+                else:
+                    # any other typ
+                    typ = realtyp
+                    todaal_member = '_{}'.format(d4pname)
+                # normalize types from DAAL
+                typ_flat = flat(typ)
+                typ_cyext = typ_flat
+                # interface types are passed py non-const pointer
+                # for the cython extern def we use a typedef with prefix 'c_'
+                if typ_flat.endswith('__iface__'):
+                    typ_cyext  = 'c_'+typ_flat
+                    ptr = '*'
+                    const = ''
+                # for sphinx docu we want to be a bit more readable
+                typ_sphinx = typ_cyext.replace('std_string', 'str').replace('data_management_NumericTablePtr', 'array')
+                # in cython/python we want everythint to be lower case
+                typ_cy = typ_flat.lower()
+                # all daal objects are passed as SharedPointer through their *Ptr typedefs
+                # we don't want to see the ptr in our call names
+                if typ_cy.endswith('ptr'):
+                    typ_cy = typ_cy[:-3]
+                    const = ''
+                # some types we accept without type in cython, because we have custom converters
+                notyp_cy = ['table_or_flist', 'std_string', 'numerictable']
+
+                # we have a few C (not C++) interfaces, usually not a problem for types
+                decl_c = '{}{} {}'.format(typ_flat, ptr, d4pname)
+                arg_c = d4pname
+                # arrays/tables need special handling for C: they are passed as (ptr, dim1, dim2)
+                if typ_cy == 'table_or_flist':
+                    decl_c = 'double* {0}_p, size_t {0}_d2, size_t {0}_d1'.format(d4pname)
+                    arg_c = 'new table_or_flist(daal::data_management::HomogenNumericTable< double >::create({0}_p, {0}_d2, {0}_d1))'.format(d4pname)
+                    const = ''
+                # default values (see above pydefaults)
+                if dflt != None:
+                    pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1]
+                    sphinx_default = '"{}"'.format(pd) if typ == 'std::string' else '{}'.format(pd)
+                    pydefault = ' = {}'.format(sphinx_default)
+                    cppdefault = ' = {}'.format(cppdefaults[typ] if dflt == True else dflt) if dflt != None else ''
+                else:
+                    pydefault = ''
+                    cppdefault = ''
+                    sphinx_default = ''
+                assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
+    # hjpat_input needs dist {% if step_specs is defined %}
+    #   {% set inp_dists = step_specs[0].inputdists if step_specs|length else inputdists %}
+    #   {% else %}
+    #   {% set inp_dists = None %}
+    #   {% endif %}
+
+            self.name          = d4pname
+            self.daalname      = name
+            self.value         = value if name else ''
+            self.typ_cpp       = typ if name else ''
+            self.arg_cpp       = d4pname
+            self.arg_py        = d4pname
+            self.arg_cyext     = cy_callext(d4pname, typ_cy, typ_cyext, s2e) if name else ''
+            self.arg_c         = arg_c if name else ''
+            self.decl_c        = decl_c if name else ''
+            self.decl_cyext    = '{}{} {}'.format(typ_cyext, ref if ref != '' else ptr, d4pname) if name else ''
+            self.decl_cy       = '{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname) if name else ''
+            self.decl_dflt_cpp = '{}{}{} {}{}'.format(const, typ, ref if ref != '' else ptr, d4pname, cppdefault) if name else ''
+            self.decl_dflt_cy  = '{}{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname, pydefault) if name else ''
+            self.decl_cpp      = '{}{}{} {}'.format(const, typ_cyext, ref if ref != '' else ptr, d4pname) if name else ''
+            self.decl_member   = '{}{} _{}'.format(typ_cyext, ptr, d4pname) if name else ''
+            self.arg_member    = '_{}'.format(d4pname) if name else ''
+            self.init_member   = '_{}({})'.format(d4pname, 'NULL' if ptr else '') if inpt else '_{0}({0})'.format(d4pname) if name else ''
+            self.assign_member = '_{0} = {0}'.format(d4pname) if name else ''
+            self.todaal_member = todaal_member if name else ''
+            self.spec          = '("{}", "{}", "{}")'.format(d4pname, typ_flat, 'REP' if 'model' in d4pname else 'OneD') if name else ''
+            self.sphinx        = ':param {} {}:{}'.format(typ_sphinx, d4pname, ' [optional, default: {}]'.format(sphinx_default) if sphinx_default else '') if name else ''
+
+        def format(self, s, *args):
+            '''Helper function to format a string with attributes from given var
+               {}s are replaced with the respective attributes given in args
+            '''
+            a = [getattr(self, x) for x in args]
+            return s.format(*a) if self.name else ''
+
+    return fmt_var(name, typ, const, dflt, inpt, algo)

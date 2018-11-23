@@ -104,8 +104,8 @@ cdef extern from "daal4py.h":
     cdef const double NaN64
     cdef const float  NaN32
 
-    cdef cppclass TableOrFList :
-        TableOrFList(PyObject *) except +
+    cdef cppclass table_or_flist :
+        table_or_flist(PyObject *) except +
 
     cdef cppclass dict_NumericTablePtr:
         pass
@@ -414,7 +414,7 @@ gen_typedefs_macro = """
 {% macro gen_typedefs(ns, template_decl, template_args, mode="Batch", suffix="b", step_spec=None) %}
 {% set disttarg = (step_spec.name.rsplit('__', 1)[0] + ', ') if step_spec.name else "" %}
 {% if template_decl|length > 0  %}
-    typedef daal::{{ns}}::{{mode}}<{{disttarg + ', '.join(template_args)}}> algo{{suffix}}_type;
+    typedef daal::{{ns}}::{{mode}}<{{disttarg + template_args|fmt('{}', 'value')}}> algo{{suffix}}_type;
 {% else %}
     typedef daal::{{ns}}::{{mode}} algo{{suffix}}_type;
 {% endif %}
@@ -440,17 +440,15 @@ gen_inst_algo = """
 {% set ctor = create + '(' + step_spec.construct + ')' %}
 {% elif create  %}
 {% set ctor = ('::create(_' + ', _'.join(create.keys()) + ')').replace('(_)', '()') %}
-{% elif params_req|length > 0  %}
-{% set ctor = ('(to_daal(_' + '), to_daal(_'.join(params_req.values()) + '))') %}
 {% else %}
-{% set ctor = '()' %}
+{% set ctor = '(' + params_req|fmt('to_daal({})', 'arg_member', sep=', ') + ')' %}
 {% endif %}
 {% if member %}
-_algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
+_algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}}); // llllll
 {% elif create %}
-auto {{algo}} = {{algo}}_type{{ctor}};
+auto {{algo}} = {{algo}}_type{{ctor}}; // llllll
 {% else %}
-auto {{algo}}_obj = {{algo}}_type{{ctor}};
+auto {{algo}}_obj = {{algo}}_type{{ctor}}; // llllll
         {{algo}}_type * {{algo}} = &{{algo}}_obj;
 {% endif %}
 {% if (step_spec == None or step_spec.params) and params_get and params_opt|length and not create %}
@@ -500,11 +498,11 @@ gen_compute_macro = gen_inst_algo + """
         auto algo{{suffix}} = _algo{{suffix}};
 
 {% for ia in input_args %}
-{% if "TableOrFList" in ia[2] %}
-        if(!_{{ia[1]}}->table && _{{ia[1]}}->file.size()) _{{ia[1]}}->table = readCSV(_{{ia[1]}}->file);
-        if(_{{ia[1]}}->table) algo{{suffix}}->input.set({{ia[0]}}, _{{ia[1]}}->table);
+{% if "table_or_flist" in ia.typ_cpp %}
+        if(!{{ia.arg_member}}->table && {{ia.arg_member}}->file.size()) {{ia.arg_member}}->table = readCSV({{ia.arg_member}}->file);
+        if({{ia.arg_member}}->table) algo{{suffix}}->input.set({{ia.value}}, {{ia.arg_member}}->table);
 {% else %}
-        if(_{{ia[1]}}) algo{{suffix}}->input.set({{ia[0]}}, to_daal(_{{ia[1]}}));
+        if({{ia.arg_member}}) algo{{suffix}}->input.set({{ia.value}}, to_daal({{ia.arg_member}}));
 {% endif %}
 {% endfor %}
 {% if setupmode %}
@@ -541,12 +539,14 @@ struct {{algo}}__iface__ : public {{prnt}}
 {
     {{distributed.decl_member}};
     {{streaming.decl_member}};
-    {{algo}}__iface__({{[distributed, streaming]|concat(attr='decl_dflt_cpp')}})
-        : {{prnt}}(){{(',\n        ' + ([distributed, streaming]|concat(attr='init_member', sep=',\n        '))) if distributed.name or streaming.name else '\n'}}
+    {{algo}}__iface__({{[distributed, streaming]|fmt('{}', 'decl_dflt_cpp')}})
+        : {{prnt}}()
+          {{[distributed, streaming]|fmt(',{}', 'init_member', sep='\n')|indent(10) if distributed.name or streaming.name else '\n'}}
     {}
 {% set indent = 23+(result_map.class_type|length) %}
-    virtual {{result_map.class_type}} * compute({{(',\n'+' '*indent).join(iargs_decl|cppdecl)}},
-{{' '*indent}}bool setup_only = false) {assert(false); return NULL;}
+    virtual {{result_map.class_type}} * compute({{input_args|fmt('{}', 'decl_cpp', sep=',\n')|indent(indent)}},
+{{' '*indent}}bool setup_only = false)
+        {assert(false); return NULL;}
 {% if streaming.name %}
     virtual {{result_map.class_type}} * finalize() {assert(false); return NULL;}
 {% endif %}
@@ -555,25 +555,22 @@ struct {{algo}}__iface__ : public {{prnt}}
 
 # generates "manager" class for managing distributed and batch modes of a given algo
 manager_wrapper_template = gen_typedefs_macro + gen_compute_macro + """
-{% if base %}
+{% if template_decl|length == template_args|length %}
 // The type used in cython
 typedef {{algo}}__iface__  c_{{algo}}_manager__iface__;
 
 // The algo creation function
-extern "C" {{algo}}__iface__ * mk_{{algo}}({{(pargs_decl+[distributed.decl_dflt_cpp, streaming.decl_dflt_cpp])|cpp_decl(pargs_call+[distributed.arg_cpp, streaming.arg_cpp], template_decl, 27+2*(algo|length))}});
+extern "C" {{algo}}__iface__ * mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(27+2*(algo|length))}});
 {% endif %}
 
 {% if template_decl  %}
 template<{% for x in template_decl %}{{template_decl[x]['template_decl'] + ' ' + x + ('' if loop.last else ', ')}}{% endfor %}>
 {% endif %}
-struct {{algo}}_manager{% if template_decl and template_args and template_decl|length != template_args|length %}<{{', '.join(template_args)}}>{% endif %} : public {{algo}}__iface__
-{% if template_args %}
+struct {{algo}}_manager{% if template_decl|length != template_args|length %}<{{template_args|fmt('{}', 'value')}}>{% endif %} : public {{algo}}__iface__
+{% if not incomplete %}
 {
 {{gen_typedefs(ns, template_decl, template_args, mode="Batch")}}
-{% for i in pargs_decl %}    {{' _'.join((i|cppdecl(True)).replace('&', '').strip().replace('__iface__ *', '__iface__::daal_type').rsplit(' ', 1))}};
-{% endfor %}
-{% for i in iargs_decl %}    {{' _'.join((i|cppdecl(True)).replace('&', '').strip().replace('__iface__ *', '__iface__::daal_type').rsplit(' ', 1))}};
-{% endfor %}
+    {{args_all|fmt('{}', 'decl_member', sep=';\n')|indent(4)}};
     daal::services::SharedPtr< algob_type > _algob;
 
 {% if streaming.name %}
@@ -581,21 +578,12 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
     daal::services::SharedPtr< algostream_type > _algostream;
 {% endif %}
 
-    {{algo}}_manager({{(',\n'+' '*(13+algo|length)).join((pargs_decl + [distributed.decl_cpp, streaming.decl_cpp])|cppdecl)}})
-        : {{algo}}__iface__({{[distributed, streaming]|concat(attr='arg_cpp')}})
-{% for i in pargs_call %}
-        , _{{i}}({{'to_daal('+i+')' if '__iface__' in (pargs_decl[loop.index0]|cppdecl(True)) else i}})
-{% endfor %}
-{% for i in iargs_decl %}
-{% if '*' in i %}
-        , _{{iargs_call[loop.index0]}}(NULL)
-{% else %}
-        , _{{iargs_call[loop.index0]}}()
-{% endif %}
-{% endfor %}
-        , _algob()
+    {{algo}}_manager({{params_ds|fmt('{}', 'decl_cpp', sep=',\n')|indent(13+algo|length)}})
+        : {{algo}}__iface__({{[distributed, streaming]|fmt('{}', 'arg_cpp')}})
+          {{args_all|fmt(',{}', 'init_member', sep='\n')|indent(10)}}
+          , _algob()
 {% if streaming.name %}
-        , _algostream()
+          , _algostream()
 {% endif %}
     {
 {% if streaming.name %}
@@ -610,7 +598,7 @@ struct {{algo}}_manager{% if template_decl and template_args and template_decl|l
     ~{{algo}}_manager()
     {
 {% for i in args_decl %}
-{% if 'TableOrFList' in i %}
+{% if 'table_or_flist' in i %}
         delete _{{args_call[loop.index0]}};
 {% elif '*' in i %}
         // ?? delete _{{args_call[loop.index0]}};
@@ -623,9 +611,7 @@ private:
     template< typename PType >
     void init_parameters(PType & parameter)
     {
-{% for p in params_opt %}
-        if(! use_default(_{{p}})) parameter.{{p}} = to_daal({{params_opt[p].replace(p, '_'+p)}});
-{% endfor %}
+        {{params_opt|fmt('if(! use_default({})) parameter.{} = to_daal({});', 'arg_member', 'daalname', 'todaal_member', sep='\n')|indent(8)}}
     }
 {% endif %}
 
@@ -674,16 +660,15 @@ public:
 private:
     typename iomb_type::result_type distributed()
     {
-        return {{pattern}}::{{pattern}}< {{algo}}_manager< {{', '.join(template_args)}} > >::compute(*this, to_daal(_{{'), to_daal(_'.join(inp_names)}}));
+        return {{pattern}}::{{pattern}}< {{algo}}_manager< {{template_args|fmt('{}', 'name')}} > >::compute(*this, to_daal(_{{'), to_daal(_'.join(inp_names)}}));
     }
 {% endif %}
 
 public:
-    typename iomb_type::result_type * compute({{(',\n'+' '*46).join(iargs_decl|cppdecl)}},
+    typename iomb_type::result_type * compute({{input_args|fmt('{}', 'decl_cpp', sep=',\n')|indent(46)}},
                                               bool setup_only = false)
     {
-{% for i in iargs_call %}        _{{i}} = {{i}};
-{% endfor %}
+        {{input_args|fmt('{}', 'assign_member', sep=';\n')|indent(8)}};
 
 {% set batchcall = '('+streaming.arg_member+' ? stream() : batch(setup_only))' if streaming.name else 'batch(setup_only)'%}
 {% if distributed.name %}
@@ -706,7 +691,7 @@ cdef extern from "daal4py.h":
     # declare the C++ equivalent of the manager__iface__ class, providing de-templatized access to compute
     cdef cppclass c_{{algo}}_manager__iface__{{'(c_'+iface[0]+'__iface__)' if iface[0] else ''}}:
 {% set indent = 17+(result_map.class_type|flat|length) %}
-        {{result_map.class_type|flat}} compute({{(',\n'+' '*indent).join(iargs_decl|d2ext)}},
+        {{result_map.class_type|flat}} compute({{input_args|fmt('{}', 'decl_cyext', sep=',\n')|indent(indent)}},
 {{' '*indent}}const bool setup_only) except +
 {% if streaming.name %}
         {{result_map.class_type|flat}} finalize() except +
@@ -715,23 +700,22 @@ cdef extern from "daal4py.h":
 
 cdef extern from "daal4py_cpp.h":
     # declare the C++ construction function. Returns the manager__iface__ for access to de-templatized constructor
-    cdef c_{{algo}}_manager__iface__ * mk_{{algo}}({{(pargs_decl+[distributed.decl_dflt_cy, streaming.decl_dflt_cy])|cy_ext_decl(pargs_call+[distributed.arg_cy, streaming.arg_cy], template_decl, 35+2*(algo|length))}}) except +
-
+    cdef c_{{algo}}_manager__iface__ * mk_{{algo}}({{params_all|fmt('{}', 'decl_cyext', sep=',\n')|indent(35+2*(algo|length))}}) except +
 
 # this is our actual algorithm class for Python
 cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     '''
     {{algo}}
-    {{(pargs_decl+[distributed.decl_dflt_py, streaming.decl_dflt_py])|cy_decl(pargs_call+[distributed.arg_py, streaming.arg_py], template_decl, 18)|sphinx}}
+    {{params_all|fmt('{}', 'sphinx', sep='\n')|indent(4)}}
     '''
     # Init simply forwards to the C++ construction function
     def __cinit__(self,
-                  {{(pargs_decl+[distributed.decl_dflt_py, streaming.decl_dflt_py])|cy_decl(pargs_call+[distributed.arg_py, streaming.arg_py], template_decl, 18)}}):
+                  {{params_all|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(18)}}):
 {% if distributed.name and streaming.name %}
-        if {{[distributed, streaming]|concat(attr='arg_py', sep=' and ')}}:
+        if {{[distributed, streaming]|fmt('{}', 'arg_py', sep=' and ')}}:
             raise ValueError('distributed streaming not supported')
 {% endif %}
-        self.c_ptr = mk_{{algo}}({{(pargs_decl+[distributed.decl_dflt_cpp, streaming.decl_dflt_cpp])|cy_call(pargs_call+[distributed.arg_py, streaming.arg_py], template_decl, 25+(algo|length))}})
+        self.c_ptr = mk_{{algo}}({{params_all|fmt('{}', 'arg_cyext', sep=',\n')|indent(25+(algo|length))}})
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)
@@ -743,19 +727,16 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
     def compute(self,
-{% for a in iargs_call %}
-{{' '*16 + a|cydecl(args_decl[loop.index0]) + ('):' if loop.last else ',')}}
-{% endfor %}
+                {{input_args|fmt('{}', 'decl_cy', sep=',\n')|indent(16)}},
+                setup=False):
         if self.c_ptr == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
-        res.c_ptr = deref(algo).compute(
-{%- for a in iargs_call -%}
-{{('' if loop.first else ' '*40) + a|cycall(iargs_decl[loop.index0], 's2e_algorithms_' + algo) + (', False)' if loop.last else ',')}}
-{% endfor %}
+        res.c_ptr = deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(40)}},
+                                        setup)
         return res
 
 {% if streaming.name %}
@@ -773,16 +754,12 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 {% if add_setup %}
     # setup forwards to the C++ de-templatized manager__iface__::compute(..., setup_only=true)
     def setup(self,
-{% for a in iargs_call %}
-{{' '*14 + a|cydecl(args_decl[loop.index0]) + ('):' if loop.last else ',')}}
-{% endfor %}
+             {{input_args|fmt('{}', 'decl_cy', sep=',\n')|indent(14)}}):
         if self.c_ptr == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
-        deref(algo).compute(
-{%- for a in iargs_call -%}
-{{('' if loop.first else ' '*28) + a|cycall(iargs_decl[loop.index0], 's2e_algorithms_' + algo) + (', True)' if loop.last else ',')}}
-{% endfor %}
+        deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(28)}},
+                            True)
         return None
 {% endif %}
 """
@@ -791,14 +768,14 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 # it all it does is dispatching to the template managers from given arguments
 # tfactory is a recursive jinja2 macro to handle any number of template args
 algo_wrapper_template = """
-{% macro tfactory(tmpl_spec, prefix, pcallargs, dist=False, args=[], indent=4) %}
+{% macro tfactory(tmpl_spec, prefix, params, dist=False, args=[], indent=4) %}
 {% for a in tmpl_spec[0][1]['values'] %}
 {{" "*indent}}if({{tmpl_spec[0][0]}} == "{{a.rsplit('::',1)[-1]}}") {
 {% if tmpl_spec|length == 1 %}
 {% set algo_type = prefix + '<' + ', '.join(args+[a]) + ' >' %}
-{{" "*(indent+4)}}return new {{algo_type}}({{(pcallargs + [distributed.arg_cpp, streaming.arg_cpp])|concat}});
+{{" "*(indent+4)}}return new {{algo_type}}({{params|fmt('{}', 'arg_cpp')}});
 {% else %}
-{{tfactory(tmpl_spec[1:], prefix, pcallargs, dist, args+[a], indent+4)}}
+{{tfactory(tmpl_spec[1:], prefix, params, dist, args+[a], indent+4)}}
 {% endif %}
 {{" "*(indent)}}} else {% if loop.last %} {
 {{" "*(indent+4)}} std::cerr << "Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': '" << {{tmpl_spec[0][0]}} << "'" << std::endl;
@@ -807,49 +784,36 @@ algo_wrapper_template = """
 {% endfor %}
 {%- endmacro %}
 
-extern "C" {{algo}}__iface__ * mk_{{algo}}({{(pargs_decl+[distributed.decl_dflt_cpp, streaming.decl_dflt_cpp])|cpp_decl(pargs_call+[distributed.arg_cpp, streaming.arg_cpp], template_decl, 27+2*(algo|length))}})
+extern "C" {{algo}}__iface__ * mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(27+2*(algo|length))}})
 {
     ThreadAllow _allow_;
 {% if template_decl %}
-{{tfactory(template_decl.items()|list, algo+'_manager', pargs_call, dist=dist)}}
+{{tfactory(template_decl.items()|list, algo+'_manager', params_ds, dist=dist)}}
     std::cerr << "Error: Could not construct {{algo}}." << std::endl;
     return NULL;
 {% else %}
-    return new {{algo}}_manager({{(pargs_call + [distributed.arg_cpp, streaming.arg_cpp])|concat}});
+    return new {{algo}}_manager({{params_ds|fmt('{}', 'arg_cpp')}});
 {% endif %}
 }
 
-extern "C" void * compute_{{algo}}({{(',\n'+' '*(27+algo|length)).join([algo+'__iface__ * algo']+iargs_decl|hpatdecl)}})
+extern "C" void * compute_{{algo}}({{algo}}__iface__ * algo,
+{{' '*(27+(algo|length))}}{{input_args|fmt('{}', 'decl_c', sep=',\n')|indent(27+(algo|length))}})
 {
 {% if distributed.name %}
     algo->{{distributed.arg_member}} = c_num_procs() > 0;
 {% endif %}
-    void * res = algo->compute(
-{% for a in iargs_decl %}
-{% set comma = ');' if loop.last else ',' %}
-{% set an = a.rsplit('=', 1)[0].strip().rsplit(' ', 1)[-1] %}
-{% if "TableOrFList" in a %}
-{{' '*34}}new TableOrFList(daal::data_management::HomogenNumericTable< double >::create({{an}}_p, {{an}}_d2, {{an}}_d1)){{comma}}
-{% else %}
-{{' '*34 + an}}{{comma}}
-{% endif %}
-{% endfor %}
+    void * res = algo->compute({{input_args|fmt('{}', 'arg_c', sep=',\n')|indent(31)}});
     return res;
 };
 """
 
 # generate a D4PSpec
 hpat_spec_template = '''
-{% if step_specs is defined %}
-{% set inp_dists = step_specs[0].inputdists if step_specs|length else inputdists %}
-{% else %}
-{% set inp_dists = None %}
-{% endif %}
 hpat_spec.append({
     'pyclass'     : {{algo}},
     'c_name'      : '{{algo}}',
-    'params'      : [{{pargs_decl|hpat_spec(pargs_call, template_decl, 21)}}],
-    'input_types' : {{iargs_decl|hpat_input_spec(inp_dists)}},
+    'params'      : [{{params_all|fmt('{}', 'spec', sep=',\n')|indent(21)}}],
+    'input_types' : [{{input_args|fmt('{}', 'spec', sep=',\n')|indent(21)}}],
     'result_dist' : {{"'REP'" if step_specs is defined else "'OneD'"}}
 })
 '''
@@ -888,86 +852,6 @@ def d2cy(ty, cpp=True):
     return [flt(x,cpp) for x in ty if x] if isinstance(ty,list) else flt(ty,cpp)
 
 
-def d2ext(ty, cpp=True):
-    def flt(t):
-        return flat(t, cpp).split('=')[0].strip().replace('lambda', 'lambda_')
-    return [flt(x) for x in ty if x] if isinstance(ty,list) else flt(ty)
-
-def gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt):
-    '''Generate list of arguments/paramters from algorithm arguments/paramters.
-       Brings required and optional arguments in the right order and
-       applies a filter
-    '''
-    r = ''
-    for a in range(len(pargs_decl)):
-        if pargs_decl[a] and '=' not in pargs_decl[a]:
-            r += ' '*indent + flt(pargs_call[a], pargs_decl[a]) + ',\n'
-    for ta in template_decl:
-        if ta and not template_decl[ta]['default']:
-            r += ' '*indent + flt(ta, 'const std::string & ' + ta) + ',\n'
-    for ta in template_decl:
-        if ta and template_decl[ta]['default']:
-            r += ' '*indent + flt(ta, 'const std::string & ' + ta + ' = "' + template_decl[ta]['default'].rsplit('::',1)[-1] + '"') + ',\n'
-    for a in range(len(pargs_decl)):
-        if pargs_decl[a] and '=' in pargs_decl[a]:
-            r += ' '*indent + flt(pargs_call[a], pargs_decl[a]) + ',\n'
-    return r.lstrip().strip(',\n')
-
-def cy_ext_decl(pargs_decl, pargs_call, template_decl, indent):
-    def flt(arg, typ):
-        return d2cy(typ).rsplit('=', 1)[0].strip()
-    return gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt)
-
-def cydecl(arg, typ):
-    if 'TableOrFList' in typ:
-        return arg
-    if 'NumericTablePtr' in typ:
-        return arg + (' = None' if '=' in typ else '')
-    r = d2cy(typ, False).replace('Ptr ', ' ').strip().rsplit('=', 1)
-    if 'std::string' in typ:
-        return arg + ' = ' + r[-1]
-    tv = r[0].strip().rsplit(' ', 1)
-    if len(tv):
-        tv = " ".join([tv[0].lower()] + tv[1:])
-    return tv if len(r)==1 else '='.join([tv, r[1]])
-
-def cy_decl(pargs_decl, pargs_call, template_decl, indent):
-    def flt(arg, typ):
-        return cydecl(arg, typ)
-    return gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt).strip(',\n')
-
-def cycall(arg, typ, s2e=None):
-    if 'TableOrFList' in typ:
-        return 'new TableOrFList(<PyObject *>' + arg + ')'
-    if 'dict_NumericTablePtr' in typ:
-        return 'make_dnt(<PyObject *>' + arg + ((', ' + s2e) if s2e else '') + ')'
-    if 'NumericTablePtr' in typ:
-        return 'make_nt(<PyObject *>' + arg + ')'
-    if 'Ptr' in typ:
-        return arg + '.c_ptr if ' + arg + ' != None else <' + flat(typ.rsplit('=', 1)[0].strip().rsplit(' ', 1)[0]) + '>0'
-    if 'std::string' in typ:
-        return 'to_std_string(<PyObject *>' + arg + ')'
-    return arg.replace('lambda', 'lambda_')
-
-def cy_call(pargs_decl, pargs_call, template_decl, indent):
-    def flt(arg, typ):
-        return cycall(arg, typ)
-    return gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt)
-
-def cppdecl(ty, noconst=False):
-    def flt(typ):
-        if 'Ptr' in typ:
-            typ = flat(typ, True)
-        if noconst or 'std::string' not in typ:
-            typ = typ.replace('const', '')
-        return typ.split('=')[0].strip()
-    return [flt(x) for x in ty if x] if isinstance(ty, list) else flt(ty)
-
-def cpp_decl(pargs_decl, pargs_call, template_decl, indent):
-    def flt(arg, typ):
-        return cppdecl(typ)
-    return gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt)
-
 def d2hpat(arg, ty, fn):
     def flt(arg, t):
         rtype = d2cy(t)
@@ -976,78 +860,18 @@ def d2hpat(arg, ty, fn):
         return 'dtable_type' if 'NumericTablePtr' in rtype else rtype.replace('ModelPtr', 'model').replace(' ', '')
     return [flt(x,y) for x,y in zip(arg, ty)] if isinstance(ty,list) else flt(arg, ty)
 
-def hpatdecl(ty):
-    def flt(typ):
-        if "TableOrFList" in typ:
-            an = typ.rsplit('=', 1)[0].strip().rsplit(' ', 1)[-1]
-            return 'double * ' + an + '_p, size_t ' + an + '_d1, size_t ' + an + '_d2'
-        if 'Ptr' in typ:
-            typ = flat(typ)
-        return typ.split('=')[0].replace('const', '').strip()
-    return [flt(x) for x in ty] if isinstance(ty, list) else flt(ty)
-
-def hpat_input_spec(ty, dists):
-    def flt(typ, dist):
-        an = typ.rsplit('=', 1)[0].strip().rsplit(' ', 1)[-1]
-        if "TableOrFList" in typ:
-            return (an, 'dtable_type', dist)
-        if 'Ptr' in typ:
-            typ = flat(typ, False)
-        return (an, typ.replace('const', '').strip().split()[0].replace('ModelPtr', 'model'), dist)
-
-    if dists == None:
-        dists = ['REP' if 'model' in x else 'OneD' for x in ty]
-    assert len(dists) == len(ty)
-    return [flt(x,y) for x,y in zip(ty, dists)]
-
-def hpat_spec(pargs_decl, pargs_call, template_decl, indent):
-    def flt(arg, typ):
-        if 'Ptr' in typ:
-            typ = flat(typ, False)
-        st = typ.split('=')
-        ref = '&' if '&' in st[0] else ('*' if '*' in st[0] else '')
-        ret = "'{}', '{}'".format(arg.replace('lambda', 'lambda_'), st[0].replace('const', '').strip().split()[0].lower()+ref)
-        return '({}, {})'.format(ret, st[1]) if len(st) > 1 else '({})'.format(ret)
-    return gen_algo_args(pargs_decl, pargs_call, template_decl, indent, flt)
-
-def sphinx(st):
-    def flt(s):
-        lst = s.rsplit('=', 1)
-        rstr = '[, ' if len(lst) > 1 else ', '
-        oval = ' = ' + lst[1].strip() + ']' if len(lst) > 1 else ''
-        dflt = ' [optional, default: '+lst[1].strip()+']' if len(lst) > 1 else ''
-        llst = lst[0].split()
-        if len(llst) == 1:
-            return (rstr + lst[0].strip() +': str' + oval, '   :param str ' + lst[0].strip() + ':' + dflt)
-        elif len(llst) == 2:
-            return (rstr + llst[1].strip() + ': ' + llst[0].strip() + oval, '   :param ' + llst[0].strip() + ' ' + llst[1].strip() + ':' + dflt)
-        else:
-            assert False, 'oops "{}"'.format(s)
-
-    all = [flt(x) for x in st.split(',') if x]
-#    return '(' + ''.join([x[0] for x in all]).strip(' ,') + ')\n\n       ' + '\n'.join([x[1] for x in all]).strip(' ,')
-    return '\n   ' + '\n'.join([x[1] for x in all]).strip(' ,')
+def fmt(*args, **kwargs):
+    sep = kwargs['sep'] if 'sep' in kwargs else ', '
+    return sep.join([y for y in [x.format(args[1], *args[2:]) for x in args[0]] if y])
 
 jenv = jinja2.Environment(trim_blocks=True)
 jenv.filters['match'] = lambda a, x : [x for x in a if s in x]
 jenv.filters['d2cy'] = d2cy
-jenv.filters['d2ext'] = d2ext
 jenv.filters['flat'] = flat
-jenv.filters['cydecl'] = cydecl
-jenv.filters['cycall'] = cycall
-jenv.filters['cy_ext_decl'] = cy_ext_decl
-jenv.filters['cy_decl'] = cy_decl
-jenv.filters['cy_call'] = cy_call
-jenv.filters['cppdecl'] = cppdecl
-jenv.filters['cpp_decl'] = cpp_decl
 jenv.filters['d2hpat'] = d2hpat
-jenv.filters['hpatdecl'] = hpatdecl
-jenv.filters['hpat_spec'] = hpat_spec
-jenv.filters['hpat_input_spec'] = hpat_input_spec
 jenv.filters['strip'] = lambda s, c : s.strip(c)
-jenv.filters['sphinx'] = sphinx
 jenv.filters['quote'] = lambda x: "'"+x+"'" if x else ''
-jenv.filters['concat'] = lambda l, attr=None, sep=', ': sep.join([getattr(x, attr) for x in l if getattr(x, attr)] if attr else [x for x in l if x])
+jenv.filters['fmt'] = fmt
 
 class wrapper_gen(object):
     def __init__(self, ac, ifaces):
@@ -1069,28 +893,6 @@ class wrapper_gen(object):
             cpp += t.render({'parent': self.ifaces[i][1]}) + '\n'
 
         return (cpp, cython_header + pyx)
-
-    def gen_hlargs(self, template_decl, args_decl):
-        """
-        Generates a list of tuples, one for each HLAPI argument: (name, type, default)
-        """
-        res = []
-        for a in args_decl:
-            if '=' not in a:
-                tmp = a.strip().rsplit(' ', 1)
-                res.append((tmp[1], tmp[0], None))
-        for ta in template_decl:
-            if not template_decl[ta]['default']:
-                res.append((ta, 'string', None))
-        for ta in template_decl:
-            if template_decl[ta]['default']:
-                res.append((ta, 'string', template_decl[ta]['default']))
-        for a in args_decl:
-            if '=' in a:
-                tmp1 = a.strip().rsplit('=', 1)
-                tmp2 = tmp1[0].strip().rsplit(' ', 1)
-                res.append((tmp2[1], tmp2[0], tmp1[1]))
-        return res
 
 
     ##################################################################################
@@ -1126,6 +928,11 @@ class wrapper_gen(object):
             return (t.render(**jparams) + '\n').split('%SNIP%')
         return '', '', ''
 
+    def lp(self, t):
+        tmp = t.split('\n')
+        for i in range(len(tmp)):
+            print(i, tmp[i])
+
     ##################################################################################
     def gen_wrapper(self, ns, algo):
         """
@@ -1140,7 +947,6 @@ class wrapper_gen(object):
         """
         cfg = self.algocfg[ns + '::' + algo]
         cpp_begin, pyx_begin, pyx_end, typesstr = '', '', '', ''
-        hlargs = []
 
         cpp_map, cpp_end, pyx_map = self.gen_modelmaps(ns, algo)
         a, b, c = self.gen_resultmaps(ns, algo)
@@ -1149,18 +955,15 @@ class wrapper_gen(object):
         pyx_map += c
 
         if len(cfg['params']) == 0:
-            return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr, hlargs)
+            return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr)
 
 
         jparams = cfg['params'].copy()
         jparams['create'] = cfg['create']
-        jparams['add_setup'] = cfg['add_setup']
+        jparams['add_setup']  = cfg['add_setup']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
-        jparams['pargs_decl'] = jparams['decl_req'] + jparams['decl_opt']
-        jparams['args_decl']  = jparams['iargs_decl'] + jparams['pargs_decl']
-        jparams['pargs_call'] = jparams['call_req'] + jparams['call_opt']
-        jparams['args_call']  = jparams['iargs_call'] + jparams['pargs_call']
+
         for p in ['distributed', 'streaming']:
             if p in cfg:
                 jparams[p] = cfg[p]
@@ -1174,14 +977,17 @@ class wrapper_gen(object):
             # Last but not least, we need to provide the template parameter specs
             jparams['template_decl'] = td['template_decl']
             jparams['template_args'] = td['template_args']
+            jparams['incomplete'] = 'incomplete' in td
             jparams['params_req'] = td['params_req']
             jparams['params_opt'] = td['params_opt']
             jparams['params_get'] = td['params_get']
+            jparams['params_ds'] = td['params_req'] + td['params_opt'] + [cfg['distributed'], cfg['streaming']]
+            jparams['params_all'] = td['params_req'] + (td['template_args'] if td['template_args'] else []) + td['params_opt'] + [cfg['distributed'], cfg['streaming']]
+            jparams['args_all']   = jparams['input_args'] + td['params_req'] + td['params_opt']
             # Very simple for specializations
             # but how do we pass only the required args to them from the wrapper?
             # we could have the full input list, but that doesn't work for required parameters
-            jparams['base'] = (i == 0)
-            assert td['template_args'] != None or jparams['base'], "eerr"
+            assert td['template_args'] != None
             if 'dist' in cfg:
                 # a wrapper for distributed mode
                 assert len(tdecl) == 1
@@ -1198,11 +1004,10 @@ class wrapper_gen(object):
                 # the C function generating specialized classes
                 t = jenv.from_string(algo_wrapper_template)
                 cpp_end += t.render(**jparams) + '\n'
-                hlargs += self.gen_hlargs(jparams['template_decl'], jparams['args_decl'])
 
             i = i+1
 
-        return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr, hlargs)
+        return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr)
 
 
     ##################################################################################

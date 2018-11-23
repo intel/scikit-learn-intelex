@@ -4,10 +4,14 @@ matrix:
     include:
         - name: "Linux-Py2"
           os: linux
-          env: MINICONDA=Miniconda2-latest-Linux-x86_64.sh
+          env:
+            - MINICONDA=Miniconda2-latest-Linux-x86_64.sh
+            - PYVER="--python=27"
         - name: "Linux-Py3"
           os: linux
-          env: MINICONDA=Miniconda3-latest-Linux-x86_64.sh
+          env:
+            - MINICONDA=Miniconda3-latest-Linux-x86_64.sh
+            - PYVER=""
         - name: "OsX-Py2"
           os: osx
           osx_image: xcode8
@@ -15,6 +19,7 @@ matrix:
             - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
             - MACOSX_DEPLOYMENT_TARGET="10.9"
+            - PYVER="--python=27"
         - name: "OsX-Py3"
           os: osx
           osx_image: xcode8
@@ -22,6 +27,7 @@ matrix:
             - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
             - MACOSX_DEPLOYMENT_TARGET="10.9"
+            - PYVER=""
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
@@ -30,20 +36,15 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
+  - conda install conda-build
   # Useful for debugging any issues with conda
   - conda info -a
-
-  # create conda env with all our deps
-  - conda create -q -n D4P -c intel -c conda-forge mpich tbb-devel daal daal-include cython jinja2 numpy
-  - source activate D4P
   - gcc -v
   - g++ -v
-  - DAALROOT=$CONDA_PREFIX TBBROOT=$CONDA_PREFIX MPIROOT=$CONDA_PREFIX python setup.py install
 
 script:
   # Your test script goes here
-  - which mpirun && mpirun -version
+  #  - which mpirun && mpirun -version
   # - echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
   # - export I_MPI_SHM_LMT=shm 
-  - cd tests && python test_examples.py; cd ..
-  - cd examples && python run_examples.py
+  - conda build -c intel -c conda-forge $PYVER conda-recipe
