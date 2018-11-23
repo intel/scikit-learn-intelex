@@ -29,7 +29,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Examples" href="examples.html" />
-    <link rel="prev" title="Fast, Scalable and Easy Machine Learning With DAAL4PY" href="index.html" /> 
+    <link rel="prev" title="Streaming Data" href="streaming.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -85,6 +85,8 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">About daal4py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scaling.html">Distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Supported Algorithms</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#principal-component-analysis-pca">Principal Component Analysis (PCA)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#principal-component-analysis-pca-transform">Principal Component Analysis (PCA) Transform</a></li>
@@ -144,7 +146,6 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaling.html">Scaling on Distributed Memory (Multiprocessing)</a></li>
 </ul>
 
             
@@ -223,9 +224,7 @@
 <dl class="class">
 <dt id="daal4py.pca">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca</code><a class="headerlink" href="#daal4py.pca" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>pca</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -325,9 +324,7 @@
 <dl class="class">
 <dt id="daal4py.pca_transform">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">pca_transform</code><a class="headerlink" href="#daal4py.pca_transform" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>pca_transform</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -335,7 +332,6 @@
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
 <li><strong>nComponents</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -377,9 +373,7 @@
 <dl class="class">
 <dt id="daal4py.svd">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">svd</code><a class="headerlink" href="#daal4py.svd" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>svd</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -389,6 +383,7 @@
 <li><strong>leftSingularMatrix</strong> (<em>str</em>) – [optional, default: “”]</li>
 <li><strong>rightSingularMatrix</strong> (<em>str</em>) – [optional, default: “”]</li>
 <li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>streaming</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -454,9 +449,7 @@
 <dl class="class">
 <dt id="daal4py.low_order_moments">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">low_order_moments</code><a class="headerlink" href="#daal4py.low_order_moments" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>low_order_moments</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -464,7 +457,7 @@
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
 <li><strong>estimatesToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>streaming</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -623,9 +616,7 @@
 <dl class="class">
 <dt id="daal4py.decision_forest_classification_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_forest_classification_training</code><a class="headerlink" href="#daal4py.decision_forest_classification_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>decision_forest_classification_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -645,7 +636,6 @@
 <li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
 <li><strong>memorySavingMode</strong> (<em>bool</em>) – [optional, default: False]</li>
 <li><strong>bootstrap</strong> (<em>bool</em>) – [optional, default: False]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -714,9 +704,7 @@
 <dl class="class">
 <dt id="daal4py.decision_forest_classification_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_forest_classification_prediction</code><a class="headerlink" href="#daal4py.decision_forest_classification_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>decision_forest_classification_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -724,7 +712,6 @@
 <li><strong>nClasses</strong> (<em>size_t</em>) – </li>
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -801,9 +788,7 @@
 <dl class="class">
 <dt id="daal4py.decision_tree_classification_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_tree_classification_training</code><a class="headerlink" href="#daal4py.decision_tree_classification_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>decision_tree_classification_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -815,7 +800,6 @@
 <li><strong>pruning</strong> (<em>str</em>) – [optional, default: “”]</li>
 <li><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>minObservationsInLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -845,9 +829,7 @@
 <dl class="class">
 <dt id="daal4py.decision_tree_classification_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_tree_classification_prediction</code><a class="headerlink" href="#daal4py.decision_tree_classification_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>decision_tree_classification_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -859,7 +841,6 @@
 <li><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>minObservationsInLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -930,9 +911,7 @@
 <dl class="class">
 <dt id="daal4py.gbt_classification_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">gbt_classification_training</code><a class="headerlink" href="#daal4py.gbt_classification_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>gbt_classification_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -955,7 +934,6 @@
 <li><strong>maxBins</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>minBinSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>internalOptions</strong> (<em>int</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -985,9 +963,7 @@
 <dl class="class">
 <dt id="daal4py.gbt_classification_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">gbt_classification_prediction</code><a class="headerlink" href="#daal4py.gbt_classification_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>gbt_classification_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -996,7 +972,6 @@
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
 <li><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1073,9 +1048,7 @@
 <dl class="class">
 <dt id="daal4py.kdtree_knn_classification_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kdtree_knn_classification_training</code><a class="headerlink" href="#daal4py.kdtree_knn_classification_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>kdtree_knn_classification_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1087,7 +1060,6 @@
 <li><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]</li>
 <li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
 <li><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1117,9 +1089,7 @@
 <dl class="class">
 <dt id="daal4py.kdtree_knn_classification_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kdtree_knn_classification_prediction</code><a class="headerlink" href="#daal4py.kdtree_knn_classification_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>kdtree_knn_classification_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1131,7 +1101,6 @@
 <li><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]</li>
 <li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
 <li><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1204,9 +1173,7 @@
 <dl class="class">
 <dt id="daal4py.multinomial_naive_bayes_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">multinomial_naive_bayes_training</code><a class="headerlink" href="#daal4py.multinomial_naive_bayes_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>multinomial_naive_bayes_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1214,9 +1181,10 @@
 <li><strong>nClasses</strong> (<em>size_t</em>) – </li>
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>priorClassEstimates</strong> (<em>str</em>) – [optional, default: None]</li>
-<li><strong>alpha</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>priorClassEstimates</strong> (<em>array</em>) – [optional, default: None]</li>
+<li><strong>alpha</strong> (<em>array</em>) – [optional, default: None]</li>
 <li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>streaming</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1246,9 +1214,7 @@
 <dl class="class">
 <dt id="daal4py.multinomial_naive_bayes_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">multinomial_naive_bayes_prediction</code><a class="headerlink" href="#daal4py.multinomial_naive_bayes_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>multinomial_naive_bayes_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1256,9 +1222,8 @@
 <li><strong>nClasses</strong> (<em>size_t</em>) – </li>
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>priorClassEstimates</strong> (<em>str</em>) – [optional, default: None]</li>
-<li><strong>alpha</strong> (<em>str</em>) – [optional, default: None]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>priorClassEstimates</strong> (<em>array</em>) – [optional, default: None]</li>
+<li><strong>alpha</strong> (<em>array</em>) – [optional, default: None]</li>
 </ul>
 </td>
 </tr>
@@ -1368,9 +1333,7 @@
 <dl class="class">
 <dt id="daal4py.svm_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">svm_training</code><a class="headerlink" href="#daal4py.svm_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>svm_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1386,7 +1349,6 @@
 <li><strong>shrinkingStep</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>kernel</strong> (<em>kernel_function_kerneliface__iface__</em>) – [optional, default: None]</li>
 <li><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1416,9 +1378,7 @@
 <dl class="class">
 <dt id="daal4py.svm_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">svm_prediction</code><a class="headerlink" href="#daal4py.svm_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>svm_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1434,7 +1394,6 @@
 <li><strong>shrinkingStep</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>kernel</strong> (<em>kernel_function_kerneliface__iface__</em>) – [optional, default: None]</li>
 <li><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1558,9 +1517,7 @@
 <dl class="class">
 <dt id="daal4py.logistic_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">logistic_regression_training</code><a class="headerlink" href="#daal4py.logistic_regression_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>logistic_regression_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1602,9 +1559,7 @@
 <dl class="class">
 <dt id="daal4py.logistic_regression_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">logistic_regression_prediction</code><a class="headerlink" href="#daal4py.logistic_regression_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>logistic_regression_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1613,7 +1568,6 @@
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
 <li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1727,9 +1681,7 @@
 <dl class="class">
 <dt id="daal4py.decision_forest_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_forest_regression_training</code><a class="headerlink" href="#daal4py.decision_forest_regression_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>decision_forest_regression_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1748,7 +1700,6 @@
 <li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
 <li><strong>memorySavingMode</strong> (<em>bool</em>) – [optional, default: False]</li>
 <li><strong>bootstrap</strong> (<em>bool</em>) – [optional, default: False]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1817,16 +1768,13 @@
 <dl class="class">
 <dt id="daal4py.decision_forest_regression_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_forest_regression_prediction</code><a class="headerlink" href="#daal4py.decision_forest_regression_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>decision_forest_regression_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1890,9 +1838,7 @@
 <dl class="class">
 <dt id="daal4py.decision_tree_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_tree_regression_training</code><a class="headerlink" href="#daal4py.decision_tree_regression_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>decision_tree_regression_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1902,7 +1848,6 @@
 <li><strong>pruning</strong> (<em>str</em>) – [optional, default: “”]</li>
 <li><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>minObservationsInLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -1932,9 +1877,7 @@
 <dl class="class">
 <dt id="daal4py.decision_tree_regression_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">decision_tree_regression_prediction</code><a class="headerlink" href="#daal4py.decision_tree_regression_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>decision_tree_regression_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -1944,7 +1887,6 @@
 <li><strong>pruning</strong> (<em>str</em>) – [optional, default: “”]</li>
 <li><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>minObservationsInLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2002,9 +1944,7 @@
 <dl class="class">
 <dt id="daal4py.gbt_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">gbt_regression_training</code><a class="headerlink" href="#daal4py.gbt_regression_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>gbt_regression_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2026,7 +1966,6 @@
 <li><strong>maxBins</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>minBinSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>internalOptions</strong> (<em>int</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2056,9 +1995,7 @@
 <dl class="class">
 <dt id="daal4py.gbt_regression_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">gbt_regression_prediction</code><a class="headerlink" href="#daal4py.gbt_regression_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>gbt_regression_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2066,7 +2003,6 @@
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
 <li><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2132,9 +2068,7 @@
 <dl class="class">
 <dt id="daal4py.linear_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">linear_regression_training</code><a class="headerlink" href="#daal4py.linear_regression_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>linear_regression_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2143,6 +2077,7 @@
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “normEqDense”]</li>
 <li><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]</li>
 <li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>streaming</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2172,16 +2107,13 @@
 <dl class="class">
 <dt id="daal4py.linear_regression_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">linear_regression_prediction</code><a class="headerlink" href="#daal4py.linear_regression_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>linear_regression_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2293,18 +2225,17 @@
 <dl class="class">
 <dt id="daal4py.ridge_regression_training">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">ridge_regression_training</code><a class="headerlink" href="#daal4py.ridge_regression_training" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>ridge_regression_training</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “normEqDense”]</li>
-<li><strong>ridgeParameters</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>ridgeParameters</strong> (<em>array</em>) – [optional, default: None]</li>
 <li><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]</li>
 <li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
+<li><strong>streaming</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2334,16 +2265,13 @@
 <dl class="class">
 <dt id="daal4py.ridge_regression_prediction">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">ridge_regression_prediction</code><a class="headerlink" href="#daal4py.ridge_regression_prediction" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>ridge_regression_prediction</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2459,9 +2387,7 @@
 <dl class="class">
 <dt id="daal4py.kmeans_init">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kmeans_init</code><a class="headerlink" href="#daal4py.kmeans_init" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>kmeans_init</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2508,9 +2434,7 @@
 <dl class="class">
 <dt id="daal4py.kmeans">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">kmeans</code><a class="headerlink" href="#daal4py.kmeans" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>kmeans</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2617,16 +2541,13 @@
 <dl class="class">
 <dt id="daal4py.multivariate_outlier_detection">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">multivariate_outlier_detection</code><a class="headerlink" href="#daal4py.multivariate_outlier_detection" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>multivariate_outlier_detection</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2665,16 +2586,13 @@
 <dl class="class">
 <dt id="daal4py.univariate_outlier_detection">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">univariate_outlier_detection</code><a class="headerlink" href="#daal4py.univariate_outlier_detection" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>univariate_outlier_detection</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2718,9 +2636,7 @@
 <dl class="class">
 <dt id="daal4py.optimization_solver_mse">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_mse</code><a class="headerlink" href="#daal4py.optimization_solver_mse" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>optimization_solver_mse</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2728,9 +2644,8 @@
 <li><strong>numberOfTerms</strong> (<em>size_t</em>) – </li>
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>batchIndices</strong> (<em>array</em>) – [optional, default: None]</li>
 <li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2754,9 +2669,7 @@
 <dl class="class">
 <dt id="daal4py.optimization_solver_logistic_loss">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_logistic_loss</code><a class="headerlink" href="#daal4py.optimization_solver_logistic_loss" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>optimization_solver_logistic_loss</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2767,9 +2680,8 @@
 <li><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]</li>
 <li><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: NaN32]</li>
 <li><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: NaN32]</li>
-<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>batchIndices</strong> (<em>array</em>) – [optional, default: None]</li>
 <li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2791,9 +2703,7 @@
 <dl class="class">
 <dt id="daal4py.optimization_solver_cross_entropy_loss">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_cross_entropy_loss</code><a class="headerlink" href="#daal4py.optimization_solver_cross_entropy_loss" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>optimization_solver_cross_entropy_loss</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2805,9 +2715,8 @@
 <li><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]</li>
 <li><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: NaN32]</li>
 <li><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: NaN32]</li>
-<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>batchIndices</strong> (<em>array</em>) – [optional, default: None]</li>
 <li><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2835,9 +2744,7 @@
 <dl class="class">
 <dt id="daal4py.optimization_solver_sgd">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_sgd</code><a class="headerlink" href="#daal4py.optimization_solver_sgd" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>optimization_solver_sgd</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2845,15 +2752,14 @@
 <li><strong>function</strong> (<em>optimization_solver_sum_of_functions_batch__iface__</em>) – </li>
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
-<li><strong>learningRateSequence</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>batchIndices</strong> (<em>array</em>) – [optional, default: None]</li>
+<li><strong>learningRateSequence</strong> (<em>array</em>) – [optional, default: None]</li>
 <li><strong>seed</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
 <li><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]</li>
 <li><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]</li>
 <li><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2903,9 +2809,7 @@
 <dl class="class">
 <dt id="daal4py.optimization_solver_lbfgs">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_lbfgs</code><a class="headerlink" href="#daal4py.optimization_solver_lbfgs" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>optimization_solver_lbfgs</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2917,15 +2821,14 @@
 <li><strong>L</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>seed</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
-<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>batchIndices</strong> (<em>array</em>) – [optional, default: None]</li>
 <li><strong>correctionPairBatchSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>correctionPairBatchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
-<li><strong>stepLengthSequence</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>correctionPairBatchIndices</strong> (<em>array</em>) – [optional, default: None]</li>
+<li><strong>stepLengthSequence</strong> (<em>array</em>) – [optional, default: None]</li>
 <li><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]</li>
 <li><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]</li>
 <li><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -2975,9 +2878,7 @@
 <dl class="class">
 <dt id="daal4py.optimization_solver_adagrad">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">optimization_solver_adagrad</code><a class="headerlink" href="#daal4py.optimization_solver_adagrad" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>optimization_solver_adagrad</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -2985,8 +2886,8 @@
 <li><strong>function</strong> (<em>optimization_solver_sum_of_functions_batch__iface__</em>) – </li>
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>batchIndices</strong> (<em>str</em>) – [optional, default: None]</li>
-<li><strong>learningRate</strong> (<em>str</em>) – [optional, default: None]</li>
+<li><strong>batchIndices</strong> (<em>array</em>) – [optional, default: None]</li>
+<li><strong>learningRate</strong> (<em>array</em>) – [optional, default: None]</li>
 <li><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]</li>
 <li><strong>seed</strong> (<em>size_t</em>) – [optional, default: -1]</li>
 <li><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]</li>
@@ -2994,7 +2895,6 @@
 <li><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]</li>
 <li><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]</li>
 <li><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -3050,16 +2950,13 @@
 <dl class="class">
 <dt id="daal4py.cosine_distance">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">cosine_distance</code><a class="headerlink" href="#daal4py.cosine_distance" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>cosine_distance</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -3098,16 +2995,13 @@
 <dl class="class">
 <dt id="daal4py.correlation_distance">
 <em class="property">class </em><code class="descclassname">daal4py.</code><code class="descname">correlation_distance</code><a class="headerlink" href="#daal4py.correlation_distance" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>correlation_distance</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</li>
 <li><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</li>
-<li><strong>distributed</strong> (<em>bool</em>) – [optional, default: False]</li>
 </ul>
 </td>
 </tr>
@@ -3184,7 +3078,7 @@
         <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Fast, Scalable and Easy Machine Learning With DAAL4PY" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="streaming.html" class="btn btn-neutral" title="Streaming Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
