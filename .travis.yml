@@ -6,7 +6,7 @@ matrix:
           os: linux
           env:
             - MINICONDA=Miniconda2-latest-Linux-x86_64.sh
-	    - PYVER="--python=27"
+            - PYVER="--python=27"
         - name: "Linux-Py3"
           os: linux
           env:
