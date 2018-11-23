@@ -23,7 +23,6 @@
 #   - Cython code to generate python API
 ###############################################################################
 
-from __future__ import print_function
 import glob, os, re
 from pprint import pformat, pprint
 from os.path import join as jp
@@ -831,7 +830,6 @@ class cython_interface(object):
         wg = wrapper_gen(algoconfig, {cpp2hl(i): ifaces[i] for i in ifaces})
         cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end = '', '', '#define NO_IMPORT_ARRAY\n#include "daal4py_cpp.h"\n', '', '', ''
 
-        print('.', end='', flush=True)
         for ns in algos:
             if ns.startswith('algorithms::') and not ns.startswith('algorithms::neural_networks') and self.namespace_dict[ns].enums:
                 cpp_begin += 'static std::map< std::string, int64_t > s2e_' + ns.replace('::', '_') + ' =\n{\n'
@@ -854,7 +852,6 @@ class cython_interface(object):
                         
 
         for a in algoconfig:
-            print('.', end='', flush=True)
             (ns, algo) = splitns(a)
             if algo.startswith('Batch'):
                 tmp = wg.gen_wrapper(ns, algo)
@@ -867,12 +864,10 @@ class cython_interface(object):
                     pyx_end   += tmp[5]
                     dtypes    += tmp[6]
 
-        print('.', end='', flush=True)
         hds = wg.gen_headers()
         fts = wg.gen_footers(no_dist, no_stream)
 
         pyx_end += fts[1]
-        print('.', flush=True)
         # Finally combine the different sections and return the 3 strings
         return(hds[0] + cpp_map + cpp_begin + fts[2] + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
 
@@ -891,7 +886,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
            "Path/$DAALROOT '"+ipath+"' doesn't seem host DAAL headers. Please provide correct daalroot."
     iface = cython_interface(ipath)
     iface.read()
-    print('Generating sources', end='', flush=True)
+    print('Generating sources...')
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(['kmeans',
                                             'pca',
                                             'svd',

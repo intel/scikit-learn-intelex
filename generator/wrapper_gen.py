@@ -860,8 +860,9 @@ def d2hpat(arg, ty, fn):
         return 'dtable_type' if 'NumericTablePtr' in rtype else rtype.replace('ModelPtr', 'model').replace(' ', '')
     return [flt(x,y) for x,y in zip(arg, ty)] if isinstance(ty,list) else flt(arg, ty)
 
-def fmt(l, s, *a, sep=', '):
-    return sep.join([y for y in [x.format(s, *a) for x in l] if y])
+def fmt(*args, **kwargs):
+    sep = kwargs['sep'] if 'sep' in kwargs else ', '
+    return sep.join([y for y in [x.format(args[1], *args[2:]) for x in args[0]] if y])
 
 jenv = jinja2.Environment(trim_blocks=True)
 jenv.filters['match'] = lambda a, x : [x for x in a if s in x]
