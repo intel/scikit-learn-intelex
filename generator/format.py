@@ -116,6 +116,8 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
                     typ_cyext  = 'c_'+typ_flat
                     ptr = '*'
                     const = ''
+                # for sphinx docu we want to be a bit more readable
+                typ_sphinx = typ_cyext.replace('std_string', 'str').replace('data_management_NumericTablePtr', 'array')
                 # in cython/python we want everythint to be lower case
                 typ_cy = typ_flat.lower()
                 # all daal objects are passed as SharedPointer through their *Ptr typedefs
@@ -137,13 +139,14 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
                 # default values (see above pydefaults)
                 if dflt != None:
                     pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1]
-                    pydefault = ' = "{}"'.format(pd) if typ == 'std::string' else ' = {}'.format(pd)
+                    sphinx_default = '"{}"'.format(pd) if typ == 'std::string' else '{}'.format(pd)
+                    pydefault = ' = {}'.format(sphinx_default)
                     cppdefault = ' = {}'.format(cppdefaults[typ] if dflt == True else dflt) if dflt != None else ''
                 else:
                     pydefault = ''
                     cppdefault = ''
+                    sphinx_default = ''
                 assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
-
     # hjpat_input needs dist {% if step_specs is defined %}
     #   {% set inp_dists = step_specs[0].inputdists if step_specs|length else inputdists %}
     #   {% else %}
@@ -170,7 +173,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
             self.assign_member = '_{0} = {0}'.format(d4pname) if name else ''
             self.todaal_member = todaal_member if name else ''
             self.spec          = '("{}", "{}", "{}")'.format(d4pname, typ_flat, 'REP' if 'model' in d4pname else 'OneD') if name else ''
-            self.sphinx        = ':param {}'.format(d4pname) if name else ''
+            self.sphinx        = ':param {} {}:{}'.format(typ_sphinx, d4pname, ' [optional, default: {}]'.format(sphinx_default) if sphinx_default else '') if name else ''
 
         def format(self, s, *args):
             '''Helper function to format a string with attributes from given var
