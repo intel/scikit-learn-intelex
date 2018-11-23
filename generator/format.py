@@ -117,7 +117,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
                     ptr = '*'
                     const = ''
                 # for sphinx docu we want to be a bit more readable
-                typ_sphinx = typ_cyext.replace('std_string', 'str').replace('data_management_NumericTablePtr', 'array')
+                typ_sphinx = typ_flat.replace('std_string', 'str').replace('data_management_NumericTablePtr', 'array').lower()
                 # in cython/python we want everythint to be lower case
                 typ_cy = typ_flat.lower()
                 # all daal objects are passed as SharedPointer through their *Ptr typedefs
