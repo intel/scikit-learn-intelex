@@ -960,6 +960,7 @@ class wrapper_gen(object):
         jparams['add_setup']  = cfg['add_setup']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
+
         for p in ['distributed', 'streaming']:
             if p in cfg:
                 jparams[p] = cfg[p]
@@ -988,7 +989,6 @@ class wrapper_gen(object):
                 # a wrapper for distributed mode
                 assert len(tdecl) == 1
                 jparams.update(cfg['dist'])
-            #self.lp(manager_wrapper_template)
             t = jenv.from_string(manager_wrapper_template)
             cpp_begin += t.render(**jparams) + '\n'
             if td['pargs'] == None:
