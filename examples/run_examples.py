@@ -34,17 +34,19 @@ if 8 * struct.calcsize('P') == 32:
 else:
     logdir = jp(exdir, '_results', 'intel64')
 
-def get_exe_cmd(ex, nodist):
-    if 'batch' in ex:
+def get_exe_cmd(ex, nodist, nostream):
+    if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
         return '"' + sys.executable + '" "' + ex + '"'
-    elif nodist:
-        return None
-    elif IS_WIN:
-        return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
-    else:
-        return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
+    if not nostream and ex.endswith('streaming.py'):
+        return '"' + sys.executable + '" "' + ex + '"'
+    if not nodist and ex.endswith('spmd.py'):
+        if IS_WIN:
+            return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
+        else:
+            return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
+    return None
 
-def run_all(nodist=False):
+def run_all(nodist=False, nostream=False):
     success = 0
     n = 0
     if not os.path.exists(logdir):
@@ -56,7 +58,7 @@ def run_all(nodist=False):
                 logfn = jp(logdir, script.replace('.py', '.res'))
                 with open(logfn, 'w') as logfile:
                     print('\n##### ' + jp(dirpath, script))
-                    execute_string = get_exe_cmd(jp(dirpath, script), nodist)
+                    execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
                     if execute_string:
                         proc = subprocess.Popen(execute_string if IS_WIN else ['/bin/bash', '-c', execute_string],
                                                 stdout=subprocess.PIPE,
@@ -83,4 +85,4 @@ def run_all(nodist=False):
         return 0
 
 if __name__ == '__main__':
-    sys.exit(run_all('nodist' in sys.argv))
+    sys.exit(run_all('nodist' in sys.argv, 'nostream' in sys.argv))

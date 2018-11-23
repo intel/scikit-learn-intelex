@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # Now let's do some prediction
     # It run only on a single node
     if d4p.my_procid() == 0:
-        predict_algo = d4p.linear_regression_prediction(distributed=True)
+        predict_algo = d4p.linear_regression_prediction()
         # read test data (with same #features)
         pdata = loadtxt("./data/distributed/linear_regression_test.csv", delimiter=',', usecols=range(10))
         # now predict using the model from the training above

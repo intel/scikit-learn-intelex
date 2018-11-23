@@ -41,7 +41,10 @@ if npyver < 9:
     sys.exit("Error: Detected numpy {}. The minimum requirement is 1.9, and >= 1.10 is strongly recommended".format(np.__version__))
 
 d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2019.%Y%m%d.%H%M%S')
-no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES'] else False
+
+trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
+no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
+no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
 daal_root = os.environ['DAALROOT']
 tbb_root = os.environ['TBBROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
@@ -66,6 +69,8 @@ else:
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 
 
+if no_stream :
+    print('\nDisabling support for streaming mode\n')
 if no_dist :
     print('\nDisabling support for distributed mode\n')
     DIST_CFLAGS  = []
@@ -165,7 +170,7 @@ def gen_pyx(odir):
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
-    gen_daal4py(daal_root, odir, d4p_version)
+    gen_daal4py(daal_root, odir, d4p_version, no_dist=no_dist, no_stream=no_stream)
 
 gen_pyx(os.path.abspath('./build'))
 

@@ -31,7 +31,7 @@ if __name__ == "__main__":
     infile = "./data/batch/naivebayes_train_dense.csv"
 
     # Configure a training object (20 classes)
-    talgo = d4p.multinomial_naive_bayes_training(20)
+    talgo = d4p.multinomial_naive_bayes_training(20, distributed=True)
     
     # Read data. Let's use 20 features per observation
     data   = loadtxt(infile, delimiter=',', usecols=range(20))
