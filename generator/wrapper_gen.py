@@ -860,6 +860,8 @@ def d2hpat(arg, ty, fn):
         return 'dtable_type' if 'NumericTablePtr' in rtype else rtype.replace('ModelPtr', 'model').replace(' ', '')
     return [flt(x,y) for x,y in zip(arg, ty)] if isinstance(ty,list) else flt(arg, ty)
 
+def fmt(l, s, *a, sep=', '):
+    return sep.join([y for y in [x.format(s, *a) for x in l] if y])
 
 jenv = jinja2.Environment(trim_blocks=True)
 jenv.filters['match'] = lambda a, x : [x for x in a if s in x]
@@ -868,7 +870,7 @@ jenv.filters['flat'] = flat
 jenv.filters['d2hpat'] = d2hpat
 jenv.filters['strip'] = lambda s, c : s.strip(c)
 jenv.filters['quote'] = lambda x: "'"+x+"'" if x else ''
-jenv.filters['fmt'] = lambda l, s, *a, sep=', ': sep.join([y for y in [x.format(s, *a) for x in l] if y])
+jenv.filters['fmt'] = fmt
 
 class wrapper_gen(object):
     def __init__(self, ac, ifaces):
