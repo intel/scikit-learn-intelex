@@ -23,6 +23,7 @@
 #   - Cython code to generate python API
 ###############################################################################
 
+from __future__ import print_function
 import glob, os, re
 from pprint import pformat, pprint
 from os.path import join as jp
@@ -510,26 +511,22 @@ class cython_interface(object):
 
 
 ###############################################################################
-    def order_iargs(self, tmp_input_args, tmp_iargs_decl, tmp_iargs_call):
+    def order_iargs(self, tmp_input_args):
         """
         We have to put the intput args into the "right" order.
         , e.g. start with data then model, then whatever else
         """
         ordered = ['data', 'model', 'labels', 'dependentVariable', 'dependentVariables',
                    'tableToFill', 'dataForPruning', 'dependentVariablesForPruning', 'labelsForPruning']
-        input_args, iargs_decl, iargs_call = [], [], []
+        input_args = []
         for arg in ordered:
-            for i in range(len(tmp_input_args)):
-                if tmp_input_args[i][1] == arg:
-                    input_args.append(tmp_input_args[i])
-                    iargs_decl.append(tmp_iargs_decl[i])
-                    iargs_call.append(tmp_iargs_call[i])
+            for i in tmp_input_args:
+                if i.name.endswith(arg):
+                    input_args.append(i)
         for i in range(len(tmp_input_args)):
-            if tmp_input_args[i][1] not in ordered:
+            if not any(tmp_input_args[i].name.endswith(x) for x in ordered):
                 input_args.append(tmp_input_args[i])
-                iargs_decl.append(tmp_iargs_decl[i])
-                iargs_call.append(tmp_iargs_call[i])
-        return (input_args, iargs_decl, iargs_call)
+        return input_args
 
 
 ###############################################################################
@@ -561,14 +558,14 @@ class cython_interface(object):
                        'template_decl': OrderedDict(),
                        'template_spec': [],
                        'template_args': [],
-                       'params_opt': OrderedDict(),
-                       'params_req': OrderedDict(),
+                       'params_opt': [],
+                       'params_req': [],
                        's1': 'step1Local',
                        's2': 'step2Master',
                    }
             # at this point required parameters need to be explicitly/maually provided in wrappers.required
             if ns in required and mode in required[ns]:
-                jparams['params_req'] = OrderedDict(required[ns][mode])
+                jparams['params_req'] = [mk_var(x[0], x[1], algo=func) for x in required[ns][mode]]
             f = ''
             tdecl = []
             if self.namespace_dict[ns].classes[mode].template_args:
@@ -576,20 +573,29 @@ class cython_interface(object):
                     # there might be specialized template classes, we provide explicit specs
                     v = specialized[ns][mode]
                     tdecl.append({'template_decl': v['tmpl_decl'],
-                                  'template_args': None,
-                                  'pargs': None})
+                                  'template_args': [mk_var(x,
+                                                           'std::string&',
+                                                           'const',
+                                                           v['tmpl_decl'][x]['default'],
+                                                           algo=func) for x in v['tmpl_decl']],
+                                  'pargs': None,
+                                  'incomplete': True,})
                     for s in v['specs']:
                         tdecl.append({'template_decl': OrderedDict([(re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', x),
                                                                      v['tmpl_decl'][x]) for x in s['template_decl']]),
-                                      'template_args': [s['expl'][x] if x in s['expl'] else x for x in v['tmpl_decl']],
+                                      'template_args': [mk_var(s['expl'][x] if x in s['expl'] else x, 'std::string&', 'const', algo=func) for x in v['tmpl_decl']],
                                       'pargs': [s['expl'][x] for x in s['expl']]})
                 else:
                     # 'normal' template
                     tdecl.append({'template_decl': OrderedDict([(t[0], {'template_decl': self.get_tmplarg(ns, t[1]),
                                                                         'values': self.get_values(ns, t[1]),
                                                                         'default': t[2].replace('DAAL_ALGORITHM_FP_TYPE', 'double')}) for t in self.namespace_dict[ns].classes[mode].template_args]),
-                                  'template_args': [t[0] for t in self.namespace_dict[ns].classes[mode].template_args],
-                                  'pargs': None})
+                                  'template_args': [mk_var(t[0],
+                                                           'std::string&',
+                                                           'const',
+                                                           t[2].replace('DAAL_ALGORITHM_FP_TYPE', 'double'),
+                                                           algo=func) for t in self.namespace_dict[ns].classes[mode].template_args],
+                                  'pargs': None,})
 
             # A parameter can be a specialized template. Sigh.
             # we need to provide specialized template classes for them.
@@ -597,13 +603,14 @@ class cython_interface(object):
             # and the first entry is the base/"real" template spec, following entries are specializations.
             # At some point we might have other things that influence this (like result or input).
             # for now, we only check for Parameter specializations
-            decl_opt, decl_req , call_opt, call_req = [], [], [], []
+            #params_opt, params_req, call_opt, call_req = [], [], [], []
+            call_opt, call_req = [], []
             for td in tdecl:
                 if 'template_args' in td:
                     parms = None
                     # this is a "real" template for which we need a body
-                    td['params_req'] = OrderedDict()
-                    td['params_opt'] = OrderedDict()
+                    td['params_req'] = []
+                    td['params_opt'] = []
                     td['params_get'] = 'parameter'
                     pargs_exp = '<' + ','.join([splitns(x)[1] for x in td['pargs']]) + '>' if td['pargs'] else ''
                     cls = mode + pargs_exp
@@ -638,7 +645,7 @@ class cython_interface(object):
                     # now we have a dict with all members of our parameter: parms
                     # we need to inspect one by one
                     hlts = {}
-                    jparams['params_opt'] = OrderedDict()
+                    #jparams['params_opt'] = []
                     for p in parms:
                         pns, tmp = splitns(p)
                         if not tmp.startswith('_') and not ignored(pns, tmp):
@@ -646,25 +653,26 @@ class cython_interface(object):
                             if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                                 (hlt, hlt_type, hlt_ns) = hlt
                                 llt = self.to_lltype(parms[p])
-                                needed = True
                                 pval = None
                                 if hlt_type == 'enum':
-                                    pval = '(' + hlt_ns + '::' + llt + ')string2enum(' + tmp + ', s2e_' + hlt_ns.replace('::', '_') + ')'
+                                    thetype = hlt_ns + '::' + llt
+                                    #pval = '(' + hlt_ns + '::' + llt + ')string2enum(' + tmp + ', s2e_' + hlt_ns.replace('::', '_') + ')'
                                 else:
-                                    pval = tmp
-                                if pval != None:
                                     thetype = (hlt if hlt else parms[p])
-                                    pval = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', pval)
-                                    if tmp in jparams['params_req']:
-                                        td['params_req'][tmp] = pval
-                                        decl_req.append('const ' + thetype + ' ' + tmp)
-                                        call_req.append(tmp)
+                                    #pval = tmp
+                                if thetype != None and tmp != None:
+                                    thetype = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', thetype)
+                                    #print(tmp, thetype, pval, '_', hlt)
+                                    if any(tmp == x.name for x in jparams['params_req']):
+                                        v = mk_var(tmp, thetype, 'const', algo=func)
+                                        td['params_req'].append(v)
+                                        #params_req.append(v)
                                     else:
-                                        td['params_opt'][tmp] = pval
                                         prm = tmp
-                                        dflt = defaults[pns][prm] if pns in defaults and prm in defaults[pns] else self.defaults[thetype]
-                                        decl_opt.append(' '.join(['const', thetype, prm, '=', str(dflt)]))
-                                        call_opt.append(prm)
+                                        dflt = defaults[pns][prm] if pns in defaults and prm in defaults[pns] else True
+                                        v = mk_var(prm, thetype, 'const', dflt, algo=func)
+                                        td['params_opt'].append(v)
+                                        #params_opt.append(v)
                                 else:
                                     print('// Warning: do not know what to do with ' + pns + ' : ' + p + '(' + parms[p] + ')')
                             else:
@@ -673,8 +681,6 @@ class cython_interface(object):
             # endfor td in tdecl
 
             # Now let's get the input arguments (provided to input class/object of algos)
-            tmp_iargs_decl = []
-            tmp_iargs_call = []
             tmp_input_args = []
             inp = self.get_class_for_typedef(ns, 'Batch', 'InputType')
             if not inp and 'Input' in self.namespace_dict[ns].classes:
@@ -686,28 +692,24 @@ class cython_interface(object):
                     tmpi = iname
                     if tmpi and not ignored(ns, tmpi):
                         if ns in defaults and tmpi in defaults[ns]:
-                            i = len(tmp_iargs_decl)
-                            dflt = ' = ' + defaults[ns][tmpi]
+                            i = len(tmp_input_args)
+                            dflt = defaults[ns][tmpi]
                         else:
                             i = reqi
                             reqi += 1
-                            dflt = ''
+                            dflt = None
                         if '::NumericTablePtr' in itype:
                             #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
-                            itype = 'TableOrFList *'
+                            itype = 'table_or_flist *'
                         ins = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', ins)
-                        tmp_iargs_decl.insert(i, 'const ' + itype + ' ' + iname + dflt)
-                        tmp_iargs_call.insert(i, iname)
-                        tmp_input_args.insert(i, (ins + '::' + iname, iname, itype))
+                        tmp_input_args.insert(i, mk_var(ins + '::' + iname, itype, 'const', dflt, inpt=True, algo=func))
             else:
                 print('// Warning: no input type found for ' + ns)
 
             # We have to bring the input args into the "right" order
-            jparams['input_args'], jparams['iargs_decl'], jparams['iargs_call'] = self.order_iargs(tmp_input_args, tmp_iargs_decl, tmp_iargs_call)
-            jparams['decl_req'] = decl_req
-            jparams['call_req'] = call_req
-            jparams['decl_opt'] = decl_opt
-            jparams['call_opt'] = call_opt
+            jparams['input_args'] = self.order_iargs(tmp_input_args)
+            #jparams['params_req'] = params_req
+            #jparams['params_opt'] = params_opt
             # we will need something more sophisticated if the interesting parent class is not a direct parent (a grand-parent for example)
             prnts = list(set([cpp2hl(x) for x in ifaces if any(x.endswith(y) for y in self.namespace_dict[ns].classes[mode].parent)]))
             jparams['iface'] = prnts if len(prnts) else list([None])
@@ -728,11 +730,11 @@ class cython_interface(object):
         }
         if not no_dist and ns in has_dist:
             retjp['dist'] = has_dist[ns]
-            retjp['distributed'] = mk_var('bool distributed=false')
+            retjp['distributed'] = mk_var('distributed', 'bool', dflt=True, algo=func)
         else:
             retjp['distributed'] = mk_var()
         if not no_stream and  'Online' in self.namespace_dict[ns].classes and not ns.endswith('pca'):
-            retjp['streaming'] = mk_var('bool streaming=false')
+            retjp['streaming'] = mk_var('streaming', 'bool', dflt=True, algo=func)
         else:
             retjp['streaming'] = mk_var()
         return {ns + '::' + mode : retjp}
@@ -829,6 +831,7 @@ class cython_interface(object):
         wg = wrapper_gen(algoconfig, {cpp2hl(i): ifaces[i] for i in ifaces})
         cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end = '', '', '#define NO_IMPORT_ARRAY\n#include "daal4py_cpp.h"\n', '', '', ''
 
+        print('.', end='', flush=True)
         for ns in algos:
             if ns.startswith('algorithms::') and not ns.startswith('algorithms::neural_networks') and self.namespace_dict[ns].enums:
                 cpp_begin += 'static std::map< std::string, int64_t > s2e_' + ns.replace('::', '_') + ' =\n{\n'
@@ -850,8 +853,8 @@ class cython_interface(object):
                         cpp_begin += '};\n\n'
                         
 
-        hlargs = {}
         for a in algoconfig:
+            print('.', end='', flush=True)
             (ns, algo) = splitns(a)
             if algo.startswith('Batch'):
                 tmp = wg.gen_wrapper(ns, algo)
@@ -863,23 +866,11 @@ class cython_interface(object):
                     pyx_begin += tmp[4]
                     pyx_end   += tmp[5]
                     dtypes    += tmp[6]
-                    hlargs[ns] = tmp[7]
 
         hds = wg.gen_headers()
         fts = wg.gen_footers(no_dist, no_stream)
 
         pyx_end += fts[1]
-        # we add a comment with tables providing parameters for each algorithm
-        # might be useful for generating docu
-        cpp_end += fts[0] + '\n/*\n'
-        for algo in hlargs:
-            if len(hlargs[algo]):
-                cpp_end += 'Algorithm:' + cpp2hl(algo.replace('algorithms::', '')) + '\n'
-                cpp_end += 'Name,Type,Default\n'
-                for a in hlargs[algo]:
-                    cpp_end += ','.join([str(x).rsplit('::')[-1] for x in a]).replace('const', '').replace('&', '').strip() + '\n'
-                cpp_end += '\n'
-        cpp_end += '\n*/\n'
         # Finally combine the different sections and return the 3 strings
         return(hds[0] + cpp_map + cpp_begin + fts[2] + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
 
@@ -898,7 +889,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
            "Path/$DAALROOT '"+ipath+"' doesn't seem host DAAL headers. Please provide correct daalroot."
     iface = cython_interface(ipath)
     iface.read()
-    print('Generating sources')
+    print('Generating sources', end='', flush=True)
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(['kmeans',
                                             'pca',
                                             'svd',

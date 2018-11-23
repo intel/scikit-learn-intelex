@@ -56,6 +56,7 @@ size_t c_my_procid();
 
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;
 typedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;
+typedef std::string std_string;
 
 template< typename T >
 bool use_default(const daal::services::SharedPtr<T> * attr)
@@ -153,21 +154,21 @@ struct IOManager
     }
 };
 
-struct TableOrFList
+struct table_or_flist
 {
     mutable daal::data_management::NumericTablePtr table;
     std::string                            file;
     std::vector< daal::data_management::NumericTablePtr > tlist;
     std::vector< std::string >             flist;
-    inline TableOrFList(daal::data_management::NumericTablePtr t)
+    inline table_or_flist(daal::data_management::NumericTablePtr t)
         : table(t), file(), tlist(), flist() {}
-    inline TableOrFList()
+    inline table_or_flist()
         : table(), file(), tlist(), flist() {}
-    TableOrFList(PyObject *);
+    table_or_flist(PyObject *);
 };
 
 // return input as DAAL numeric table.
-extern const daal::data_management::NumericTablePtr get_table(const TableOrFList & t);
+extern const daal::data_management::NumericTablePtr get_table(const table_or_flist & t);
 
 template< typename T >
 struct RAW
@@ -185,8 +186,8 @@ struct RAW< daal::services::SharedPtr< T > >
 
 template< typename T > T to_daal(T t) {return t;}
 template< typename T > daal::services::SharedPtr<T> to_daal(daal::services::SharedPtr<T>* t) {return *t;}
-inline const TableOrFList & to_daal(const TableOrFList * t) {return *t;}
-inline const TableOrFList & to_daal(TableOrFList * t) {return *t;}
+inline const table_or_flist & to_daal(const table_or_flist * t) {return *t;}
+inline const table_or_flist & to_daal(table_or_flist * t) {return *t;}
 
 template< typename T >
 void * get_nt_data_ptr(const daal::data_management::NumericTablePtr * ptr)
