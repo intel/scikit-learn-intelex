@@ -4,7 +4,7 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.linear_model.ridge import Ridge
 
 import daal4py
-from .daal4py_utils import (make2d, getFPType)
+from ..utils import (make2d, getFPType)
 
 
 def _daal4py_fit(self, X, y):

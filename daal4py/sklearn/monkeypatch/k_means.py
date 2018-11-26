@@ -8,7 +8,7 @@ from sklearn.externals.six import string_types
 from sklearn.utils.extmath import row_norms
 
 import daal4py
-from .daal4py_utils import getFPType
+from ..utils import getFPType
 
 def _daal_mean_var(X):
     fpt = getFPType(X)

@@ -4,9 +4,7 @@ import sklearn
 from sklearn.utils import (check_random_state, check_array, check_X_y)
 
 import daal4py
-from .daal4py_utils import (make2d, getFPType)
-
-use_daal = True
+from ..utils import (make2d, getFPType)
 
 def _resultsToCompute_string(value=True, gradient=True, hessian=False):
     results_needed = []

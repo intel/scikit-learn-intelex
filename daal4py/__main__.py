@@ -20,7 +20,7 @@
 
 
 import sys
-from .dispatcher import enable
+from .sklearn import patch_sklearn
 
 def _main():
     import argparse
@@ -39,7 +39,7 @@ def _main():
 
     try:
         import sklearn
-        enable()
+        patch_sklearn()
     except ImportError:
         print("Scikit-learn could not be imported. Nothing to patch")
 

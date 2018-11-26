@@ -4,7 +4,7 @@ import numbers
 import warnings
 
 import daal4py
-from .daal4py_utils import (make2d, getFPType)
+from .utils import (make2d, getFPType)
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
 from sklearn.tree._tree import (DTYPE, Tree)
