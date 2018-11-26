@@ -23,17 +23,13 @@ The build-process (using setup.py) happens in 3 stages:
 2. Running cython on generated source
 3. Compiling and linking
 
-## Prerequisites
-### General prerequisites for building binary packages
-* Python version 2.7 or >= 3.6
-* C++ compiler with C++11 support
-
 # Building daal4py using conda-build
 The easiest way to build daal4py is using the conda-build withe the provided recipe.
 
 ## Prerequisites
 * Python version 2.7 or >= 3.6
 * conda-build version >= 3
+* C++ compiler with C++11 support
 
 ## Building daal4py
 ```
