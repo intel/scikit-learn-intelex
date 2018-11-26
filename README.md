@@ -16,18 +16,36 @@ You can even run this on a cluster by simple adding a keyword-parameter
 kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
 ```
 # Getting Started
+daal4py is easily built from source with the majority of the necessary prerequisites available on conda.  The instructions below detail how to gather the prerequisites, setting one's build environment, and finally building and installing the completed package.  daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if desired.  
 
-daal4py is easily built from source with the majority of the necessary prerequisites available on conda.  The instructions below detail how to gather the prerequisites, setting one's build environment, and finally building and installing the completed package.  daal4py can be built for all three major platforms (Windows, Linux, macOS) with multi-node (distributed) support if desired.  
-
-## Build Overview
-The build-process (using setup.py) is 3-phased
+The build-process (using setup.py) happens in 3 stages:
 1. Creating C++ and cython sources from DAAL C++ headers
 2. Running cython on generated source
 3. Compiling and linking
 
 ## Prerequisites
-### Prerequisites for building binary packages
-* Python 3.6
+### General prerequisites for building binary packages
+* Python version 2.7 or >= 3.6
+* C++ compiler with C++11 support
+
+# Building daal4py using conda-build
+The easiest way to build daal4py is using the conda-build withe the provided recipe.
+
+## Prerequisites
+* Python version 2.7 or >= 3.6
+* conda-build version >= 3
+
+## Building daal4py
+```
+cd <checkout-dir>
+conda build conda-recipe
+```
+
+# Building daal4py without conda-build
+Without conda-build you have to manually setup your environment before building daal4py.
+
+## Prerequisites
+* Python version 2.7 or >= 3.6
 * Jinja2
 * Cython
 * Numpy
@@ -35,19 +53,13 @@ The build-process (using setup.py) is 3-phased
 * Intel(R) Threading Building Blocks (Intel® TBB) version 2018.0.4 or later (https://www.threadingbuildingblocks.org/)
   * You can use the pre-built conda package from Intel's channel or conda-forge channel on anaconda.org (see below)
   * Needed for distributed mode. You can disable support for distributed mode by setting NO_DIST to '1' or 'yes'
-
 * Intel® Data Analytics Acceleration Library (Intel® DAAL) version 2019 or later (https://github.com/01org/daal)
   * You can use the pre-built conda package from Intel channel on anaconda.org (see below)
 * MPI
   * You can use the pre-built conda package intel or conda-forge channel on anaconda.org (see below)
   * Needed for distributed mode. You can disable support for distributed mode by setting NO_DIST to '1' or 'yes'
 
-### Prerequisites for creating documentation
-* sphinx
-* sphinx_rtd_theme
-
-
-### Setting up a build environment
+## Setting up a build environment
 The easiest path for getting cython, DAAL, TBB, MPI etc. is by creating a conda environment and setting environment variables:
 ```
 conda create -n DAAL4PY -c intel python=3.6 impi-devel tbb-devel daal daal-include cython jinja2 numpy
@@ -60,21 +72,29 @@ export MPIROOT=$CONDA_PREFIX
 ## Configuring the build with environment variables
 * DAAL4PY_VERSION: sets package version
 * NO_DIST: set to '1', 'yes' or alike to build without support for distributed mode
+* NO_STREAM: set to '1', 'yes' or alike to build without support for streaming mode
 
 ### Notes on building for macOS
-Building for macOS has a few extra details than the other platforms.  The Intel® Concurrent Collections (Intel® CnC) _prebuilt_ package is only offered on conda for Windows and Linux, and is required for the multi-node (distributed) support.  If one does not have a CnC built for macOS, then build with single-node only by setting ```NO_DIST``` to 1. If building in High Sierra or higher, one may have to run into build errors related to platform targets.  Utilize ```export MACOSX_DEPLOYMENT_TARGET="10.9"``` if running into platform target issues.
+If building in High Sierra or higher, one may have to run into C++ build errors related to platform targets. Utilize ```export MACOSX_DEPLOYMENT_TARGET="10.9"``` if running into platform target issues.
 
 ## Building daal4py
 Requires Intel® DAAL, Intel® TBB and MPI being properly setup, e.g. DAALROOT, TBBROOT and MPIROOT being set.
 ```
+cd <checkout-dir>
 python setup.py build_ext
 ```
 
 ## Installing daal4py
 Requires Intel® DAAL, Intel® TBB and MPI being properly setup, e.g. DAALROOT, TBBROOT and MPIROOT being set.
 ```
+cd <checkout-dir>
 python setup.py install
 ```
+
+# Building documentation for daal4py
+## Prerequisites for creating documentation
+* sphinx
+* sphinx_rtd_theme
 
 ## Building documentation
 1. Install daal4py into your python environment
