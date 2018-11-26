@@ -1,3 +1,20 @@
+#
+#*******************************************************************************
+# Copyright 2014-2017 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#******************************************************************************/
+
 import numpy as np
 import scipy.sparse as sparse
 import scipy.optimize as optimize
@@ -25,6 +42,7 @@ from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
 
 use_daal = True
 
+# Code adapted from sklearn.linear_model.logistic
 def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                              max_iter=100, tol=1e-4, verbose=0,
                              solver='lbfgs', coef=None,
