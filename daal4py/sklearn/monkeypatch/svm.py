@@ -7,7 +7,7 @@ from sklearn.utils import check_random_state, check_X_y
 import warnings
 
 import daal4py
-from .daal4py_utils import (make2d, getFPType)
+from ..utils import (make2d, getFPType)
 
 
 LIBSVM_IMPL = ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']

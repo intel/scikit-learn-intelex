@@ -4,7 +4,7 @@ from sklearn.decomposition.pca import *
 from sklearn.decomposition.pca import _infer_dimension_
 
 import daal4py
-from .daal4py_utils import getFPType
+from ..utils import getFPType
 
 
 def _daal4py_svd(X):

@@ -1,4 +1,5 @@
 from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
 
 from sklearn.decomposition.pca import PCA
 from sklearn.cluster.k_means_ import KMeans
@@ -63,8 +64,11 @@ def do_unpatch(name):
 
 
 def enable(name=None):
-    if sklearn_version != "0.20.0":
-        raise NotImplementedError("daal4sklearn is for scikit-learn 0.20.0 only, found version {0}".format(sklearn_version))
+    if LooseVersion(sklearn_version) < LooseVersion("0.20.0"):
+        raise NotImplementedError("daal4sklearn is for scikit-learn 0.20.0 only ...")
+    elif LooseVersion(sklearn_version) > LooseVersion("0.20.1"):
+        warnings.warn("daal4sklearn {daal4py_version} has only been tested with scikit-learn 0.20.0, found version...")
+
     if name is not None:
         do_patch(name)
     else:

@@ -7,7 +7,7 @@ from sklearn.externals.joblib import Parallel, delayed
 from sklearn.utils.fixes import sparse_lsqr
 
 import daal4py
-from .daal4py_utils import (make2d, getFPType)
+from ..utils import (make2d, getFPType)
 
 def _daal4py_fit(self, X, y):
     y = make2d(y)

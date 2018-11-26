@@ -3,7 +3,7 @@ from sklearn.metrics.pairwise import _parallel_pairwise, _pairwise_callable
 from sklearn.metrics.pairwise import _VALID_METRICS
 
 import daal4py
-from .daal4py_utils import getFPType
+from ..utils import getFPType
 
 
 def _daal4py_cosine_distance_dense(X):
