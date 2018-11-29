@@ -20,7 +20,6 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
-
 #if PY_VERSION_HEX >= 0x03000000
 #define PyString_Check(name) PyUnicode_Check(name)
 #define PyString_AsString(str) PyUnicode_AsUTF8(str)
@@ -31,43 +30,57 @@
 
 #define SET_NPY_FEATURE( _T, _M )                \
     switch(_T) { \
-        case NPY_BYTELTR: \
-            _M(char);\
+        case NPY_DOUBLE: \
+        case NPY_CDOUBLE: \
+        case NPY_DOUBLELTR: \
+        case NPY_CDOUBLELTR: \
+            _M(double); \
             break; \
-        case NPY_UBYTELTR:  \
-            _M(unsigned char);\
-            break; \
-        case NPY_SHORTLTR: \
-            _M(short);\
-            break; \
-        case NPY_USHORTLTR: \
-            _M(unsigned short); \
-            break; \
-        case NPY_INTLTR: \
-            _M(int); \
-            break; \
-        case NPY_UINTLTR: \
-            _M(unsigned int); \
-            break; \
-        case NPY_LONGLTR: \
-            _M(long); \
-            break; \
-        case NPY_ULONGLTR: \
-            _M(unsigned long); \
-            break; \
-        case NPY_LONGLONGLTR: \
-            _M(long long); \
-            break; \
-        case NPY_ULONGLONGLTR: \
-            _M(unsigned long long); \
-            break; \
+        case NPY_FLOAT: \
+        case NPY_CFLOAT: \
         case NPY_FLOATLTR: \
         case NPY_CFLOATLTR: \
             _M(float); \
             break; \
-        case NPY_DOUBLELTR: \
-        case NPY_CDOUBLELTR: \
-            _M(double); \
+        case NPY_INT: \
+        case NPY_INTLTR: \
+            _M(int); \
+            break; \
+        case NPY_UINT: \
+        case NPY_UINTLTR: \
+            _M(unsigned int); \
+            break; \
+        case NPY_LONG: \
+        case NPY_LONGLTR: \
+            _M(long); \
+            break; \
+        case NPY_ULONG: \
+        case NPY_ULONGLTR: \
+            _M(unsigned long); \
+            break; \
+        case NPY_LONGLONG: \
+        case NPY_LONGLONGLTR: \
+            _M(long long); \
+            break; \
+        case NPY_ULONGLONG: \
+        case NPY_ULONGLONGLTR: \
+            _M(unsigned long long); \
+            break; \
+        case NPY_BYTE: \
+        case NPY_BYTELTR: \
+            _M(char);\
+            break; \
+        case NPY_UBYTE:  \
+        case NPY_UBYTELTR:  \
+            _M(unsigned char);\
+            break; \
+        case NPY_SHORT: \
+        case NPY_SHORTLTR: \
+            _M(short);\
+            break; \
+        case NPY_USHORT: \
+        case NPY_USHORTLTR: \
+            _M(unsigned short); \
             break; \
         default: \
             std::cerr << "Unsupported NPY type " << (_T) << " ignored\n."; \
@@ -124,12 +137,19 @@ public:
             SET_NPY_FEATURE(descr->type, SETFEATURE_);
 #undef SETFEATURE_
         }
+        _memStatus = daal::data_management::NumericTableIface::userAllocated;
     }
 
     /** \private */
     ~NpyNumericTable()
     {
         Py_XDECREF(_ary);
+    }
+
+    virtual daal::services::Status resize(size_t nrows) DAAL_C11_OVERRIDE
+    {
+        std::cerr << "Resizing numpy array through daal not supported." << std::endl;
+        return daal::services::Status(daal::services::ErrorMethodNotSupported);
     }
 
     virtual int getSerializationTag() const
@@ -265,7 +285,6 @@ public:
     }
 
 private:
-
     // This is a generic copy function for copying between DAAL and numpy
     // Wet template parameter WBack to true for copying back to numpy array.
     //
@@ -273,15 +292,15 @@ private:
     // 2. Create numpy array iterator setup for casting to requested type
     // 3. Iterate through numpy array and copy to/from block using memcpy
     template<typename T, bool WBack>
-    void do_cpy(daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t endcol, size_t startrow, size_t nrows)
+    void do_cpy(daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t ncols, size_t startrow, size_t nrows)
     {
-        auto __state = PyGILState_Ensure();
-
         // Handle zero-sized arrays specially
         if (PyArray_SIZE(_ary) == 0) {
-            PyGILState_Release(__state);
             return;
         }
+
+        auto __state = PyGILState_Ensure();
+
 
         // Getting the slice/block from the numpy array requires creating slices
         // so it's not particularly cheap
@@ -294,8 +313,8 @@ private:
         PyObject* s1s = PyLong_FromLong(startrow);
         PyObject* s1e = PyLong_FromLong(startrow+nrows);
         PyObject* s2s = PyLong_FromLong(startcol);
-        PyObject* s2e = PyLong_FromLong(endcol);
-        PyObject* slice = PyTuple_New(2); 
+        PyObject* s2e = PyLong_FromLong(startcol+ncols);
+        PyObject* slice = PyTuple_New(2);
         PyTuple_SET_ITEM(slice, 0, PySlice_New(s1s, s1e, NULL));
         PyTuple_SET_ITEM(slice, 1, PySlice_New(s2s, s2e, NULL));
         PyArrayObject * ary_block = (PyArrayObject*)PyObject_GetItem((PyObject*)_ary, slice);
@@ -303,12 +322,13 @@ private:
         Py_XDECREF(s1e);
         Py_XDECREF(s2s);
         Py_XDECREF(s2e);
-        
+
         // create the iterator
         PyObject *val = Py_BuildValue("s", npy_type<T>::value);
         PyArray_Descr *dtype;
         PyArray_DescrConverter(val, &dtype);
         Py_XDECREF(val);
+
         NpyIter * iter = NpyIter_New(ary_block,
                                      ((WBack ? NPY_ITER_WRITEONLY : NPY_ITER_READONLY) // the array is never written to
                                       | NPY_ITER_EXTERNAL_LOOP  // Inner loop is done outside the iterator for efficiency.
@@ -317,15 +337,12 @@ private:
                                      NPY_CORDER,                // Visit elements in C memory order
                                      NPY_UNSAFE_CASTING,        // all casting allowed
                                      dtype);                    // let's numpy do the casting
+
         if (iter == NULL) {
             PyGILState_Release(__state);
             return;
         }
 
-        Py_ssize_t N = PyArray_DIMS(ary_block)[1];
-        // Set to the desired range, unfortunately we cannot specify a 2d range
-        NpyIter_ResetToIterIndexRange(iter, startrow*N, (startrow+nrows)*N, NULL);
-        
         // The iternext function gets stored in a local variable
         // so it can be called repeatedly in an efficient manner.
         NpyIter_IterNextFunc * iternext = NpyIter_GetIterNext(iter, NULL);
@@ -341,40 +358,44 @@ private:
         // The location of the inner loop size which the iterator may update
         npy_intp * innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);
 
-        npy_intp innerstride = strideptr[0];
         if(NpyIter_GetDescrArray(iter)[0]->elsize != sizeof(T)) {
             NpyIter_Deallocate(iter);
-            PyGILState_Release(__state);
             throw std::invalid_argument("Encountered unexpected element size or type when copying block.");
+            PyGILState_Release(__state);
             return;
         }
-        
+
+        PyGILState_Release(__state);
+
         // ptr to column in block
         T * blockPtr = block.getBlockPtr();
 
         // we assume all inner strides are identical
-        if(innerstride == sizeof(T)) {
-            do {
-                memcpy(WBack ? *dataptr        : (char*)blockPtr,
-                       WBack ? (char*)blockPtr : *dataptr,
-                       sizeof(T) * (*innersizeptr));
-            } while(iternext(iter));
-        } else {
-            // For efficiency, should specialize this based on item size...
-            npy_intp i;
+        npy_intp innerstride = strideptr[0];
+        if(strideptr[0] == sizeof(T)) {
             do {
                 npy_intp size = *innersizeptr;
+                memcpy(WBack ? *dataptr        : (char*)blockPtr,
+                       WBack ? (char*)blockPtr : *dataptr,
+                       sizeof(T) * size);
+                blockPtr += size;
+            } while(iternext(iter));
+        } else {
+            do {
+                // For efficiency, should specialize this based on item size...
+                npy_intp i;
                 char *src = *dataptr;
+                npy_intp size = *innersizeptr;
                 for(i = 0; i < size; ++i, src += innerstride, blockPtr += 1) {
                     memcpy(WBack ? src             : (char*)blockPtr,
                            WBack ? (char*)blockPtr : src,
                            sizeof(T));
                 }
-            } while (iternext(iter));
+            } while(iternext(iter));
         }
 
+        __state = PyGILState_Ensure();
         NpyIter_Deallocate(iter);
-
         PyGILState_Release(__state);
         return;
     }
@@ -402,7 +423,7 @@ private:
         if(!(rwFlag & (int)daal::data_management::readOnly)) return daal::services::Status();
 
         // use our copy method in copy-out mode
-        do_cpy<T, false>(block, firstcol, firstcol+ncols, idx, nrows);
+        do_cpy<T, false>(block, firstcol, ncols, idx, nrows);
         return daal::services::Status();
     }
 
@@ -415,7 +436,7 @@ private:
             const size_t nrows = block.getNumberOfRows();
 
             // use our copy method in write-back mode
-            do_cpy<T, true>(block, block.getColumnsOffset(), block.getColumnsOffset() + ncols, 0, nrows);
+            do_cpy<T, true>(block, block.getColumnsOffset(), ncols, 0, nrows);
 
             block.reset();
         }

@@ -35,79 +35,6 @@
 #define array_data(a)          PyArray_DATA((PyArrayObject*)a)
 #define array_size(a,i)        PyArray_DIM((PyArrayObject*)a,i)
 
-/* Test whether a python object is contiguous.  If array is
- * contiguous, return 1.  Otherwise, set the python error string and
- * return 0.
- */
-int require_behaved(PyArrayObject* ary)
-{
-    int contiguous = 1;
-    if (!array_is_behaved(ary)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Array must be contiguous.  A non-contiguous array was given");
-        contiguous = 0;
-    }
-    return contiguous;
-}
-
-/* Require that a numpy array is not byte-swapped.  If the array is
- * not byte-swapped, return 1.  Otherwise, set the python error string
- * and return 0.
- */
-int require_native(PyArrayObject* ary)
-{
-    int native = 1;
-    if (!array_is_native(ary)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Array must have native byteorder.  "
-                        "A byte-swapped array was given");
-        native = 0;
-    }
-    return native;
-}
-
-/* Require the given PyArrayObject to have a specified number of
- * dimensions.  If the array has the specified number of dimensions,
- * return 1.  Otherwise, set the python error string and return 0.
- */
-int require_dimensions(PyArrayObject* ary,
-                       int            exact_dimensions)
-{
-    int success = 1;
-    if (array_numdims(ary) != exact_dimensions) {
-        PyErr_Format(PyExc_TypeError,
-                     "Array must have %d dimensions.  Given array has %d dimensions",
-                     exact_dimensions,
-                     array_numdims(ary));
-        success = 0;
-    }
-    return success;
-}
-
-/* Given a PyArrayObject, check to see if it is contiguous.  If so,
- * return the input pointer and flag it as not a new object.  If it is
- * not contiguous, create a new PyArrayObject using the original data,
- * flag it as a new object and return the pointer.
- */
-PyArrayObject* make_contiguous(PyArrayObject* ary,
-                               int*           is_new_object,
-                               int            min_dims,
-                               int            max_dims)
-{
-    PyArrayObject* result;
-    if (array_is_behaved(ary)) {
-        result = ary;
-        *is_new_object = 0;
-    } else {
-        result = (PyArrayObject*) PyArray_ContiguousFromObject((PyObject*)ary,
-                                                               array_type(ary),
-                                                               min_dims,
-                                                               max_dims);
-        *is_new_object = 1;
-    }
-    return result;
-}
-
 /* Convert a given PyObject to a contiguous PyArrayObject of the
  * specified type.  If the input object is not a contiguous
  * PyArrayObject, a new one will be created and the new object flag
@@ -326,7 +253,7 @@ static daal::data_management::NumericTable * _make_nt(PyObject * nda)
     PyArrayObject* array = obj_to_behaved_array_allow_conversion(nda, NPTYPE);
 
     if(array) {
-        if(require_dimensions(array,2)) {
+        if(array_numdims(array) == 2) {
             // we provide the SharedPtr with a deleter which decrements the pyref
             ptr = new daal::data_management::HomogenNumericTable<T>(daal::services::SharedPtr<T>((T*)array_data(array),
                                                                                                  NumpyDeleter(array)),
