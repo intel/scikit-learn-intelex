@@ -231,7 +231,7 @@ public:
         Py_ssize_t len = 0;
 #if PY_MAJOR_VERSION < 3
         char * ds = NULL;
-        PyString_AsStringAndSize(PyObject_Repr(PyArray_DESCR(ary)), &ds, &len);
+        PyString_AsStringAndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &ds, &len);
 #else
         char * ds = PyUnicode_AsUTF8AndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &len);
 #endif
