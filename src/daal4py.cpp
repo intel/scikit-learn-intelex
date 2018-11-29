@@ -267,7 +267,7 @@ static daal::data_management::NumericTable * _make_nt(PyObject * nda)
         }
     } else if(is_array(nda)) {
         // the given numpy array is not well behaved C array
-        ptr = new NpyNumericTable((PyArrayObject*)nda);
+        ptr = new NpyNumericTable<NpyNonContigHandler>((PyArrayObject*)nda);
     }
 
     if(!ptr) std::cerr << "Could not convert Python object to DAAL table.\n";

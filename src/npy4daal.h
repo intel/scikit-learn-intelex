@@ -28,7 +28,7 @@
 #endif
 
 
-#define SET_NPY_FEATURE( _T, _M )                \
+#define SET_NPY_FEATURE( _T, _M, _E )              \
     switch(_T) { \
         case NPY_DOUBLE: \
         case NPY_CDOUBLE: \
@@ -84,7 +84,7 @@
             break; \
         default: \
             std::cerr << "Unsupported NPY type " << (_T) << " ignored\n."; \
-            return; \
+            _E;\
     };
 
 template<typename T> struct npy_type;
@@ -93,140 +93,48 @@ template<> struct npy_type<float>  { static constexpr char *value = "f4"; };
 template<> struct npy_type<int>    { static constexpr char *value = "i4"; };
 
 
-// Numeric Table wrapping a non-contiguous, homogen numpy array
+// For wrapping a non-contiguous, homogen numpy array
 // Avoids copying by using numpy iterators when accesing blocks of data
-class NpyNumericTable : public daal::data_management::NumericTable
+class NpyNonContigHandler
 {
-protected:
-    PyArrayObject * _ary;
 public:
-
-    /**
-     *  Constructor
-     *  \param[in]  ary  The non-contiguous, homogen numpy array to wrap
-     */
-    NpyNumericTable(PyArrayObject * ary)
-        : NumericTable(daal::data_management::NumericTableDictionaryPtr()),
-          _ary(ary)
+    static daal::data_management::NumericTableDictionaryPtr init(PyArrayObject * ary, daal::services::ErrorID * status)
     {
         Py_XINCREF(ary);
-        _layout = daal::data_management::NumericTableIface::aos;
 
         PyArray_Descr * descr = PyArray_DESCR(ary);              // type descriptor
 
         // we assume numpy.i has done typechecks and this is a 2-dimensional homogen array
         if(descr->names) {
             std::cerr << "Found a structured numpy array. Unable to create homogen NumericTable." << std::endl;
-            this->_status.add(daal::services::ErrorIncorrectTypeOfInputNumericTable);
-            return;
+            *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
+            return daal::data_management::NumericTableDictionaryPtr();
         }
         if(PyArray_NDIM(ary) != 2) {
             std::cerr << "Found array with " << PyArray_NDIM(ary) << " dimensions, extected 2. Don't know how to create homogen NumericTable." << std::endl;
-            this->_status.add(daal::services::ErrorIncorrectTypeOfInputNumericTable);
-            return;
+            *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
+            return daal::data_management::NumericTableDictionaryPtr();
         }
 
         Py_ssize_t N = PyArray_DIMS(ary)[1];
-        _ddict = daal::data_management::NumericTableDictionaryPtr(new daal::data_management::NumericTableDictionary(N));
-        setNumberOfRows(PyArray_DIMS(ary)[0]);
+        auto _ddict = daal::data_management::NumericTableDictionaryPtr(new daal::data_management::NumericTableDictionary(N));
         // setNumberOfColumns not needed, done by providing size to ddict
 
         // iterate through all elements and init ddict feature accordingly
         for (Py_ssize_t i=0; i<N; i++) {
 #define SETFEATURE_(_T) _ddict->setFeature<_T>(i)
-            SET_NPY_FEATURE(descr->type, SETFEATURE_);
+            SET_NPY_FEATURE(descr->type, SETFEATURE_, return daal::data_management::NumericTableDictionaryPtr());
 #undef SETFEATURE_
         }
-        _memStatus = daal::data_management::NumericTableIface::userAllocated;
+
+        return _ddict;
     }
 
     /** \private */
-    ~NpyNumericTable()
-    {
-        Py_XDECREF(_ary);
-    }
-
-    virtual daal::services::Status resize(size_t nrows) DAAL_C11_OVERRIDE
-    {
-        std::cerr << "Resizing numpy array through daal not supported." << std::endl;
-        return daal::services::Status(daal::services::ErrorMethodNotSupported);
-    }
-
-    virtual int getSerializationTag() const
-    {
-        return daal::SERIALIZATION_AOS_NT_ID;
-    }
-
-    daal::services::Status getBlockOfRows(size_t vector_idx, size_t vector_num, daal::data_management::ReadWriteMode rwflag, daal::data_management::BlockDescriptor<double>& block) DAAL_C11_OVERRIDE
-    {
-        return getTBlock<double>(vector_idx, vector_num, rwflag, block);
-    }
-    daal::services::Status getBlockOfRows(size_t vector_idx, size_t vector_num, daal::data_management::ReadWriteMode rwflag, daal::data_management::BlockDescriptor<float>& block) DAAL_C11_OVERRIDE
-    {
-        return getTBlock<float>(vector_idx, vector_num, rwflag, block);
-    }
-    daal::services::Status getBlockOfRows(size_t vector_idx, size_t vector_num, daal::data_management::ReadWriteMode rwflag, daal::data_management::BlockDescriptor<int>& block) DAAL_C11_OVERRIDE
-    {
-        return getTBlock<int>(vector_idx, vector_num, rwflag, block);
-    }
-
-    daal::services::Status releaseBlockOfRows(daal::data_management::BlockDescriptor<double>& block) DAAL_C11_OVERRIDE
-    {
-        return releaseTBlock<double>(block);
-    }
-    daal::services::Status releaseBlockOfRows(daal::data_management::BlockDescriptor<float>& block) DAAL_C11_OVERRIDE
-    {
-        return releaseTBlock<float>(block);
-    }
-    daal::services::Status releaseBlockOfRows(daal::data_management::BlockDescriptor<int>& block) DAAL_C11_OVERRIDE
-    {
-        return releaseTBlock<int>(block);
-    }
-
-    daal::services::Status getBlockOfColumnValues(size_t feature_idx, size_t vector_idx, size_t value_num, daal::data_management::ReadWriteMode rwflag,
-                                            daal::data_management::BlockDescriptor<double>& block) DAAL_C11_OVERRIDE
-    {
-        return getTBlock<double>(vector_idx, value_num, rwflag, block, feature_idx, 1 );
-    }
-    daal::services::Status getBlockOfColumnValues(size_t feature_idx, size_t vector_idx, size_t value_num, daal::data_management::ReadWriteMode rwflag,
-                                            daal::data_management::BlockDescriptor<float>& block) DAAL_C11_OVERRIDE
-    {
-        return getTBlock<float>(vector_idx, value_num, rwflag, block, feature_idx, 1);
-    }
-    daal::services::Status getBlockOfColumnValues(size_t feature_idx, size_t vector_idx, size_t value_num, daal::data_management::ReadWriteMode rwflag,
-                                            daal::data_management::BlockDescriptor<int>& block) DAAL_C11_OVERRIDE
-    {
-        return getTBlock<int>(vector_idx, value_num, rwflag, block, feature_idx, 1);
-    }
-
-    daal::services::Status releaseBlockOfColumnValues(daal::data_management::BlockDescriptor<double>& block) DAAL_C11_OVERRIDE
-    {
-        return releaseTBlock<double>(block);
-    }
-    daal::services::Status releaseBlockOfColumnValues(daal::data_management::BlockDescriptor<float>& block) DAAL_C11_OVERRIDE
-    {
-        return releaseTBlock<float>(block);
-    }
-    daal::services::Status releaseBlockOfColumnValues(daal::data_management::BlockDescriptor<int>& block) DAAL_C11_OVERRIDE
-    {
-        return releaseTBlock<int>(block);
-    }
-
-    daal::services::Status allocateDataMemory(daal::MemType type = daal::dram) DAAL_C11_OVERRIDE
-    {
-        return daal::services::Status(daal::services::ErrorMethodNotSupported);
-    }
-
-    void freeDataMemory() DAAL_C11_OVERRIDE
-    {
-        daal::services::Status ec(daal::services::ErrorMethodNotSupported);
-    }
-
-    /** \private */
-    daal::services::Status serializeImpl(daal::data_management::InputDataArchive  *archive)
+    static daal::services::ErrorID serializeImpl(PyArrayObject * ary_, daal::data_management::InputDataArchive *archive)
     {
         // To make our lives easier, we first create a contiguous array
-        PyArrayObject * ary = PyArray_GETCONTIGUOUS(_ary);
+        PyArrayObject * ary = PyArray_GETCONTIGUOUS(ary_);
         // First serialize the type descriptor in string representation
         Py_ssize_t len = 0;
 #if PY_MAJOR_VERSION < 3
@@ -236,8 +144,7 @@ public:
         char * ds = PyUnicode_AsUTF8AndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &len);
 #endif
         if(ds == NULL) {
-            this->_status.add(daal::services::UnknownError);
-            return daal::services::Status();
+            return daal::services::UnknownError;
         }
         archive->set(len);
         archive->set(ds, len);
@@ -246,11 +153,11 @@ public:
         archive->set(PyArray_DIMS(ary)[1]);
         archive->set((char*)PyArray_DATA(ary), PyArray_DIMS(ary)[0] * PyArray_DIMS(ary)[1]);
 
-        return daal::services::Status();
+        return (daal::services::ErrorID)0;
     }
 
     /** \private */
-    daal::services::Status deserializeImpl(const daal::data_management::OutputDataArchive *archive)
+    static daal::services::ErrorID deserializeImpl(PyArrayObject * ary, const daal::data_management::OutputDataArchive *archive)
     {
         // First deserialize the type descriptor in string representation...
         size_t len;
@@ -265,26 +172,23 @@ public:
                                                          NULL);
         delete [] nds;
         if(nd == NULL) {
-            this->_status.add(daal::services::UnknownError);
-            return daal::services::Status();
+            return daal::services::UnknownError;
         }
         // now get the array data
         npy_intp dims[2];
         archive->set(dims[0]);
         archive->set(dims[1]);
         // create the array...
-        _ary = (PyArrayObject*)PyArray_SimpleNewFromDescr(1, dims, nd);
-        if(_ary == NULL) {
-            this->_status.add(daal::services::UnknownError);
-            return daal::services::Status();
+        ary = (PyArrayObject*)PyArray_SimpleNewFromDescr(1, dims, nd);
+        if(ary == NULL) {
+            return daal::services::UnknownError;
         }
         // ...then copy data
-        archive->set((char*)PyArray_DATA(_ary), dims[0]*dims[1]);
+        archive->set((char*)PyArray_DATA(ary), dims[0]*dims[1]);
 
-        return daal::services::Status();
+        return (daal::services::ErrorID)0;
     }
 
-private:
     // This is a generic copy function for copying between DAAL and numpy
     // Wet template parameter WBack to true for copying back to numpy array.
     //
@@ -292,10 +196,10 @@ private:
     // 2. Create numpy array iterator setup for casting to requested type
     // 3. Iterate through numpy array and copy to/from block using memcpy
     template<typename T, bool WBack>
-    void do_cpy(daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t ncols, size_t startrow, size_t nrows)
+    static void do_cpy(PyArrayObject * ary, daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t ncols, size_t startrow, size_t nrows)
     {
         // Handle zero-sized arrays specially
-        if (PyArray_SIZE(_ary) == 0) {
+        if (PyArray_SIZE(ary) == 0) {
             return;
         }
 
@@ -317,7 +221,7 @@ private:
         PyObject* slice = PyTuple_New(2);
         PyTuple_SET_ITEM(slice, 0, PySlice_New(s1s, s1e, NULL));
         PyTuple_SET_ITEM(slice, 1, PySlice_New(s2s, s2e, NULL));
-        PyArrayObject * ary_block = (PyArrayObject*)PyObject_GetItem((PyObject*)_ary, slice);
+        PyArrayObject * ary_block = (PyArrayObject*)PyObject_GetItem((PyObject*)ary, slice);
         Py_XDECREF(s1s);
         Py_XDECREF(s1e);
         Py_XDECREF(s2s);
@@ -399,9 +303,138 @@ private:
         PyGILState_Release(__state);
         return;
     }
+};
 
+// Numeric Table wrapping a non-contiguous, homogen numpy array
+// Avoids copying by using numpy iterators when accesing blocks of data
+template<typename Hndlr>
+class NpyNumericTable : public daal::data_management::NumericTable
+{
+private:
+    PyArrayObject * _ary;
 
-    template <typename T>
+public:
+    /**
+     *  Constructor
+     *  \param[in]  ary  The non-contiguous, homogen numpy array to wrap
+     */
+    NpyNumericTable(PyArrayObject * ary)
+        : NumericTable(daal::data_management::NumericTableDictionaryPtr()),
+          _ary(ary)
+    {
+        daal::services::ErrorID status = (daal::services::ErrorID)0;
+        _ddict = Hndlr::init(_ary, &status);
+        if(status) {
+            this->_status.add(status);
+            return;
+        }
+        setNumberOfRows(PyArray_DIMS(ary)[0]);
+        _layout = daal::data_management::NumericTableIface::aos;
+        _memStatus = daal::data_management::NumericTableIface::userAllocated;
+    }
+
+    /** \private */
+    ~NpyNumericTable()
+    {
+        Py_XDECREF(_ary);
+    }
+
+    virtual daal::services::Status resize(size_t nrows) DAAL_C11_OVERRIDE
+    {
+        std::cerr << "Resizing numpy array through daal not supported." << std::endl;
+        return daal::services::Status(daal::services::ErrorMethodNotSupported);
+    }
+
+    virtual int getSerializationTag() const
+    {
+        return daal::SERIALIZATION_AOS_NT_ID;
+    }
+
+    daal::services::Status getBlockOfRows(size_t vector_idx, size_t vector_num,
+                                          daal::data_management::ReadWriteMode rwflag, daal::data_management::BlockDescriptor<double>& block) DAAL_C11_OVERRIDE
+    {
+        return getTBlock<double>(vector_idx, vector_num, rwflag, block);
+    }
+    daal::services::Status getBlockOfRows(size_t vector_idx, size_t vector_num,
+                                          daal::data_management::ReadWriteMode rwflag, daal::data_management::BlockDescriptor<float>& block) DAAL_C11_OVERRIDE
+    {
+        return getTBlock<float>(vector_idx, vector_num, rwflag, block);
+    }
+    daal::services::Status getBlockOfRows(size_t vector_idx, size_t vector_num,
+                                          daal::data_management::ReadWriteMode rwflag, daal::data_management::BlockDescriptor<int>& block) DAAL_C11_OVERRIDE
+    {
+        return getTBlock<int>(vector_idx, vector_num, rwflag, block);
+    }
+
+    daal::services::Status releaseBlockOfRows(daal::data_management::BlockDescriptor<double>& block) DAAL_C11_OVERRIDE
+    {
+        return releaseTBlock<double>(block);
+    }
+    daal::services::Status releaseBlockOfRows(daal::data_management::BlockDescriptor<float>& block) DAAL_C11_OVERRIDE
+    {
+        return releaseTBlock<float>(block);
+    }
+    daal::services::Status releaseBlockOfRows(daal::data_management::BlockDescriptor<int>& block) DAAL_C11_OVERRIDE
+    {
+        return releaseTBlock<int>(block);
+    }
+
+    daal::services::Status getBlockOfColumnValues(size_t feature_idx, size_t vector_idx, size_t value_num, daal::data_management::ReadWriteMode rwflag,
+                                                  daal::data_management::BlockDescriptor<double>& block) DAAL_C11_OVERRIDE
+    {
+        return getTBlock<double>(vector_idx, value_num, rwflag, block, feature_idx, 1 );
+    }
+    daal::services::Status getBlockOfColumnValues(size_t feature_idx, size_t vector_idx, size_t value_num, daal::data_management::ReadWriteMode rwflag,
+                                                  daal::data_management::BlockDescriptor<float>& block) DAAL_C11_OVERRIDE
+    {
+        return getTBlock<float>(vector_idx, value_num, rwflag, block, feature_idx, 1);
+    }
+    daal::services::Status getBlockOfColumnValues(size_t feature_idx, size_t vector_idx, size_t value_num, daal::data_management::ReadWriteMode rwflag,
+                                                  daal::data_management::BlockDescriptor<int>& block) DAAL_C11_OVERRIDE
+    {
+        return getTBlock<int>(vector_idx, value_num, rwflag, block, feature_idx, 1);
+    }
+
+    daal::services::Status releaseBlockOfColumnValues(daal::data_management::BlockDescriptor<double>& block) DAAL_C11_OVERRIDE
+    {
+        return releaseTBlock<double>(block);
+    }
+    daal::services::Status releaseBlockOfColumnValues(daal::data_management::BlockDescriptor<float>& block) DAAL_C11_OVERRIDE
+    {
+        return releaseTBlock<float>(block);
+    }
+    daal::services::Status releaseBlockOfColumnValues(daal::data_management::BlockDescriptor<int>& block) DAAL_C11_OVERRIDE
+    {
+        return releaseTBlock<int>(block);
+    }
+
+    daal::services::Status allocateDataMemory(daal::MemType type = daal::dram) DAAL_C11_OVERRIDE
+    {
+        return daal::services::Status(daal::services::ErrorMethodNotSupported);
+    }
+
+    void freeDataMemory() DAAL_C11_OVERRIDE
+    {
+        daal::services::Status ec(daal::services::ErrorMethodNotSupported);
+    }
+
+    daal::services::Status deserializeImpl(const daal::data_management::OutputDataArchive *archive)
+    {
+        daal::services::ErrorID s = Hndlr::deserializeImpl(_ary, archive);
+        if(s) this->_status.add(s);
+        return daal::services::Status();
+    }
+
+    daal::services::Status serializeImpl(daal::data_management::InputDataArchive *archive)
+    {
+        daal::services::ErrorID s = Hndlr::serializeImpl(_ary, archive);
+        if(s) this->_status.add(s);
+        return daal::services::Status();
+    }
+
+private:
+
+    template<typename T>
     daal::services::Status getTBlock(size_t idx, size_t numrows, int rwFlag, daal::data_management::BlockDescriptor<T>& block, size_t firstcol=0, size_t numcols=0xffffffff)
     {
         // sanitize bounds
@@ -423,12 +456,11 @@ private:
         if(!(rwFlag & (int)daal::data_management::readOnly)) return daal::services::Status();
 
         // use our copy method in copy-out mode
-        do_cpy<T, false>(block, firstcol, ncols, idx, nrows);
+        Hndlr::template do_cpy<T, false>(_ary, block, firstcol, ncols, idx, nrows);
         return daal::services::Status();
     }
 
-
-    template <typename T>
+    template<typename T>
     daal::services::Status releaseTBlock(daal::data_management::BlockDescriptor<T>& block)
     {
         if(block.getRWFlag() & (int)daal::data_management::writeOnly) {
@@ -436,7 +468,7 @@ private:
             const size_t nrows = block.getNumberOfRows();
 
             // use our copy method in write-back mode
-            do_cpy<T, true>(block, block.getColumnsOffset(), ncols, 0, nrows);
+            Hndlr::template do_cpy<T, true>(_ary, block, block.getColumnsOffset(), ncols, 0, nrows);
 
             block.reset();
         }
