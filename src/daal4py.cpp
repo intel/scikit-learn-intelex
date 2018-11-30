@@ -266,8 +266,21 @@ static daal::data_management::NumericTable * _make_nt(PyObject * nda)
             std::cerr << "Input array has wrong dimensionality (must be 2d).\n";
         }
     } else if(is_array(nda)) {
-        // the given numpy array is not well behaved C array
-        ptr = new NpyNumericTable<NpyNonContigHandler>((PyArrayObject*)nda);
+        array = (PyArrayObject*)nda;
+        if(array_numdims(nda) == 2) {
+            // the given numpy array is not well behaved C array but has right dimensionality
+            ptr = new NpyNumericTable<NpyNonContigHandler>(array);
+        } else if(array_numdims(nda) == 1) {
+            PyArray_Descr * descr = PyArray_DESCR(array);
+            if(descr->names) {
+                // the given array is a structured numpy array.
+                ptr = new NpyNumericTable<NpyStructHandler>(array);
+            } else {
+                std::cerr << "Input array is neither well behaved and nor a structured array.\n";
+            }
+        } else {
+            std::cerr << "Input array has wrong dimensionality (must be 2d).\n";
+        }
     }
 
     if(!ptr) std::cerr << "Could not convert Python object to DAAL table.\n";

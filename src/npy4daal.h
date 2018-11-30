@@ -104,12 +104,6 @@ public:
 
         PyArray_Descr * descr = PyArray_DESCR(ary);              // type descriptor
 
-        // we assume numpy.i has done typechecks and this is a 2-dimensional homogen array
-        if(descr->names) {
-            std::cerr << "Found a structured numpy array. Unable to create homogen NumericTable." << std::endl;
-            *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
-            return daal::data_management::NumericTableDictionaryPtr();
-        }
         if(PyArray_NDIM(ary) != 2) {
             std::cerr << "Found array with " << PyArray_NDIM(ary) << " dimensions, extected 2. Don't know how to create homogen NumericTable." << std::endl;
             *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
@@ -130,65 +124,6 @@ public:
         return _ddict;
     }
 
-    /** \private */
-    static daal::services::ErrorID serializeImpl(PyArrayObject * ary_, daal::data_management::InputDataArchive *archive)
-    {
-        // To make our lives easier, we first create a contiguous array
-        PyArrayObject * ary = PyArray_GETCONTIGUOUS(ary_);
-        // First serialize the type descriptor in string representation
-        Py_ssize_t len = 0;
-#if PY_MAJOR_VERSION < 3
-        char * ds = NULL;
-        PyString_AsStringAndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &ds, &len);
-#else
-        char * ds = PyUnicode_AsUTF8AndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &len);
-#endif
-        if(ds == NULL) {
-            return daal::services::UnknownError;
-        }
-        archive->set(len);
-        archive->set(ds, len);
-        // now the array data
-        archive->set(PyArray_DIMS(ary)[0]);
-        archive->set(PyArray_DIMS(ary)[1]);
-        archive->set((char*)PyArray_DATA(ary), PyArray_DIMS(ary)[0] * PyArray_DIMS(ary)[1]);
-
-        return (daal::services::ErrorID)0;
-    }
-
-    /** \private */
-    static daal::services::ErrorID deserializeImpl(PyArrayObject * ary, const daal::data_management::OutputDataArchive *archive)
-    {
-        // First deserialize the type descriptor in string representation...
-        size_t len;
-        archive->set(len);
-
-        char * nds = new char[len];
-        archive->set(nds, len);
-        // ..then create the type descriptor
-        PyObject * npy = PyImport_ImportModule("numpy");
-        PyObject * globalDictionary = PyModule_GetDict(npy);
-        PyArray_Descr* nd = (PyArray_Descr*)PyRun_String(PyString_AsString(PyObject_Str(PyString_FromString(nds))), Py_eval_input, globalDictionary,
-                                                         NULL);
-        delete [] nds;
-        if(nd == NULL) {
-            return daal::services::UnknownError;
-        }
-        // now get the array data
-        npy_intp dims[2];
-        archive->set(dims[0]);
-        archive->set(dims[1]);
-        // create the array...
-        ary = (PyArrayObject*)PyArray_SimpleNewFromDescr(1, dims, nd);
-        if(ary == NULL) {
-            return daal::services::UnknownError;
-        }
-        // ...then copy data
-        archive->set((char*)PyArray_DATA(ary), dims[0]*dims[1]);
-
-        return (daal::services::ErrorID)0;
-    }
-
     // This is a generic copy function for copying between DAAL and numpy
     // Wet template parameter WBack to true for copying back to numpy array.
     //
@@ -196,7 +131,8 @@ public:
     // 2. Create numpy array iterator setup for casting to requested type
     // 3. Iterate through numpy array and copy to/from block using memcpy
     template<typename T, bool WBack>
-    static void do_cpy(PyArrayObject * ary, daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t ncols, size_t startrow, size_t nrows)
+    static void do_cpy(PyArrayObject * ary, daal::data_management::NumericTableDictionaryPtr & ddict,
+                       daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t ncols, size_t startrow, size_t nrows)
     {
         // Handle zero-sized arrays specially
         if (PyArray_SIZE(ary) == 0) {
@@ -304,6 +240,117 @@ public:
         return;
     }
 };
+
+// For wrapping a structured numpy array
+// Avoids copying by using numpy iterators when accesing blocks of data
+class NpyStructHandler
+{
+public:
+    static daal::data_management::NumericTableDictionaryPtr init(PyArrayObject * ary, daal::services::ErrorID * status)
+    {
+        // e.g. each element is a tuple.
+        PyArray_Descr * descr = PyArray_DESCR(ary);              // type descriptor
+
+        if(!descr->names) {
+            std::cerr << "No dtype argument provided. Unable to create AOSNumericTable" << std::endl;
+            *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
+            return daal::data_management::NumericTableDictionaryPtr();
+        }
+        if(PyArray_NDIM(ary) != 1) {
+            std::cerr << "Found array with " << PyArray_NDIM(ary) << " dimensions, extected 1 for a strctured array. Don't know how to create NumericTable." << std::endl;
+            *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
+            return daal::data_management::NumericTableDictionaryPtr();
+        }
+
+        PyObject * fnames = PySequence_Fast(descr->names, NULL); // list of names of tuple-elements
+        Py_ssize_t N = PySequence_Fast_GET_SIZE(fnames);         // number of elements in tuple
+
+        auto _ddict = daal::data_management::NumericTableDictionaryPtr(new daal::data_management::NumericTableDictionary(N));
+
+        // iterate through all elements in tuple
+        // get their type and init ddict feature accordingly
+        for (Py_ssize_t i=0; i<N; i++) {
+            PyObject * name = PySequence_Fast_GET_ITEM(fnames, i);  // tuple elements are identified by name
+            PyObject * ftr = PyObject_GetItem(descr->fields, name); // desr->fields is a dict
+            if(!PyTuple_Check(ftr)) {
+                std::cerr << "Not a tuple: " << ftr << " is a " << PyString_AsString(PyObject_Str(PyObject_Type(ftr))) << "\n.";
+                *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
+                return daal::data_management::NumericTableDictionaryPtr();
+            }
+            PyArray_Descr *id = NULL;
+            // here we convert the dtype string into type descriptor
+            if (PyArray_DescrConverter(PyTuple_GetItem(ftr, 0), &id) != NPY_SUCCEED) {
+                std::cerr << "Couldn't get typedescr\n.";
+                *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
+                return daal::data_management::NumericTableDictionaryPtr();
+            }
+#define SETFEATURE_(_T) _ddict->setFeature<_T>(i)
+            SET_NPY_FEATURE(id->type, SETFEATURE_, return daal::data_management::NumericTableDictionaryPtr());
+#undef SETFEATURE_
+        }
+
+        return _ddict;
+    }
+
+        // this is a generic copy function
+    // set template parameter Down to true for down-casts, to false for upcasts
+    template<typename T, bool WBack>
+    static void do_cpy(PyArrayObject * ary, daal::data_management::NumericTableDictionaryPtr & ddict,
+                       daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t ncols, size_t startrow, size_t nrows)
+    {
+        auto __state = PyGILState_Ensure();
+        // tuple elements are identified by name, need the list of names
+        PyObject * fnames = PySequence_Fast(PyArray_DESCR(ary)->names, NULL);
+        for( long j = 0; j < ncols ; j++ ) {
+            PyObject * name = PySequence_Fast_GET_ITEM(fnames, j);
+            // get column by name
+            PyArrayObject * col = (PyArrayObject *)PyObject_GetItem((PyObject *)ary, name); assert(col);
+            // need the descriptor to create an iterator
+            PyArray_Descr * dtype = PyArray_DTYPE(col); assert(dtype);
+            // get an iterator for the column
+            NpyIter * iter = NpyIter_New(col, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_SAME_KIND_CASTING, dtype); assert(iter);
+            NpyIter_IterNextFunc * iternext = NpyIter_GetIterNext(iter, NULL);
+            // fast forward to first element we want
+            NpyIter_GotoIterIndex(iter, startrow);
+            size_t n = 0;
+            // ptr to column in block
+            T * blockPtr = block.getBlockPtr() + j + startcol;
+            // feature for column
+            daal::data_management::NumericTableFeature &f = (*ddict)[j + startcol];
+            // iterate through column, use casting functions to upcast, dataptr will point to current element
+            void ** dataptr = (void **) NpyIter_GetDataPtrArray(iter);
+
+            PyGILState_Release(__state);
+
+            if(WBack) { // could be templeate arg to eliminate conditional, prefer smaller binaires for now
+                do {
+                    daal::data_management::data_feature_utils::getVectorDownCast(
+                        f.indexType,
+                        daal::data_management::data_feature_utils::getInternalNumType<T>())(1,
+                                                                                            blockPtr + n*block.getNumberOfColumns(),
+                                                                                            *dataptr);
+                    ++n;
+                } while (iternext(iter) && n < nrows);
+            } else {
+                do {
+                    daal::data_management::data_feature_utils::getVectorUpCast(
+                        f.indexType,
+                        daal::data_management::data_feature_utils::getInternalNumType<T>())(1,
+                                                                                            *dataptr,
+                                                                                            blockPtr + n*block.getNumberOfColumns());
+                    ++n;
+                } while (iternext(iter) && n < nrows);
+            }
+
+            __state = PyGILState_Ensure();
+            // deallocate iterator
+            NpyIter_Deallocate(iter);
+        }
+        PyGILState_Release(__state);
+        return;
+    }
+};
+
 
 // Numeric Table wrapping a non-contiguous, homogen numpy array
 // Avoids copying by using numpy iterators when accesing blocks of data
@@ -418,17 +465,75 @@ public:
         daal::services::Status ec(daal::services::ErrorMethodNotSupported);
     }
 
-    daal::services::Status deserializeImpl(const daal::data_management::OutputDataArchive *archive)
+    /** \private */
+    daal::services::Status serializeImpl(daal::data_management::InputDataArchive *archive)
     {
-        daal::services::ErrorID s = Hndlr::deserializeImpl(_ary, archive);
-        if(s) this->_status.add(s);
+        // To make our lives easier, we first create a contiguous array
+        PyArrayObject * ary = PyArray_GETCONTIGUOUS(_ary);
+        // First serialize the type descriptor in string representation
+        Py_ssize_t len = 0;
+#if PY_MAJOR_VERSION < 3
+        char * ds = NULL;
+        PyString_AsStringAndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &ds, &len);
+#else
+        char * ds = PyUnicode_AsUTF8AndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &len);
+#endif
+        if(ds == NULL) {
+            this->_status.add(daal::services::UnknownError);
+            return daal::services::Status();
+        }
+        archive->set(len);
+        archive->set(ds, len);
+        // now the array data
+        auto ndim = PyArray_NDIM(ary);
+        archive->set(ndim);
+        size_t N = 1;
+        for(int i=0; i<PyArray_NDIM(ary); ++i) {
+            archive->set(PyArray_DIMS(ary)[i]);
+            N *= PyArray_DIMS(ary)[i];
+        }
+        archive->set((char*)PyArray_DATA(ary), N);
+
         return daal::services::Status();
     }
 
-    daal::services::Status serializeImpl(daal::data_management::InputDataArchive *archive)
+    /** \private */
+    daal::services::Status deserializeImpl(const daal::data_management::OutputDataArchive *archive)
     {
-        daal::services::ErrorID s = Hndlr::serializeImpl(_ary, archive);
-        if(s) this->_status.add(s);
+        // First deserialize the type descriptor in string representation...
+        size_t len;
+        archive->set(len);
+
+        char * nds = new char[len];
+        archive->set(nds, len);
+        // ..then create the type descriptor
+        PyObject * npy = PyImport_ImportModule("numpy");
+        PyObject * globalDictionary = PyModule_GetDict(npy);
+        PyArray_Descr* nd = (PyArray_Descr*)PyRun_String(PyString_AsString(PyObject_Str(PyString_FromString(nds))), Py_eval_input, globalDictionary,
+                                                         NULL);
+        delete [] nds;
+        if(nd == NULL) {
+            this->_status.add(daal::services::UnknownError);
+            return daal::services::Status();
+        }
+        // now get the array shape
+        int ndim;
+        archive->set(ndim);
+        npy_intp dims[ndim];
+        size_t N = 1;
+        for(int i=0; i<ndim; ++i) {
+            archive->set(dims[i]);
+            N *= dims[i];
+        }
+        // create the array...
+        _ary = (PyArrayObject*)PyArray_SimpleNewFromDescr(1, dims, nd);
+        if(_ary == NULL) {
+            this->_status.add(daal::services::UnknownError);
+            return daal::services::Status();
+        }
+        // ...then copy data
+        archive->set((char*)PyArray_DATA(_ary), N);
+
         return daal::services::Status();
     }
 
@@ -456,7 +561,7 @@ private:
         if(!(rwFlag & (int)daal::data_management::readOnly)) return daal::services::Status();
 
         // use our copy method in copy-out mode
-        Hndlr::template do_cpy<T, false>(_ary, block, firstcol, ncols, idx, nrows);
+        Hndlr::template do_cpy<T, false>(_ary, _ddict, block, firstcol, ncols, idx, nrows);
         return daal::services::Status();
     }
 
@@ -468,7 +573,7 @@ private:
             const size_t nrows = block.getNumberOfRows();
 
             // use our copy method in write-back mode
-            Hndlr::template do_cpy<T, true>(_ary, block, block.getColumnsOffset(), ncols, 0, nrows);
+            Hndlr::template do_cpy<T, true>(_ary, _ddict, block, block.getColumnsOffset(), ncols, 0, nrows);
 
             block.reset();
         }
