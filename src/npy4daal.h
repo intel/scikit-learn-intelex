@@ -468,6 +468,7 @@ public:
     /** \private */
     daal::services::Status serializeImpl(daal::data_management::InputDataArchive *archive)
     {
+        auto __state = PyGILState_Ensure();
         // To make our lives easier, we first create a contiguous array
         PyArrayObject * ary = PyArray_GETCONTIGUOUS(_ary);
         // First serialize the type descriptor in string representation
@@ -480,6 +481,7 @@ public:
 #endif
         if(ds == NULL) {
             this->_status.add(daal::services::UnknownError);
+            PyGILState_Release(__state);
             return daal::services::Status();
         }
         archive->set(len);
@@ -494,12 +496,14 @@ public:
         }
         archive->set((char*)PyArray_DATA(ary), N);
 
+        PyGILState_Release(__state);
         return daal::services::Status();
     }
 
     /** \private */
     daal::services::Status deserializeImpl(const daal::data_management::OutputDataArchive *archive)
     {
+        auto __state = PyGILState_Ensure();
         // First deserialize the type descriptor in string representation...
         size_t len;
         archive->set(len);
@@ -513,13 +517,21 @@ public:
                                                          NULL);
         delete [] nds;
         if(nd == NULL) {
+            std::cerr << "Creating array descriptor failed when deserializing.\n";
             this->_status.add(daal::services::UnknownError);
+            PyGILState_Release(__state);
             return daal::services::Status();
         }
         // now get the array shape
         int ndim;
         archive->set(ndim);
-        npy_intp dims[ndim];
+        if(ndim > 2) {
+            std::cerr << "Unexpected dimensionality when deserializing.\n";
+            this->_status.add(daal::services::UnknownError);
+            PyGILState_Release(__state);
+            return daal::services::Status();
+        }
+        npy_intp dims[2];
         size_t N = 1;
         for(int i=0; i<ndim; ++i) {
             archive->set(dims[i]);
@@ -528,12 +540,15 @@ public:
         // create the array...
         _ary = (PyArrayObject*)PyArray_SimpleNewFromDescr(1, dims, nd);
         if(_ary == NULL) {
+            std::cerr << "Creating numpy array failed when deserializing.\n";
             this->_status.add(daal::services::UnknownError);
+            PyGILState_Release(__state);
             return daal::services::Status();
         }
         // ...then copy data
         archive->set((char*)PyArray_DATA(_ary), N);
 
+        PyGILState_Release(__state);
         return daal::services::Status();
     }
 
