@@ -477,7 +477,7 @@ public:
         char * ds = NULL;
         PyString_AsStringAndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &ds, &len);
 #else
-        char * ds = PyUnicode_AsUTF8AndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &len);
+        const char * ds = PyUnicode_AsUTF8AndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &len);
 #endif
         if(ds == NULL) {
             this->_status.add(daal::services::UnknownError);
