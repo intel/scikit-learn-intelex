@@ -98,16 +98,16 @@ template<> struct npy_type<int>    { static constexpr char *value = "i4"; };
 class NpyNonContigHandler
 {
 public:
-    static daal::data_management::NumericTableDictionaryPtr init(PyArrayObject * ary, daal::services::ErrorID * status)
+    static daal::data_management::NumericTableDictionaryPtr init(PyArrayObject * ary)
     {
         Py_XINCREF(ary);
 
         PyArray_Descr * descr = PyArray_DESCR(ary);              // type descriptor
 
         if(PyArray_NDIM(ary) != 2) {
-            std::cerr << "Found array with " << PyArray_NDIM(ary) << " dimensions, extected 2. Don't know how to create homogen NumericTable." << std::endl;
-            *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
-            return daal::data_management::NumericTableDictionaryPtr();
+            throw std::invalid_argument(std::string("Found array with ")
+                                        + std::to_string(PyArray_NDIM(ary))
+                                        + std::string(" dimensions, extected 2. Don't know how to create homogen NumericTable."));
         }
 
         Py_ssize_t N = PyArray_DIMS(ary)[1];
@@ -200,9 +200,8 @@ public:
 
         if(NpyIter_GetDescrArray(iter)[0]->elsize != sizeof(T)) {
             NpyIter_Deallocate(iter);
-            throw std::invalid_argument("Encountered unexpected element size or type when copying block.");
             PyGILState_Release(__state);
-            return;
+            throw std::invalid_argument("Encountered unexpected element size or type when copying block.");
         }
 
         PyGILState_Release(__state);
@@ -246,20 +245,18 @@ public:
 class NpyStructHandler
 {
 public:
-    static daal::data_management::NumericTableDictionaryPtr init(PyArrayObject * ary, daal::services::ErrorID * status)
+    static daal::data_management::NumericTableDictionaryPtr init(PyArrayObject * ary)
     {
         // e.g. each element is a tuple.
         PyArray_Descr * descr = PyArray_DESCR(ary);              // type descriptor
 
         if(!descr->names) {
-            std::cerr << "No dtype argument provided. Unable to create AOSNumericTable" << std::endl;
-            *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
-            return daal::data_management::NumericTableDictionaryPtr();
+            throw std::invalid_argument("No dtype argument provided. Unable to create AOSNumericTable.");
         }
         if(PyArray_NDIM(ary) != 1) {
-            std::cerr << "Found array with " << PyArray_NDIM(ary) << " dimensions, extected 1 for a strctured array. Don't know how to create NumericTable." << std::endl;
-            *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
-            return daal::data_management::NumericTableDictionaryPtr();
+            throw std::invalid_argument(std::string("Found array with ")
+                                        + std::to_string(PyArray_NDIM(ary))
+                                        + std::string(" dimensions, extected 1 for a strctured array. Don't know how to create NumericTable."));
         }
 
         PyObject * fnames = PySequence_Fast(descr->names, NULL); // list of names of tuple-elements
@@ -273,16 +270,13 @@ public:
             PyObject * name = PySequence_Fast_GET_ITEM(fnames, i);  // tuple elements are identified by name
             PyObject * ftr = PyObject_GetItem(descr->fields, name); // desr->fields is a dict
             if(!PyTuple_Check(ftr)) {
-                std::cerr << "Not a tuple: " << ftr << " is a " << PyString_AsString(PyObject_Str(PyObject_Type(ftr))) << "\n.";
-                *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
-                return daal::data_management::NumericTableDictionaryPtr();
+                throw std::invalid_argument(std::string("Found invalid dtype in structured numpy array, expected tuple, got ")
+                                            + std::string(PyString_AsString(PyObject_Str(PyObject_Type(ftr)))));
             }
             PyArray_Descr *id = NULL;
             // here we convert the dtype string into type descriptor
             if (PyArray_DescrConverter(PyTuple_GetItem(ftr, 0), &id) != NPY_SUCCEED) {
-                std::cerr << "Couldn't get typedescr\n.";
-                *status = daal::services::ErrorIncorrectTypeOfInputNumericTable;
-                return daal::data_management::NumericTableDictionaryPtr();
+                throw std::invalid_argument("Couldn't get typedescr of column in structured numpy array");
             }
 #define SETFEATURE_(_T) _ddict->setFeature<_T>(i)
             SET_NPY_FEATURE(id->type, SETFEATURE_, return daal::data_management::NumericTableDictionaryPtr());
@@ -322,22 +316,18 @@ public:
 
             PyGILState_Release(__state);
 
-            if(WBack) { // could be templeate arg to eliminate conditional, prefer smaller binaires for now
+            if(WBack) {
+                auto dcast = daal::data_management::internal::getVectorDownCast(f.indexType,
+                                                                                daal::data_management::data_feature_utils::getInternalNumType<T>());
                 do {
-                    daal::data_management::data_feature_utils::getVectorDownCast(
-                        f.indexType,
-                        daal::data_management::data_feature_utils::getInternalNumType<T>())(1,
-                                                                                            blockPtr + n*block.getNumberOfColumns(),
-                                                                                            *dataptr);
+                    dcast(1, blockPtr + n*block.getNumberOfColumns(), *dataptr);
                     ++n;
                 } while (iternext(iter) && n < nrows);
             } else {
+                auto ucast = daal::data_management::internal::getVectorUpCast(f.indexType,
+                                                                              daal::data_management::data_feature_utils::getInternalNumType<T>());
                 do {
-                    daal::data_management::data_feature_utils::getVectorUpCast(
-                        f.indexType,
-                        daal::data_management::data_feature_utils::getInternalNumType<T>())(1,
-                                                                                            *dataptr,
-                                                                                            blockPtr + n*block.getNumberOfColumns());
+                    ucast(1, *dataptr, blockPtr + n*block.getNumberOfColumns());
                     ++n;
                 } while (iternext(iter) && n < nrows);
             }
@@ -370,11 +360,7 @@ public:
           _ary(ary)
     {
         daal::services::ErrorID status = (daal::services::ErrorID)0;
-        _ddict = Hndlr::init(_ary, &status);
-        if(status) {
-            this->_status.add(status);
-            return;
-        }
+        _ddict = Hndlr::init(_ary);
         setNumberOfRows(PyArray_DIMS(ary)[0]);
         _layout = daal::data_management::NumericTableIface::aos;
         _memStatus = daal::data_management::NumericTableIface::userAllocated;
@@ -388,8 +374,7 @@ public:
 
     virtual daal::services::Status resize(size_t nrows) DAAL_C11_OVERRIDE
     {
-        std::cerr << "Resizing numpy array through daal not supported." << std::endl;
-        return daal::services::Status(daal::services::ErrorMethodNotSupported);
+        throw std::invalid_argument("Resizing numpy array through daal not supported.");
     }
 
     virtual int getSerializationTag() const
@@ -480,9 +465,8 @@ public:
         const char * ds = PyUnicode_AsUTF8AndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &len);
 #endif
         if(ds == NULL) {
-            this->_status.add(daal::services::UnknownError);
             PyGILState_Release(__state);
-            return daal::services::Status();
+            throw std::invalid_argument("Couldn't get string from/for numpy array's descriptor.");
         }
         archive->set(len);
         archive->set(ds, len);
@@ -517,19 +501,15 @@ public:
                                                          NULL);
         delete [] nds;
         if(nd == NULL) {
-            std::cerr << "Creating array descriptor failed when deserializing.\n";
-            this->_status.add(daal::services::UnknownError);
             PyGILState_Release(__state);
-            return daal::services::Status();
+            throw std::invalid_argument("Creating array descriptor failed when deserializing.");
         }
         // now get the array shape
         int ndim;
         archive->set(ndim);
         if(ndim > 2) {
-            std::cerr << "Unexpected dimensionality when deserializing.\n";
-            this->_status.add(daal::services::UnknownError);
             PyGILState_Release(__state);
-            return daal::services::Status();
+            throw std::invalid_argument("Found unexpected dimensionality when deserializing.");
         }
         npy_intp dims[2];
         size_t N = 1;
@@ -540,10 +520,8 @@ public:
         // create the array...
         _ary = (PyArrayObject*)PyArray_SimpleNewFromDescr(1, dims, nd);
         if(_ary == NULL) {
-            std::cerr << "Creating numpy array failed when deserializing.\n";
-            this->_status.add(daal::services::UnknownError);
             PyGILState_Release(__state);
-            return daal::services::Status();
+            throw std::invalid_argument("Creating numpy array failed when deserializing.");
         }
         // ...then copy data
         archive->set((char*)PyArray_DATA(_ary), N);
