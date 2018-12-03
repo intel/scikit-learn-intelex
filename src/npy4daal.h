@@ -379,7 +379,7 @@ public:
 
     virtual int getSerializationTag() const
     {
-        return daal::SERIALIZATION_AOS_NT_ID;
+        return 3333;  // independent of template arg Hndlr!
     }
 
     daal::services::Status getBlockOfRows(size_t vector_idx, size_t vector_num,
