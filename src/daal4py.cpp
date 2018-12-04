@@ -28,34 +28,12 @@
 // ************************************************************************************
 
 #define is_array(a)            ((a) && PyArray_Check(a))
-#define array_is_behaved(a)    (PyArray_ISCARRAY_RO((PyArrayObject*)a))
+#define array_type(a)          PyArray_TYPE((PyArrayObject*)a)
+#define array_is_behaved(a)    (PyArray_ISCARRAY_RO((PyArrayObject*)a) && array_type(a)<NPY_OBJECT)
 #define array_is_native(a)     (PyArray_ISNOTSWAPPED((PyArrayObject*)a))
 #define array_numdims(a)       PyArray_NDIM((PyArrayObject*)a)
-#define array_type(a)          PyArray_TYPE((PyArrayObject*)a)
 #define array_data(a)          PyArray_DATA((PyArrayObject*)a)
 #define array_size(a,i)        PyArray_DIM((PyArrayObject*)a,i)
-
-/* Convert a given PyObject to a contiguous PyArrayObject of the
- * specified type.  If the input object is not a contiguous
- * PyArrayObject, a new one will be created and the new object flag
- * will be set.
- */
-PyArrayObject* obj_to_behaved_array_allow_conversion(PyObject* input,
-                                                     int       typecode)
-{
-    PyArrayObject* ary = NULL;
-
-    if(is_array(input)) {
-        if((typecode == NPY_NOTYPE || PyArray_EquivTypenums(array_type(input), typecode))
-           && array_is_behaved((PyArrayObject*)input)) {
-            ary = (PyArrayObject*)input;
-        }
-    } else {
-        ary = (PyArrayObject*)PyArray_FROMANY(input, typecode, 2, 2, NPY_ARRAY_CARRAY);
-        /* If NULL, PyArray_FromObject will have set python error value.*/
-    }
-    return ary;
-}
 
 // ************************************************************************************
 // ************************************************************************************
@@ -244,46 +222,51 @@ extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * di
     return pydict;
 }
 
-template<typename T, int NPTYPE>
-static daal::data_management::NumericTable * _make_nt(PyObject * nda)
+template<typename T>
+static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
 {
-    int is_new_object = 0;
     daal::data_management::NumericTable * ptr = NULL;
+    PyArrayObject * array = (PyArrayObject*)nda;
 
-    PyArrayObject* array = obj_to_behaved_array_allow_conversion(nda, NPTYPE);
+    assert(is_array(nda) && array_is_behaved(array));
 
-    if(array) {
-        if(array_numdims(array) == 2) {
-            // we provide the SharedPtr with a deleter which decrements the pyref
-            ptr = new daal::data_management::HomogenNumericTable<T>(daal::services::SharedPtr<T>((T*)array_data(array),
-                                                                                                 NumpyDeleter(array)),
-                                                                    (size_t)array_size(array,1),
-                                                                    (size_t)array_size(array,0));
-            // we need it increment the ref-count if we use the input array in-place
-            // if we copied/converted it we already own our own reference
-            if((PyObject*)array == nda) Py_INCREF(array);
-        } else {
-            std::cerr << "Input array has wrong dimensionality (must be 2d).\n";
-        }
-    } else if(is_array(nda)) {
-        array = (PyArrayObject*)nda;
-        if(array_numdims(nda) == 2) {
-            // the given numpy array is not well behaved C array but has right dimensionality
-            ptr = new NpyNumericTable<NpyNonContigHandler>(array);
-        } else if(array_numdims(nda) == 1) {
-            PyArray_Descr * descr = PyArray_DESCR(array);
-            if(descr->names) {
-                // the given array is a structured numpy array.
-                ptr = new NpyNumericTable<NpyStructHandler>(array);
-            } else {
-                std::cerr << "Input array is neither well behaved and nor a structured array.\n";
-            }
-        } else {
-            std::cerr << "Input array has wrong dimensionality (must be 2d).\n";
-        }
+    if(array_numdims(array) == 2) {
+        // we provide the SharedPtr with a deleter which decrements the pyref
+        ptr = new daal::data_management::HomogenNumericTable<T>(daal::services::SharedPtr<T>((T*)array_data(array),
+                                                                                             NumpyDeleter(array)),
+                                                                (size_t)array_size(array,1),
+                                                                (size_t)array_size(array,0));
+        // we need it increment the ref-count if we use the input array in-place
+        // if we copied/converted it we already own our own reference
+        if((PyObject*)array == nda) Py_INCREF(array);
+    } else {
+        std::cerr << "Input array has wrong dimensionality (must be 2d).\n";
     }
 
-    if(!ptr) std::cerr << "Could not convert Python object to DAAL table.\n";
+    return ptr;
+}
+
+ static daal::data_management::NumericTable * _make_npynt(PyObject * nda)
+ {
+    daal::data_management::NumericTable * ptr = NULL;
+
+    assert(is_array(nda));
+
+    PyArrayObject * array = (PyArrayObject*)nda;
+    if(array_numdims(array) == 2) {
+        // the given numpy array is not well behaved C array but has right dimensionality
+        ptr = new NpyNumericTable<NpyNonContigHandler>(array);
+    } else if(array_numdims(nda) == 1) {
+        PyArray_Descr * descr = PyArray_DESCR(array);
+        if(descr->names) {
+            // the given array is a structured numpy array.
+            ptr = new NpyNumericTable<NpyStructHandler>(array);
+        } else {
+            std::cerr << "Input array is neither well behaved and nor a structured array.\n";
+        }
+    } else {
+        std::cerr << "Input array has wrong dimensionality (must be 2d).\n";
+    }
 
     return ptr;
 }
@@ -292,27 +275,44 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * nda)
 {
     if(nda && nda != Py_None) {
         daal::data_management::NumericTable * ptr = NULL;
+        if(is_array(nda)) { // we got a numpy array
+            PyArrayObject * ary = (PyArrayObject*)nda;
 
-        switch(array_type(nda)) {
-        case NPY_UINT32:
-            ptr = _make_nt<uint32_t, NPY_UINT32>(nda);
-            break;
-        case NPY_INT32:
-            ptr = _make_nt<int32_t, NPY_INT32>(nda);
-            break;
-        case NPY_UINT64:
-            ptr = _make_nt<uint64_t, NPY_UINT64>(nda);
-            break;
-        case NPY_INT64:
-            ptr = _make_nt<int64_t, NPY_INT64>(nda);
-            break;
-        case NPY_FLOAT32:
-            ptr = _make_nt<float, NPY_FLOAT32>(nda);
-            break;
-        default:
-            ptr = _make_nt<double, NPY_FLOAT64>(nda);
-        }
+            if(array_is_behaved(ary)) {
+#define MAKENT_(_T) ptr = _make_hnt<_T>(nda)
+                SET_NPY_FEATURE(PyArray_DESCR(ary)->type, MAKENT_, throw std::invalid_argument("Found unsupported array type"));
+#undef MAKENT_
+            } else {
+                ptr = _make_npynt(nda);
+            }
 
+            if(!ptr) std::cerr << "Could not convert Python object to DAAL table.\n";
+
+        } else if(PyList_Check(nda) && PyList_Size(nda) > 0) { // a list of arrays for SOA?
+            PyObject * first = PyList_GetItem(nda, 0);
+
+            if(is_array(first)) { // can handle only list of 1d arrays
+                auto N = PyList_Size(nda);
+                daal::data_management::SOANumericTable * soatbl = NULL;
+
+                for(auto i = 0; i < N; i++) {
+                    PyArrayObject * ary = (PyArrayObject*)PyList_GetItem(nda, i);
+                    if(i==0) soatbl = new daal::data_management::SOANumericTable(N, PyArray_DIMS(ary)[0]);
+                    if(PyArray_NDIM(ary) != 1) {
+                        std::cerr << "Found wrong dimensionality (" << PyArray_NDIM(ary) << ") of array in list when constructing SOA table (must be 1d)";
+                        delete soatbl;
+                        soatbl = NULL;
+                        break;
+                    }
+
+#define SETARRAY_(_T) {daal::services::SharedPtr< _T > _tmp(reinterpret_cast< _T * >(PyArray_DATA(ary)), NumpyDeleter(ary)); soatbl->setArray(_tmp, i);}
+                    SET_NPY_FEATURE(PyArray_DESCR(ary)->type, SETARRAY_, throw std::invalid_argument("Found unsupported array type"));
+#undef SETARRAY_
+
+                }
+                ptr = soatbl;
+            } // else not a list of 1d arrays -> cannot handle
+        } // else not a list of 1d arrays -> cannot handle
         return new daal::data_management::NumericTablePtr(ptr);
     }
 	return new daal::data_management::NumericTablePtr();
@@ -350,35 +350,21 @@ extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * di
 table_or_flist::table_or_flist(PyObject * input)
 {
     this->table.reset();
-    this->tlist.resize(0);
     this->file.resize(0);
-    this->flist.resize(0);
     if(input == Py_None) {
         ;
-    } else if(PyList_Check(input) && PyList_Size(input) > 0) {
-        PyObject * first = PyList_GetItem(input, 0);
-        if(is_array(first)) {
-            this->tlist.resize(PyList_Size(input));
-            for(auto i = 0; i < this->tlist.size(); i++) {
-                auto tmp = make_nt(PyList_GetItem(input, i));
-                this->tlist[i] = *tmp;
-                delete tmp;
-            }
-        } else if(PyUnicode_Check(first)) {
-            this->flist.resize(PyList_Size(input));
-            for(auto i = 0; i < this->flist.size(); i++) {
-                this->flist[i] = PyUnicode_AsUTF8(PyList_GetItem(input, i));
-            }
-        }
     } else if(PyUnicode_Check(input)) {
         //        this->file = PyUnicode_AsUTF8AndSize(input, &size);
         this->file = PyUnicode_AsUTF8(input);
-    } else if(is_array(input)) {
-        auto tmp = make_nt(input);
-        this->table = *tmp;
-        delete tmp;
     } else {
-        std::cerr << "Got type '" << Py_TYPE(input)->tp_name << "' when expecting string or array or list of strings/arrays. Treating as None." << std::endl;
+        auto tmp = make_nt(input);
+        if(tmp) {
+            this->table = *tmp;
+            delete tmp;
+        }
+        if(! this->table) {
+            std::cerr << "Got type '" << Py_TYPE(input)->tp_name << "' when expecting string, array, or list of 1d-arrays. Treating as None." << std::endl;
+        }
     }
 }
 
@@ -386,8 +372,6 @@ const daal::data_management::NumericTablePtr get_table(const table_or_flist & t)
 {
     if(t.table) return t.table;
     if(t.file.size()) return readCSV(t.file);
-    if(t.tlist.size() == 1) return t.tlist[0];
-    if(t.flist.size() == 1) return readCSV(t.flist[0]);
     throw std::invalid_argument("one and only one input per process allowed");
     return daal::data_management::NumericTablePtr();
 }

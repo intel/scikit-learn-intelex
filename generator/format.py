@@ -63,7 +63,7 @@ def flat(typ):
 def cy_callext(arg, typ_cy, typ_cyext, s2e=None):
     '''Where needed decorate argument with conversion when calling C++ from cython'''
     if 'table_or_flist' in typ_cy:
-        return 'new table_or_flist(<PyObject *>' + arg + ')'
+        return 'mk_table_or_flist({0})'.format(arg)
     if 'dict_numerictable' in typ_cy:
         return 'make_dnt(<PyObject *>' + arg + ((', ' + s2e) if s2e else '') + ')'
     if 'numerictable' in typ_cy:

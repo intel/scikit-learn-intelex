@@ -11,16 +11,14 @@ import numpy as np
 from daal4py import __daal_link_version__ as dv
 daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
-except:
-    # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+read_csv = None
 
 
-class Test(unittest.TestCase):
+class TestExNpy(unittest.TestCase):
+    def setUp(self):
+        global read_csv
+        read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+
     def test_adagrad_mse_batch(self):
         testdata = read_csv(os.path.join(unittest_data_path, "adagrad_mse_batch.csv"), range(1))
         from adagrad_mse_batch import main as get_results
@@ -253,6 +251,17 @@ class Test(unittest.TestCase):
         from univariate_outlier_batch import main as get_results
         ( _,result) = get_results()
         self.assertTrue(np.allclose(result.weights, testdata))
+
+
+class TestExPd(TestExNpy):
+    def setUp(self):
+        # let's try to use pandas' fast csv reader
+        try:
+            import pandas
+            global read_csv
+            read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
+        except:
+            pass
 
 
 if __name__ == '__main__':
