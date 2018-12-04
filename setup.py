@@ -113,7 +113,7 @@ def get_type_defines():
 def getpyexts():
     include_dir_plat = set([os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',] + DIST_INCDIRS)
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl']
-    eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-DD4P_VERSION="'+d4p_version+'"'] + get_type_defines()
+    eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-DD4P_VERSION="'+d4p_version+'"', '-DNPY_ALLOW_THREADS=1'] + get_type_defines()
     ela = []
 
     if using_intel and IS_WIN:

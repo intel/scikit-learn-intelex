@@ -12,7 +12,7 @@ from examples.run_examples import run_all
 from tests.test_examples import Test
 
 s = unittest.defaultTestLoader.discover('tests')
-r = unittest.TextTestRunner()
+r = unittest.TextTestRunner(verbosity=7)
 r.run(s)
 ret1 = 0 if r._makeResult().wasSuccessful() else 1
 

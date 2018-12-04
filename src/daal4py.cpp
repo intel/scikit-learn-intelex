@@ -15,16 +15,11 @@
  *******************************************************************************/
 
 #define NO_IMPORT_ARRAY
-#include "daal4py.h"
 #include <cstdint>
 #include <Python.h>
+#include "daal4py.h"
+#include "npy4daal.h"
 
-#if PY_VERSION_HEX >= 0x03000000
-#define PyString_Check(name) PyUnicode_Check(name)
-#define PyString_AsString(str) PyUnicode_AsUTF8(str)
-#define PyString_FromString(str) PyUnicode_FromString(str)
-#define PyString_FromStringAndSize(str, sz) PyUnicode_FromStringAndSize(str, sz)
-#endif
 
 // ************************************************************************************
 // ************************************************************************************
@@ -33,134 +28,33 @@
 // ************************************************************************************
 
 #define is_array(a)            ((a) && PyArray_Check(a))
-#define array_is_contiguous(a) (PyArray_ISCONTIGUOUS((PyArrayObject*)a))
+#define array_is_behaved(a)    (PyArray_ISCARRAY_RO((PyArrayObject*)a))
 #define array_is_native(a)     (PyArray_ISNOTSWAPPED((PyArrayObject*)a))
 #define array_numdims(a)       PyArray_NDIM((PyArrayObject*)a)
 #define array_type(a)          PyArray_TYPE((PyArrayObject*)a)
 #define array_data(a)          PyArray_DATA((PyArrayObject*)a)
 #define array_size(a,i)        PyArray_DIM((PyArrayObject*)a,i)
 
-/* Test whether a python object is contiguous.  If array is
- * contiguous, return 1.  Otherwise, set the python error string and
- * return 0.
- */
-int require_contiguous(PyArrayObject* ary)
-{
-    int contiguous = 1;
-    if (!array_is_contiguous(ary)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Array must be contiguous.  A non-contiguous array was given");
-        contiguous = 0;
-    }
-    return contiguous;
-}
-
-/* Require that a numpy array is not byte-swapped.  If the array is
- * not byte-swapped, return 1.  Otherwise, set the python error string
- * and return 0.
- */
-int require_native(PyArrayObject* ary)
-{
-    int native = 1;
-    if (!array_is_native(ary)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Array must have native byteorder.  "
-                        "A byte-swapped array was given");
-        native = 0;
-    }
-    return native;
-}
-
-/* Require the given PyArrayObject to have a specified number of
- * dimensions.  If the array has the specified number of dimensions,
- * return 1.  Otherwise, set the python error string and return 0.
- */
-int require_dimensions(PyArrayObject* ary,
-                       int            exact_dimensions)
-{
-    int success = 1;
-    if (array_numdims(ary) != exact_dimensions) {
-        PyErr_Format(PyExc_TypeError,
-                     "Array must have %d dimensions.  Given array has %d dimensions",
-                     exact_dimensions,
-                     array_numdims(ary));
-        success = 0;
-    }
-    return success;
-}
-
-/* Given a PyArrayObject, check to see if it is contiguous.  If so,
- * return the input pointer and flag it as not a new object.  If it is
- * not contiguous, create a new PyArrayObject using the original data,
- * flag it as a new object and return the pointer.
- */
-PyArrayObject* make_contiguous(PyArrayObject* ary,
-                               int*           is_new_object,
-                               int            min_dims,
-                               int            max_dims)
-{
-    PyArrayObject* result;
-    if (array_is_contiguous(ary)) {
-        result = ary;
-        *is_new_object = 0;
-    } else {
-        result = (PyArrayObject*) PyArray_ContiguousFromObject((PyObject*)ary,
-                                                               array_type(ary),
-                                                               min_dims,
-                                                               max_dims);
-        *is_new_object = 1;
-    }
-    return result;
-}
-
-/* Convert the given PyObject to a NumPy array with the given
- * typecode.  On success, return a valid PyArrayObject* with the
- * correct type.  On failure, the python error string will be set and
- * the routine returns NULL.
- */
-PyArrayObject* obj_to_array_allow_conversion(PyObject* input,
-                                             int       typecode,
-                                             int*      is_new_object)
-{
-    PyArrayObject* ary = NULL;
-    PyObject*      py_obj;
-    if (is_array(input) && (typecode == NPY_NOTYPE ||
-                            PyArray_EquivTypenums(array_type(input),typecode))) {
-        ary = (PyArrayObject*) input;
-        *is_new_object = 0;
-    } else {
-        py_obj = PyArray_FROMANY(input, typecode, 0, 0, NPY_ARRAY_DEFAULT);
-        /* If NULL, PyArray_FromObject will have set python error value.*/
-        ary = (PyArrayObject*) py_obj;
-        *is_new_object = 1;
-    }
-    return ary;
-}
-
 /* Convert a given PyObject to a contiguous PyArrayObject of the
  * specified type.  If the input object is not a contiguous
  * PyArrayObject, a new one will be created and the new object flag
  * will be set.
  */
-PyArrayObject* obj_to_array_contiguous_allow_conversion(PyObject* input,
-                                                        int       typecode,
-                                                        int*      is_new_object)
+PyArrayObject* obj_to_behaved_array_allow_conversion(PyObject* input,
+                                                     int       typecode)
 {
-    int is_new1 = 0;
-    int is_new2 = 0;
-    PyArrayObject* ary2;
-    PyArrayObject* ary1 = obj_to_array_allow_conversion(input,
-                                                        typecode,
-                                                        &is_new1);
-    if (ary1) {
-        ary2 = make_contiguous(ary1, &is_new2, 0, 0);
-        if ( is_new1 && is_new2) {
-            Py_DECREF(ary1);
+    PyArrayObject* ary = NULL;
+
+    if(is_array(input)) {
+        if((typecode == NPY_NOTYPE || PyArray_EquivTypenums(array_type(input), typecode))
+           && array_is_behaved((PyArrayObject*)input)) {
+            ary = (PyArrayObject*)input;
         }
-        ary1 = ary2;
+    } else {
+        ary = (PyArrayObject*)PyArray_FROMANY(input, typecode, 2, 2, NPY_ARRAY_CARRAY);
+        /* If NULL, PyArray_FromObject will have set python error value.*/
     }
-    *is_new_object = is_new1 || is_new2;
-    return ary1;
+    return ary;
 }
 
 // ************************************************************************************
@@ -192,7 +86,7 @@ private:
 // An empty virtual base class (used by TVSP) for shared pointer handling
 // we use this to have a generic type for all shared pointers
 // e.g. used in daalsp_free functions below
-class VSP 
+class VSP
 {
 public:
     // we need a virtual destructor
@@ -221,7 +115,7 @@ void daalsp_free(void * cap)
     if (sp) delete sp;
 }
 #endif
-     
+
 template< typename T >
 void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
 {
@@ -354,18 +248,42 @@ template<typename T, int NPTYPE>
 static daal::data_management::NumericTable * _make_nt(PyObject * nda)
 {
     int is_new_object = 0;
-    PyArrayObject* array = obj_to_array_contiguous_allow_conversion(nda, NPTYPE, &is_new_object);
-    if (!array || !require_dimensions(array,2) || !require_contiguous(array) || !require_native(array)) {
-        throw std::invalid_argument("Conversion to DAAL NumericTable failed");
+    daal::data_management::NumericTable * ptr = NULL;
+
+    PyArrayObject* array = obj_to_behaved_array_allow_conversion(nda, NPTYPE);
+
+    if(array) {
+        if(array_numdims(array) == 2) {
+            // we provide the SharedPtr with a deleter which decrements the pyref
+            ptr = new daal::data_management::HomogenNumericTable<T>(daal::services::SharedPtr<T>((T*)array_data(array),
+                                                                                                 NumpyDeleter(array)),
+                                                                    (size_t)array_size(array,1),
+                                                                    (size_t)array_size(array,0));
+            // we need it increment the ref-count if we use the input array in-place
+            // if we copied/converted it we already own our own reference
+            if((PyObject*)array == nda) Py_INCREF(array);
+        } else {
+            std::cerr << "Input array has wrong dimensionality (must be 2d).\n";
+        }
+    } else if(is_array(nda)) {
+        array = (PyArrayObject*)nda;
+        if(array_numdims(nda) == 2) {
+            // the given numpy array is not well behaved C array but has right dimensionality
+            ptr = new NpyNumericTable<NpyNonContigHandler>(array);
+        } else if(array_numdims(nda) == 1) {
+            PyArray_Descr * descr = PyArray_DESCR(array);
+            if(descr->names) {
+                // the given array is a structured numpy array.
+                ptr = new NpyNumericTable<NpyStructHandler>(array);
+            } else {
+                std::cerr << "Input array is neither well behaved and nor a structured array.\n";
+            }
+        } else {
+            std::cerr << "Input array has wrong dimensionality (must be 2d).\n";
+        }
     }
-    // we provide the SharedPtr with a deleter which decrements the pyref
-    daal::data_management::NumericTable * ptr = new daal::data_management::HomogenNumericTable<T>(daal::services::SharedPtr<T>((T*)array_data(array),
-                                                                                                                               NumpyDeleter(array)),
-                                                                                                  (size_t)array_size(array,1),
-                                                                                                  (size_t)array_size(array,0));
-    // we need it increment the ref-count if we use the input array in-place
-    // if we copied/converted it we already own our own reference
-    if((PyObject*)array == nda) Py_INCREF(array);
+
+    if(!ptr) std::cerr << "Could not convert Python object to DAAL table.\n";
 
     return ptr;
 }
