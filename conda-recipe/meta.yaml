@@ -28,12 +28,16 @@ requirements:
         - daal >=2019.0
         - mpich                  # [not win]
         - impi_rt                # [win]
+    test:
+        - pandas
 
 build:
     number: {{buildnumber}}
     include_recipe: False
 
 test:
+    requires:
+        - pandas
     imports:
         - daal4py
     source_files:

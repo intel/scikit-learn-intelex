@@ -25,10 +25,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64)
+    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main():
@@ -49,14 +49,14 @@ def main():
     func.setup(data, dep_data, None)
 
     # configure a algorithm
-    stepLengthSequence = np.array([[stepLength]], dtype=np.float64)
+    stepLengthSequence = np.array([[stepLength]], dtype=np.double)
     alg = d4p.optimization_solver_lbfgs(func,
                                         stepLengthSequence=stepLengthSequence,
                                         nIterations=nIterations)
 
     # do the computation
     nParameters = nClasses * (nFeatures + 1)
-    initialPoint = np.full((nParameters, 1), 0.001, dtype=np.float64)
+    initialPoint = np.full((nParameters, 1), 0.001, dtype=np.double)
     res = alg.compute(initialPoint)
 
     # result provides minimum and nIterations
@@ -70,8 +70,7 @@ if __name__ == "__main__":
     res = main()
     print("\nExpected coefficients:\n", np.array([[-2.277], [2.836], [14.985], [0.511], [7.510], [-2.831], [-5.814], [-0.033], [13.227], [-24.447], [3.730],
         [10.394], [-10.461], [-0.766], [0.077], [1.558], [-1.133], [2.884], [-3.825], [7.699], [2.421], [-0.135], [-6.996], [1.785], [-2.294], [-9.819], [1.692],
-        [-0.725], [0.069], [-8.41], [1.458], [-3.306], [-4.719], [5.507], [-1.642]], dtype=np.float64))
+        [-0.725], [0.069], [-8.41], [1.458], [-3.306], [-4.719], [5.507], [-1.642]], dtype=np.double))
     print("\nResulting coefficients:\n", res.minimum)
     print("\nNumber of iterations performed:\n", res.nIterations[0][0])
     print('All looks good!')
-

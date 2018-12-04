@@ -17,7 +17,7 @@ daal4py's streaming mode is as easy as follows:
 1. When constructing the algorithm configure it with ``streaming=True``::
 
      algo = daal4py.svd(streaming=True)
-2. Repeat calling ``compute(input-data)`` with chunks of your input (arrays or
+2. Repeat calling ``compute(input-data)`` with chunks of your input (arrays, DataFrames or
    files)::
 
      for f in input_files:
@@ -26,9 +26,9 @@ daal4py's streaming mode is as easy as follows:
 
      result = algo.finalize()
 
-The streaming algorithms also accept arrays as input, e.g. the data can come
-from a stream rather than from multiple files. Here is an example which
-simulates a data stream using a generator which reads a file in chunks:
+The streaming algorithms also accept arrays and DataFrames as input, e.g. the
+data can come from a stream rather than from multiple files. Here is an example
+which simulates a data stream using a generator which reads a file in chunks:
 `SVD reading stream of data <https://github.com/IntelPython/daal4py/blob/master/examples/stream.py>`_
 
 Supported Algorithms and Examples

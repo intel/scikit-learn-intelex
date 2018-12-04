@@ -38,16 +38,16 @@ the linear regression workflow is showcased below::
     # train, test, and target are Pandas dataframes
 
     d4p_lm = d4p.linear_regression_training(interceptFlag=True)
-    lm_trained = d4p_lm.compute(train.values, target.values)
+    lm_trained = d4p_lm.compute(train, target)
 
     lm_predictor_component = d4p.linear_regression_prediction()
-    result = lm_predictor_component.compute(test.values, lm_trained.model)
+    result = lm_predictor_component.compute(test, lm_trained.model)
 
 In the example above, it can be seen that model is divided into training and
-prediction.  This gives flexibility when writing custom grid searches and
-custom functions that modify model behavior or use it as a parameter.  Daal4py
-also allows for direct usage of NumPy arrays instead of DAAL's NumericTables,
-which allow for better integration with the NumPy/SciPy stack.
+prediction.  This gives flexibility when writing custom grid searches and custom
+functions that modify model behavior or use it as a parameter. Daal4py also
+allows for direct usage of NumPy arrays and Pandas DataFrames instead of DAAL's
+NumericTables, which allow for better integration with the Pandas/NumPy/SciPy stack.
 
 
 Daal4py machine learning algorithms are constructed with a rich set of
@@ -137,12 +137,19 @@ All algorithms in daal4py work the same way:
 1. Instantiate and parameterize
 2. Run/compute on input data
 
-The below tables list the accepted arguments. Those with no default (None) are required arguments. All other arguments with defaults are optional and can be provided as keyword arguments (like ``optarg=77``).
-Each algorithm returns a class-like object with properties as its result.
+The below tables list the accepted arguments. Those with no default (None) are
+required arguments. All other arguments with defaults are optional and can be
+provided as keyword arguments (like ``optarg=77``).  Each algorithm returns a
+class-like object with properties as its result.
 
-For algorithms with training and prediction, simply extract the ``model`` property from the result returned by the training and pass it in as the (second) input argument.
+For algorithms with training and prediction, simply extract the ``model``
+property from the result returned by the training and pass it in as the (second)
+input argument.
 
-Note that all input objects and the result/model properties are native types, e.g. standard types (integer, float, numpy arrays, ...). Additionally, if you provide the name of a csv-file as an input argument daal4py will work on the entire file content.
+Note that all input objects and the result/model properties are native types,
+e.g. standard types (integer, float, Numpy arrays, Pandas DataFrames,
+...). Additionally, if you provide the name of a csv-file as an input argument
+daal4py will work on the entire file content.
 
 Content
 -------
