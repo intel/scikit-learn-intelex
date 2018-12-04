@@ -50,6 +50,7 @@ using daal::services::LibraryVersionInfo;
 extern "C" {
 void c_daalinit(int nthreads=-1);
 void c_daalfini();
+size_t c_num_threads();
 size_t c_num_procs();
 size_t c_my_procid();
 }
