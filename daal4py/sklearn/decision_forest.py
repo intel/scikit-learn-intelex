@@ -25,7 +25,8 @@ from .utils import (make2d, getFPType)
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
 from sklearn.tree._tree import (DTYPE, Tree)
-from sklearn.ensemble import (RandomForestClassifier, RandomForestRegressor)
+from sklearn.ensemble import RandomForestClassifier as skl_RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor as skl_RandomForestRegressor
 from sklearn.utils import (check_random_state, check_array)
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import (check_is_fitted, check_consistent_length)
@@ -55,7 +56,7 @@ def _to_absolute_max_features(max_features, n_features, is_classification=False)
             return 0
 
 
-class DaalRandomForestClassifier(RandomForestClassifier):
+class RandomForestClassifier(skl_RandomForestClassifier):
     def __init__(self,
             n_estimators=10,
             criterion="gini",
@@ -73,7 +74,7 @@ class DaalRandomForestClassifier(RandomForestClassifier):
             random_state=None,
             verbose=0,
             warm_start=False):
-        super(DaalRandomForestClassifier, self).__init__(
+        super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
                 max_depth=max_depth,
@@ -94,25 +95,27 @@ class DaalRandomForestClassifier(RandomForestClassifier):
 
 
     def _check_daal_supported_parameters(self):
+        _class_name = self.__class__.__name__
+        print(_class_name)
         if self.n_jobs != 1:
-            warnings.warn('DaalRandomForestClassifier ignores non-default settings of n_jobs')
+            warnings.warn(_class_name + ' ignores non-default settings of n_jobs')
         if self.verbose != 0:
-            warnings.wanr('DaalRandomForestClassifier ignores non-default settings of verbose')
+            warnings.wanr(_class_name + ' ignores non-default settings of verbose')
         if self.warm_start:
-            warnings.warn('DaalRandomForestClassifier ignores non-default settings of warm_start')
-        if self.criterion != "mse":
-            warnings.warn('DaalRandomForestClassifier currently only supports criterion="gini"')
+            warnings.warn(_class_name + ' ignores non-default settings of warm_start')
+        if self.criterion != "gini":
+            warnings.warn(_class_name + ' currently only supports criterion="gini"')
         if self.min_impurity_decrease != 0.0:
-            warnings.warn("DaalRandomForestClassifier currently does not support min_impurity_decrease."
+            warnings.warn(_class_name + " currently does not support min_impurity_decrease."
                           "It currently supports min_impurity_split to control tree growth.")
         if self.max_leaf_nodes is not None:
-            warnings.warn("DaalRandomForestClassifier currently does not support non-default "
+            warnings.warn(_class_name + " currently does not support non-default "
                           "setting for max_leaf_nodes.")
         if self.min_weight_fraction_leaf != 0.0:
-            warnings.warn("DaalRandomForestClassifier currently does not support non-default "
+            warnings.warn(_class_name + " currently does not support non-default "
                           "setting for min_weight_fraction_leaf.")
         if self.min_samples_leaf != 1:
-            warnings.warn("DaalRandomForestClassifier currently does not support non-default "
+            warnings.warn(_class_name + " currently does not support non-default "
                           "setting for min_samples_leaf.")
 
 
@@ -138,7 +141,8 @@ class DaalRandomForestClassifier(RandomForestClassifier):
         self.n_outputs_ = y.shape[1]
 
         if self.n_outputs_ != 1:
-            raise ValueError("DaalRandomForestClassifier does not currently support multi-output data. Consider using OneHotEncoder")
+            _class_name = self.__class__.__name__
+            raise ValueError(_class_name + " does not currently support multi-output data. Consider using OneHotEncoder")
 
         y = check_array(y, ensure_2d=False, dtype=None)
         y, _ = self._validate_y_class_weight(y)
@@ -256,7 +260,7 @@ class DaalRandomForestClassifier(RandomForestClassifier):
 
 
 
-class DaalRandomForestRegressor(RandomForestRegressor):
+class RandomForestRegressor(skl_RandomForestRegressor):
     def __init__(self,
             n_estimators=10,
             criterion="mse",
@@ -274,7 +278,7 @@ class DaalRandomForestRegressor(RandomForestRegressor):
             random_state=None,
             verbose=0,
             warm_start=False):
-        super(DaalRandomForestRegressor, self).__init__(
+        super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
                 max_depth=max_depth,
@@ -294,25 +298,26 @@ class DaalRandomForestRegressor(RandomForestRegressor):
             )
     
     def _check_daal_supported_parameters(self):
+        _class_name = self.__class__.__name__
         if self.n_jobs != 1:
-            warnings.warn('DaalRandomForestRegressor ignores non-default settings of n_jobs')
+            warnings.warn(_class_name + ' ignores non-default settings of n_jobs')
         if self.verbose != 0:
-            warnings.warn('DaalRandomForestRegressor ignores non-default settings of verbose')
+            warnings.warn(_class_name + ' ignores non-default settings of verbose')
         if self.warm_start:
-            warnings.warn('DaalRandomForestRegressor ignores non-default settings of warm_start')
+            warnings.warn(_class_name + ' ignores non-default settings of warm_start')
         if self.criterion != "mse":
-            warnings.warn('DaalRandomForestRegressor currently only supports criterion="mse"')
+            warnings.warn(_class_name + ' currently only supports criterion="mse"')
         if self.min_impurity_decrease != 0.0:
-            warnings.warn("DaalRandomForestRegressor currently does not support min_impurity_decrease."
+            warnings.warn(_class_name + " currently does not support min_impurity_decrease."
                           "It currently supports min_impurity_split to control tree growth.")
         if self.max_leaf_nodes is not None:
-            warnings.warn("DaalRandomForestRegressor currently does not support non-default "
+            warnings.warn(_class_name + " currently does not support non-default "
                           "setting for max_leaf_nodes.")
         if self.min_weight_fraction_leaf != 0.0:
-            warnings.warn("DaalRandomForestRegressor currently does not support non-default "
+            warnings.warn(_class_name + " currently does not support non-default "
                           "setting for min_weight_fraction_leaf.")
         if self.min_samples_leaf != 1:
-            warnings.warn("DaalRandomForestRegressor currently does not support non-default "
+            warnings.warn(_class_name + " currently does not support non-default "
                           "setting for min_samples_leaf.")
 
 
