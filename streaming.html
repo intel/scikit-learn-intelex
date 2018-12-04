@@ -172,7 +172,7 @@ operations with computation.</p>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Repeat calling <code class="docutils literal notranslate"><span class="pre">compute(input-data)</span></code> with chunks of your input (arrays or
+<li><p class="first">Repeat calling <code class="docutils literal notranslate"><span class="pre">compute(input-data)</span></code> with chunks of your input (arrays, DataFrames or
 files):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">input_files</span><span class="p">:</span>
     <span class="n">algo</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -185,9 +185,9 @@ files):</p>
 </div>
 </li>
 </ol>
-<p>The streaming algorithms also accept arrays as input, e.g. the data can come
-from a stream rather than from multiple files. Here is an example which
-simulates a data stream using a generator which reads a file in chunks:
+<p>The streaming algorithms also accept arrays and DataFrames as input, e.g. the
+data can come from a stream rather than from multiple files. Here is an example
+which simulates a data stream using a generator which reads a file in chunks:
 <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/stream.py">SVD reading stream of data</a></p>
 <div class="section" id="supported-algorithms-and-examples">
 <h2>Supported Algorithms and Examples<a class="headerlink" href="#supported-algorithms-and-examples" title="Permalink to this headline">¶</a></h2>
