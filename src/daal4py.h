@@ -158,13 +158,11 @@ struct IOManager
 struct table_or_flist
 {
     mutable daal::data_management::NumericTablePtr table;
-    std::string                            file;
-    std::vector< daal::data_management::NumericTablePtr > tlist;
-    std::vector< std::string >             flist;
+    std::string                                    file;
     inline table_or_flist(daal::data_management::NumericTablePtr t)
-        : table(t), file(), tlist(), flist() {}
+        : table(t), file() {}
     inline table_or_flist()
-        : table(), file(), tlist(), flist() {}
+        : table(), file() {}
     table_or_flist(PyObject *);
 };
 

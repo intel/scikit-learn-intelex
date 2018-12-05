@@ -24,10 +24,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32).values
+    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
+    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
 def main():
@@ -40,7 +40,7 @@ def main():
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    data = read_csv(infile, range(18))
+    data = read_csv(infile, range(18), t=np.float32)
     result2 = algo.compute(data)
 
     # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues

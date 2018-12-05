@@ -9,7 +9,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 ex_dir = os.path.join(here, "examples")
 
 from examples.run_examples import run_all
-from tests.test_examples import Test
+#from tests.test_examples import TestExNpy, TestExPd
 
 s = unittest.defaultTestLoader.discover('tests')
 r = unittest.TextTestRunner(verbosity=7)

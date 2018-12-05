@@ -68,6 +68,16 @@ from cpython.ref cimport PyObject
 from cython.operator cimport dereference as deref
 from libc.stdint cimport int64_t
 
+try:
+    import pandas
+    pdDataFrame = pandas.DataFrame
+    pdSeries = pandas.Series
+except:
+    class pdDataFrame:
+        pass
+    class pdSeries:
+        pass
+
 npc.import_array()
 
 hpat_spec = []
@@ -153,6 +163,14 @@ def num_procs():
 
 def my_procid():
     return c_my_procid()
+
+
+cdef table_or_flist * mk_table_or_flist(object x):
+    if isinstance(x, pdDataFrame):
+        x = [x.loc[:,i].values for i in x]
+    elif isinstance(x, pdSeries):
+        x = [x.values]
+    return new table_or_flist(<PyObject *>x)
 
 '''
 

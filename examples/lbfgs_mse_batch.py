@@ -25,10 +25,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float64).values
+    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main():
@@ -61,7 +61,7 @@ def main():
 
 if __name__ == "__main__":
     res = main()
-    print("\nExpected coefficients:\n", np.array([[11], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10]], dtype=np.float64))
+    print("\nExpected coefficients:\n", np.array([[11], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10]], dtype=np.double))
     print("\nResulting coefficients:\n", res.minimum)
     print("\nNumber of iterations performed:\n", res.nIterations[0][0])
     print('All looks good!')
