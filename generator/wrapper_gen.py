@@ -134,6 +134,7 @@ cdef extern from "daal.h":
 cdef extern from "daal4py_cpp.h":
     cdef void c_daalinit(int nthreads) except +
     cdef void c_daalfini() except +
+    cdef size_t c_num_threads() except +
     cdef size_t c_num_procs() except +
     cdef size_t c_my_procid() except +
 
@@ -143,6 +144,9 @@ def daalinit(nthreads = -1):
 
 def daalfini():
     c_daalfini()
+
+def num_threads():
+    return c_num_threads()
 
 def num_procs():
     return c_num_procs()

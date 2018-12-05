@@ -463,6 +463,12 @@ void c_daalfini()
 #endif
 }
 
+size_t c_num_threads()
+{
+    return daal::services::Environment::getInstance()->getNumberOfThreads();
+}
+
+
 size_t c_num_procs()
 {
 #ifdef _DIST_
