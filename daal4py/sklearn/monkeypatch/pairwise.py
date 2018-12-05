@@ -15,8 +15,13 @@
 # limitations under the License.
 #******************************************************************************/
 
+from functools import partial
 from sklearn.metrics.pairwise import _parallel_pairwise, _pairwise_callable
-from sklearn.metrics.pairwise import _VALID_METRICS
+from sklearn.metrics.pairwise import _VALID_METRICS, PAIRWISE_DISTANCE_FUNCTIONS
+from sklearn.metrics.pairwise import PAIRWISE_BOOLEAN_FUNCTIONS
+from sklearn.metrics.pairwise import check_pairwise_arrays
+from scipy.sparse import issparse
+from scipy.spatial import distance
 
 import daal4py
 from ..utils import getFPType

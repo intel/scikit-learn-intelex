@@ -19,6 +19,7 @@ import numpy as np
 import scipy.sparse as sparse
 import scipy.optimize as optimize
 import numbers
+import warnings
 
 from .logistic_loss import (_daal4py_loss_and_grad,
                             _daal4py_logistic_loss_extra_args,
@@ -29,6 +30,7 @@ from sklearn.utils import (check_array,
                            compute_class_weight,
                            check_random_state)
 from sklearn.linear_model.sag import sag_solver
+from sklearn.utils.optimize import newton_cg
 from sklearn.linear_model.logistic import (_check_solver,
                                            _check_multi_class,
                                            _fit_liblinear,
