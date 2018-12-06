@@ -16,6 +16,7 @@
 
 #define NO_IMPORT_ARRAY
 #include <cstdint>
+#include <cstring>
 #include <Python.h>
 #include "daal4py.h"
 #include "npy4daal.h"
@@ -271,32 +272,32 @@ static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
     return ptr;
 }
 
-daal::data_management::NumericTablePtr * make_nt(PyObject * nda)
+daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
 {
-    if(nda && nda != Py_None) {
+    if(obj && obj != Py_None) {
         daal::data_management::NumericTable * ptr = NULL;
-        if(is_array(nda)) { // we got a numpy array
-            PyArrayObject * ary = (PyArrayObject*)nda;
+        if(is_array(obj)) { // we got a numpy array
+            PyArrayObject * ary = (PyArrayObject*)obj;
 
             if(array_is_behaved(ary)) {
-#define MAKENT_(_T) ptr = _make_hnt<_T>(nda)
+#define MAKENT_(_T) ptr = _make_hnt<_T>(obj)
                 SET_NPY_FEATURE(PyArray_DESCR(ary)->type, MAKENT_, throw std::invalid_argument("Found unsupported array type"));
 #undef MAKENT_
             } else {
-                ptr = _make_npynt(nda);
+                ptr = _make_npynt(obj);
             }
 
             if(!ptr) std::cerr << "Could not convert Python object to DAAL table.\n";
 
-        } else if(PyList_Check(nda) && PyList_Size(nda) > 0) { // a list of arrays for SOA?
-            PyObject * first = PyList_GetItem(nda, 0);
+        } else if(PyList_Check(obj) && PyList_Size(obj) > 0) { // a list of arrays for SOA?
+            PyObject * first = PyList_GetItem(obj, 0);
 
             if(is_array(first)) { // can handle only list of 1d arrays
-                auto N = PyList_Size(nda);
+                auto N = PyList_Size(obj);
                 daal::data_management::SOANumericTable * soatbl = NULL;
 
                 for(auto i = 0; i < N; i++) {
-                    PyArrayObject * ary = (PyArrayObject*)PyList_GetItem(nda, i);
+                    PyArrayObject * ary = (PyArrayObject*)PyList_GetItem(obj, i);
                     if(i==0) soatbl = new daal::data_management::SOANumericTable(N, PyArray_DIMS(ary)[0]);
                     if(PyArray_NDIM(ary) != 1) {
                         std::cerr << "Found wrong dimensionality (" << PyArray_NDIM(ary) << ") of array in list when constructing SOA table (must be 1d)";
@@ -311,8 +312,56 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * nda)
 
                 }
                 ptr = soatbl;
-            } // else not a list of 1d arrays -> cannot handle
-        } // else not a list of 1d arrays -> cannot handle
+            } // else not a list of 1d arrays
+        } // else not a list of 1d arrays
+        if(ptr == NULL && strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0) {
+            daal::services::SharedPtr<daal::data_management::CSRNumericTable> ret;
+            PyObject * vals  = PyObject_GetAttrString(obj, "data");
+            PyObject * indcs = PyObject_GetAttrString(obj, "indices");
+            PyObject * roffs = PyObject_GetAttrString(obj, "indptr");
+            PyObject * shape = PyObject_GetAttrString(obj, "shape");
+
+            if(shape && PyTuple_Check(shape)
+               && vals && indcs && roffs
+               && array_numdims(vals)==1 && array_numdims(indcs)==1 && array_numdims(roffs)==1) {
+
+                // As long as DAAL does not support 0-based indexing we have to copy the indices and add 1 to each
+                PyObject * np_indcs = PyArray_FROMANY(indcs, NPY_UINT64, 0, 0, NPY_ARRAY_CARRAY|NPY_ARRAY_ENSURECOPY|NPY_ARRAY_FORCECAST);
+                PyObject * np_roffs = PyArray_FROMANY(roffs, NPY_UINT64, 0, 0, NPY_ARRAY_CARRAY|NPY_ARRAY_ENSURECOPY|NPY_ARRAY_FORCECAST);
+                PyObject * np_vals = PyArray_FROMANY(vals, array_type(vals), 0, 0, NPY_ARRAY_CARRAY);
+
+                PyObject * nr = PyTuple_GetItem(shape, 0);
+                PyObject * nc = PyTuple_GetItem(shape, 1);
+
+                if(np_indcs && np_roffs && np_vals && nr && nc) {
+                    size_t * c_indcs = (size_t*)array_data(np_indcs);
+                    size_t n = array_size(np_indcs, 0);
+                    for(size_t i=0; i<n; ++i) c_indcs[i] += 1;
+
+                    size_t * c_roffs = (size_t*)array_data(np_roffs);
+                    n = array_size(np_roffs, 0);
+                    for(size_t i=0; i<n; ++i) c_roffs[i] += 1;
+
+
+#define MKCSR_(_T)\
+                    ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>((_T*)array_data(np_vals), NumpyDeleter((PyArrayObject*)np_vals)), \
+                                                                         daal::services::SharedPtr<size_t>(c_indcs, NumpyDeleter((PyArrayObject*)np_indcs)), \
+                                                                         daal::services::SharedPtr<size_t>(c_roffs, NumpyDeleter((PyArrayObject*)np_roffs)), \
+                                                                         PyLong_AsSize_t(nc), \
+                                                                         PyLong_AsSize_t(nr))
+                    SET_NPY_FEATURE(array_type(np_vals), MKCSR_, throw std::invalid_argument("Found unsupported data type in csr_matrix"));
+#undef MKCSR_
+
+                } else std::cerr << "Failed accessing csr data when converting csr_matrix.\n";
+                Py_DECREF(nc);
+                Py_DECREF(nr);
+            } else std::cerr << "Got invalid csr_matrix object.\n";
+            Py_DECREF(shape);
+            Py_DECREF(roffs);
+            Py_DECREF(indcs);
+            Py_DECREF(vals);
+            return new daal::data_management::NumericTablePtr(ret);
+        }
         return new daal::data_management::NumericTablePtr(ptr);
     }
 	return new daal::data_management::NumericTablePtr();

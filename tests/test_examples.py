@@ -9,6 +9,8 @@ os.chdir(examples_path)
 import unittest
 import numpy as np
 import pandas as pd
+from scipy.sparse import csr_matrix
+
 from daal4py import __daal_link_version__ as dv
 daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
@@ -24,6 +26,8 @@ def np_read_csv(f, c, s=0, n=np.iinfo(np.int64).max, t=np.float64):
     return a
 
 pd_read_csv = lambda f, c, s=0, n=None, t=np.float64: pd.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=t).values
+
+csr_read_csv = lambda f, c, s=0, n=None, t=np.float64: csr_matrix(np_read_csv(f, c, s=s, n=n, t=t))
 
 
 class TestExNpy(unittest.TestCase):
@@ -303,6 +307,10 @@ class TestExNpy(unittest.TestCase):
 class TestExPd(TestExNpy):
     def setUp(self):
         self.read_csv = pd_read_csv
+
+class TestExCSR(TestExNpy):
+    def setUp(self):
+        self.read_csv = csr_read_csv
 
 
 if __name__ == '__main__':
