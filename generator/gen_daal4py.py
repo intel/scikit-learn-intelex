@@ -832,7 +832,7 @@ class cython_interface(object):
 
         for ns in algos:
             if ns.startswith('algorithms::') and not ns.startswith('algorithms::neural_networks') and self.namespace_dict[ns].enums:
-                cpp_begin += 'static std::map< std::string, int64_t > s2e_' + ns.replace('::', '_') + ' =\n{\n'
+                cpp_begin += 'static str2i_map_t s2e_' + ns.replace('::', '_') + ' =\n{\n'
                 for e in  self.namespace_dict[ns].enums:
                     for v in self.namespace_dict[ns].enums[e]:
                         vv = ns + '::' + v
@@ -844,7 +844,7 @@ class cython_interface(object):
                 for e in  self.namespace_dict[ns].enums:
                     enm = '::'.join([ns, e])
                     if enm in enum_maps:
-                        cpp_begin += 'static std::map< int64_t, std::string > e2s_' + ns.replace('::', '_') + '_' + enum_maps[enm] +' =\n{\n'
+                        cpp_begin += 'static i2str_map_t e2s_' + ns.replace('::', '_') + '_' + enum_maps[enm] +' =\n{\n'
                         for v in self.namespace_dict[ns].enums[e]:
                             vv = ns + '::' + v
                             cpp_begin += ' '*4 +'{daal::' + vv + ', "' + v + '"},\n'
