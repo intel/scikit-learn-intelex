@@ -17,9 +17,6 @@
 
 import numpy as np
 
-import sklearn
-from sklearn.utils import (check_random_state, check_array, check_X_y)
-
 import daal4py
 from ..utils import (make2d, getFPType)
 
@@ -35,7 +32,9 @@ def _resultsToCompute_string(value=True, gradient=True, hessian=False):
     return '|'.join(results_needed)
 
 
-def _daal4py_logistic_loss_extra_args(nClasses_unused, beta, X, y, l1=0.0, l2=0.0, fit_intercept=True, value=True, gradient=True, hessian=False):
+def _daal4py_logistic_loss_extra_args(nClasses_unused, beta, X, y,
+                                      l1=0.0, l2=0.0, fit_intercept=True,
+                                      value=True, gradient=True, hessian=False):
     X = make2d(X)
     nSamples, nFeatures = X.shape
 
@@ -58,7 +57,10 @@ def _daal4py_logistic_loss_extra_args(nClasses_unused, beta, X, y, l1=0.0, l2=0.
 
     return (objective_function_algorithm_instance, X, y, n)
 
-def _daal4py_cross_entropy_loss_extra_args(nClasses, beta, X, y, l1=0.0, l2=0.0, fit_intercept=True, value=True, gradient=True, hessian=False):
+
+def _daal4py_cross_entropy_loss_extra_args(nClasses, beta, X, y,
+                                           l1=0.0, l2=0.0, fit_intercept=True,
+                                           value=True, gradient=True, hessian=False):
     X = make2d(X)
     nSamples, nFeatures = X.shape
     y = make2d(y)
