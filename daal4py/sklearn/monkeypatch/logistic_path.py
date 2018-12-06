@@ -25,8 +25,8 @@ from .logistic_loss import (_daal4py_loss_and_grad,
                             _daal4py_logistic_loss_extra_args,
                             _daal4py_cross_entropy_loss_extra_args)
 
-from sklearn.utils import (check_array, 
-                           check_consistent_length, 
+from sklearn.utils import (check_array,
+                           check_consistent_length,
                            compute_class_weight,
                            check_random_state)
 from sklearn.linear_model.sag import sag_solver
