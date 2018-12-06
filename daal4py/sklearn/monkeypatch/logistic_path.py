@@ -31,6 +31,7 @@ from sklearn.utils import (check_array,
                            check_random_state)
 from sklearn.linear_model.sag import sag_solver
 from sklearn.utils.optimize import newton_cg
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model.logistic import (_check_solver,
                                            _check_multi_class,
                                            _fit_liblinear,
