@@ -392,8 +392,8 @@ def fit(self, X, y, sample_weight=None):
         # In binary case, we need to flip the sign of coef, intercept and
         # decision function. Use self._intercept_ and self._dual_coef_ internally.
         if not self._daal_fit:
-            self._intercept_ = self.intercept_.copy()
-            self._dual_coef_ = self.dual_coef_.copy()
+            self._internal_intercept_ = self.intercept_.copy()
+            self._internal_dual_coef_ = self.dual_coef_.copy()
         else:
             self._internal_intercept_ = self.intercept_.copy()
             self._internal_dual_coef_ = self.dual_coef_.copy()
