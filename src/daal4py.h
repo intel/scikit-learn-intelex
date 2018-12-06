@@ -36,6 +36,7 @@ using daal::services::LibraryVersionInfo;
 #include <vector>
 #include <limits>
 #include <string>
+#include <unordered_map>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
@@ -58,6 +59,8 @@ size_t c_my_procid();
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;
 typedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;
 typedef std::string std_string;
+typedef std::unordered_map<std::string, int64_t> str2i_map_t;
+typedef std::unordered_map<int64_t, std::string> i2str_map_t;
 
 template< typename T >
 bool use_default(const daal::services::SharedPtr<T> * attr)
@@ -195,7 +198,7 @@ void * get_nt_data_ptr(const daal::data_management::NumericTablePtr * ptr)
     return dptr ? reinterpret_cast< void* >(dptr->getArraySharedPtr().get()) : NULL;
 }
 
-extern int64_t string2enum(const std::string& str, std::map< std::string, int64_t > & strmap);
+extern int64_t string2enum(const std::string& str, str2i_map_t & strmap);
 
 static std::string to_std_string(PyObject * o)
 {
@@ -211,9 +214,9 @@ typedef daal::data_management::KeyValueDataCollectionPtr dict_NumericTablePtr;
 
 extern "C" void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data, size_t * dims, char dtype = 0);
 extern PyObject * make_nda(daal::data_management::NumericTablePtr * nt_ptr);
-extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * nt_ptr, const std::map< int64_t, std::string > &);
+extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * nt_ptr, const i2str_map_t &);
 extern daal::data_management::NumericTablePtr * make_nt(PyObject * nda);
-extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, std::map< std::string, int64_t > &);
+extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t &);
 
 extern const daal::data_management::NumericTablePtr readCSV(const std::string& fname);
 

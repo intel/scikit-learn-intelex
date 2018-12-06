@@ -95,16 +95,17 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
                 ptr        = '*' if '*' in typ or any(typ.endswith(x) for x in ['Ptr', '__iface__']) else ''
                 # get rid of ref/ptr in type
                 realtyp    = typ.replace('&', '').replace('*', '').strip()
-                # string to enum dict for our algo, needed for converting python strings to C++ enums
-                s2e = 's2e_algorithms_{}'.format(algo)
 
                 # we try to identify enum types, which become strings in python
                 if '::' in realtyp and not any(x in realtyp for x in ['Ptr', 'std::']):
+                    # string to enum dict for our algo, needed for converting python strings to C++ enums
+                    s2e = 's2e_algorithms_{}'.format(flat(realtyp.rsplit('::', 1)[0]))
                     typ = 'std::string'
                     ref = '&'
                     todaal_member = '({})string2enum(_{}, {})'.format(realtyp, d4pname, s2e)
                 else:
                     # any other typ
+                    s2e = 's2e_algorithms_{}'.format(algo)
                     typ = realtyp
                     todaal_member = '_{}'.format(d4pname)
                 # normalize types from DAAL

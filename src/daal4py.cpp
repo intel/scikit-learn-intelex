@@ -193,7 +193,7 @@ PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
     throw std::invalid_argument("Got unsupported table type.");
 }
 
-extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * dict, const std::map< int64_t, std::string > & id2str)
+extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * dict, const i2str_map_t & id2str)
 {
     PyObject *pydict = PyDict_New();
     for(size_t i=0; i<(*dict)->size(); ++i) {
@@ -318,7 +318,7 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * nda)
 	return new daal::data_management::NumericTablePtr();
 }
 
-extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, std::map< std::string, int64_t > & str2id)
+extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t & str2id)
 {
     auto dc = new daal::data_management::KeyValueDataCollectionPtr(new daal::data_management::KeyValueDataCollection);
     if(dict && dict != Py_None) {
@@ -415,15 +415,24 @@ void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data
     return;
 }
 
-int64_t string2enum(const std::string& str, std::map< std::string, int64_t > & strmap)
+static int64_t getval_(const std::string& str, const str2i_map_t & strmap)
+{
+        auto i = strmap.find(str);
+        if(i == strmap.end()) throw std::invalid_argument(std::string("Encountered unexpected string-identifier '")
+                                                                      + str
+                                                                      + std::string("'"));
+        return i->second;
+}
+
+int64_t string2enum(const std::string& str, str2i_map_t & strmap)
 {
     int64_t r = 0;
     std::size_t current, previous = 0;
     while((current = str.find('|', previous)) != std::string::npos) {
-        r |= strmap[str.substr(previous, current - previous)];
+        r |= getval_(str.substr(previous, current - previous), strmap);
         previous = current + 1;
     }
-    return (r | strmap[str.substr(previous, current - previous)]);
+    return (r | getval_(str.substr(previous, current - previous), strmap));
 }
 
 
