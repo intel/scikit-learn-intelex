@@ -15,6 +15,7 @@
 # limitations under the License.
 #******************************************************************************/
 
+import numpy as np
 from functools import partial
 from sklearn.metrics.pairwise import _parallel_pairwise, _pairwise_callable
 from sklearn.metrics.pairwise import _VALID_METRICS, PAIRWISE_DISTANCE_FUNCTIONS
