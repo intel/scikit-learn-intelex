@@ -30,6 +30,7 @@ requirements:
         - impi_rt                # [win]
     test:
         - pandas
+        - scipy
 
 build:
     number: {{buildnumber}}
