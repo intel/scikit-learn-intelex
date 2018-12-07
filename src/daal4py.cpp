@@ -272,6 +272,13 @@ static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
     return ptr;
 }
 
+// Try to convert given object to DAAL Table without copying. Currently supports
+// * numpy contiguous, homogenous -> DAAL HomogenNumericTable
+// * numpy non-contiguous, homogenous -> NpyNumericTable
+// * numpy structured, heterogenous -> NpyNumericTable
+// * list of arrays, heterogen -> DAAL SOANumericTable
+// * scipy csr_matrix -> DAAL CSRNumericTable
+//   As long as DAAL CSR is only 0-based we need to copy indices/offsets
 daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
 {
     if(obj && obj != Py_None) {
@@ -322,7 +329,7 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
             PyObject * shape = PyObject_GetAttrString(obj, "shape");
 
             if(shape && PyTuple_Check(shape)
-               && vals && indcs && roffs
+               && is_array(vals) && is_array(indcs) && is_array(roffs)
                && array_numdims(vals)==1 && array_numdims(indcs)==1 && array_numdims(roffs)==1) {
 
                 // As long as DAAL does not support 0-based indexing we have to copy the indices and add 1 to each
@@ -334,6 +341,7 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
                 PyObject * nc = PyTuple_GetItem(shape, 1);
 
                 if(np_indcs && np_roffs && np_vals && nr && nc) {
+                    // for now, increment indcs by 1
                     size_t * c_indcs = (size_t*)array_data(np_indcs);
                     size_t n = array_size(np_indcs, 0);
                     for(size_t i=0; i<n; ++i) c_indcs[i] += 1;
@@ -353,8 +361,6 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
 #undef MKCSR_
 
                 } else std::cerr << "Failed accessing csr data when converting csr_matrix.\n";
-                Py_DECREF(nc);
-                Py_DECREF(nr);
             } else std::cerr << "Got invalid csr_matrix object.\n";
             Py_DECREF(shape);
             Py_DECREF(roffs);
@@ -432,7 +438,7 @@ const daal::data_management::NumericTablePtr readCSV(const std::string& fname)
                    daal::data_management::DataSource::doAllocateNumericTable,
                    daal::data_management::DataSource::doDictionaryFromContext);
     dataSource.loadDataBlock();
-    return daal::data_management::NumericTablePtr(dataSource.getNumericTable());
+    return dataSource.getNumericTable();
 }
 
 

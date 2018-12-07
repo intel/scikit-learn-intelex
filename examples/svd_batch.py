@@ -29,7 +29,6 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
-
 def main():
     infile = "./data/batch/svd.csv"
 
@@ -51,6 +50,8 @@ def main():
     assert result1.rightSingularMatrix.shape == (data.shape[1], data.shape[1])
     assert result1.leftSingularMatrix.shape == data.shape
 
+    if hasattr(data, 'toarray'):
+        data = data.toarray() # to make the next assertion work with scipy's csr_matrix
     assert np.allclose(data, np.matmul(np.matmul(result1.leftSingularMatrix,np.diag(result1.singularValues[0])),result1.rightSingularMatrix))
 
     return (data, result1)

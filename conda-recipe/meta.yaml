@@ -38,6 +38,7 @@ build:
 test:
     requires:
         - pandas
+        - scipy
     imports:
         - daal4py
     source_files:
