@@ -25,7 +25,7 @@ def np_read_csv(f, c, s=0, n=np.iinfo(np.int64).max, t=np.float64):
         return a[:, np.newaxis]
     return a
 
-pd_read_csv = lambda f, c, s=0, n=None, t=np.float64: pd.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=t).values
+pd_read_csv = lambda f, c, s=0, n=None, t=np.float64: pd.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=t)
 
 csr_read_csv = lambda f, c, s=0, n=None, t=np.float64: csr_matrix(np_read_csv(f, c, s=s, n=n, t=t))
 
