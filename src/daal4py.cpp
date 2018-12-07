@@ -355,8 +355,8 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
                     ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>((_T*)array_data(np_vals), NumpyDeleter((PyArrayObject*)np_vals)), \
                                                                          daal::services::SharedPtr<size_t>(c_indcs, NumpyDeleter((PyArrayObject*)np_indcs)), \
                                                                          daal::services::SharedPtr<size_t>(c_roffs, NumpyDeleter((PyArrayObject*)np_roffs)), \
-                                                                         PyLong_AsSize_t(nc), \
-                                                                         PyLong_AsSize_t(nr))
+                                                                         (size_t)PyLong_AsSsize_t(nc), \
+                                                                         (size_t)PyLong_AsSsize_t(nr))
                     SET_NPY_FEATURE(array_type(np_vals), MKCSR_, throw std::invalid_argument("Found unsupported data type in csr_matrix"));
 #undef MKCSR_
 
