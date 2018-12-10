@@ -27,13 +27,12 @@ def np_read_csv(f, c, s=0, n=np.iinfo(np.int64).max, t=np.float64):
 
 pd_read_csv = lambda f, c, s=0, n=None, t=np.float64: pd.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=t)
 
-csr_read_csv = lambda f, c, s=0, n=None, t=np.float64: csr_matrix(np_read_csv(f, c, s=s, n=n, t=t))
+csr_read_csv = lambda f, c, s=0, n=None, t=np.float64: csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
 
 
 class TestExNpy(unittest.TestCase):
 
     def setUp(self):
-        global read_csv
         self.read_csv = np_read_csv
 
     def test_adagrad_mse_batch(self):
