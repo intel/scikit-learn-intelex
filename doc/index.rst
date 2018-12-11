@@ -158,7 +158,8 @@ Content
    :caption: Contents:
 
    About daal4py <index>
+   Data <data>
+   Supported Algorithms <algorithms>
    Distribution <scaling>
    Streaming <streaming>
-   Supported Algorithms <algorithms>
    Examples <examples>
