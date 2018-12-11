@@ -42,11 +42,11 @@ if __name__ == "__main__":
     # Now let's do some prediction
     # It run only on a single node
     if d4p.my_procid() == 0:
-        predict_algo = d4p.ridge_regression_prediction()
+        predict_algo = d4p.ridge_regression_prediction(method=method)
         # read test data (with same #features)
         pdata = loadtxt("./data/distributed/linear_regression_test.csv", delimiter=',', usecols=range(10))
         # now predict using the model from the training above
-        predict_result = d4p.ridge_regression_prediction().compute(pdata, train_result.model)
+        predict_result = d4p.ridge_regression_prediction(method=method).compute(pdata, train_result.model)
         
         # The prediction result provides prediction
         assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])

@@ -29,7 +29,7 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/svd.csv"
 
     # configure a SVD object
@@ -39,7 +39,8 @@ def main():
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    data = read_csv(infile, range(18), t=np.float32)
+    algo = d4p.svd()
+    data = readcsv(infile, range(18), t=np.float32)
     result2 = algo.compute(data)
 
     # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues

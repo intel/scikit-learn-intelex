@@ -36,7 +36,7 @@ except:
         return a
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     # read data from file
     file = "./data/batch/covcormoments_dense.csv"
 
@@ -49,7 +49,7 @@ def main():
     while True:
         # Read data in chunks
         try:
-            data = read_csv(file, range(10), lines_read, chunk_size)
+            data = readcsv(file, range(10), lines_read, chunk_size)
         except:
             break
         # Now feed chunk

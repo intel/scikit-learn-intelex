@@ -30,7 +30,7 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     nClasses = 2
     nFeatures = 20
 
@@ -41,18 +41,18 @@ def main():
     train_labels = np.split(read_csv(trainfile, range(nFeatures, nFeatures + 1)), d4p.num_procs())[d4p.my_procid()]
 
     # set parameters and train
-    train_alg = d4p.logistic_regression_training(nClasses=nClasses, interceptFlag=True, distributed=True)
+    train_alg = d4p.logistic_regression_training(nClasses=nClasses, interceptFlag=True, distributed=True, method=method)
     train_result = train_alg.compute(train_data, train_labels)
 
     # Now let's do some prediction
     # It operates on the same data on each process
     # read testing data from file with 20 features per observation
     testfile = "./data/batch/binary_cls_test.csv"
-    predict_data = read_csv(testfile, range(nFeatures))
-    predict_labels = read_csv(testfile, range(nFeatures, nFeatures + 1))
+    predict_data = readcsv(testfile, range(nFeatures))
+    predict_labels = readcsv(testfile, range(nFeatures, nFeatures + 1))
     
     # set parameters and compute predictions
-    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses)
+    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses, method=method)
     predict_result = predict_alg.compute(predict_data, train_result.model)
     
     # the prediction result provides prediction

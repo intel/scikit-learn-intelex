@@ -30,7 +30,7 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     maxIterations = 40
 
     # input data file
@@ -41,15 +41,15 @@ def main():
     train_algo = d4p.gbt_regression_training(maxIterations=maxIterations)
     
     # Read data. Let's use 3 features per observation
-    data = read_csv(infile, range(13), t=np.float32)
-    deps = read_csv(infile, range(13,14), t=np.float32)
+    data = readcsv(infile, range(13), t=np.float32)
+    deps = readcsv(infile, range(13,14), t=np.float32)
     train_result = train_algo.compute(data, deps)
 
     # Now let's do some prediction
     predict_algo = d4p.gbt_regression_prediction()
     # read test data (with same #features)
-    pdata = read_csv(testfile, range(13), t=np.float32)
-    ptdata = read_csv(testfile, range(13,14), t=np.float32)
+    pdata = readcsv(testfile, range(13), t=np.float32)
+    ptdata = readcsv(testfile, range(13,14), t=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

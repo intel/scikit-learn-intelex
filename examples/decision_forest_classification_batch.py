@@ -30,26 +30,32 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     # input data file
     infile = "./data/batch/df_classification_train.csv"
     testfile = "./data/batch/df_classification_test.csv"
 
     # Configure a training object (5 classes)
-    train_algo = d4p.decision_forest_classification_training(5, nTrees=10, minObservationsInLeafNode=8, featuresPerNode=3, engine = d4p.engines_mt19937(seed=777),
-                                                             varImportance='MDI', bootstrap=True, resultsToCompute='computeOutOfBagError')
+    train_algo = d4p.decision_forest_classification_training(5,
+                                                             nTrees=10,
+                                                             minObservationsInLeafNode=8,
+                                                             featuresPerNode=3,
+                                                             engine = d4p.engines_mt19937(seed=777),
+                                                             varImportance='MDI',
+                                                             bootstrap=True,
+                                                             resultsToCompute='computeOutOfBagError')
     
     # Read data. Let's use 3 features per observation
-    data   = read_csv(infile, range(3), t=np.float32)
-    labels = read_csv(infile, range(3,4), t=np.float32)
+    data   = readcsv(infile, range(3), t=np.float32)
+    labels = readcsv(infile, range(3,4), t=np.float32)
     train_result = train_algo.compute(data, labels)
     # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
     # Now let's do some prediction
     predict_algo = d4p.decision_forest_classification_prediction(5)
     # read test data (with same #features)
-    pdata = read_csv(testfile, range(3), t=np.float32)
-    plabels = read_csv(testfile, range(3,4), t=np.float32)
+    pdata = readcsv(testfile, range(3), t=np.float32)
+    plabels = readcsv(testfile, range(3,4), t=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

@@ -30,16 +30,16 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='svdDense'):
     dataFileName = "data/batch/pca_transform.csv"
     nVectors = 4
     nComponents = 2
 
     # read data
-    data = read_csv(dataFileName, range(3))
+    data = readcsv(dataFileName, range(3))
     
     # configure a PCA object and perform PCA
-    pca_algo = d4p.pca(method='svdDense', isDeterministic=True, resultsToCompute="mean|variance|eigenvalue")
+    pca_algo = d4p.pca(isDeterministic=True, resultsToCompute="mean|variance|eigenvalue")
     pca_res = pca_algo.compute(data)
 
     # Apply transform with whitening because means and eigenvalues are provided
@@ -61,3 +61,4 @@ if __name__ == "__main__":
     print("\nVariances kv:\n", pca_res.dataForTransform['variance'])
     # print results of tranform
     print("\nTransformed data:", pcatrans_res.transformedData)
+    print('All looks good!')

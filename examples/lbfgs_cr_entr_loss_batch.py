@@ -31,7 +31,7 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     nFeatures = 6
     nClasses = 5
     nIterations = 1000
@@ -40,8 +40,8 @@ def main():
     infile = "./data/batch/logreg_train.csv"
 
     # Read the data
-    data = read_csv(infile, range(nFeatures))
-    dep_data = read_csv(infile, range(nFeatures, nFeatures + 1))
+    data = readcsv(infile, range(nFeatures))
+    dep_data = readcsv(infile, range(nFeatures, nFeatures + 1))
     nVectors = data.shape[0]
 
     # configure a function

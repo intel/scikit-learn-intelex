@@ -30,14 +30,14 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     nClasses = 5
     nFeatures = 6
 
     # read training data from file with 6 features per observation and 1 class label
     trainfile = "./data/batch/logreg_train.csv"
-    train_data = read_csv(trainfile, range(nFeatures))
-    train_labels = read_csv(trainfile, range(nFeatures, nFeatures + 1))
+    train_data = readcsv(trainfile, range(nFeatures))
+    train_labels = readcsv(trainfile, range(nFeatures, nFeatures + 1))
 
     # set parameters and train
     train_alg = d4p.logistic_regression_training(nClasses=nClasses,
@@ -48,8 +48,8 @@ def main():
 
     # read testing data from file with 6 features per observation
     testfile = "./data/batch/logreg_test.csv"
-    predict_data = read_csv(testfile, range(nFeatures))
-    predict_labels = read_csv(testfile, range(nFeatures, nFeatures + 1))
+    predict_data = readcsv(testfile, range(nFeatures))
+    predict_labels = readcsv(testfile, range(nFeatures, nFeatures + 1))
 
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,

@@ -30,18 +30,17 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='svdDense'):
     infile = "./data/batch/pca_normalized.csv"
-    method = 'svdDense'
 
     # configure a PCA object
-    algo = d4p.pca(method=method, resultsToCompute = "mean|variance|eigenvalue", isDeterministic = True)
+    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True)
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    data = read_csv(infile, range(10))
+    data = readcsv(infile, range(10))
     result2 = algo.compute(data)
 
     # PCA result objects provide eigenvalues, eigenvectors, means and variances

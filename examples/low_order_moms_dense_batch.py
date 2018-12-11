@@ -30,13 +30,13 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method="defaultDense"):
     # read data from file
     file = "./data/batch/covcormoments_dense.csv"
-    data = read_csv(file, range(10))
+    data = readcsv(file, range(10))
 
     # compute
-    alg = d4p.low_order_moments()
+    alg = d4p.low_order_moments(method=method)
     res = alg.compute(data)
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,

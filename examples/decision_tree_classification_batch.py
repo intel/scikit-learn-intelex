@@ -30,7 +30,7 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     # input data file
     infile = "./data/batch/decision_tree_train.csv"
     prunefile = "./data/batch/decision_tree_prune.csv"
@@ -40,17 +40,17 @@ def main():
     train_algo = d4p.decision_tree_classification_training(5)
     
     # Read data. Let's use 5 features per observation
-    data   = read_csv(infile, range(5), t=np.float32)
-    labels = read_csv(infile, range(5,6), t=np.float32)
-    prunedata = read_csv(prunefile, range(5), t=np.float32)
-    prunelabels = read_csv(prunefile, range(5,6), t=np.float32)
+    data   = readcsv(infile, range(5), t=np.float32)
+    labels = readcsv(infile, range(5,6), t=np.float32)
+    prunedata = readcsv(prunefile, range(5), t=np.float32)
+    prunelabels = readcsv(prunefile, range(5,6), t=np.float32)
     train_result = train_algo.compute(data, labels, prunedata, prunelabels)
 
     # Now let's do some prediction
     predict_algo = d4p.decision_tree_classification_prediction()
     # read test data (with same #features)
-    pdata = read_csv(testfile, range(5), t=np.float32)
-    plabels = read_csv(testfile, range(5,6), t=np.float32)
+    pdata = readcsv(testfile, range(5), t=np.float32)
+    plabels = readcsv(testfile, range(5,6), t=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

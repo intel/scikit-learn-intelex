@@ -31,8 +31,8 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
 
-def main():
-    data = read_csv(os.path.join('data', 'batch', 'distance.csv'), range(10))
+def main(readcsv=read_csv, method='defaultDense'):
+    data = readcsv(os.path.join('data', 'batch', 'distance.csv'), range(10))
 
     # Create algorithm to compute cosine distance (no parameters)
     algorithm = d4p.cosine_distance()
