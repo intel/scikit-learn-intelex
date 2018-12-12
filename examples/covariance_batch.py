@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py assiciation rules example for shared memory systems
+# daal4py covariance example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -31,30 +31,29 @@ except:
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infile = "./data/batch/apriori.csv"
+    infile = "./data/batch/covcormoments_dense.csv"
 
-    # configure a association_rules object
-    algo = d4p.association_rules(discoverRules=True, minSupport=0.001, minConfidence=0.7)
+    # configure a covariance object
+    algo = d4p.covariance()
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
+    algo = d4p.covariance(method=method)
     data = readcsv(infile)
     result2 = algo.compute(data)
 
-    # association_rules result objects provide antecedentItemsets, confidence, consequentItemsets, largeItemsets and largeItemsetsSupport
-    assert np.allclose(result1.largeItemsets, result2.largeItemsets)
-    assert np.allclose(result1.largeItemsetsSupport, result2.largeItemsetsSupport)
-    assert np.allclose(result1.antecedentItemsets, result2.antecedentItemsets)
-    assert np.allclose(result1.consequentItemsets, result2.consequentItemsets)
-    assert np.allclose(result1.confidence, result2.confidence)
+    # covariance result objects provide correlation, covariance and mean
+    assert np.allclose(result1.covariance, result1.covariance)
+    assert np.allclose(result1.mean, result1.mean)
+    assert np.allclose(result1.correlation, result1.correlation)
 
     return result1
 
 
 if __name__ == "__main__":
-    result1 = main()
-    print('Confidence: (20 first)')
-    print(result1.confidence[0:20])
+    res = main()
+    print("Covariance matrix:\n", res.covariance)
+    print("Mean vector:\n", res.mean)
     print('All looks good!')

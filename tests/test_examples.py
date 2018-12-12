@@ -64,6 +64,18 @@ class TestExNpyArray(unittest.TestCase):
         r = result.cosineDistance
         self.assertTrue(np.allclose(np.array([[np.amin(r)],[np.amax(r)],[np.mean(r)],[np.average(r)]]), testdata))
 
+    def test_covariance_batch(self):
+        testdata = np_read_csv(os.path.join(unittest_data_path, "covariance.csv"))
+        import covariance_batch as ex
+        result = self.call(ex)
+        self.assertTrue(np.allclose(result.covariance, testdata))
+
+    def test_covariance_streaming(self):
+        testdata = np_read_csv(os.path.join(unittest_data_path, "covariance.csv"))
+        import covariance_streaming as ex
+        result = self.call(ex)
+        self.assertTrue(np.allclose(result.covariance, testdata))
+
     def test_kdtree_knn_classification_batch(self):
         import kdtree_knn_classification_batch as ex
         (_, predict_result, test_labels) = self.call(ex)
