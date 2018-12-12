@@ -36,13 +36,13 @@ except:
         return a
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     # input data file
     infile = "./data/batch/naivebayes_train_dense.csv"
     testfile = "./data/batch/naivebayes_test_dense.csv"
 
     # Configure a training object (20 classes)
-    train_algo = d4p.multinomial_naive_bayes_training(20, streaming=True)
+    train_algo = d4p.multinomial_naive_bayes_training(20, streaming=True, method=method)
     
     chunk_size = 250
     lines_read = 0
@@ -51,8 +51,8 @@ def main():
         # Read data in chunks
         # Read data. Let's use 20 features per observation
         try:
-            data   = read_csv(infile, range(20), lines_read, chunk_size)
-            labels = read_csv(infile, range(20,21), lines_read, chunk_size)
+            data   = readcsv(infile, range(20), lines_read, chunk_size)
+            labels = readcsv(infile, range(20,21), lines_read, chunk_size)
         except:
             break
         # Now feed chunk
@@ -63,10 +63,10 @@ def main():
     train_result = train_algo.finalize()
 
     # Now let's do some prediction
-    pred_algo = d4p.multinomial_naive_bayes_prediction(20)
+    pred_algo = d4p.multinomial_naive_bayes_prediction(20, method=method)
     # read test data (with same #features)
-    pred_data = read_csv(testfile, range(20))
-    pred_labels = read_csv(testfile, range(20,21))
+    pred_data = readcsv(testfile, range(20))
+    pred_labels = readcsv(testfile, range(20,21))
     # now predict using the model from the training above
     pred_result = pred_algo.compute(pred_data, train_result.model)
 

@@ -31,15 +31,15 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     # Input data set parameters
     train_file = os.path.join('data', 'batch', 'k_nearest_neighbors_train.csv')
     predict_file  = os.path.join('data', 'batch', 'k_nearest_neighbors_test.csv')
 
     # Read data. Let's use 5 features per observation
     nFeatures = 5
-    train_data   = read_csv(train_file, range(nFeatures))
-    train_labels = read_csv(train_file, range(nFeatures, nFeatures+1))
+    train_data   = readcsv(train_file, range(nFeatures))
+    train_labels = readcsv(train_file, range(nFeatures, nFeatures+1))
 
     # Create an algorithm object and call compute
     train_algo = d4p.kdtree_knn_classification_training()
@@ -47,8 +47,8 @@ def main():
 
 
     # Now let's do some prediction
-    predict_data = read_csv(predict_file, range(nFeatures))
-    predict_labels = read_csv(predict_file, range(nFeatures, nFeatures+1))
+    predict_data = readcsv(predict_file, range(nFeatures))
+    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures+1))
                         
     # Create an algorithm object and call compute
     predict_algo = d4p.kdtree_knn_classification_prediction()

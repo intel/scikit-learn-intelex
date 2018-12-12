@@ -36,7 +36,7 @@ except:
         return a
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     infiles = ["./data/distributed/svd_{}.csv".format(i) for i in range(1,5)]
 
     # configure a SVD object

@@ -25,6 +25,7 @@
 #define PyString_AsString(str) PyUnicode_AsUTF8(str)
 #define PyString_FromString(str) PyUnicode_FromString(str)
 #define PyString_FromStringAndSize(str, sz) PyUnicode_FromStringAndSize(str, sz)
+#define PyInt_AsSsize_t PyLong_AsSsize_t
 #endif
 
 

@@ -36,7 +36,7 @@ except:
         return a
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/linear_regression_train.csv"
     testfile = "./data/batch/linear_regression_test.csv"
 
@@ -50,8 +50,8 @@ def main():
         # Read data in chunks
         # Let's have 10 independent, and 2 dependent variables (for each observation)
         try:
-            indep_data = read_csv(infile, range(10), lines_read, chunk_size)
-            dep_data   = read_csv(infile, range(10,12), lines_read, chunk_size)
+            indep_data = readcsv(infile, range(10), lines_read, chunk_size)
+            dep_data   = readcsv(infile, range(10,12), lines_read, chunk_size)
         except:
             break
         # Now feed chunk
@@ -64,8 +64,8 @@ def main():
     # Now let's do some prediction
     predict_algo = d4p.ridge_regression_prediction()
     # read test data (with same #features)
-    pdata = read_csv(testfile, range(10))
-    ptdata = read_csv(testfile, range(10,12))
+    pdata = readcsv(testfile, range(10))
+    ptdata = readcsv(testfile, range(10,12))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

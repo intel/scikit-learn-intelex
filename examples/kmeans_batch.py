@@ -30,14 +30,14 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/kmeans_dense.csv"
     nClusters = 20
     maxIter = 5
 
     initrain_algo = d4p.kmeans_init(nClusters, method="randomDense")
     # Load the data
-    data = read_csv(infile, range(20))
+    data = readcsv(infile, range(20))
     # compute initial centroids
     initrain_result = initrain_algo.compute(data)
     # The results provides the initial centroids

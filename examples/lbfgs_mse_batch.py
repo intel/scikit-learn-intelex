@@ -31,11 +31,11 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     infile   = "./data/batch/lbfgs.csv"
     # Read the data, let's have 10 independent variables
-    data     = read_csv(infile, range(10))
-    dep_data = read_csv(infile, range(10,11))
+    data     = readcsv(infile, range(10))
+    dep_data = readcsv(infile, range(10,11))
     nVectors = data.shape[0]
 
     # configure a MSE object

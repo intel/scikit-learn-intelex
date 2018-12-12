@@ -30,7 +30,7 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/decision_tree_train.csv"
     prunefile = "./data/batch/decision_tree_prune.csv"
     testfile = "./data/batch/decision_tree_test.csv"
@@ -39,18 +39,18 @@ def main():
     train_algo = d4p.decision_tree_regression_training()
     
     # Read data. Let's have 5 independent, and 1 dependent variables (for each observation)
-    indep_data = read_csv(infile, range(5))
-    dep_data   = read_csv(infile, range(5,6))
-    prune_indep = read_csv(prunefile, range(5))
-    prune_dep = read_csv(prunefile, range(5,6))
+    indep_data = readcsv(infile, range(5))
+    dep_data   = readcsv(infile, range(5,6))
+    prune_indep = readcsv(prunefile, range(5))
+    prune_dep = readcsv(prunefile, range(5,6))
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data, prune_indep, prune_dep)
 
     # Now let's do some prediction
     predict_algo = d4p.decision_tree_regression_prediction()
     # read test data (with same #features)
-    pdata = read_csv(testfile, range(5))
-    ptdata = read_csv(testfile, range(5,6))
+    pdata = readcsv(testfile, range(5))
+    ptdata = readcsv(testfile, range(5,6))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

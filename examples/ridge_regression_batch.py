@@ -30,7 +30,7 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/linear_regression_train.csv"
     testfile = "./data/batch/linear_regression_test.csv"
 
@@ -38,16 +38,16 @@ def main():
     train_algo = d4p.ridge_regression_training(interceptFlag=True)
     
     # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
-    indep_data = read_csv(infile, range(10))
-    dep_data   = read_csv(infile, range(10,12))
+    indep_data = readcsv(infile, range(10))
+    dep_data   = readcsv(infile, range(10,12))
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
 
     # Now let's do some prediction
     predict_algo = d4p.ridge_regression_prediction()
     # read test data (with same #features)
-    pdata = read_csv(testfile, range(10))
-    ptdata = read_csv(testfile, range(10,12))
+    pdata = readcsv(testfile, range(10))
+    ptdata = readcsv(testfile, range(10,12))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

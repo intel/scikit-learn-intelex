@@ -28,11 +28,11 @@ try:
     read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
 
-def main():
-    data = read_csv(os.path.join('data', 'batch', 'distance.csv'), range(10))
+def main(readcsv=read_csv, method='defaultDense'):
+    data = readcsv(os.path.join('data', 'batch', 'distance.csv'), range(10))
 
     # Create algorithm to compute cosine distance (no parameters)
     algorithm = d4p.cosine_distance()

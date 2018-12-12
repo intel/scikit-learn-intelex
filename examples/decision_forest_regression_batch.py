@@ -30,17 +30,20 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/df_regression_train.csv"
     testfile = "./data/batch/df_regression_test.csv"
 
     # Configure a Linear regression training object
-    train_algo = d4p.decision_forest_regression_training(nTrees=100, varImportance='MDA_Raw', bootstrap=True, engine = d4p.engines_mt2203(seed=777),
-                                                    resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation')
+    train_algo = d4p.decision_forest_regression_training(nTrees=100,
+                                                         varImportance='MDA_Raw',
+                                                         bootstrap=True,
+                                                         engine = d4p.engines_mt2203(seed=777),
+                                                         resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation')
     
     # Read data. Let's have 13 independent, and 1 dependent variables (for each observation)
-    indep_data = read_csv(infile, range(13), t=np.float32)
-    dep_data   = read_csv(infile, range(13,14), t=np.float32)
+    indep_data = readcsv(infile, range(13), t=np.float32)
+    dep_data   = readcsv(infile, range(13,14), t=np.float32)
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
     # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
@@ -48,8 +51,8 @@ def main():
     # Now let's do some prediction
     predict_algo = d4p.decision_forest_regression_prediction()
     # read test data (with same #features)
-    pdata = read_csv(testfile, range(13), t=np.float32)
-    ptdata = read_csv(testfile, range(13,14), t=np.float32)
+    pdata = readcsv(testfile, range(13), t=np.float32)
+    ptdata = readcsv(testfile, range(13,14), t=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

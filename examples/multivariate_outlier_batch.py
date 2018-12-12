@@ -31,12 +31,12 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     # Input file
     infile = "./data/batch/outlierdetection.csv"
 
     # Retrieve the data from the input file
-    data = read_csv(infile, range(3))
+    data = readcsv(infile, range(3))
 
     # Create an algorithm to detect outliers using the default method
     algorithm = d4p.multivariate_outlier_detection()

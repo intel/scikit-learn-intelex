@@ -30,14 +30,14 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main():
+def main(readcsv=read_csv, method='defaultDense'):
     nFeatures = 20
     nClasses = 5
 
     # read training data from file with nFeatures features per observation and 1 class label
     train_file = 'data/batch/svm_multi_class_train_dense.csv'
-    train_data = read_csv(train_file, range(nFeatures))
-    train_labels = read_csv(train_file, range(nFeatures, nFeatures + 1))
+    train_data = readcsv(train_file, range(nFeatures))
+    train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1))
 
     # Create and configure algorithm object
     algorithm = d4p.multi_class_classifier_training(nClasses=nClasses,
@@ -52,8 +52,8 @@ def main():
     # Now the prediction stage
     # Read data
     pred_file = 'data/batch/svm_multi_class_test_dense.csv'
-    pred_data = read_csv(pred_file, range(nFeatures))
-    pred_labels = read_csv(pred_file, range(nFeatures, nFeatures + 1))
+    pred_data = readcsv(pred_file, range(nFeatures))
+    pred_labels = readcsv(pred_file, range(nFeatures, nFeatures + 1))
     
     # Create an algorithm object to predict multi-class SVM values
     algorithm = d4p.multi_class_classifier_prediction(nClasses,
