@@ -908,6 +908,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
                                             'distance',
                                             'cholesky',
                                             'kdtree_knn_classification',
+                                            'association_rules',
     ], no_dist, no_stream)
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:

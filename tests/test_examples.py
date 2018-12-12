@@ -15,7 +15,7 @@ from daal4py import __daal_link_version__ as dv
 daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
 # function reading file and returning numpy array
-def np_read_csv(f, c, s=0, n=np.iinfo(np.int64).max, t=np.float64):
+def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
     if s==0 and n==np.iinfo(np.int64).max:
         return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
     a = np.genfromtxt(f, usecols=c, delimiter=',', skip_header=s, max_rows=n, dtype=t)
@@ -26,10 +26,10 @@ def np_read_csv(f, c, s=0, n=np.iinfo(np.int64).max, t=np.float64):
     return a
 
 # function reading file and returning pandas DataFrame
-pd_read_csv = lambda f, c, s=0, n=None, t=np.float64: pd.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=t)
+pd_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: pd.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=t)
 
 # function reading file and returning scipy.sparse.csr_matrix
-csr_read_csv = lambda f, c, s=0, n=None, t=np.float64: csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
+csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
 
 
 class TestExNpyArray(unittest.TestCase):
@@ -39,13 +39,19 @@ class TestExNpyArray(unittest.TestCase):
         return ex.main(readcsv=np_read_csv)
 
     def test_adagrad_mse_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "adagrad_mse_batch.csv"), range(1))
+        testdata = np_read_csv(os.path.join(unittest_data_path, "adagrad_mse_batch.csv"))
         import adagrad_mse_batch as ex
         result = self.call(ex)
         self.assertTrue(np.allclose(result.minimum, testdata))
 
+    def test_association_rules_batch(self):
+        testdata = np_read_csv(os.path.join(unittest_data_path, "association_rules_batch.csv"))
+        import association_rules_batch as ex
+        result = self.call(ex)
+        self.assertTrue(np.allclose(result.confidence, testdata))
+
     def test_correlation_distance_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "correlation_distance_batch.csv"), range(1))
+        testdata = np_read_csv(os.path.join(unittest_data_path, "correlation_distance_batch.csv"))
         import correlation_distance_batch as ex
         result = self.call(ex)
         r = result.correlationDistance
