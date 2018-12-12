@@ -15,6 +15,7 @@
 # limitations under the License.
 #******************************************************************************/
 
+import warnings
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
