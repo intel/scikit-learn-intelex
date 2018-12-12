@@ -63,6 +63,6 @@ if __name__ == "__main__":
     for chunk in rn:
         algo.compute(chunk)
         
-        # finalize computation
-        res = algo.finalize()
-        print("Singular values:\n", res.singularValues)
+    # finalize computation
+    res = algo.finalize()
+    print("Singular values:\n", res.singularValues)
