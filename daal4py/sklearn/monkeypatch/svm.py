@@ -21,6 +21,7 @@ import numpy as np
 
 from scipy import sparse as sp
 from sklearn.utils import check_random_state, check_X_y
+from sklearn.svm.classes import BaseSVC, SVC
 import warnings
 
 import daal4py
@@ -39,16 +40,16 @@ def _intercept_getter(self):
 
 def _dual_coef_setter(self, val):
     self._internal_dual_coef_ = val
-    if hasattr(self, '_daal_model'):
-        del self._daal_model
+    if hasattr(self, 'daal_model_'):
+        del self.daal_model_
     if getattr(self, '_daal_fit', False):
         self._daal_fit = False
 
 
 def _intercept_setter(self, val):
     self._internal_intercept_ = val
-    if hasattr(self, '_daal_model'):
-        del self._daal_model
+    if hasattr(self, 'daal_model_'):
+        del self.daal_model_
     if getattr(self, '_daal_fit', False):
         self._daal_fit = False
 
@@ -140,17 +141,18 @@ def _daal4py_kf(kernel, X_fptype, gamma=1.0):
     return kf
 
 
-def _daal4py_fit(self, X, y, kernel):
+def _daal4py_fit(self, X, y_inp, kernel):
 
     if self.C <= 0:
         raise ValueError("C <= 0")
 
-    y = make2d(y)
+    y = make2d(y_inp)
     num_classes = len(self.classes_)
 
     if num_classes == 2:
         # Intel(R) DAAL requires binary classes to be 1 and -1. sklearn normalizes
         # the classes to 0 and 1, so we temporarily replace the 0s with -1s.
+        y = y.copy()
         y[y == 0] = -1
 
     X_fptype = getFPType(X)
@@ -185,7 +187,7 @@ def _daal4py_fit(self, X, y, kernel):
     res = algo.compute(X, y)
     model = res.model
 
-    self._daal_model = model
+    self.daal_model_ = model
 
     if num_classes == 2:
         # binary
@@ -433,7 +435,7 @@ def _daal4py_predict(self, X):
             prediction=svm_predict
         )
 
-    predictionRes = alg.compute(X, self._daal_model)
+    predictionRes = alg.compute(X, self.daal_model_)
 
     res = predictionRes.prediction
     res = res.ravel()
@@ -461,10 +463,34 @@ def predict(self, X):
     y_pred : array, shape (n_samples,)
     """
     X = self._validate_for_predict(X)
-    if getattr(self, '_daal_fit', False) and hasattr(self, '_daal_model'):
+    if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
         y = _daal4py_predict(self, X)
     else:
         predict = self._sparse_predict if self._sparse else self._dense_predict
         y = predict(X)
 
     return self.classes_.take(np.asarray(y, dtype=np.intp))
+
+
+class SVC_daal4py(BaseSVC):
+    __doc__ = SVC.__doc__
+    _impl = 'c_svc'
+
+    def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto_deprecated',
+                 coef0=0.0, shrinking=True, probability=False,
+                 tol=1e-3, cache_size=200, class_weight=None,
+                 verbose=False, max_iter=-1, decision_function_shape='ovr',
+                 random_state=None):
+
+        super(SVC_daal4py, self).__init__(
+            kernel=kernel, degree=degree, gamma=gamma,
+            coef0=coef0, tol=tol, C=C, nu=0., shrinking=shrinking,
+            probability=probability, cache_size=cache_size,
+            class_weight=class_weight, verbose=verbose, max_iter=max_iter,
+            decision_function_shape=decision_function_shape,
+            random_state=random_state)
+
+SVC_daal4py.fit = fit
+SVC_daal4py.predict = predict
+SVC_daal4py._dual_coef_ = property(_dual_coef_getter, _dual_coef_setter)
+SVC_daal4py._intercept_ = property(_intercept_getter, _intercept_setter)
