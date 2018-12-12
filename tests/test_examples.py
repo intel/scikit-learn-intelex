@@ -33,48 +33,13 @@ csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_c
 
 
 class TestExNpyArray(unittest.TestCase):
-    "We run and validate all the examples but read data with numpy, so working natively on a numpy arrays"
+    """
+    We run and validate all the examples but read data with numpy, so working natively on a numpy arrays.
+    We use generic functions to test these, they get added later.
+    """
 
     def call(self, ex):
         return ex.main(readcsv=np_read_csv)
-
-    def test_adagrad_mse_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "adagrad_mse_batch.csv"))
-        import adagrad_mse_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.minimum, testdata))
-
-    def test_association_rules_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "association_rules_batch.csv"))
-        import association_rules_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.confidence, testdata))
-
-    def test_correlation_distance_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "correlation_distance_batch.csv"))
-        import correlation_distance_batch as ex
-        result = self.call(ex)
-        r = result.correlationDistance
-        self.assertTrue(np.allclose(np.array([[np.amin(r)],[np.amax(r)],[np.mean(r)],[np.average(r)]]), testdata))
-
-    def test_cosine_distance_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "cosine_distance_batch.csv"), range(1))
-        import cosine_distance_batch as ex
-        result = self.call(ex)
-        r = result.cosineDistance
-        self.assertTrue(np.allclose(np.array([[np.amin(r)],[np.amax(r)],[np.mean(r)],[np.average(r)]]), testdata))
-
-    def test_covariance_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "covariance.csv"))
-        import covariance_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.covariance, testdata))
-
-    def test_covariance_streaming(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "covariance.csv"))
-        import covariance_streaming as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.covariance, testdata))
 
     def test_kdtree_knn_classification_batch(self):
         import kdtree_knn_classification_batch as ex
@@ -119,24 +84,6 @@ class TestExNpyArray(unittest.TestCase):
         (_, predict_result, _) = self.call(ex)
         #MSE
         self.assertTrue(np.square(predict_result.prediction - testdata).mean() < 1e-2)
-
-    def test_kmeans_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "kmeans_batch.csv"), range(20))
-        import kmeans_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.centroids, testdata))
-
-    def test_lbfgs_cr_entr_loss_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "lbfgs_cr_entr_loss_batch.csv"), range(1))
-        import lbfgs_cr_entr_loss_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.minimum, testdata))
-
-    def test_lbfgs_mse_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "lbfgs_mse_batch.csv"), range(1))
-        import lbfgs_mse_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.minimum, testdata))
 
     def test_linear_regression_batch(self):
         testdata = np_read_csv(os.path.join(unittest_data_path, "linear_regression_batch.csv"), range(2))
@@ -228,35 +175,11 @@ class TestExNpyArray(unittest.TestCase):
         (predict_result, _) = self.call(ex)
         self.assertTrue(np.allclose(predict_result.prediction, testdata))
 
-    def test_cholesky_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "cholesky_batch.csv"), range(5))
-        import cholesky_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.choleskyFactor, testdata))
-
-    def test_pca_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "pca_batch.csv"), range(10))
-        import pca_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.eigenvectors, testdata))
-
     def test_pca_transform_batch(self):
         testdata = np_read_csv(os.path.join(unittest_data_path, "pca_transform_batch.csv"), range(2))
         import pca_transform_batch as ex
         _, result = self.call(ex)
         self.assertTrue(np.allclose(result.transformedData, testdata))
-
-    def test_sgd_logistic_loss_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "sgd_logistic_loss_batch.csv"), range(1))
-        import sgd_logistic_loss_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.minimum, testdata))
-
-    def test_sgd_mse_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "sgd_mse_batch.csv"), range(1))
-        import sgd_mse_batch as ex
-        result = self.call(ex)
-        self.assertTrue(np.allclose(result.minimum, testdata))
 
     def test_svd_batch(self):
         import svd_batch as ex
@@ -288,6 +211,38 @@ class TestExNpyArray(unittest.TestCase):
         import univariate_outlier_batch as ex
         ( _,result) = self.call(ex)
         self.assertTrue(np.allclose(result.weights, testdata))
+
+
+def add_simple(cls, e, f, attr):
+    import importlib
+    def testit(self):
+        testdata = np_read_csv(os.path.join(unittest_data_path, f))
+        ex = importlib.import_module(e)
+        result = self.call(ex)
+        self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata))
+    setattr(cls, 'test_'+e, testit)
+
+
+for e in [('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
+          ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
+          ('correlation_distance_batch', 'correlation_distance_batch.csv', lambda r: [[np.amin(r.correlationDistance)],
+                                                                                      [np.amax(r.correlationDistance)],
+                                                                                      [np.mean(r.correlationDistance)],
+                                                                                      [np.average(r.correlationDistance)]]),
+          ('cosine_distance_batch', 'cosine_distance_batch.csv', lambda r: [[np.amin(r.cosineDistance)],
+                                                                            [np.amax(r.cosineDistance)],
+                                                                            [np.mean(r.cosineDistance)],
+                                                                            [np.average(r.cosineDistance)]]),
+          ('covariance_batch', 'covariance.csv', 'covariance'),
+          ('covariance_streaming', 'covariance.csv', 'covariance'),
+          ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
+          ('kmeans_batch', 'kmeans_batch.csv', 'centroids'),
+          ('lbfgs_cr_entr_loss_batch', 'lbfgs_cr_entr_loss_batch.csv', 'minimum'),
+          ('lbfgs_mse_batch', 'lbfgs_mse_batch.csv', 'minimum'),
+          ('pca_batch', 'pca_batch.csv', 'eigenvectors'),
+          ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
+          ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),]:
+    add_simple(TestExNpyArray, *e)
 
 
 class TestExPandasDF(TestExNpyArray):
