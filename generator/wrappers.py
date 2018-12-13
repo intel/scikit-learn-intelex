@@ -442,6 +442,7 @@ no_warn = {
     'algorithms::normalization': ['Result',],
     'algorithms::normalization::zscore::Batch': ['ParameterType',],
     'algorithms::optimization_solver': ['Result',],
+    'algorithms::qr::Batch': ['ParameterType',],
     'algorithms::ridge_regression': ['Result',],
     'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
     'algorithms::svm': ['Result',],

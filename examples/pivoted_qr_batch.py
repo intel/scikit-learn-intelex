@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py PCA example for shared memory systems
+# daal4py pivoted QR example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -31,10 +31,10 @@ except:
 
 
 def main(readcsv=read_csv, method='svdDense'):
-    infile = "./data/batch/pca_normalized.csv"
+    infile = "./data/batch/qr.csv"
 
-    # configure a PCA object
-    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True)
+    # configure a pivoted QR object
+    algo = d4p.pivoted_qr()
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
@@ -43,23 +43,13 @@ def main(readcsv=read_csv, method='svdDense'):
     data = readcsv(infile)
     result2 = algo.compute(data)
 
-    # PCA result objects provide eigenvalues, eigenvectors, means and variances
-    assert np.allclose(result1.eigenvalues, result2.eigenvalues)
-    assert np.allclose(result1.eigenvectors, result2.eigenvectors)
-    assert np.allclose(result1.means, result2.means)
-    assert np.allclose(result1.variances, result2.variances)
-    assert result1.eigenvalues.shape == (1, data.shape[1])
-    assert result1.eigenvectors.shape == (data.shape[1], data.shape[1])
-    assert result1.means.shape == (1, data.shape[1])
-    assert result1.variances.shape == (1, data.shape[1])
-
+    # pivoted QR result objects provide matrixQ, matrixR and permutationMatrix
     return result1
 
 
 if __name__ == "__main__":
-    result1 = main()
-    print("\nEigenvalues:\n", result1.eigenvalues)
-    print("\nEigenvectors:\n", result1.eigenvectors)
-    print("\nMeans:\n", result1.means)
-    print("\nVariances:\n", result1.variances)
+    result = main()
+    print("Orthogonal matrix Q (:10):\n", result.matrixQ[:10])
+    print("Triangular matrix R:\n", result.matrixR)
+    print("\nPermutation matrix P:\n", result.permutationMatrix)
     print('All looks good!')

@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py covariance example for streaming on shared memory systems
+# daal4py QR example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -24,11 +24,11 @@ import numpy as np
 # let's use a generator for getting stream from file (defined in stream.py)
 from stream import read_next
 
-def main(readcsv=None, method='defaultDense'):
-    infile = "./data/batch/covcormoments_dense.csv"
-    
-    # configure a covariance object
-    algo = d4p.covariance(streaming=True)
+def main(readcsv=None, method='svdDense'):
+    infile = "./data/batch/qr.csv"
+
+    # configure a QR object
+    algo = d4p.qr(streaming=True)
 
     # get the generator (defined in stream.py)...
     rn = read_next(infile, 112, readcsv)
@@ -39,11 +39,12 @@ def main(readcsv=None, method='defaultDense'):
     # finalize computation
     result = algo.finalize()
 
+    # QR result objects provide matrixQ and matrixR
     return result
 
 
 if __name__ == "__main__":
-    res = main()
-    print("Covariance matrix:\n", res.covariance)
-    print("Mean vector:\n", res.mean)
+    result = main()
+    print("Orthogonal matrix Q:\n", result.matrixQ[:10])
+    print("Triangular matrix R:\n", result.matrixR)
     print('All looks good!')
