@@ -142,6 +142,8 @@ gen_examples = [
     ('multivariate_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
     ('naive_bayes_batch', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
     ('naive_bayes_streaming', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
+    ('normalization_minmax_batch', 'normalization_minmax.csv', 'normalizedData'),
+    ('normalization_zscore_batch', 'normalization_zscore.csv', 'normalizedData'),
     ('pca_batch', 'pca_batch.csv', 'eigenvectors'),
     ('pca_transform_batch', 'pca_transform_batch.csv', lambda r: r[1].transformedData),
     ('ridge_regression_batch', 'ridge_regression_batch.csv', lambda r: r[0].prediction),

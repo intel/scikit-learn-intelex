@@ -121,6 +121,7 @@ ignore = {
                                                  'gradientSquareSum'],
     'algorithms::optimization_solver::objective_function': [],
     'algorithms::optimization_solver::iterative_solver': [],
+    'algorithms::normalization::minmax': ['moments'],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -438,6 +439,8 @@ no_warn = {
     'algorithms::multi_class_classifier': ['Result',],
     'algorithms::multinomial_naive_bayes': ['Result',],
     'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
+    'algorithms::normalization': ['Result',],
+    'algorithms::normalization::zscore::Batch': ['ParameterType',],
     'algorithms::optimization_solver': ['Result',],
     'algorithms::ridge_regression': ['Result',],
     'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],

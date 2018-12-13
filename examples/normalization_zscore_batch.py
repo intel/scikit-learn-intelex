@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py tanh example for shared memory systems
+# daal4py normalization zscore example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -31,27 +31,25 @@ except:
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infile = "./data/batch/covcormoments_dense.csv"
+    infile = "./data/batch/normalization.csv"
 
     # configure a covariance object
-    algo = d4p.math_tanh()
+    algo = d4p.normalization_zscore()
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    algo = d4p.math_tanh(method=method)
     data = readcsv(infile)
     result2 = algo.compute(data)
 
     # covariance result objects provide correlation, covariance and mean
-    assert np.allclose(result1.value, result2.value)
-    assert np.allclose(result1.value, np.tanh(data.toarray() if hasattr(data, 'toarray') else data))
+    assert np.allclose(result1.normalizedData, result2.normalizedData)
 
     return result1
 
 
 if __name__ == "__main__":
     res = main()
-    print("TanH result (first 5 rows):\n", res.value[:5])
+    print("ZScore result (first 5 rows):\n", res.normalizedData[:5])
     print('All looks good!')
