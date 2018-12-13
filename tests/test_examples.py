@@ -32,22 +32,25 @@ pd_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: pd.read_csv(f, usecol
 csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
 
 
-def add_test(cls, e, f, attr, ver=(0,0)):
+def add_test(cls, e, f=None, attr=None, ver=(0,0)):
     if daal_version < ver:
         print(e+" not supported in this library version")
     else:
         import importlib
         def testit(self):
-            testdata = np_read_csv(os.path.join(unittest_data_path, f))
             ex = importlib.import_module(e)
             result = self.call(ex)
-            self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata))
+            if f and attr:
+                testdata = np_read_csv(os.path.join(unittest_data_path, f))
+                self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata, atol=1e-06))
+            else:
+                self.assertTrue(True)
         setattr(cls, 'test_'+e, testit)
 
 
 class Base():
     """
-    We use generic functions to test these, they get added later.
+    We also use generic functions to test these, they get added later.
     """
 
     def test_kdtree_knn_classification_batch(self):
@@ -102,6 +105,7 @@ gen_examples = [
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv', lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv', lambda r: r[1].prediction),
     ('gradient_boosted_classification_batch', 'gradient_boosted_classification_batch.csv', lambda r: r[1].prediction),
+    ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
     ('kmeans_batch', 'kmeans_batch.csv', 'centroids'),
     ('lbfgs_cr_entr_loss_batch', 'lbfgs_cr_entr_loss_batch.csv', 'minimum'),
     ('lbfgs_mse_batch', 'lbfgs_mse_batch.csv', 'minimum'),
@@ -129,6 +133,12 @@ gen_examples = [
                                                                                         r.variance,
                                                                                         r.standardDeviation,
                                                                                         r.variation))),
+    ('math_abs_batch',),
+    ('math_logistic_batch',),
+    ('math_relu_batch',),
+    ('math_smoothrelu_batch',),
+    ('math_softmax_batch',),
+    ('math_tanh_batch',),
     ('multivariate_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
     ('naive_bayes_batch', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
     ('naive_bayes_streaming', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
@@ -154,19 +164,22 @@ class TestExNpyArray(Base, unittest.TestCase):
         return ex.main(readcsv=np_read_csv)
 
 
-class TestExPandasDF(TestExNpyArray):
-    "We run and validate all the examples but read data with pandas, so working natively on a pandas DataFrame"
-    def call(self, ex):
-        return ex.main(readcsv=pd_read_csv)
+# class TestExPandasDF(Base, unittest.TestCase):
+#     "We run and validate all the examples but read data with pandas, so working natively on a pandas DataFrame"
+#     def call(self, ex):
+#         return ex.main(readcsv=pd_read_csv)
 
 
-class TestExCSRMatrix(TestExNpyArray):
+class TestExCSRMatrix(Base, unittest.TestCase):
     """
     We run and validate all the examples but use scipy-sparse-csr_matrix as input data.
     We also let algos use CSR method (some algos ignore the method argument since they do not specifically support CSR).
     """
     def call(self, ex):
         method = 'singlePassCSR' if any(x in ex.__name__ for x in ['low_order_moms', 'covariance']) else 'fastCSR'
+        # cannot use fastCSR ofr implicit als; bug in DAAL?
+        if 'implicit_als' in ex.__name__:
+            method = 'defaultDense'
         if hasattr(ex, 'dflt_method'):
             low_order_moms
             method = ex.dflt_method.replace('defaultDense', 'fastCSR').replace('Dense', 'CSR')
