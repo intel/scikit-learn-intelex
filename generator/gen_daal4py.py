@@ -905,7 +905,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
                                             'moments',
                                             'multi_class_classifier',
                                             'multinomial_naive_bayes',
-                                            'multivariate_outlier_detection',
+                                            'outlier_detection',
                                             'normalization',
                                             'optimization_solver',
                                             'pca',
