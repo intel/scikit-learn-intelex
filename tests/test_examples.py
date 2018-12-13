@@ -32,51 +32,28 @@ pd_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: pd.read_csv(f, usecol
 csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
 
 
-class TestExNpyArray(unittest.TestCase):
+def add_test(cls, e, f, attr, ver=(0,0)):
+    if daal_version < ver:
+        print(e+" not supported in this library version")
+    else:
+        import importlib
+        def testit(self):
+            testdata = np_read_csv(os.path.join(unittest_data_path, f))
+            ex = importlib.import_module(e)
+            result = self.call(ex)
+            self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata))
+        setattr(cls, 'test_'+e, testit)
+
+
+class Base():
     """
-    We run and validate all the examples but read data with numpy, so working natively on a numpy arrays.
     We use generic functions to test these, they get added later.
     """
-
-    def call(self, ex):
-        return ex.main(readcsv=np_read_csv)
 
     def test_kdtree_knn_classification_batch(self):
         import kdtree_knn_classification_batch as ex
         (_, predict_result, test_labels) = self.call(ex)
         self.assertTrue(np.count_nonzero(test_labels != predict_result.prediction) < 170)
-
-    @unittest.skipIf(daal_version < (2019, 1), "not supported in this library version")
-    def test_decision_forest_classification_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "decision_forest_classification_batch.csv"), range(1))
-        import decision_forest_classification_batch as ex
-        (_, predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    @unittest.skipIf(daal_version < (2019, 1), "not supported in this library version")
-    def test_decision_forest_regression_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "decision_forest_regression_batch.csv"), range(1))
-        import decision_forest_regression_batch as ex
-        (_, predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_decision_tree_classification_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "decision_tree_classification_batch.csv"), range(1))
-        import decision_tree_classification_batch as ex
-        (_, predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_decision_tree_regression_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "decision_tree_regression_batch.csv"), range(1))
-        import decision_tree_regression_batch as ex
-        (_, predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_gradient_boosted_classification_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "gradient_boosted_classification_batch.csv"), range(1))
-        import gradient_boosted_classification_batch as ex
-        (_, predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
 
     def test_gradient_boosted_regression_batch(self):
         testdata = np_read_csv(os.path.join(unittest_data_path, "gradient_boosted_regression_batch.csv"), range(1))
@@ -85,107 +62,11 @@ class TestExNpyArray(unittest.TestCase):
         #MSE
         self.assertTrue(np.square(predict_result.prediction - testdata).mean() < 1e-2)
 
-    def test_linear_regression_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "linear_regression_batch.csv"), range(2))
-        import linear_regression_batch as ex
-        (_, predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_linear_regression_stream(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "linear_regression_batch.csv"), range(2))
-        import linear_regression_streaming as ex
-        (_, predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_ridge_regression_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "ridge_regression_batch.csv"), range(2))
-        import ridge_regression_batch as ex
-        (predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_ridge_regression_stream(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "ridge_regression_batch.csv"), range(2))
-        import ridge_regression_streaming as ex
-        (predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_log_reg_binary_dense_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "log_reg_binary_dense_batch.csv"), range(1))
-        import log_reg_binary_dense_batch as ex
-        (_, predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_log_reg_dense_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "log_reg_dense_batch.csv"), range(1))
-        import log_reg_dense_batch as ex
-        (_, predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_low_order_moms_dense_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "low_order_moms_dense_batch.csv"), range(10))
-        import low_order_moms_dense_batch as ex
-        res = self.call(ex)
-        r = np.vstack((
-            res.minimum,
-            res.maximum,
-            res.sum,
-            res.sumSquares,
-            res.sumSquaresCentered,
-            res.mean,
-            res.secondOrderRawMoment,
-            res.variance,
-            res.standardDeviation,
-            res.variation
-        ))
-        self.assertTrue(np.allclose(r, testdata))
-
-    def test_low_order_moms_dense_stream(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "low_order_moms_dense_batch.csv"), range(10))
-        import low_order_moms_streaming as ex
-        res = self.call(ex)
-        r = np.vstack((
-            res.minimum,
-            res.maximum,
-            res.sum,
-            res.sumSquares,
-            res.sumSquaresCentered,
-            res.mean,
-            res.secondOrderRawMoment,
-            res.variance,
-            res.standardDeviation,
-            res.variation
-        ))
-        self.assertTrue(np.allclose(r, testdata))
-
-    def test_multivariate_outlier_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "multivariate_outlier_batch.csv"), range(1))
-        import multivariate_outlier_batch as ex
-        ( _,result) = self.call(ex)
-        self.assertTrue(np.allclose(result.weights, testdata))
-
-    def test_naive_bayes_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "naive_bayes_batch.csv"), range(1))
-        import naive_bayes_batch as ex
-        (predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_naive_bayes_stream(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "naive_bayes_batch.csv"), range(1))
-        import naive_bayes_streaming as ex
-        (predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
-
-    def test_pca_transform_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "pca_transform_batch.csv"), range(2))
-        import pca_transform_batch as ex
-        _, result = self.call(ex)
-        self.assertTrue(np.allclose(result.transformedData, testdata))
-
     def test_svd_batch(self):
         import svd_batch as ex
         (data, result) = self.call(ex)
         self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
-
+ 
     def test_svd_stream(self):
         import svd_streaming as ex
         result = self.call(ex)
@@ -200,49 +81,77 @@ class TestExNpyArray(unittest.TestCase):
         (predict_result, _) = self.call(ex)
         self.assertTrue(np.absolute(predict_result.prediction - testdata).max() < np.absolute(predict_result.prediction.max() - predict_result.prediction.min()) * 0.05)
 
-    def test_svm_multiclass_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "svm_multiclass_batch.csv"), range(1))
-        import svm_multiclass_batch as ex
-        (predict_result, _) = self.call(ex)
-        self.assertTrue(np.allclose(predict_result.prediction, testdata))
 
-    def test_univariate_outlier_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "univariate_outlier_batch.csv"), range(1))
-        import univariate_outlier_batch as ex
-        ( _,result) = self.call(ex)
-        self.assertTrue(np.allclose(result.weights, testdata))
+gen_examples = [
+    ('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
+    ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
+    ('correlation_distance_batch', 'correlation_distance_batch.csv', lambda r: [[np.amin(r.correlationDistance)],
+                                                                                [np.amax(r.correlationDistance)],
+                                                                                [np.mean(r.correlationDistance)],
+                                                                                [np.average(r.correlationDistance)]]),
+    ('cosine_distance_batch', 'cosine_distance_batch.csv', lambda r: [[np.amin(r.cosineDistance)],
+                                                                      [np.amax(r.cosineDistance)],
+                                                                      [np.mean(r.cosineDistance)],
+                                                                      [np.average(r.cosineDistance)]]),
+    #('gradient_boosted_regression_batch', 'gradient_boosted_regression_batch.csv', lambda x: x[1].prediction),
+    ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
+    ('covariance_batch', 'covariance.csv', 'covariance'),
+    ('covariance_streaming', 'covariance.csv', 'covariance'),
+    ('decision_forest_classification_batch', 'decision_forest_classification_batch.csv', lambda r: r[1].prediction, (2019, 1)),
+    ('decision_forest_regression_batch', 'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2019, 1)),
+    ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv', lambda r: r[1].prediction),
+    ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv', lambda r: r[1].prediction),
+    ('gradient_boosted_classification_batch', 'gradient_boosted_classification_batch.csv', lambda r: r[1].prediction),
+    ('kmeans_batch', 'kmeans_batch.csv', 'centroids'),
+    ('lbfgs_cr_entr_loss_batch', 'lbfgs_cr_entr_loss_batch.csv', 'minimum'),
+    ('lbfgs_mse_batch', 'lbfgs_mse_batch.csv', 'minimum'),
+    ('linear_regression_batch', 'linear_regression_batch.csv', lambda r: r[1].prediction),
+    ('linear_regression_streaming', 'linear_regression_batch.csv', lambda r: r[1].prediction),
+    ('log_reg_binary_dense_batch', 'log_reg_binary_dense_batch.csv', lambda r: r[1].prediction),
+    ('log_reg_dense_batch', 'log_reg_dense_batch.csv', lambda r: r[1].prediction),
+    ('low_order_moms_dense_batch', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
+                                                                                          r.maximum,
+                                                                                          r.sum,
+                                                                                          r.sumSquares,
+                                                                                          r.sumSquaresCentered,
+                                                                                          r.mean,
+                                                                                          r.secondOrderRawMoment,
+                                                                                          r.variance,
+                                                                                          r.standardDeviation,
+                                                                                          r.variation))),
+    ('low_order_moms_streaming', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
+                                                                                        r.maximum,
+                                                                                        r.sum,
+                                                                                        r.sumSquares,
+                                                                                        r.sumSquaresCentered,
+                                                                                        r.mean,
+                                                                                        r.secondOrderRawMoment,
+                                                                                        r.variance,
+                                                                                        r.standardDeviation,
+                                                                                        r.variation))),
+    ('multivariate_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
+    ('naive_bayes_batch', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
+    ('naive_bayes_streaming', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
+    ('pca_batch', 'pca_batch.csv', 'eigenvectors'),
+    ('pca_transform_batch', 'pca_transform_batch.csv', lambda r: r[1].transformedData),
+    ('ridge_regression_batch', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
+    ('ridge_regression_streaming', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
+    ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
+    ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),
+    ('svm_multiclass_batch', 'svm_multiclass_batch.csv', lambda r: r[0].prediction),
+    ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
+]
 
+for example in gen_examples:
+    add_test(Base, *example)
+    
 
-def add_simple(cls, e, f, attr):
-    import importlib
-    def testit(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, f))
-        ex = importlib.import_module(e)
-        result = self.call(ex)
-        self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata))
-    setattr(cls, 'test_'+e, testit)
-
-
-for e in [('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
-          ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
-          ('correlation_distance_batch', 'correlation_distance_batch.csv', lambda r: [[np.amin(r.correlationDistance)],
-                                                                                      [np.amax(r.correlationDistance)],
-                                                                                      [np.mean(r.correlationDistance)],
-                                                                                      [np.average(r.correlationDistance)]]),
-          ('cosine_distance_batch', 'cosine_distance_batch.csv', lambda r: [[np.amin(r.cosineDistance)],
-                                                                            [np.amax(r.cosineDistance)],
-                                                                            [np.mean(r.cosineDistance)],
-                                                                            [np.average(r.cosineDistance)]]),
-          ('covariance_batch', 'covariance.csv', 'covariance'),
-          ('covariance_streaming', 'covariance.csv', 'covariance'),
-          ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
-          ('kmeans_batch', 'kmeans_batch.csv', 'centroids'),
-          ('lbfgs_cr_entr_loss_batch', 'lbfgs_cr_entr_loss_batch.csv', 'minimum'),
-          ('lbfgs_mse_batch', 'lbfgs_mse_batch.csv', 'minimum'),
-          ('pca_batch', 'pca_batch.csv', 'eigenvectors'),
-          ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
-          ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),]:
-    add_simple(TestExNpyArray, *e)
+class TestExNpyArray(Base, unittest.TestCase):
+    """
+    We run and validate all the examples but read data with numpy, so working natively on a numpy arrays.
+    """
+    def call(self, ex):
+        return ex.main(readcsv=np_read_csv)
 
 
 class TestExPandasDF(TestExNpyArray):
