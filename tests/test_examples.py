@@ -164,10 +164,10 @@ class TestExNpyArray(Base, unittest.TestCase):
         return ex.main(readcsv=np_read_csv)
 
 
-# class TestExPandasDF(Base, unittest.TestCase):
-#     "We run and validate all the examples but read data with pandas, so working natively on a pandas DataFrame"
-#     def call(self, ex):
-#         return ex.main(readcsv=pd_read_csv)
+class TestExPandasDF(Base, unittest.TestCase):
+    "We run and validate all the examples but read data with pandas, so working natively on a pandas DataFrame"
+    def call(self, ex):
+        return ex.main(readcsv=pd_read_csv)
 
 
 class TestExCSRMatrix(Base, unittest.TestCase):
