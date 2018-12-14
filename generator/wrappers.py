@@ -445,6 +445,7 @@ no_warn = {
     'algorithms::qr::Batch': ['ParameterType',],
     'algorithms::ridge_regression': ['Result',],
     'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
+    'algorithms::sorting::Batch': ['ParameterType',],
     'algorithms::svm': ['Result',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
 }

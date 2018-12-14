@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py quantiles example for shared memory systems
+# daal4py sorting example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -31,10 +31,10 @@ except:
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infile = "./data/batch/quantiles.csv"
+    infile = "./data/batch/sorting.csv"
 
-    # configure a quantiles object
-    algo = d4p.quantiles()
+    # configure a sorting object
+    algo = d4p.sorting()
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
@@ -43,13 +43,14 @@ def main(readcsv=read_csv, method='defaultDense'):
     data = readcsv(infile)
     result2 = algo.compute(data)
 
-    # QUANTILES result objects provide quantiles
-    assert np.allclose(result1.quantiles, result2.quantiles)
+    # sorting result objects provide sortedData
+    assert np.allclose(result1.sortedData, result2.sortedData)
+    assert np.allclose(result1.sortedData, np.sort(data.toarray() if hasattr(data, 'toarray') else data, axis=0))
 
     return result1
 
 
 if __name__ == "__main__":
     result = main()
-    print("Quantiles:\n", result.quantiles)
+    print("Sorted matrix of observations:\n", result.sortedData)
     print('All looks good!')

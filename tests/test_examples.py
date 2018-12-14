@@ -155,6 +155,7 @@ gen_examples = [
     ('ridge_regression_streaming', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
     ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
     ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),
+    ('sorting_batch',),
     ('svm_multiclass_batch', 'svm_multiclass_batch.csv', lambda r: r[0].prediction),
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
 ]
@@ -183,6 +184,9 @@ class TestExCSRMatrix(Base, unittest.TestCase):
     We also let algos use CSR method (some algos ignore the method argument since they do not specifically support CSR).
     """
     def call(self, ex):
+        # some algos do not support CSR matrices
+        if  ex.__name__.startswith('sorting'):
+            self.skipTest("not supporting CSR")
         method = 'singlePassCSR' if any(x in ex.__name__ for x in ['low_order_moms', 'covariance']) else 'fastCSR'
         # cannot use fastCSR ofr implicit als; bug in DAAL?
         if 'implicit_als' in ex.__name__:

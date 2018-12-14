@@ -912,6 +912,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
                                             'quantiles',
                                             'qr',
                                             'ridge_regression',
+                                            'sorting',
                                             'svd',
                                             'svm',
                                             'univariate_outlier_detection',
