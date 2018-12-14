@@ -122,6 +122,8 @@ ignore = {
     'algorithms::optimization_solver::objective_function': [],
     'algorithms::optimization_solver::iterative_solver': [],
     'algorithms::normalization::minmax': ['moments'],
+    'algorithms::stump::training': ['weights'],
+    'algorithms::stump::prediction': ['ParameterType'],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -446,8 +448,10 @@ no_warn = {
     'algorithms::ridge_regression': ['Result',],
     'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
     'algorithms::sorting::Batch': ['ParameterType',],
+    'algorithms::stump': ['Result',],
     'algorithms::svm': ['Result',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
+    'algorithms::weak_learner': ['Result',],
 }
 
 # we need to be more specific about numeric table types for the lowering phase in HPAT

@@ -618,21 +618,21 @@ class cython_interface(object):
                     if fcls in no_constructor:
                         parms = no_constructor[fcls]
                     else:
+                        qual_cls = '::'.join([ns, mode])
                         if 'ParameterType' in self.namespace_dict[ns].classes[cls].typedefs:
-                            p = self.get_class_for_typedef(ns, cls, 'ParameterType')
-                            parms = self.get_all_attrs(p[0], p[1], 'members', ns) if p else None
-                            if not parms:
-                                if ns in fallbacks and 'ParameterType' in fallbacks[ns]:
-                                    parms = self.get_all_attrs(*(splitns(fallbacks[ns]['ParameterType']) + ['members', ns]))
-                            tmp = '::'.join([ns, mode])
-                            if not parms:
-                                tmp = '::'.join([ns, mode])
-                                if tmp not in no_warn or 'ParameterType' not in no_warn[tmp]:
-                                    print('// Warning: no members of "ParameterType" found for ' + tmp)
+                            if not ignored(ns, 'ParameterType'):
+                                p = self.get_class_for_typedef(ns, cls, 'ParameterType')
+                                parms = self.get_all_attrs(p[0], p[1], 'members', ns) if p else None
+                                if not parms:
+                                    if ns in fallbacks and 'ParameterType' in fallbacks[ns]:
+                                        parms = self.get_all_attrs(*(splitns(fallbacks[ns]['ParameterType']) + ['members', ns]))
+                                if not parms:
+                                    if qual_cls not in no_warn or 'ParameterType' not in no_warn[qual_cls]:
+                                        print('// Warning: no members of "ParameterType" found for ' + qual_cls)
+                            # else nothing to do, we ignore the parameter
                         else:
-                            tmp = '::'.join([ns, mode])
-                            if tmp not in no_warn or 'ParameterType' not in no_warn[tmp]:
-                                print('// Warning: no "ParameterType" defined for ' + tmp)
+                            if qual_cls not in no_warn or 'ParameterType' not in no_warn[qual_cls]:
+                                print('// Warning: no "ParameterType" defined for ' + qual_cls)
                                 parms = None
                         if parms:
                             p = self.get_all_attrs(ns, cls, 'members')
@@ -913,9 +913,11 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
                                             'qr',
                                             'ridge_regression',
                                             'sorting',
+                                            'stump',
                                             'svd',
                                             'svm',
                                             'univariate_outlier_detection',
+                                            'weak_learner',
     ], no_dist, no_stream)
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:

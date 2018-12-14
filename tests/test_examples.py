@@ -156,6 +156,7 @@ gen_examples = [
     ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
     ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),
     ('sorting_batch',),
+    ('stump_batch',),
     ('svm_multiclass_batch', 'svm_multiclass_batch.csv', lambda r: r[0].prediction),
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
 ]
