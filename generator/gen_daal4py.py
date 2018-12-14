@@ -909,6 +909,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
                                             'normalization',
                                             'optimization_solver',
                                             'pca',
+                                            'quantiles',
                                             'qr',
                                             'ridge_regression',
                                             'svd',

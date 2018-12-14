@@ -148,6 +148,7 @@ gen_examples = [
     ('pca_batch', 'pca_batch.csv', 'eigenvectors'),
     ('pca_transform_batch', 'pca_transform_batch.csv', lambda r: r[1].transformedData),
     ('pivoted_qr_batch', 'pivoted_qr.csv', 'matrixR'),
+    ('quantiles_batch', 'quantiles.csv', 'quantiles'),
     ('qr_batch', 'qr.csv', 'matrixR'),
     ('qr_streaming', 'qr.csv', 'matrixR'),
     ('ridge_regression_batch', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
