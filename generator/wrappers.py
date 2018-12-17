@@ -21,6 +21,12 @@ from collections import defaultdict, OrderedDict, namedtuple
 # Note: even though listed under 'Batch', they are currently also used for 'Distributed'
 #  unless explicitly provided in a step spec.
 required = {
+    'algorithms::em_gmm': {
+        'Batch': [('nComponents', 'size_t')],
+    },
+    'algorithms::em_gmm::init': {
+        'Batch': [('nComponents', 'size_t')],
+    },
     'algorithms::kmeans': {
         'Batch': [('nClusters', 'size_t'), ('maxIterations', 'size_t')],
     },
@@ -124,6 +130,8 @@ ignore = {
     'algorithms::normalization::minmax': ['moments'],
     'algorithms::stump::training': ['weights'],
     'algorithms::stump::prediction': ['ParameterType'],
+    'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
+    'algorithms::pca': ['correlation'],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms

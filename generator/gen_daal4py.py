@@ -161,7 +161,7 @@ class cython_interface(object):
                         parsed_data = parse_header(header, cython_interface.ignores)
 
                     ns = cleanup_ns(fname, parsed_data['ns'])
-                    # Now let's update the namespace; more than one file might constribute to the same ns
+                    # Now let's update the namespace; more than one file might contribute to the same ns
                     if ns:
                         if ns not in self.namespace_dict:
                             self.namespace_dict[ns] = namespace(ns)
@@ -292,10 +292,15 @@ class cython_interface(object):
         if t.endswith('ModelPtr'):
             thens = self.get_ns(ns, t, attrs=['typedefs'])
             return ('daal::' + thens + '::ModelPtr', 'class', tns)
+        if t.endswith('ResultPtr'):
+            thens = self.get_ns(ns, t, attrs=['typedefs'])
+            return ('daal::' + thens + '::ResultPtr', 'class', tns)
         if t in ['data_management::NumericTablePtr'] or any(t == x[0] for x in ifaces.values()):
             return ('daal::' + t, 'class', tns)
         if t.endswith('KeyValueDataCollectionPtr'):
             return ('dict_NumericTablePtr', 'class', '')
+        if t.endswith('DataCollectionPtr'):
+            return ('list_NumericTablePtr', 'class', '')
         if 'Batch' in self.namespace_dict[ns].classes and t in self.namespace_dict[ns].classes['Batch'].typedefs:
             tns, tname = splitns(self.namespace_dict[ns].classes['Batch'].typedefs[t])
             return (self.namespace_dict[ns].classes['Batch'].typedefs[t], 'class', tns)
@@ -417,7 +422,8 @@ class cython_interface(object):
                     print("// Warning: ignoring " + ns + " " + str(hlt))
                     ignlist.append((ins, i))
             else:
-                print("// Warning: could not find hlt for " + ns + ' ' + cls + " " + i + " " + str(attrs[i]))
+                print("// Warning: could not find hlt for " + ns + ' ' + cls + " " + i + " " + str(attrs[i]) + '. Ignored.')
+                ignlist.append((ins, i))
         return (explist, ignlist)
 
 
@@ -437,7 +443,7 @@ class cython_interface(object):
             res = (ns, 'Result')
         if res and '_'.join(res) not in self.done:
             self.done.append('_'.join(res))
-            attrs = self.get_expand_attrs(res[0], res[1], 'sets')
+            attrs = self.get_expand_attrs(res[0], res[1], 'gets')
             if attrs and attrs[0]:
                 jparams = {'class_type': 'daal::' + res[0] + '::' + res[1] + 'Ptr',
                            'enum_gets': attrs[0],
@@ -654,7 +660,7 @@ class cython_interface(object):
                                 llt = self.to_lltype(parms[p])
                                 pval = None
                                 if hlt_type == 'enum':
-                                    thetype = hlt_ns + '::' + llt
+                                    thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
                                     #pval = '(' + hlt_ns + '::' + llt + ')string2enum(' + tmp + ', s2e_' + hlt_ns.replace('::', '_') + ')'
                                 else:
                                     thetype = (hlt if hlt else parms[p])
@@ -887,37 +893,39 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     iface = cython_interface(ipath)
     iface.read()
     print('Generating sources...')
-    cpp_h, cpp_cpp, pyx_file = iface.hlapi(['association_rules',
-                                            'cholesky',
-                                            'covariance',
-                                            'decision_forest',
-                                            'decision_tree',
-                                            'distance',
-                                            'engine',
-                                            'gbt',
-                                            'implicit_als',
-                                            'kdtree_knn_classification',
-                                            'kernel_function',
-                                            'kmeans',
-                                            'linear_regression',
-                                            'logistic_regression',
-                                            'math',
-                                            'moments',
-                                            'multi_class_classifier',
-                                            'multinomial_naive_bayes',
-                                            'outlier_detection',
-                                            'normalization',
-                                            'optimization_solver',
-                                            'pca',
-                                            'quantiles',
-                                            'qr',
-                                            'ridge_regression',
-                                            'sorting',
-                                            'stump',
-                                            'svd',
-                                            'svm',
-                                            'univariate_outlier_detection',
-                                            'weak_learner',
+    cpp_h, cpp_cpp, pyx_file = iface.hlapi([
+        'association_rules',
+        'cholesky',
+        'covariance',
+        'decision_forest',
+        'decision_tree',
+        'distance',
+        'em_gmm',
+        'engine',
+        'gbt',
+        'implicit_als',
+        'kdtree_knn_classification',
+        'kernel_function',
+        'kmeans',
+        'linear_regression',
+        'logistic_regression',
+        'math',
+        'moments',
+        'multi_class_classifier',
+        'multinomial_naive_bayes',
+        'normalization',
+        'optimization_solver',
+        'outlier_detection',
+        'pca',
+        'qr',
+        'quantiles',
+        'ridge_regression',
+        'sorting',
+        'stump',
+        'svd',
+        'svm',
+        'univariate_outlier_detection',
+        'weak_learner',
     ], no_dist, no_stream)
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:

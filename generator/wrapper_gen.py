@@ -117,14 +117,19 @@ cdef extern from "daal4py.h":
     cdef cppclass table_or_flist :
         table_or_flist(PyObject *) except +
 
+    cdef cppclass list_NumericTablePtr:
+        pass
+
     cdef cppclass dict_NumericTablePtr:
         pass
 
     cdef std_string to_std_string(PyObject * o) except +
 
     cdef PyObject * make_nda(NumericTablePtr * nt_ptr) except +
+    cdef PyObject * make_nda(list_NumericTablePtr * nt_ptr) except +
     cdef PyObject * make_nda(dict_NumericTablePtr * nt_ptr, void *) except +
     cdef NumericTablePtr * make_nt(PyObject * nda) except +
+    cdef list_NumericTablePtr * make_datacoll(PyObject * nda) except +
     cdef dict_NumericTablePtr * make_dnt(PyObject * nda, void *) except +
 
     cdef T* dynamicPointerPtrCast[T,U](U*)
@@ -268,6 +273,7 @@ cdef class {{flatname}}:
 
     @property
     def {{m[1]}}(self):
+        '''{{rtype}}'''
 {% if ('Ptr' in rtype and 'NumericTablePtr' not in rtype) or '__iface__' in rtype %}
 {% set frtype=(rtype.strip(' *&')|flat(False)|strip(' *')).replace('Ptr', '')|lower %}
         ':type: {{frtype}}'

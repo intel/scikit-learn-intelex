@@ -83,6 +83,7 @@ class cpp_class(object):
         self.members = OrderedDict() # dictionary mapping member names to their types
         self.sets = OrderedDict() # dictionary mapping set enum type to input type
         self.arg_sets = OrderedDict() # dictionary mapping set enum type to input type and argument
+        self.arg_gets = OrderedDict() # dictionary mapping set enum type to input type and argument
         self.setgets = []         # set and get methods, formatted for %rename
         self.gets = {}            # getXXX methods and return type
         self.templates = []       # template member functions
@@ -203,17 +204,28 @@ class setget_parser(object):
             if mgs:
                 ctxt.gdict['classes'][ctxt.curr_class].setgets.append([mgs.group(4), mgs.group(2), mgs.group(6), mgs.group(3)])
                 # map input-enum to object-type and optional arg
-                # gets are easier to parse, we assume we have a set for every get
-                if mgs.group(4) == 'get':
+                if mgs.group(4) == 'get': # a getter
+                    name = mgs.group(6).strip()
                     if(',' in mgs.group(3)):
                         arg = mgs.group(3).strip(')').split(',')[1].strip().split(' ')
-                        ctxt.gdict['classes'][ctxt.curr_class].arg_sets[mgs.group(6).strip()] = (mgs.group(2).strip(), arg)
+                        ctxt.gdict['classes'][ctxt.curr_class].arg_gets[name] = (mgs.group(2).strip(), arg)
                     else:
-                        ctxt.gdict['classes'][ctxt.curr_class].sets[mgs.group(6).strip()] = mgs.group(2).strip()
+                        ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(2).strip()
+                else: # a setter
+                    args = mgs.group(3).split('{')[0].strip(')').strip().split(',')
+                    name = mgs.group(6).strip()
+                    typ  = args[-1].replace('const', '').strip().split(' ')[0].strip()
+                    if len(args) > 2:
+                        val  = args[1].strip().split(' ')
+                        ctxt.gdict['classes'][ctxt.curr_class].arg_sets[name] = (typ, val)
+                    else:
+                        ctxt.gdict['classes'][ctxt.curr_class].sets[name] = typ
                 return True
             mgs = re.match(r'\s*(?:virtual\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*\)', l)
             if mgs:
-                ctxt.gdict['classes'][ctxt.curr_class].gets[mgs.group(4)] = mgs.group(1)
+                name = mgs.group(4)
+                if name not in ['getSerializationTag']:
+                    ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(1)
                 return True
             # some get-methods accept an argument!
             # We support only a single argument for now, and only simple types like int, size_t etc, no refs, no pointers

@@ -66,9 +66,11 @@ def cy_callext(arg, typ_cy, typ_cyext, s2e=None):
         return 'mk_table_or_flist({0})'.format(arg)
     if 'dict_numerictable' in typ_cy:
         return 'make_dnt(<PyObject *>' + arg + ((', ' + s2e) if s2e else '') + ')'
+    if 'list_numerictable' in typ_cy:
+        return 'make_datacoll(<PyObject *>' + arg + ')'
     if 'numerictable' in typ_cy:
         return 'make_nt(<PyObject *>' + arg + ')'
-    if any(typ_cy.endswith(x) for x in ['__iface__', 'model']):
+    if any(typ_cy.endswith(x) for x in ['__iface__', 'model', '_result']):
         return arg + '.c_ptr if ' + arg + ' != None else <' + typ_cyext + ' *>0'
     if 'std_string' in typ_cy:
         return 'to_std_string(<PyObject *>' + arg + ')'

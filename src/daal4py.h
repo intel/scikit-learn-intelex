@@ -210,12 +210,15 @@ const float NaN32 = std::numeric_limits<float>::quiet_NaN();
 
 typedef daal::data_management::DataCollectionPtr data_management_DataCollectionPtr;
 typedef daal::data_management::NumericTablePtr data_management_NumericTablePtr;
+typedef daal::data_management::DataCollectionPtr list_NumericTablePtr;
 typedef daal::data_management::KeyValueDataCollectionPtr dict_NumericTablePtr;
 
 extern "C" void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data, size_t * dims, char dtype = 0);
 extern PyObject * make_nda(daal::data_management::NumericTablePtr * nt_ptr);
+extern PyObject * make_nda(daal::data_management::DataCollectionPtr * nt_ptr);
 extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * nt_ptr, const i2str_map_t &);
 extern daal::data_management::NumericTablePtr * make_nt(PyObject * nda);
+extern daal::data_management::DataCollectionPtr * make_datacoll(PyObject * nda);
 extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t &);
 
 extern const daal::data_management::NumericTablePtr readCSV(const std::string& fname);
