@@ -21,7 +21,7 @@ import numpy as np
 
 from scipy import sparse as sp
 from sklearn.utils import check_random_state, check_X_y
-from sklearn.svm.classes import BaseSVC, SVC
+import sklearn.svm.classes
 import warnings
 
 import daal4py
@@ -472,8 +472,7 @@ def predict(self, X):
     return self.classes_.take(np.asarray(y, dtype=np.intp))
 
 
-class SVC_daal4py(BaseSVC):
-    __doc__ = SVC.__doc__
+class SVC_daal4py(sklearn.svm.classes.BaseSVC):
     _impl = 'c_svc'
 
     def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto_deprecated',
@@ -494,3 +493,6 @@ SVC_daal4py.fit = fit
 SVC_daal4py.predict = predict
 SVC_daal4py._dual_coef_ = property(_dual_coef_getter, _dual_coef_setter)
 SVC_daal4py._intercept_ = property(_intercept_getter, _intercept_setter)
+SVC_daal4py.__doc__ = sklearn.svm.classes.SVC.__doc__
+SVC_daal4py.__name__ = sklearn.svm.classes.SVC.__name__
+SVC_daal4py.__qualname__ = sklearn.svm.classes.SVC.__qualname__
