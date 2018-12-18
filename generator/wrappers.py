@@ -33,7 +33,6 @@ def get_algos(ver):
         'linear_regression',
         'logistic_regression',
         'math',
-        'moments',
         'multi_class_classifier',
         'multinomial_naive_bayes',
         'normalization',
@@ -52,6 +51,7 @@ def get_algos(ver):
         algos += [
             'boost',
             'covariance',
+            'moments',
         ]
     return algos
 
