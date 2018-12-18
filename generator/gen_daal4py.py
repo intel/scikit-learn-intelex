@@ -179,7 +179,6 @@ class cython_interface(object):
                         if parsed_data['need_methods']:
                             self.namespace_dict[ns].need_methods = True
 
-
 ###############################################################################
 # Postprocessing starts here
 ###############################################################################
@@ -306,6 +305,8 @@ class cython_interface(object):
             return (self.namespace_dict[ns].classes['Batch'].typedefs[t], 'class', tns)
         tt = re.sub(r'(?<!daal::)services::SharedPtr', r'daal::services::SharedPtr', t)
         tt = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', tt)
+        tt = re.sub(r'SharedPtr<classifier::', r'SharedPtr<daal::algorithms::classifier::', tt)
+        tt = re.sub(r'SharedPtr<regression::', r'SharedPtr<daal::algorithms::regression::', tt)
         if any(tt == x[0] for x in ifaces.values()):
             return (tt, 'class', tns)
         tns = self.get_ns(ns, t)
@@ -811,12 +812,12 @@ class cython_interface(object):
 
         algos = [x for x in self.namespace_dict if any(y in x for y in algo_patterns)] if algo_patterns else self.namespace_dict
         algos = [x for x in algos if not any(y in x for y in ['quality_metric'])]
-
+        algos += ['algorithms::classifier', 'algorithms::regression', 'algorithms::linear_model',]
         # First expand typedefs
-        for ns in algos + ['algorithms::classifier', 'algorithms::linear_model',]:
+        for ns in algos:
             self.expand_typedefs(ns)
         # Next, extract and prepare the data (input, parameters, results, template spec)
-        for ns in algos + ['algorithms::classifier', 'algorithms::linear_model',]:
+        for ns in algos:
             if not ignored(ns):
                 nn = ns.split('::')
                 if nn[0] == 'daal':
@@ -897,6 +898,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
         'association_rules',
         'cholesky',
         'covariance',
+        'boost',
         'decision_forest',
         'decision_tree',
         'distance',

@@ -86,9 +86,11 @@ class Base():
 
 
 gen_examples = [
+    ('adaboost_batch',),
     ('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
     ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
     ('bacon_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
+    ('brownboost_batch',),
     ('correlation_distance_batch', 'correlation_distance_batch.csv', lambda r: [[np.amin(r.correlationDistance)],
                                                                                 [np.amax(r.correlationDistance)],
                                                                                 [np.mean(r.correlationDistance)],
@@ -115,6 +117,7 @@ gen_examples = [
     ('linear_regression_streaming', 'linear_regression_batch.csv', lambda r: r[1].prediction),
     ('log_reg_binary_dense_batch', 'log_reg_binary_dense_batch.csv', lambda r: r[1].prediction),
     ('log_reg_dense_batch', 'log_reg_dense_batch.csv', lambda r: r[1].prediction),
+    ('logitboost_batch',),
     ('low_order_moms_dense_batch', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
                                                                                           r.maximum,
                                                                                           r.sum,

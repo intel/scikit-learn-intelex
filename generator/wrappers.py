@@ -66,6 +66,12 @@ required = {
     'algorithms::decision_forest::classification::prediction': {
         'Batch': [('nClasses', 'size_t')],
     },
+    'algorithms::logitboost::prediction': {
+        'Batch': [('nClasses', 'size_t')],
+    },
+    'algorithms::logitboost::training': {
+        'Batch': [('nClasses', 'size_t')],
+    },
     'algorithms::optimization_solver::mse': {
         'Batch': [('numberOfTerms', 'size_t')],
     },
@@ -106,18 +112,24 @@ add_setup = [
 # List them here for the 'ignoring' algos.
 # Also lists input set/gets to ignore
 ignore = {
+    'algorithms::adaboost::training': ['weights'],
+    'algorithms::brownboost::training': ['weights'],
+    'algorithms::logitboost::training': ['weights'],
     'algorithms::svm::training': ['weights'],
     'algorithms::kdtree_knn_classification::training': ['weights'],
     'algorithms::multi_class_classifier::training': ['weights'],
     'algorithms::multinomial_naive_bayes::training': ['weights'],
     'algorithms::kmeans::init': ['nRowsTotal', 'offset',],
-    'algorithms::gbt::regression::training': ['dependentVariables'],
+    'algorithms::gbt::regression::training': ['dependentVariables', 'weights'],
     'algorithms::gbt::classification::training': ['weights',],
     'algorithms::logistic_regression::training': ['weights',],
     'algorithms::decision_tree::classification::training': ['weights',],
+    'algorithms::decision_tree::regression::training': ['weights',],
     'algorithms::decision_forest::classification::training': ['weights', 'updatedEngine',],
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', 'updatedEngine',],
+    'algorithms::linear_regression::training': ['weights',],
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',],
+    'algorithms::ridge_regression::training': ['weights',],
     'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',],
     'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
                                              'pastUpdateVector', 'pastWorkValue'],
@@ -129,6 +141,8 @@ ignore = {
     'algorithms::optimization_solver::iterative_solver': [],
     'algorithms::normalization::minmax': ['moments'],
     'algorithms::stump::training': ['weights'],
+    'algorithms::stump::classification::training': ['weights'],
+    'algorithms::stump::regression::training': ['weights'],
     'algorithms::stump::prediction': ['ParameterType'],
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
     'algorithms::pca': ['correlation'],
@@ -144,6 +158,8 @@ ifaces = {
     'engines::FamilyBatchBase': ('daal::algorithms::engines::EnginePtr', 'daal::algorithms::engines::EnginePtr'),
     'optimization_solver::sum_of_functions::Batch': ('daal::algorithms::optimization_solver::sum_of_functions::BatchPtr', None),
     'optimization_solver::iterative_solver::Batch': ('daal::algorithms::optimization_solver::iterative_solver::BatchPtr', None),
+    'regression::training::Batch': ('daal::services::SharedPtr<daal::algorithms::regression::training::Batch>', None),
+    'regression::prediction::Batch': ('daal::services::SharedPtr<daal::algorithms::regression::prediction::Batch>', None),
 }
 
 # By default input arguments have no default value (e.g. they are required).
@@ -413,6 +429,9 @@ specialized = {
 }
 
 no_warn = {
+    'algorithms::adaboost': ['Result',],
+    'algorithms::boosting': ['Result',],
+    'algorithms::brownboost': ['Result',],
     'algorithms::cholesky::Batch': ['ParameterType',],
     'algorithms::classifier': ['Result',],
     'algorithms::correlation_distance::Batch': ['ParameterType',],
@@ -451,12 +470,17 @@ no_warn = {
     'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::normalization': ['Result',],
     'algorithms::normalization::zscore::Batch': ['ParameterType',],
+    'algorithms::logitboost': ['Result',],
     'algorithms::optimization_solver': ['Result',],
     'algorithms::qr::Batch': ['ParameterType',],
+    'algorithms::regression': ['Result',],
     'algorithms::ridge_regression': ['Result',],
     'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
     'algorithms::sorting::Batch': ['ParameterType',],
     'algorithms::stump': ['Result',],
+    'algorithms::stump::classification': ['Result',],
+    'algorithms::stump::regression': ['Result',],
+    'algorithms::stump::regression::prediction::Batch': ['ParameterType'],
     'algorithms::svm': ['Result',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::weak_learner': ['Result',],
