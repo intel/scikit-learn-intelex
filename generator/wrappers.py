@@ -16,6 +16,45 @@
 
 from collections import defaultdict, OrderedDict, namedtuple
 
+def get_algos(ver):
+    algos = [
+        'association_rules',
+        'cholesky',
+        'decision_forest',
+        'decision_tree',
+        'distance',
+        'em_gmm',
+        'engine',
+        'gbt',
+        'implicit_als',
+        'kdtree_knn_classification',
+        'kernel_function',
+        'kmeans',
+        'linear_regression',
+        'logistic_regression',
+        'math',
+        'moments',
+        'multi_class_classifier',
+        'multinomial_naive_bayes',
+        'normalization',
+        'optimization_solver',
+        'outlier_detection',
+        'pca',
+        'qr',
+        'quantiles',
+        'ridge_regression',
+        'sorting',
+        'svd',
+        'svm',
+        'univariate_outlier_detection',
+    ]
+    if ver > (2019, 1):
+        algos += [
+            'boost',
+            'covariance',
+        ]
+    return algos
+
 # Listing requried parameters for each algorithm.
 # They are used to initialize the algorithm object instead of gettings set explicitly.
 # Note: even though listed under 'Batch', they are currently also used for 'Distributed'
@@ -140,10 +179,6 @@ ignore = {
     'algorithms::optimization_solver::objective_function': [],
     'algorithms::optimization_solver::iterative_solver': [],
     'algorithms::normalization::minmax': ['moments'],
-    'algorithms::stump::training': ['weights'],
-    'algorithms::stump::classification::training': ['weights'],
-    'algorithms::stump::regression::training': ['weights'],
-    'algorithms::stump::prediction': ['ParameterType'],
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
     'algorithms::pca': ['correlation'],
 }
@@ -477,10 +512,6 @@ no_warn = {
     'algorithms::ridge_regression': ['Result',],
     'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
     'algorithms::sorting::Batch': ['ParameterType',],
-    'algorithms::stump': ['Result',],
-    'algorithms::stump::classification': ['Result',],
-    'algorithms::stump::regression': ['Result',],
-    'algorithms::stump::regression::prediction::Batch': ['ParameterType'],
     'algorithms::svm': ['Result',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::weak_learner': ['Result',],

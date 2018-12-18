@@ -28,8 +28,8 @@ from pprint import pformat, pprint
 from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
-from .parse import parse_header
-from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks, add_setup, enum_maps
+from .parse import parse_header, parse_version
+from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks, add_setup, enum_maps, get_algos
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 
@@ -178,6 +178,12 @@ class cython_interface(object):
                         self.namespace_dict[ns].headers.append(fname.replace(self.include_root, '').lstrip('/'))
                         if parsed_data['need_methods']:
                             self.namespace_dict[ns].need_methods = True
+
+        with open(jp(self.include_root, '..', 'services', 'library_version_info.h')) as header:
+            v = parse_version(header)
+            self.version = (int(v[0]), int(v[2]))
+            print('Found DAAL version {}.{}'.format(*self.version))
+
 
 ###############################################################################
 # Postprocessing starts here
@@ -811,7 +817,7 @@ class cython_interface(object):
         algoconfig = {}
 
         algos = [x for x in self.namespace_dict if any(y in x for y in algo_patterns)] if algo_patterns else self.namespace_dict
-        algos = [x for x in algos if not any(y in x for y in ['quality_metric'])]
+        algos = [x for x in algos if not any(y in x for y in ['quality_metric', 'boosting'])]
         algos += ['algorithms::classifier', 'algorithms::regression', 'algorithms::linear_model',]
         # First expand typedefs
         for ns in algos:
@@ -894,41 +900,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     iface = cython_interface(ipath)
     iface.read()
     print('Generating sources...')
-    cpp_h, cpp_cpp, pyx_file = iface.hlapi([
-        'association_rules',
-        'cholesky',
-        'covariance',
-        'boost',
-        'decision_forest',
-        'decision_tree',
-        'distance',
-        'em_gmm',
-        'engine',
-        'gbt',
-        'implicit_als',
-        'kdtree_knn_classification',
-        'kernel_function',
-        'kmeans',
-        'linear_regression',
-        'logistic_regression',
-        'math',
-        'moments',
-        'multi_class_classifier',
-        'multinomial_naive_bayes',
-        'normalization',
-        'optimization_solver',
-        'outlier_detection',
-        'pca',
-        'qr',
-        'quantiles',
-        'ridge_regression',
-        'sorting',
-        'stump',
-        'svd',
-        'svm',
-        'univariate_outlier_detection',
-        'weak_learner',
-    ], no_dist, no_stream)
+    cpp_h, cpp_cpp, pyx_file = iface.hlapi(get_algos(iface.version), no_dist, no_stream)
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:
         f.write(cpp_h)
