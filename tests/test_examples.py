@@ -33,19 +33,17 @@ csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_c
 
 
 def add_test(cls, e, f=None, attr=None, ver=(0,0)):
-    if daal_version < ver:
-        print(e+" not supported in this library version")
-    else:
-        import importlib
-        def testit(self):
-            ex = importlib.import_module(e)
-            result = self.call(ex)
-            if f and attr:
-                testdata = np_read_csv(os.path.join(unittest_data_path, f))
-                self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata, atol=1e-06))
-            else:
-                self.assertTrue(True)
-        setattr(cls, 'test_'+e, testit)
+    import importlib
+    @unittest.skipIf(daal_version < ver, "not supported in this library version")
+    def testit(self):
+        ex = importlib.import_module(e)
+        result = self.call(ex)
+        if f and attr:
+            testdata = np_read_csv(os.path.join(unittest_data_path, f))
+            self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata, atol=1e-06))
+        else:
+            self.assertTrue(True)
+    setattr(cls, 'test_'+e, testit)
 
 
 class Base():
@@ -86,11 +84,11 @@ class Base():
 
 
 gen_examples = [
-    ('adaboost_batch',),
+    ('adaboost_batch', None, None, (2019, 2)),
     ('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
     ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
     ('bacon_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
-    ('brownboost_batch',),
+    ('brownboost_batch', None, None, (2019, 2)),
     ('correlation_distance_batch', 'correlation_distance_batch.csv', lambda r: [[np.amin(r.correlationDistance)],
                                                                                 [np.amax(r.correlationDistance)],
                                                                                 [np.mean(r.correlationDistance)],
@@ -101,8 +99,8 @@ gen_examples = [
                                                                       [np.average(r.cosineDistance)]]),
     #('gradient_boosted_regression_batch', 'gradient_boosted_regression_batch.csv', lambda x: x[1].prediction),
     ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
-    ('covariance_batch', 'covariance.csv', 'covariance'),
-    ('covariance_streaming', 'covariance.csv', 'covariance'),
+    ('covariance_batch', 'covariance.csv', 'covariance', (2019, 2)),
+    ('covariance_streaming', 'covariance.csv', 'covariance', (2019, 2)),
     ('decision_forest_classification_batch', 'decision_forest_classification_batch.csv', lambda r: r[1].prediction, (2019, 1)),
     ('decision_forest_regression_batch', 'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2019, 1)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv', lambda r: r[1].prediction),
@@ -117,7 +115,7 @@ gen_examples = [
     ('linear_regression_streaming', 'linear_regression_batch.csv', lambda r: r[1].prediction),
     ('log_reg_binary_dense_batch', 'log_reg_binary_dense_batch.csv', lambda r: r[1].prediction),
     ('log_reg_dense_batch', 'log_reg_dense_batch.csv', lambda r: r[1].prediction),
-    ('logitboost_batch',),
+    ('logitboost_batch', None, None, (2019, 2)),
     ('low_order_moms_dense_batch', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
                                                                                           r.maximum,
                                                                                           r.sum,
@@ -127,7 +125,7 @@ gen_examples = [
                                                                                           r.secondOrderRawMoment,
                                                                                           r.variance,
                                                                                           r.standardDeviation,
-                                                                                          r.variation))),
+                                                                                          r.variation)), (2019, 2)),
     ('low_order_moms_streaming', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
                                                                                         r.maximum,
                                                                                         r.sum,
@@ -137,7 +135,7 @@ gen_examples = [
                                                                                         r.secondOrderRawMoment,
                                                                                         r.variance,
                                                                                         r.standardDeviation,
-                                                                                        r.variation))),
+                                                                                        r.variation)), (2019, 2)),
     ('math_abs_batch',),
     ('math_logistic_batch',),
     ('math_relu_batch',),
@@ -160,7 +158,6 @@ gen_examples = [
     ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
     ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),
     ('sorting_batch',),
-    ('stump_batch',),
     ('svm_multiclass_batch', 'svm_multiclass_batch.csv', lambda r: r[0].prediction),
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
 ]

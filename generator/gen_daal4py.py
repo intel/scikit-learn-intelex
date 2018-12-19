@@ -309,10 +309,12 @@ class cython_interface(object):
         if 'Batch' in self.namespace_dict[ns].classes and t in self.namespace_dict[ns].classes['Batch'].typedefs:
             tns, tname = splitns(self.namespace_dict[ns].classes['Batch'].typedefs[t])
             return (self.namespace_dict[ns].classes['Batch'].typedefs[t], 'class', tns)
-        tt = re.sub(r'(?<!daal::)services::SharedPtr', r'daal::services::SharedPtr', t)
-        tt = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', tt)
-        tt = re.sub(r'SharedPtr<classifier::', r'SharedPtr<daal::algorithms::classifier::', tt)
-        tt = re.sub(r'SharedPtr<regression::', r'SharedPtr<daal::algorithms::regression::', tt)
+        if 'services::SharedPtr' in t:
+            no_spt = re.sub(r'.*services::SharedPtr<(.*)>.*', r'\1', t).strip()
+            no_spt_ns = self.get_ns(ns, no_spt)
+            tt = 'daal::services::SharedPtr<daal::{}::{}>'.format(no_spt_ns, splitns(no_spt)[1])
+        else:
+            tt = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', t)
         if any(tt == x[0] for x in ifaces.values()):
             return (tt, 'class', tns)
         tns = self.get_ns(ns, t)
