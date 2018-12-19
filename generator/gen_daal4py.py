@@ -866,8 +866,8 @@ class cython_interface(object):
 
         hds = wg.gen_headers()
         fts = wg.gen_footers(no_dist, no_stream)
-
         pyx_end += fts[1]
+            
         # Finally combine the different sections and return the 3 strings
         return(hds[0] + cpp_map + cpp_begin + fts[2] + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
 
