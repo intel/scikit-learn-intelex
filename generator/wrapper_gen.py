@@ -753,13 +753,20 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         del self.c_ptr
 {% endif %}
 
+{% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
     def compute(self,
                 {{input_args|fmt('{}', 'decl_cy', sep=',\n')|indent(16)}},
                 setup=False):
+        '''
+        {{algo}}.compute({{input_args|fmt('{}', 'name', sep=', ')}})
+        Do the actual computation on provided input data.
+
+        {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
+        :rtype: {{cytype}}
+        '''
         if self.c_ptr == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
-{% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
@@ -783,6 +790,13 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # setup forwards to the C++ de-templatized manager__iface__::compute(..., setup_only=true)
     def setup(self,
              {{input_args|fmt('{}', 'decl_cy', sep=',\n')|indent(14)}}):
+        '''
+        {{algo}}.setup({{input_args|fmt('{}', 'name', sep=', ')}})
+        Setup (partial) input data for using algorithm object in other algorithms.
+
+        {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
+        :rtype: None
+        '''
         if self.c_ptr == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
