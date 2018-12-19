@@ -213,7 +213,7 @@ extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({
 {% for m in named_gets %}
 extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
 {
-    return RAW< {{m[0]}} >()((*obj_)->get{{m[1]}}());
+    return RAW< {{m[0]}} >()((*obj_)->get{{m[1]}}{{m[2]}}());
 }
 {% endfor %}
 {% for m in get_methods %}

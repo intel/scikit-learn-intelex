@@ -111,7 +111,7 @@ class cython_interface(object):
                'BatchContainer', 'OnlineContainer', 'DistributedContainer',
                'serializeImpl', 'deserializeImpl', 'serialImpl',
                'getEpsilonVal', 'getMinVal', 'getMaxVal', 'getPMMLNumType', 'getInternalNumType', 'getIndexNumType',
-               'allocateNumericTableImpl', 'allocateImpl',
+               'allocateNumericTableImpl', 'allocateImpl', 'allocate', 'initialize',
                'setPartialResultStorage', 'addPartialResultStorage',]
 
     # files we ignore/skip
@@ -487,7 +487,7 @@ class cython_interface(object):
             huhu = self.get_all_attrs(ns, mname, 'gets')
             for g in huhu:
                 # We have a few get-methods accepting parameters, we map them separately
-                if(type(huhu[g]) in [list,tuple]):
+                if type(huhu[g]) in [list,tuple] and len(huhu[g]) > 2:
                     rtyp, ptyp, pnm = huhu[g]
                     gn = splitns(g)[1].replace('get', '')
                     if '::' in rtyp:
@@ -495,11 +495,16 @@ class cython_interface(object):
                         rtyp = '::'.join(['daal::'+self.get_ns(ns, rtyp), ttyp])
                     jparams['get_methods'].append((rtyp, gn, ptyp, pnm))
                 else:
-                    if not any(g.endswith(x) for x in ['SerializationTag',]):
+                    if type(huhu[g]) in [list,tuple]:
+                        rtyp, sfx = huhu[g]
+                    else:
+                        rtyp = huhu[g]
+                        sfx = ''
+                    if not any(rtyp.endswith(x) for x in ['SerializationTag',]):
                         gn = splitns(g)[1].replace('get', '')
                         if not any(gn == x[1] for x in jparams['named_gets']):
-                            typ = re.sub(r'(?<!daal::)data_management', r'daal::data_management', huhu[g])
-                            jparams['named_gets'].append((typ, gn))
+                            typ = re.sub(r'(?<!daal::)data_management', r'daal::data_management', rtyp)
+                            jparams['named_gets'].append((typ, gn, sfx))
         return jparams
 
 

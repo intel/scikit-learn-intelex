@@ -43,14 +43,19 @@ def get_algos(ver):
         'quantiles',
         'ridge_regression',
         'sorting',
+        'stump::classification',  # stump itself is deprecated since 2019.2
+        'stump::regression',
         'svd',
         'svm',
         'univariate_outlier_detection',
     ]
+    # Note: boosting and weak_learner are deprecated since 2019.2, we just ignore them
     if ver > (2019, 1):
         algos += [
-            'boost',
+            'adaboost',
+            'brownboost',
             'covariance',
+            'logitboost',
             'moments',
         ]
     return algos
@@ -181,6 +186,8 @@ ignore = {
     'algorithms::normalization::minmax': ['moments'],
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
     'algorithms::pca': ['correlation'],
+    'algorithms::stump::classification::training': ['weights'],
+    'algorithms::stump::regression::training': ['weights'],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -513,6 +520,9 @@ no_warn = {
     'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
     'algorithms::sorting::Batch': ['ParameterType',],
     'algorithms::svm': ['Result',],
+    'algorithms::stump::classification': ['Result',],
+    'algorithms::stump::regression': ['Result',],
+    'algorithms::stump::regression::prediction::Batch': ['ParameterType',],
     'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
     'algorithms::weak_learner': ['Result',],
 }

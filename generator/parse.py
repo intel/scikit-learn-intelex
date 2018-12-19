@@ -70,6 +70,8 @@
 #     (except to end the class-def)
 #   - forward declarations for non-template classes/structs are ignored
 #     (such as "class myclass;")
+#   - template member functions for getting/setting values are only supported
+#     for a single template argument (fptype) and no parameters
 ###############################################################################
 ###############################################################################
 
@@ -197,13 +199,15 @@ class step_parser(object):
 class setget_parser(object):
     """Parse a set/get methods"""
     def parse(self, l, ctxt):
-        if ctxt.curr_class and ctxt.access and not ctxt.template:
+        if ctxt.curr_class and ctxt.access:
             mgs = re.match(r'\s*using .+::(get|set);', l)
             if mgs:
+                assert not ctxt.template
                 ctxt.gdict['classes'][ctxt.curr_class].setgets.append(l.strip(' ;'))
                 return True
             mgs = re.match(r'(\s*)([^\(=\s]+\s+)((get|set)(\(((\w|:)+).*\)))', l)
             if mgs:
+                assert not ctxt.template
                 ctxt.gdict['classes'][ctxt.curr_class].setgets.append([mgs.group(4), mgs.group(2), mgs.group(6), mgs.group(3)])
                 # map input-enum to object-type and optional arg
                 if mgs.group(4) == 'get': # a getter
@@ -223,12 +227,17 @@ class setget_parser(object):
                     else:
                         ctxt.gdict['classes'][ctxt.curr_class].sets[name] = typ
                 return True
-            mgs = re.match(r'\s*(?:virtual\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*\)', l)
+            mgs = re.match(r'\s*(?:(?:virtual|DAAL_EXPORT)\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*\)', l)
             if mgs:
                 name = mgs.group(4)
                 if name not in ['getSerializationTag']:
-                    ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(1)
-                return True
+                    if ctxt.template and name.startswith('get'):
+                        assert len(ctxt.template) == 1 and ctxt.template[0][1] == 'fptypes'
+                        ctxt.gdict['classes'][ctxt.curr_class].gets[name] = ('double', '<double>')
+                        return False
+                    else:
+                        ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(1)
+                        return True
             # some get-methods accept an argument!
             # We support only a single argument for now, and only simple types like int, size_t etc, no refs, no pointers
             mgs = re.match(r'\s*(?:virtual\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*((?:\w|_)+)\s+((?:\w|_)+)\s*\)', l)
@@ -341,6 +350,7 @@ class class_template_parser(object):
                 if m.group(5) not in ctxt.ignores:
                     ctxt.gdict['classes'][ctxt.curr_class].templates.append([ctxt.curr_class + '::' + m.group(5), ctxt.template])
                     ctxt.template = False
+                    return True
                 else:
                     pass
                 #error_template_string += fname + ':\n\tignoring ' + m.group(5)
