@@ -49,7 +49,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     lr = np.array([[0.01]], dtype=np.double)
     niters=100000
     saga_algo = d4p.optimization_solver_saga(nIterations=niters,
-                                             accuracyThreshold=0.00001,
+                                             accuracyThreshold=1e-5,
                                              batchSize=1,
                                              function=logloss_algo,
                                              learningRate=lr,
@@ -58,7 +58,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # finally do the computation
     inp = np.zeros((2, 1), dtype=np.double)
-    res = saga_algo.compute(inp, None)
+    res = saga_algo.compute(None, inp)
 
     # The Saga result provides minimum and nIterations
     assert res.minimum.shape == inp.shape and res.nIterations[0][0] <= niters
