@@ -23,10 +23,10 @@ import numpy as np
 
 def main(readcsv=None, method='defaultDense'):
 
-    # Create algorithm to create bernoulli data
+    # Create algorithm
     algorithm = d4p.distributions_bernoulli(0.5, engine=d4p.engines_mt19937(seed=777))
 
-    # Computed cosine distance with file or numpy array
+    # Create array and fill with bernoulli distribution
     data = np.zeros((1,10))
     res = algorithm.compute(data)
 
