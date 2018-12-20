@@ -18,21 +18,22 @@ from collections import defaultdict, OrderedDict, namedtuple
 
 def wrap_algo(algo, ver):
     # Note: boosting and weak_learner are deprecated since 2019.2, we just ignore them
-    if ver < (2019, 2) and algo in ['stump', 'adaboost', 'brownboost', 'covariance', 'logitboost', 'moments',]:
+    if ver < (2019, 2) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'covariance', 'logitboost', 'moments',]):
         return False
     # ignore depcerated version of stump
     if 'stump' in algo and not any(x in algo for x in ['stump::regression', 'stump::classification']):
         return False
     # other deprecated algos
-    if any(x in algo for x in ['boosting']):
+    if any(x in algo for x in ['boosting', 'weak_learner']):
         return False
     # ignore unneeded stuff
     if any(algo.endswith(x) for x in ['daal', 'algorithms',
                                       'linear_model::prediction', 'linear_model::training',
-                                      'classification::prediction', 'classification::training']):
+                                      'classification::prediction', 'classification::training',
+                                      'algorithms::tree_utils', 'algorithms::tree_utils::classification', 'algorithms::tree_utils::regression']):
         return False
     # ignore unsupported alogs
-    if any(x in algo for x in ['quality_metric', 'distributions']):
+    if any(x in algo for x in ['quality_metric',]):
         return False
     return True
 
@@ -41,6 +42,9 @@ def wrap_algo(algo, ver):
 # Note: even though listed under 'Batch', they are currently also used for 'Distributed'
 #  unless explicitly provided in a step spec.
 required = {
+    'algorithms::distributions::bernoulli': {
+        'Batch': [('p', 'double')],
+    },
     'algorithms::em_gmm': {
         'Batch': [('nComponents', 'size_t')],
     },
@@ -157,6 +161,8 @@ ignore = {
                                                'correctionPairs', 'correctionIndices', 'averageArgumentLIterations',],
     'algorithms::optimization_solver::adagrad': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
                                                  'gradientSquareSum'],
+    'algorithms::optimization_solver::saga': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
+                                             'gradientSum'],
     'algorithms::optimization_solver::objective_function': [],
     'algorithms::optimization_solver::iterative_solver': [],
     'algorithms::normalization::minmax': ['moments'],

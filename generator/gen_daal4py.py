@@ -294,6 +294,8 @@ class cython_interface(object):
             return (t, 'stdtype', '')
         if t in ['bool']:
             return ('bool', 'stdtype', '')
+        if t == 'algorithmFPType':
+            return ('double', 'stdtype', '')
         if t.endswith('ModelPtr'):
             thens = self.get_ns(ns, t, attrs=['typedefs'])
             return ('daal::' + thens + '::ModelPtr', 'class', tns)
