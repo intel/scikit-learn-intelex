@@ -58,7 +58,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # finally do the computation
     inp = np.zeros((2, 1), dtype=np.double)
-    res = saga_algo.compute(inp)
+    res = saga_algo.compute(inp, None)
 
     # The Saga result provides minimum and nIterations
     assert res.minimum.shape == inp.shape and res.nIterations[0][0] <= niters
