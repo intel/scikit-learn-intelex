@@ -62,6 +62,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # The Saga result provides minimum and nIterations
     assert res.minimum.shape == inp.shape and res.nIterations[0][0] <= niters
+    assert np.allclose(res.minimum, [[-0.17663868],[ 0.35893627]])
 
     return res
 
