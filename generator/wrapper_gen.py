@@ -114,8 +114,8 @@ cdef extern from "daal4py.h":
     cdef const double NaN64
     cdef const float  NaN32
 
-    cdef cppclass table_or_flist :
-        table_or_flist(PyObject *) except +
+    cdef cppclass data_or_file :
+        data_or_file(PyObject *) except +
 
     cdef cppclass list_NumericTablePtr:
         pass
@@ -170,12 +170,12 @@ def my_procid():
     return c_my_procid()
 
 
-cdef table_or_flist * mk_table_or_flist(object x):
+cdef data_or_file * mk_data_or_file(object x):
     if isinstance(x, pdDataFrame):
         x = [x.loc[:,i].values for i in x]
     elif isinstance(x, pdSeries):
         x = [x.values]
-    return new table_or_flist(<PyObject *>x)
+    return new data_or_file(<PyObject *>x)
 
 '''
 
@@ -273,17 +273,22 @@ cdef class {{flatname}}:
 
     @property
     def {{m[1]}}(self):
-        '''{{rtype}}'''
 {% if ('Ptr' in rtype and 'NumericTablePtr' not in rtype) or '__iface__' in rtype %}
 {% set frtype=(rtype.strip(' *&')|flat(False)|strip(' *')).replace('Ptr', '')|lower %}
-        ':type: {{frtype}}'
+        '''
+        {{m[1]}}
+        :type: {{frtype.replace('data_management_NumericTablePtr', 'Numpy array')}}
+        '''
         if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return res
 {% else %}
-        ':type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}'
+        '''
+        {{m[1]}}
+        :type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}
+        '''
         if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
@@ -298,7 +303,10 @@ cdef class {{flatname}}:
 {% if (flatname.startswith('gbt_') or flatname.startswith('decision_forest')) and flatname.endswith('model') %}
     @property
     def NumberOfTrees(self):
-        'FIXME'
+        '''
+        NumberOfTrees
+        :type: size_t
+        '''
         if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         return get_{{flatname}}_numberOfTrees(self.c_ptr)
@@ -526,7 +534,7 @@ gen_compute_macro = gen_inst_algo + """
         auto algo{{suffix}} = _algo{{suffix}};
 
 {% for ia in input_args %}
-{% if "table_or_flist" in ia.typ_cpp %}
+{% if "data_or_file" in ia.typ_cpp %}
         if(!{{ia.arg_member}}->table && {{ia.arg_member}}->file.size()) {{ia.arg_member}}->table = readCSV({{ia.arg_member}}->file);
         if({{ia.arg_member}}->table) algo{{suffix}}->input.set({{ia.value}}, {{ia.arg_member}}->table);
 {% else %}
@@ -626,7 +634,7 @@ struct {{algo}}_manager{% if template_decl|length != template_args|length %}<{{t
     ~{{algo}}_manager()
     {
 {% for i in args_decl %}
-{% if 'table_or_flist' in i %}
+{% if 'data_or_file' in i %}
         delete _{{args_call[loop.index0]}};
 {% elif '*' in i %}
         // ?? delete _{{args_call[loop.index0]}};

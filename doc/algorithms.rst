@@ -449,11 +449,11 @@ Examples:
    :members: compute, setup
 .. autoclass:: daal4py.implicit_als_training_result
    :members:
-.. autoclass:: daal4py.implicit_als_training_model
+.. autoclass:: daal4py.implicit_als_model
    :members:
-.. autoclass:: daal4py.implicit_als_prediction
+.. autoclass:: daal4py.implicit_als_prediction_ratings
    :members: compute, setup
-.. autoclass:: daal4py.implicit_als_prediction_result
+.. autoclass:: daal4py.implicit_als_prediction_ratings_result
    :members:
 
 K-Means Clustering

@@ -158,19 +158,19 @@ struct IOManager
     }
 };
 
-struct table_or_flist
+struct data_or_file
 {
     mutable daal::data_management::NumericTablePtr table;
     std::string                                    file;
-    inline table_or_flist(daal::data_management::NumericTablePtr t)
+    inline data_or_file(daal::data_management::NumericTablePtr t)
         : table(t), file() {}
-    inline table_or_flist()
+    inline data_or_file()
         : table(), file() {}
-    table_or_flist(PyObject *);
+    data_or_file(PyObject *);
 };
 
 // return input as DAAL numeric table.
-extern const daal::data_management::NumericTablePtr get_table(const table_or_flist & t);
+extern const daal::data_management::NumericTablePtr get_table(const data_or_file & t);
 
 template< typename T >
 struct RAW
@@ -188,8 +188,8 @@ struct RAW< daal::services::SharedPtr< T > >
 
 template< typename T > T to_daal(T t) {return t;}
 template< typename T > daal::services::SharedPtr<T> to_daal(daal::services::SharedPtr<T>* t) {return *t;}
-inline const table_or_flist & to_daal(const table_or_flist * t) {return *t;}
-inline const table_or_flist & to_daal(table_or_flist * t) {return *t;}
+inline const data_or_file & to_daal(const data_or_file * t) {return *t;}
+inline const data_or_file & to_daal(data_or_file * t) {return *t;}
 
 template< typename T >
 void * get_nt_data_ptr(const daal::data_management::NumericTablePtr * ptr)
