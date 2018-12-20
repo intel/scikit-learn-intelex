@@ -16,49 +16,25 @@
 
 from collections import defaultdict, OrderedDict, namedtuple
 
-def get_algos(ver):
-    algos = [
-        'association_rules',
-        'cholesky',
-        'decision_forest',
-        'decision_tree',
-        'distance',
-        'em_gmm',
-        'engine',
-        'gbt',
-        'implicit_als',
-        'kdtree_knn_classification',
-        'kernel_function',
-        'kmeans',
-        'linear_regression',
-        'logistic_regression',
-        'math',
-        'multi_class_classifier',
-        'multinomial_naive_bayes',
-        'normalization',
-        'optimization_solver',
-        'outlier_detection',
-        'pca',
-        'qr',
-        'quantiles',
-        'ridge_regression',
-        'sorting',
-        'stump::classification',  # stump itself is deprecated since 2019.2
-        'stump::regression',
-        'svd',
-        'svm',
-        'univariate_outlier_detection',
-    ]
+def wrap_algo(algo, ver):
     # Note: boosting and weak_learner are deprecated since 2019.2, we just ignore them
-    if ver > (2019, 1):
-        algos += [
-            'adaboost',
-            'brownboost',
-            'covariance',
-            'logitboost',
-            'moments',
-        ]
-    return algos
+    if ver < (2019, 2) and algo in ['stump', 'adaboost', 'brownboost', 'covariance', 'logitboost', 'moments',]:
+        return False
+    # ignore depcerated version of stump
+    if 'stump' in algo and not any(x in algo for x in ['stump::regression', 'stump::classification']):
+        return False
+    # other deprecated algos
+    if any(x in algo for x in ['boosting']):
+        return False
+    # ignore unneeded stuff
+    if any(algo.endswith(x) for x in ['daal', 'algorithms',
+                                      'linear_model::prediction', 'linear_model::training',
+                                      'classification::prediction', 'classification::training']):
+        return False
+    # ignore unsupported alogs
+    if any(x in algo for x in ['quality_metric', 'distributions']):
+        return False
+    return True
 
 # Listing requried parameters for each algorithm.
 # They are used to initialize the algorithm object instead of gettings set explicitly.

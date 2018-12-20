@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks, add_setup, enum_maps, get_algos
+from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks, add_setup, enum_maps, wrap_algo
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 
@@ -801,9 +801,9 @@ class cython_interface(object):
                 cfg[ns]['model_typemap']['derived'] = model_hierarchy[m]
 
 
-    def hlapi(self, algo_patterns, no_dist=False, no_stream=False):
+    def hlapi(self, version, no_dist=False, no_stream=False):
         """
-        Generate high level wrappers for namespaces listed in algo_patterns (or all).
+        Generate high level wrappers for namespaces allowed by wrap_algo(ns, version).
 
         First extract the namespaces we really want, e.g. ignore NN.
 
@@ -823,9 +823,8 @@ class cython_interface(object):
         tmaps, wrappers, hlapi, dtypes = '', '', '', ''
         algoconfig = {}
 
-        algos = [x for x in self.namespace_dict if any(y in x for y in algo_patterns)] if algo_patterns else self.namespace_dict
-        algos = [x for x in algos if not any(y in x for y in ['quality_metric', 'boosting'])]
-        algos += ['algorithms::classifier', 'algorithms::regression', 'algorithms::linear_model',]
+        algos = [x for x in self.namespace_dict if wrap_algo(x, version)]
+        assert all(x in algos for x in ['algorithms::classifier', 'algorithms::regression', 'algorithms::linear_model',])
         # First expand typedefs
         for ns in algos:
             self.expand_typedefs(ns)
@@ -907,7 +906,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     iface = cython_interface(ipath)
     iface.read()
     print('Generating sources...')
-    cpp_h, cpp_cpp, pyx_file = iface.hlapi(get_algos(iface.version), no_dist, no_stream)
+    cpp_h, cpp_cpp, pyx_file = iface.hlapi(iface.version, no_dist, no_stream)
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:
         f.write(cpp_h)
