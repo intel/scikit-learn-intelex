@@ -16,11 +16,13 @@
 
 from collections import defaultdict, OrderedDict, namedtuple
 
+# given a C++ namespace and a DAAL version, return if namespace/algo should be
+# wrapped in daal4py.
 def wrap_algo(algo, ver):
-    # Note: boosting and weak_learner are deprecated since 2019.2, we just ignore them
+    # Ignore some algos if using older DAAL
     if ver < (2019, 2) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'covariance', 'logitboost', 'moments',]):
         return False
-    # ignore depcerated version of stump
+    # ignore deprecated version of stump
     if 'stump' in algo and not any(x in algo for x in ['stump::regression', 'stump::classification']):
         return False
     # other deprecated algos
@@ -32,12 +34,14 @@ def wrap_algo(algo, ver):
                                       'classification::prediction', 'classification::training',
                                       'algorithms::tree_utils', 'algorithms::tree_utils::classification', 'algorithms::tree_utils::regression']):
         return False
-    # ignore unsupported alogs
+    # ignore unsupported algos
     if any(x in algo for x in ['quality_metric',]):
         return False
+
     return True
 
-# Listing requried parameters for each algorithm.
+
+# Listing required parameters for each algorithm.
 # They are used to initialize the algorithm object instead of gettings set explicitly.
 # Note: even though listed under 'Batch', they are currently also used for 'Distributed'
 #  unless explicitly provided in a step spec.
