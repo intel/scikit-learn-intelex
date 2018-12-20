@@ -2,66 +2,6 @@
 Algorithms
 ##########
 
-Principal Component Analysis (PCA)
-----------------------------------
-Detailed description of parameters and semantics are described in
-`Intel DAAL PCA <https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis>`_
-
-Examples:
-
-- `Single-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_batch.py>`_
-- `Multi-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`_
-
-.. autoclass:: daal4py.pca
-   :members: compute, setup
-.. autoclass:: daal4py.pca_result
-   :members:
-
-Principal Component Analysis (PCA) Transform
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel DAAL PCA Transform <https://software.intel.com/en-us/daal-programming-guide-principal-components-analysis-transform>`_
-
-Examples:
-
-- `Single-Process PCA Transform <https://github.com/IntelPython/daal4py/blob/master/examples/pca_transform_batch.py>`_
-
-.. autoclass:: daal4py.pca_transform
-   :members: compute, setup
-.. autoclass:: daal4py.pca_transform_result
-   :members:
-
-Singular Value Decomposition (SVD)
-----------------------------------
-Detailed description of parameters and semantics are described in
-`Intel DAAL SVD <https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition>`_
-
-Examples:
-
-- `Single-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_batch.py>`_
-- `Streaming SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_streaming.py>`_
-- `Multi-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
-
-.. autoclass:: daal4py.svd
-   :members: compute, setup
-.. autoclass:: daal4py.svd_result
-   :members:
-
-Moments of Low Order
---------------------
-Detailed description of parameters and semantics are described in
-`Intel DAAL Moments of Low Order <https://software.intel.com/en-us/daal-programming-guide-moments-of-low-order>`_
-
-Examples:
-
-- `Single-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py>`_
-- `Streaming Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py>`_
-
-.. autoclass:: daal4py.low_order_moments
-   :members: compute, setup
-.. autoclass:: daal4py.low_order_moments_result
-   :members:
-
 Classification
 --------------
 See also `Intel DAAL Classification
@@ -436,24 +376,33 @@ Examples:
 .. autoclass:: daal4py.stump_regression_model
    :members:
 
-Implicit Alternating Least Squares (implicit ALS)
--------------------------------------------------
+Principal Component Analysis (PCA)
+----------------------------------
 Detailed description of parameters and semantics are described in
-`Intel DAAL K-Means-Clustering <https://software.intel.com/en-us/daal-programming-guide-implicit-alternating-least-squares>`_
+`Intel DAAL PCA <https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis>`_
 
 Examples:
 
-- `Single-Process implicit ALS <https://github.com/IntelPython/daal4py/blob/master/examples/implicit_als_batch.py>`_
+- `Single-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_batch.py>`_
+- `Multi-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`_
 
-.. autoclass:: daal4py.implicit_als_training
+.. autoclass:: daal4py.pca
    :members: compute, setup
-.. autoclass:: daal4py.implicit_als_training_result
+.. autoclass:: daal4py.pca_result
    :members:
-.. autoclass:: daal4py.implicit_als_model
-   :members:
-.. autoclass:: daal4py.implicit_als_prediction_ratings
+
+Principal Component Analysis (PCA) Transform
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL PCA Transform <https://software.intel.com/en-us/daal-programming-guide-principal-components-analysis-transform>`_
+
+Examples:
+
+- `Single-Process PCA Transform <https://github.com/IntelPython/daal4py/blob/master/examples/pca_transform_batch.py>`_
+
+.. autoclass:: daal4py.pca_transform
    :members: compute, setup
-.. autoclass:: daal4py.implicit_als_prediction_ratings_result
+.. autoclass:: daal4py.pca_transform_result
    :members:
 
 K-Means Clustering
@@ -614,6 +563,19 @@ Examples:
 .. autoclass:: daal4py.optimization_solver_adagrad_result
    :members:
 
+Stochastic Average Gradient Descent
+"""""""""""""""""""""""""""""""""""
+Detailed description of parameters and semantics are described in
+`Intel DAAL Stochastic Average Gradient Descent SAGA <https://software.intel.com/en-us/daal-programming-guide-stochastic-average-gradient-descent>`_
+
+Examples:
+- `Single Proces saga-logistc_loss <https://github.com/IntelPython/daal4py/blob/master/examples/saga_batch.py>`_
+
+.. autoclass:: daal4py.optimization_solver_saga
+   :members: compute, setup
+.. autoclass:: daal4py.optimization_solver_saga_result
+   :members:
+
 Distances
 ---------
 Cosine Distance Matrix
@@ -642,35 +604,6 @@ Examples:
 .. autoclass:: daal4py.correlation_distance
    :members: compute, setup
 .. autoclass:: daal4py.correlation_distance_result
-   :members:
-
-Correlation and Variance-Covariance Matrices
---------------------------------------------
-Detailed description of parameters and semantics are described in
-`Intel DAAL Correlation and Variance-Covariance Matrices <https://software.intel.com/en-us/daal-programming-guide-correlation-and-variance-covariance-matrices>`_
-
-Examples:
-
-- `Single-Process Covariance <https://github.com/IntelPython/daal4py/blob/master/examples/covariance_batch.py>`_
-- `Streaming Covariance <https://github.com/IntelPython/daal4py/blob/master/examples/covariance_streaming.py>`_
-
-.. autoclass:: daal4py.covariance
-   :members: compute, setup
-.. autoclass:: daal4py.covariance_result
-   :members:
-
-Quantiles
----------
-Detailed description of parameters and semantics are described in
-`Intel DAAL Quantiles <https://software.intel.com/en-us/daal-programming-guide-quantile>`_
-
-Examples:
-
-- `Single-Process Quantiles <https://github.com/IntelPython/daal4py/blob/master/examples/quantiles_batch.py>`_
-
-.. autoclass:: daal4py.quantiles
-   :members: compute, setup
-.. autoclass:: daal4py.quantiles_result
    :members:
 
 Expectation-Maximization (EM)
@@ -706,34 +639,6 @@ Examples:
 .. autoclass:: daal4py.em_gmm_result
    :members:
 
-Association Rules
------------------
-Detailed description of parameters and semantics are described in
-`Intel DAAL Association Rules <https://software.intel.com/en-us/daal-programming-guide-association-rules>`_
-
-Examples:
-
-- `Single-Process Association Rules <https://github.com/IntelPython/daal4py/blob/master/examples/association_rules_batch.py>`_
-
-.. autoclass:: daal4py.association_rules
-   :members: compute, setup
-.. autoclass:: daal4py.association_rules_result
-   :members:
-
-Cholesky Decomposition
-----------------------
-Detailed description of parameters and semantics are described in
-`Intel DAAL Cholesky Decomposition <https://software.intel.com/en-us/daal-programming-guide-cholesky-decomposition>`_
-
-Examples:
-
-- `Single-Process Cholesky <https://github.com/IntelPython/daal4py/blob/master/examples/cholesky_batch.py>`_
-
-.. autoclass:: daal4py.cholesky
-   :members: compute, setup
-.. autoclass:: daal4py.cholesky_result
-   :members:
-
 QR Decomposition
 ----------------
 Detailed description of parameters and semantics are described in
@@ -766,20 +671,6 @@ Examples:
 .. autoclass:: daal4py.pivoted_qr
    :members: compute, setup
 .. autoclass:: daal4py.pivoted_qr_result
-   :members:
-
-Sorting
--------
-Detailed description of parameters and semantics are described in
-`Intel DAAL sorting <https://software.intel.com/en-us/daal-programming-guide-sorting>`_
-
-Examples:
-
-- `Single-Process Sorting <https://github.com/IntelPython/daal4py/blob/master/examples/sorting_batch.py>`_
-
-.. autoclass:: daal4py.sorting
-   :members: compute, setup
-.. autoclass:: daal4py.sorting_result
    :members:
 
 Normalization
@@ -853,6 +744,52 @@ Detailed description of parameters and semantics are described in
 .. autoclass:: daal4py.engines_mcg59_result
    :members:
 
+Distributions
+-------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL Absolute Value (abs) <https://software.intel.com/en-us/daal-programming-guide-distributions>`_
+
+Bernoulli
+^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-bernoulli>`_
+
+Examples:
+
+- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli.py>`_
+
+.. autoclass:: daal4py.distributions_bernoulli
+   :members: compute, setup
+.. autoclass:: daal4py.distributions_bernoulli_result
+   :members:
+
+Normal
+^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-normal>`_
+
+Examples:
+
+- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal.py>`_
+
+.. autoclass:: daal4py.distributions_normal
+   :members: compute, setup
+.. autoclass:: daal4py.distributions_normal_result
+   :members:
+
+Uniform
+^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-uniform>`_
+
+Examples:
+
+- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform.py>`_
+
+.. autoclass:: daal4py.distributions_uniform
+   :members: compute, setup
+.. autoclass:: daal4py.distributions_uniform_result
+   :members:
 
 Math functions
 --------------
@@ -938,6 +875,128 @@ Examples:
 .. autoclass:: daal4py.math_softmax
    :members: compute, setup
 .. autoclass:: daal4py.math_softmax_result
+   :members:
+
+Association Rules
+-----------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL Association Rules <https://software.intel.com/en-us/daal-programming-guide-association-rules>`_
+
+Examples:
+
+- `Single-Process Association Rules <https://github.com/IntelPython/daal4py/blob/master/examples/association_rules_batch.py>`_
+
+.. autoclass:: daal4py.association_rules
+   :members: compute, setup
+.. autoclass:: daal4py.association_rules_result
+   :members:
+
+Cholesky Decomposition
+----------------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL Cholesky Decomposition <https://software.intel.com/en-us/daal-programming-guide-cholesky-decomposition>`_
+
+Examples:
+
+- `Single-Process Cholesky <https://github.com/IntelPython/daal4py/blob/master/examples/cholesky_batch.py>`_
+
+.. autoclass:: daal4py.cholesky
+   :members: compute, setup
+.. autoclass:: daal4py.cholesky_result
+   :members:
+
+Correlation and Variance-Covariance Matrices
+--------------------------------------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL Correlation and Variance-Covariance Matrices <https://software.intel.com/en-us/daal-programming-guide-correlation-and-variance-covariance-matrices>`_
+
+Examples:
+
+- `Single-Process Covariance <https://github.com/IntelPython/daal4py/blob/master/examples/covariance_batch.py>`_
+- `Streaming Covariance <https://github.com/IntelPython/daal4py/blob/master/examples/covariance_streaming.py>`_
+
+.. autoclass:: daal4py.covariance
+   :members: compute, setup
+.. autoclass:: daal4py.covariance_result
+   :members:
+
+Implicit Alternating Least Squares (implicit ALS)
+-------------------------------------------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL K-Means-Clustering <https://software.intel.com/en-us/daal-programming-guide-implicit-alternating-least-squares>`_
+
+Examples:
+
+- `Single-Process implicit ALS <https://github.com/IntelPython/daal4py/blob/master/examples/implicit_als_batch.py>`_
+
+.. autoclass:: daal4py.implicit_als_training
+   :members: compute, setup
+.. autoclass:: daal4py.implicit_als_training_result
+   :members:
+.. autoclass:: daal4py.implicit_als_model
+   :members:
+.. autoclass:: daal4py.implicit_als_prediction_ratings
+   :members: compute, setup
+.. autoclass:: daal4py.implicit_als_prediction_ratings_result
+   :members:
+
+Moments of Low Order
+--------------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL Moments of Low Order <https://software.intel.com/en-us/daal-programming-guide-moments-of-low-order>`_
+
+Examples:
+
+- `Single-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py>`_
+- `Streaming Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py>`_
+
+.. autoclass:: daal4py.low_order_moments
+   :members: compute, setup
+.. autoclass:: daal4py.low_order_moments_result
+   :members:
+
+Quantiles
+---------
+Detailed description of parameters and semantics are described in
+`Intel DAAL Quantiles <https://software.intel.com/en-us/daal-programming-guide-quantile>`_
+
+Examples:
+
+- `Single-Process Quantiles <https://github.com/IntelPython/daal4py/blob/master/examples/quantiles_batch.py>`_
+
+.. autoclass:: daal4py.quantiles
+   :members: compute, setup
+.. autoclass:: daal4py.quantiles_result
+   :members:
+
+Singular Value Decomposition (SVD)
+----------------------------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL SVD <https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition>`_
+
+Examples:
+
+- `Single-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_batch.py>`_
+- `Streaming SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_streaming.py>`_
+- `Multi-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
+
+.. autoclass:: daal4py.svd
+   :members: compute, setup
+.. autoclass:: daal4py.svd_result
+   :members:
+
+Sorting
+-------
+Detailed description of parameters and semantics are described in
+`Intel DAAL sorting <https://software.intel.com/en-us/daal-programming-guide-sorting>`_
+
+Examples:
+
+- `Single-Process Sorting <https://github.com/IntelPython/daal4py/blob/master/examples/sorting_batch.py>`_
+
+.. autoclass:: daal4py.sorting
+   :members: compute, setup
+.. autoclass:: daal4py.sorting_result
    :members:
 
 Trees
