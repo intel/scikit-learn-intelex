@@ -538,7 +538,7 @@ class cython_interface(object):
         , e.g. start with data then model, then whatever else
         """
         ordered = ['data', 'model', 'labels', 'dependentVariable', 'dependentVariables',
-                   'tableToFill', 'dataForPruning', 'dependentVariablesForPruning', 'labelsForPruning']
+                   'tableToFill', 'dataForPruning', 'dependentVariablesForPruning', 'labelsForPruning', 'inputArgument']
         input_args = []
         for arg in ordered:
             for i in tmp_input_args:

@@ -30,8 +30,8 @@ def wrap_algo(algo, ver):
         return False
     # ignore unneeded stuff
     if any(algo.endswith(x) for x in ['daal', 'algorithms',
-                                      'linear_model::prediction', 'linear_model::training',
-                                      'classification::prediction', 'classification::training',
+                                      'algorithms::linear_model::prediction', 'algorithms::linear_model::training',
+                                      'algorithms::classification::prediction', 'algorithms::classification::training',
                                       'algorithms::tree_utils', 'algorithms::tree_utils::classification', 'algorithms::tree_utils::regression']):
         return False
     # ignore unsupported algos

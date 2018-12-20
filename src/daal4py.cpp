@@ -338,6 +338,10 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
 #undef SETARRAY_
 
                 }
+                if(soatbl->getNumberOfColumns() != N) {
+                    delete soatbl;
+                    throw std::runtime_error("Creating DAAL SOA table from list failed.");
+                }
                 ptr = soatbl;
             } // else not a list of 1d arrays
         } // else not a list of 1d arrays
