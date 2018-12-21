@@ -117,7 +117,7 @@ gen_examples = [
     ('linear_regression_batch', 'linear_regression_batch.csv', lambda r: r[1].prediction),
     ('linear_regression_streaming', 'linear_regression_batch.csv', lambda r: r[1].prediction),
     ('log_reg_binary_dense_batch', 'log_reg_binary_dense_batch.csv', lambda r: r[1].prediction),
-    ('log_reg_dense_batch', 'log_reg_dense_batch.csv', lambda r: r[1].prediction),
+    ('log_reg_dense_batch',),
     ('logitboost_batch', None, None, (2019, 2)),
     ('low_order_moms_dense_batch', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
                                                                                           r.maximum,
