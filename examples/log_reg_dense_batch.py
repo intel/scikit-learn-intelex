@@ -59,7 +59,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     assert predict_result.probabilities.shape == (predict_data.shape[0], nClasses)
     assert predict_result.logProbabilities.shape == (predict_data.shape[0], nClasses)
     predict_labels = np.loadtxt(testfile, usecols=range(nFeatures, nFeatures + 1), delimiter=',', ndmin=2)
-    assert(np.count_nonzero(predict_result.prediction-predict_labels) < 2)
+    assert(np.count_nonzero(predict_result.prediction-predict_labels) < 3)
 
     return (train_result, predict_result, predict_labels)
 

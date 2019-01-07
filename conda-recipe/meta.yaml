@@ -16,18 +16,17 @@ requirements:
         - numpy >=1.13
         - tbb-devel
         - daal-devel >=2019.0
-#        - daal-static  # [win and daal < 2019.1]
         - cython
         - jinja2
-        - mpich                  # [not win]
-        - impi-devel             # [win]
+        - mpich                  # [osx]
+        - impi-devel             # [not osx]
     run:
         - python
         - numpy >=1.13
         - tbb
         - daal >=2019.0
-        - mpich                  # [not win]
-        - impi_rt                # [win]
+        - mpich                  # [osx]
+        - impi_rt                # [not osx]
     test:
         - pandas
         - scipy
