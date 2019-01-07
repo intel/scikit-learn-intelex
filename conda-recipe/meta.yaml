@@ -18,15 +18,15 @@ requirements:
         - daal-devel >=2019.0
         - cython
         - jinja2
-        - mpich                  # [osx]
-        - impi-devel             # [not osx]
+        - mpich                  # [not win]
+        - impi-devel             # [win]
     run:
         - python
         - numpy >=1.13
         - tbb
         - daal >=2019.0
-        - mpich                  # [osx]
-        - impi_rt                # [not osx]
+        - mpich                  # [not win]
+        - impi_rt                # [win]
     test:
         - pandas
         - scipy

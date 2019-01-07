@@ -2,10 +2,9 @@ import os
 import sys
 import unittest
 
+# Work around intel mpi package issue with libfabric
 if sys.platform in ['win32', 'cygwin']:
     os.environ['PATH'] = ';'.join([os.environ['PATH'], os.path.join(os.environ['CONDA_PREFIX'], 'Library', 'bin', 'libfabric')])
-else:
-    os.environ['LD_LIBRARY_PATH'] = ':'.join([os.environ['LD_LIBRARY_PATH'], os.path.join(os.environ['CONDA_PREFIX'], 'lib', 'libfabric')])
 
 here = os.path.abspath(os.path.dirname(__file__))
 ex_dir = os.path.join(here, "examples")
