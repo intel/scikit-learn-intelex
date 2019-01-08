@@ -21,6 +21,12 @@ from sklearn.metrics.pairwise import _parallel_pairwise, _pairwise_callable
 from sklearn.metrics.pairwise import _VALID_METRICS, PAIRWISE_DISTANCE_FUNCTIONS
 from sklearn.metrics.pairwise import PAIRWISE_BOOLEAN_FUNCTIONS
 from sklearn.metrics.pairwise import check_pairwise_arrays
+try:
+    from sklearn.metrics.pairwise import _precompute_metric_params
+except ImportError:
+    def _precompute_metric_params(*args, **kwrds):
+        return dict()
+
 from scipy.sparse import issparse
 from scipy.spatial import distance
 
@@ -146,6 +152,10 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=1, **kwds):
         dtype = bool if metric in PAIRWISE_BOOLEAN_FUNCTIONS else None
 
         X, Y = check_pairwise_arrays(X, Y, dtype=dtype)
+
+        # precompute data-derived metric params
+        params = _precompute_metric_params(X, Y, metric=metric, **kwds)
+        kwds.update(**params)
 
         if n_jobs == 1 and X is Y:
             return distance.squareform(distance.pdist(X, metric=metric,
