@@ -472,7 +472,7 @@ def predict(self, X):
     return self.classes_.take(np.asarray(y, dtype=np.intp))
 
 
-class SVC_daal4py(sklearn.svm.classes.BaseSVC):
+class SVC(sklearn.svm.classes.BaseSVC):
     _impl = 'c_svc'
 
     def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto_deprecated',
@@ -481,7 +481,7 @@ class SVC_daal4py(sklearn.svm.classes.BaseSVC):
                  verbose=False, max_iter=-1, decision_function_shape='ovr',
                  random_state=None):
 
-        super(SVC_daal4py, self).__init__(
+        super(SVC, self).__init__(
             kernel=kernel, degree=degree, gamma=gamma,
             coef0=coef0, tol=tol, C=C, nu=0., shrinking=shrinking,
             probability=probability, cache_size=cache_size,
@@ -489,10 +489,9 @@ class SVC_daal4py(sklearn.svm.classes.BaseSVC):
             decision_function_shape=decision_function_shape,
             random_state=random_state)
 
-SVC_daal4py.fit = fit
-SVC_daal4py.predict = predict
-SVC_daal4py._dual_coef_ = property(_dual_coef_getter, _dual_coef_setter)
-SVC_daal4py._intercept_ = property(_intercept_getter, _intercept_setter)
-SVC_daal4py.__doc__ = sklearn.svm.classes.SVC.__doc__
-SVC_daal4py.__name__ = sklearn.svm.classes.SVC.__name__
-SVC_daal4py.__qualname__ = sklearn.svm.classes.SVC.__qualname__
+
+SVC.fit = fit
+SVC.predict = predict
+SVC._dual_coef_ = property(_dual_coef_getter, _dual_coef_setter)
+SVC._intercept_ = property(_intercept_getter, _intercept_setter)
+SVC.__doc__ = sklearn.svm.classes.SVC.__doc__

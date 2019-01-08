@@ -24,7 +24,7 @@ from sklearn.cluster.k_means_ import (k_means, _labels_inertia, _k_init, _valida
 from sklearn.externals.six import string_types
 from sklearn.utils.extmath import row_norms
 
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
 from ..utils import getFPType
@@ -247,27 +247,21 @@ def predict(self, X, sample_weight=None):
                                self.cluster_centers_)[0]
 
 
-class KMeans_daal4py(KMeans):
-    __doc__ = KMeans.__doc__
+class KMeans(KMeans_original):
+    __doc__ = KMeans_original.__doc__
 
     def __init__(self, n_clusters=8, init='k-means++', n_init=10,
                  max_iter=300, tol=1e-4, precompute_distances='auto',
                  verbose=0, random_state=None, copy_x=True,
                  n_jobs=None, algorithm='auto'):
 
-        self.n_clusters = n_clusters
-        self.init = init
-        self.max_iter = max_iter
-        self.tol = tol
-        self.precompute_distances = precompute_distances
-        self.n_init = n_init
-        self.verbose = verbose
-        self.random_state = random_state
-        self.copy_x = copy_x
-        self.n_jobs = n_jobs
-        self.algorithm = algorithm
+        super(KMeans, self).__init__(
+            n_clusters=n_clusters, init=init, max_iter=max_iter,
+            tol=tol, precompute_distances=precompute_distances,
+            n_init=n_init, verbose=verbose, random_state=random_state,
+            copy_x=copy_x, n_jobs=n_jobs, algorithm=algorithm)
 
 
-setattr(KMeans_daal4py, 'fit', fit)
-setattr(KMeans_daal4py, 'predict', predict)
+setattr(KMeans, 'fit', fit)
+setattr(KMeans, 'predict', predict)
  

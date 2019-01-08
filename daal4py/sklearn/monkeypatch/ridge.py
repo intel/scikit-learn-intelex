@@ -18,7 +18,9 @@
 import numpy as np
 from scipy import sparse as sp
 from sklearn.utils import check_array, check_X_y
-from sklearn.linear_model.ridge import Ridge
+from sklearn.base import RegressorMixin
+from sklearn.linear_model.ridge import _BaseRidge
+from sklearn.linear_model.ridge import Ridge as Ridge_original
 
 import daal4py
 from ..utils import (make2d, getFPType)
@@ -95,7 +97,7 @@ def fit(self, X, y, sample_weight=None):
             not self.fit_shape_good_for_daal_ or
             not (X.dtype == np.float64 or X.dtype == np.float32) or
             sample_weight is not None):
-        return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
+        return super(Ridge_original, self).fit(X, y, sample_weight=sample_weight)
     else:
         self.n_iter_ = None
         return _daal4py_fit(self, X, y)
@@ -127,3 +129,20 @@ def predict(self, X):
         return self._decision_function(X)
     else:
         return _daal4py_predict(self, X)
+
+
+class Ridge(_BaseRidge, RegressorMixin):
+
+    def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
+                 copy_X=True, max_iter=None, tol=1e-3, solver="auto",
+                 random_state=None):
+        print(self.__qualname__)
+        super(Ridge, self).__init__(
+            alpha=alpha, fit_intercept=fit_intercept, normalize=normalize,
+            copy_X=copy_X, max_iter=max_iter, tol=tol, solver=solver,
+            random_state=random_state)
+
+
+setattr(Ridge, 'fit', fit)
+setattr(Ridge, 'predict', predict)
+setattr(Ridge, '__doc__', Ridge_original.__doc__)

@@ -22,6 +22,7 @@ from sklearn.utils import check_array, check_X_y, deprecated, as_float_array
 from sklearn.linear_model.base import _rescale_data
 from sklearn.externals.joblib import Parallel, delayed
 from sklearn.utils.fixes import sparse_lsqr
+from sklearn.linear_model import LinearRegression as LinearRegression_original
 
 import daal4py
 from ..utils import (make2d, getFPType)
@@ -157,3 +158,17 @@ def predict(self, X):
     else:
         X = check_array(X)
         return _daal4py_predict(self, X)
+
+
+class LinearRegression(LinearRegression_original):
+    __doc__ = LinearRegression_original.__doc__
+
+    def __init__(self, fit_intercept=True, normalize=False, copy_X=True,
+                 n_jobs=None):
+        super(LinearRegression, self).__init__(
+            fit_intercept=fit_intercept, normalize=normalize,
+            copy_X=copy_X, n_jobs=n_jobs)
+
+
+setattr(LinearRegression, 'fit', fit)
+setattr(LinearRegression, 'predict', predict)
