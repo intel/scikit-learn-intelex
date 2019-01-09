@@ -1,5 +1,5 @@
 {% set version = '0.2019.2' %}
-{% set buildnumber = 0 %}
+{% set buildnumber = 1 %}
 
 package:
     name: daal4py
