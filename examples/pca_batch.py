@@ -24,10 +24,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+    read_csv = lambda f, c=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 except:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='svdDense'):
@@ -40,7 +40,7 @@ def main(readcsv=read_csv, method='svdDense'):
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    data = readcsv(infile, range(10))
+    data = readcsv(infile)
     result2 = algo.compute(data)
 
     # PCA result objects provide eigenvalues, eigenvectors, means and variances

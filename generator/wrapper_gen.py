@@ -114,8 +114,11 @@ cdef extern from "daal4py.h":
     cdef const double NaN64
     cdef const float  NaN32
 
-    cdef cppclass table_or_flist :
-        table_or_flist(PyObject *) except +
+    cdef cppclass data_or_file :
+        data_or_file(PyObject *) except +
+
+    cdef cppclass list_NumericTablePtr:
+        pass
 
     cdef cppclass dict_NumericTablePtr:
         pass
@@ -123,8 +126,10 @@ cdef extern from "daal4py.h":
     cdef std_string to_std_string(PyObject * o) except +
 
     cdef PyObject * make_nda(NumericTablePtr * nt_ptr) except +
+    cdef PyObject * make_nda(list_NumericTablePtr * nt_ptr) except +
     cdef PyObject * make_nda(dict_NumericTablePtr * nt_ptr, void *) except +
     cdef NumericTablePtr * make_nt(PyObject * nda) except +
+    cdef list_NumericTablePtr * make_datacoll(PyObject * nda) except +
     cdef dict_NumericTablePtr * make_dnt(PyObject * nda, void *) except +
 
     cdef T* dynamicPointerPtrCast[T,U](U*)
@@ -165,12 +170,12 @@ def my_procid():
     return c_my_procid()
 
 
-cdef table_or_flist * mk_table_or_flist(object x):
+cdef data_or_file * mk_data_or_file(object x):
     if isinstance(x, pdDataFrame):
         x = [x.loc[:,i].values for i in x]
     elif isinstance(x, pdSeries):
         x = [x.values]
-    return new table_or_flist(<PyObject *>x)
+    return new data_or_file(<PyObject *>x)
 
 '''
 
@@ -208,7 +213,7 @@ extern "C" {{m[2]}} {{'*' if 'Ptr' in m[2] else ''}} get_{{flatname}}_{{m[1]}}({
 {% for m in named_gets %}
 extern "C" {{m[0]}} {{'*' if 'Ptr' in m[0] else ''}} get_{{flatname}}_{{m[1]}}({{class_type}} * obj_)
 {
-    return RAW< {{m[0]}} >()((*obj_)->get{{m[1]}}());
+    return RAW< {{m[0]}} >()((*obj_)->get{{m[1]}}{{m[2]}}());
 }
 {% endfor %}
 {% for m in get_methods %}
@@ -270,14 +275,20 @@ cdef class {{flatname}}:
     def {{m[1]}}(self):
 {% if ('Ptr' in rtype and 'NumericTablePtr' not in rtype) or '__iface__' in rtype %}
 {% set frtype=(rtype.strip(' *&')|flat(False)|strip(' *')).replace('Ptr', '')|lower %}
-        ':type: {{frtype}}'
+        '''
+        {{m[1]}}
+        :type: {{frtype.replace('data_management_NumericTablePtr', 'Numpy array')}}
+        '''
         if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return res
 {% else %}
-        ':type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}'
+        '''
+        {{m[1]}}
+        :type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}
+        '''
         if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
@@ -292,7 +303,10 @@ cdef class {{flatname}}:
 {% if (flatname.startswith('gbt_') or flatname.startswith('decision_forest')) and flatname.endswith('model') %}
     @property
     def NumberOfTrees(self):
-        'FIXME'
+        '''
+        NumberOfTrees
+        :type: size_t
+        '''
         if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
         return get_{{flatname}}_numberOfTrees(self.c_ptr)
@@ -520,7 +534,7 @@ gen_compute_macro = gen_inst_algo + """
         auto algo{{suffix}} = _algo{{suffix}};
 
 {% for ia in input_args %}
-{% if "table_or_flist" in ia.typ_cpp %}
+{% if "data_or_file" in ia.typ_cpp %}
         if(!{{ia.arg_member}}->table && {{ia.arg_member}}->file.size()) {{ia.arg_member}}->table = readCSV({{ia.arg_member}}->file);
         if({{ia.arg_member}}->table) algo{{suffix}}->input.set({{ia.value}}, {{ia.arg_member}}->table);
 {% else %}
@@ -620,7 +634,7 @@ struct {{algo}}_manager{% if template_decl|length != template_args|length %}<{{t
     ~{{algo}}_manager()
     {
 {% for i in args_decl %}
-{% if 'table_or_flist' in i %}
+{% if 'data_or_file' in i %}
         delete _{{args_call[loop.index0]}};
 {% elif '*' in i %}
         // ?? delete _{{args_call[loop.index0]}};
@@ -747,13 +761,20 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         del self.c_ptr
 {% endif %}
 
+{% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
     def compute(self,
                 {{input_args|fmt('{}', 'decl_cy', sep=',\n')|indent(16)}},
                 setup=False):
+        '''
+        {{algo}}.compute({{input_args|fmt('{}', 'name', sep=', ')}})
+        Do the actual computation on provided input data.
+
+        {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
+        :rtype: {{cytype}}
+        '''
         if self.c_ptr == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
-{% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
@@ -777,6 +798,13 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # setup forwards to the C++ de-templatized manager__iface__::compute(..., setup_only=true)
     def setup(self,
              {{input_args|fmt('{}', 'decl_cy', sep=',\n')|indent(14)}}):
+        '''
+        {{algo}}.setup({{input_args|fmt('{}', 'name', sep=', ')}})
+        Setup (partial) input data for using algorithm object in other algorithms.
+
+        {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
+        :rtype: None
+        '''
         if self.c_ptr == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr

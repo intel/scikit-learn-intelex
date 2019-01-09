@@ -62,13 +62,15 @@ def flat(typ):
 
 def cy_callext(arg, typ_cy, typ_cyext, s2e=None):
     '''Where needed decorate argument with conversion when calling C++ from cython'''
-    if 'table_or_flist' in typ_cy:
-        return 'mk_table_or_flist({0})'.format(arg)
+    if 'data_or_file' in typ_cy:
+        return 'mk_data_or_file({0})'.format(arg)
     if 'dict_numerictable' in typ_cy:
         return 'make_dnt(<PyObject *>' + arg + ((', ' + s2e) if s2e else '') + ')'
+    if 'list_numerictable' in typ_cy:
+        return 'make_datacoll(<PyObject *>' + arg + ')'
     if 'numerictable' in typ_cy:
         return 'make_nt(<PyObject *>' + arg + ')'
-    if any(typ_cy.endswith(x) for x in ['__iface__', 'model']):
+    if any(typ_cy.endswith(x) for x in ['__iface__', 'model', '_result']):
         return arg + '.c_ptr if ' + arg + ' != None else <' + typ_cyext + ' *>0'
     if 'std_string' in typ_cy:
         return 'to_std_string(<PyObject *>' + arg + ')'
@@ -127,15 +129,15 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
                     typ_cy = typ_cy[:-3]
                     const = ''
                 # some types we accept without type in cython, because we have custom converters
-                notyp_cy = ['table_or_flist', 'std_string', 'numerictable']
+                notyp_cy = ['data_or_file', 'std_string', 'numerictable']
 
                 # we have a few C (not C++) interfaces, usually not a problem for types
                 decl_c = '{}{} {}'.format(typ_flat, ptr, d4pname)
                 arg_c = d4pname
                 # arrays/tables need special handling for C: they are passed as (ptr, dim1, dim2)
-                if typ_cy == 'table_or_flist':
+                if typ_cy == 'data_or_file':
                     decl_c = 'double* {0}_p, size_t {0}_d2, size_t {0}_d1'.format(d4pname)
-                    arg_c = 'new table_or_flist(daal::data_management::HomogenNumericTable< double >::create({0}_p, {0}_d2, {0}_d1))'.format(d4pname)
+                    arg_c = 'new data_or_file(daal::data_management::HomogenNumericTable< double >::create({0}_p, {0}_d2, {0}_d1))'.format(d4pname)
                     const = ''
                 # default values (see above pydefaults)
                 if dflt != None:

@@ -158,19 +158,19 @@ struct IOManager
     }
 };
 
-struct table_or_flist
+struct data_or_file
 {
     mutable daal::data_management::NumericTablePtr table;
     std::string                                    file;
-    inline table_or_flist(daal::data_management::NumericTablePtr t)
+    inline data_or_file(daal::data_management::NumericTablePtr t)
         : table(t), file() {}
-    inline table_or_flist()
+    inline data_or_file()
         : table(), file() {}
-    table_or_flist(PyObject *);
+    data_or_file(PyObject *);
 };
 
 // return input as DAAL numeric table.
-extern const daal::data_management::NumericTablePtr get_table(const table_or_flist & t);
+extern const daal::data_management::NumericTablePtr get_table(const data_or_file & t);
 
 template< typename T >
 struct RAW
@@ -188,8 +188,8 @@ struct RAW< daal::services::SharedPtr< T > >
 
 template< typename T > T to_daal(T t) {return t;}
 template< typename T > daal::services::SharedPtr<T> to_daal(daal::services::SharedPtr<T>* t) {return *t;}
-inline const table_or_flist & to_daal(const table_or_flist * t) {return *t;}
-inline const table_or_flist & to_daal(table_or_flist * t) {return *t;}
+inline const data_or_file & to_daal(const data_or_file * t) {return *t;}
+inline const data_or_file & to_daal(data_or_file * t) {return *t;}
 
 template< typename T >
 void * get_nt_data_ptr(const daal::data_management::NumericTablePtr * ptr)
@@ -210,12 +210,15 @@ const float NaN32 = std::numeric_limits<float>::quiet_NaN();
 
 typedef daal::data_management::DataCollectionPtr data_management_DataCollectionPtr;
 typedef daal::data_management::NumericTablePtr data_management_NumericTablePtr;
+typedef daal::data_management::DataCollectionPtr list_NumericTablePtr;
 typedef daal::data_management::KeyValueDataCollectionPtr dict_NumericTablePtr;
 
 extern "C" void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data, size_t * dims, char dtype = 0);
 extern PyObject * make_nda(daal::data_management::NumericTablePtr * nt_ptr);
+extern PyObject * make_nda(daal::data_management::DataCollectionPtr * nt_ptr);
 extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * nt_ptr, const i2str_map_t &);
 extern daal::data_management::NumericTablePtr * make_nt(PyObject * nda);
+extern daal::data_management::DataCollectionPtr * make_datacoll(PyObject * nda);
 extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t &);
 
 extern const daal::data_management::NumericTablePtr readCSV(const std::string& fname);
