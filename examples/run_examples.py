@@ -20,8 +20,12 @@ import struct
 import subprocess
 import sys
 
+from daal4py import __daal_link_version__ as dv
+daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+
 from os.path import join as jp
 from time import gmtime, strftime
+from collections import defaultdict
 
 exdir = os.path.dirname(os.path.realpath(__file__))
 
@@ -34,7 +38,23 @@ if 8 * struct.calcsize('P') == 32:
 else:
     logdir = jp(exdir, '_results', 'intel64')
 
+req_version = defaultdict(lambda:(2019,0))
+req_version['decision_forest_classification_batch.py'] = (2019,1)
+req_version['decision_forest_regression_batch.py'] = (2019,1)
+req_version['adaboost_batch.py'] = (2019,2)
+req_version['brownboost_batch.py'] = (2019,2)
+req_version['logitboost_batch.py'] = (2019,2)
+req_version['covariance_batch.py'] = (2019,2)
+req_version['covariance_streaming.py'] = (2019,2)
+req_version['low_order_moms_dense_batch.py'] = (2019,2)
+req_version['low_order_moms_streaming.py'] = (2019,2)
+req_version['stump_classification_batch.py'] = (2019,2)
+req_version['stump_regression_batch.py'] = (2019,2)
+req_version['saga_batch.py'] = (2019,2)
+
 def get_exe_cmd(ex, nodist, nostream):
+    if req_version[os.path.basename(ex)] > daal_version:
+        return None
     if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
         return '"' + sys.executable + '" "' + ex + '"'
     if not nostream and ex.endswith('streaming.py'):

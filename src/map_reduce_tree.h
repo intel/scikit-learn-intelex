@@ -45,6 +45,7 @@ public:
                 if(rank >= cN) {
                     // Upper half of processes send their stuff to lower half
                     MPI4DAAL::send(inp, rank - cN, REDTAG);
+                    break;
                 } else if(rank + cN < nRanks) {
                     // lower half of processes receives message and computes partial reduction
                     std::vector<typename Algo::iomstep1Local_type::result_type> p_results(2);

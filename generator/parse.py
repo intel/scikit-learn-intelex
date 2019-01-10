@@ -41,11 +41,9 @@
 #  - at least one class/func uses a compute method:     gdict['needs_methods']
 #  - string of errors encountered (templates)           gdict['error_template_string']
 #  - set of steps found (for distributed)               gdict['steps']
-# Note that (partial) template class specializations will get separate entires in 'classes'.
-# The speicializing template arguments will be appended to the class name and the member
-# attribute partial set to true.
-#
-# Yes: the get/set business needs some reworking.
+# Note that (partial) template class specializations will get separate entries in 'classes'.
+# The specializing template arguments will get appended to the class name and the member
+# attribute 'partial' set to true.
 #
 # The context keeps parsing context/state such as the current class. Parser specific
 # states should be stored in the parser object itself.
@@ -59,15 +57,21 @@
 #   - the innermost namespace must be 'interface1'
 #   - enum values are defined one per separate line
 #   - templates are particularly difficult
-#     - "template<.*>" should be on a separate line
+#     - "template<.*>" should be on a separate line than template name
 #     - "template<.*>" must be on a single line
 #     - implementation body should start on a separate line
 #     - special types we detect:
 #       - steps
 #       - methods: the argument type must end with 'Method'
 #         we do not understand or map the actual type
+#   - end of struct/class/enum/namespace '};' must be in a separate line
+#     any other code in the same line will result in errorneous parsing
+#   - within a class-declaration, '}\s*;' is not allowed
+#     (except to end the class-def)
 #   - forward declarations for non-template classes/structs are ignored
 #     (such as "class myclass;")
+#   - template member functions for getting/setting values are only supported
+#     for a single template argument (fptype) and no parameters
 ###############################################################################
 ###############################################################################
 
@@ -83,6 +87,7 @@ class cpp_class(object):
         self.members = OrderedDict() # dictionary mapping member names to their types
         self.sets = OrderedDict() # dictionary mapping set enum type to input type
         self.arg_sets = OrderedDict() # dictionary mapping set enum type to input type and argument
+        self.arg_gets = OrderedDict() # dictionary mapping set enum type to input type and argument
         self.setgets = []         # set and get methods, formatted for %rename
         self.gets = {}            # getXXX methods and return type
         self.templates = []       # template member functions
@@ -110,7 +115,7 @@ class ns_parser(object):
 class eos_parser(object):
     """detect end of struct/class/enum '};'"""
     def parse(self, l, ctxt):
-        m = re.match(r'^\w*}\w*;\w*$', l)
+        m = re.match(r'^\s*}\s*;\s*$', l)
         if m:
             ctxt.enum = False
             ctxt.curr_class = False
@@ -194,27 +199,45 @@ class step_parser(object):
 class setget_parser(object):
     """Parse a set/get methods"""
     def parse(self, l, ctxt):
-        if ctxt.curr_class and ctxt.access and not ctxt.template:
+        if ctxt.curr_class and ctxt.access:
             mgs = re.match(r'\s*using .+::(get|set);', l)
             if mgs:
+                assert not ctxt.template
                 ctxt.gdict['classes'][ctxt.curr_class].setgets.append(l.strip(' ;'))
                 return True
             mgs = re.match(r'(\s*)([^\(=\s]+\s+)((get|set)(\(((\w|:)+).*\)))', l)
             if mgs:
+                assert not ctxt.template
                 ctxt.gdict['classes'][ctxt.curr_class].setgets.append([mgs.group(4), mgs.group(2), mgs.group(6), mgs.group(3)])
                 # map input-enum to object-type and optional arg
-                # gets are easier to parse, we assume we have a set for every get
-                if mgs.group(4) == 'get':
+                if mgs.group(4) == 'get': # a getter
+                    name = mgs.group(6).strip()
                     if(',' in mgs.group(3)):
                         arg = mgs.group(3).strip(')').split(',')[1].strip().split(' ')
-                        ctxt.gdict['classes'][ctxt.curr_class].arg_sets[mgs.group(6).strip()] = (mgs.group(2).strip(), arg)
+                        ctxt.gdict['classes'][ctxt.curr_class].arg_gets[name] = (mgs.group(2).strip(), arg)
                     else:
-                        ctxt.gdict['classes'][ctxt.curr_class].sets[mgs.group(6).strip()] = mgs.group(2).strip()
+                        ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(2).strip()
+                else: # a setter
+                    args = mgs.group(3).split('{')[0].strip(')').strip().split(',')
+                    name = mgs.group(6).strip()
+                    typ  = args[-1].replace('const', '').strip().split(' ')[0].strip()
+                    if len(args) > 2:
+                        val  = args[1].strip().split(' ')
+                        ctxt.gdict['classes'][ctxt.curr_class].arg_sets[name] = (typ, val)
+                    else:
+                        ctxt.gdict['classes'][ctxt.curr_class].sets[name] = typ
                 return True
-            mgs = re.match(r'\s*(?:virtual\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*\)', l)
+            mgs = re.match(r'\s*(?:(?:virtual|DAAL_EXPORT)\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*\)', l)
             if mgs:
-                ctxt.gdict['classes'][ctxt.curr_class].gets[mgs.group(4)] = mgs.group(1)
-                return True
+                name = mgs.group(4)
+                if name not in ['getSerializationTag']:
+                    if ctxt.template and name.startswith('get'):
+                        assert len(ctxt.template) == 1 and ctxt.template[0][1] == 'fptypes'
+                        ctxt.gdict['classes'][ctxt.curr_class].gets[name] = ('double', '<double>')
+                        return False
+                    else:
+                        ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(1)
+                        return True
             # some get-methods accept an argument!
             # We support only a single argument for now, and only simple types like int, size_t etc, no refs, no pointers
             mgs = re.match(r'\s*(?:virtual\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*((?:\w|_)+)\s+((?:\w|_)+)\s*\)', l)
@@ -327,6 +350,7 @@ class class_template_parser(object):
                 if m.group(5) not in ctxt.ignores:
                     ctxt.gdict['classes'][ctxt.curr_class].templates.append([ctxt.curr_class + '::' + m.group(5), ctxt.template])
                     ctxt.template = False
+                    return True
                 else:
                     pass
                 #error_template_string += fname + ':\n\tignoring ' + m.group(5)
@@ -386,6 +410,26 @@ def parse_header(header, ignores):
         ctxt.n += 1
 
     return gdict
+
+
+def parse_version(header):
+    """Parse DAAL version strings"""
+    v = (None, None, None)
+    for l in header:
+        if '#define __INTEL_DAAL_' in l:
+            m = re.match(r'#define __INTEL_DAAL__ (\d+)', l)
+            if m:
+                v = (m.group(1), v[1], v[2])
+            m = re.match(r'#define __INTEL_DAAL_MINOR__ (\d+)', l)
+            if m:
+                v = (v[0], m.group(1), v[2])
+            m = re.match(r'#define __INTEL_DAAL_UPDATE__ (\d+)', l)
+            if m:
+                v = (v[0], v[1], m.group(1))
+        if None not in v:
+            return v
+    return v
+
 
 if __name__ == "__main__":
     pass

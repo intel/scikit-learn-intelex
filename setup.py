@@ -111,7 +111,7 @@ def get_type_defines():
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
 
 def getpyexts():
-    include_dir_plat = set([os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',] + DIST_INCDIRS)
+    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',] + DIST_INCDIRS
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-DD4P_VERSION="'+d4p_version+'"', '-DNPY_ALLOW_THREADS=1'] + get_type_defines()
     ela = []
@@ -152,7 +152,7 @@ def getpyexts():
                                 [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')],
-                                include_dirs=include_dir_plat.union([np.get_include()]),
+                                include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
                                 libraries=libraries_plat,

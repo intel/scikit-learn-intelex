@@ -16,11 +16,45 @@
 
 from collections import defaultdict, OrderedDict, namedtuple
 
-# Listing requried parameters for each algorithm.
+# given a C++ namespace and a DAAL version, return if namespace/algo should be
+# wrapped in daal4py.
+def wrap_algo(algo, ver):
+    # Ignore some algos if using older DAAL
+    if ver < (2019, 2) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'covariance', 'logitboost', 'moments',]):
+        return False
+    # ignore deprecated version of stump
+    if 'stump' in algo and not any(x in algo for x in ['stump::regression', 'stump::classification']):
+        return False
+    # other deprecated algos
+    if any(x in algo for x in ['boosting', 'weak_learner']):
+        return False
+    # ignore unneeded stuff
+    if any(algo.endswith(x) for x in ['daal', 'algorithms',
+                                      'algorithms::linear_model::prediction', 'algorithms::linear_model::training',
+                                      'algorithms::classification::prediction', 'algorithms::classification::training',
+                                      'algorithms::tree_utils', 'algorithms::tree_utils::classification', 'algorithms::tree_utils::regression']):
+        return False
+    # ignore unsupported algos
+    if any(x in algo for x in ['quality_metric',]):
+        return False
+
+    return True
+
+
+# Listing required parameters for each algorithm.
 # They are used to initialize the algorithm object instead of gettings set explicitly.
 # Note: even though listed under 'Batch', they are currently also used for 'Distributed'
 #  unless explicitly provided in a step spec.
 required = {
+    'algorithms::distributions::bernoulli': {
+        'Batch': [('p', 'double')],
+    },
+    'algorithms::em_gmm': {
+        'Batch': [('nComponents', 'size_t')],
+    },
+    'algorithms::em_gmm::init': {
+        'Batch': [('nComponents', 'size_t')],
+    },
     'algorithms::kmeans': {
         'Batch': [('nClusters', 'size_t'), ('maxIterations', 'size_t')],
     },
@@ -58,6 +92,12 @@ required = {
         'Batch': [('nClasses', 'size_t')],
     },
     'algorithms::decision_forest::classification::prediction': {
+        'Batch': [('nClasses', 'size_t')],
+    },
+    'algorithms::logitboost::prediction': {
+        'Batch': [('nClasses', 'size_t')],
+    },
+    'algorithms::logitboost::training': {
         'Batch': [('nClasses', 'size_t')],
     },
     'algorithms::optimization_solver::mse': {
@@ -100,18 +140,24 @@ add_setup = [
 # List them here for the 'ignoring' algos.
 # Also lists input set/gets to ignore
 ignore = {
+    'algorithms::adaboost::training': ['weights'],
+    'algorithms::brownboost::training': ['weights'],
+    'algorithms::logitboost::training': ['weights'],
     'algorithms::svm::training': ['weights'],
     'algorithms::kdtree_knn_classification::training': ['weights'],
     'algorithms::multi_class_classifier::training': ['weights'],
     'algorithms::multinomial_naive_bayes::training': ['weights'],
     'algorithms::kmeans::init': ['nRowsTotal', 'offset',],
-    'algorithms::gbt::regression::training': ['dependentVariables'],
+    'algorithms::gbt::regression::training': ['dependentVariables', 'weights'],
     'algorithms::gbt::classification::training': ['weights',],
     'algorithms::logistic_regression::training': ['weights',],
     'algorithms::decision_tree::classification::training': ['weights',],
+    'algorithms::decision_tree::regression::training': ['weights',],
     'algorithms::decision_forest::classification::training': ['weights', 'updatedEngine',],
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', 'updatedEngine',],
+    'algorithms::linear_regression::training': ['weights',],
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',],
+    'algorithms::ridge_regression::training': ['weights',],
     'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',],
     'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
                                              'pastUpdateVector', 'pastWorkValue'],
@@ -119,8 +165,14 @@ ignore = {
                                                'correctionPairs', 'correctionIndices', 'averageArgumentLIterations',],
     'algorithms::optimization_solver::adagrad': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
                                                  'gradientSquareSum'],
+    'algorithms::optimization_solver::saga': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',],
     'algorithms::optimization_solver::objective_function': [],
     'algorithms::optimization_solver::iterative_solver': [],
+    'algorithms::normalization::minmax': ['moments'],
+    'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
+    'algorithms::pca': ['correlation'],
+    'algorithms::stump::classification::training': ['weights'],
+    'algorithms::stump::regression::training': ['weights'],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -133,6 +185,8 @@ ifaces = {
     'engines::FamilyBatchBase': ('daal::algorithms::engines::EnginePtr', 'daal::algorithms::engines::EnginePtr'),
     'optimization_solver::sum_of_functions::Batch': ('daal::algorithms::optimization_solver::sum_of_functions::BatchPtr', None),
     'optimization_solver::iterative_solver::Batch': ('daal::algorithms::optimization_solver::iterative_solver::BatchPtr', None),
+    'regression::training::Batch': ('daal::services::SharedPtr<daal::algorithms::regression::training::Batch>', None),
+    'regression::prediction::Batch': ('daal::services::SharedPtr<daal::algorithms::regression::prediction::Batch>', None),
 }
 
 # By default input arguments have no default value (e.g. they are required).
@@ -402,8 +456,13 @@ specialized = {
 }
 
 no_warn = {
-    'algorithms::classifier': ['Result',],
+    'algorithms::adaboost': ['Result',],
+    'algorithms::boosting': ['Result',],
+    'algorithms::brownboost': ['Result',],
     'algorithms::cholesky::Batch': ['ParameterType',],
+    'algorithms::classifier': ['Result',],
+    'algorithms::correlation_distance::Batch': ['ParameterType',],
+    'algorithms::cosine_distance::Batch': ['ParameterType',],
     'algorithms::decision_forest': ['Result',],
     'algorithms::decision_forest::classification': ['Result',],
     'algorithms::decision_forest::regression': ['Result',],
@@ -419,21 +478,38 @@ no_warn = {
     'algorithms::gbt::classification': ['Result',],
     'algorithms::gbt::regression': ['Result',],
     'algorithms::gbt::training': ['Result',],
-    'algorithms::logistic_regression': ['Result',],
+    'algorithms::implicit_als': ['Result',],
+    'algorithms::implicit_als::prediction': ['Result',],
+    'algorithms::kdtree_knn_classification': ['Result',],
     'algorithms::linear_model': ['Result',],
     'algorithms::linear_regression': ['Result',],
-    'algorithms::kdtree_knn_classification': ['Result',],
     'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
-    'algorithms::ridge_regression': ['Result',],
-    'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
+    'algorithms::logistic_regression': ['Result',],
+    'algorithms::math': ['Result',],
+    'algorithms::math::abs::Batch': ['ParameterType',],
+    'algorithms::math::logistic::Batch': ['ParameterType',],
+    'algorithms::math::relu::Batch': ['ParameterType',],
+    'algorithms::math::smoothrelu::Batch': ['ParameterType',],
+    'algorithms::math::softmax::Batch': ['ParameterType',],
+    'algorithms::math::tanh::Batch': ['ParameterType',],
     'algorithms::multi_class_classifier': ['Result',],
     'algorithms::multinomial_naive_bayes': ['Result',],
     'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
-    'algorithms::svm': ['Result',],
-    'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
+    'algorithms::normalization': ['Result',],
+    'algorithms::normalization::zscore::Batch': ['ParameterType',],
+    'algorithms::logitboost': ['Result',],
     'algorithms::optimization_solver': ['Result',],
-    'algorithms::cosine_distance::Batch': ['ParameterType',],
-    'algorithms::correlation_distance::Batch': ['ParameterType',],
+    'algorithms::qr::Batch': ['ParameterType',],
+    'algorithms::regression': ['Result',],
+    'algorithms::ridge_regression': ['Result',],
+    'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
+    'algorithms::sorting::Batch': ['ParameterType',],
+    'algorithms::svm': ['Result',],
+    'algorithms::stump::classification': ['Result',],
+    'algorithms::stump::regression': ['Result',],
+    'algorithms::stump::regression::prediction::Batch': ['ParameterType',],
+    'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
+    'algorithms::weak_learner': ['Result',],
 }
 
 # we need to be more specific about numeric table types for the lowering phase in HPAT

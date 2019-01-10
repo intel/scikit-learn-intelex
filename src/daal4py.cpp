@@ -107,6 +107,8 @@ void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
     PyArray_SetBaseObject(ary, cap);
 }
 
+// *****************************************************************************
+
 // Uses a shared pointer to a raw array (T*) for creating a nd-array
 template<typename T, int NPTYPE>
 static PyObject * _sp_to_nda(daal::services::SharedPtr< T > & sp, size_t nr, size_t nc)
@@ -192,6 +194,21 @@ PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
     if((res = _make_nda_from_bd<double, NPY_FLOAT64>(ptr)) != NULL) return res;
 
     throw std::invalid_argument("Got unsupported table type.");
+}
+
+// Create a list of numpy arrays
+extern PyObject * make_nda(daal::data_management::DataCollectionPtr * coll)
+{
+    if(PyErr_Occurred()) {PyErr_Print(); PyErr_Clear();}
+    if(!coll) return Py_None;
+    auto n = (*coll)->size();
+    PyObject *list = PyList_New(n);
+    for(auto i=0; i<n; ++i) {
+        daal::data_management::NumericTablePtr nt = daal::services::dynamicPointerCast<daal::data_management::NumericTable>((*coll)->get(i));
+        PyList_SetItem(list, i, make_nda(&nt));
+        if(PyErr_Occurred()) { PyErr_Print(); throw std::runtime_error("Python error"); }
+    }
+    return list;
 }
 
 extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * dict, const i2str_map_t & id2str)
@@ -321,6 +338,10 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
 #undef SETARRAY_
 
                 }
+                if(soatbl->getNumberOfColumns() != N) {
+                    delete soatbl;
+                    throw std::runtime_error("Creating DAAL SOA table from list failed.");
+                }
                 ptr = soatbl;
             } // else not a list of 1d arrays
         } // else not a list of 1d arrays
@@ -419,7 +440,7 @@ extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * di
     return dc;
 }
 
-table_or_flist::table_or_flist(PyObject * input)
+data_or_file::data_or_file(PyObject * input)
 {
     this->table.reset();
     this->file.resize(0);
@@ -440,7 +461,7 @@ table_or_flist::table_or_flist(PyObject * input)
     }
 }
 
-const daal::data_management::NumericTablePtr get_table(const table_or_flist & t)
+const daal::data_management::NumericTablePtr get_table(const data_or_file & t)
 {
     if(t.table) return t.table;
     if(t.file.size()) return readCSV(t.file);
@@ -486,6 +507,27 @@ void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data
     dims[0] = dims[1] = 0;
     return;
 }
+
+
+daal::data_management::DataCollectionPtr * make_datacoll(PyObject * input)
+{
+    if(PyErr_Occurred()) {PyErr_Print(); PyErr_Clear();}
+    if(input && input != Py_None && PyList_Check(input) && PyList_Size(input) > 0) {
+        auto n = PyList_Size(input);
+        daal::data_management::DataCollection * res = new daal::data_management::DataCollection;
+        res->resize(n);
+        for(auto i = 0; i < n; i++) {
+            PyObject * obj = PyList_GetItem(input, i);
+            if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
+            auto tmp = make_nt(obj);
+            if(tmp) res->push_back(*tmp);
+            else throw std::runtime_error(std::string("Unexpected object '") + Py_TYPE(obj)->tp_name + "' found in list, expected an array");
+        }
+        return new daal::data_management::DataCollectionPtr(res);
+    }
+    return NULL;
+}
+
 
 static int64_t getval_(const std::string& str, const str2i_map_t & strmap)
 {
