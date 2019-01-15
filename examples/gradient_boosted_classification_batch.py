@@ -33,7 +33,7 @@ except:
 def main(readcsv=read_csv, method='defaultDense'):
     nFeatures = 3
     nClasses = 5
-    maxIterations = 40
+    maxIterations = 200
     minObservationsInLeafNode = 8
     # input data file
     infile = "./data/batch/df_classification_train.csv"
@@ -54,12 +54,12 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_algo = d4p.gbt_classification_prediction(5)
     # read test data (with same #features)
     pdata = readcsv(testfile, range(3), t=np.float32)
-    plabels = readcsv(testfile, range(3,4), t=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    assert(predict_result.prediction.shape == (pdata.shape[0], 1))
+    plabels = readcsv(testfile, range(3,4), t=np.float32)
+    assert np.count_nonzero(predict_result.prediction-plabels)/pdata.shape[0] < 0.022
 
     return (train_result, predict_result, plabels)
 

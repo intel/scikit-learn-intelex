@@ -109,7 +109,7 @@ gen_examples = [
     ('distributions_normal_batch',),
     ('distributions_uniform_batch',),
     ('em_gmm_batch', 'em_gmm.csv', lambda r: r.covariances[0]),
-    ('gradient_boosted_classification_batch', 'gradient_boosted_classification_batch.csv', lambda r: r[1].prediction),
+    ('gradient_boosted_classification_batch',),
     ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
     ('kmeans_batch', 'kmeans_batch.csv', 'centroids'),
     ('lbfgs_cr_entr_loss_batch', 'lbfgs_cr_entr_loss_batch.csv', 'minimum'),
