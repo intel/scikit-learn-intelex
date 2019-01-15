@@ -915,7 +915,7 @@ class cython_interface(object):
                     dtypes    += tmp[6]
 
         hds = wg.gen_headers()
-        fts = wg.gen_footers(no_dist, no_stream)
+        fts = wg.gen_footers(no_dist, no_stream, algos, version, [x for x in has_dist if has_dist[x]["pattern"] == "dist_custom"])
         pyx_end += fts[1]
 
         # Finally combine the different sections and return the 3 strings
@@ -952,16 +952,3 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
         f.write(pyx_file)
         f.write(pyx_gettree)
-        f.write('cdef extern from "daal.h":\n')
-        f.write('    cdef const long long INTEL_DAAL_VERSION\n')
-        f.write('    cdef const long long __INTEL_DAAL_BUILD_DATE\n\n')
-        f.write('    cppclass LibraryVersionInfo:\n')
-        f.write('        LibraryVersionInfo()\n')
-        f.write('        int majorVersion, minorVersion, updateVersion\n')
-        f.write('        char * build_rev\n\n')
-        f.write('__version__ = "{}"\n'.format(version))
-        f.write('__daal_link_version__ = "{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_BUILD_DATE)\n')
-        f.write('cdef _get__daal_run_version__():\n')
-        f.write('    cdef LibraryVersionInfo li\n')
-        f.write('    return "{}{}{}_{}".format(li.majorVersion, str(li.minorVersion).zfill(2), str(li.updateVersion).zfill(2), li.build_rev)\n\n')
-        f.write('__daal_run_version__ = _get__daal_run_version__()\n')
