@@ -40,7 +40,7 @@ def add_test(cls, e, f=None, attr=None, ver=(0,0)):
         result = self.call(ex)
         if f and attr:
             testdata = np_read_csv(os.path.join(unittest_data_path, f))
-            self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata, atol=1e-06))
+            self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata, atol=1e-05))
         else:
             self.assertTrue(True)
     setattr(cls, 'test_'+e, testit)
