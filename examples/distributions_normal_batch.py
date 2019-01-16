@@ -37,7 +37,5 @@ def main(readcsv=None, method='defaultDense'):
 
 if __name__ == "__main__":
     res = main()
-    np.set_printoptions(threshold=np.nan)
-    np.set_printoptions(linewidth=np.nan)
     print("\nNormal distribution output:", res)
     print("All looks good!")

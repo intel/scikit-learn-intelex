@@ -40,7 +40,7 @@ def add_test(cls, e, f=None, attr=None, ver=(0,0)):
         result = self.call(ex)
         if f and attr:
             testdata = np_read_csv(os.path.join(unittest_data_path, f))
-            self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata, atol=1e-06))
+            self.assertTrue(np.allclose(attr(result) if callable(attr) else getattr(result, attr), testdata, atol=1e-05))
         else:
             self.assertTrue(True)
     setattr(cls, 'test_'+e, testit)
@@ -109,7 +109,7 @@ gen_examples = [
     ('distributions_normal_batch',),
     ('distributions_uniform_batch',),
     ('em_gmm_batch', 'em_gmm.csv', lambda r: r.covariances[0]),
-    ('gradient_boosted_classification_batch', 'gradient_boosted_classification_batch.csv', lambda r: r[1].prediction),
+    ('gradient_boosted_classification_batch',),
     ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
     ('kmeans_batch', 'kmeans_batch.csv', 'centroids'),
     ('lbfgs_cr_entr_loss_batch', 'lbfgs_cr_entr_loss_batch.csv', 'minimum'),
