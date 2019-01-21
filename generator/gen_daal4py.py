@@ -886,7 +886,7 @@ class cython_interface(object):
                     dtypes    += tmp[6]
 
         hds = wg.gen_headers()
-        fts = wg.gen_footers(no_dist, no_stream, algos, version)
+        fts = wg.gen_footers(no_dist, no_stream, algos, version, [x for x in has_dist if has_dist[x]["pattern"] == "dist_custom"])
         pyx_end += fts[1]
 
         # Finally combine the different sections and return the 3 strings
