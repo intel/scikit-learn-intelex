@@ -676,8 +676,6 @@ class cython_interface(object):
                     if a not in all_params:
                         all_params[a] = parms[a]
 
-            print('llll', ns, opt_params.keys())
-
             bcls = '::'.join([ns, 'Batch'])
             if bcls in no_constructor:
                 # Special mode were we have no parameters/constructor, but a create method

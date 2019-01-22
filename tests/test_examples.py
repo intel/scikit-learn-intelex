@@ -56,13 +56,6 @@ class Base():
         (_, predict_result, test_labels) = self.call(ex)
         self.assertTrue(np.count_nonzero(test_labels != predict_result.prediction) < 170)
 
-    def test_gradient_boosted_regression_batch(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "gradient_boosted_regression_batch.csv"), range(1))
-        import gradient_boosted_regression_batch as ex
-        (_, predict_result, _) = self.call(ex)
-        #MSE
-        self.assertTrue(np.square(predict_result.prediction - testdata).mean() < 1e-2)
-
     def test_svd_batch(self):
         import svd_batch as ex
         (data, result) = self.call(ex)
@@ -110,6 +103,7 @@ gen_examples = [
     ('distributions_uniform_batch',),
     ('em_gmm_batch', 'em_gmm.csv', lambda r: r.covariances[0]),
     ('gradient_boosted_classification_batch',),
+    ('gradient_boosted_regression_batch',),
     ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
     ('kmeans_batch', 'kmeans_batch.csv', 'centroids'),
     ('lbfgs_cr_entr_loss_batch', 'lbfgs_cr_entr_loss_batch.csv', 'minimum'),
