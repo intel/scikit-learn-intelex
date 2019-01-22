@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2018 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -172,7 +172,17 @@ class cython_interface(object):
                             self.namespace_dict[pns].children.add(ns)
                         self.namespace_dict[ns].includes = self.namespace_dict[ns].includes.union(parsed_data['includes'])
                         self.namespace_dict[ns].steps = self.namespace_dict[ns].steps.union(parsed_data['steps'])
-                        self.namespace_dict[ns].classes.update(parsed_data['classes'])
+                        # we support multiple interface* namespaces for class defs
+                        for c in parsed_data['classes']:
+                            if 'interface' not in c:
+                                self.namespace_dict[ns].classes[c] = parsed_data['classes'][c]
+                            else:
+                                tmp = splitns(c)
+                                subns = '{}::{}'.format(ns, tmp[0])
+                                if subns not in self.namespace_dict:
+                                    self.namespace_dict[subns] = namespace(subns)
+                                self.namespace_dict[subns].classes[tmp[1]] = parsed_data['classes'][c]
+                                self.namespace_dict[subns].classes[tmp[1]].name = tmp[1]
                         self.namespace_dict[ns].enums.update(parsed_data['enums'])
                         self.namespace_dict[ns].typedefs.update(parsed_data['typedefs'])
                         self.namespace_dict[ns].headers.append(fname.replace(self.include_root, '').lstrip('/'))
@@ -188,7 +198,7 @@ class cython_interface(object):
 ###############################################################################
 # Postprocessing starts here
 ###############################################################################
-    def get_ns(self, ns, c, attrs=['classes', 'enums', 'typedefs']):
+    def get_ns(self, ns, c_, attrs=['classes', 'enums', 'typedefs']):
         """
         Find class c starting in namespace ns.
         We search all entries given in attrs - not only 'classes'.
@@ -196,16 +206,18 @@ class cython_interface(object):
         We go up to all enclosing namespaces of ns until we find c (e.g. current-namespace::c)
         or we reached the global namespace.
         """
-        # first let's get rid of 'interface*'
-        c = re.sub(r'interface\d+::', r'', c)
+        if not c_.startswith('interface'):
+            # Let's get rid of 'interface*'
+            c = re.sub(r'interface\d+::', r'', c_)
+        else:
+            c = c_
         # we need to cut off leading daal::
         if c.startswith('daal::'):
             c = c[6:]
-        tmp = c.split('::')
         tmp = splitns(c)
-        cns = ('::' + tmp[0]) if len(tmp) == 2 else '::' # the namespace-part of our class
-        cname = tmp[-1]                                  # class name (stripped off namespace)
-        currns = ns + cns   # current namespace in which we look for c
+        cns = ('::' + tmp[0]) # the namespace-part of our class
+        cname = tmp[-1]       # class name (stripped off namespace)
+        currns = ns + cns     # current namespace in which we look for c
         done = False
         while currns and not done:
             # if in the outmost level we only have cns, which starts with '::'
@@ -250,12 +262,13 @@ class cython_interface(object):
             if not ignored(ons, n):
                 pmembers[n] = tmp[a]
         for parent in self.namespace_dict[ns].classes[cls].parent:
-            parentclass = cls
-            pns = ns
             # we need to cut off leading daal::
             sanep = parent.split()[-1].replace('daal::', '')
             parentclass = splitns(sanep)[1]
-            pns = self.get_ns(pns, sanep)
+            pns = self.get_ns(ns, sanep)
+            if pns != None and 'interface' not in parent and ns == pns and self.namespace_dict[ns].classes[cls].iface != self.namespace_dict[pns].classes[parentclass].iface:
+                    sanep = '{}::{}'.format(self.namespace_dict[ns].classes[cls].iface, sanep)
+                    pns = self.get_ns(ns, sanep)
             if pns != None:
                 pms = self.get_all_attrs(pns, parentclass, attr, ons)
                 for x in pms:
@@ -371,17 +384,25 @@ class cython_interface(object):
 ###############################################################################
     def get_class_for_typedef(self, ns, cls, td):
         """
-        Find the Result type for given algorithm in the C++ namespace hierachy.
+        Find the Result type for given algorithm in the C++ class and namespace hierachy.
         Strips off potential SharedPtr def.
+        Note: we assume there are no typedefs *Type outside classes
         """
-        if ns not in self.namespace_dict or cls not in self.namespace_dict[ns].classes or td not in self.namespace_dict[ns].classes[cls].typedefs:
+        if ns not in self.namespace_dict or cls not in self.namespace_dict[ns].classes:
+            return None
+        if td not in self.namespace_dict[ns].classes[cls].typedefs:
+            # Note: we assume there are no typedefs *Type outside classes
+            for parent in self.namespace_dict[ns].classes[cls].parent:
+                res = self.get_class_for_typedef(self.get_ns(ns, parent), splitns(parent)[1], td)
+                if res:
+                    return res
             return None
 
         res =  self.namespace_dict[ns].classes[cls].typedefs[td]
         tmp = splitns(res)
         ret = None
         if res.endswith('Type'):
-            # this is a dirty hack: we assume there are no typedefs *Type outside classes
+            # Note: we assume there are no typedefs *Type outside classes
             assert res.endswith(td)
             ret = self.get_class_for_typedef(self.get_ns(ns, tmp[0]), splitns(tmp[0])[1], tmp[1])
             if not ret and '<' in tmp[0]:
@@ -549,6 +570,29 @@ class cython_interface(object):
                 input_args.append(tmp_input_args[i])
         return input_args
 
+###############################################################################
+    def get_template_specializations(self, ns, cls):
+        res = []
+        pat = cls+'<'
+        for c in self.namespace_dict[ns].classes:
+            if c.startswith(pat):
+                res.append((ns, self.namespace_dict[ns].classes[c]))
+        return res
+
+
+###############################################################################
+    def get_all_parameter_classes(self, ns):
+        res = []
+        for c in self.namespace_dict[ns].classes:
+            if any(re.match(r'{}(<.+>)?$'.format(x), c) for x in ['Batch', 'Online', 'Distributed']):
+                p = self.get_class_for_typedef(ns, c, 'ParameterType')
+                if p and p not in res:
+                    res.append((p[0], self.namespace_dict[p[0]].classes[p[1]]))
+                    t = self.get_template_specializations(*p)
+                    if t:
+                        res += t
+        return res
+
 
 ###############################################################################
     def prepare_hlwrapper(self, ns, mode, func, no_dist, no_stream):
@@ -572,7 +616,7 @@ class cython_interface(object):
 
         Next we extract type-map (native_type) information for Model and Result types.
         """
-        if mode in self.namespace_dict[ns].classes:
+        if mode in self.namespace_dict[ns].classes and self.namespace_dict[ns].classes[mode].template_args:
             ins = splitns(self.namespace_dict[ns].classes[mode].typedefs['InputType'])[0] if 'InputType' in self.namespace_dict[ns].classes[mode].typedefs else ns
             jparams = {'ns': ns,
                        'algo': func,
@@ -581,42 +625,26 @@ class cython_interface(object):
                        'template_args': [],
                        'params_opt': [],
                        'params_req': [],
+                       'params_get': 'parameter',
+                       'params_templ': {},
+                       'opt_params': [],
                        's1': 'step1Local',
                        's2': 'step2Master',
-                   }
-            # at this point required parameters need to be explicitly/maually provided in wrappers.required
-            if ns in required and mode in required[ns]:
-                jparams['params_req'] = [mk_var(x[0], x[1], algo=func) for x in required[ns][mode]]
+            }
+            # at this point required parameters need to be explictly/manually provided in wrappers.required
+            params_req = [mk_var(x[0], x[1], algo=func) for x in required[ns]] if ns in required else []
             f = ''
-            tdecl = []
             if self.namespace_dict[ns].classes[mode].template_args:
-                if ns in specialized and mode in specialized[ns]:
-                    # there might be specialized template classes, we provide explicit specs
-                    v = specialized[ns][mode]
-                    tdecl.append({'template_decl': v['tmpl_decl'],
-                                  'template_args': [mk_var(x,
-                                                           'std::string&',
-                                                           'const',
-                                                           v['tmpl_decl'][x]['default'],
-                                                           algo=func) for x in v['tmpl_decl']],
-                                  'pargs': None,
-                                  'incomplete': True,})
-                    for s in v['specs']:
-                        tdecl.append({'template_decl': OrderedDict([(re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', x),
-                                                                     v['tmpl_decl'][x]) for x in s['template_decl']]),
-                                      'template_args': [mk_var(s['expl'][x] if x in s['expl'] else x, 'std::string&', 'const', algo=func) for x in v['tmpl_decl']],
-                                      'pargs': [s['expl'][x] for x in s['expl']]})
-                else:
-                    # 'normal' template
-                    tdecl.append({'template_decl': OrderedDict([(t[0], {'template_decl': self.get_tmplarg(ns, t[1]),
-                                                                        'values': self.get_values(ns, t[1]),
-                                                                        'default': t[2].replace('DAAL_ALGORITHM_FP_TYPE', 'double')}) for t in self.namespace_dict[ns].classes[mode].template_args]),
-                                  'template_args': [mk_var(t[0],
-                                                           'std::string&',
-                                                           'const',
-                                                           t[2].replace('DAAL_ALGORITHM_FP_TYPE', 'double'),
-                                                           algo=func) for t in self.namespace_dict[ns].classes[mode].template_args],
-                                  'pargs': None,})
+                jparams['params_templ'] = {
+                    'template_decl': OrderedDict([(t[0], {'template_decl': self.get_tmplarg(ns, t[1]),
+                                                          'values': self.get_values(ns, t[1]),
+                                                          'default': t[2].replace('DAAL_ALGORITHM_FP_TYPE', 'double')}) for t in self.namespace_dict[ns].classes[mode].template_args]),
+                    'template_args': [mk_var(t[0],
+                                             'std::string&',
+                                             'const',
+                                             t[2].replace('DAAL_ALGORITHM_FP_TYPE', 'double'),
+                                             algo=func) for t in self.namespace_dict[ns].classes[mode].template_args]
+                }
 
             # A parameter can be a specialized template. Sigh.
             # we need to provide specialized template classes for them.
@@ -624,82 +652,83 @@ class cython_interface(object):
             # and the first entry is the base/"real" template spec, following entries are specializations.
             # At some point we might have other things that influence this (like result or input).
             # for now, we only check for Parameter specializations
-            #params_opt, params_req, call_opt, call_req = [], [], [], []
-            call_opt, call_req = [], []
-            for td in tdecl:
-                if 'template_args' in td:
-                    parms = None
-                    # this is a "real" template for which we need a body
-                    td['params_req'] = []
-                    td['params_opt'] = []
-                    td['params_get'] = 'parameter'
-                    pargs_exp = '<' + ','.join([splitns(x)[1] for x in td['pargs']]) + '>' if td['pargs'] else ''
-                    cls = mode + pargs_exp
-                    fcls = '::'.join([ns, cls])
-                    # Special mode were we have no parameters/constructor, but a create method
-                    if fcls in no_constructor:
-                        parms = no_constructor[fcls]
-                    else:
-                        qual_cls = '::'.join([ns, mode])
-                        if 'ParameterType' in self.namespace_dict[ns].classes[cls].typedefs:
-                            if not ignored(ns, 'ParameterType'):
-                                p = self.get_class_for_typedef(ns, cls, 'ParameterType')
-                                parms = self.get_all_attrs(p[0], p[1], 'members', ns) if p else None
-                                if not parms:
-                                    if ns in fallbacks and 'ParameterType' in fallbacks[ns]:
-                                        parms = self.get_all_attrs(*(splitns(fallbacks[ns]['ParameterType']) + ['members', ns]))
-                                if not parms:
-                                    if qual_cls not in no_warn or 'ParameterType' not in no_warn[qual_cls]:
-                                        print('// Warning: no members of "ParameterType" found for ' + qual_cls)
-                            # else nothing to do, we ignore the parameter
-                        else:
-                            if qual_cls not in no_warn or 'ParameterType' not in no_warn[qual_cls]:
-                                print('// Warning: no "ParameterType" defined for ' + qual_cls)
-                                parms = None
-                        if parms:
-                            p = self.get_all_attrs(ns, cls, 'members')
-                            if not p or not any(x.endswith('parameter') for x in p):
-                                td['params_get'] = 'parameter()'
-                        else:
-                            td['params_get'] = None
-                            continue
-                    # now we have a dict with all members of our parameter: parms
-                    # we need to inspect one by one
-                    hlts = {}
-                    #jparams['params_opt'] = []
-                    for p in parms:
-                        pns, tmp = splitns(p)
-                        if not tmp.startswith('_') and not ignored(pns, tmp):
-                            hlt = self.to_hltype(pns, parms[p])
-                            if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
-                                (hlt, hlt_type, hlt_ns) = hlt
-                                llt = self.to_lltype(parms[p])
-                                pval = None
-                                if hlt_type == 'enum':
-                                    thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
-                                    #pval = '(' + hlt_ns + '::' + llt + ')string2enum(' + tmp + ', s2e_' + hlt_ns.replace('::', '_') + ')'
-                                else:
-                                    thetype = (hlt if hlt else parms[p])
-                                    #pval = tmp
-                                if thetype != None and tmp != None:
-                                    thetype = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', thetype)
-                                    #print(tmp, thetype, pval, '_', hlt)
-                                    if any(tmp == x.name for x in jparams['params_req']):
-                                        v = mk_var(tmp, thetype, 'const', algo=func)
-                                        td['params_req'].append(v)
-                                        #params_req.append(v)
-                                    else:
-                                        prm = tmp
-                                        dflt = defaults[pns][prm] if pns in defaults and prm in defaults[pns] else True
-                                        v = mk_var(prm, thetype, 'const', dflt, algo=func)
-                                        td['params_opt'].append(v)
-                                        #params_opt.append(v)
-                                else:
-                                    print('// Warning: do not know what to do with ' + pns + ' : ' + p + '(' + parms[p] + ')')
-                            else:
-                                print('// Warning: parameter member ' + p + ' of ' + pns + ' is no stdtype, no enum and not a DAAl class. Ignored.')
 
-            # endfor td in tdecl
+            param_classes = self.get_all_parameter_classes(ns)
+            all_params = OrderedDict()
+            opt_params = {}
+            for p in param_classes:
+                parms = self.get_all_attrs(p[0], p[1].name, 'members', ns)
+                assert '::' not in p[1].name
+                # hack: we need to use fully qualified enum values, proper solution would find enum...
+                pcls = re.sub(r'(\w+\s*>)', r'daal::{}::\1', p[1].name).format(p[0])
+                # We need to rename the template args, since they might shadow the algorithm's template args (like fptype, Method)
+                if p[1].template_args and not p[1].partial:
+                    # let's format the class name as the argument including template args
+                    nm = '{}::{}<{}>'.format(p[0], pcls, ', '.join([x[0]+'_' for x in p[1].template_args]))
+                else:
+                    nm = '{}::{}'.format(p[0], pcls)
+                    if p[1].template_args:
+                        for x in p[1].template_args:
+                            nm = nm.replace(x[0], x[0]+'_')
+                if nm not in opt_params:
+                    opt_params[nm] = ([[x[0]+'_', x[1], x[2]] for x in p[1].template_args] if p[1].template_args else False, [splitns(x)[1] for x in parms])
+                for a in parms:
+                    if a not in all_params:
+                        all_params[a] = parms[a]
+
+            print('llll', ns, opt_params.keys())
+
+            bcls = '::'.join([ns, 'Batch'])
+            if bcls in no_constructor:
+                # Special mode were we have no parameters/constructor, but a create method
+                all_params = no_constructor[bcls]
+            elif len(all_params) >= 1:
+                # If we have parameters, check if we have an accessor func or a member 'parameter'
+                p = self.get_all_attrs(ns, 'Batch', 'members')
+                if not p or not any(x.endswith('parameter') for x in p):
+                    jparams['params_get'] = 'parameter()'
+            else:
+                # No parameters found
+                if ns not in no_warn or 'ParameterType' not in no_warn[ns]:
+                    print('// Warning: no parameters found for ' + ns)
+                jparams['params_get'] = None
+
+            for p in all_params:
+                pns, tmp = splitns(p)
+                if not tmp.startswith('_') and not ignored(pns, tmp):
+                    hlt = self.to_hltype(pns, all_params[p])
+                    if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
+                        (hlt, hlt_type, hlt_ns) = hlt
+                        llt = self.to_lltype(all_params[p])
+                        pval = None
+                        if hlt_type == 'enum':
+                            thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
+                        else:
+                            thetype = (hlt if hlt else all_params[p])
+                        if thetype != None and tmp != None:
+                            thetype = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', thetype)
+                            if any(tmp == x.name for x in params_req):
+                                v = mk_var(tmp, thetype, 'const', algo=func)
+                                jparams['params_req'].append(v)
+                            else:
+                                prm = tmp
+                                dflt = defaults[pns][prm] if pns in defaults and prm in defaults[pns] else True
+                                v = mk_var(prm, thetype, 'const', dflt, algo=func)
+                                jparams['params_opt'].append(v)
+                        else:
+                            print('// Warning: do not know what to do with ' + pns + ' : ' + p + '(' + all_params[p] + ')')
+                    else:
+                        print('// Warning: parameter member ' + p + ' of ' + pns + ' is no stdtype, no enum and not a DAAl class. Ignored.')
+
+            # we now prepare the optional arguments per Parameter class, so that we can generate
+            # specialized init_parameter()'s
+            for pcls in opt_params:
+                val = opt_params[pcls]
+                tmp = []
+                for opt in jparams['params_opt']:
+                    if opt.name in val[1]:
+                        tmp.append(opt)
+                jparams['opt_params'].append((pcls, val[0], tmp))
 
             # Now let's get the input arguments (provided to input class/object of algos)
             tmp_input_args = []
@@ -729,21 +758,23 @@ class cython_interface(object):
 
             # We have to bring the input args into the "right" order
             jparams['input_args'] = self.order_iargs(tmp_input_args)
-            #jparams['params_req'] = params_req
-            #jparams['params_opt'] = params_opt
             # we will need something more sophisticated if the interesting parent class is not a direct parent (a grand-parent for example)
-            prnts = list(set([cpp2hl(x) for x in ifaces if any(x.endswith(y) for y in self.namespace_dict[ns].classes[mode].parent)]))
-            jparams['iface'] = prnts if len(prnts) else list([None])
+            ifcs = []
+            for i in self.namespace_dict[ns].classes[mode].parent:
+                pns = self.get_ns(ns, i, attrs=['classes'])
+                if pns:
+                    p = '::'.join([pns.replace('algorithms::', ''), splitns(i)[1]])
+                    if p in ifaces:
+                        ifcs.append(cpp2hl(p))
+            jparams['iface'] = ifcs if len(ifcs) else [None]
         else:
             jparams = {}
-            tdecl = []
 
         # here we know parameters, inputs etc for each
         # let's store this
         fcls = '::'.join([ns, mode])
         retjp = {
             'params': jparams,
-            'sparams': tdecl,
             'model_typemap': self.prepare_modelmaps(ns),
             'result_typemap': self.prepare_resultmaps(ns),
             'create': no_constructor[fcls] if fcls in no_constructor else '',
@@ -779,8 +810,8 @@ class cython_interface(object):
                         parent = parent + 'Ptr'
                     model_hierarchy[parent].append(c['model_typemap']['class_type'])
 
-        # We now have to exapand so that each ancestor holds a list of all its decendents
-        done = 0
+        done = 0 if len(model_hierarchy) > 0 else 1
+        # We now have to expand so that each ancestor holds a list of all its decendents
         while done == 0:
             done = 0
             adds = {}
@@ -826,7 +857,7 @@ class cython_interface(object):
         algoconfig = {}
 
         algos = [x for x in self.namespace_dict if wrap_algo(x, version)]
-        assert all(x in algos for x in ['algorithms::classifier', 'algorithms::regression', 'algorithms::linear_model',])
+
         # First expand typedefs
         for ns in algos:
             self.expand_typedefs(ns)
@@ -870,7 +901,7 @@ class cython_interface(object):
                             vv = ns + '::' + v
                             cpp_begin += ' '*4 +'{daal::' + vv + ', "' + v + '"},\n'
                         cpp_begin += '};\n\n'
-                        
+
 
         for a in algoconfig:
             (ns, algo) = splitns(a)
@@ -909,6 +940,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     iface.read()
     print('Generating sources...')
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(iface.version, no_dist, no_stream)
+
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:
         f.write(cpp_h)

@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2018 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -603,7 +603,6 @@ extern "C" {{algo}}__iface__ * mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', se
 template<{% for x in template_decl %}{{template_decl[x]['template_decl'] + ' ' + x + ('' if loop.last else ', ')}}{% endfor %}>
 {% endif %}
 struct {{algo}}_manager{% if template_decl|length != template_args|length %}<{{template_args|fmt('{}', 'value')}}>{% endif %} : public {{algo}}__iface__
-{% if not incomplete %}
 {
 {{gen_typedefs(ns, template_decl, template_args, mode="Batch")}}
     {{args_all|fmt('{}', 'decl_member', sep=';\n')|indent(4)}};
@@ -643,13 +642,17 @@ struct {{algo}}_manager{% if template_decl|length != template_args|length %}<{{t
     }
 
 private:
-{% if params_opt|length and not create %}
-    template< typename PType >
-    void init_parameters(PType & parameter)
+{% for p in opt_params %}
+{% if p[2]|length and not create %}
+{% if p[1] and p[1][0][1]!='' %}
+    template<{% for i in p[1] %}{{'typename' if i[1]=='fptypes' else '::'.join(['daal', ns, i[1]])}} {{i[0]}}{% endfor %}>
+{% endif %}
+    void init_parameters(daal::{{p[0]}} & parameter)
     {
-        {{params_opt|fmt('if(! use_default({})) parameter.{} = to_daal({});', 'arg_member', 'daalname', 'todaal_member', sep='\n')|indent(8)}}
+        {{p[2]|fmt('if(! use_default({})) parameter.{} = to_daal({});', 'arg_member', 'daalname', 'todaal_member', sep='\n')|indent(8)}}
     }
 {% endif %}
+{% endfor %}
 
 {% for ifc in iface if ifc %}
     virtual {{ifc}}__iface__::{{ifc}}Ptr_type get_ptr()
@@ -715,9 +718,6 @@ public:
 {% endif %}
     }
 };
-{% else %}
-{};
-{% endif %}
 """
 
 # generates cython class wrappers for given algo
@@ -1007,55 +1007,41 @@ class wrapper_gen(object):
         if len(cfg['params']) == 0:
             return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr)
 
-
         jparams = cfg['params'].copy()
+        jparams.update(cfg['params']['params_templ'])
         jparams['create'] = cfg['create']
         jparams['add_setup']  = cfg['add_setup']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
+        jparams['params_ds'] = jparams['params_req'] + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
+        jparams['params_all'] = jparams['params_req'] + (jparams['template_args'] if jparams['template_args'] else []) + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
+        jparams['args_all']   = jparams['input_args'] + jparams['params_req'] + jparams['params_opt']
 
         for p in ['distributed', 'streaming']:
             if p in cfg:
                 jparams[p] = cfg[p]
-        tdecl = cfg['sparams']
 
         t = jenv.from_string(algo_iface_template)
         cpp_begin += t.render(**jparams) + '\n'
-        # render all specializations
-        i = 0
-        for td in tdecl:
-            # Last but not least, we need to provide the template parameter specs
-            jparams['template_decl'] = td['template_decl']
-            jparams['template_args'] = td['template_args']
-            jparams['incomplete'] = 'incomplete' in td
-            jparams['params_req'] = td['params_req']
-            jparams['params_opt'] = td['params_opt']
-            jparams['params_get'] = td['params_get']
-            jparams['params_ds'] = td['params_req'] + td['params_opt'] + [cfg['distributed'], cfg['streaming']]
-            jparams['params_all'] = td['params_req'] + (td['template_args'] if td['template_args'] else []) + td['params_opt'] + [cfg['distributed'], cfg['streaming']]
-            jparams['args_all']   = jparams['input_args'] + td['params_req'] + td['params_opt']
-            # Very simple for specializations
-            # but how do we pass only the required args to them from the wrapper?
-            # we could have the full input list, but that doesn't work for required parameters
-            assert td['template_args'] != None
+
+        if len(jparams):
             if 'dist' in cfg:
                 # a wrapper for distributed mode
-                assert len(tdecl) == 1
                 jparams.update(cfg['dist'])
+
             t = jenv.from_string(manager_wrapper_template)
             cpp_begin += t.render(**jparams) + '\n'
-            if td['pargs'] == None:
-                t = jenv.from_string(hpat_spec_template)
-                pyx_begin += t.render(**jparams) + '\n'
-                # this is our actual API wrapper, only once per template (covering all its specializations)
-                # the parent class
-                t = jenv.from_string(parent_wrapper_template)
-                pyx_end += t.render(**jparams) + '\n'
-                # the C function generating specialized classes
-                t = jenv.from_string(algo_wrapper_template)
-                cpp_end += t.render(**jparams) + '\n'
 
-            i = i+1
+            t = jenv.from_string(hpat_spec_template)
+            pyx_begin += t.render(**jparams) + '\n'
+
+            # this is our actual API wrapper
+            t = jenv.from_string(parent_wrapper_template)
+            pyx_end += t.render(**jparams) + '\n'
+
+            # the C function generating specialized classes
+            t = jenv.from_string(algo_wrapper_template)
+            cpp_end += t.render(**jparams) + '\n'
 
         return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr)
 

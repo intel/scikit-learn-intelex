@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2018 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ from collections import defaultdict, OrderedDict, namedtuple
 # given a C++ namespace and a DAAL version, return if namespace/algo should be
 # wrapped in daal4py.
 def wrap_algo(algo, ver):
+    #return True if 'kmeans' in algo and not 'interface' in algo else False
     # Ignore some algos if using older DAAL
-    if ver < (2019, 2) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'covariance', 'logitboost', 'moments',]):
+    if ver < (2019, 22) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'covariance', 'logitboost', 'moments',]):
         return False
     # ignore deprecated version of stump
     if 'stump' in algo and not any(x in algo for x in ['stump::regression', 'stump::classification']):
@@ -32,10 +33,10 @@ def wrap_algo(algo, ver):
     if any(algo.endswith(x) for x in ['daal', 'algorithms',
                                       'algorithms::linear_model::prediction', 'algorithms::linear_model::training',
                                       'algorithms::classification::prediction', 'algorithms::classification::training',
-                                      'algorithms::tree_utils', 'algorithms::tree_utils::classification', 'algorithms::tree_utils::regression']):
+                                      'algorithms::tree_utils', 'algorithms::tree_utils::classification', 'algorithms::tree_utils::regression',]):
         return False
     # ignore unsupported algos
-    if any(x in algo for x in ['quality_metric',]):
+    if any(x in algo for x in ['quality_metric', '::interface']):
         return False
 
     return True
@@ -46,78 +47,30 @@ def wrap_algo(algo, ver):
 # Note: even though listed under 'Batch', they are currently also used for 'Distributed'
 #  unless explicitly provided in a step spec.
 required = {
-    'algorithms::distributions::bernoulli': {
-        'Batch': [('p', 'double')],
-    },
-    'algorithms::em_gmm': {
-        'Batch': [('nComponents', 'size_t')],
-    },
-    'algorithms::em_gmm::init': {
-        'Batch': [('nComponents', 'size_t')],
-    },
-    'algorithms::kmeans': {
-        'Batch': [('nClusters', 'size_t'), ('maxIterations', 'size_t')],
-    },
-    'algorithms::kmeans::init': {
-        'Batch': [('nClusters', 'size_t')],
-    },
-    'algorithms::multinomial_naive_bayes::training': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::multinomial_naive_bayes::prediction': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::multi_class_classifier::training': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::multi_class_classifier::prediction': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::gbt::classification::training': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::gbt::classification::prediction': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::logistic_regression::training': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::logistic_regression::prediction': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::decision_tree::classification::training': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::decision_forest::classification::training': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::decision_forest::classification::prediction': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::logitboost::prediction': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::logitboost::training': {
-        'Batch': [('nClasses', 'size_t')],
-    },
-    'algorithms::optimization_solver::mse': {
-        'Batch': [('numberOfTerms', 'size_t')],
-    },
-    'algorithms::optimization_solver::logistic_loss': {
-        'Batch': [('numberOfTerms', 'size_t')],
-    },
-    'algorithms::optimization_solver::cross_entropy_loss': {
-        'Batch': [('nClasses', 'size_t'), ('numberOfTerms', 'size_t')],
-    },
-    'algorithms::optimization_solver::sgd': {
-        'Batch': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
-    },
-    'algorithms::optimization_solver::lbfgs': {
-        'Batch': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
-    },
-    'algorithms::optimization_solver::adagrad': {
-        'Batch': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
-    },
+    'algorithms::distributions::bernoulli': [('p', 'double')],
+    'algorithms::em_gmm': [('nComponents', 'size_t')],
+    'algorithms::em_gmm::init': [('nComponents', 'size_t')],
+    'algorithms::kmeans': [('nClusters', 'size_t'), ('maxIterations', 'size_t')],
+    'algorithms::kmeans::init': [('nClusters', 'size_t')],
+    'algorithms::multinomial_naive_bayes::training': [('nClasses', 'size_t')],
+    'algorithms::multinomial_naive_bayes::prediction': [('nClasses', 'size_t')],
+    'algorithms::multi_class_classifier::training': [('nClasses', 'size_t')],
+    'algorithms::multi_class_classifier::prediction': [('nClasses', 'size_t')],
+    'algorithms::gbt::classification::training': [('nClasses', 'size_t')],
+    'algorithms::gbt::classification::prediction': [('nClasses', 'size_t')],
+    'algorithms::logistic_regression::training': [('nClasses', 'size_t')],
+    'algorithms::logistic_regression::prediction': [('nClasses', 'size_t')],
+    'algorithms::decision_tree::classification::training': [('nClasses', 'size_t')],
+    'algorithms::decision_forest::classification::training': [('nClasses', 'size_t')],
+    'algorithms::decision_forest::classification::prediction': [('nClasses', 'size_t')],
+    'algorithms::logitboost::prediction': [('nClasses', 'size_t')],
+    'algorithms::logitboost::training': [('nClasses', 'size_t')],
+    'algorithms::optimization_solver::mse': [('numberOfTerms', 'size_t')],
+    'algorithms::optimization_solver::logistic_loss': [('numberOfTerms', 'size_t')],
+    'algorithms::optimization_solver::cross_entropy_loss': [('nClasses', 'size_t'), ('numberOfTerms', 'size_t')],
+    'algorithms::optimization_solver::sgd': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+    'algorithms::optimization_solver::lbfgs': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+    'algorithms::optimization_solver::adagrad': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
 }
 
 # Some algorithms have no public constructors and need to be instantiated with 'create'
@@ -147,7 +100,7 @@ ignore = {
     'algorithms::kdtree_knn_classification::training': ['weights'],
     'algorithms::multi_class_classifier::training': ['weights'],
     'algorithms::multinomial_naive_bayes::training': ['weights'],
-    'algorithms::kmeans::init': ['nRowsTotal', 'offset',],
+    'algorithms::kmeans::init': ['nRowsTotal', 'offset', 'firstIteration', 'outputForStep5Required'],
     'algorithms::gbt::regression::training': ['dependentVariables', 'weights'],
     'algorithms::gbt::classification::training': ['weights',],
     'algorithms::logistic_regression::training': ['weights',],
@@ -169,8 +122,9 @@ ignore = {
     'algorithms::optimization_solver::objective_function': [],
     'algorithms::optimization_solver::iterative_solver': [],
     'algorithms::normalization::minmax': ['moments'],
+    'algorithms::normalization::zscore': ['moments'],
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
-    'algorithms::pca': ['correlation'],
+    'algorithms::pca': ['correlation', 'covariance', 'normalization'],
     'algorithms::stump::classification::training': ['weights'],
     'algorithms::stump::regression::training': ['weights'],
 }
@@ -459,21 +413,21 @@ no_warn = {
     'algorithms::adaboost': ['Result',],
     'algorithms::boosting': ['Result',],
     'algorithms::brownboost': ['Result',],
-    'algorithms::cholesky::Batch': ['ParameterType',],
+    'algorithms::cholesky': ['ParameterType',],
     'algorithms::classifier': ['Result',],
-    'algorithms::correlation_distance::Batch': ['ParameterType',],
-    'algorithms::cosine_distance::Batch': ['ParameterType',],
+    'algorithms::correlation_distance': ['ParameterType',],
+    'algorithms::cosine_distance': ['ParameterType',],
     'algorithms::decision_forest': ['Result',],
     'algorithms::decision_forest::classification': ['Result',],
     'algorithms::decision_forest::regression': ['Result',],
-    'algorithms::decision_forest::regression::prediction::Batch': ['ParameterType',],
+    'algorithms::decision_forest::regression::prediction': ['ParameterType',],
     'algorithms::decision_forest::training': ['Result',],
     'algorithms::decision_tree': ['Result',],
     'algorithms::decision_tree::classification': ['Result',],
     'algorithms::decision_tree::regression': ['Result',],
-    'algorithms::engines::mcg59::Batch': ['ParameterType',],
-    'algorithms::engines::mt19937::Batch': ['ParameterType',],
-    'algorithms::engines::mt2203::Batch': ['ParameterType',],
+    'algorithms::engines::mcg59': ['ParameterType',],
+    'algorithms::engines::mt19937': ['ParameterType',],
+    'algorithms::engines::mt2203': ['ParameterType',],
     'algorithms::gbt': ['Result',],
     'algorithms::gbt::classification': ['Result',],
     'algorithms::gbt::regression': ['Result',],
@@ -483,32 +437,32 @@ no_warn = {
     'algorithms::kdtree_knn_classification': ['Result',],
     'algorithms::linear_model': ['Result',],
     'algorithms::linear_regression': ['Result',],
-    'algorithms::linear_regression::prediction::Batch': ['ParameterType',],
+    'algorithms::linear_regression::prediction': ['ParameterType',],
     'algorithms::logistic_regression': ['Result',],
     'algorithms::math': ['Result',],
-    'algorithms::math::abs::Batch': ['ParameterType',],
-    'algorithms::math::logistic::Batch': ['ParameterType',],
-    'algorithms::math::relu::Batch': ['ParameterType',],
-    'algorithms::math::smoothrelu::Batch': ['ParameterType',],
-    'algorithms::math::softmax::Batch': ['ParameterType',],
-    'algorithms::math::tanh::Batch': ['ParameterType',],
+    'algorithms::math::abs': ['ParameterType',],
+    'algorithms::math::logistic': ['ParameterType',],
+    'algorithms::math::relu': ['ParameterType',],
+    'algorithms::math::smoothrelu': ['ParameterType',],
+    'algorithms::math::softmax': ['ParameterType',],
+    'algorithms::math::tanh': ['ParameterType',],
     'algorithms::multi_class_classifier': ['Result',],
     'algorithms::multinomial_naive_bayes': ['Result',],
-    'algorithms::multivariate_outlier_detection::Batch': ['ParameterType',],
+    'algorithms::multivariate_outlier_detection': ['ParameterType',],
     'algorithms::normalization': ['Result',],
-    'algorithms::normalization::zscore::Batch': ['ParameterType',],
+    'algorithms::normalization::zscore': ['ParameterType',],
     'algorithms::logitboost': ['Result',],
     'algorithms::optimization_solver': ['Result',],
-    'algorithms::qr::Batch': ['ParameterType',],
+    'algorithms::qr': ['ParameterType',],
     'algorithms::regression': ['Result',],
     'algorithms::ridge_regression': ['Result',],
-    'algorithms::ridge_regression::prediction::Batch': ['ParameterType',],
-    'algorithms::sorting::Batch': ['ParameterType',],
+    'algorithms::ridge_regression::prediction': ['ParameterType',],
+    'algorithms::sorting': ['ParameterType',],
     'algorithms::svm': ['Result',],
     'algorithms::stump::classification': ['Result',],
     'algorithms::stump::regression': ['Result',],
-    'algorithms::stump::regression::prediction::Batch': ['ParameterType',],
-    'algorithms::univariate_outlier_detection::Batch': ['ParameterType',],
+    'algorithms::stump::regression::prediction': ['ParameterType',],
+    'algorithms::univariate_outlier_detection': ['ParameterType',],
     'algorithms::weak_learner': ['Result',],
 }
 
