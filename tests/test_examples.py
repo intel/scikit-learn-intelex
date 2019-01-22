@@ -190,7 +190,7 @@ class TestExCSRMatrix(Base, unittest.TestCase):
         if  ex.__name__.startswith('sorting'):
             self.skipTest("not supporting CSR")
         method = 'singlePassCSR' if any(x in ex.__name__ for x in ['low_order_moms', 'covariance']) else 'fastCSR'
-        # cannot use fastCSR ofr implicit als; bug in DAAL?
+        # cannot use fastCSR ofr implicit als; bug in Intel(R) DAAL?
         if 'implicit_als' in ex.__name__:
             method = 'defaultDense'
         if hasattr(ex, 'dflt_method'):
