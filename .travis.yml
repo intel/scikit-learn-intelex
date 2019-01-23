@@ -36,15 +36,17 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda install conda-build
+  - conda install -q conda-build
   # Useful for debugging any issues with conda
   - conda info -a
   - gcc -v
   - g++ -v
 
 script:
-  # Your test script goes here
-  #  - which mpirun && mpirun -version
-  # - echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
-  # - export I_MPI_SHM_LMT=shm 
-  - conda build -c intel -c conda-forge $PYVER conda-recipe
+  - conda build -c intel -c conda-forge $PYVER --output-folder ./ conda-recipe
+
+after_success:
+  - pip install scikit-learn
+  - conda install -q -c intel daal
+  - conda install -q ./*/daal4py-*.tar.bz2
+  - if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then python -m daal4py -m pytest --disable-warnings --pyargs sklearn ; else echo "FIXME light scikit-learn testing" ; fi
