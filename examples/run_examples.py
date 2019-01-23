@@ -41,16 +41,12 @@ else:
 req_version = defaultdict(lambda:(2019,0))
 req_version['decision_forest_classification_batch.py'] = (2019,1)
 req_version['decision_forest_regression_batch.py'] = (2019,1)
-req_version['adaboost_batch.py'] = (2019,3)
-req_version['brownboost_batch.py'] = (2019,3)
-req_version['logitboost_batch.py'] = (2019,3)
-req_version['covariance_batch.py'] = (2019,3)
-req_version['covariance_streaming.py'] = (2019,3)
-req_version['low_order_moms_dense_batch.py'] = (2019,3)
-req_version['low_order_moms_streaming.py'] = (2019,3)
-req_version['stump_classification_batch.py'] = (2019,3)
-req_version['stump_regression_batch.py'] = (2019,3)
-req_version['saga_batch.py'] = (2019,3)
+req_version['adaboost_batch.py'] = (2019,4)
+req_version['brownboost_batch.py'] = (2019,4)
+req_version['logitboost_batch.py'] = (2019,4)
+req_version['stump_classification_batch.py'] = (2019,4)
+req_version['stump_regression_batch.py'] = (2019,4)
+req_version['saga_batch.py'] = (2019,2)
 
 def get_exe_cmd(ex, nodist, nostream):
     if req_version[os.path.basename(ex)] > daal_version:

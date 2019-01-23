@@ -66,6 +66,7 @@
 #         we do not understand or map the actual type
 #   - end of struct/class/enum/namespace '};' must be in a separate line
 #     any other code in the same line will result in errorneous parsing
+#     leading spaces are not allowed!
 #   - within a class-declaration, '}\s*;' is not allowed
 #     (except to end the class-def)
 #   - forward declarations for non-template classes/structs are ignored
@@ -120,7 +121,7 @@ class ns_parser(object):
 class eos_parser(object):
     """detect end of struct/class/enum '};'"""
     def parse(self, l, ctxt):
-        m = re.match(r'^\s*}\s*;\s*$', l)
+        m = re.match(r'^}\s*;\s*$', l)
         if m:
             ctxt.enum = False
             ctxt.curr_class = False
