@@ -52,7 +52,7 @@ def main(readcsv=read_csv, method='defaultDense'):
                                              accuracyThreshold=1e-5,
                                              batchSize=1,
                                              function=logloss_algo,
-                                             learningRate=lr,
+                                             learningRateSequence=lr,
                                              optionalResultRequired=True)
 
 
