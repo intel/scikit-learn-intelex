@@ -23,38 +23,28 @@ import warnings
 import sklearn.cluster as kmeans_module
 import sklearn.svm as svm_module
 import sklearn.linear_model.logistic as logistic_module
-# import sklearn.linear_model.base as linear_regression_module
-# import sklearn.linear_model.ridge as ridge_module
+import sklearn.linear_model.base as linear_regression_module
+import sklearn.linear_model.ridge as ridge_module
 import sklearn.decomposition.pca as pca_module
 
 from sklearn.decomposition.pca import PCA
-from sklearn.linear_model.base import LinearRegression
-from sklearn.linear_model.ridge import Ridge
 from sklearn.metrics import pairwise
-# from sklearn.cluster import KMeans
 
 
 from .pairwise import daal_pairwise_distances
-from .pca import _fit_full as pca_fit_full
-from .linear import fit as linear_fit
-from .linear import predict as linear_predict
-from .ridge import fit as ridge_fit
-from .ridge import predict as ridge_predict
-# from .ridge import Ridge as Ridge_daal4py
-# from .linear import LinearRegression as LinearRegression_daal4py
+from .pca import PCA as PCA_daal4py
+from .ridge import Ridge as Ridge_daal4py
+from .linear import LinearRegression as LinearRegression_daal4py
 from .k_means import KMeans as KMeans_daal4py
-# from .k_means import fit as kmeans_fit
-# from .k_means import predict as kmeans_predict
 from .logistic_path import logistic_regression_path as daal_optimized_logistic_path
 from .svm import SVC as SVC_daal4py
 
 _mapping = {
-    'pca_full':  [[(PCA, '_fit_full', pca_fit_full), None]],
+    'pca':    [[(pca_module, 'PCA', PCA_daal4py), None]],
     'kmeans':    [[(kmeans_module, 'KMeans', KMeans_daal4py), None]],
-#    'kmeans':    [[(KMeans, 'fit', kmeans_fit), None], [(KMeans, 'predict', kmeans_predict), None]],
     'distances': [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
-    'linear':    [[(LinearRegression, 'fit', linear_fit), None], [(LinearRegression, 'predict', linear_predict), None]],
-    'ridge':     [[(Ridge, 'fit', ridge_fit), None], [(Ridge, 'predict', ridge_predict), None]],
+    'linear':    [[(linear_regression_module, 'LinearRegression', LinearRegression_daal4py)]],
+    'ridge':     [[(ridge_module, 'Ridge', Ridge_daal4py)]],
     'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]], 
     'logistic':  [[(logistic_module, 'logistic_regression_path', daal_optimized_logistic_path), None]],
 }

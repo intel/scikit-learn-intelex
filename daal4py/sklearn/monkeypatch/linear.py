@@ -160,15 +160,21 @@ def predict(self, X):
         return _daal4py_predict(self, X)
 
 
+_fit_copy = fit
+_predict_copy = predict
+
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 
     def __init__(self, fit_intercept=True, normalize=False, copy_X=True,
                  n_jobs=None):
-        super(LinearRegression, self).__init__(
+        super().__init__(
             fit_intercept=fit_intercept, normalize=normalize,
             copy_X=copy_X, n_jobs=n_jobs)
 
+    def fit(self, X, y):
+        return _fit_copy(self, X, y)
 
-setattr(LinearRegression, 'fit', fit)
-setattr(LinearRegression, 'predict', predict)
+    def predict(self, X, y):
+        return _predict_copy(self, X)
+

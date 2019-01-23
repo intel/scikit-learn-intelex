@@ -17,7 +17,7 @@
 
 import numpy as np
 from sklearn import decomposition
-from sklearn.decomposition.pca import *
+from sklearn.decomposition.pca import PCA as PCA_original
 from sklearn.decomposition.pca import _infer_dimension_
 
 import daal4py
@@ -104,3 +104,23 @@ def _fit_full(self, X, n_components):
     self.singular_values_ = S[:n_components]
 
     return U, S, V
+
+
+_fit_full_copy = _fit_full
+
+class PCA(PCA_original):
+    __doc__ = PCA_original.__doc__
+
+    def __init__(self, n_components=None, copy=True, whiten=False,
+                 svd_solver='auto', tol=0.0, iterated_power='auto',
+                 random_state=None):
+        self.n_components = n_components
+        self.copy = copy
+        self.whiten = whiten
+        self.svd_solver = svd_solver
+        self.tol = tol
+        self.iterated_power = iterated_power
+        self.random_state = random_state
+
+    def _fit_full(self, X, n_components):
+        return _fit_full_copy(X, n_components)

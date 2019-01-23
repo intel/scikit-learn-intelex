@@ -130,19 +130,24 @@ def predict(self, X):
     else:
         return _daal4py_predict(self, X)
 
+_fit_copy = fit
+_predict_copy = predict
 
 class Ridge(_BaseRidge, RegressorMixin):
+    __doc__ = Ridge_original.__doc__
 
     def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
                  copy_X=True, max_iter=None, tol=1e-3, solver="auto",
                  random_state=None):
-        print(self.__qualname__)
-        super(Ridge, self).__init__(
+
+        super().__init__(
             alpha=alpha, fit_intercept=fit_intercept, normalize=normalize,
             copy_X=copy_X, max_iter=max_iter, tol=tol, solver=solver,
             random_state=random_state)
 
+        def fit(self, X, y):
+            return _fit_copy(self, X, y)
 
-setattr(Ridge, 'fit', fit)
-setattr(Ridge, 'predict', predict)
-setattr(Ridge, '__doc__', Ridge_original.__doc__)
+        def predict(self, X):
+            return _predict_copy(self, X)
+
