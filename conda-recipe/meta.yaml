@@ -13,7 +13,7 @@ requirements:
     build:
         - python
         - setuptools
-        - numpy >=1.16
+        - numpy-devel >=1.15
         - tbb-devel
         - daal-devel >=2019.0
         - cython
@@ -22,7 +22,6 @@ requirements:
         - impi-devel             # [win]
     run:
         - python
-        - numpy >=1.16
         - tbb
         - daal >=2019.0
         - mpich                  # [not win]
