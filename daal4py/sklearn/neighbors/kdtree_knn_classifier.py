@@ -92,7 +92,7 @@ class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
             self.n_jobs = None
 
         # Check that X and y have correct shape
-        X, y = check_X_y(X, y, y_numeric=False, dtype=[np.float64, np.float32])
+        X, y = check_X_y(X, y, y_numeric=False, dtype=[np.single, np.double])
 
         check_classification_targets(y)
 
@@ -138,7 +138,7 @@ class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
                                'n_classes_'])
 
         # Input validation
-        X = check_array(X)
+        X = check_array(X, dtype=[np.single, np.double])
         if X.shape[1] != self.n_features_:
             raise ValueError('Shape of input is different from what was seen in `fit`')
 
