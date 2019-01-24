@@ -25,7 +25,7 @@ jobs:
           name: Building daal4py
           command: |
             . ~/miniconda/bin/activate bld
-            conda build -c intel -c conda-forge --output-folder ./ conda-recipe
+            conda build --python=36 -c intel -c conda-forge --output-folder ./ conda-recipe
       - run:
           name: Testing sklearn patches
           command: |
