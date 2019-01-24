@@ -11,24 +11,24 @@ jobs:
       - run:
         name: Setting up build environment
         command: |
-	  wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-      	  bash miniconda.sh -b -p $HOME/miniconda
-      	  export PATH="$HOME/miniconda/bin:$PATH"
-      	  hash -r
-      	  conda config --set always_yes yes --set changeps1 no
-      	  conda update -q conda
-      	  conda install -q conda-build pytest
-      	  conda info -a
-      	  gcc -v
-	  g++ -v
+          wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+          bash miniconda.sh -b -p $HOME/miniconda
+          export PATH="$HOME/miniconda/bin:$PATH"
+          hash -r
+          conda config --set always_yes yes --set changeps1 no
+          conda update -q conda
+          conda install -q conda-build pytest
+          conda info -a
+          gcc -v
+          g++ -v
       - run:
         name: Building daal4py
-	command: "$HOME/miniconda/bin/conda" build -c intel -c conda-forge --output-folder ./ conda-recipe
+  command: "$HOME/miniconda/bin/conda" build -c intel -c conda-forge --output-folder ./ conda-recipe
       - run:
         name: Testing sklearn patches
-	command: |
-      	  export PATH="$HOME/miniconda/bin:$PATH"
-	  conda install -q -c intel daal
-      	  conda install -q ./*/daal4py-*.tar.bz2
-      	  pip install scikit-learn
+  command: |
+          export PATH="$HOME/miniconda/bin:$PATH"
+          conda install -q -c intel daal
+          conda install -q ./*/daal4py-*.tar.bz2
+          pip install scikit-learn
           cd && python -m daal4py -m pytest --disable-warnings --pyargs sklearn
