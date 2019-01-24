@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2018 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -48,7 +48,5 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     res = main()
-    np.set_printoptions(threshold=np.nan)
-    np.set_printoptions(linewidth=np.nan)
     print("\nCosine distance (first 15 rows/columns):\n", res.cosineDistance[0:15,0:15])
     print("All looks good!")

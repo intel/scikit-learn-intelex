@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2018 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@
 #         we do not understand or map the actual type
 #   - end of struct/class/enum/namespace '};' must be in a separate line
 #     any other code in the same line will result in errorneous parsing
+#     leading spaces are not allowed!
 #   - within a class-declaration, '}\s*;' is not allowed
 #     (except to end the class-def)
 #   - forward declarations for non-template classes/structs are ignored
@@ -81,7 +82,7 @@ import re
 ###############################################################################
 class cpp_class(object):
     """A C++ class representation"""
-    def __init__(self, n, tpl, parent=None, partial=False):
+    def __init__(self, n, tpl, parent=None, partial=False, iface='interface1'):
         self.name = n             # name of the class
         self.template_args = tpl  # list of template arguments as [name, values, default]
         self.members = OrderedDict() # dictionary mapping member names to their types
@@ -95,7 +96,12 @@ class cpp_class(object):
         self.parent = parent      # list of parent classes
         self.result = None        # Result type (if Batch, Online or Disributed)
         self.typedefs = {}        # Typedefs
+        self.iface = iface
         assert not partial or tpl
+
+    def plus_ns(self):
+        self.name = '{}::{}'.format(self.iface, self.name)
+        return self
 
 ###############################################################################
 
@@ -115,7 +121,7 @@ class ns_parser(object):
 class eos_parser(object):
     """detect end of struct/class/enum '};'"""
     def parse(self, l, ctxt):
-        m = re.match(r'^\s*}\s*;\s*$', l)
+        m = re.match(r'^}\s*;\s*$', l)
         if m:
             ctxt.enum = False
             ctxt.curr_class = False
@@ -263,7 +269,7 @@ class member_parser(object):
     """Parse class members"""
     def parse(self, l, ctxt):
         if ctxt.curr_class and ctxt.access:
-            mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+([\w_]+)\s*;', l)
+            mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?([\w_]+)\s*;', l)
             if mm :
                 if mm.group(2) not in ctxt.gdict['classes'][ctxt.curr_class].members:
                     ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)] = mm.group(1)
@@ -319,7 +325,7 @@ class class_template_parser(object):
         # we don't have a 'else' (e.g. if not a template) here since we could have template one-liners
         # is it a class/struct?
         m = re.match(r'(?:^\s*|.*?\s+)(class|struct)\s+(DAAL_EXPORT\s+)?(\w+)\s*(<[^>]+>)?(\s*:\s*((public|private|protected)\s+(.*)))?({|$|:|;)', l)
-        m2 = re.match(r'\s*(class|struct)\s+\w+;', l) # forward deckarations can be ignored
+        m2 = re.match(r'\s*(class|struct)\s+\w+;', l) # forward declarations can be ignored
         if m and not m2:
             if m.group(3) in ctxt.ignores:
                 pass
@@ -332,12 +338,21 @@ class class_template_parser(object):
                 if m.group(4):
                     # template specialization
                     targs = m.group(4).split(',')
-                    targs = [a.strip('<> ') for a in targs if not any(ta[0] in a.lower() for ta in ctxt.template)]
+                    targs = [a.strip('<> ').replace('algorithmFPType', 'fptype') for a in targs] # if not any(ta[0] in a.lower() for ta in ctxt.template)]
                     ctxt.curr_class += '<' + ', '.join(targs) + '>'
                     # print('Found specialization ' + ctxt.curr_class + '\n  File "' + ctxt.header+'", line '+str(ctxt.n))
-                    ctxt.gdict['classes'][ctxt.curr_class] = cpp_class(ctxt.curr_class, ctxt.template, parent=parents, partial=True)
+                    cls = cpp_class(ctxt.curr_class, ctxt.template, parent=parents, partial=True, iface=ctxt.gdict['ns'][-1])
                 else:
-                    ctxt.gdict['classes'][ctxt.curr_class] = cpp_class(ctxt.curr_class, ctxt.template, parent=parents)
+                    cls = cpp_class(ctxt.curr_class, ctxt.template, parent=parents, iface=ctxt.gdict['ns'][-1])
+                if ctxt.curr_class in ctxt.gdict['classes']:
+                    if ctxt.gdict['classes'][ctxt.curr_class].iface < ctxt.gdict['ns'][-1]:
+                        old_cls = ctxt.gdict['classes'][ctxt.curr_class].plus_ns()
+                        ctxt.gdict['classes'][ctxt.curr_class] = cls
+                    else:
+                        old_cls = cls.plus_ns()
+                    ctxt.gdict['classes'][old_cls.name] = old_cls
+                else:
+                    ctxt.gdict['classes'][ctxt.curr_class] = cls
                 #elif ctxt.template:
                 #        ctxt.gdict['error_template_string'] += '$FNAME:' + str(ctxt.n) + ': Warning: Expected a template specialization for class ' + ctxt.curr_class + '\n'
                 if ctxt.template:

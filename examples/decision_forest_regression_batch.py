@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2018 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     from daal4py import __daal_link_version__ as dv
     daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
     if daal_version < (2019, 1):
-        print("Need Intel DAAL 2019.1 or later")
+        print("Need Intel(R) DAAL 2019.1 or later")
     else:
         (train_result, predict_result, ptdata) = main()
         print("\nVariable importance results:\n", train_result.variableImportance)
