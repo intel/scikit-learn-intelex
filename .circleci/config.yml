@@ -28,7 +28,7 @@ jobs:
           name: Testing sklearn patches
           command: |
             export PATH=~/miniconda/bin:$PATH
-            conda install -q -c intel daal
+            conda install -q -c intel -c conda-forge daal mpich tbb
             conda install -q ./*/daal4py-*.tar.bz2
-            pip install scikit-learn
+            pip install -q scikit-learn
             cd && python -m daal4py -m pytest --disable-warnings --pyargs sklearn
