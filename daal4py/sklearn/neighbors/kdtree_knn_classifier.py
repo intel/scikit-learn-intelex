@@ -27,7 +27,7 @@ from sklearn import preprocessing
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils import check_random_state
 import daal4py as d4p
-from utils import daal_get_data_type
+from ..utils import getFPType
 
 
 class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
@@ -119,7 +119,7 @@ class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
         self.seed_ = rs.randint(np.iinfo('i').max)
 
         # Define type of data
-        fptype = daal_get_data_type(X)
+        fptype = getFPType(X)
 
         # Fit the model
         train_algo = d4p.kdtree_knn_classification_training(fptype=fptype,
@@ -149,7 +149,7 @@ class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ['daal_model_'])
 
         # Define type of data
-        fptype = daal_get_data_type(X)
+        fptype = getFPType(X)
 
         # Prediction
         predict_algo = d4p.kdtree_knn_classification_prediction(fptype=fptype,

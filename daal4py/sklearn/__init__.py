@@ -21,4 +21,5 @@ from .monkeypatch.dispatcher import disable as unpatch_sklearn
 from .monkeypatch.dispatcher import _patch_names as sklearn_patch_names
 
 __all__ = ["RandomForestClassifier", "RandomForestRegressor", 
-           "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names"]
+           "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
+           "neighbors"]
