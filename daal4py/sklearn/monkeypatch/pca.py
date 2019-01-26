@@ -16,9 +16,11 @@
 #******************************************************************************/
 
 import numpy as np
+import numbers
 from sklearn import decomposition
+from sklearn.utils import check_array
 from sklearn.decomposition.pca import PCA as PCA_original
-from sklearn.decomposition.pca import _infer_dimension_
+from sklearn.decomposition.pca import (_infer_dimension_, svd_flip)
 
 import daal4py
 from ..utils import getFPType
@@ -67,7 +69,7 @@ def _fit_full(self, X, n_components):
     if X.shape[0] > X.shape[1] and (X.dtype == np.float64 or X.dtype == np.float32):
         U, S, V = _daal4py_svd(X)
     else:
-        U, S, V = linalg.svd(X, full_matrices=False)
+        U, S, V = np.linalg.svd(X, full_matrices=False)
     # flip eigenvectors' sign to enforce deterministic output
     U, V = svd_flip(U, V)
 
@@ -123,4 +125,4 @@ class PCA(PCA_original):
         self.random_state = random_state
 
     def _fit_full(self, X, n_components):
-        return _fit_full_copy(X, n_components)
+        return _fit_full_copy(self, X, n_components)

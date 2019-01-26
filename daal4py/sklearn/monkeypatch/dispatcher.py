@@ -23,9 +23,8 @@ import warnings
 import sklearn.cluster as kmeans_module
 import sklearn.svm as svm_module
 import sklearn.linear_model.logistic as logistic_module
-import sklearn.linear_model.base as linear_regression_module
-import sklearn.linear_model.ridge as ridge_module
-import sklearn.decomposition.pca as pca_module
+import sklearn.linear_model as linear_model_module
+import sklearn.decomposition as decomposition_module
 
 from sklearn.decomposition.pca import PCA
 from sklearn.metrics import pairwise
@@ -40,11 +39,11 @@ from .logistic_path import logistic_regression_path as daal_optimized_logistic_p
 from .svm import SVC as SVC_daal4py
 
 _mapping = {
-    'pca':    [[(pca_module, 'PCA', PCA_daal4py), None]],
+    'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
     'kmeans':    [[(kmeans_module, 'KMeans', KMeans_daal4py), None]],
     'distances': [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
-    'linear':    [[(linear_regression_module, 'LinearRegression', LinearRegression_daal4py)]],
-    'ridge':     [[(ridge_module, 'Ridge', Ridge_daal4py)]],
+    'linear':    [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
+    'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
     'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]], 
     'logistic':  [[(logistic_module, 'logistic_regression_path', daal_optimized_logistic_path), None]],
 }

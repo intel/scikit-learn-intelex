@@ -31,7 +31,10 @@ from ..utils import getFPType
 
 def _daal_mean_var(X):
     fpt = getFPType(X)
-    alg = daal4py.low_order_moments(fptype=fpt, method='defaultDense', estimatesToCompute='estimatesAll')
+    try:
+        alg = daal4py.low_order_moments(fptype=fpt, method='defaultDense', estimatesToCompute='estimatesAll')
+    except AttributeError:
+        return np.var(X, axis=0).mean()
     ssc = alg.compute(X).sumSquaresCentered
     ssc = ssc.reshape((-1,1))
     alg = daal4py.low_order_moments(fptype=fpt, method='defaultDense', estimatesToCompute='estimatesAll')

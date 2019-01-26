@@ -34,7 +34,7 @@ def _daal4py_fit(self, X, y):
 
     ridge_params = np.asarray(self.alpha, dtype=X.dtype)
     if ridge_params.size != 1 and ridge_params.size != y.shape[1]:
-        raise ValueError("alpha length wrong")
+        raise ValueError("alpha length is wrong")
     ridge_params = ridge_params.reshape((1,-1))
 
     ridge_alg = daal4py.ridge_regression_training(
@@ -97,7 +97,7 @@ def fit(self, X, y, sample_weight=None):
             not self.fit_shape_good_for_daal_ or
             not (X.dtype == np.float64 or X.dtype == np.float32) or
             sample_weight is not None):
-        return super(Ridge_original, self).fit(X, y, sample_weight=sample_weight)
+        return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
     else:
         self.n_iter_ = None
         return _daal4py_fit(self, X, y)
@@ -133,21 +133,24 @@ def predict(self, X):
 _fit_copy = fit
 _predict_copy = predict
 
-class Ridge(_BaseRidge, RegressorMixin):
+class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 
     def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
                  copy_X=True, max_iter=None, tol=1e-3, solver="auto",
                  random_state=None):
+        self.alpha = alpha
+        self.fit_intercept = fit_intercept
+        self.normalize = normalize
+        self.copy_X = copy_X
+        self.max_iter = max_iter
+        self.tol = tol
+        self.solver = solver
+        self.random_state = random_state
 
-        super().__init__(
-            alpha=alpha, fit_intercept=fit_intercept, normalize=normalize,
-            copy_X=copy_X, max_iter=max_iter, tol=tol, solver=solver,
-            random_state=random_state)
+    def fit(self, X, y, sample_weight=None):
+        return _fit_copy(self, X, y, sample_weight=sample_weight)
 
-        def fit(self, X, y):
-            return _fit_copy(self, X, y)
-
-        def predict(self, X):
-            return _predict_copy(self, X)
+    def predict(self, X):
+        return _predict_copy(self, X)
 

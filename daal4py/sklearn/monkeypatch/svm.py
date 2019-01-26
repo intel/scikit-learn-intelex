@@ -265,7 +265,10 @@ def _daal4py_fit(self, X, y_inp, kernel):
 def _daal_std(X):
     """DAAL-based threaded computation of X.std()"""
     fpt = getFPType(X)
-    alg = daal4py.low_order_moments(fptype=fpt, method='defaultDense', estimatesToCompute='estimatesMeanVariance')
+    try:
+        alg = daal4py.low_order_moments(fptype=fpt, method='defaultDense', estimatesToCompute='estimatesMeanVariance')
+    except AttributeError:
+        return np.std(X)
     ssc = alg.compute(X.reshape(-1,1)).sumSquaresCentered
     return np.sqrt(ssc[0, 0] / X.size)
 
