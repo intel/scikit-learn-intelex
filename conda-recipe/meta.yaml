@@ -29,6 +29,7 @@ requirements:
     test:
         - pandas
         - scipy
+        - scikit-learn
 
 build:
     number: {{buildnumber}}
