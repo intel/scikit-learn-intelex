@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2018 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ req_version['brownboost_batch.py'] = (2019,4)
 req_version['logitboost_batch.py'] = (2019,4)
 req_version['stump_classification_batch.py'] = (2019,4)
 req_version['stump_regression_batch.py'] = (2019,4)
-req_version['saga_batch.py'] = (2019,3)
+req_version['saga_batch.py'] = (2019,2)
 
 def get_exe_cmd(ex, nodist, nostream):
     if req_version[os.path.basename(ex)] > daal_version:
