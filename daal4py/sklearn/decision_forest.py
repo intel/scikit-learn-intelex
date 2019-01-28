@@ -96,7 +96,6 @@ class RandomForestClassifier(skl_RandomForestClassifier):
 
     def _check_daal_supported_parameters(self):
         _class_name = self.__class__.__name__
-        print(_class_name)
         if self.n_jobs != 1:
             warnings.warn(_class_name + ' ignores non-default settings of n_jobs')
         if self.verbose != 0:
