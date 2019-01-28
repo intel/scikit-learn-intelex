@@ -172,9 +172,9 @@ class LinearRegression(LinearRegression_original):
             fit_intercept=fit_intercept, normalize=normalize,
             copy_X=copy_X, n_jobs=n_jobs)
 
-    def fit(self, X, y):
-        return _fit_copy(self, X, y)
+    def fit(self, X, y, sample_weight=None):
+        return _fit_copy(self, X, y, sample_weight=sample_weight)
 
-    def predict(self, X, y):
+    def predict(self, X):
         return _predict_copy(self, X)
 

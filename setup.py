@@ -197,6 +197,6 @@ setup(  name        = "daal4py",
             'Topic :: Software Development',
           ],
         setup_requires = ['numpy>=1.11', 'cython'],
-        packages = ['daal4py'],
+        packages = ['daal4py', 'daal4py.sklearn', 'daal4py.sklearn.neighbors', 'daal4py.sklearn.monkeypatch'],
         ext_modules = getpyexts(),
 )
