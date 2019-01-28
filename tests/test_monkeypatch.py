@@ -1,5 +1,4 @@
 
-import pytest
 import daal4py.sklearn
 
 def assert_is_patched(mod, cls_name):
