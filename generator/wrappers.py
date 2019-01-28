@@ -20,7 +20,7 @@ from collections import defaultdict, OrderedDict, namedtuple
 # wrapped in daal4py.
 def wrap_algo(algo, ver):
     # Ignore some algos if using older DAAL
-    if (True or ver < (2019, 2)) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'covariance', 'logitboost', 'moments',]):
+    if ver < (2019, 4) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'logitboost',]):
         return False
     # ignore deprecated version of stump
     if 'stump' in algo and not any(x in algo for x in ['stump::regression', 'stump::classification']):
