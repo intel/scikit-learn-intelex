@@ -27,8 +27,8 @@ jobs:
           command: |
             . ~/miniconda/bin/activate bld
             mkdir -p /tmp/out
-            conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test conda-recipe
-            tar cfj /tmp/out/daal4py-conda-build.tar.bz2 /home/circleci/miniconda/conda-bld/daal4py_*
+            conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test --no-remove-work-dir conda-recipe
+            tar cfj /tmp/out/daal4py-conda-build.tar.bz2 /home/circleci/miniconda/conda-bld/*
       - store_artifacts:
             path: /tmp/out
       - run:
