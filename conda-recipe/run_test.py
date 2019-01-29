@@ -14,8 +14,9 @@ from examples.run_examples import run_all
 
 s = unittest.defaultTestLoader.discover('tests')
 r = unittest.TextTestRunner(verbosity=7)
-r.run(s)
-ret1 = 0 if r._makeResult().wasSuccessful() else 1
+
+testResult = r.run(s)
+ret1 = 0 if testResult.wasSuccessful() else 1
 
 os.chdir(ex_dir)
 ret2 = run_all()
