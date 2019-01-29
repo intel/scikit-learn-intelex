@@ -35,4 +35,9 @@ jobs:
             conda install -q ./*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
-            cd && python -m daal4py -m pytest --disable-warnings --pyargs sklearn
+            touch ~/d4p.out ~/skl.out
+            cd && ((python -m daal4py -m pytest --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
+            cd && ((python -m pytest --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
+            D4P=`grep -e 'failed,.*passed,.*skipped,.*xfailed,' ~/d4p.out | awk '{print($1, $3, $5, $7, $9)}'`
+            SKL=`grep -e 'failed,.*passed,.*skipped,.*xfailed,' ~/skl.out | awk '{print($1, $3, $5, $7, $9)}'`
+            if [ "$D4P" = "$SKL" ]; then exit 0 ; else exit 1 ; fi
