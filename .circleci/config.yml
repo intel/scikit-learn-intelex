@@ -11,7 +11,7 @@ jobs:
       - run:
           name: Setting up build environment
           command: |
-            cat /proc/cpuinfo
+            cat /proc/cpuinfo | head
             wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
             bash miniconda.sh -b -p ~/miniconda
             export PATH=~/miniconda/bin:$PATH
@@ -34,4 +34,5 @@ jobs:
             . activate bld
             conda install -q ./*/daal4py-*.tar.bz2
             pip install -q scikit-learn
+            conda list
             cd && python -m daal4py -m pytest --disable-warnings --pyargs sklearn
