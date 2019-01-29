@@ -19,7 +19,7 @@ jobs:
             conda config --set always_yes yes --set changeps1 no
             conda update -q conda
             conda install -q conda-build
-            conda create -q -n bld --override-channels -c intel -c conda-forge python=3.6 numpy pytest daal mpich tbb
+            conda create -q -n bld --override-channels -c intel -c conda-forge python=3.6 numpy scipy pytest daal mpich tbb
             gcc -v
             g++ -v
       - run:
