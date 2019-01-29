@@ -26,15 +26,17 @@ jobs:
           name: Building daal4py
           command: |
             . ~/miniconda/bin/activate bld
-            conda build --python=36 --override-channels -c intel -c conda-forge --output-folder ./ conda-recipe
+            mkdir -p /tmp/out
+            conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out conda-recipe
+            tar cfj /tmp/out/daal4py-conda-build.tar.bz2 /home/circleci/miniconda/conda-bld/daal4py_*
       - store_artifacts:
-            path: ./*/daal4py-*.tar.bz2
+            path: /tmp/out
       - run:
           name: Testing sklearn patches
           command: |
             export PATH=~/miniconda/bin:$PATH
             . activate bld
-            conda install -q ./*/daal4py-*.tar.bz2
+            conda install -q /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
             touch ~/d4p.out ~/skl.out
