@@ -27,7 +27,6 @@ jobs:
           command: |
             . ~/miniconda/bin/activate bld
             conda build --python=36 --override-channels -c intel -c conda-forge --output-folder ./ conda-recipe
-            tar cfj build/daal4py-gen-srcs.tar.bz2 build/*.pyx build/*.h build/*.cpp
       - store_artifacts:
             path: ./*/daal4py-*.tar.bz2
       - run:
