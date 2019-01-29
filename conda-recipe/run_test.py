@@ -20,4 +20,4 @@ ret1 = 0 if r._makeResult().wasSuccessful() else 1
 os.chdir(ex_dir)
 ret2 = run_all()
 
-sys.exit(ret1 + ret2)
+sys.exit(4711 if ret1 or ret2 else 0)
