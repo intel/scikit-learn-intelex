@@ -168,7 +168,7 @@ class LinearRegression(LinearRegression_original):
 
     def __init__(self, fit_intercept=True, normalize=False, copy_X=True,
                  n_jobs=None):
-        super().__init__(
+        super(LinearRegression, self).__init__(
             fit_intercept=fit_intercept, normalize=normalize,
             copy_X=copy_X, n_jobs=n_jobs)
 
