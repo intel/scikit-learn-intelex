@@ -177,6 +177,25 @@ cdef data_or_file * mk_data_or_file(object x):
         x = [x.values]
     return new data_or_file(<PyObject *>x)
 
+
+def _str(instance, properties):
+        result = ''
+        for p in properties:
+            prop = getattr(instance, p, None)
+            if isinstance(prop, np.ndarray):
+                result += p + ': array, type={}, shape={}'.format(prop.dtype,
+                                                                  prop.shape)
+            elif isinstance(prop, dict):
+                result += p + ': dict, len={}'.format(len(prop))
+            else:
+                result += p + ': '
+            value = str(prop).replace('\\n', '\\n  ')
+            if '\\n' in value:
+                result += '\\n  '
+            result += value
+            result += '\\n\\n'
+        return result[:-2]
+
 '''
 
 ###############################################################################
@@ -268,6 +287,8 @@ cdef class {{flatname}}:
     def __init__(self, int64_t ptr=0):
         self.c_ptr = <{{class_type|flat}}>ptr
 
+    def __str__(self):
+        return _str(self, [{% for m in enum_gets+named_gets %}'{{m[1]}}',{% endfor %}])
 {% for m in enum_gets+named_gets %}
 {% set rtype = m[2]|d2cy(False) if m in enum_gets else m[0]|d2cy(False) %}
 
