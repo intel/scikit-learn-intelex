@@ -41,7 +41,6 @@ install:
   - conda info -a
   - gcc -v
   - g++ -v
-  - head /proc/cpuinfo
 
 script:
   - conda build -c intel -c conda-forge $PYVER --output-folder ./ conda-recipe
