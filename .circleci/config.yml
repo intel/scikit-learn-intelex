@@ -11,7 +11,6 @@ jobs:
       - run:
           name: Setting up build environment
           command: |
-            cat /proc/cpuinfo | head
             wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
             bash miniconda.sh -b -p ~/miniconda
             export PATH=~/miniconda/bin:$PATH
@@ -22,15 +21,13 @@ jobs:
             conda create -q -n bld --override-channels -c intel -c conda-forge python=3.6 numpy scipy pytest daal mpich tbb
             gcc -v
             g++ -v
+            head /proc/cpuinfo
       - run:
           name: Building daal4py
           command: |
             . ~/miniconda/bin/activate bld
             mkdir -p /tmp/out
-            conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test --no-remove-work-dir conda-recipe
-            tar cfj /tmp/out/daal4py-conda-build.tar.bz2 /home/circleci/miniconda/conda-bld/*
-      - store_artifacts:
-            path: /tmp/out
+            conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
           command: |
