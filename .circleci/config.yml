@@ -54,4 +54,4 @@ jobs:
             export SKL=`grep -e '.*passed' ~/skl.out`
             pwd
             ls -la .
-            cd && python ~/daal4py_ci/.circleci/compare_runs.py
+            cd && python ~/daal4py-ci/.circleci/compare_runs.py
