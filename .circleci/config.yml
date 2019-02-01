@@ -47,8 +47,9 @@ jobs:
             # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
             # See: https://github.com/IntelPython/daal4py/issues/25
             export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"cluster/tests/test_k_means.py::test_k_means_fit_predict\""
-            cd && ((python -m daal4py -m pytest ${DESELECTED_TEST} --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
+            echo ${DESELECTED_TESTS}
+            cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
             cd && ((python -m pytest ${DESELECTED_TESTS} --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
             export D4P=`grep -e '.*passed' ~/d4p.out`
             export SKL=`grep -e '.*passed' ~/skl.out`
-            cd && python .circlici/compare_runs.py
+            cd && python .circleci/compare_runs.py
