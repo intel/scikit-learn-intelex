@@ -52,4 +52,5 @@ jobs:
             cd && ((python -m pytest ${DESELECTED_TESTS} --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
             export D4P=`grep -e '.*passed' ~/d4p.out`
             export SKL=`grep -e '.*passed' ~/skl.out`
-            cd && python .circleci/compare_runs.py
+	    pwd
+            cd && python ~/daal4py_ci/.circleci/compare_runs.py
