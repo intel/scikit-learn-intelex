@@ -189,7 +189,7 @@ def _str(instance, properties):
                 result += p + ': dict, len={}'.format(len(prop))
             else:
                 result += p + ': '
-            value = str(prop).replace('\\n', '\\n  ')
+            value = '\\n  '.join(str(prop).splitlines())
             if '\\n' in value:
                 result += '\\n  '
             result += value
