@@ -37,18 +37,18 @@ jobs:
             pip install -q scikit-learn
             conda list
             touch ~/d4p.out ~/skl.out
-	    # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
-	    # See: https://github.com/scikit-learn/scikit-learn/issues/12738
+            # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
+            # See: https://github.com/scikit-learn/scikit-learn/issues/12738
             export DESELECTED_TESTS="--deselect \"svm/tests/test_svm.py::test_sample_weights\""
             export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"svm/tests/test_svm.py::test_precomputed\""
             export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"svm/tests/test_sparse.py::test_sparse\""
             export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"svm/tests/test_sparse.py::test_svc_iris\""
             export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"ensemble/tests/test_bagging.py::test_sparse_classification\""
-	    # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
-	    # See: https://github.com/IntelPython/daal4py/issues/25
+            # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
+            # See: https://github.com/IntelPython/daal4py/issues/25
             export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"cluster/tests/test_k_means.py::test_k_means_fit_predict\""
             cd && ((python -m daal4py -m pytest ${DESELECTED_TEST} --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
             cd && ((python -m pytest ${DESELECTED_TESTS} --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
-            D4P=`grep -e 'failed,.*passed,.*skipped,.*xfailed,' ~/d4p.out | awk '{print($1, $3, $5, $7, $9)}'`
-            SKL=`grep -e 'failed,.*passed,.*skipped,.*xfailed,' ~/skl.out | awk '{print($1, $3, $5, $7, $9)}'`
+            export D4P=`grep -e '.*passed' ~/d4p.out | awk '{print($1, $3, $5, $7, $9)}'`
+            export SKL=`grep -e '.*passed' ~/skl.out | awk '{print($1, $3, $5, $7, $9)}'`
             if [ "$D4P" = "$SKL" ]; then exit 0 ; else exit 1 ; fi
