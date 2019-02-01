@@ -53,4 +53,5 @@ jobs:
             export D4P=`grep -e '.*passed' ~/d4p.out`
             export SKL=`grep -e '.*passed' ~/skl.out`
             pwd
+            ls -la .
             cd && python ~/daal4py_ci/.circleci/compare_runs.py
