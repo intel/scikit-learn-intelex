@@ -36,7 +36,7 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda install -q conda-build
+  - conda install -q conda-build=3.16
   # Useful for debugging any issues with conda
   - conda info -a
   - gcc -v
