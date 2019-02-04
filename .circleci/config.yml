@@ -33,6 +33,7 @@ jobs:
           name: Testing sklearn patches
           command: |
             export PATH=~/miniconda/bin:$PATH
+            . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
