@@ -25,14 +25,15 @@ jobs:
       - run:
           name: Building daal4py
           command: |
-            . ~/miniconda/bin/activate bld
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
             mkdir -p /tmp/out
             conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
           command: |
             export PATH=~/miniconda/bin:$PATH
-            . activate bld
+            conda activate bld
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
@@ -52,6 +53,6 @@ jobs:
             cd && ((python -m pytest ${DESELECTED_TESTS} --verbose --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
             export D4P=`grep -e '.*passed' ~/d4p.out`
             export SKL=`grep -e '.*passed' ~/skl.out`
-            pwd
-            ls -la .
-            cd && python ~/daal4py-ci/.circleci/compare_runs.py
+            echo $D4P
+            echo $SKL
+            python ~/daal4py-ci/.circleci/compare_runs.py
