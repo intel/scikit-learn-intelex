@@ -39,19 +39,21 @@ jobs:
             pip install -q scikit-learn
             conda list
             touch ~/d4p.out ~/skl.out
+            export BASEDIR=`python -c "import os.path, sklearn; print(os.path.dirname(sklearn.__file__) + '/')"`
             # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
             # See: https://github.com/scikit-learn/scikit-learn/issues/12738
-            export DESELECTED_TESTS="--deselect \"svm/tests/test_svm.py::test_sample_weights\""
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"svm/tests/test_svm.py::test_precomputed\""
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"svm/tests/test_sparse.py::test_sparse\""
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"svm/tests/test_sparse.py::test_svc_iris\""
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"ensemble/tests/test_bagging.py::test_sparse_classification\""
+            export DESELECTED_TESTS="--deselect \"${BASEDIR}svm/tests/test_svm.py::test_sample_weights\""
+            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"${BASEDIR}svm/tests/test_svm.py::test_precomputed\""
+            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"${BASEDIR}svm/tests/test_sparse.py::test_sparse\""
+            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"${BASEDIR}svm/tests/test_sparse.py::test_svc_iris\""
+            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"${BASEDIR}ensemble/tests/test_bagging.py::test_sparse_classification\""
             # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
             # See: https://github.com/IntelPython/daal4py/issues/25
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"cluster/tests/test_k_means.py::test_k_means_fit_predict\""
-            echo "-m daal4py -m pytest ${DESELECTED_TESTS} --disable-warnings --pyargs sklearn"
-            cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} --verbose --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
-            cd && ((python -m pytest ${DESELECTED_TESTS} --verbose --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
+            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect \"${BASEDIR}cluster/tests/test_k_means.py::test_k_means_fit_predict\""
+            echo "-m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
+            echo ${PYTEST_ADDOPTS}
+            cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
+            cd && ((python -m pytest ${DESELECTED_TESTS} -q -rf --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
             export D4P=`grep -e '.*passed' ~/d4p.out`
             export SKL=`grep -e '.*passed' ~/skl.out`
             echo $D4P
