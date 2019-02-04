@@ -52,10 +52,13 @@ jobs:
             export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}cluster/tests/test_k_means.py::test_k_means_fit_predict"
             echo "-m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
             # It is important for pytest to work in a separate test folder to not discover tests in ~/miniconda folder
-            cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
-            cd && ((python -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
+            cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn > ~/d4p.out) || true)
+            cd && ((python -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn > ~/skl.out) || true)
             export D4P=`grep -e '\d* passed.* second' ~/d4p.out`
             export SKL=`grep -e '\d* passed.* second' ~/skl.out`
+            tar cjf /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2 ~/d4p.out ~/skl.out
             echo "Summary of patched run: " $D4P
             echo "Summary of unpatched run: " $SKL
             python ~/daal4py-ci/.circleci/compare_runs.py
+      - store_artifacts:
+          path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
