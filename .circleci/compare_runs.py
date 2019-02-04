@@ -18,6 +18,7 @@ if all((comp('failed', operator.eq),
      comp('xpassed', operator.eq),
      comp('xfailed', operator.eq))
    ):
+    print("Patched scikit-learn passed the compatibility check")
     sys.exit(0)
 else:
     print("Patched run: {}".format(d4p))

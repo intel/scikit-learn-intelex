@@ -56,6 +56,6 @@ jobs:
             cd && ((python -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
             export D4P=`grep -e '\d* passed.* second' ~/d4p.out`
             export SKL=`grep -e '\d* passed.* second' ~/skl.out`
-            echo $D4P
-            echo $SKL
+            echo "Summary of patched run: " $D4P
+            echo "Summary of unpatched run: " $SKL
             python ~/daal4py-ci/.circleci/compare_runs.py
