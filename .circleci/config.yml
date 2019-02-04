@@ -39,8 +39,7 @@ jobs:
             pip install -q scikit-learn
             conda list
             touch ~/d4p.out ~/skl.out
-            # export BASEDIR=`python -c "import os.path, sklearn; print(os.path.dirname(sklearn.__file__) + '/')"`
-            export BASEDIR=
+            export BASEDIR=`python -c "import os.path, sklearn; print(os.path.relpath(os.path.dirname(sklearn.__file__)) + '/')"`
             # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
             # See: https://github.com/scikit-learn/scikit-learn/issues/12738
             export DESELECTED_TESTS="--deselect ${BASEDIR}svm/tests/test_svm.py::test_sample_weights"
@@ -53,7 +52,6 @@ jobs:
             export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}cluster/tests/test_k_means.py::test_k_means_fit_predict"
             echo "-m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
             # It is important for pytest to work in a separate test folder to not discover tests in ~/miniconda folder
-            mkdir -p test_tmp && cd test_tmp
             cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
             cd && ((python -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
             export D4P=`grep -e '\d* passed.* second' ~/d4p.out`
