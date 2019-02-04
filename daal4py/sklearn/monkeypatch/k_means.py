@@ -250,6 +250,9 @@ def predict(self, X, sample_weight=None):
                                self.cluster_centers_)[0]
 
 
+_fit_copy = fit
+_predict_copy = predict
+    
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
@@ -264,7 +267,8 @@ class KMeans(KMeans_original):
             n_init=n_init, verbose=verbose, random_state=random_state,
             copy_x=copy_x, n_jobs=n_jobs, algorithm=algorithm)
 
+    def fit(self, X, y=None, sample_weight=None):
+        return _fit_copy(self, X, y=y, sample_weight=sample_weight)
 
-setattr(KMeans, 'fit', fit)
-setattr(KMeans, 'predict', predict)
- 
+    def predict(self, X, sample_weight=None):
+        return _predict_copy(self, X, sample_weight=sample_weight)
