@@ -15,11 +15,9 @@
 # limitations under the License.
 #******************************************************************************/
 
-from .decision_forest import (RandomForestClassifier, RandomForestRegressor)
 from .monkeypatch.dispatcher import enable as patch_sklearn
 from .monkeypatch.dispatcher import disable as unpatch_sklearn
 from .monkeypatch.dispatcher import _patch_names as sklearn_patch_names
 
-__all__ = ["RandomForestClassifier", "RandomForestRegressor", 
-           "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
-           "neighbors"]
+__all__ = ["patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
+           "neighbors", "ensemble"]
