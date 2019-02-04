@@ -39,7 +39,7 @@ jobs:
             pip install -q scikit-learn
             conda list
             touch ~/d4p.out ~/skl.out
-            export BASEDIR=`python -c "import os.path, sklearn; print(os.path.relpath(os.path.dirname(sklearn.__file__)) + '/')"`
+            export BASEDIR=`python -c "import os.path, sklearn; print(os.path.relpath(os.path.dirname(sklearn.__file__), os.path.expanduser('~')) + '/')"`
             # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
             # See: https://github.com/scikit-learn/scikit-learn/issues/12738
             export DESELECTED_TESTS="--deselect ${BASEDIR}svm/tests/test_svm.py::test_sample_weights"
