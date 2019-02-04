@@ -13,8 +13,8 @@ def comp(k, op):
 
 
 d4p, skl = get_counts('D4P'), get_counts('SKL')
-if all((comp('failed', operator.eq),
-     comp('passed', operator.ge),
+if all((comp('failed', operator.le), # patched has <= fails
+     comp('passed', operator.ge),    # patches has >= passes due to extra tests discovered
      comp('xpassed', operator.eq),
      comp('xfailed', operator.eq))
    ):
