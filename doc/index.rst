@@ -151,6 +151,24 @@ e.g. standard types (integer, float, Numpy arrays, Pandas DataFrames,
 ...). Additionally, if you provide the name of a csv-file as an input argument
 daal4py will work on the entire file content.
 
+Scikit-Learn patches
+--------------------
+daal4py can dynamically patch :ref:`certain scikit-learn algorithms <sklearn>` to
+use Intel® DAAL as the underlying solver, while getting the same solution faster.
+To unlock performance for your application, simply run::
+
+    python -m daal4py my_application.py
+
+Patches can also be enabled programmatically::
+
+    import daal4py.sklearn
+    daal4py.sklearn.patch_sklearn()
+
+Additionally, daal4py.sklearn provides scikit-learn API compatible classes for
+k-nearest neighbors classifier, as well as random forest classifier and regressors
+which are not a drop-in replacements of the corresponding scikit-learn counterparts.
+    
+  
 Content
 -------
 .. toctree::
@@ -163,3 +181,4 @@ Content
    Distribution <scaling>
    Streaming <streaming>
    Examples <examples>
+   Scikit-Learn API <sklearn>

@@ -9,11 +9,15 @@ source:
     path: ..
     #git_url: https://github.com/IntelPython/daal4py.git
 
+build:
+    number: {{buildnumber}}
+    include_recipe: False
+
 requirements:
-    build:
+    host:
         - python
         - setuptools
-        - numpy >=1.16
+        - numpy >=1.15
         - tbb-devel
         - daal-devel >=2019.0
         - cython
@@ -22,23 +26,17 @@ requirements:
         - impi-devel             # [win]
     run:
         - python
-        - numpy >=1.16
         - tbb
         - daal >=2019.0
         - mpich                  # [not win]
         - impi_rt                # [win]
-    test:
-        - pandas
-        - scipy
-
-build:
-    number: {{buildnumber}}
-    include_recipe: False
+        - {{ pin_compatible('numpy') }}
 
 test:
     requires:
         - pandas
         - scipy
+        - scikit-learn
     imports:
         - daal4py
     source_files:
@@ -46,5 +44,7 @@ test:
         - tests
 
 about:
+    home: https://intelpython.github.io/daal4py/
     license: Apache 2.0
     license_file: LICENSE
+    summary: A convenient Python API to Intel (R) DAAL

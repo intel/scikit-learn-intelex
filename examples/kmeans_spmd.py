@@ -53,12 +53,15 @@ if __name__ == "__main__":
     # Note: we could have done this in just one line:
     # d4p.kmeans(nClusters, maxIter, assignFlag=True, distributed=True).compute(data, d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True).compute(data).centroids)
 
-    # Kmeans result objects provide assignments (if requested), centroids, goalFunction, nIterations and objectiveFunction
+    # Kmeans result objects provide centroids, goalFunction, nIterations and objectiveFunction
     assert result.centroids.shape[0] == nClusters
-    print(result.nIterations, result.centroids[0], maxIter)
-    # we'd need an extra call to kmeans.compute(10, 0) to get the assignments; getting assignments is not yet supported in dist mode
-    assert result.assignments == None
     assert result.nIterations <= maxIter
+    # we need an extra call to kmeans to get the assignments (not directly supported through parameter assignFlag yet in SPMD mode)
+    algo = d4p.kmeans(nClusters, 0, assignFlag=True) # maxIt=0; not distributed, we compute on local data only!
+    assignments = algo.compute(data, result.centroids).assignments
 
+    print("\nFirst 10 cluster assignments:\n", assignments[0:10])
+    print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
+    print("\nObjective function value:\n", result.objectiveFunction)
     print('All looks good!')
     d4p.daalfini()
