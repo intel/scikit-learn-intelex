@@ -36,15 +36,11 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda install conda-build
+  - conda install -q conda-build=3.16
   # Useful for debugging any issues with conda
   - conda info -a
   - gcc -v
   - g++ -v
 
 script:
-  # Your test script goes here
-  #  - which mpirun && mpirun -version
-  # - echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
-  # - export I_MPI_SHM_LMT=shm 
-  - conda build -c intel -c conda-forge $PYVER conda-recipe
+  - conda build -c intel -c conda-forge $PYVER --output-folder ./ conda-recipe

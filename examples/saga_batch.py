@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2018 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -52,7 +52,7 @@ def main(readcsv=read_csv, method='defaultDense'):
                                              accuracyThreshold=1e-5,
                                              batchSize=1,
                                              function=logloss_algo,
-                                             learningRate=lr,
+                                             learningRateSequence=lr,
                                              optionalResultRequired=True)
 
 

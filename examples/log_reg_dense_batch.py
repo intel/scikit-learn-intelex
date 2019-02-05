@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2018 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -58,7 +58,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     assert predict_result.probabilities.shape == (predict_data.shape[0], nClasses)
     assert predict_result.logProbabilities.shape == (predict_data.shape[0], nClasses)
     predict_labels = np.loadtxt(testfile, usecols=range(nFeatures, nFeatures + 1), delimiter=',', ndmin=2)
-    assert np.count_nonzero(predict_result.prediction-predict_labels) <= 6, str(np.count_nonzero(predict_result.prediction-predict_labels))
+    assert np.count_nonzero(predict_result.prediction-predict_labels)/predict_labels.shape[0] < 0.025
 
     return (train_result, predict_result, predict_labels)
 
