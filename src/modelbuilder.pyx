@@ -34,7 +34,7 @@ cdef class decision_forest_classification_modelbuilder:
         return self.c_ptr.getModel()
 
 
-def ModelBuilder(nTrees=1, nClasses=2):
+def model_builder(nTrees=1, nClasses=2):
     '''
     Currently we support only decision forest classification models.
     The future may bring us more.

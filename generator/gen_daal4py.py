@@ -948,7 +948,10 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
 
     with open(jp('src', 'gettree.pyx'), 'r') as f:
         pyx_gettree = f.read()
+    with open(jp('src', 'modelbuilder.pyx'), 'r') as f:
+        pyx_modelbuilder = f.read()
 
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
         f.write(pyx_file)
         f.write(pyx_gettree)
+        f.write(pyx_modelbuilder)
