@@ -182,17 +182,20 @@ def _str(instance, properties):
         result = ''
         for p in properties:
             prop = getattr(instance, p, None)
+            tail = ''
             if isinstance(prop, np.ndarray):
-                result += p + ': array, type={}, shape={}'.format(prop.dtype,
-                                                                  prop.shape)
+                result += p + ': array('
+                tail = ',\\n  dtype={}, shape={})'.format(prop.dtype,
+                                                        prop.shape)
             elif isinstance(prop, dict):
                 result += p + ': dict, len={}'.format(len(prop))
             else:
                 result += p + ': '
             value = '\\n  '.join(str(prop).splitlines())
-            if '\\n' in value:
+            if '\\n' in value or isinstance(prop, np.ndarray):
                 result += '\\n  '
             result += value
+            result += tail
             result += '\\n\\n'
         return result[:-2]
 
