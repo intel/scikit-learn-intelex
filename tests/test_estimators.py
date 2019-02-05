@@ -3,8 +3,8 @@ import unittest
 from sklearn.utils.estimator_checks import check_estimator
 
 from daal4py.sklearn.neighbors import KNeighborsClassifier
-from daal4py.sklearn import RandomForestClassifier
-from daal4py.sklearn import RandomForestRegressor
+from daal4py.sklearn.ensemble import RandomForestClassifier
+from daal4py.sklearn.ensemble import RandomForestRegressor
 
 
 class Test(unittest.TestCase):
