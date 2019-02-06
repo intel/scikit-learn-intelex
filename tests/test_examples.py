@@ -153,7 +153,7 @@ gen_examples = [
     #('qr_streaming', 'qr.csv', 'matrixR'),
     ('ridge_regression_batch', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
     ('ridge_regression_streaming', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
-    ('saga_batch', None, None, (2019, 2)),
+    ('saga_batch', None, None, (2019, 3)),
     ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
     ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),
     ('sorting_batch',),
