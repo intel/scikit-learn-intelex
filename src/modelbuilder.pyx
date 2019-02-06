@@ -25,7 +25,7 @@ cdef class decision_forest_classification_modelbuilder:
         return self.c_ptr.createTree(nNodes)
 
     def addLeafNode(self, c_TreeId treeId, c_NodeId parentId, size_t position, size_t classLabel):
-        return self.c_ptr.addLeafMode(treeId, parentId, position, classLabel)
+        return self.c_ptr.addLeafNode(treeId, parentId, position, classLabel)
 
     def addSplitNode(self, c_TreeId treeId, size_t position, size_t featureIndex, double featureValue, c_NodeId parentId=c_noParent):
         return self.c_ptr.addSplitNode(treeId, parentId, position, featureIndex, featureValue)
