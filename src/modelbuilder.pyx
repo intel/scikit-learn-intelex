@@ -1,4 +1,4 @@
-cdef extern "modelbuilder.h":
+cdef extern from "modelbuilder.h":
     ctypedef size_t c_NodeId
     ctypedef size_t c_TreeId
     cdef size_t c_noParent
@@ -21,16 +21,16 @@ cdef class decision_forest_classification_modelbuilder:
     def __dealloc__(self):
         del self.c_ptr
 
-    def createTree(self, size_t nNodes)
+    def createTree(self, size_t nNodes):
         return self.c_ptr.createTree(nNodes)
 
-    def addLeafNode(self, c_TreeId treeId, c_NodeId parentId, size_t position, size_t classLabel)
-        return self.c_ptr.createTree(treeId, parentId, position, classLabel)
+    def addLeafNode(self, c_TreeId treeId, c_NodeId parentId, size_t position, size_t classLabel):
+        return self.c_ptr.addLeafMode(treeId, parentId, position, classLabel)
 
-    def addSplitNode(self, c_TreeId treeId, size_t position, size_t featureIndex, double featureValue, c_NodeId parentId=c_noParent)
-        return self.c_ptr.createTree(treeId, parentId, position, featureIndex, featureValue)
+    def addSplitNode(self, c_TreeId treeId, size_t position, size_t featureIndex, double featureValue, c_NodeId parentId=c_noParent):
+        return self.c_ptr.addSplitNode(treeId, parentId, position, featureIndex, featureValue)
 
-    def getModel(self)
+    def getModel(self):
         return self.c_ptr.getModel()
 
 
