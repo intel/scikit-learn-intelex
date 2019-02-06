@@ -46,7 +46,7 @@ req_version['brownboost_batch.py'] = (2019,4)
 req_version['logitboost_batch.py'] = (2019,4)
 req_version['stump_classification_batch.py'] = (2019,4)
 req_version['stump_regression_batch.py'] = (2019,4)
-req_version['saga_batch.py'] = (2019,2)
+req_version['saga_batch.py'] = (2019,3)
 
 def get_exe_cmd(ex, nodist, nostream):
     if req_version[os.path.basename(ex)] > daal_version:
