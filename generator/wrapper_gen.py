@@ -868,6 +868,76 @@ hpat_spec.append({
 })
 '''
 
+# template for footer in .pyx file
+# requires {{algos}}    list of algorithms that are available
+#          {{version}}  version of DAAL
+pyx_footer_template = '''
+def getTreeState(model, i=0, n_classes=1):
+    cdef TreeState cTreeState
+    if False:
+        pass
+{% for model in ['algorithms::decision_forest::classification', 'algorithms::gbt::classification'] %}
+{% if model in algos %}
+{% set flatname = '::'.join([model, 'model'])|flat %}
+    elif isinstance(model, {{flatname}}):
+        cTreeState = _getTreeState((<{{flatname}}>model).c_ptr, i, n_classes)
+{% endif %}
+{% endfor %}
+{% for model in ['algorithms::decision_tree::classification'] %}
+{% if model in algos %}
+{% set flatname = '::'.join([model, 'model'])|flat %}
+    elif isinstance(model, {{flatname}}):
+        cTreeState = _getTreeState((<{{flatname}}>model).c_ptr, n_classes)
+{% endif %}
+{% endfor %}
+{% for model in ['algorithms::decision_forest::regression', 'algorithms::gbt::regression'] %}
+{% if model in algos %}
+{% set flatname = '::'.join([model, 'model'])|flat %}
+    elif isinstance(model, {{flatname}}):
+        cTreeState = _getTreeState((<{{flatname}}>model).c_ptr, i, 1)
+{% endif %}
+{% endfor %}
+{% for model in ['algorithms::decision_tree::regression'] %}
+{% if model in algos %}
+{% set flatname = '::'.join([model, 'model'])|flat %}
+    elif isinstance(model, {{flatname}}):
+        cTreeState = _getTreeState((<{{flatname}}>model).c_ptr, 1)
+{% endif %}
+{% endfor %}
+    else:
+        assert(False), 'Incorrect model type: ' + str(type(model))
+    state = pyTreeState()
+    state.set(&cTreeState)
+    return state
+
+
+cdef extern from "daal.h":
+    cdef const long long INTEL_DAAL_VERSION
+    cdef const long long __INTEL_DAAL_BUILD_DATE
+    cppclass LibraryVersionInfo:
+        LibraryVersionInfo()
+        int majorVersion, minorVersion, updateVersion
+        char * build_rev
+__version__ = "{}".format({{version}})
+__daal_link_version__ = "{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_BUILD_DATE)
+cdef _get__daal_run_version__():
+    cdef LibraryVersionInfo li
+    return "{}{}{}_{}".format(li.majorVersion, str(li.minorVersion).zfill(2), str(li.updateVersion).zfill(2), li.build_rev)
+__daal_run_version__ = _get__daal_run_version__()
+
+'''
+
+# template for footer in .cpp file
+# requires {{algos}}                list of algorithms that are available
+#          {{dist_custom_algos}}    list of algorithms with custom distribution pattern
+cpp_footer_template = '''
+{% for algo in dist_custom_algos%}
+{% if algo in algos %}
+#include "dist_{{algo|flat}}.h"
+{% endif %}
+{% endfor %}
+'''
+
 ##################################################################################
 # A set of jinja2 filters to convert arguments, types etc which where extracted
 # from DAAL C++ headers to cython syntax and/or C++ for our own code
@@ -1047,8 +1117,13 @@ class wrapper_gen(object):
 
 
     ##################################################################################
-    def gen_footers(self, no_dist=False, no_stream=False):
+    def gen_footers(self, no_dist=False, no_stream=False, algos=[], version='', dist_custom_algos=[]):
+        t = jenv.from_string(pyx_footer_template)
+        pyx_footer = t.render(algos=algos, version=version)
+
         if no_dist:
-            return ('', '', '')
+            return ('', pyx_footer, '')
         else:
-            return ('', '', '#include "dist_logistic_regression.h"\n#include "dist_kmeans_init.h"\n#include "dist_kmeans.h"\n')
+            t = jenv.from_string(cpp_footer_template)
+            cpp_footer = t.render(algos=algos, dist_custom_algos=dist_custom_algos)
+            return ('', pyx_footer, cpp_footer)

@@ -120,34 +120,3 @@ cdef class pyTreeState(object):
     @property
     def class_count(self):
         return self.class_count
-
-
-def getTreeState(model, i=0, n_classes=1):
-    '''
-Get decision tree from model.
-
-Please refer to scikit-learn for details about the tree layout. Try ``help(sklearn.tree._tree.Tree)`` or go to `Understanding the decision tree structure <http://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html#sphx-glr-auto-examples-tree-plot-unveil-tree-structure-py>`_.
-
-:param Model model: The input model
-:param int i: Only for forests: The index of the tree
-:param int n_classes: Only for classifiers: Number of classes
-:return: sklearn.tree._tree.Tree
-    '''
-    cdef TreeState cTreeState
-    if isinstance(model, decision_forest_classification_model):
-        cTreeState = _getTreeState((<decision_forest_classification_model>model).c_ptr, i, n_classes)
-    elif isinstance(model, gbt_classification_model):
-        cTreeState = _getTreeState((<gbt_classification_model>model).c_ptr, i, n_classes)
-    elif isinstance(model, decision_forest_regression_model):
-        cTreeState = _getTreeState((<decision_forest_regression_model>model).c_ptr, i, 1)
-    elif isinstance(model, gbt_regression_model):
-        cTreeState = _getTreeState((<gbt_regression_model>model).c_ptr, i, 1)
-    elif isinstance(model, decision_tree_classification_model):
-        cTreeState = _getTreeState((<decision_tree_classification_model>model).c_ptr, n_classes)
-    elif isinstance(model, decision_tree_regression_model):
-        cTreeState = _getTreeState((<decision_tree_regression_model>model).c_ptr, 1)
-    else:
-        assert(False), 'Incorrect model type: ' + str(type(model))
-    state = pyTreeState()
-    state.set(&cTreeState)
-    return state
