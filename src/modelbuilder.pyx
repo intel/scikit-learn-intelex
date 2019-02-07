@@ -22,16 +22,16 @@ cdef class decision_forest_classification_modelbuilder:
     def __dealloc__(self):
         del self.c_ptr
 
-    def createTree(self, size_t nNodes):
+    def create_tree(self, size_t nNodes):
         return self.c_ptr.createTree(nNodes)
 
-    def addLeafNode(self, c_TreeId treeId, c_NodeId parentId, size_t position, size_t classLabel):
+    def add_leaf(self, c_TreeId treeId, size_t classLabel, c_NodeId parentId=c_noParent, size_t position=0):
         return self.c_ptr.addLeafNode(treeId, parentId, position, classLabel)
 
-    def addSplitNode(self, c_TreeId treeId, size_t position, size_t featureIndex, double featureValue, c_NodeId parentId=c_noParent):
+    def add_split(self, c_TreeId treeId, size_t featureIndex, double featureValue, c_NodeId parentId=c_noParent, size_t position=0):
         return self.c_ptr.addSplitNode(treeId, parentId, position, featureIndex, featureValue)
 
-    def getModel(self):
+    def model(self):
         cdef decision_forest_classification_model res = decision_forest_classification_model.__new__(decision_forest_classification_model)
         res.c_ptr = get_decision_forest_classification_modelbuilder_Model(self.c_ptr)
         return res
