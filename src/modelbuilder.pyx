@@ -4,11 +4,12 @@ cdef extern from "modelbuilder.h":
     cdef size_t c_noParent
 
     cdef cppclass c_decision_forest_classification_ModelBuilder:
-        ModelBuilder(size_t nClasses, size_t nTrees) except +
+        c_decision_forest_classification_ModelBuilder(size_t nClasses, size_t nTrees) except +
         c_TreeId createTree(size_t nNodes)
         c_NodeId addLeafNode(c_TreeId treeId, c_NodeId parentId, size_t position, size_t classLabel)
         c_NodeId addSplitNode(c_TreeId treeId, c_NodeId parentId, size_t position, size_t featureIndex, double featureValue)
-        ModelPtr getModel()
+
+    cdef decision_forest_classification_ModelPtr * get_decision_forest_classification_modelbuilder_Model(c_decision_forest_classification_ModelBuilder *);
 
 
 cdef class decision_forest_classification_modelbuilder:
@@ -31,7 +32,9 @@ cdef class decision_forest_classification_modelbuilder:
         return self.c_ptr.addSplitNode(treeId, parentId, position, featureIndex, featureValue)
 
     def getModel(self):
-        return self.c_ptr.getModel()
+        cdef decision_forest_classification_model res = decision_forest_classification_model.__new__(decision_forest_classification_model)
+        res.c_ptr = get_decision_forest_classification_modelbuilder_Model(self.c_ptr)
+        return res
 
 
 def model_builder(nTrees=1, nClasses=2):
