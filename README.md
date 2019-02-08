@@ -36,7 +36,23 @@ The easiest way to build daal4py is using the conda-build withe the provided rec
 ## Building daal4py
 ```
 cd <checkout-dir>
-conda build conda-recipe
+conda build conda-recipe -c intel -c conda-forge
+```
+This will build the conda package and tell you where to find it (```.../daal4py*.tar.bz2```).
+
+## Installing the built daal4py conda package
+```
+conda install <path-to-conda-package-as-built-above>
+```
+To actually use your daal4py, dependent packages need to be installed. To ensure, do
+
+Linux and OsX:
+```
+conda install -c intel -c conda-forge mpich tbb daal numpy
+```
+Windows:
+```
+conda install -c intel mpi_rt tbb daal numpy
 ```
 
 # Building daal4py without conda-build
