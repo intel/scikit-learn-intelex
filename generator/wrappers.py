@@ -231,6 +231,20 @@ has_dist = {
                              addinput  = 'daal::algorithms::low_order_moments::partialResults')
                    ],
     },
+    'algorithms::covariance' : {
+        'pattern': 'map_reduce_star',
+        'step_specs': [SSpec(name      = 'step1Local',
+                             input     = ['daal::data_management::NumericTablePtr'],
+                             output    = 'daal::services::SharedPtr< daal::algorithms::covariance::PartialResult >',
+                             iomanager = 'PartialIOManager',
+                             setinput  = ['daal::algorithms::covariance::data']),
+                       SSpec(name      = 'step2Master',
+                             input     = ['daal::services::SharedPtr< daal::algorithms::covariance::PartialResult >'],
+                             output    = 'daal::algorithms::covariance::ResultPtr',
+                             iomanager = 'IOManager',
+                             addinput  = 'daal::algorithms::covariance::partialResults')
+                   ],
+    },
     'algorithms::multinomial_naive_bayes::training' : {
         'pattern': 'map_reduce_star',
         'step_specs': [SSpec(name      = 'step1Local',
