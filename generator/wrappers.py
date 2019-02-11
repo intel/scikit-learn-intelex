@@ -217,6 +217,20 @@ has_dist = {
                              params    = False)
                    ],
     },
+    'algorithms::low_order_moments' : {
+        'pattern': 'map_reduce_star',
+        'step_specs': [SSpec(name      = 'step1Local',
+                             input     = ['daal::data_management::NumericTablePtr'],
+                             output    = 'daal::services::SharedPtr< daal::algorithms::low_order_moments::PartialResult >',
+                             iomanager = 'PartialIOManager',
+                             setinput  = ['daal::algorithms::low_order_moments::data']),
+                       SSpec(name      = 'step2Master',
+                             input     = ['daal::services::SharedPtr< daal::algorithms::low_order_moments::PartialResult >'],
+                             output    = 'daal::algorithms::low_order_moments::ResultPtr',
+                             iomanager = 'IOManager',
+                             addinput  = 'daal::algorithms::low_order_moments::partialResults')
+                   ],
+    },
     'algorithms::multinomial_naive_bayes::training' : {
         'pattern': 'map_reduce_star',
         'step_specs': [SSpec(name      = 'step1Local',
