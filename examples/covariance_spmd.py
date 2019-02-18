@@ -21,16 +21,42 @@
 #    mpirun -n 4 python ./covariance_spmd.py
 
 import daal4py as d4p
-from numpy import loadtxt
+import numpy as np
+
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c=None, sr=0, nr=None, t=np.float64: pandas.read_csv(f,
+                                                                              usecols=c,
+                                                                              skiprows=sr,
+                                                                              nrows=nr,
+                                                                              delimiter=',',
+                                                                              header=None,
+                                                                              dtype=t)
+except:
+    # fall back to numpy loadtxt
+    def read_csv(f, c=None, sr=0, nr=np.iinfo(np.int64).max, t=np.float64):
+        print("sr",sr,"nr",nr)
+        res = np.genfromtxt(f,
+                      usecols=c,
+                      delimiter=',',
+                      skip_header=sr,
+                      max_rows=nr,
+                      dtype=t)
+        if res.ndim == 1:
+            return res[:, np.newaxis]
+        return res
 
 
-if __name__ == "__main__":
-    # Initialize SPMD mode
-    d4p.daalinit()
-
+def main(readcsv=read_csv, method='defaultDense'):
     # Each process gets its own data
-    infile = "./data/distributed/covcormoments_dense_" + str(d4p.my_procid()+1) + ".csv"
-    data = loadtxt(infile, delimiter=',')
+    infile = "./data/batch/covcormoments_dense.csv"
+    # We know the number of lines in the file and use this to separate data between processes
+    lines_count = 200
+    process_count = 4
+    block_size = (int)(lines_count/process_count) + 1
+    # Last process reads the file to the end
+    data = read_csv(infile, sr=d4p.my_procid()*block_size, nr=block_size)
 
     # Create algorithm with distributed mode
     alg = d4p.covariance(method="defaultDense", distributed=True)
@@ -43,7 +69,13 @@ if __name__ == "__main__":
     assert res.mean.shape == (1, data.shape[1])
     assert res.correlation.shape == (data.shape[1], data.shape[1])
 
-    # Print message to show that job is done
-    # To see more details look at batch example
-    print('All looks good!')
+    return res
+
+
+if __name__ == "__main__":
+    # Initialize SPMD mode
+    d4p.daalinit()
+    res = main()
+    print("results in process number", d4p.my_procid())
+    print(res)
     d4p.daalfini()
