@@ -21,30 +21,65 @@
 #    mpirun -n 4 python ./svd_spmd.py
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+import numpy as np
+
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c=None, sr=0, nr=None, t=np.float64: pandas.read_csv(f,
+                                                                              usecols=c,
+                                                                              skiprows=sr,
+                                                                              nrows=nr,
+                                                                              delimiter=',',
+                                                                              header=None,
+                                                                              dtype=t)
+except:
+    # fall back to numpy loadtxt
+    def read_csv(f, c=None, sr=0, nr=np.iinfo(np.int64).max, t=np.float64):
+        print("sr",sr,"nr",nr)
+        res = np.genfromtxt(f,
+                      usecols=c,
+                      delimiter=',',
+                      skip_header=sr,
+                      max_rows=nr,
+                      dtype=t)
+        if res.ndim == 1:
+            return res[:, np.newaxis]
+        return res
+
+
+def main():
+    infile = "./data/batch/svd.csv"
+    # We know the number of lines in the file and use this to separate data between processes
+    lines_count = 16000
+    block_size = (int)(lines_count/d4p.num_procs()) + 1
+    # Last process reads the file to the end
+    data = read_csv(infile, sr=d4p.my_procid()*block_size, nr=block_size)
+
+    # configure a SVD object
+    algo = d4p.svd(distributed=True)
+
+    # We can also load the data ourselfs and provide the numpy array
+    result = algo.compute(data)
+
+    # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues
+    assert result.singularValues.shape == (1, data.shape[1])
+    assert result.rightSingularMatrix.shape == (data.shape[1], data.shape[1])
+
+    # leftSingularMatrix not yet supported in dist mode
+    # TODO: remove condition after adding this support
+    if result.leftSingularMatrix is not None:
+        assert result.leftSingularMatrix.shape == data.shape
+        self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
+
+    return data, result
+
 
 if __name__ == "__main__":
     # Initialize SPMD mode
     d4p.daalinit()
-
-    # Each process gets its own data
-    infile = "./data/distributed/svd_{}.csv".format(d4p.my_procid()+1)
-
-    # configure a SVD object
-    algo = d4p.svd(distributed=True)
-    
-    # let's provide a file directly, not a table/array
-    result1 = algo.compute(infile)
-
-    # We can also load the data ourselfs and provide the numpy array
-    data = loadtxt(infile, delimiter=',')
-    result2 = algo.compute(data)
-
-    # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues
-    # leftSingularMatrix not yet supported in dist mode
-    assert result1.leftSingularMatrix == None and result2.leftSingularMatrix == None
-    assert allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-05)
-    assert allclose(result1.singularValues, result2.singularValues, atol=1e-07)
-
+    data, result = main()
+    print("results in process number", d4p.my_procid())
+    print(result)
     print('All looks good!')
     d4p.daalfini()

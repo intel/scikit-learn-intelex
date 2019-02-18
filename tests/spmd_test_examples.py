@@ -40,7 +40,7 @@ def add_test(cls, e, f=None, attr=None, ver=(0,0)):
     def testit(self):
         ex = importlib.import_module(e)
         result = self.call(ex)
-        if f and attr:# and d4p.my_procid() == 0:
+        if f and attr and d4p.my_procid() == 0:
             testdata = np_read_csv(os.path.join(unittest_data_path, f))
             actual = attr(result) if callable(attr) else getattr(result, attr)
 #            print("actual",actual)
@@ -52,12 +52,9 @@ def add_test(cls, e, f=None, attr=None, ver=(0,0)):
 
 
 class Base():
-    pass
-    # def test_svd_spmd(self):
-        # import svd_spmd as ex
-        # (data, result) = self.call(ex)
-        # if result.leftSingularMatrix is not None:
-            # self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
+    def test_svd_spmd(self):
+        import svd_spmd as ex
+        self.call(ex)
 
 
 gen_examples = [
