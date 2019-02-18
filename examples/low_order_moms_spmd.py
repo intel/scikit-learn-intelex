@@ -53,8 +53,7 @@ def main():
     infile = "./data/batch/covcormoments_dense.csv"
     # We know the number of lines in the file and use this to separate data between processes
     lines_count = 200
-    process_count = 4
-    block_size = (int)(lines_count/process_count) + 1
+    block_size = (int)(lines_count/d4p.num_procs()) + 1
     # Last process reads the file to the end
     data = read_csv(infile, sr=d4p.my_procid()*block_size, nr=block_size)
 
