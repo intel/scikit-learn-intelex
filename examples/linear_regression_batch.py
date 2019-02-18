@@ -20,6 +20,7 @@
 
 import daal4py as d4p
 import numpy as np
+from hpat import jit
 
 # let's try to use pandas' fast csv reader
 try:
@@ -30,7 +31,8 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+@jit(nopython=True)
+def main(method='defaultDense'):
     infile = "./data/batch/linear_regression_train.csv"
     testfile = "./data/batch/linear_regression_test.csv"
 
@@ -38,16 +40,16 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_algo = d4p.linear_regression_training(interceptFlag=True)
     
     # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
-    indep_data = readcsv(infile, range(10))
-    dep_data   = readcsv(infile, range(10,12))
+    indep_data = pandas.read_csv(infile, names=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], usecols=[0,1,2,3,4,5,6,7,8,9], delimiter=',', header=None, dtype={'0':np.float64, '1':np.float64, '2':np.float64, '3':np.float64, '4':np.float64, '5':np.float64, '6':np.float64, '7':np.float64, '8':np.float64, '9':np.float64})
+    dep_data   = pandas.read_csv(infile, names=['10', '11'], usecols=[10,11], delimiter=',', header=None, dtype={'10':np.float64, '11':np.float64})
     # Now train/compute, the result provides the model for prediction
-    train_result = train_algo.compute(indep_data, dep_data)
+    train_result = train_algo.compute(indep_data[:], dep_data[:])
 
     # Now let's do some prediction
     predict_algo = d4p.linear_regression_prediction()
     # read test data (with same #features)
-    pdata = readcsv(testfile, range(10))
-    ptdata = readcsv(testfile, range(10,12))
+    pdata = pandas.read_csv(testfile, names=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], usecols=[0,1,2,3,4,5,6,7,8,9], delimiter=',', header=None, dtype={'0':np.float64, '1':np.float64, '2':np.float64, '3':np.float64, '4':np.float64, '5':np.float64, '6':np.float64, '7':np.float64, '8':np.float64, '9':np.float64})
+    ptdata = pandas.read_csv(testfile, names=['10', '11'], usecols=[10,11], delimiter=',', header=None, dtype={'10':np.float64, '11':np.float64})
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

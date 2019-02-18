@@ -120,8 +120,8 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
                     ptr = '*'
                     const = ''
                 # for sphinx docu we want to be a bit more readable
-                typ_sphinx = typ_flat.replace('std_string', 'str').replace('data_management_NumericTablePtr', 'array').lower()
-                # in cython/python we want everythint to be lower case
+                typ_sphinx = typ_flat.replace('std_string', 'str').replace('data_management_numerictable', 'array').lower()
+                # in cython/python we want everything to be lower case
                 typ_cy = typ_flat.lower()
                 # all daal objects are passed as SharedPointer through their *Ptr typedefs
                 # we don't want to see the ptr in our call names
@@ -136,25 +136,26 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
                 arg_c = d4pname
                 # arrays/tables need special handling for C: they are passed as (ptr, dim1, dim2)
                 if typ_cy == 'data_or_file':
-                    decl_c = 'double* {0}_p, size_t {0}_d2, size_t {0}_d1'.format(d4pname)
-                    arg_c = 'new data_or_file(daal::data_management::HomogenNumericTable< double >::create({0}_p, {0}_d2, {0}_d1))'.format(d4pname)
+                    decl_c = 'double* {0}_ptr, size_t {0}_nrows, size_t {0}_ncols'.format(d4pname)
+                    arg_c = 'new data_or_file(daal::data_management::HomogenNumericTable< double >::create({0}_ptr, {0}_ncols, {0}_nrows))'.format(d4pname)
                     const = ''
                 # default values (see above pydefaults)
                 if dflt != None:
-                    pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1]
-                    sphinx_default = '"{}"'.format(pd) if typ == 'std::string' else '{}'.format(pd)
-                    pydefault = ' = {}'.format(sphinx_default)
+                    pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1].replace('NumericTablePtr()', 'None')
+                    default_val = '"{}"'.format(pd) if typ == 'std::string' else '{}'.format(pd)
+                    sphinx_default = default_val
+                    pydefault = ' = {}'.format(default_val)
                     cppdefault = ' = {}'.format(cppdefaults[typ] if dflt == True else dflt) if dflt != None else ''
+                    if default_val == 'None':
+                        default_val = '"None"'
                 else:
+                    default_val = None
                     pydefault = ''
                     cppdefault = ''
                     sphinx_default = ''
                 assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
-    # hjpat_input needs dist {% if step_specs is defined %}
-    #   {% set inp_dists = step_specs[0].inputdists if step_specs|length else inputdists %}
-    #   {% else %}
-    #   {% set inp_dists = None %}
-    #   {% endif %}
+
+                hpat_dist = 'REP' if any(x in d4pname for x in ['model', 'inputCentroids']) else 'OneD'
 
             self.name          = d4pname
             self.daalname      = name
@@ -175,7 +176,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
             self.init_member   = '_{}({})'.format(d4pname, 'NULL' if ptr else '') if inpt else '_{0}({0})'.format(d4pname) if name else ''
             self.assign_member = '_{0} = {0}'.format(d4pname) if name else ''
             self.todaal_member = todaal_member if name else ''
-            self.spec          = '("{}", "{}", "{}")'.format(d4pname, typ_flat, 'REP' if 'model' in d4pname else 'OneD') if name else ''
+            self.spec          = '("{}", "{}", {}, "{}")'.format(d4pname, typ_cy.replace('data_management_', ''), default_val, hpat_dist) if name else ''
             self.sphinx        = ':param {} {}:{}'.format(typ_sphinx, d4pname, ' [optional, default: {}]'.format(sphinx_default) if sphinx_default else '') if name else ''
 
         def format(self, s, *args):
