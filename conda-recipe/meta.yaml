@@ -43,8 +43,9 @@ test:
         - examples
         - tests
     commands:
-        - mpirun -n 4 python -m unittest discover -p spmd*.py # [not win]
-        - mpiexec -localonly -n 4 python -m unittest discover -p spmd*.py # [win]
+        - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
+        - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
+        - python -m unittest discover -v -s tests -p test*.py
 
 about:
     home: https://intelpython.github.io/daal4py/
