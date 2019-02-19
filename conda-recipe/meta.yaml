@@ -42,6 +42,9 @@ test:
     source_files:
         - examples
         - tests
+    commands:
+        - mpirun -n 4 python -m unittest discover -p spmd*.py # [not win]
+        - mpiexec -localonly -n 4 python -m unittest discover -p spmd*.py # [win]
 
 about:
     home: https://intelpython.github.io/daal4py/
