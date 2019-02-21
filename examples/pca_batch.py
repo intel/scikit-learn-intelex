@@ -33,8 +33,10 @@ except:
 def main(readcsv=read_csv, method='svdDense'):
     infile = "./data/batch/pca_normalized.csv"
 
+    # This is an optional argument z score can be configured differently
+    zscore = d4p.normalization_zscore()
     # configure a PCA object
-    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True)
+    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
