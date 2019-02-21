@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, fallbacks, add_setup, enum_maps, wrap_algo
+from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, wrap_algo
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 

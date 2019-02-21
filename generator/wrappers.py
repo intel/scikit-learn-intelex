@@ -124,7 +124,7 @@ ignore = {
     'algorithms::normalization::minmax': ['moments'],
     'algorithms::normalization::zscore': ['moments'],
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
-    'algorithms::pca': ['correlation', 'covariance', 'normalization'],
+    'algorithms::pca': ['correlation', 'covariance'],
     'algorithms::stump::classification::training': ['weights'],
     'algorithms::stump::regression::training': ['weights'],
 }
@@ -141,6 +141,7 @@ ifaces = {
     'optimization_solver::iterative_solver::Batch': ('daal::algorithms::optimization_solver::iterative_solver::BatchPtr', None),
     'regression::training::Batch': ('daal::services::SharedPtr<daal::algorithms::regression::training::Batch>', None),
     'regression::prediction::Batch': ('daal::services::SharedPtr<daal::algorithms::regression::prediction::Batch>', None),
+    'normalization::zscore::BatchImpl': ('daal::services::SharedPtr<daal::algorithms::normalization::zscore::BatchImpl>', None),
 }
 
 # By default input arguments have no default value (e.g. they are required).
@@ -157,14 +158,6 @@ defaults = {
         'scatter': 'daal::data_management::NumericTablePtr()',
         'threshold': 'daal::data_management::NumericTablePtr()',
     },
-}
-
-# In some cases we the whole C++ business is too complex and we need to provide
-# types manually.
-fallbacks = {
-    'algorithms::pca': {
-        'ParameterType': 'algorithms::pca::BaseBatchParameter',
-    }
 }
 
 # For enums that are used to access KeyValueDataCollections we need an inverse map
