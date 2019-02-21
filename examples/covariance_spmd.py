@@ -16,46 +16,26 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py covariance example for shared memory systems; SPMD mode
+# daal4py covariance example for distributed memory systems; SPMD mode
 # run like this:
 #    mpirun -n 4 python ./covariance_spmd.py
 
 import daal4py as d4p
 import numpy as np
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
-    read_csv = lambda f, c=None, sr=0, nr=None, t=np.float64: pandas.read_csv(f,
-                                                                              usecols=c,
-                                                                              skiprows=sr,
-                                                                              nrows=nr,
-                                                                              delimiter=',',
-                                                                              header=None,
-                                                                              dtype=t)
-except:
-    # fall back to numpy loadtxt
-    def read_csv(f, c=None, sr=0, nr=np.iinfo(np.int64).max, t=np.float64):
-        print("sr",sr,"nr",nr)
-        res = np.genfromtxt(f,
-                      usecols=c,
-                      delimiter=',',
-                      skip_header=sr,
-                      max_rows=nr,
-                      dtype=t)
-        if res.ndim == 1:
-            return res[:, np.newaxis]
-        return res
-
+# let's use a reading of file in few chunks (defined in spmd_utils.py)
+from spmd_utils import read_csv, get_chunk_params
 
 def main():
-    # Each process gets its own data
     infile = "./data/batch/covcormoments_dense.csv"
+
     # We know the number of lines in the file and use this to separate data between processes
-    lines_count = 200
-    block_size = (int)(lines_count/d4p.num_procs()) + 1
-    # Last process reads the file to the end
-    data = read_csv(infile, sr=d4p.my_procid()*block_size, nr=block_size)
+    skiprows, nrows = get_chunk_params(lines_count=200,
+                                       chunks_count=d4p.num_procs(),
+                                       chunk_number=d4p.my_procid())
+
+    # Each process reads its chunk of the file
+    data = read_csv(infile, sr=skiprows, nr=nrows)
 
     # Create algorithm with distributed mode
     alg = d4p.covariance(method="defaultDense", distributed=True)
