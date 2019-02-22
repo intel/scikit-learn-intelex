@@ -1,3 +1,5 @@
+trigger: none # only PRs
+
 jobs:
 - job: Windows
   pool:
@@ -7,7 +9,7 @@ jobs:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
 
-  - script: conda create -q -n CB python=3.7 conda-build conda-verify
+  - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
 
   - script: |
