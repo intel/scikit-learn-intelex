@@ -7,10 +7,10 @@ jobs:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
 
-  - script: conda create -n CB conda-build
+  - script: conda create -q -n CB python=3.7 conda-build
     displayName: Create Anaconda environment
 
   - script: |
       call activate CB
-      conda build -c intel -c conda-forge $PYVER --output-folder conda-recipe
+      conda build -c intel -c conda-forge --output-folder conda-recipe
     displayName: conda build
