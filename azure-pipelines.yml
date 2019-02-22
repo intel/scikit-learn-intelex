@@ -1,0 +1,16 @@
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+
+  steps:
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+
+  - script: conda create -n CB conda-build
+    displayName: Create Anaconda environment
+
+  - script: |
+      call activate CB
+      conda build -c intel -c conda-forge $PYVER --output-folder ./ conda-recipe
+    displayName: conda build
