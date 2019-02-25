@@ -35,6 +35,7 @@ except:
 
 
 def get_chunk_params(lines_count, chunks_count, chunk_number):
+    'returns count of rows to skip from beginning of file and count of rows to read'
     min_nrows = (int)(lines_count / chunks_count)
     rest_rows = lines_count - min_nrows * chunks_count
     is_tail = rest_rows > chunk_number

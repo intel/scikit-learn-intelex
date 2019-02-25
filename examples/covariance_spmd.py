@@ -23,7 +23,7 @@
 import daal4py as d4p
 import numpy as np
 
-# let's use a reading of file in few chunks (defined in spmd_utils.py)
+# let's use a reading of file in chunks (defined in spmd_utils.py)
 from spmd_utils import read_csv, get_chunk_params
 
 def main():
@@ -55,6 +55,7 @@ if __name__ == "__main__":
     # Initialize SPMD mode
     d4p.daalinit()
     res = main()
-    print("results in process number", d4p.my_procid())
-    print(res)
+    # result is available on all processes - but we print only on root
+    if d4p.my_procid() == 0:
+        print(res)
     d4p.daalfini()
