@@ -51,7 +51,7 @@ if __name__ == "__main__":
     # Read the whole file to be able to compare
     whole_file = read_csv(infile)
 
-    # In examples we need to know the sise of file but here we can do it
+    # Computing chunk-size requires file-size
     lines_in_file = whole_file.shape[0]
 
     # Read chunks

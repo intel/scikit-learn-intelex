@@ -1,17 +1,6 @@
-import os
-import sys
-test_path = os.path.abspath(os.path.dirname(__file__))
-unittest_data_path = os.path.join(test_path, "unittest_data")
-examples_path = os.path.join(os.path.dirname(test_path), "examples")
-sys.path.insert(0, examples_path)
-os.chdir(examples_path)
-
 import unittest
 import daal4py as d4p
 import numpy as np
-
-from daal4py import __daal_link_version__ as dv
-daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
 from test_examples import np_read_csv, add_test
 
@@ -33,7 +22,6 @@ gen_examples = [
                                                                                    r.standardDeviation,
                                                                                    r.variation))),
 ]
-
 
 for example in gen_examples:
     add_test(Base, *example)
