@@ -93,23 +93,11 @@ add_setup = [
 # List them here for the 'ignoring' algos.
 # Also lists input set/gets to ignore
 ignore = {
-    'algorithms::adaboost::training': ['weights'],
-    'algorithms::brownboost::training': ['weights'],
-    'algorithms::logitboost::training': ['weights'],
-    'algorithms::kdtree_knn_classification::training': ['weights'],
-    'algorithms::multi_class_classifier::training': ['weights'],
-    'algorithms::multinomial_naive_bayes::training': ['weights'],
     'algorithms::kmeans::init': ['nRowsTotal', 'offset', 'firstIteration', 'outputForStep5Required'],
-    'algorithms::gbt::regression::training': ['dependentVariables', 'weights'],
-    'algorithms::gbt::classification::training': ['weights',],
-    'algorithms::logistic_regression::training': ['weights',],
-    'algorithms::decision_tree::classification::training': ['weights',],
-    'algorithms::decision_tree::regression::training': ['weights',],
-    'algorithms::decision_forest::classification::training': ['weights', 'updatedEngine',],
+    'algorithms::gbt::regression::training': ['dependentVariables'],
+    'algorithms::decision_forest::classification::training': ['updatedEngine',],
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', 'updatedEngine',],
-    'algorithms::linear_regression::training': ['weights',],
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',],
-    'algorithms::ridge_regression::training': ['weights',],
     'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',],
     'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
                                              'pastUpdateVector', 'pastWorkValue'],
@@ -124,8 +112,6 @@ ignore = {
     'algorithms::normalization::zscore': ['moments'],
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
     'algorithms::pca': ['correlation', 'covariance'],
-    'algorithms::stump::classification::training': ['weights'],
-    'algorithms::stump::regression::training': ['weights'],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -157,7 +143,55 @@ defaults = {
         'scatter': True,
         'threshold': True,
     },
+    'algorithms::adaboost::training': {
+        'weights': True,
+    },
+    'algorithms::brownboost::training': {
+        'weights': True,
+    },
+    'algorithms::logitboost::training': {
+        'weights': True,
+    },
     'algorithms::svm::training': {
+        'weights': True,
+    },
+    'algorithms::kdtree_knn_classification::training': {
+        'weights': True,
+    },
+    'algorithms::multi_class_classifier::training': {
+        'weights': True,
+    },
+    'algorithms::multinomial_naive_bayes::training': {
+        'weights': True,
+    },
+    'algorithms::gbt::regression::training': {
+        'weights': True,
+    },
+    'algorithms::gbt::classification::training': {
+        'weights': True,
+    },
+    'algorithms::logistic_regression::training': {
+        'weights': True,
+    },
+    'algorithms::decision_tree::classification::training': {
+        'weights': True,
+    },
+    'algorithms::decision_tree::regression::training': {
+        'weights': True,
+    },
+    'algorithms::decision_forest::classification::training': {
+        'weights': True,
+    },
+    'algorithms::linear_regression::training': {
+        'weights': True,
+    },
+    'algorithms::ridge_regression::training': {
+        'weights': True,
+    },
+    'algorithms::stump::classification::training': {
+        'weights': True,
+    },
+    'algorithms::stump::regression::training': {
         'weights': True,
     },
 }
