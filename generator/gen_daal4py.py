@@ -120,20 +120,6 @@ class cython_interface(object):
                     'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h',
                     'multi_class_classifier_types.h']
 
-    # default values for all types
-    # we replace all default values given in DAAL with these.
-    # Our generated code will detect these and then let DAAL handle setting defaults
-    # Note: we assume default bool is always false.
-    defaults = defaultdict(lambda: None)
-    defaults.update({'double': 'NaN64',
-                     'float': 'NaN32',
-                     'int': '-1',
-                     'long': '-1',
-                     'size_t': '-1',
-                     'bool': 'False',
-                     #'std::string' : '""',
-                     'std::string &' : '""',})
-
     done = []
 
 

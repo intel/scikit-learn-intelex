@@ -96,7 +96,6 @@ ignore = {
     'algorithms::adaboost::training': ['weights'],
     'algorithms::brownboost::training': ['weights'],
     'algorithms::logitboost::training': ['weights'],
-    'algorithms::svm::training': ['weights'],
     'algorithms::kdtree_knn_classification::training': ['weights'],
     'algorithms::multi_class_classifier::training': ['weights'],
     'algorithms::multinomial_naive_bayes::training': ['weights'],
@@ -149,14 +148,17 @@ ifaces = {
 # default value (for each algorithm).
 defaults = {
     'algorithms::multivariate_outlier_detection': {
-        'location': 'daal::data_management::NumericTablePtr()',
-        'scatter': 'daal::data_management::NumericTablePtr()',
-        'threshold': 'daal::data_management::NumericTablePtr()',
+        'location': True,
+        'scatter': True,
+        'threshold': True,
     },
     'algorithms::univariate_outlier_detection': {
-        'location': 'daal::data_management::NumericTablePtr()',
-        'scatter': 'daal::data_management::NumericTablePtr()',
-        'threshold': 'daal::data_management::NumericTablePtr()',
+        'location': True,
+        'scatter': True,
+        'threshold': True,
+    },
+    'algorithms::svm::training': {
+        'weights': True,
     },
 }
 
