@@ -52,6 +52,11 @@ class Base():
     We also use generic functions to test these, they get added later.
     """
 
+    def test_optional_arg_kdtree_knn_cls_batch(self):
+        import optional_arg_kdtree_knn_cls_batch as ex
+        (_, predict_result, test_labels) = self.call(ex)
+        self.assertTrue(np.count_nonzero(test_labels != predict_result.prediction) < 170)
+
     def test_kdtree_knn_classification_batch(self):
         import kdtree_knn_classification_batch as ex
         (_, predict_result, test_labels) = self.call(ex)
