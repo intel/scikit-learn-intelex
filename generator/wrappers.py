@@ -1,3 +1,4 @@
+
 #*******************************************************************************
 # Copyright 2014-2019 Intel Corporation
 #
@@ -92,6 +93,7 @@ add_setup = [
 # different algos (like training and prediction)
 # List them here for the 'ignoring' algos.
 # Also lists input set/gets to ignore
+# Adding an empty list to ignore all parameters, inputs and results
 ignore = {
     'algorithms::kmeans::init': ['nRowsTotal', 'offset', 'firstIteration', 'outputForStep5Required'],
     'algorithms::gbt::regression::training': ['dependentVariables'],
@@ -111,7 +113,7 @@ ignore = {
     'algorithms::normalization::minmax': ['moments'],
     'algorithms::normalization::zscore': ['moments'],
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
-    'algorithms::pca': ['correlation', 'covariance'],
+    'algorithms::pca': ['covariance'],
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -133,6 +135,9 @@ ifaces = {
 # Here you can make input arguments and parameters optional by providing their
 # default value (for each algorithm).
 defaults = {
+    'algorithms::pca': {
+        'correlation': True,
+    },
     'algorithms::multivariate_outlier_detection': {
         'location': True,
         'scatter': True,
