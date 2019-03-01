@@ -95,25 +95,26 @@ add_setup = [
 # Also lists input set/gets to ignore
 # Adding an empty list to ignore all parameters, inputs and results
 ignore = {
-    'algorithms::kmeans::init': ['nRowsTotal', 'offset', 'firstIteration', 'outputForStep5Required'],
-    'algorithms::gbt::regression::training': ['dependentVariables'],
-    'algorithms::decision_forest::classification::training': ['updatedEngine',],
-    'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', 'updatedEngine',],
-    'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',],
-    'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',],
+    'algorithms::kmeans::init': ['nRowsTotal', 'offset', 'firstIteration', 'outputForStep5Required'], # internal for distributed
+    'algorithms::gbt::regression::training': ['dependentVariables'], # dependentVariables from parent class is not used
+    'algorithms::decision_forest::classification::training': ['updatedEngine',], # output
+    'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', # InputId from parent class is not used
+                                                          'updatedEngine',], # output
+    'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
+    'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
     'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
-                                             'pastUpdateVector', 'pastWorkValue'],
+                                             'pastUpdateVector', 'pastWorkValue'], # internal stuff
     'algorithms::optimization_solver::lbfgs': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
-                                               'correctionPairs', 'correctionIndices', 'averageArgumentLIterations',],
+                                               'correctionPairs', 'correctionIndices', 'averageArgumentLIterations',], # internal stuff
     'algorithms::optimization_solver::adagrad': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
-                                                 'gradientSquareSum'],
-    'algorithms::optimization_solver::saga': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',],
-    'algorithms::optimization_solver::objective_function': [],
-    'algorithms::optimization_solver::iterative_solver': [],
-    'algorithms::normalization::minmax': ['moments'],
-    'algorithms::normalization::zscore': ['moments'],
-    'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input, parameter
-    'algorithms::pca': ['covariance'],
+                                                 'gradientSquareSum'], # internal stuff
+    'algorithms::optimization_solver::saga': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',], # internal stuff
+    'algorithms::optimization_solver::objective_function': [], # interface type
+    'algorithms::optimization_solver::iterative_solver': [], # interface type
+    'algorithms::normalization::minmax': ['moments'], # parameter, required an interface
+    'algorithms::normalization::zscore': ['moments'], # parameter, required an interface
+    'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input is dictionary, parameter
+    'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -134,71 +135,28 @@ ifaces = {
 # By default input arguments have no default value (e.g. they are required).
 # Here you can make input arguments and parameters optional by providing their
 # default value (for each algorithm).
+# Set True value for standart data types and shared pointers.
 defaults = {
-    'algorithms::pca': {
-        'correlation': True,
-    },
-    'algorithms::multivariate_outlier_detection': {
-        'location': True,
-        'scatter': True,
-        'threshold': True,
-    },
-    'algorithms::univariate_outlier_detection': {
-        'location': True,
-        'scatter': True,
-        'threshold': True,
-    },
-    'algorithms::adaboost::training': {
-        'weights': True,
-    },
-    'algorithms::brownboost::training': {
-        'weights': True,
-    },
-    'algorithms::logitboost::training': {
-        'weights': True,
-    },
-    'algorithms::svm::training': {
-        'weights': True,
-    },
-    'algorithms::kdtree_knn_classification::training': {
-        'weights': True,
-    },
-    'algorithms::multi_class_classifier::training': {
-        'weights': True,
-    },
-    'algorithms::multinomial_naive_bayes::training': {
-        'weights': True,
-    },
-    'algorithms::gbt::regression::training': {
-        'weights': True,
-    },
-    'algorithms::gbt::classification::training': {
-        'weights': True,
-    },
-    'algorithms::logistic_regression::training': {
-        'weights': True,
-    },
-    'algorithms::decision_tree::classification::training': {
-        'weights': True,
-    },
-    'algorithms::decision_tree::regression::training': {
-        'weights': True,
-    },
-    'algorithms::decision_forest::classification::training': {
-        'weights': True,
-    },
-    'algorithms::linear_regression::training': {
-        'weights': True,
-    },
-    'algorithms::ridge_regression::training': {
-        'weights': True,
-    },
-    'algorithms::stump::classification::training': {
-        'weights': True,
-    },
-    'algorithms::stump::regression::training': {
-        'weights': True,
-    },
+    'algorithms::pca': {'correlation': True,},
+    'algorithms::multivariate_outlier_detection': {'location': True, 'scatter': True, 'threshold': True,},
+    'algorithms::univariate_outlier_detection': {'location': True, 'scatter': True, 'threshold': True,},
+    'algorithms::adaboost::training': {'weights': True,},
+    'algorithms::brownboost::training': {'weights': True,},
+    'algorithms::logitboost::training': {'weights': True,},
+    'algorithms::svm::training': {'weights': True,},
+    'algorithms::kdtree_knn_classification::training': {'weights': True,},
+    'algorithms::multi_class_classifier::training': {'weights': True,},
+    'algorithms::multinomial_naive_bayes::training': {'weights': True,},
+    'algorithms::gbt::regression::training': {'weights': True,},
+    'algorithms::gbt::classification::training': {'weights': True,},
+    'algorithms::logistic_regression::training': {'weights': True,},
+    'algorithms::decision_tree::classification::training': {'weights': True,},
+    'algorithms::decision_tree::regression::training': {'weights': True,},
+    'algorithms::decision_forest::classification::training': {'weights': True,},
+    'algorithms::linear_regression::training': {'weights': True,},
+    'algorithms::ridge_regression::training': {'weights': True,},
+    'algorithms::stump::classification::training': {'weights': True,},
+    'algorithms::stump::regression::training': {'weights': True,},
 }
 
 # For enums that are used to access KeyValueDataCollections we need an inverse map

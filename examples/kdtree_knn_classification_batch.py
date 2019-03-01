@@ -43,8 +43,10 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Create an algorithm object and call compute
     train_algo = d4p.kdtree_knn_classification_training()
-    train_result = train_algo.compute(train_data, train_labels)
-
+    # 'weights' is optional argument, let's use equal weights
+    # in this case results must be the same as without weights
+    weights = np.ones((train_data.shape[0], 1))
+    train_result = train_algo.compute(train_data, train_labels, weights)
 
     # Now let's do some prediction
     predict_data = readcsv(predict_file, range(nFeatures))
@@ -53,6 +55,9 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Create an algorithm object and call compute
     predict_algo = d4p.kdtree_knn_classification_prediction()
     predict_result = predict_algo.compute(predict_data, train_result.model)
+    
+    # Expects that difference between result and ground truth data is less than 170 values
+    assert np.count_nonzero(predict_labels != predict_result.prediction) < 170
 
     return (train_result, predict_result, predict_labels)
 
@@ -60,6 +65,5 @@ def main(readcsv=read_csv, method='defaultDense'):
 if __name__ == "__main__":
     (train_result, predict_result, predict_labels) = main()    
     print("KD-tree based kNN classification results (first 20 observations):")
-    print("Ground truth:\n", predict_labels[30:35])
-    print("Classification results:\n", predict_result.prediction[30:35])
-    print(np.count_nonzero(predict_labels != predict_result.prediction), predict_labels.shape)
+    print("Ground truth(observations #30-34):\n", predict_labels[30:35])
+    print("Classification results(observations #30-34):\n", predict_result.prediction[30:35])
