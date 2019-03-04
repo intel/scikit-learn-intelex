@@ -197,7 +197,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             min_impurity_split=self.min_impurity_split,
             random_state=None)
         
-        # we need to set est.tree_ field with Trees constructed from DAAL solution
+        # we need to set est.tree_ field with Trees constructed from Intel(R) DAAL solution
         estimators_ = []
         for i in range(self.n_estimators):
             # print("Tree #{}".format(i))
@@ -320,7 +320,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
                           "setting for min_samples_leaf.")
 
 
-    # daal only supports "mse" criterion
+    # Intel(R) daal only supports "mse" criterion
     def daal_fit(self, X, y):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.double, np.single]
@@ -391,7 +391,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
             min_impurity_split=self.min_impurity_split,
             random_state=None)
 
-        # we need to set est.tree_ field with Trees constructed from DAAL solution
+        # we need to set est.tree_ field with Trees constructed from Intel(R) DAAL solution
         estimators_ = []
         for i in range(self.n_estimators):
             est_i = clone(est)
