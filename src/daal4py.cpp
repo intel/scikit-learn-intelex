@@ -57,7 +57,7 @@ public:
         PyGILState_Release(gstate);
     }
     // We don't want this to be copied
-    void operator=(const NumpyDeleter&) = delete;
+    NumpyDeleter& operator=(const NumpyDeleter&) = delete;
 private:
     PyArrayObject* _ndarray;
 };

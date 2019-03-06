@@ -126,7 +126,7 @@ public:
     inline virtual ~algo_manager__iface__() {}
     // We don't want any manager to be copied
     algo_manager__iface__(const algo_manager__iface__ &) = delete;
-    void operator=(const algo_manager__iface__ &) = delete;
+    algo_manager__iface__ operator=(const algo_manager__iface__ &) = delete;
 };
 
 #if 0
