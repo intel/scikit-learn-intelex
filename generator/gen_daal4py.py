@@ -433,9 +433,9 @@ class cython_interface(object):
                     for e in self.namespace_dict[ins].enums[inp]:
                         if not any(e in x for x in explist) and not ignored(ins, e):
                             if type(attrs[i]) in [list,tuple]:
-                                explist.append((ins, e, hlt[0], attrs[i][1]))
+                                explist.append((ins, e, hlt[0], attrs[i][1], self.namespace_dict[ins].enums[inp][e][1]))
                             else:
-                                explist.append((ins, e, hlt[0], None))
+                                explist.append((ins, e, hlt[0], None, self.namespace_dict[ins].enums[inp][e][1]))
                 else:
                     print("// Warning: ignoring " + ns + " " + str(hlt))
                     ignlist.append((ins, i))
@@ -722,7 +722,7 @@ class cython_interface(object):
             if inp:
                 expinputs = self.get_expand_attrs(inp[0], inp[1], 'sets')
                 reqi = 0
-                for ins, iname, itype, optarg in expinputs[0]:
+                for ins, iname, itype, optarg, doc in expinputs[0]:
                     tmpi = iname
                     if tmpi and not ignored(ns, tmpi):
                         if ns in defaults and tmpi in defaults[ns]:
@@ -736,7 +736,7 @@ class cython_interface(object):
                             #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
                             itype = 'data_or_file *'
                         ins = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', ins)
-                        tmp_input_args.insert(i, mk_var(ins + '::' + iname, itype, 'const', dflt, inpt=True, algo=func))
+                        tmp_input_args.insert(i, mk_var(ins + '::' + iname, itype, 'const', dflt, inpt=True, algo=func, doc=doc))
             else:
                 print('// Warning: no input type found for ' + ns)
 

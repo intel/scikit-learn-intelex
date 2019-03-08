@@ -107,6 +107,29 @@ class cpp_class(object):
 
 
 ###############################################################################
+class comment_parser(object):
+    """parse documentation in comments"""
+    def parse(self, l, ctxt):
+        # if parsing of multiline comment is in progress
+        if ctxt.doc_lambda:
+            # delete '%'
+            line = l.replace('%', '')
+            docm = re.search(r'^\s*(.+?)\*/', line)
+            doc_end = docm.group(1) if docm else None
+            if doc_end:
+                ctxt.doc_lambda(doc_end)
+                ctxt.doc_lambda = None
+                return True
+            docm = re.search(r'^\s*(.+?)$', line)
+            doc_mid = docm.group(1) if docm else None
+            if doc_mid:
+                ctxt.doc_lambda(doc_mid)
+                return True
+            raise Exception("Comments parsing in progress but comment was not found")
+        return False
+
+
+###############################################################################
 class ns_parser(object):
     """parse namespace declaration"""
     def parse(self, l, ctxt):
@@ -175,7 +198,16 @@ class enum_parser(object):
             else:
                 me = re.match(r'^\s*(\w+)(?:\s*=\s*((\(int\))?\w(\w|:|\s|\+)*))?(\s*,)?\s*((/\*|//).*)?$', l)
                 if me and not me.group(1).startswith('last'):
-                    ctxt.gdict['enums'][ctxt.enum][me.group(1)] = me.group(2) if me.group(2) else ''
+                    # try to find single line comment with documentation
+                    docm = re.search('/\*!<(.+?)\*/', me.group(6)) if me.group(6) else None
+                    doc = docm.group(1).replace('%','') if docm else None
+                    # try to find begin of comment with documentation
+                    if not doc:
+                        docm = re.search('/\*!<(.+?)$', me.group(6)) if me.group(6) else None
+                        doc = docm.group(1).replace('%','') if docm else None
+                        if doc:
+                            ctxt.doc_lambda = lambda d: ctxt.gdict['enums'][ctxt.enum][me.group(1)][1] + ' ' + d
+                    ctxt.gdict['enums'][ctxt.enum][me.group(1)] = (me.group(2) if me.group(2) else '', doc)
                     return True
         return False
 
@@ -392,6 +424,7 @@ class pcontext(object):
         self.template = False
         self.access = False
         self.header = header
+        self.doc_lambda = None
 
 
 ###############################################################################
@@ -411,7 +444,7 @@ def parse_header(header, ignores):
                     'typedefs': {},
                 })
     ctxt = pcontext(gdict, ignores, header.name)
-    parsers = [ns_parser(), include_parser(), eos_parser(), typedef_parser(), enum_parser(), access_parser(), step_parser(), setget_parser(), result_parser(), member_parser(), class_template_parser()]
+    parsers = [comment_parser(), ns_parser(), include_parser(), eos_parser(), typedef_parser(), enum_parser(), access_parser(), step_parser(), setget_parser(), result_parser(), member_parser(), class_template_parser()]
 
     # go line by line
     ctxt.n = 1
