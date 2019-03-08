@@ -74,8 +74,10 @@ def do_unpatch(name):
 def enable(name=None):
     if LooseVersion(sklearn_version) < LooseVersion("0.20.0"):
         raise NotImplementedError("daal4sklearn is for scikit-learn 0.20.0 only ...")
-    elif LooseVersion(sklearn_version) > LooseVersion("0.20.2"):
-        warnings.warn("daal4sklearn {daal4py_version} has only been tested with scikit-learn 0.20.2, found version...")
+    elif LooseVersion(sklearn_version) > LooseVersion("0.20.3"):
+        warn_msg = ("daal4py {daal4py_version} has only been tested " +
+                   "with scikit-learn 0.20.3, found version: {sklearn_version}")
+        warnings.warn(warn_msg.format(daal4py_version=daal4py.__version__, sklearn_version=sklearn_version))
 
     if name is not None:
         do_patch(name)

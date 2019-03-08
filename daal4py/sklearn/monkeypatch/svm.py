@@ -262,15 +262,15 @@ def _daal4py_fit(self, X, y_inp, kernel):
     return
 
 
-def _daal_std(X):
+def _daal_var(X):
     """DAAL-based threaded computation of X.std()"""
     fpt = getFPType(X)
     try:
         alg = daal4py.low_order_moments(fptype=fpt, method='defaultDense', estimatesToCompute='estimatesMeanVariance')
     except AttributeError:
-        return np.std(X)
+        return np.var(X)
     ssc = alg.compute(X.reshape(-1,1)).sumSquaresCentered
-    return np.sqrt(ssc[0, 0] / X.size)
+    return ssc[0, 0] / X.size
 
 
 def fit(self, X, y, sample_weight=None):
@@ -341,19 +341,19 @@ def fit(self, X, y, sample_weight=None):
                                  not in ('linear', 'precomputed'))
             if kernel_uses_gamma:
                 if sparse:
-                    # std = sqrt(E[X^2] - E[X]^2)
-                    X_std = np.sqrt((X.multiply(X)).mean() - (X.mean())**2)
+                    # std = E[X^2] - E[X]^2
+                    X_var = X.multiply(X).mean() - (X.mean())**2
                 else:
-                    X_std = _daal_std(X) # X.std()
+                    X_var = _daal_var(X) # X.var()
             else:
-                X_std = 1.0 / X.shape[1]
+                X_var = 1.0 / X.shape[1]
             if self.gamma == 'scale':
-                if X_std != 0:
-                    self._gamma = 1.0 / (X.shape[1] * X_std)
+                if X_var != 0:
+                    self._gamma = 1.0 / (X.shape[1] * X_var)
                 else:
                     self._gamma = 1.0
             else:
-                if kernel_uses_gamma and not np.isclose(X_std, 1.0):
+                if kernel_uses_gamma and not np.isclose(X_var, 1.0):
                     # NOTE: when deprecation ends we need to remove explicitly
                     # setting `gamma` in examples (also in tests). See
                     # https://github.com/scikit-learn/scikit-learn/pull/10331
