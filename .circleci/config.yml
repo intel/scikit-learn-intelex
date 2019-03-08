@@ -50,9 +50,9 @@ jobs:
             # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
             # See: https://github.com/IntelPython/daal4py/issues/25
             export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}cluster/tests/test_k_means.py::test_k_means_fit_predict"
-	    # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
-	    # htSee tps://github.com/IntelPython/daal4py/issues/69
-	    export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}preprocessing/tests/test_discretization.py::test_nonuniform_strategies"
+            # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
+            # htSee tps://github.com/IntelPython/daal4py/issues/69
+            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}preprocessing/tests/test_discretization.py::test_nonuniform_strategies"
             echo "-m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
             # It is important for pytest to work in a separate test folder to not discover tests in ~/miniconda folder
             cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} -ra --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
