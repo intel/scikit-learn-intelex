@@ -24,6 +24,10 @@ from sklearn.utils import check_random_state, check_X_y
 import sklearn.svm.classes
 import warnings
 
+from distutils.version import LooseVersion
+from sklearn import __version__ as sklearn_version
+
+
 import daal4py
 from ..utils import (make2d, getFPType)
 
@@ -273,6 +277,86 @@ def _daal_var(X):
     return ssc[0, 0] / X.size
 
 
+
+"""
+        if self.gamma in ('scale', 'auto_deprecated'):
+            if sparse:
+                # var = E[X^2] - E[X]^2
+                X_var = (X.multiply(X)).mean() - (X.mean()) ** 2
+            else:
+                X_var = X.var()
+            if self.gamma == 'scale':
+                if X_var != 0:
+                    self._gamma = 1.0 / (X.shape[1] * X_var)
+                else:
+                    self._gamma = 1.0
+            else:
+                kernel_uses_gamma = (not callable(self.kernel) and self.kernel
+                                     not in ('linear', 'precomputed'))
+                if kernel_uses_gamma and not np.isclose(X_var, 1.0):
+                    # NOTE: when deprecation ends we need to remove explicitly
+                    # setting `gamma` in examples (also in tests). See
+                    # https://github.com/scikit-learn/scikit-learn/pull/10331
+                    # for the examples/tests that need to be reverted.
+                    warnings.warn("The default value of gamma will change "
+                                  "from 'auto' to 'scale' in version 0.22 to "
+                                  "account better for unscaled features. Set "
+                                  "gamma explicitly to 'auto' or 'scale' to "
+                                  "avoid this warning.", FutureWarning)
+                self._gamma = 1.0 / X.shape[1]
+        elif self.gamma == 'auto':
+            self._gamma = 1.0 / X.shape[1]
+        else:
+            self._gamma = self.gamma
+"""
+
+def __compute_gamma__(gamma, kernel, X, sparse, use_var=True):
+    if gamma in ('scale', 'auto_deprecated'):
+        kernel_uses_gamma = (not callable(kernel) and kernel
+                             not in ('linear', 'precomputed'))
+        if kernel_uses_gamma:
+            if sparse:
+                # var = E[X^2] - E[X]^2
+                X_sc = (X.multiply(X)).mean() - (X.mean())**2
+            else:
+                X_sc = _daal_var(X) # X.var()
+            if not use_var:
+                X_sc = np.sqrt(X_sc)
+        else:
+            X_sc = 1.0 / X.shape[1]
+        if gamma == 'scale':
+            if X_sc != 0:
+                _gamma = 1.0 / (X.shape[1] * X_sc)
+            else:
+                _gamma = 1.0
+        else:
+            if kernel_uses_gamma and not np.isclose(X_sc, 1.0):
+                # NOTE: when deprecation ends we need to remove explicitly
+                # setting `gamma` in examples (also in tests). See
+                # https://github.com/scikit-learn/scikit-learn/pull/10331
+                # for the examples/tests that need to be reverted.
+                warnings.warn("The default value of gamma will change "
+                              "from 'auto' to 'scale' in version 0.22 to "
+                              "account better for unscaled features. Set "
+                              "gamma explicitly to 'auto' or 'scale' to "
+                              "avoid this warning.", FutureWarning)
+            _gamma = 1.0 / X.shape[1]
+    elif gamma == 'auto':
+        _gamma = 1.0 / X.shape[1]
+    else:
+        _gamma = gamma
+
+    return _gamma
+
+no_older_than_0_20_3 = None
+
+def _compute_gamma(*args):
+    global no_older_than_0_20_3
+    if no_older_than_0_20_3 is None:
+        no_older_than_0_20_3 = (LooseVersion(sklearn_version) >= LooseVersion("0.20.3"))
+    return __compute_gamma__(*args, use_var=no_older_than_0_20_3)
+
+
 def fit(self, X, y, sample_weight=None):
         """Fit the SVM model according to the given training data.
 
@@ -336,39 +420,7 @@ def fit(self, X, y, sample_weight=None):
                              "boolean masks (use `indices=True` in CV)."
                              % (sample_weight.shape, X.shape))
 
-        if self.gamma in ('scale', 'auto_deprecated'):
-            kernel_uses_gamma = (not callable(self.kernel) and self.kernel
-                                 not in ('linear', 'precomputed'))
-            if kernel_uses_gamma:
-                if sparse:
-                    # std = E[X^2] - E[X]^2
-                    X_var = X.multiply(X).mean() - (X.mean())**2
-                else:
-                    X_var = _daal_var(X) # X.var()
-            else:
-                X_var = 1.0 / X.shape[1]
-            if self.gamma == 'scale':
-                if X_var != 0:
-                    self._gamma = 1.0 / (X.shape[1] * X_var)
-                else:
-                    self._gamma = 1.0
-            else:
-                if kernel_uses_gamma and not np.isclose(X_var, 1.0):
-                    # NOTE: when deprecation ends we need to remove explicitly
-                    # setting `gamma` in examples (also in tests). See
-                    # https://github.com/scikit-learn/scikit-learn/pull/10331
-                    # for the examples/tests that need to be reverted.
-                    warnings.warn("The default value of gamma will change "
-                                  "from 'auto' to 'scale' in version 0.22 to "
-                                  "account better for unscaled features. Set "
-                                  "gamma explicitly to 'auto' or 'scale' to "
-                                  "avoid this warning.", FutureWarning)
-                self._gamma = 1.0 / X.shape[1]
-        elif self.gamma == 'auto':
-            self._gamma = 1.0 / X.shape[1]
-        else:
-            self._gamma = self.gamma
-
+        self._gamma = _compute_gamma(self.gamma, self.kernel, X, sparse)
 
         kernel = self.kernel
         if callable(kernel):
