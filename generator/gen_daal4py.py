@@ -285,6 +285,9 @@ class cython_interface(object):
             '?' means we do not know what 't' is
         For classes, we also add lookups in namespaces that DAAL C++ API finds through "using".
         """
+        if isinstance(t, list):
+            ### FIXME
+            t = t[0]
         if t in ['DAAL_UINT64']:
             ### FIXME
             t = 'ResultToComputeId'
@@ -416,7 +419,10 @@ class cython_interface(object):
           [1] list of members it can not map tp hltype (namespace, attribute)
         Only standard data types and those with typemaps can be mapped to a hltype.
         """
+        assert 'members' not in attr, "get_expand_attrs is not supported for members"
         attrs = self.get_all_attrs(ns, cls, attr)
+        #print("attrs", attrs)
+        #assert attrs in ['sets', 'gets']
         explist = []
         ignlist = []
         for i in attrs:
@@ -683,7 +689,7 @@ class cython_interface(object):
                     hlt = self.to_hltype(pns, all_params[p])
                     if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                         (hlt, hlt_type, hlt_ns) = hlt
-                        llt = self.to_lltype(all_params[p])
+                        llt = self.to_lltype(all_params[p][0])
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
@@ -691,13 +697,15 @@ class cython_interface(object):
                             thetype = (hlt if hlt else all_params[p])
                         if thetype != None and tmp != None:
                             thetype = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', thetype)
+                            doc = all_params[p][1]
+                            print("doc", doc)
                             if any(tmp == x.name for x in params_req):
-                                v = mk_var(tmp, thetype, 'const', algo=func)
+                                v = mk_var(tmp, thetype, 'const', algo=func, doc=doc)
                                 jparams['params_req'].append(v)
                             else:
                                 prm = tmp
                                 dflt = defaults[pns][prm] if pns in defaults and prm in defaults[pns] else True
-                                v = mk_var(prm, thetype, 'const', dflt, algo=func)
+                                v = mk_var(prm, thetype, 'const', dflt, algo=func, doc=doc)
                                 jparams['params_opt'].append(v)
                         else:
                             print('// Warning: do not know what to do with ' + pns + ' : ' + p + '(' + all_params[p] + ')')

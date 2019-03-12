@@ -117,13 +117,15 @@ class comment_parser(object):
             docm = re.search(r'^\s*(.+?)\*/', line)
             doc_end = docm.group(1) if docm else None
             if doc_end:
-                ctxt.doc_lambda(doc_end)
+                doc = ctxt.doc_lambda()
+                doc[1] += ' ' + doc_end
                 ctxt.doc_lambda = None
                 return True
             docm = re.search(r'^\s*(.+?)$', line)
             doc_mid = docm.group(1) if docm else None
             if doc_mid:
-                ctxt.doc_lambda(doc_mid)
+                doc = ctxt.doc_lambda()
+                doc[1] += ' ' + doc_mid
                 return True
             raise Exception("Comments parsing in progress but comment was not found")
         return False
@@ -206,8 +208,8 @@ class enum_parser(object):
                         docm = re.search('/\*!<(.+?)$', me.group(6)) if me.group(6) else None
                         doc = docm.group(1).replace('%','') if docm else None
                         if doc:
-                            ctxt.doc_lambda = lambda d: ctxt.gdict['enums'][ctxt.enum][me.group(1)][1] + ' ' + d
-                    ctxt.gdict['enums'][ctxt.enum][me.group(1)] = (me.group(2) if me.group(2) else '', doc)
+                            ctxt.doc_lambda = lambda: ctxt.gdict['enums'][ctxt.enum][me.group(1)]
+                    ctxt.gdict['enums'][ctxt.enum][me.group(1)] = [me.group(2) if me.group(2) else '', doc]
                     return True
         return False
 
@@ -304,7 +306,16 @@ class member_parser(object):
             mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?([\w_]+)\s*;', l)
             if mm :
                 if mm.group(2) not in ctxt.gdict['classes'][ctxt.curr_class].members:
-                    ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)] = mm.group(1)
+                    # try to find single line comment with documentation
+                    docm = re.search('/\*!<(.+?)\*/', l)
+                    doc = docm.group(1).replace('%','') if docm else None
+                    # try to find begin of comment with documentation
+                    if not doc:
+                        docm = re.search('/\*!<(.+?)$', l)
+                        doc = docm.group(1).replace('%','') if docm else None
+                        if doc:
+                            ctxt.doc_lambda = lambda: ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)]
+                    ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)] = [mm.group(1), doc]
                 return True
         return False
 
@@ -449,8 +460,9 @@ def parse_header(header, ignores):
     # go line by line
     ctxt.n = 1
     for l in header:
-        # first strip of eol comments
-        l = l.split('//')[0]
+        # first strip of eol comments if it is not the link
+        if not re.search(r'http://', l):
+            l = l.split('//')[0]
         # apply each parser, continue to next line if possible
         for p in parsers:
             if p.parse(l, ctxt):
