@@ -303,6 +303,9 @@ void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
     PyArray_SetBaseObject(ary, cap);
 }
 
-extern void set_rawp_base(PyArrayObject *, void *);
+
+extern "C" {
+void set_rawp_base(PyArrayObject *, void *);
+}
 
 #endif // _HLAPI_H_INCLUDED_

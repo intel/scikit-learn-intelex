@@ -81,14 +81,14 @@ void daalsp_free(void * cap)
 #ifdef USE_CAPSULE
 void rawp_free_cap(PyObject * cap)
 {
-    VSP * sp = (VSP*) PyCapsule_GetPointer(cap, NULL);
-    if (sp) delete sp;
+    void * rp = PyCapsule_GetPointer(cap, NULL);
+    if (rp) delete[] rp;
 }
 #else
 void rawp_free(void * cap)
 {
-    VSP * sp = (VSP*) PyCObject_AsVoidPtr(reinterpret_cast<PyObject *>(cap));
-    if (sp) delete sp;
+    void * rp = PyCObject_AsVoidPtr(reinterpret_cast<PyObject *>(cap));
+    if (rp) delete[] rp;
 }
 #endif
 
