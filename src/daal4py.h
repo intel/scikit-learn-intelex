@@ -261,4 +261,48 @@ public:
         }
     }
 };
+
+/* *********************************************************************** */
+
+// An empty virtual base class (used by TVSP) for shared pointer handling
+// we use this to have a generic type for all shared pointers
+// e.g. used in daalsp_free functions below
+class VSP
+{
+public:
+    // we need a virtual destructor
+    virtual ~VSP() {};
+};
+// typed virtual shared pointer, for simplicity we make it a DAAL shared pointer
+template< typename T >
+class TVSP : public VSP, public daal::services::SharedPtr<T>
+{
+public:
+    TVSP(const daal::services::SharedPtr<T> & org) : daal::services::SharedPtr<T>(org) {}
+    virtual ~TVSP() {};
+};
+
+// define our own free functions for wrapping python objects holding our shared pointers
+#ifdef USE_CAPSULE
+extern void daalsp_free_cap(PyObject *);
+extern void rawp_free_cap(PyObject *);
+#else
+extern void daalsp_free_cap(PyObject *);
+extern void rawp_free(void *);
+#endif
+
+template< typename T >
+void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
+{
+    void * tmp_sp = (void*) new TVSP<T>(sp);
+#ifdef USE_CAPSULE
+    PyObject* cap = PyCapsule_New(tmp_sp, NULL, daalsp_free_cap);
+#else
+    PyObject* cap = PyCObject_FromVoidPtr(tmp_sp, daalsp_free);
+#endif
+    PyArray_SetBaseObject(ary, cap);
+}
+
+extern void set_rawp_base(PyArrayObject *, void *);
+
 #endif // _HLAPI_H_INCLUDED_
