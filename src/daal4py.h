@@ -283,23 +283,14 @@ public:
 };
 
 // define our own free functions for wrapping python objects holding our shared pointers
-#ifdef USE_CAPSULE
 extern void daalsp_free_cap(PyObject *);
 extern void rawp_free_cap(PyObject *);
-#else
-extern void daalsp_free(void *);
-extern void rawp_free(void *);
-#endif
 
 template< typename T >
 void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
 {
     void * tmp_sp = (void*) new TVSP<T>(sp);
-#ifdef USE_CAPSULE
     PyObject* cap = PyCapsule_New(tmp_sp, NULL, daalsp_free_cap);
-#else
-    PyObject* cap = PyCObject_FromVoidPtr(tmp_sp, daalsp_free);
-#endif
     PyArray_SetBaseObject(ary, cap);
 }
 

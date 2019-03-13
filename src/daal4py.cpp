@@ -63,43 +63,23 @@ private:
 };
 
 // define our own free functions for wrapping python objects holding our shared pointers
-#ifdef USE_CAPSULE
 void daalsp_free_cap(PyObject * cap)
 {
     VSP * sp = (VSP*) PyCapsule_GetPointer(cap, NULL);
     if (sp) delete sp;
 }
-#else
-void daalsp_free(void * cap)
-{
-    VSP * sp = (VSP*) PyCObject_AsVoidPtr(reinterpret_cast<PyObject *>(cap));
-    if (sp) delete sp;
-}
-#endif
 
 // define our own free functions for wrapping python objects holding our raw pointers
-#ifdef USE_CAPSULE
 void rawp_free_cap(PyObject * cap)
 {
     void * rp = PyCapsule_GetPointer(cap, NULL);
     if (rp) delete[] rp;
 }
-#else
-void rawp_free(void * cap)
-{
-    void * rp = PyCObject_AsVoidPtr(reinterpret_cast<PyObject *>(cap));
-    if (rp) delete[] rp;
-}
-#endif
 
 
 void set_rawp_base(PyArrayObject * ary, void * ptr)
 {
-#ifdef USE_CAPSULE
     PyObject* cap = PyCapsule_New(ptr, NULL, rawp_free_cap);
-#else
-    PyObject* cap = PyCObject_FromVoidPtr(ptr, rawp_free);
-#endif
     PyArray_SetBaseObject(ary, cap);
 }
 
