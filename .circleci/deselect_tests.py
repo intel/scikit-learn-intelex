@@ -2,6 +2,41 @@
 import argparse
 import os.path
 from yaml import load as yaml_load
+from distutils.version import LooseVersion
+import sklearn
+from sklearn import __version__ as sklearn_version
+
+def evaluate_cond(cond, v):
+    if cond.startswith(">="):
+        return LooseVersion(v) >= LooseVersion(cond[2:])
+    if cond.startswith("<="):
+        return LooseVersion(v) <= LooseVersion(cond[2:])
+    if cond.startswith("=="):
+        return LooseVersion(v) == LooseVersion(cond[2:])
+    if cond.startswith("!="):
+        return LooseVersion(v) != LooseVersion(cond[2:])
+    if cond.startswith("<"):
+        return LooseVersion(v) < LooseVersion(cond[2:])
+    if cond.startswith(">"):
+        return LooseVersion(v) > LooseVersion(cond[2:])
+    return False
+    
+
+def filter_by_version(entry, sk_ver):
+    if not entry:
+        return None
+    t = entry.split(' ')
+    if len(t) == 1:
+        return entry
+    if len(t) != 2:
+        return None
+    test_name, cond = t
+    conds = cond.split(',')
+    if all([evaluate_cond(cond, sk_ver) for cond in conds]):
+        return test_name
+    else:
+        return None
+
 
 if __name__ == '__main__':
     argParser = argparse.ArgumentParser(
@@ -20,9 +55,14 @@ if __name__ == '__main__':
             dt = yaml_load(fh)
 
         if args.absolute:
-            import sklearn
-            base_dir = os.path.relpath(os.path.dirname(sklearn.__file__), os.path.expanduser('~')) + '/'
+            base_dir = os.path.relpath(
+                os.path.dirname(sklearn.__file__),
+                os.path.expanduser('~')) + '/'
         else:
             base_dir = ""
 
-        print(" ".join([ "--deselect " + base_dir + test_name for test_name in dt.get('deselected_tests', []) ]))
+        filtered_deselection = [filter_by_version(test_name, sklearn_version)
+                                for test_name in  dt.get('deselected_tests', [])]
+        pytest_switches = [ "--deselect " + base_dir + test_name
+                            for test_name in filtered_deselection if test_name]
+        print(" ".join(pytest_switches) )
