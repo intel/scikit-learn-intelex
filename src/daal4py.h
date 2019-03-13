@@ -287,7 +287,7 @@ public:
 extern void daalsp_free_cap(PyObject *);
 extern void rawp_free_cap(PyObject *);
 #else
-extern void daalsp_free(PyObject *);
+extern void daalsp_free(void *);
 extern void rawp_free(void *);
 #endif
 
