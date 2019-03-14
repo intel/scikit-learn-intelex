@@ -1,15 +1,17 @@
 from cpython cimport Py_INCREF, PyTypeObject
 import numpy as np
-cimport numpy as np
+cimport numpy as cnp
 
 
 cdef extern from "numpy/arrayobject.h":
-    object PyArray_NewFromDescr(PyTypeObject* subtype, np.dtype descr,
-                                int nd, np.npy_intp* dims,
-                                np.npy_intp* strides,
+    object PyArray_NewFromDescr(PyTypeObject* subtype, cnp.dtype descr,
+                                int nd, cnp.npy_intp* dims,
+                                cnp.npy_intp* strides,
                                 void* data, int flags, object obj)
-    object PyArray_SimpleNewFromData(int nd, np.npy_intp* dims, int typenum, void* data)
+    object PyArray_SimpleNewFromData(int nd, cnp.npy_intp* dims, int typenum, void* data)
 
+cdef extern from "daal4py.h":
+    cdef void set_rawp_base(cnp.ndarray, void *)
 
 cdef extern from "tree_visitor.h":
     cdef struct skl_tree_node:
@@ -50,41 +52,40 @@ NODE_DTYPE = np.dtype({
 
 
 cdef class pyTreeState(object):
-    cdef np.ndarray node_ar
-    cdef np.ndarray value_ar
+    cdef cnp.ndarray node_ar
+    cdef cnp.ndarray value_ar
     cdef size_t max_depth
     cdef size_t node_count
     cdef size_t leaf_count
     cdef size_t class_count
 
-    cdef np.ndarray _get_node_ndarray(self, void* nodes, size_t count):
+    cdef cnp.ndarray _get_node_ndarray(self, void* nodes, size_t count):
         """Wraps nodes as a NumPy struct array.
         The array keeps a reference to this Tree, which manages the underlying
         memory. Individual fields are publicly accessible as properties of the
         Tree.
         """
-        cdef np.npy_intp shape[1]
-        shape[0] = <np.npy_intp> count
-        cdef np.npy_intp strides[1]
+        cdef cnp.npy_intp shape[1]
+        shape[0] = <cnp.npy_intp> count
+        cdef cnp.npy_intp strides[1]
         strides[0] = sizeof(skl_tree_node)
-        cdef np.ndarray arr
+        cdef cnp.ndarray arr
         Py_INCREF(NODE_DTYPE)
-        arr = PyArray_NewFromDescr(<PyTypeObject*> np.ndarray, <np.dtype> NODE_DTYPE, 1, shape,
+        arr = PyArray_NewFromDescr(<PyTypeObject*> cnp.ndarray, <cnp.dtype> NODE_DTYPE, 1, shape,
                                    strides, nodes,
-                                   np.NPY_DEFAULT, None)
-        Py_INCREF(self)
-        arr.base = <PyObject*> self
+                                   cnp.NPY_DEFAULT, None)
+        set_rawp_base(arr, nodes)
         return arr
 
-    cdef np.ndarray _get_value_ndarray(self, void* values, size_t count, size_t outputs, size_t class_counts):
-        cdef np.npy_intp shape[3]
-        shape[0] = <np.npy_intp> count
-        shape[1] = <np.npy_intp> 1
-        shape[2] = <np.npy_intp> class_counts
-        cdef np.ndarray arr
-        arr = PyArray_SimpleNewFromData(3, shape, np.NPY_DOUBLE, values)
-        Py_INCREF(self)
-        arr.base = <PyObject*> self
+
+    cdef cnp.ndarray _get_value_ndarray(self, void* values, size_t count, size_t outputs, size_t class_counts):
+        cdef cnp.npy_intp shape[3]
+        shape[0] = <cnp.npy_intp> count
+        shape[1] = <cnp.npy_intp> 1
+        shape[2] = <cnp.npy_intp> class_counts
+        cdef cnp.ndarray arr
+        arr = PyArray_SimpleNewFromData(3, shape, cnp.NPY_DOUBLE, values)
+        set_rawp_base(arr, values)
         return arr
 
 
