@@ -16,9 +16,9 @@ def evaluate_cond(cond, v):
     if cond.startswith("!="):
         return LooseVersion(v) != LooseVersion(cond[2:])
     if cond.startswith("<"):
-        return LooseVersion(v) < LooseVersion(cond[2:])
+        return LooseVersion(v) < LooseVersion(cond[1:])
     if cond.startswith(">"):
-        return LooseVersion(v) > LooseVersion(cond[2:])
+        return LooseVersion(v) > LooseVersion(cond[1:])
     return False
     
 
