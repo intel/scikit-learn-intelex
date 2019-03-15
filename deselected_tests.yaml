@@ -1,4 +1,15 @@
+# This file lists node ids (in pytest sense) of sklearn tests that
+# are to be deselected during test discovery step.
+#
+# Deselection can be predicated on the version of scikit-learn used.
+# Use - node_id cond, or - node_id cond1,cond2  where cond is OPver.
+# Supported OPs are >=, <=, ==, !=, >, <
+# For example,
+#    - tests/test_isotonic.py::test_permutation_invariance >0.18,<=0.19
+#  will exclude deselection in versions 0.18.1, and 0.18.2 only
+
 deselected_tests:
+
   # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
   # See: https://github.com/scikit-learn/scikit-learn/issues/12738
   - svm/tests/test_svm.py::test_sample_weights
@@ -6,9 +17,11 @@ deselected_tests:
   - svm/tests/test_sparse.py::test_sparse
   - svm/tests/test_sparse.py::test_svc_iris
   - ensemble/tests/test_bagging.py::test_sparse_classification
+
   # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
   # See: https://github.com/IntelPython/daal4py/issues/25
   - cluster/tests/test_k_means.py::test_k_means_fit_predict
+
   # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
   # See https://github.com/IntelPython/daal4py/issues/69
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies >=0.20.3
