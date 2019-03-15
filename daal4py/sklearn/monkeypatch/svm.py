@@ -278,6 +278,17 @@ def _daal_var(X):
 
 
 def __compute_gamma__(gamma, kernel, X, sparse, use_var=True):
+    """
+    Computes actual value of 'gamma' parameter of RBF kernel
+    corresponding to SVC keyword values `gamma` and `kernel`, and feature 
+    matrix X, with sparsity `sparse`.
+
+    In 0.20 gamma='scale' used to mean compute 'gamma' based on 
+    column-wise standard deviation, but in 0.20.3 it was changed
+    to use column-wise variance.
+
+    See: https://github.com/scikit-learn/scikit-learn/pull/13221 
+    """
     if gamma in ('scale', 'auto_deprecated'):
         kernel_uses_gamma = (not callable(kernel) and kernel
                              not in ('linear', 'precomputed'))
