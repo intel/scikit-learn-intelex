@@ -82,7 +82,6 @@ pygments_style = 'sphinx'
 #html_theme = 'alabaster'
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
-    "documentwidth": 70,
     "sidebarwidth": 30,
     "nosidebar": False,
 }
