@@ -92,89 +92,97 @@ Examples:
 .. autoclass:: daal4py.kdtree_knn_classification_model
    :members:
 
-AdaBoost Classification
-^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel DAAL Classification AdaBoost <https://software.intel.com/en-us/daal-programming-guide-adaboost-classifier>`_
+..
+    Remove this line, line above and indent below when algorithm will be added
+    AdaBoost Classification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+    Detailed description of parameters and semantics are described in
+    `Intel DAAL Classification AdaBoost <https://software.intel.com/en-us/daal-programming-guide-adaboost-classifier>`_
 
-Examples:
+    Examples:
 
-- `Single-Process AdaBoost Classification
-  <https://github.com/IntelPython/daal4py/blob/master/examples/adaboost_batch.py>`_
+    - `Single-Process AdaBoost Classification
+      <https://github.com/IntelPython/daal4py/blob/master/examples/adaboost_batch.py>`_
 
-.. autoclass:: daal4py.adaboost_training
-   :members: compute
-.. autoclass:: daal4py.adaboost_training_result
-   :members:
-.. autoclass:: daal4py.adaboost_prediction
-   :members: compute
-.. autoclass:: daal4py.classifier_prediction_result
-   :members:
-.. autoclass:: daal4py.adaboost_model
-   :members:
+    .. autoclass:: daal4py.adaboost_training
+       :members: compute
+    .. autoclass:: daal4py.adaboost_training_result
+       :members:
+    .. autoclass:: daal4py.adaboost_prediction
+       :members: compute
+    .. autoclass:: daal4py.classifier_prediction_result
+       :members:
+    .. autoclass:: daal4py.adaboost_model
+       :members:
 
-BrownBoost Classification
-^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel DAAL Classification BrownBoost <https://software.intel.com/en-us/daal-programming-guide-brownboost-classifier>`_
+..
+    Remove this line, line above and indent below when algorithm will be added
+    BrownBoost Classification
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    Detailed description of parameters and semantics are described in
+    `Intel DAAL Classification BrownBoost <https://software.intel.com/en-us/daal-programming-guide-brownboost-classifier>`_
 
-Examples:
+    Examples:
 
-- `Single-Process BrownBoost Classification
-  <https://github.com/IntelPython/daal4py/blob/master/examples/brownboost_batch.py>`_
+    - `Single-Process BrownBoost Classification
+      <https://github.com/IntelPython/daal4py/blob/master/examples/brownboost_batch.py>`_
 
-.. autoclass:: daal4py.brownboost_training
-   :members: compute
-.. autoclass:: daal4py.brownboost_training_result
-   :members:
-.. autoclass:: daal4py.brownboost_prediction
-   :members: compute
-.. autoclass:: daal4py.classifier_prediction_result
-   :members:
-.. autoclass:: daal4py.brownboost_model
-   :members:
+    .. autoclass:: daal4py.brownboost_training
+       :members: compute
+    .. autoclass:: daal4py.brownboost_training_result
+       :members:
+    .. autoclass:: daal4py.brownboost_prediction
+       :members: compute
+    .. autoclass:: daal4py.classifier_prediction_result
+       :members:
+    .. autoclass:: daal4py.brownboost_model
+       :members:
 
-LogitBoost Classification
-^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel DAAL Classification LogitBoost <https://software.intel.com/en-us/daal-programming-guide-logitboost-classifier>`_
+..
+    Remove this line, line above and indent below when algorithm will be added
+    LogitBoost Classification
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    Detailed description of parameters and semantics are described in
+    `Intel DAAL Classification LogitBoost <https://software.intel.com/en-us/daal-programming-guide-logitboost-classifier>`_
 
-Examples:
+    Examples:
 
-- `Single-Process LogitBoost Classification
-  <https://github.com/IntelPython/daal4py/blob/master/examples/logitboost_batch.py>`_
+    - `Single-Process LogitBoost Classification
+      <https://github.com/IntelPython/daal4py/blob/master/examples/logitboost_batch.py>`_
 
-.. autoclass:: daal4py.logitboost_training
-   :members: compute
-.. autoclass:: daal4py.logitboost_training_result
-   :members:
-.. autoclass:: daal4py.logitboost_prediction
-   :members: compute
-.. autoclass:: daal4py.classifier_prediction_result
-   :members:
-.. autoclass:: daal4py.logitboost_model
-   :members:
+    .. autoclass:: daal4py.logitboost_training
+       :members: compute
+    .. autoclass:: daal4py.logitboost_training_result
+       :members:
+    .. autoclass:: daal4py.logitboost_prediction
+       :members: compute
+    .. autoclass:: daal4py.classifier_prediction_result
+       :members:
+    .. autoclass:: daal4py.logitboost_model
+       :members:
 
-Stump Weak Learner Classification
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel DAAL Classification Weak Learner Stump <https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier>`_
+..
+    Remove this line, line above and indent below when algorithm will be added
+    Stump Weak Learner Classification
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    Detailed description of parameters and semantics are described in
+    `Intel DAAL Classification Weak Learner Stump <https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier>`_
 
-Examples:
+    Examples:
 
-- `Single-Process Stump Weak Learner Classification
-  <https://github.com/IntelPython/daal4py/blob/master/examples/stump_classification_batch.py>`_
+    - `Single-Process Stump Weak Learner Classification
+      <https://github.com/IntelPython/daal4py/blob/master/examples/stump_classification_batch.py>`_
 
-.. autoclass:: daal4py.stump_classification_training
-   :members: compute
-.. autoclass:: daal4py.stump_classification_training_result
-   :members:
-.. autoclass:: daal4py.stump_classification_prediction
-   :members: compute
-.. autoclass:: daal4py.classifier_prediction_result
-   :members:
-.. autoclass:: daal4py.stump_classification_model
-   :members:
+    .. autoclass:: daal4py.stump_classification_training
+       :members: compute
+    .. autoclass:: daal4py.stump_classification_training_result
+       :members:
+    .. autoclass:: daal4py.stump_classification_prediction
+       :members: compute
+    .. autoclass:: daal4py.classifier_prediction_result
+       :members:
+    .. autoclass:: daal4py.stump_classification_model
+       :members:
 
 Multinomial Naive Bayes
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -355,26 +363,28 @@ Examples:
 .. autoclass:: daal4py.ridge_regression_model
    :members:
 
-Stump Weak Learner Regression
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel DAAL Regression Weak Learner Stump <https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier>`_
+..
+    Remove this line, line above and indent below when algorithm will be added
+    Stump Weak Learner Regression
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    Detailed description of parameters and semantics are described in
+    `Intel DAAL Regression Weak Learner Stump <https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier>`_
 
-Examples:
+    Examples:
 
-- `Single-Process Stump Weak Learner Regression
-  <https://github.com/IntelPython/daal4py/blob/master/examples/stump_regression_batch.py>`_
+    - `Single-Process Stump Weak Learner Regression
+      <https://github.com/IntelPython/daal4py/blob/master/examples/stump_regression_batch.py>`_
 
-.. autoclass:: daal4py.stump_regression_training
-   :members: compute
-.. autoclass:: daal4py.stump_regression_training_result
-   :members:
-.. autoclass:: daal4py.stump_regression_prediction
-   :members: compute
-.. autoclass:: daal4py.stump_regression_prediction_result
-   :members:
-.. autoclass:: daal4py.stump_regression_model
-   :members:
+    .. autoclass:: daal4py.stump_regression_training
+       :members: compute
+    .. autoclass:: daal4py.stump_regression_training_result
+       :members:
+    .. autoclass:: daal4py.stump_regression_prediction
+       :members: compute
+    .. autoclass:: daal4py.stump_regression_prediction_result
+       :members:
+    .. autoclass:: daal4py.stump_regression_model
+       :members:
 
 Principal Component Analysis (PCA)
 ----------------------------------
