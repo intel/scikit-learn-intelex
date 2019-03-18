@@ -122,6 +122,9 @@ class comment_parser(object):
         # delete '%', it marks non-key words in DAAL Doxygen documentation
         line = l.replace('%', '')
 
+        # delete keys for formulas in DAAL Doxigen documentation
+        line = line.replace('\\f$', '')
+
         # remove internal references in DAAL Doxygen documentation
         m = re.match(r'^(.*), \\ref .*$', line)
         if m:
