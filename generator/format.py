@@ -150,6 +150,20 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                     cppdefault = ''
                     sphinx_default = ''
                 assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
+
+                # replace DAAL C++ names by daal4py names
+                m = re.match('^.* (\w+::[:\w]+).*$', doc) if doc else None
+                if m:
+                    doc = doc.replace(m.group(1), flat(m.group(1)).lower())
+
+                # replace all rest colons by unicode character
+                if doc:
+                    doc = doc.replace(':', '\\u003A')
+
+                m = re.match('^.*:.*$', doc) if doc else None
+                if m:
+                    print("docre",doc)
+
     # hjpat_input needs dist {% if step_specs is defined %}
     #   {% set inp_dists = step_specs[0].inputdists if step_specs|length else inputdists %}
     #   {% else %}

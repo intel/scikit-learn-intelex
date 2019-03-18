@@ -78,6 +78,7 @@
 
 from collections import defaultdict, OrderedDict
 import re
+from enum import Enum, unique
 
 ###############################################################################
 class cpp_class(object):
@@ -107,27 +108,83 @@ class cpp_class(object):
 
 
 ###############################################################################
+@unique
+class doc_state(Enum):
+    none = 0
+    single = 1
+    multi = 2
+    template = 3
+
+
 class comment_parser(object):
     """parse documentation in comments"""
     def parse(self, l, ctxt):
-        # if parsing of multiline comment is in progress
-        if ctxt.doc_lambda:
-            # delete '%'
-            line = l.replace('%', '')
-            docm = re.search(r'^\s*(.+?)\*/', line)
-            doc_end = docm.group(1) if docm else None
-            if doc_end:
+        # delete '%', it marks non-key words in DAAL Doxygen documentation
+        line = l.replace('%', '')
+
+        # remove internal references in DAAL Doxygen documentation
+        m = re.match(r'^(.*), \\ref .*$', line)
+        if m:
+            line = m.group(1)
+
+        # try to find the begin of algorithm template description
+        m = re.match('^ \* <a name=\"DAAL-CLASS-ALGORITHMS__.*(BATCH|ALGORITHMIMPL)\"></a>$', line)
+        if m:
+            ctxt.doc_state = doc_state.template
+            ctxt.doc = defaultdict()
+            return True
+
+        # if parsing of bach algorithm template description is in progress
+        if ctxt.doc_state is doc_state.template:
+            # try to find template param description
+            m = re.match(r'^ \* \\tparam\s+(\w+)\s+(.*)$', line)
+            if m:
+                ctxt.doc[m.group(1)] = m.group(2)
+                return True
+            # try to find end of bach algorithm template description
+            m = re.match(r'.*\*/', line)
+            if m:
+                ctxt.doc_state = doc_state.none
+                return False
+
+        # if it is still template then go to next line
+        if ctxt.doc_state is doc_state.template:
+            return True
+
+        # try to find single line comment with documentation
+        m = re.match('^.*/\*!<(.+?)\*/.*$', line)
+        if m:
+            # save the doc to context and continue with next parser
+            ctxt.doc = m.group(1)
+            ctxt.doc_state = doc_state.single
+            return False
+
+        # try to find the begin of comment with documentation
+        m = re.match('^.*/\*!<(.+?)$', line)
+        if m:
+            # save the begin of doc to context and continue with next parser
+            ctxt.doc = m.group(1)
+            ctxt.doc_state = doc_state.multi
+            return False
+
+        # if it is multiline comment and there is place to insert it
+        if ctxt.doc_state is doc_state.multi and ctxt.doc_lambda:
+            # try to find the end of comment with documentation
+            m = re.match(r'^\s*(.+?)\*/', line)
+            if m:
                 doc = ctxt.doc_lambda()
-                doc[1] += ' ' + doc_end
+                doc[1] += ' ' + m.group(1)
+                ctxt.doc_state = doc_state.none
                 ctxt.doc_lambda = None
-                return True
-            docm = re.search(r'^\s*(.+?)$', line)
-            doc_mid = docm.group(1) if docm else None
-            if doc_mid:
+                return False
+            # append the text in the line to documentation 
+            m = re.search(r'^\s*(.+?)$', line)
+            if m:
                 doc = ctxt.doc_lambda()
-                doc[1] += ' ' + doc_mid
+                doc[1] += ' ' + m.group(1)
                 return True
-            raise Exception("Comments parsing in progress but comment was not found")
+            raise Exception("Multiline comment parsing is in progress but comment was not found")
+
         return False
 
 
@@ -171,7 +228,7 @@ class include_parser(object):
 class typedef_parser(object):
     """Parse a typedef"""
     def parse(self, l, ctxt):
-        m =  re.match(r'\s*typedef(\s+(struct|typename))?\s+(.+)\s+(\w+).*', l)
+        m = re.match(r'\s*typedef(\s+(struct|typename))?\s+(.+)\s+(\w+).*', l)
         if m:
             if ctxt.curr_class:
                 ctxt.gdict['classes'][ctxt.curr_class].typedefs[m.group(4).strip()] = m.group(3).strip()
@@ -200,16 +257,11 @@ class enum_parser(object):
             else:
                 me = re.match(r'^\s*(\w+)(?:\s*=\s*((\(int\))?\w(\w|:|\s|\+)*))?(\s*,)?\s*((/\*|//).*)?$', l)
                 if me and not me.group(1).startswith('last'):
-                    # try to find single line comment with documentation
-                    docm = re.search('/\*!<(.+?)\*/', me.group(6)) if me.group(6) else None
-                    doc = docm.group(1).replace('%','') if docm else None
-                    # try to find begin of comment with documentation
-                    if not doc:
-                        docm = re.search('/\*!<(.+?)$', me.group(6)) if me.group(6) else None
-                        doc = docm.group(1).replace('%','') if docm else None
-                        if doc:
-                            ctxt.doc_lambda = lambda: ctxt.gdict['enums'][ctxt.enum][me.group(1)]
-                    ctxt.gdict['enums'][ctxt.enum][me.group(1)] = [me.group(2) if me.group(2) else '', doc]
+                    # if multiline documentation is found then save the destination for documentation
+                    if ctxt.doc_state is doc_state.multi:
+                        ctxt.doc_lambda = lambda: ctxt.gdict['enums'][ctxt.enum][me.group(1)]
+                    ctxt.gdict['enums'][ctxt.enum][me.group(1)] = [me.group(2) if me.group(2) else '', ctxt.doc]
+                    ctxt.doc = ''
                     return True
         return False
 
@@ -306,16 +358,11 @@ class member_parser(object):
             mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?([\w_]+)\s*;', l)
             if mm :
                 if mm.group(2) not in ctxt.gdict['classes'][ctxt.curr_class].members:
-                    # try to find single line comment with documentation
-                    docm = re.search('/\*!<(.+?)\*/', l)
-                    doc = docm.group(1).replace('%','') if docm else None
-                    # try to find begin of comment with documentation
-                    if not doc:
-                        docm = re.search('/\*!<(.+?)$', l)
-                        doc = docm.group(1).replace('%','') if docm else None
-                        if doc:
-                            ctxt.doc_lambda = lambda: ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)]
-                    ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)] = [mm.group(1), doc]
+                    # if multiline documentation is found then save the destination for documentation
+                    if ctxt.doc_state is doc_state.multi:
+                        ctxt.doc_lambda = lambda: ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)]
+                    ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)] = [mm.group(1), ctxt.doc]
+                    ctxt.doc = ''
                 return True
         return False
 
@@ -343,26 +390,32 @@ class class_template_parser(object):
             tmp = ctxt.template.split(',')
             tmplargs = []
             for ta in tmp:
+                doc = ''
+                # if comment with template documentation was found
+                if isinstance(ctxt.doc, defaultdict):
+                    m = re.match('^([ <]*)?(typename|\w*|[:\w]*) +(\w*)?.*$', ta)
+                    if m:
+                        doc = ctxt.doc[m.group(3)] if m.group(3) in ctxt.doc else ''
                 tmpltmp = None
                 mtm = re.match(r'.*?(\w*Method) +(\w+?)( *= *(\w+))?[ >]*$', ta)
                 if mtm and not 'CompressionMethod' in l:
-                    tmpltmp = [mtm.group(2), mtm.group(1), mtm.group(4) if mtm.group(4) else '']
+                    tmpltmp = [mtm.group(2), mtm.group(1), mtm.group(4) if mtm.group(4) else '', doc]
                     ctxt.gdict['need_methods'] = True
                 else:
                     mtt = re.match(r'.*typename \w*?FPType( *= *(\w+))?[ >]*$', ta)
                     if mtt:
-                        tmpltmp = ['fptype', 'fptypes', mtt.group(2) if mtt.group(2) else '']
+                        tmpltmp = ['fptype', 'fptypes', mtt.group(2) if mtt.group(2) else '', doc]
                     else:
                         mtt = re.match(r'.*ComputeStep \w+?( *= *(\w+))?[ >]*$', ta)
                         if mtt:
-                            tmpltmp = ['step', 'steps', mtt.group(2) if mtt.group(2) else '']
+                            tmpltmp = ['step', 'steps', mtt.group(2) if mtt.group(2) else '', doc]
                 if not tmpltmp:
                     tatmp = ta.split('=')
                     tatmp2 = tatmp[0].split()
                     if len(tatmp2) > 1:
-                        tmpltmp = [tatmp2[1].strip('<> '), tatmp2[0].strip('<> '), tatmp[-1].strip('<> ') if len(tatmp) > 1 else '']
+                        tmpltmp = [tatmp2[1].strip('<> '), tatmp2[0].strip('<> '), tatmp[-1].strip('<> ') if len(tatmp) > 1 else '', doc]
                     else:
-                        tmpltmp = [ta, '', '']
+                        tmpltmp = [ta, '', '', doc]
                 tmplargs.append(tmpltmp)
             ctxt.template = tmplargs
         # we don't have a 'else' (e.g. if not a template) here since we could have template one-liners
@@ -435,6 +488,8 @@ class pcontext(object):
         self.template = False
         self.access = False
         self.header = header
+        self.doc = ''
+        self.doc_state = doc_state.none
         self.doc_lambda = None
 
 
@@ -461,7 +516,7 @@ def parse_header(header, ignores):
     ctxt.n = 1
     for l in header:
         # first strip of eol comments if it is not the link
-        if not re.search(r'http://', l):
+        if not re.search(r'https?://', l):
             l = l.split('//')[0]
         # apply each parser, continue to next line if possible
         for p in parsers:

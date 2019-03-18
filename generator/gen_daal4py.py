@@ -285,9 +285,6 @@ class cython_interface(object):
             '?' means we do not know what 't' is
         For classes, we also add lookups in namespaces that DAAL C++ API finds through "using".
         """
-        if isinstance(t, list):
-            ### FIXME
-            t = t[0]
         if t in ['DAAL_UINT64']:
             ### FIXME
             t = 'ResultToComputeId'
@@ -421,8 +418,6 @@ class cython_interface(object):
         """
         assert 'members' not in attr, "get_expand_attrs is not supported for members"
         attrs = self.get_all_attrs(ns, cls, attr)
-        #print("attrs", attrs)
-        #assert attrs in ['sets', 'gets']
         explist = []
         ignlist = []
         for i in attrs:
@@ -635,7 +630,7 @@ class cython_interface(object):
                                              'std::string&',
                                              'const',
                                              t[2].replace('DAAL_ALGORITHM_FP_TYPE', 'double'),
-                                             algo=func) for t in self.namespace_dict[ns].classes[mode].template_args]
+                                             algo=func, doc=t[3]) for t in self.namespace_dict[ns].classes[mode].template_args]
                 }
 
             # A parameter can be a specialized template. Sigh.
@@ -686,7 +681,10 @@ class cython_interface(object):
             for p in all_params:
                 pns, tmp = splitns(p)
                 if not tmp.startswith('_') and not ignored(pns, tmp):
-                    hlt = self.to_hltype(pns, all_params[p])
+                    ### FIXME if it is a list then take first member else take whole value
+                    ### we can remove it when we will save template params docs
+                    hlt = self.to_hltype(pns, all_params[p][0] if isinstance(all_params[p], list) else all_params[p])
+                    #hlt = self.to_hltype(pns, all_params[p][0])
                     if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                         (hlt, hlt_type, hlt_ns) = hlt
                         llt = self.to_lltype(all_params[p][0])
@@ -698,7 +696,6 @@ class cython_interface(object):
                         if thetype != None and tmp != None:
                             thetype = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', thetype)
                             doc = all_params[p][1]
-                            print("doc", doc)
                             if any(tmp == x.name for x in params_req):
                                 v = mk_var(tmp, thetype, 'const', algo=func, doc=doc)
                                 jparams['params_req'].append(v)
@@ -774,11 +771,11 @@ class cython_interface(object):
         }
         if not no_dist and ns in has_dist:
             retjp['dist'] = has_dist[ns]
-            retjp['distributed'] = mk_var('distributed', 'bool', dflt=True, algo=func)
+            retjp['distributed'] = mk_var('distributed', 'bool', dflt=True, algo=func, doc='enable distributed computation (SPMD)')
         else:
             retjp['distributed'] = mk_var()
         if not no_stream and  'Online' in self.namespace_dict[ns].classes and not ns.endswith('pca'):
-            retjp['streaming'] = mk_var('streaming', 'bool', dflt=True, algo=func)
+            retjp['streaming'] = mk_var('streaming', 'bool', dflt=True, algo=func, doc='enable streaming')
         else:
             retjp['streaming'] = mk_var()
         return {ns + '::' + mode : retjp}

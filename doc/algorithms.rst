@@ -18,11 +18,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_batch.py>`_
 
 .. autoclass:: daal4py.decision_forest_classification_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.decision_forest_classification_training_result
    :members:
 .. autoclass:: daal4py.decision_forest_classification_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.decision_forest_classification_model
@@ -39,11 +39,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_classification_batch.py>`_
 
 .. autoclass:: daal4py.decision_tree_classification_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.decision_tree_classification_training_result
    :members:
 .. autoclass:: daal4py.decision_tree_classification_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.decision_tree_classification_model
@@ -60,11 +60,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_classification_batch.py>`_
 
 .. autoclass:: daal4py.gbt_classification_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.gbt_classification_training_result
    :members:
 .. autoclass:: daal4py.gbt_classification_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.gbt_classification_model
@@ -82,11 +82,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/kdtree_knn_classification_batch.py>`_
 
 .. autoclass:: daal4py.kdtree_knn_classification_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.kdtree_knn_classification_training_result
    :members:
 .. autoclass:: daal4py.kdtree_knn_classification_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.kdtree_knn_classification_model
@@ -103,11 +103,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/adaboost_batch.py>`_
 
 .. autoclass:: daal4py.adaboost_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.adaboost_training_result
    :members:
 .. autoclass:: daal4py.adaboost_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.adaboost_model
@@ -124,11 +124,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/brownboost_batch.py>`_
 
 .. autoclass:: daal4py.brownboost_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.brownboost_training_result
    :members:
 .. autoclass:: daal4py.brownboost_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.brownboost_model
@@ -145,11 +145,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/logitboost_batch.py>`_
 
 .. autoclass:: daal4py.logitboost_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.logitboost_training_result
    :members:
 .. autoclass:: daal4py.logitboost_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.logitboost_model
@@ -166,11 +166,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/stump_classification_batch.py>`_
 
 .. autoclass:: daal4py.stump_classification_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.stump_classification_training_result
    :members:
 .. autoclass:: daal4py.stump_classification_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.stump_classification_model
@@ -189,11 +189,11 @@ Examples:
 - `Multi-Process Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_spmd.py>`_
 
 .. autoclass:: daal4py.multinomial_naive_bayes_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.multinomial_naive_bayes_training_result
    :members:
 .. autoclass:: daal4py.multinomial_naive_bayes_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.multinomial_naive_bayes_model
@@ -210,11 +210,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/svm_batch.py>`_
 
 .. autoclass:: daal4py.svm_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.svm_training_result
    :members:
 .. autoclass:: daal4py.svm_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.svm_model
@@ -233,11 +233,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/log_reg_dense_batch.py>`_
 
 .. autoclass:: daal4py.logistic_regression_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.logistic_regression_training_result
    :members:
 .. autoclass:: daal4py.logistic_regression_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.classifier_prediction_result
    :members:
 .. autoclass:: daal4py.logistic_regression_model
@@ -259,11 +259,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_batch.py>`_
 
 .. autoclass:: daal4py.decision_forest_regression_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.decision_forest_regression_training_result
    :members:
 .. autoclass:: daal4py.decision_forest_regression_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.decision_forest_regression_prediction_result
    :members:
 .. autoclass:: daal4py.decision_forest_regression_model
@@ -280,11 +280,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_regression_batch.py>`_
 
 .. autoclass:: daal4py.decision_tree_regression_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.decision_tree_regression_training_result
    :members:
 .. autoclass:: daal4py.decision_tree_regression_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.decision_tree_regression_prediction_result
    :members:
 .. autoclass:: daal4py.decision_tree_regression_model
@@ -301,11 +301,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_regression_batch.py>`_
 
 .. autoclass:: daal4py.gbt_regression_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.gbt_regression_training_result
    :members:
 .. autoclass:: daal4py.gbt_regression_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.gbt_regression_prediction_result
    :members:
 .. autoclass:: daal4py.gbt_regression_model
@@ -323,11 +323,11 @@ Examples:
 - `Multi-Process Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_spmd.py>`_
 
 .. autoclass:: daal4py.linear_regression_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.linear_regression_training_result
    :members:
 .. autoclass:: daal4py.linear_regression_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.linear_regression_prediction_result
    :members:
 .. autoclass:: daal4py.linear_regression_model
@@ -345,11 +345,11 @@ Examples:
 - `Multi-Process Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_spmd.py>`_
 
 .. autoclass:: daal4py.ridge_regression_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.ridge_regression_training_result
    :members:
 .. autoclass:: daal4py.ridge_regression_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.ridge_regression_prediction_result
    :members:
 .. autoclass:: daal4py.ridge_regression_model
@@ -366,11 +366,11 @@ Examples:
   <https://github.com/IntelPython/daal4py/blob/master/examples/stump_regression_batch.py>`_
 
 .. autoclass:: daal4py.stump_regression_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.stump_regression_training_result
    :members:
 .. autoclass:: daal4py.stump_regression_prediction
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.stump_regression_prediction_result
    :members:
 .. autoclass:: daal4py.stump_regression_model
@@ -387,7 +387,7 @@ Examples:
 - `Multi-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`_
 
 .. autoclass:: daal4py.pca
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.pca_result
    :members:
 
@@ -401,7 +401,7 @@ Examples:
 - `Single-Process PCA Transform <https://github.com/IntelPython/daal4py/blob/master/examples/pca_transform_batch.py>`_
 
 .. autoclass:: daal4py.pca_transform
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.pca_transform_result
    :members:
 
@@ -421,7 +421,7 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL K-Means Initialization <https://software.intel.com/en-us/daal-programming-guide-initialization>`_
 
 .. autoclass:: daal4py.kmeans_init
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.kmeans_init_result
    :members:
 
@@ -431,7 +431,7 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL K-Means Computation <https://software.intel.com/en-us/daal-programming-guide-computation>`_
 
 .. autoclass:: daal4py.kmeans
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.kmeans_result
    :members:
 
@@ -447,7 +447,7 @@ Examples:
 - `Single-Process Multivariate Outlier Detection <https://github.com/IntelPython/daal4py/blob/master/examples/multivariate_outlier_batch.py>`_
 
 .. autoclass:: daal4py.multivariate_outlier_detection
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.multivariate_outlier_detection_result
    :members:
 
@@ -461,7 +461,7 @@ Examples:
 - `Single-Process Univariate Outlier Detection <https://github.com/IntelPython/daal4py/blob/master/examples/univariate_outlier_batch.py>`_
 
 .. autoclass:: daal4py.univariate_outlier_detection
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.univariate_outlier_detection_result
    :members:
 
@@ -475,7 +475,7 @@ Examples:
 - `Single-Process Bacon Outlier Detection <https://github.com/IntelPython/daal4py/blob/master/examples/bacon_outlier_batch.py>`_
 
 .. autoclass:: daal4py.bacon_outlier_detection
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.bacon_outlier_detection_result
    :members:
 
@@ -533,7 +533,7 @@ Examples:
 - `Using MSE <https://github.com/IntelPython/daal4py//blob/master/examples/sgd_mse_batch.py>`_
 
 .. autoclass:: daal4py.optimization_solver_sgd
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.optimization_solver_sgd_result
    :members:
 
@@ -546,7 +546,7 @@ Examples:
 - `Using MSE <https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_mse_batch.py>`_
 
 .. autoclass:: daal4py.optimization_solver_lbfgs
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.optimization_solver_lbfgs_result
    :members:
 
@@ -559,7 +559,7 @@ Examples:
 - `Using MSE <https://github.com/IntelPython/daal4py/blob/master/examples/adagrad_mse_batch.py>`_
 
 .. autoclass:: daal4py.optimization_solver_adagrad
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.optimization_solver_adagrad_result
    :members:
 
@@ -572,7 +572,7 @@ Examples:
 - `Single Proces saga-logistc_loss <https://github.com/IntelPython/daal4py/blob/master/examples/saga_batch.py>`_
 
 .. autoclass:: daal4py.optimization_solver_saga
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.optimization_solver_saga_result
    :members:
 
@@ -588,7 +588,7 @@ Examples:
 - `Single-Process Cosine Distance <https://github.com/IntelPython/daal4py/blob/master/examples/cosine_distance_batch.py>`_
 
 .. autoclass:: daal4py.cosine_distance
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.cosine_distance_result
    :members:
 
@@ -602,7 +602,7 @@ Examples:
 - `Single-Process Correlation Distance <https://github.com/IntelPython/daal4py/blob/master/examples/correlation_distance_batch.py>`_
 
 .. autoclass:: daal4py.correlation_distance
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.correlation_distance_result
    :members:
 
@@ -621,7 +621,7 @@ Examples:
 - `Single-Process Expectation-Maximization <https://github.com/IntelPython/daal4py/blob/master/examples/em_gmm_batch.py>`_
 
 .. autoclass:: daal4py.em_gmm_init
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.em_gmm_init_result
    :members:
 
@@ -635,7 +635,7 @@ Examples:
 - `Single-Process Expectation-Maximization <https://github.com/IntelPython/daal4py/blob/master/examples/em_gmm_batch.py>`_
 
 .. autoclass:: daal4py.em_gmm
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.em_gmm_result
    :members:
 
@@ -655,7 +655,7 @@ Examples:
 - `Streaming QR <https://github.com/IntelPython/daal4py/blob/master/examples/qr_streaming.py>`_
 
 .. autoclass:: daal4py.qr
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.qr_result
    :members:
 
@@ -669,7 +669,7 @@ Examples:
 - `Single-Process Pivoted QR <https://github.com/IntelPython/daal4py/blob/master/examples/pivoted_qr_batch.py>`_
 
 .. autoclass:: daal4py.pivoted_qr
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.pivoted_qr_result
    :members:
 
@@ -688,7 +688,7 @@ Examples:
 - `Single-Process Z-Score Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_zscore.py>`_
 
 .. autoclass:: daal4py.normalization_zscore
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.normalization_zscore_result
    :members:
 
@@ -702,7 +702,7 @@ Examples:
 - `Single-Process Min-Max Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax.py>`_
 
 .. autoclass:: daal4py.normalization_minmax
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.normalization_minmax_result
    :members:
 
@@ -720,7 +720,7 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL mt19937 <https://software.intel.com/en-us/daal-programming-guide-mt19937>`_
 
 .. autoclass:: daal4py.engines_mt19937
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.engines_mt19937_result
    :members:
 
@@ -730,7 +730,7 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL mt2203 <https://software.intel.com/en-us/daal-programming-guide-mt2203>`_
 
 .. autoclass:: daal4py.engines_mt2203
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.engines_mt2203_result
    :members:
 
@@ -740,7 +740,7 @@ Detailed description of parameters and semantics are described in
 `Intel DAAL mcg59 <https://software.intel.com/en-us/daal-programming-guide-mcg59>`_
 
 .. autoclass:: daal4py.engines_mcg59
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.engines_mcg59_result
    :members:
 
@@ -759,7 +759,7 @@ Examples:
 - `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli.py>`_
 
 .. autoclass:: daal4py.distributions_bernoulli
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.distributions_bernoulli_result
    :members:
 
@@ -773,12 +773,12 @@ Examples:
 - `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal.py>`_
 
 .. autoclass:: daal4py.distributions_normal
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.distributions_normal_result
    :members:
 
 Uniform
-^^^^^^
+^^^^^^^
 Detailed description of parameters and semantics are described in
 `Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-uniform>`_
 
@@ -787,7 +787,7 @@ Examples:
 - `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform.py>`_
 
 .. autoclass:: daal4py.distributions_uniform
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.distributions_uniform_result
    :members:
 
@@ -803,7 +803,7 @@ Examples:
 - `Single-Process abs <https://github.com/IntelPython/daal4py/blob/master/examples/math_abs.py>`_
 
 .. autoclass:: daal4py.math_abs
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.math_abs_result
    :members:
 
@@ -817,7 +817,7 @@ Examples:
 - `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/math_tanh.py>`_
 
 .. autoclass:: daal4py.math_tanh
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.math_tanh_result
    :members:
 
@@ -831,7 +831,7 @@ Examples:
 - `Single-Process logistic <https://github.com/IntelPython/daal4py/blob/master/examples/math_logistic.py>`_
 
 .. autoclass:: daal4py.math_logistic
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.math_logistic_result
    :members:
 
@@ -845,7 +845,7 @@ Examples:
 - `Single-Process ReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_relu.py>`_
 
 .. autoclass:: daal4py.math_relu
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.math_relu_result
    :members:
 
@@ -859,7 +859,7 @@ Examples:
 - `Single-Process SmoothReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_smoothrelu.py>`_
 
 .. autoclass:: daal4py.math_smoothrelu
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.math_smoothrelu_result
    :members:
 
@@ -873,7 +873,7 @@ Examples:
 - `Single-Process softmax <https://github.com/IntelPython/daal4py/blob/master/examples/math_softmax.py>`_
 
 .. autoclass:: daal4py.math_softmax
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.math_softmax_result
    :members:
 
@@ -887,7 +887,7 @@ Examples:
 - `Single-Process Association Rules <https://github.com/IntelPython/daal4py/blob/master/examples/association_rules_batch.py>`_
 
 .. autoclass:: daal4py.association_rules
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.association_rules_result
    :members:
 
@@ -901,7 +901,7 @@ Examples:
 - `Single-Process Cholesky <https://github.com/IntelPython/daal4py/blob/master/examples/cholesky_batch.py>`_
 
 .. autoclass:: daal4py.cholesky
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.cholesky_result
    :members:
 
@@ -917,7 +917,7 @@ Examples:
 - `Multi-Process Covariance <https://github.com/IntelPython/daal4py/blob/master/examples/covariance_spmd.py>`_
 
 .. autoclass:: daal4py.covariance
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.covariance_result
    :members:
 
@@ -931,13 +931,13 @@ Examples:
 - `Single-Process implicit ALS <https://github.com/IntelPython/daal4py/blob/master/examples/implicit_als_batch.py>`_
 
 .. autoclass:: daal4py.implicit_als_training
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.implicit_als_training_result
    :members:
 .. autoclass:: daal4py.implicit_als_model
    :members:
 .. autoclass:: daal4py.implicit_als_prediction_ratings
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.implicit_als_prediction_ratings_result
    :members:
 
@@ -953,7 +953,7 @@ Examples:
 - `Multi-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_spmd.py>`_
 
 .. autoclass:: daal4py.low_order_moments
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.low_order_moments_result
    :members:
 
@@ -967,7 +967,7 @@ Examples:
 - `Single-Process Quantiles <https://github.com/IntelPython/daal4py/blob/master/examples/quantiles_batch.py>`_
 
 .. autoclass:: daal4py.quantiles
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.quantiles_result
    :members:
 
@@ -983,7 +983,7 @@ Examples:
 - `Multi-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_spmd.py>`_
 
 .. autoclass:: daal4py.svd
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.svd_result
    :members:
 
@@ -997,7 +997,7 @@ Examples:
 - `Single-Process Sorting <https://github.com/IntelPython/daal4py/blob/master/examples/sorting_batch.py>`_
 
 .. autoclass:: daal4py.sorting
-   :members: compute, setup
+   :members: compute
 .. autoclass:: daal4py.sorting_result
    :members:
 

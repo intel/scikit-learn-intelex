@@ -83,6 +83,7 @@ no_constructor = {
 }
 
 # Some algorithms require a setup function, to provide input without actual compute
+# Also need to add it to doc/algorithms.rst
 add_setup = [
     'algorithms::optimization_solver::mse',
     'algorithms::optimization_solver::logistic_loss',
