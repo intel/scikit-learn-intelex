@@ -77,9 +77,9 @@ required = {
 # Some algorithms have no public constructors and need to be instantiated with 'create'
 # (for whatever reason)
 no_constructor = {
-    'algorithms::engines::mt19937::Batch': {'seed': 'size_t'},
-    'algorithms::engines::mt2203::Batch': {'seed': 'size_t'},
-    'algorithms::engines::mcg59::Batch': {'seed': 'size_t'},
+    'algorithms::engines::mt19937::Batch': {'seed': ['size_t', 'seed']},
+    'algorithms::engines::mt2203::Batch': {'seed': ['size_t', 'seed']},
+    'algorithms::engines::mcg59::Batch': {'seed': ['size_t', 'seed']},
 }
 
 # Some algorithms require a setup function, to provide input without actual compute

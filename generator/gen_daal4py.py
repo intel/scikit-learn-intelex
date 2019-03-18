@@ -681,10 +681,7 @@ class cython_interface(object):
             for p in all_params:
                 pns, tmp = splitns(p)
                 if not tmp.startswith('_') and not ignored(pns, tmp):
-                    ### FIXME if it is a list then take first member else take whole value
-                    ### we can remove it when we will save template params docs
-                    hlt = self.to_hltype(pns, all_params[p][0] if isinstance(all_params[p], list) else all_params[p])
-                    #hlt = self.to_hltype(pns, all_params[p][0])
+                    hlt = self.to_hltype(pns, all_params[p][0])
                     if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                         (hlt, hlt_type, hlt_ns) = hlt
                         llt = self.to_lltype(all_params[p][0])
