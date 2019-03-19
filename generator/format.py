@@ -151,17 +151,6 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                     sphinx_default = ''
                 assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
 
-                # replace DAAL C++ names by daal4py names
-                m = re.match('^.* (\w+::[:\w]+).*$', doc) if doc else None
-                if m:
-                    doc = doc.replace(m.group(1), flat(m.group(1)).lower())
-
-    # hjpat_input needs dist {% if step_specs is defined %}
-    #   {% set inp_dists = step_specs[0].inputdists if step_specs|length else inputdists %}
-    #   {% else %}
-    #   {% set inp_dists = None %}
-    #   {% endif %}
-
             self.name          = d4pname
             self.daalname      = name
             self.value         = value if name else ''

@@ -119,14 +119,19 @@ class doc_state(Enum):
 class comment_parser(object):
     """parse documentation in comments"""
     def parse(self, l, ctxt):
+        assert not re.match(r'.*\*/(.+)', l), "Found the code after closed comment in the same line"
+
         # delete '%', it marks non-key words in DAAL Doxygen documentation
         line = l.replace('%', '')
 
-        # delete keys for formulas in DAAL Doxigen documentation
+        # delete keys for formulas in DAAL Doxygen documentation
         line = line.replace('\\f$', '')
 
-        # remove internal references in DAAL Doxygen documentation
-        line = re.sub(r',\s+\\ref.*$', '', line)
+        # delete internal references in DAAL Doxygen documentation
+        line = re.sub(r',?\s+\\ref[^(*/)]*', '', line)
+
+        # delete DAAL C++ substrings
+        line = re.sub(r',?\s*\w+::[:\w]+', '', line)
 
         # try to find the begin of algorithm template description
         m = re.match('^ \* <a name=\"DAAL-CLASS-ALGORITHMS__.*(BATCH|ALGORITHMIMPL)\"></a>$', line)
@@ -138,37 +143,29 @@ class comment_parser(object):
         # if parsing of algorithm template description is in progress
         if ctxt.doc_state is doc_state.template:
             # try to find template param description
-            m = re.match(r'^\s+\*\s+\\tparam\s+(\w+)\s+(.*)$', line)
+            m = re.match(r'^\s+\*\s+\\tparam\s+(\w+)\s+(.+)$', line)
             if m:
                 ctxt.doc[m.group(1)] = m.group(2)
-                return True
             # try to find end of bach algorithm template description
             m = re.match(r'.*\*/', line)
             if m:
                 ctxt.doc_state = doc_state.none
-                return False
+            return True
 
         # if it is still template then go to next line
         if ctxt.doc_state is doc_state.template:
             return True
 
         # clear the doc, if we will not find doc then we save empty line
-        ctxt.doc = ''
+        if ctxt.doc_state in [doc_state.single, doc_state.multi]:
+            ctxt.doc = ''
 
         # try to find single line comment with documentation
-        m = re.match('^.*/\*!<(.+?)\*/.*$', line)
+        m = re.match('^.*/\*!<(.*?)\*/.*$', line)
         if m:
             # save the doc to context and continue with next parser
             ctxt.doc = m.group(1)
             ctxt.doc_state = doc_state.single
-            return False
-
-        # try to find the begin of comment with documentation
-        m = re.match('^.*/\*!<(.+?)$', line)
-        if m:
-            # save the begin of doc to context and continue with next parser
-            ctxt.doc = m.group(1)
-            ctxt.doc_state = doc_state.multi
             return False
 
         # if it is multiline comment and there is place to insert it
@@ -179,13 +176,20 @@ class comment_parser(object):
             if m:
                 ctxt.doc_state = doc_state.none
                 ctxt.doc_lambda = None
-                assert not re.match(r'.*\*/(.+)', line), "Found the code after closed comment in the same line"
             else:
                 # take the text in the line
                 m = re.match(r'^\s*(.+?)$', line)
             # append found comment to documentation
             doc[1] += ' ' + m.group(1)
             return True
+
+        # try to find the begin of comment with documentation
+        m = re.match('^.*/\*!<(.+?)$', line)
+        if m:
+            # save the begin of doc to context and continue with next parser
+            ctxt.doc = m.group(1)
+            ctxt.doc_state = doc_state.multi
+            return False
 
         return False
 
