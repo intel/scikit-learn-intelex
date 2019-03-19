@@ -126,9 +126,7 @@ class comment_parser(object):
         line = line.replace('\\f$', '')
 
         # remove internal references in DAAL Doxygen documentation
-        m = re.match(r'^(.*), \\ref .*$', line)
-        if m:
-            line = m.group(1)
+        line = re.sub(r',\s+\\ref.*$', '', line)
 
         # try to find the begin of algorithm template description
         m = re.match('^ \* <a name=\"DAAL-CLASS-ALGORITHMS__.*(BATCH|ALGORITHMIMPL)\"></a>$', line)
@@ -137,10 +135,10 @@ class comment_parser(object):
             ctxt.doc = defaultdict()
             return True
 
-        # if parsing of bach algorithm template description is in progress
+        # if parsing of algorithm template description is in progress
         if ctxt.doc_state is doc_state.template:
             # try to find template param description
-            m = re.match(r'^ \* \\tparam\s+(\w+)\s+(.*)$', line)
+            m = re.match(r'^\s+\*\s+\\tparam\s+(\w+)\s+(.*)$', line)
             if m:
                 ctxt.doc[m.group(1)] = m.group(2)
                 return True
@@ -153,6 +151,9 @@ class comment_parser(object):
         # if it is still template then go to next line
         if ctxt.doc_state is doc_state.template:
             return True
+
+        # clear the doc, if we will not find doc then we save empty line
+        ctxt.doc = ''
 
         # try to find single line comment with documentation
         m = re.match('^.*/\*!<(.+?)\*/.*$', line)
@@ -172,21 +173,19 @@ class comment_parser(object):
 
         # if it is multiline comment and there is place to insert it
         if ctxt.doc_state is doc_state.multi and ctxt.doc_lambda:
+            doc = ctxt.doc_lambda()
             # try to find the end of comment with documentation
             m = re.match(r'^\s*(.+?)\*/', line)
             if m:
-                doc = ctxt.doc_lambda()
-                doc[1] += ' ' + m.group(1)
                 ctxt.doc_state = doc_state.none
                 ctxt.doc_lambda = None
-                return False
-            # append the text in the line to documentation 
-            m = re.search(r'^\s*(.+?)$', line)
-            if m:
-                doc = ctxt.doc_lambda()
-                doc[1] += ' ' + m.group(1)
-                return True
-            raise Exception("Multiline comment parsing is in progress but comment was not found")
+                assert not re.match(r'.*\*/(.+)', line), "Found the code after closed comment in the same line"
+            else:
+                # take the text in the line
+                m = re.match(r'^\s*(.+?)$', line)
+            # append found comment to documentation
+            doc[1] += ' ' + m.group(1)
+            return True
 
         return False
 
@@ -260,11 +259,9 @@ class enum_parser(object):
             else:
                 me = re.match(r'^\s*(\w+)(?:\s*=\s*((\(int\))?\w(\w|:|\s|\+)*))?(\s*,)?\s*((/\*|//).*)?$', l)
                 if me and not me.group(1).startswith('last'):
-                    # if multiline documentation is found then save the destination for documentation
-                    if ctxt.doc_state is doc_state.multi:
-                        ctxt.doc_lambda = lambda: ctxt.gdict['enums'][ctxt.enum][me.group(1)]
+                    # save the destination for documentation
+                    ctxt.doc_lambda = lambda: ctxt.gdict['enums'][ctxt.enum][me.group(1)]
                     ctxt.gdict['enums'][ctxt.enum][me.group(1)] = [me.group(2) if me.group(2) else '', ctxt.doc]
-                    ctxt.doc = ''
                     return True
         return False
 
@@ -361,11 +358,9 @@ class member_parser(object):
             mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?([\w_]+)\s*;', l)
             if mm :
                 if mm.group(2) not in ctxt.gdict['classes'][ctxt.curr_class].members:
-                    # if multiline documentation is found then save the destination for documentation
-                    if ctxt.doc_state is doc_state.multi:
-                        ctxt.doc_lambda = lambda: ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)]
+                    # save the destination for documentation
+                    ctxt.doc_lambda = lambda: ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)]
                     ctxt.gdict['classes'][ctxt.curr_class].members[mm.group(2)] = [mm.group(1), ctxt.doc]
-                    ctxt.doc = ''
                 return True
         return False
 
