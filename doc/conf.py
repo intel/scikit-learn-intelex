@@ -20,13 +20,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'daal4py'
-copyright = '2018, Intel'
+copyright = '2019, Intel'
 author = 'Intel'
 
 # The short X.Y version
 version = '0.2019'
 # The full version, including alpha/beta/rc tags
-release = '0.2019.2'
+release = '0.2019.3'
 
 
 # -- General configuration ---------------------------------------------------
