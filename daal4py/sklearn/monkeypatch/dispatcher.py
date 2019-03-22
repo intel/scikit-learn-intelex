@@ -65,8 +65,9 @@ def do_unpatch(name):
     lname = name.lower()
     if lname in _mapping:
         for descriptor in _mapping[lname]:
-            which, what, replacer = descriptor[0]
-            setattr(which, what, descriptor[1])
+            if descriptor[1] is not None:
+                which, what, replacer = descriptor[0]
+                setattr(which, what, descriptor[1])
     else:
         raise ValueError("Has no patch for: " + name)
 
