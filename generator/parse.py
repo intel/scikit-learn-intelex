@@ -78,7 +78,6 @@
 
 from collections import defaultdict, OrderedDict
 import re
-from enum import Enum, unique
 
 ###############################################################################
 class cpp_class(object):
@@ -108,12 +107,11 @@ class cpp_class(object):
 
 
 ###############################################################################
-@unique
-class doc_state(Enum):
-    none = 0
-    single = 1
-    multi = 2
-    template = 3
+def enum(**enums):
+    return type('Enum', (), enums)
+
+
+doc_state = enum(none=0, single=1, multi=2, template=3)
 
 
 class comment_parser(object):
