@@ -96,26 +96,30 @@ add_setup = [
 # Also lists input set/gets to ignore
 # Adding an empty list to ignore all parameters, inputs and results
 ignore = {
-    'algorithms::kmeans::init': ['nRowsTotal', 'offset', 'firstIteration', 'outputForStep5Required'], # internal for distributed
+    'algorithms::kmeans::init': ['firstIteration', 'outputForStep5Required',], # internal for distributed
+    'algorithms::kmeans::init::interface1': ['nRowsTotal', 'offset', 'seed',], # internal for distributed, deprecated
     'algorithms::gbt::regression::training': ['dependentVariables'], # dependentVariables from parent class is not used
+    'algorithms::decision_forest::training': ['seed',], # deprecated
     'algorithms::decision_forest::classification::training': ['updatedEngine',], # output
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', # InputId from parent class is not used
                                                           'updatedEngine',], # output
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
     'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
     'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
-                                             'pastUpdateVector', 'pastWorkValue'], # internal stuff
+                                             'pastUpdateVector', 'pastWorkValue', 'seed',], # internal stuff, deprecated
     'algorithms::optimization_solver::lbfgs': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
-                                               'correctionPairs', 'correctionIndices', 'averageArgumentLIterations',], # internal stuff
+                                               'correctionPairs', 'correctionIndices', 'averageArgumentLIterations', 'seed',], # internal stuff, deprecated
     'algorithms::optimization_solver::adagrad': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
-                                                 'gradientSquareSum'], # internal stuff
-    'algorithms::optimization_solver::saga': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',], # internal stuff
+                                                 'gradientSquareSum', 'seed',], # internal stuff, deprecated
+    'algorithms::optimization_solver::saga': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId', 'seed',], # internal stuff, deprecated
     'algorithms::optimization_solver::objective_function': [], # interface type
     'algorithms::optimization_solver::iterative_solver': [], # interface type
     'algorithms::normalization::minmax': ['moments'], # parameter, required an interface
     'algorithms::normalization::zscore': ['moments'], # parameter, required an interface
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input is dictionary, parameter
+    'algorithms::em_gmm::init': ['seed',], # deprecated
     'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
+    'algorithms::kdtree_knn_classification': ['seed',], # deprecated
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
