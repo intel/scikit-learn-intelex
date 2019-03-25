@@ -152,8 +152,7 @@ daal4py will work on the entire file content.
 
 Scikit-Learn patches
 --------------------
-daal4py can dynamically patch certain `scikit-learn
-<https://scikit-learn.org/stable/>`__  algorithms to
+daal4py can dynamically patch :ref:`certain scikit-learn algorithms <sklearn>` to
 use Intel® DAAL as the underlying solver, while getting the same solution faster.
 To unlock performance for your application, simply run::
 
