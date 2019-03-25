@@ -870,6 +870,7 @@ extern "C" {{algo}}__iface__ * mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', se
 {% endif %}
 }
 
+// A C interface to compute, used for HPAT
 extern "C" void * compute_{{algo}}({{algo}}__iface__ * algo,
 {{' '*(27+(algo|length))}}{{input_args|fmt('{}', 'decl_c', sep=',\n')|indent(27+(algo|length))}})
 {

@@ -34,7 +34,7 @@
 
 import numpy as np
 from numpy import nan
-from numba import types, cgutils, ir
+from numba import types, cgutils, ir, njit
 from numba.extending import (intrinsic, typeof_impl, overload, overload_method,
                              overload_attribute, box, unbox, make_attribute_wrapper,
                              type_callable, models, register_model, lower_builtin, lower_getattr,
@@ -49,6 +49,7 @@ from hpat.distributed_analysis import DistributedAnalysis, Distribution as DType
 from llvmlite import ir as lir
 from numba.targets.arrayobj import _empty_nd_impl
 from hpat.str_ext import gen_unicode_to_std_str
+from hpat.hiframes.pd_dataframe_ext import DataFrameType
 import ctypes
 
 
@@ -150,15 +151,22 @@ def gen_call(context, builder, sig, args, c_func):
             lir_types.append(get_lir_type(context, unicode_type))
             c_args.append(gen_unicode_to_std_str(context, builder, args[i]))
         else:
+            #if sig.args[i] == DataFrameType:
+            print('yey', sig.args[i])
             lirt = get_lir_type(context, sig.args[i])
             if isinstance(lirt, list):  # Array!
                 # generate lir code to extract actual arguments
                 # collect args/types in list
                 lir_types += lirt
+                # we need to add another indicator so daal4py know what kind of array it gets
+                # e.g. it could be contiguous or an array-of-arrays.
+                lir_types.append(lir.IntType(1))
                 in_arrtype = sig.args[i]
                 in_array = context.make_array(in_arrtype)(context, builder, args[i])
                 in_shape = cgutils.unpack_tuple(builder, in_array.shape)
-                c_args += [in_array.data, in_shape[0], in_shape[1]]
+                # This is a raw pointer to a contiguous array
+                ary_type = context.get_constant(types.boolean, True)
+                c_args += [in_array.data, in_shape[0], in_shape[1], ary_type]
             else:
                 lir_types.append(lirt)
                 c_args.append(args[i])
@@ -174,6 +182,24 @@ def gen_call(context, builder, sig, args, c_func):
     # and finally generate the call
     ptr = builder.call(fn, c_args)
     return nt2nd(context, builder, ptr, sig.return_type) if ret_is_array else ptr
+
+
+def inp2d4p(a, b):
+    assert False, 'Dummy function, only its @overload should be used'
+
+@overload(inp2d4p)
+def ovl_inp2d4p(inp, dist):
+    if isinstance(inp, types.Array):
+        def inp2d4p_impl(inp, dist):
+            return (inp.ctypes, dist)
+        return inp2d4p_impl
+    if isinstance(inp, types.UnicodeType):
+        raise NotImplementedError("file-input to daal4py not implemented yet for HPAT")
+    if inp in algo_factory.all_nbtypes.values():
+        def inp2d4p_impl(inp, dist):
+            return (inp,)
+        return inp2d4p_impl
+    raise ValueError("Input type '{}' not supported".format(inp))
 
 
 ##############################################################################
@@ -213,17 +239,16 @@ class algo_factory(object):
         'list_numerictable' : dtable_type, # TODO: is in fact a list of tables!
         'dict_numerictable' : dtable_type, # TODO: is in fact a dict of tables!
         'data_or_file': dtable_type,       # TODO: table can have different types, input can be file
-        'numerictable': dtable_type,       # TODO: table can have different types
+        'table'       : dtable_type,       # TODO: table can have different types
         'dtable_type' : dtable_type,
         'ftable_type' : ftable_type,
         'itable_type' : itable_type,
         'size_t'      : types.uint64,
-        'int'      : types.int32,
+        'int'         : types.int32,
         'double'      : types.float64,
         'float'       : types.float32,
         'bool'        : types.boolean,
-        'std::string&': unicode_type,
-        'std_string'  : unicode_type,
+        'str'         : unicode_type,
     }
 
     def from_d4p(self, spec):
@@ -368,6 +393,7 @@ def _ovld({5}):
 
         # Initing the code we want to exec
         lower_code = ''
+        ovl_code   = ''
         infer_code = '''# This is our class providing the resolve_* methods
 @infer_getattr
 class AlgoAttributes_{0}(AttributeTemplate):
@@ -397,8 +423,48 @@ def lower_{2}(context, builder, typ, val):
     return gen_call(context, builder, algo_factory.all_nbtypes['{3}'](typ), [val], '{2}')
 '''.format(self.name, a[0], c_func, a[1])
 
-        # Now we handle compute method algorithms classes
+        # Now we handle compute method of algorithm classes
         if self.spec.input_types:
+            ovl_code = '''
+@overload_method(type(algo_factory.all_nbtypes['{name}']), 'compute')
+def {name}_compute(algo, {argsWdflt}):
+    if isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):
+        print('2 laksdfkl')
+        ityps = [{ityps}]
+        sig = [algo_factory.all_nbtypes['{name}']]
+        for i in ityps:
+            print('3 laksdfkl', i)
+            if i == 'data_or_file':
+                print('3a laksdfkl', i)
+                sig += [types.ArrayCTypes(dtable_type), types.boolean]
+            else:
+                print('3b laksdfkl', i)
+                sig.append(algo_factory.all_nbtypes[i])
+        print('4 laksdfkl', algo_factory.all_nbtypes['{name}_result'])
+        try:
+            sig = signature(algo_factory.all_nbtypes['{name}_result'], *sig)
+            print('5 laksdfkl')
+            cfunc = types.ExternalFunction('compute_{cname}', sig)
+            print('6 laksdfkl')
+        except Exception as e:
+            import sys
+            print("Unexpected error:", sys.exc_info()[0])
+            raise
+        print(sig)
+
+        def {name}_compute_impl(algo, {argsWdflt}):
+            cargs = (algo, {cargs})
+            return cfunc(*cargs)
+
+        return {name}_compute_impl
+'''.format(name=self.name,
+           cname=self.spec.c_name,
+           args=', '.join([x[0] for x in self.spec.input_types]),
+           argsWdflt=', '.join(['{}=None'.format(x[0]) for x in self.spec.input_types]),
+           ityps=', '.join(["'{}'".format(x[1]) for x in self.spec.input_types]),
+           cargs=', '.join(['inp2d4p({0}, algo!=None)'.format(x[0]) for x in self.spec.input_types]))
+
+            #print(ovl_code)
             compute_name = '.'.join([name_stub, 'compute'])
 
             # using bound_function for typing
@@ -421,8 +487,9 @@ def lower_compute(context, builder, sig, args):
             self.spec.c_name)
 
         try:
-            exec(infer_code+lower_code, globals(), {})
+            exec(infer_code+lower_code, globals(), {}) #+ovl_code
         except Exception as e:
+            import sys
             print("Unexpected error:", sys.exc_info()[0])
             raise
 
@@ -487,7 +554,6 @@ for s in hpat_spec:
 # now bring life to the classes
 for a in algos:
     a.activate()
-
 
 ##############################################################################
 ##############################################################################
