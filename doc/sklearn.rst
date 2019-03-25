@@ -20,9 +20,14 @@ Additionally, daal4py contains code to monkey-patch the following existing sciki
 algorithms::
 
     1. sklearn.linear_model.LinearRegression
-    2. sklearn.linear_model.Ridge
+    2. sklearn.linear_model.Ridge(solver='auto')
     3. sklearn.linear_model.LogisticRegression(solver='lbfgs')
     4. sklearn.decomposition.PCA(solver='full')
     5. sklearn.cluster.KMeans(algo='full')
-    6. sklearn.metric.pairwise_distance()
+    6. sklearn.metric.pairwise_distance, with metric='cosine' or metric='correlation'
     7. sklearn.svm.SVC
+
+
+Monkey-patched scikit-learn passes scikit-learn's own test suite, with few exceptions, specified in `deselected_tests.yaml <https://github.com/IntelPython/daal4py/blob/master/deselected_tests.yaml>`_.
+       
+       
