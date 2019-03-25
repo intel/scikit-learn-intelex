@@ -60,12 +60,13 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
         return isinstance(s, string_types) and s == target_str
 
     if is_string(cluster_centers_0, 'k-means++'):
-        #_seed = random_state.randint(np.iinfo('i').max)
-        #daal_engine = daal4py.engines_mt19937(fptype=X_fptype, method='defaultDense')
-        #kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype, method='plusPlusDense', engine=daal_engine)
-        #kmeans_init_res = kmeans_init.compute(X)
-        #centroids_ = kmeans_init_res.centroids
-        centroids_ = _k_init(X, nClusters, np.square(X).sum(axis=1), random_state)
+        _seed = random_state.randint(np.iinfo('i').max)
+        daal_engine = daal4py.engines_mt19937(fptype=X_fptype, method='defaultDense', seed=_seed)
+        _n_local_trials = 2 + int(np.log(nClusters))
+        kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype,
+                                          nTrials=_n_local_trials, method='plusPlusDense', engine=daal_engine)
+        kmeans_init_res = kmeans_init.compute(X)
+        centroids_ = kmeans_init_res.centroids
     elif is_string(cluster_centers_0, 'random'):
         _seed = random_state.randint(np.iinfo('i').max)
         daal_engine = daal4py.engines_mt19937(seed=_seed, fptype=X_fptype, method='defaultDense')
