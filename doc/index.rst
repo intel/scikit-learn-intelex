@@ -1,9 +1,8 @@
-:tocdepth: 2
+.. _index:
 
 #####################################################
 Fast, Scalable and Easy Machine Learning With DAAL4PY
 #####################################################
-
 Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
 to use. It provides highly configurable Machine Learning kernels, some of which
 support streaming input data and/or can be easily and efficiently scaled out to
@@ -166,18 +165,3 @@ Patches can also be enabled programmatically::
 Additionally, daal4py.sklearn provides scikit-learn API compatible classes for
 k-nearest neighbors classifier, as well as random forest classifier and regressors
 which are not a drop-in replacements of the corresponding scikit-learn counterparts.
-    
-  
-Content
--------
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   About daal4py <index>
-   Data <data>
-   Supported Algorithms <algorithms>
-   Distribution <scaling>
-   Streaming <streaming>
-   Examples <examples>
-   Scikit-Learn API <sklearn>
