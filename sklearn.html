@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; daal4py 0.2019.3 documentation</title>
+  <title>Scikit-Learn API &mdash; daal4py 0.2019.3 documentation</title>
   
 
   
@@ -25,7 +25,6 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script type="text/javascript" src="_static/language_data.js"></script>
-        <script type="text/javascript" src="_static/searchtools.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -35,7 +34,8 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Examples" href="examples.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -66,7 +66,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -84,14 +84,14 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">About daal4py</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data.html">Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaling.html">Distribution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sklearn.html">Scikit-Learn API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scikit-Learn API</a></li>
 </ul>
 
             
@@ -137,12 +137,14 @@
     
       <li><a href="contents.html">Docs</a> &raquo;</li>
         
-      <li>Search</li>
+      <li>Scikit-Learn API</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="_sources/sklearn.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -154,24 +156,44 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search
-      functionality.
-    </p>
-  </div>
-  </noscript>
+  <div class="section" id="scikit-learn-api">
+<span id="sklearn"></span><h1>Scikit-Learn API<a class="headerlink" href="#scikit-learn-api" title="Permalink to this headline">¶</a></h1>
+<p>Python interface to efficient Intel® Data Analytics and Acceleration Library (DAAL)
+provided by daal4py allows one to create scikit-learn compatible estimators,
+transformers, clusterers, etc. powered by DAAL which are nearly as efficient as
+native programs.</p>
+<p>Submodule daal4py.sklearn provides such classes.</p>
+<p>Currently, these include:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">neighbors</span><span class="o">.</span><span class="n">KNeighborsClassifier</span>
+<span class="mf">2.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">ensemble</span><span class="o">.</span><span class="n">RandomForestClassifier</span>
+<span class="mf">3.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">ensemble</span><span class="o">.</span><span class="n">RandomForestRegressor</span>
+</pre></div>
+</div>
+<p>Additionally, daal4py contains code to monkey-patch the following existing scikit-learn algorithms:</p>
+<ol class="arabic simple">
+<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html">sklearn.linear_model.LinearRegression</a></li>
+<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html">sklearn.linear_model.Ridge</a> (solver=’auto’)</li>
+<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html">sklearn.linear_model.LogisticRegression</a> (solver=’lbfgs’)</li>
+<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html">sklearn.decomposition.PCA</a> (solver=’full’)</li>
+<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html">sklearn.cluster.KMeans</a> (algo=’full’)</li>
+<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise_distances.html">sklearn.metric.pairwise_distance</a>, with metric=’cosine’ or metric=’correlation’</li>
+<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></li>
+</ol>
+<p>Monkey-patched scikit-learn passes scikit-learn’s own test suite, with few exceptions, specified in <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/deselected_tests.yaml">deselected_tests.yaml</a>.</p>
+</div>
 
-  
-  <div id="search-results">
-  
-  </div>
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -204,14 +226,7 @@
   
   
     
-  
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
    
-
 
 </body>
 </html>

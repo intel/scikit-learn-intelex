@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fast, Scalable and Easy Machine Learning With DAAL4PY &mdash; daal4py 0.2019.2 documentation</title>
+  <title>Fast, Scalable and Easy Machine Learning With DAAL4PY &mdash; daal4py 0.2019.3 documentation</title>
   
 
   
@@ -17,37 +17,40 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Scaling on Distributed Memory (Multiprocessing)" href="scaling.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+    <link rel="next" title="Input Data" href="data.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="contents.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="#" class="icon icon-home"> daal4py
+            <a href="contents.html" class="icon icon-home"> daal4py
           
 
           
@@ -83,11 +86,22 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">About daal4py</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">About daal4py</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#designed-for-data-scientists-and-framework-designers">Designed for Data Scientists and Framework Designers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-design-and-usage">API Design and usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#daal4py-s-design">Daal4py’s Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#built-for-performance">Built for Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-daal4py">Getting daal4py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scikit-learn-patches">Scikit-Learn patches</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scaling.html">Distribution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a></li>
-<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sklearn.html">Scikit-Learn API</a></li>
 </ul>
 
             
@@ -102,7 +116,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">daal4py</a>
+          <a href="contents.html">daal4py</a>
         
       </nav>
 
@@ -131,7 +145,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="#">Docs</a> &raquo;</li>
+      <li><a href="contents.html">Docs</a> &raquo;</li>
         
       <li>Fast, Scalable and Easy Machine Learning With DAAL4PY</li>
     
@@ -153,7 +167,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="fast-scalable-and-easy-machine-learning-with-daal4py">
-<h1>Fast, Scalable and Easy Machine Learning With DAAL4PY<a class="headerlink" href="#fast-scalable-and-easy-machine-learning-with-daal4py" title="Permalink to this headline">¶</a></h1>
+<span id="index"></span><h1>Fast, Scalable and Easy Machine Learning With DAAL4PY<a class="headerlink" href="#fast-scalable-and-easy-machine-learning-with-daal4py" title="Permalink to this headline">¶</a></h1>
 <p>Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
 to use. It provides highly configurable Machine Learning kernels, some of which
 support streaming input data and/or can be easily and efficiently scaled out to
@@ -185,10 +199,10 @@ the linear regression workflow is showcased below:</p>
 <span class="c1"># train, test, and target are Pandas dataframes</span>
 
 <span class="n">d4p_lm</span> <span class="o">=</span> <span class="n">d4p</span><span class="o">.</span><span class="n">linear_regression_training</span><span class="p">(</span><span class="n">interceptFlag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">lm_trained</span> <span class="o">=</span> <span class="n">d4p_lm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">lm_trained</span> <span class="o">=</span> <span class="n">d4p_lm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 
 <span class="n">lm_predictor_component</span> <span class="o">=</span> <span class="n">d4p</span><span class="o">.</span><span class="n">linear_regression_prediction</span><span class="p">()</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">lm_predictor_component</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">lm_trained</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">lm_predictor_component</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">lm_trained</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In the example above, it can be seen that model is divided into training and
@@ -256,14 +270,14 @@ into memory of a single node.</p>
 <div class="figure" id="id1">
 <img alt="_images/d4p-linreg-scale.jpg" src="_images/d4p-linreg-scale.jpg" />
 <p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed linear regression
-of 2.86 TB of data in less than 2 seconds and 91.55 GB of data in
-less than 74 milliseconds.</span></p>
+of 2.15 TB of data in 1.18 seconds and 68.66 GB of data in less than
+48 milliseconds.</span></p>
 </div>
 <div class="figure" id="id2">
 <img alt="_images/d4p-kmeans-scale.jpg" src="_images/d4p-kmeans-scale.jpg" />
 <p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed K-Means (10
-clusters) of 1.12 TB of data in 108.8 seconds and 35.76 GB of data
-in 5.26 seconds.</span></p>
+clusters) of 1.12 TB of data in 107.4 seconds and 35.76 GB of data
+in 4.8 seconds.</span></p>
 </div>
 <p>Configuration: Intel(R) Xeon(R) Gold 6148 CPU &#64; 2.40GHz, EIST/Turbo on 2
 sockets, 20 cores per socket, 192 GB RAM, 16 nodes connected with Infiniband,
@@ -290,54 +304,26 @@ class-like object with properties as its result.</p>
 property from the result returned by the training and pass it in as the (second)
 input argument.</p>
 <p>Note that all input objects and the result/model properties are native types,
-e.g. standard types (integer, float, Numpy arrays, pandas DataFrames,
+e.g. standard types (integer, float, Numpy arrays, Pandas DataFrames,
 …). Additionally, if you provide the name of a csv-file as an input argument
 daal4py will work on the entire file content.</p>
 </div>
-<div class="section" id="content">
-<h2>Content<a class="headerlink" href="#content" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">About daal4py</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#designed-for-data-scientists-and-framework-designers">Designed for Data Scientists and Framework Designers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#api-design-and-usage">API Design and usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#daal4py-s-design">Daal4py’s Design</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#built-for-performance">Built for Performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#getting-daal4py">Getting daal4py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#content">Content</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="scaling.html">Distribution</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#it-s-easy">It’s Easy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="streaming.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#principal-component-analysis-pca">Principal Component Analysis (PCA)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#singular-value-decomposition-svd">Singular Value Decomposition (SVD)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#moments-of-low-order">Moments of Low Order</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#classification">Classification</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#regression">Regression</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#k-means-clustering">K-Means Clustering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#outlier-detection">Outlier Detection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#optimization-solvers">Optimization Solvers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#distances">Distances</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#trees">Trees</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#data-science-examples">Data Science examples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#general-usage">General usage</a></li>
-</ul>
-</li>
-</ul>
+<div class="section" id="scikit-learn-patches">
+<h2>Scikit-Learn patches<a class="headerlink" href="#scikit-learn-patches" title="Permalink to this headline">¶</a></h2>
+<p>daal4py can dynamically patch <a class="reference internal" href="sklearn.html#sklearn"><span class="std std-ref">certain scikit-learn algorithms</span></a> to
+use Intel® DAAL as the underlying solver, while getting the same solution faster.
+To unlock performance for your application, simply run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">daal4py</span> <span class="n">my_application</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
 </div>
+<p>Patches can also be enabled programmatically:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">daal4py.sklearn</span>
+<span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">patch_sklearn</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Additionally, daal4py.sklearn provides scikit-learn API compatible classes for
+k-nearest neighbors classifier, as well as random forest classifier and regressors
+which are not a drop-in replacements of the corresponding scikit-learn counterparts.</p>
 </div>
 </div>
 
@@ -349,8 +335,10 @@ daal4py will work on the entire file content.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="scaling.html" class="btn btn-neutral float-right" title="Scaling on Distributed Memory (Multiprocessing)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="data.html" class="btn btn-neutral float-right" title="Input Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
+      
+        <a href="contents.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -359,7 +347,7 @@ daal4py will work on the entire file content.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Intel.
+        &copy; Copyright 2019, Intel
 
     </p>
   </div>
@@ -376,32 +364,16 @@ daal4py will work on the entire file content.</p>
   
 
 
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.2019.2',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
