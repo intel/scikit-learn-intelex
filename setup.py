@@ -128,9 +128,6 @@ def getpyexts():
     eca += get_sdl_cflags()
     ela += get_sdl_ldflags()
 
-    if sys.version_info[0] >= 3:
-        eca.append('-DUSE_CAPSULE')
-
     if IS_WIN:
         libraries_plat = ['daal_core_dll']
     else:

@@ -18,7 +18,9 @@ jobs:
             conda config --set always_yes yes --set changeps1 no
             conda update -q conda
             conda install -q conda-build
-            conda create -q -n bld --override-channels -c intel -c conda-forge python=3.6 numpy scipy pytest daal mpich tbb pandas numpydoc
+            conda create -q -n bld --override-channels -c intel -c conda-forge python=3.6 numpy scipy pytest daal tbb pandas numpydoc
+            conda install -q -n bld -c defaults --override-channels --no-deps libgcc-ng libstdcxx-ng
+            conda install -q -n bld -c conda-forge --override-channels --no-deps mpi libgfortran mpich
             gcc -v
             g++ -v
             head /proc/cpuinfo
@@ -35,21 +37,12 @@ jobs:
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
+            conda install -c defaults pyyaml
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
             touch ~/d4p.out ~/skl.out
-            export BASEDIR=`python -c "import os.path, sklearn; print(os.path.relpath(os.path.dirname(sklearn.__file__), os.path.expanduser('~')) + '/')"`
-            # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
-            # See: https://github.com/scikit-learn/scikit-learn/issues/12738
-            export DESELECTED_TESTS="--deselect ${BASEDIR}svm/tests/test_svm.py::test_sample_weights"
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}svm/tests/test_svm.py::test_precomputed"
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}svm/tests/test_sparse.py::test_sparse"
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}svm/tests/test_sparse.py::test_svc_iris"
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}ensemble/tests/test_bagging.py::test_sparse_classification"
-            # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
-            # See: https://github.com/IntelPython/daal4py/issues/25
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}cluster/tests/test_k_means.py::test_k_means_fit_predict"
+            export DESELECTED_TESTS=`python deselect_tests.py ../deselected_tests.yaml --absolute`
             echo "-m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
             # It is important for pytest to work in a separate test folder to not discover tests in ~/miniconda folder
             cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} -ra --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
