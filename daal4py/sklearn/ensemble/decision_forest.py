@@ -320,7 +320,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
                           "setting for min_samples_leaf.")
 
 
-    # Intel(R) daal only supports "mse" criterion
+    # Intel(R) DAAL only supports "mse" criterion
     def daal_fit(self, X, y):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.double, np.single]
