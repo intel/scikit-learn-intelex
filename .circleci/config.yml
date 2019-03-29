@@ -3,9 +3,7 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.6.7
-
     working_directory: ~/daal4py-ci
-
     steps:
       - checkout
       - run:
@@ -37,9 +35,7 @@ jobs:
   prepare-test-pypi:
     docker:
       - image: circleci/python:3.6.7
-
     working_directory: ~/daal4py-ci
-
     steps:
       - run:
           name: Installing sklearn from pypi
@@ -55,9 +51,7 @@ jobs:
   prepare-sklearn-master:
     docker:
       - image: circleci/python:3.6.7
-
     working_directory: ~/daal4py-ci
-
     steps:
       - run:
           name: Installing sklearn from github master
@@ -76,9 +70,7 @@ jobs:
   test-sklearn:
     docker:
       - image: circleci/python:3.6.7
-
     working_directory: ~/daal4py-ci
-
     steps:
       - run:
           name: Testing daal4py patches for scikit-learn
@@ -96,17 +88,36 @@ jobs:
             echo "Summary of unpatched run: " $SKL
             python ~/daal4py-ci/.circleci/compare_runs.py
 
+
+  publish-pypi:
+    docker:
+      - image: circleci/python:3.6.7
+    steps:
+      - store_artifacts:
+          path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
+          destination: patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+
+
+  publish-master:
+    docker:
+      - image: circleci/python:3.6.7
+    steps:
+      - store_artifacts:
+          path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
+          destination: patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+
+
 workflows:
   version: 2
   on_commit:
     jobs:
       - build
-      - test-sklearn-pypi
-      - publish:
-          steps:
-            - store_artifacts:
-                path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
-                destination: patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+      - test-sklearn-pypi:
+          requires:
+            - build
+      - publish-pypi:
+          requires:
+            - test-sklearn-pypi
 
   nightly:
     triggers:
@@ -118,9 +129,9 @@ workflows:
                 - master
     jobs:
       - build
-      - test-sklearn-master
-      - publish:
-          steps:
-            - store_artifacts:
-                path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
-                destination: patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+      - test-sklearn-master:
+          requires:
+            - build
+      - publish-master:
+          requires:
+            - test-sklearn-master
