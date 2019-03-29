@@ -67,10 +67,10 @@ jobs:
             conda activate bld
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
             git checkout https://github.com/scikit-learn/scikit-learn
-	    pushd scikit-learn
-	    python setup.py install
+            pushd scikit-learn
+            python setup.py install
             conda list
-	    popd
+            popd
 
 
   test-sklearn:
@@ -104,7 +104,7 @@ workflows:
       - test-sklearn-pypi
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
-	  destination: patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+          destination: patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
 
   nightly:
     triggers:
@@ -119,4 +119,4 @@ workflows:
       - test-sklearn-master
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
-	  destination: patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+          destination: patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
