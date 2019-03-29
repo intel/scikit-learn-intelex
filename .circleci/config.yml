@@ -32,7 +32,7 @@ jobs:
             conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test conda-recipe
 
 
-  prepare-test-pypi:
+  prepare-sklearn-pypi:
     docker:
       - image: circleci/python:3.6.7
     working_directory: ~/daal4py-ci
@@ -112,12 +112,15 @@ workflows:
   on_commit:
     jobs:
       - build
-      - test-sklearn-pypi:
+      - prepare-sklearn-pypi:
           requires:
             - build
+      - test-sklearn:
+          requires:
+            - prepare-sklearn-pypi
       - publish-pypi:
           requires:
-            - test-sklearn-pypi
+            - test-sklearn
 
   nightly:
     triggers:
@@ -129,9 +132,12 @@ workflows:
                 - master
     jobs:
       - build
-      - test-sklearn-master:
+      - prepare-sklearn-master:
           requires:
             - build
+      - test-sklearn:
+          requires:
+            - prepare-sklearn-master
       - publish-master:
           requires:
-            - test-sklearn-master
+            - test-sklearn
