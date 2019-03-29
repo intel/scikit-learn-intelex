@@ -102,9 +102,11 @@ workflows:
     jobs:
       - build
       - test-sklearn-pypi
-      - store_artifacts:
-          path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
-          destination: patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+      publish:
+        steps:
+	  - store_artifacts:
+              path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
+              destination: patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
 
   nightly:
     triggers:
@@ -117,6 +119,8 @@ workflows:
     jobs:
       - build
       - test-sklearn-master
-      - store_artifacts:
-          path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
-          destination: patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+      publish:
+        steps:
+	  - store_artifacts:
+              path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
+              destination: patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
