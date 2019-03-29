@@ -104,7 +104,7 @@ workflows:
       - test-sklearn-pypi
       - publish:
           steps:
-	    - store_artifacts:
+            - store_artifacts:
                 path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
                 destination: patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
 
@@ -121,6 +121,6 @@ workflows:
       - test-sklearn-master
       - publish:
           steps:
-	    - store_artifacts:
+            - store_artifacts:
                 path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
                 destination: patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
