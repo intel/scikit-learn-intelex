@@ -70,6 +70,7 @@ jobs:
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
+            conda isntall -y --override-channels -c intel cython
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
@@ -84,11 +85,14 @@ workflows:
   commit:
     jobs:
       - build_pypi
+          filters:
+            branches:
+              only: master
 
   nightly:
     triggers:
       - schedule:
-          cron: "50 * * * *"
+          cron: "08 * * * *"
           filters:
             branches:
               only: test-sklearn-master
