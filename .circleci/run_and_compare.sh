@@ -1,4 +1,5 @@
 #!/bin/bash
+cd ~/daal4py-ci/.circleci
 touch ~/d4p.out ~/skl.out
 export DESELECTED_TESTS=`python deselect_tests.py ../deselected_tests.yaml --absolute`
 echo "-m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
