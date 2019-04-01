@@ -131,7 +131,7 @@ class comment_parser(object):
         # delete DAAL C++ substrings
         line = re.sub(r',?\s*\w+::[:\w]+', '', line)
 
-        # try to find the begin of algorithm template description
+        # try to find the beginning of algorithm template description
         m = re.match('^ \* <a name=\"DAAL-CLASS-ALGORITHMS__.*(BATCH|ALGORITHMIMPL)\"></a>$', line)
         if m:
             ctxt.doc_state = doc_state.template
@@ -144,7 +144,7 @@ class comment_parser(object):
             m = re.match(r'^\s+\*\s+\\tparam\s+(\w+)\s+(.+)$', line)
             if m:
                 ctxt.doc[m.group(1)] = m.group(2)
-            # try to find end of bach algorithm template description
+            # try to find end of algorithm template description
             m = re.match(r'.*\*/', line)
             if m:
                 ctxt.doc_state = doc_state.none
