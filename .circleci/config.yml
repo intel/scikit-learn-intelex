@@ -84,9 +84,6 @@ workflows:
   commit:
     jobs:
       - build_pypi:
-          filters:
-            branches:
-              only: master
 
   nightly:
     triggers:
