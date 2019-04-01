@@ -30,7 +30,7 @@ jobs:
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
-            ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+            source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
 
@@ -69,7 +69,7 @@ jobs:
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
             conda list
-            ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+            source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
 
@@ -86,7 +86,7 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "46 * * * *"
+          cron: "43 * * * *"
           filters:
             branches:
               only: test-sklearn-master
