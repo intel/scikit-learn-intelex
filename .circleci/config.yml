@@ -83,7 +83,7 @@ workflows:
   version: 2
   commit:
     jobs:
-      - build_pypi:
+      - build_pypi
 
   nightly:
     triggers:
