@@ -152,7 +152,6 @@ def gen_call(context, builder, sig, args, c_func):
             c_args.append(gen_unicode_to_std_str(context, builder, args[i]))
         else:
             #if sig.args[i] == DataFrameType:
-            print('yey', sig.args[i])
             lirt = get_lir_type(context, sig.args[i])
             if isinstance(lirt, list):  # Array!
                 # generate lir code to extract actual arguments
@@ -425,46 +424,6 @@ def lower_{2}(context, builder, typ, val):
 
         # Now we handle compute method of algorithm classes
         if self.spec.input_types:
-            ovl_code = '''
-@overload_method(type(algo_factory.all_nbtypes['{name}']), 'compute')
-def {name}_compute(algo, {argsWdflt}):
-    if isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):
-        print('2 laksdfkl')
-        ityps = [{ityps}]
-        sig = [algo_factory.all_nbtypes['{name}']]
-        for i in ityps:
-            print('3 laksdfkl', i)
-            if i == 'data_or_file':
-                print('3a laksdfkl', i)
-                sig += [types.ArrayCTypes(dtable_type), types.boolean]
-            else:
-                print('3b laksdfkl', i)
-                sig.append(algo_factory.all_nbtypes[i])
-        print('4 laksdfkl', algo_factory.all_nbtypes['{name}_result'])
-        try:
-            sig = signature(algo_factory.all_nbtypes['{name}_result'], *sig)
-            print('5 laksdfkl')
-            cfunc = types.ExternalFunction('compute_{cname}', sig)
-            print('6 laksdfkl')
-        except Exception as e:
-            import sys
-            print("Unexpected error:", sys.exc_info()[0])
-            raise
-        print(sig)
-
-        def {name}_compute_impl(algo, {argsWdflt}):
-            cargs = (algo, {cargs})
-            return cfunc(*cargs)
-
-        return {name}_compute_impl
-'''.format(name=self.name,
-           cname=self.spec.c_name,
-           args=', '.join([x[0] for x in self.spec.input_types]),
-           argsWdflt=', '.join(['{}=None'.format(x[0]) for x in self.spec.input_types]),
-           ityps=', '.join(["'{}'".format(x[1]) for x in self.spec.input_types]),
-           cargs=', '.join(['inp2d4p({0}, algo!=None)'.format(x[0]) for x in self.spec.input_types]))
-
-            #print(ovl_code)
             compute_name = '.'.join([name_stub, 'compute'])
 
             # using bound_function for typing
@@ -552,13 +511,18 @@ for s in hpat_spec:
         assert s['alias'] in algo_factory.all_nbtypes, "Recurring aliasing not supported"
         algo_factory.all_nbtypes[s['c_name']] =  algo_factory.all_nbtypes[s['alias']]
 # now bring life to the classes
+algo_map = {}
 for a in algos:
     a.activate()
+    algo_map[algo_factory.all_nbtypes[a.name]] = a
+#del algos
 
 ##############################################################################
 ##############################################################################
 
-def _analyze_call_d4p(lhs, func_mod, func_name, typemap, args, array_dists):
+from hpat.distributed_analysis import DistributedAnalysis, Distribution as DType
+
+def _analyze_call_d4p():
     '''
     Analyze distribution for calls to daal4py.
     Return True of a call for daal4py was detected and handled.
@@ -567,35 +531,37 @@ def _analyze_call_d4p(lhs, func_mod, func_name, typemap, args, array_dists):
     We raise an exception if the required distribution cannot be met.
     '''
 
-    if isinstance(func_mod, ir.Var) and func_name == 'compute':
+    def _analyze(lhs, func_mod, mod_typ, func_name, args, array_dists):
+        assert func_name == 'compute' and mod_typ in algo_map, "unexpected type/function to daal4py function-call analysis."
         # every d4p algo gets executed by invoking "compute".
         # we need to find the algorithm that's currently called
-        for algo in algos:
-            if algo.all_nbtypes[algo.name] == typemap[func_mod.name]:
-                # handle all input arguments and set their distribution as given by the spec
-                for i in range(len(args)):
-                    aname = args[i].name
-                    adist = algo.spec.input_types[i][2]
-                    if aname not in array_dists:
-                        array_dists[aname] = adist
-                    else:
-                        min_adist = DType.OneD_Var if adist == DType.OneD else adist
-                        assert array_dists[aname].value <= DType.OneD.value, "Cannot handle unknown distribution type"
-                        # bail out if there is a distribution conflict with some other use of the argument
-                        # FIXME: handle DType.Thread and Disribution.REP as equivalent
-                        assert array_dists[aname].value >= min_adist.value,\
-                               'Distribution of argument {} ({}) to "daal4py.{}.compute" must be "{}". '\
-                               'Some other use of it demands "{}", though.'\
-                               .format(i+1, algo.spec.input_types[i][0], algo.name, adist, array_dists[aname])
-                # handle distribution of the result
-                if lhs not in array_dists:
-                    array_dists[lhs] = algo.spec.result_dist
-                else:
-                    array_dists[lhs] = DType(min(array_dists[lhs].value, algo.spec.result_dist.value))
-                    min_rdist = DType.OneD_Var if algo.spec.result_dist == DType.OneD else algo.spec.result_dist
-                    assert array_dists[lhs].value >= min_rdist.value,\
-                        'Distribution ({}) to "daal4py.{}.compute" must be at least "{}". '\
-                        'Some other use of it demands "{}", though.'\
-                        .format(algo.name, min_rdist, array_dists[lhs])
-                return True
-        return False
+        algo = algo_map[mod_typ]
+        # handle all input arguments and set their distribution as given by the spec
+        for i in range(len(args)):
+            aname = args[i].name
+            adist = algo.spec.input_types[i][2]
+            if aname not in array_dists:
+                array_dists[aname] = adist
+            else:
+                min_adist = DType.OneD_Var if adist == DType.OneD else adist
+                assert array_dists[aname].value <= DType.OneD.value, "Cannot handle unknown distribution type"
+                # bail out if there is a distribution conflict with some other use of the argument
+                # FIXME: handle DType.Thread and Disribution.REP as equivalent
+                assert array_dists[aname].value >= min_adist.value,\
+                       'Distribution of argument {} ({}) to "daal4py.{}.compute" must be "{}". '\
+                       'Some other use of it demands "{}", though.'\
+                       .format(i+1, algo.spec.input_types[i][0], algo.name, adist, array_dists[aname])
+        # handle distribution of the result
+        if lhs not in array_dists:
+            array_dists[lhs] = algo.spec.result_dist
+        else:
+            array_dists[lhs] = DType(min(array_dists[lhs].value, algo.spec.result_dist.value))
+            min_rdist = DType.OneD_Var if algo.spec.result_dist == DType.OneD else algo.spec.result_dist
+            assert array_dists[lhs].value >= min_rdist.value,\
+                'Distribution ({}) to "daal4py.{}.compute" must be at least "{}". '\
+                'Some other use of it demands "{}", though.'\
+                .format(algo.name, min_rdist, array_dists[lhs])
+        return True
+
+    for a in algo_map:
+        DistributedAnalysis.add_call_analysis(a, 'compute', _analyze)

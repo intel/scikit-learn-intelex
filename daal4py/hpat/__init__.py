@@ -16,8 +16,6 @@
 
 # register our call-analysis with HPAT
 
-from hpat.distributed_analysis import DistributedAnalysis, Distribution as DType
-from numba import ir
 from .d4hpat import _analyze_call_d4p
 
-DistributedAnalysis.add_call_analysis(_analyze_call_d4p)
+_analyze_call_d4p()
