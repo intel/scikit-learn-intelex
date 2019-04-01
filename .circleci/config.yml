@@ -84,7 +84,7 @@ workflows:
   version: 2
   commit:
     jobs:
-      - build_pypi
+      - build_pypi:
           filters:
             branches:
               only: master
@@ -92,7 +92,7 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "08 * * * *"
+          cron: "47 * * * *"
           filters:
             branches:
               only: test-sklearn-master
