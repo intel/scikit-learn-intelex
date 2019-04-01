@@ -1,9 +1,8 @@
-:tocdepth: 2
+.. _index:
 
 #####################################################
 Fast, Scalable and Easy Machine Learning With DAAL4PY
 #####################################################
-
 Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
 to use. It provides highly configurable Machine Learning kernels, some of which
 support streaming input data and/or can be easily and efficiently scaled out to
@@ -110,15 +109,14 @@ into memory of a single node.
 .. figure:: d4p-linreg-scale.jpg
 
 	    On a 32-node cluster (1280 cores) daal4py computed linear regression
-	    of 2.86 TB of data in less than 2 seconds and 91.55 GB of data in
-	    less than 74 milliseconds.
+	    of 2.15 TB of data in 1.18 seconds and 68.66 GB of data in less than
+	    48 milliseconds.
 
 .. figure:: d4p-kmeans-scale.jpg
 
 	    On a 32-node cluster (1280 cores) daal4py computed K-Means (10
-	    clusters) of 1.12 TB of data in 108.8 seconds and 35.76 GB of data
-	    in 5.26 seconds.
-
+	    clusters) of 1.12 TB of data in 107.4 seconds and 35.76 GB of data
+	    in 4.8 seconds.
 
 Configuration: Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz, EIST/Turbo on 2
 sockets, 20 cores per socket, 192 GB RAM, 16 nodes connected with Infiniband,
@@ -167,18 +165,3 @@ Patches can also be enabled programmatically::
 Additionally, daal4py.sklearn provides scikit-learn API compatible classes for
 k-nearest neighbors classifier, as well as random forest classifier and regressors
 which are not a drop-in replacements of the corresponding scikit-learn counterparts.
-    
-  
-Content
--------
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   About daal4py <index>
-   Data <data>
-   Supported Algorithms <algorithms>
-   Distribution <scaling>
-   Streaming <streaming>
-   Examples <examples>
-   Scikit-Learn API <sklearn>

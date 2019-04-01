@@ -77,12 +77,13 @@ required = {
 # Some algorithms have no public constructors and need to be instantiated with 'create'
 # (for whatever reason)
 no_constructor = {
-    'algorithms::engines::mt19937::Batch': {'seed': 'size_t'},
-    'algorithms::engines::mt2203::Batch': {'seed': 'size_t'},
-    'algorithms::engines::mcg59::Batch': {'seed': 'size_t'},
+    'algorithms::engines::mt19937::Batch': {'seed': ['size_t', 'seed']},
+    'algorithms::engines::mt2203::Batch': {'seed': ['size_t', 'seed']},
+    'algorithms::engines::mcg59::Batch': {'seed': ['size_t', 'seed']},
 }
 
 # Some algorithms require a setup function, to provide input without actual compute
+# Also need to add it to doc/algorithms.rst
 add_setup = [
     'algorithms::optimization_solver::mse',
     'algorithms::optimization_solver::logistic_loss',
@@ -95,26 +96,30 @@ add_setup = [
 # Also lists input set/gets to ignore
 # Adding an empty list to ignore all parameters, inputs and results
 ignore = {
-    'algorithms::kmeans::init': ['nRowsTotal', 'offset', 'firstIteration', 'outputForStep5Required'], # internal for distributed
+    'algorithms::kmeans::init': ['firstIteration', 'outputForStep5Required',], # internal for distributed
+    'algorithms::kmeans::init::interface1': ['nRowsTotal', 'offset', 'seed',], # internal for distributed, deprecated
     'algorithms::gbt::regression::training': ['dependentVariables'], # dependentVariables from parent class is not used
+    'algorithms::decision_forest::training': ['seed',], # deprecated
     'algorithms::decision_forest::classification::training': ['updatedEngine',], # output
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', # InputId from parent class is not used
                                                           'updatedEngine',], # output
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
     'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
     'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
-                                             'pastUpdateVector', 'pastWorkValue'], # internal stuff
+                                             'pastUpdateVector', 'pastWorkValue', 'seed',], # internal stuff, deprecated
     'algorithms::optimization_solver::lbfgs': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
-                                               'correctionPairs', 'correctionIndices', 'averageArgumentLIterations',], # internal stuff
+                                               'correctionPairs', 'correctionIndices', 'averageArgumentLIterations', 'seed',], # internal stuff, deprecated
     'algorithms::optimization_solver::adagrad': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
-                                                 'gradientSquareSum'], # internal stuff
-    'algorithms::optimization_solver::saga': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',], # internal stuff
+                                                 'gradientSquareSum', 'seed',], # internal stuff, deprecated
+    'algorithms::optimization_solver::saga': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId', 'seed',], # internal stuff, deprecated
     'algorithms::optimization_solver::objective_function': [], # interface type
     'algorithms::optimization_solver::iterative_solver': [], # interface type
     'algorithms::normalization::minmax': ['moments'], # parameter, required an interface
     'algorithms::normalization::zscore': ['moments'], # parameter, required an interface
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input is dictionary, parameter
+    'algorithms::em_gmm::init': ['seed',], # deprecated
     'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
+    'algorithms::kdtree_knn_classification': ['seed',], # deprecated
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms

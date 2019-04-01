@@ -76,14 +76,14 @@ def cy_callext(arg, typ_cy, typ_cyext, s2e=None):
         return 'to_std_string(<PyObject *>' + arg + ')'
     return arg
 
-def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
+def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None):
     '''Return an object with preformatted attributes for given argument.
        Analyses, normalizes and formats types, names and members.
        We can also craete an empty object, which can then be used in jinja2 filters without an extra condition.
        emtpy/optional state is indicated by name==''
     '''
     class fmt_var(object):
-        def __init__(self, name, typ, const, dflt, inpt, algo):
+        def __init__(self, name, typ, const, dflt, inpt, algo, doc):
             d4pname = ''
             if name:
                 value      = name.strip()
@@ -150,11 +150,6 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
                     cppdefault = ''
                     sphinx_default = ''
                 assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
-    # hjpat_input needs dist {% if step_specs is defined %}
-    #   {% set inp_dists = step_specs[0].inputdists if step_specs|length else inputdists %}
-    #   {% else %}
-    #   {% set inp_dists = None %}
-    #   {% endif %}
 
             self.name          = d4pname
             self.daalname      = name
@@ -176,7 +171,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
             self.assign_member = '_{0} = {0}'.format(d4pname) if name else ''
             self.todaal_member = todaal_member if name else ''
             self.spec          = '("{}", "{}", "{}")'.format(d4pname, typ_flat, 'REP' if 'model' in d4pname else 'OneD') if name else ''
-            self.sphinx        = ':param {} {}:{}'.format(typ_sphinx, d4pname, ' [optional, default: {}]'.format(sphinx_default) if sphinx_default else '') if name else ''
+            self.sphinx        = ':param {} {}:{} {}'.format(typ_sphinx, d4pname, ' [optional, default: {}]'.format(sphinx_default) if sphinx_default else '', doc) if name else ''
 
         def format(self, s, *args):
             '''Helper function to format a string with attributes from given var
@@ -185,4 +180,4 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None):
             a = [getattr(self, x) for x in args]
             return s.format(*a) if self.name else ''
 
-    return fmt_var(name, typ, const, dflt, inpt, algo)
+    return fmt_var(name, typ, const, dflt, inpt, algo, doc)

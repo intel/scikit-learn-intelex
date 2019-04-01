@@ -416,6 +416,7 @@ class cython_interface(object):
           [1] list of members it can not map tp hltype (namespace, attribute)
         Only standard data types and those with typemaps can be mapped to a hltype.
         """
+        assert 'members' not in attr, "get_expand_attrs is not supported for members"
         attrs = self.get_all_attrs(ns, cls, attr)
         explist = []
         ignlist = []
@@ -433,9 +434,9 @@ class cython_interface(object):
                     for e in self.namespace_dict[ins].enums[inp]:
                         if not any(e in x for x in explist) and not ignored(ins, e):
                             if type(attrs[i]) in [list,tuple]:
-                                explist.append((ins, e, hlt[0], attrs[i][1]))
+                                explist.append((ins, e, hlt[0], attrs[i][1], self.namespace_dict[ins].enums[inp][e][1]))
                             else:
-                                explist.append((ins, e, hlt[0], None))
+                                explist.append((ins, e, hlt[0], None, self.namespace_dict[ins].enums[inp][e][1]))
                 else:
                     print("// Warning: ignoring " + ns + " " + str(hlt))
                     ignlist.append((ins, i))
@@ -629,7 +630,7 @@ class cython_interface(object):
                                              'std::string&',
                                              'const',
                                              t[2].replace('DAAL_ALGORITHM_FP_TYPE', 'double'),
-                                             algo=func) for t in self.namespace_dict[ns].classes[mode].template_args]
+                                             algo=func, doc=t[3]) for t in self.namespace_dict[ns].classes[mode].template_args]
                 }
 
             # A parameter can be a specialized template. Sigh.
@@ -680,10 +681,10 @@ class cython_interface(object):
             for p in all_params:
                 pns, tmp = splitns(p)
                 if not tmp.startswith('_') and not ignored(pns, tmp):
-                    hlt = self.to_hltype(pns, all_params[p])
+                    hlt = self.to_hltype(pns, all_params[p][0])
                     if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                         (hlt, hlt_type, hlt_ns) = hlt
-                        llt = self.to_lltype(all_params[p])
+                        llt = self.to_lltype(all_params[p][0])
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
@@ -691,13 +692,14 @@ class cython_interface(object):
                             thetype = (hlt if hlt else all_params[p])
                         if thetype != None and tmp != None:
                             thetype = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', thetype)
+                            doc = all_params[p][1]
                             if any(tmp == x.name for x in params_req):
-                                v = mk_var(tmp, thetype, 'const', algo=func)
+                                v = mk_var(tmp, thetype, 'const', algo=func, doc=doc)
                                 jparams['params_req'].append(v)
                             else:
                                 prm = tmp
                                 dflt = defaults[pns][prm] if pns in defaults and prm in defaults[pns] else True
-                                v = mk_var(prm, thetype, 'const', dflt, algo=func)
+                                v = mk_var(prm, thetype, 'const', dflt, algo=func, doc=doc)
                                 jparams['params_opt'].append(v)
                         else:
                             print('// Warning: do not know what to do with ' + pns + ' : ' + p + '(' + all_params[p] + ')')
@@ -722,7 +724,7 @@ class cython_interface(object):
             if inp:
                 expinputs = self.get_expand_attrs(inp[0], inp[1], 'sets')
                 reqi = 0
-                for ins, iname, itype, optarg in expinputs[0]:
+                for ins, iname, itype, optarg, doc in expinputs[0]:
                     tmpi = iname
                     if tmpi and not ignored(ns, tmpi):
                         if ns in defaults and tmpi in defaults[ns]:
@@ -736,7 +738,7 @@ class cython_interface(object):
                             #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
                             itype = 'data_or_file *'
                         ins = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', ins)
-                        tmp_input_args.insert(i, mk_var(ins + '::' + iname, itype, 'const', dflt, inpt=True, algo=func))
+                        tmp_input_args.insert(i, mk_var(ins + '::' + iname, itype, 'const', dflt, inpt=True, algo=func, doc=doc))
             else:
                 print('// Warning: no input type found for ' + ns)
 
@@ -766,11 +768,11 @@ class cython_interface(object):
         }
         if not no_dist and ns in has_dist:
             retjp['dist'] = has_dist[ns]
-            retjp['distributed'] = mk_var('distributed', 'bool', dflt=True, algo=func)
+            retjp['distributed'] = mk_var('distributed', 'bool', dflt=True, algo=func, doc='enable distributed computation (SPMD)')
         else:
             retjp['distributed'] = mk_var()
         if not no_stream and  'Online' in self.namespace_dict[ns].classes and not ns.endswith('pca'):
-            retjp['streaming'] = mk_var('streaming', 'bool', dflt=True, algo=func)
+            retjp['streaming'] = mk_var('streaming', 'bool', dflt=True, algo=func, doc='enable streaming')
         else:
             retjp['streaming'] = mk_var()
         return {ns + '::' + mode : retjp}
