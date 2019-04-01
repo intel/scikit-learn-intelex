@@ -14,9 +14,6 @@ jobs:
           command: |
             ls -la
             source ./.circleci/setup_env.sh
-            gcc -v
-            g++ -v
-            head /proc/cpuinfo
       - run:
           name: Building daal4py
           command: |
@@ -54,9 +51,6 @@ jobs:
           command: |
             ls -la
             source ./.circleci/setup_env.sh
-            gcc -v
-            g++ -v
-            head /proc/cpuinfo
       - run:
           name: Building daal4py
           command: |
@@ -70,7 +64,7 @@ jobs:
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
-            conda isntall -y --override-channels -c intel cython
+            conda install -y --override-channels -c intel cython
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
@@ -92,7 +86,7 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "47 * * * *"
+          cron: "49 * * * *"
           filters:
             branches:
               only: test-sklearn-master
