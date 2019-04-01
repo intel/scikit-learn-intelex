@@ -13,7 +13,7 @@ jobs:
           name: Setting up build environment
           command: |
             ls -la
-            source ./setup_env.sh
+            source ./.circleci/setup_env.sh
             gcc -v
             g++ -v
             head /proc/cpuinfo
@@ -33,7 +33,7 @@ jobs:
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
-            ./run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+            ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
 
@@ -53,7 +53,7 @@ jobs:
           name: Setting up build environment
           command: |
             ls -la
-            source ./setup_env.sh
+            source ./.circleci/setup_env.sh
             gcc -v
             g++ -v
             head /proc/cpuinfo
@@ -74,7 +74,7 @@ jobs:
             git checkout https://github.com/scikit-learn/scikit-learn
             pushd scikit-learn && python setup.py install && popd
             conda list
-            ./run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+            ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
 
