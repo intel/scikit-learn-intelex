@@ -46,10 +46,9 @@ jobs:
       - run:
           name: Checkout master
           command: |
-            git config user.email "scripting@intel.com"
-            git config user.name "Intel(R) Scripting"
+            git fetch --all
             git checkout master
-            git pull --ff-only
+            git reset --hard origin/master
       - run:
           name: Setting up build environment
           command: |
@@ -90,7 +89,7 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "08 * * * *"
+          cron: "21 * * * *"
           filters:
             branches:
               only: test-sklearn-master
