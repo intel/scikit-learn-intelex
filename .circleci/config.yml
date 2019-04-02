@@ -1,0 +1,98 @@
+version: 2.0
+
+jobs:
+  build_pypi:
+    docker:
+      - image: circleci/python:3.6.7
+
+    working_directory: ~/daal4py-ci
+
+    steps:
+      - checkout
+      - run:
+          name: Setting up build environment
+          command: |
+            ls -la
+            source ./.circleci/setup_env.sh
+      - run:
+          name: Building daal4py
+          command: |
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            mkdir -p /tmp/out
+            conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test conda-recipe
+      - run:
+          name: Testing sklearn patches
+          command: |
+            export PATH=~/miniconda/bin:$PATH
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            conda install -q /tmp/out/*/daal4py-*.tar.bz2
+            pip install -q scikit-learn
+            conda list
+            source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+      - store_artifacts:
+          path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+
+
+  build_master:
+    docker:
+      - image: circleci/python:3.6.7
+
+    working_directory: ~/daal4py-ci
+
+    steps:
+      - checkout
+      - run:
+          name: Checkout master
+          command: |
+            git fetch --all
+            git checkout master
+            git reset --hard origin/master
+            git checkout ${CIRCLE_BRANCH} -- .circleci daal4py/sklearn/monkeypatch/dispatcher.py
+      - run:
+          name: Setting up build environment
+          command: |
+            ls -la
+            source ./.circleci/setup_env.sh
+      - run:
+          name: Building daal4py
+          command: |
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            mkdir -p /tmp/out
+            conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test conda-recipe
+      - run:
+          name: Testing sklearn patches
+          command: |
+            export PATH=~/miniconda/bin:$PATH
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            conda install -y --override-channels -c intel cython
+            conda install -q /tmp/out/*/daal4py-*.tar.bz2
+            git clone https://github.com/scikit-learn/scikit-learn.git
+            pushd scikit-learn && python setup.py install && popd
+            conda list
+            source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+      - store_artifacts:
+          path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+
+
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - build_pypi:
+          filters:
+            branches:
+              only: master
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "17 * * * *"
+          filters:
+            branches:
+              only: test-sklearn-master
+    jobs:
+      - build_master
