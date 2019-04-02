@@ -1,7 +1,7 @@
 # coding: utf-8
 import argparse
 import os.path
-from yaml import load as yaml_load
+from yaml import FullLoader, load as yaml_load
 from distutils.version import LooseVersion
 import sklearn
 from sklearn import __version__ as sklearn_version
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     fn = args.conf_file[0] 
     if os.path.exists(fn):
         with open(fn, 'r') as fh:
-            dt = yaml_load(fh)
+            dt = yaml_load(fh, Loader=FullLoader)
 
         if args.absolute:
             base_dir = os.path.relpath(
