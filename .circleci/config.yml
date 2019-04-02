@@ -49,6 +49,7 @@ jobs:
             git fetch --all
             git checkout master
             git reset --hard origin/master
+            git checkout ${CIRCLE_BRANCH} -- .circleci
       - run:
           name: Setting up build environment
           command: |
@@ -89,7 +90,7 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "21 * * * *"
+          cron: "35 * * * *"
           filters:
             branches:
               only: test-sklearn-master
