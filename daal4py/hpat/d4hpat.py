@@ -424,6 +424,46 @@ def lower_{2}(context, builder, typ, val):
 
         # Now we handle compute method of algorithm classes
         if self.spec.input_types:
+            ovl_code = '''
+@overload_method(type(algo_factory.all_nbtypes['{name}']), 'compute')
+def {name}_compute(algo, {argsWdflt}):
+    if isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):
+        print('2 laksdfkl')
+        ityps = [{ityps}]
+        sig = [algo_factory.all_nbtypes['{name}']]
+        for i in ityps:
+            print('3 laksdfkl', i)
+            if i == 'data_or_file':
+                print('3a laksdfkl', i)
+                sig += [types.ArrayCTypes(dtable_type), types.boolean]
+            else:
+                print('3b laksdfkl', i)
+                sig.append(algo_factory.all_nbtypes[i])
+        print('4 laksdfkl', algo_factory.all_nbtypes['{name}_result'])
+        try:
+            sig = signature(algo_factory.all_nbtypes['{name}_result'], *sig)
+            print('5 laksdfkl')
+            cfunc = types.ExternalFunction('compute_{cname}', sig)
+            print('6 laksdfkl')
+        except Exception as e:
+            import sys
+            print("Unexpected error:", sys.exc_info()[0])
+            raise
+        print(sig)
+
+        def {name}_compute_impl(algo, {argsWdflt}):
+            cargs = (algo, {cargs})
+            return cfunc(*cargs)
+
+        return {name}_compute_impl
+'''.format(name=self.name,
+           cname=self.spec.c_name,
+           args=', '.join([x[0] for x in self.spec.input_types]),
+           argsWdflt=', '.join(['{}=None'.format(x[0]) for x in self.spec.input_types]),
+           ityps=', '.join(["'{}'".format(x[1]) for x in self.spec.input_types]),
+           cargs=', '.join(['inp2d4p({0}, algo!=None)'.format(x[0]) for x in self.spec.input_types]))
+
+            #print(ovl_code)
             compute_name = '.'.join([name_stub, 'compute'])
 
             # using bound_function for typing
