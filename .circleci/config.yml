@@ -45,7 +45,7 @@ jobs:
       - checkout
       - run:
           name: Checkout master
-          command: git checkout master
+          command: git checkout master && git pull
       - run:
           name: Setting up build environment
           command: |
