@@ -38,6 +38,9 @@ from .k_means import KMeans as KMeans_daal4py
 from .logistic_path import logistic_regression_path as daal_optimized_logistic_path
 from .svm import SVC as SVC_daal4py
 
+from daal4py import __version__ as daal4py_version
+
+
 _mapping = {
     'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
     'kmeans':    [[(kmeans_module, 'KMeans', KMeans_daal4py), None]],
@@ -78,7 +81,7 @@ def enable(name=None):
     elif LooseVersion(sklearn_version) > LooseVersion("0.20.3"):
         warn_msg = ("daal4py {daal4py_version} has only been tested " +
                    "with scikit-learn 0.20.3, found version: {sklearn_version}")
-        warnings.warn(warn_msg.format(daal4py_version=daal4py.__version__, sklearn_version=sklearn_version))
+        warnings.warn(warn_msg.format(daal4py_version=daal4py_version, sklearn_version=sklearn_version))
 
     if name is not None:
         do_patch(name)
