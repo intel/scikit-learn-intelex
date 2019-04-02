@@ -49,7 +49,7 @@ jobs:
             git fetch --all
             git checkout master
             git reset --hard origin/master
-            git checkout ${CIRCLE_BRANCH} -- .circleci
+            git checkout ${CIRCLE_BRANCH} -- .circleci daal4py/sklearn/monkeypatch/dispatcher.py
       - run:
           name: Setting up build environment
           command: |
@@ -90,7 +90,7 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "35 * * * *"
+          cron: "17 * * * *"
           filters:
             branches:
               only: test-sklearn-master
