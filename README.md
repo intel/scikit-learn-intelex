@@ -11,7 +11,7 @@ A simplified API to Intel® DAAL that allows for fast usage of the framework sui
 Running full scikit-learn test suite with daal4p's optimization patches
 
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
-- [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to built master branch
+- [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
 
 With this daal4py API, your Python programs can use Intel® DAAL algorithms in just one line:
 ```
