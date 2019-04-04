@@ -89,7 +89,7 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "49 * * * *"
+          cron: "49 23 * * *"
           filters:
             branches:
               only: test-sklearn-master
