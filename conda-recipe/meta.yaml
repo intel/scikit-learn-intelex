@@ -14,9 +14,11 @@ build:
     include_recipe: False
 
 requirements:
-    host:
+    build:
         - {{ compiler('c') }}
         - {{ compiler('cxx') }}
+
+    host:
         - python
         - setuptools
         - numpy >=1.15
