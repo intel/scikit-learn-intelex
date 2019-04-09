@@ -28,4 +28,4 @@ deselected_tests:
 
   # For Newton-CG solver, solution computed in float32 disagrees with that of float64 a little more than
   # the test expects
-  - linear_model/tests/test_logistic.py::test_dtype_match[ovr]
+  - linear_model/tests/test_logistic.py::test_dtype_match
