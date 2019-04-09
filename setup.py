@@ -27,18 +27,11 @@ from os.path import join as jp
 from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext
+import glob
 
 import numpy as np
 
 npyver = int(np.__version__.split('.')[1])
-
-if npyver == 9:
-    print("Warning:  Detected numpy version {}".format(np.__version__))
-    print("Numpy 1.10 or greater is strongly recommended.")
-    print("Earlier versions have not been tested. Use at your own risk.")
-
-if npyver < 9:
-    sys.exit("Error: Detected numpy {}. The minimum requirement is 1.9, and >= 1.10 is strongly recommended".format(np.__version__))
 
 d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2019.%Y%m%d.%H%M%S')
 
@@ -149,6 +142,7 @@ def getpyexts():
                                 [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')],
+                                depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
@@ -162,28 +156,39 @@ for key, value in get_config_vars().items():
         cfg_vars[key] = value.replace("-Wstrict-prototypes", "").replace('-DNDEBUG', '')
 
 
-from generator.gen_daal4py import gen_daal4py
 def gen_pyx(odir):
+    gtr_files = glob.glob(jp(os.path.abspath('generator'), '*')) + ['./setup.py']
+    src_files = [os.path.abspath('build/daal4py_cpp.h'),
+                 os.path.abspath('build/daal4py_cpp.cpp'),
+                 os.path.abspath('build/daal4py_cy.pyx')]
+    src_files.sort(key=lambda x: os.path.getmtime(x))
+    gtr_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    if os.path.getmtime(src_files[0]) > os.path.getmtime(gtr_files[0]):
+        print('Generated files are all newer than generator code. Skipping code generation')
+        return
+
+    from generator.gen_daal4py import gen_daal4py
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
     gen_daal4py(daal_root, odir, d4p_version, no_dist=no_dist, no_stream=no_stream)
 
+
 gen_pyx(os.path.abspath('./build'))
+
 
 # daal setup
 setup(  name        = "daal4py",
-        description = "Higher Level Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)",
+        description = "Convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)",
         author      = "Intel",
         version     = d4p_version,
         classifiers=[
-            'Development Status :: 4 - ALPHA',
+            'Development Status :: 5 - Production/Stable',
             'Environment :: Console',
             'Intended Audience :: Developers',
-            'Intended Audience :: System Administrators',
             'Intended Audience :: Other Audience',
             'Intended Audience :: Science/Research',
-            'License :: Other/Proprietary License',
+            'License :: OSI Approved :: Apache Software License',
             'Operating System :: MacOS :: MacOS X',
             'Operating System :: Microsoft :: Windows',
             'Operating System :: POSIX :: Linux',
@@ -193,7 +198,7 @@ setup(  name        = "daal4py",
             'Topic :: System',
             'Topic :: Software Development',
           ],
-        setup_requires = ['numpy>=1.11', 'cython', 'jinja2'],
+        setup_requires = ['numpy>=1.14', 'cython', 'jinja2'],
         packages = ['daal4py', 'daal4py.sklearn',
                     'daal4py.sklearn.neighbors',
                     'daal4py.sklearn.ensemble',
