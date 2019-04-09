@@ -1,5 +1,3 @@
-trigger: none # only PRs
-
 jobs:
 - job: Windows
   pool:
