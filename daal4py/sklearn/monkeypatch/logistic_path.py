@@ -23,7 +23,8 @@ import warnings
 
 from .logistic_loss import (_daal4py_loss_and_grad,
                             _daal4py_logistic_loss_extra_args,
-                            _daal4py_cross_entropy_loss_extra_args)
+                            _daal4py_cross_entropy_loss_extra_args,
+                            _daal4py_loss_, _daal4py_grad_, _daal4py_grad_hess_)
 
 from sklearn.utils import (check_array,
                            check_consistent_length,
@@ -228,7 +229,7 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         default_weights = (class_weight is None)
         sample_weight = np.ones(X.shape[0], dtype=X.dtype)
 
-    daal_ready = use_daal and solver in ['lbfgs'] and not sparse.issparse(X)
+    daal_ready = use_daal and solver in ['lbfgs', 'newton-cg'] and not sparse.issparse(X)
     # If class_weights is a dict (provided by the user), the weights
     # are assigned to the original labels. If it is "balanced", then
     # the class_weights are assigned after masking the labels with a OvR.
@@ -316,6 +317,13 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                     w0[:, :coef.shape[1]] = coef
 
     C_daal_multiplier = 1
+    # commented out because this is Py3 feature
+    #def _map_to_binary_logistic_regression():
+    #    nonlocal C_daal_multiplier
+    #    nonlocal w0
+    #    C_daal_multiplier = 2
+    #    w0 *= 2
+
     if multi_class == 'multinomial':
         # fmin_l_bfgs_b and newton-cg accepts only ravelled parameters.
         if solver in ['lbfgs', 'newton-cg']:
@@ -327,6 +335,7 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         if solver == 'lbfgs':
             if daal_ready:
                 if classes.size == 2:
+                    # _map_to_binary_logistic_regression()
                     C_daal_multiplier = 2
                     w0 *= 2
                     daal_extra_args_func = _daal4py_logistic_loss_extra_args
@@ -336,9 +345,21 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
             else:
                 func = lambda x, *args: _multinomial_loss_grad(x, *args)[0:2]
         elif solver == 'newton-cg':
-            func = lambda x, *args: _multinomial_loss(x, *args)[0]
-            grad = lambda x, *args: _multinomial_loss_grad(x, *args)[1]
-            hess = _multinomial_grad_hess
+            if daal_ready:
+                if classes.size == 2:
+                    # _map_to_binary_logistic_regression()
+                    C_daal_multiplier = 2
+                    w0 *= 2
+                    daal_extra_args_func = _daal4py_logistic_loss_extra_args
+                else:
+                    daal_extra_args_func = _daal4py_cross_entropy_loss_extra_args
+                func = _daal4py_loss_
+                grad = _daal4py_grad_
+                hess = _daal4py_grad_hess_
+            else:
+                func = lambda x, *args: _multinomial_loss(x, *args)[0]
+                grad = lambda x, *args: _multinomial_loss_grad(x, *args)[1]
+                hess = _multinomial_grad_hess
         warm_start_sag = {'coef': w0.T}
     else:
         target = y_bin
@@ -349,9 +370,15 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
             else:
                 func = _logistic_loss_and_grad
         elif solver == 'newton-cg':
-            func = _logistic_loss
-            grad = lambda x, *args: _logistic_loss_and_grad(x, *args)[1]
-            hess = _logistic_grad_hess
+            if daal_ready:
+                daal_extra_args_func = _daal4py_logistic_loss_extra_args
+                func = _daal4py_loss_
+                grad = _daal4py_grad_
+                hess = _daal4py_grad_hess_
+            else:
+                func = _logistic_loss
+                grad = lambda x, *args: _logistic_loss_and_grad(x, *args)[1]
+                hess = _logistic_grad_hess
         warm_start_sag = {'coef': np.expand_dims(w0, axis=1)}
 
     coefs = list()
@@ -379,9 +406,24 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
             # See https://github.com/scipy/scipy/issues/7854.
             n_iter_i = min(info['nit'], max_iter)
         elif solver == 'newton-cg':
-            args = (X, target, 1. / C, sample_weight)
-            w0, n_iter_i = newton_cg(hess, func, grad, w0, args=args,
-                                     maxiter=max_iter, tol=tol)
+            if daal_ready:
+                def make_ncg_funcs(f, value=False, gradient=False, hessian=False):
+                    daal_penaltyL2 = 0.5 / C / C_daal_multiplier
+                    _obj_, X_, y_, n_samples = daal_extra_args_func(
+                        classes.size, w0, X, target, 0., daal_penaltyL2, fit_intercept,
+                        value=value, gradient=gradient, hessian=hessian)
+                    _func_ = lambda x, *args: f(x, _obj_, *args)
+                    return _func_, (X_, y_, n_samples, daal_penaltyL2)
+
+                loss_func, extra_args  = make_ncg_funcs(func, value=True)
+                grad_func, _  = make_ncg_funcs(grad, gradient=True)
+                grad_hess_func, _ = make_ncg_funcs(hess, gradient=True)
+                w0, n_iter_i = newton_cg(grad_hess_func, loss_func, grad_func, w0, args=extra_args,
+                                         maxiter=max_iter, tol=tol)
+            else:
+                args = (X, target, 1. / C, sample_weight)
+                w0, n_iter_i = newton_cg(hess, func, grad, w0, args=args,
+                                         maxiter=max_iter, tol=tol)
         elif solver == 'liblinear':
             coef_, intercept_, n_iter_i, = _fit_liblinear(
                 X, target, C, fit_intercept, intercept_scaling, None,

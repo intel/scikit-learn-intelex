@@ -91,7 +91,7 @@ def get_sdl_cflags():
 
 def get_sdl_ldflags():
     if IS_LIN:
-        return ['-Wl,-z,noexecstack', '-Wl,-z,relro', '-Wl,-z,now',]
+        return ['-Wl,-z,noexecstack,-z,relro,-z,now',]
     elif IS_MAC:
         return []
     elif IS_WIN:
