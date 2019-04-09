@@ -31,8 +31,6 @@ import glob
 
 import numpy as np
 
-npyver = int(np.__version__.split('.')[1])
-
 d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2019.%Y%m%d.%H%M%S')
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
