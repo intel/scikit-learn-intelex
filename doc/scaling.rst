@@ -78,3 +78,11 @@ The following algorithms support distribution:
 - K-Means (kmeans_init and kmeans)
 
   - `K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_spmd.py>`_
+
+- Correlation and Variance-Covariance Matrices (covariance)
+
+  - `Covariance <https://github.com/IntelPython/daal4py/blob/master/examples/covariance_spmd.py>`_
+
+- Moments of Low Order (low_order_moments)
+
+  - `Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_spmd.py>`_

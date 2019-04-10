@@ -1,6 +1,7 @@
-version: 2
+version: 2.0
+
 jobs:
-  build:
+  build_pypi:
     docker:
       - image: circleci/python:3.6.7
 
@@ -11,17 +12,8 @@ jobs:
       - run:
           name: Setting up build environment
           command: |
-            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-            bash miniconda.sh -b -p ~/miniconda
-            export PATH=~/miniconda/bin:$PATH
-            hash -r
-            conda config --set always_yes yes --set changeps1 no
-            conda update -q conda
-            conda install -q conda-build
-            conda create -q -n bld --override-channels -c intel -c conda-forge python=3.6 numpy scipy pytest daal mpich tbb pandas numpydoc
-            gcc -v
-            g++ -v
-            head /proc/cpuinfo
+            ls -la
+            source ./.circleci/setup_env.sh
       - run:
           name: Building daal4py
           command: |
@@ -38,27 +30,68 @@ jobs:
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
-            touch ~/d4p.out ~/skl.out
-            export BASEDIR=`python -c "import os.path, sklearn; print(os.path.relpath(os.path.dirname(sklearn.__file__), os.path.expanduser('~')) + '/')"`
-            # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
-            # See: https://github.com/scikit-learn/scikit-learn/issues/12738
-            export DESELECTED_TESTS="--deselect ${BASEDIR}svm/tests/test_svm.py::test_sample_weights"
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}svm/tests/test_svm.py::test_precomputed"
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}svm/tests/test_sparse.py::test_sparse"
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}svm/tests/test_sparse.py::test_svc_iris"
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}ensemble/tests/test_bagging.py::test_sparse_classification"
-            # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
-            # See: https://github.com/IntelPython/daal4py/issues/25
-            export DESELECTED_TESTS="${DESELECTED_TESTS} --deselect ${BASEDIR}cluster/tests/test_k_means.py::test_k_means_fit_predict"
-            echo "-m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
-            # It is important for pytest to work in a separate test folder to not discover tests in ~/miniconda folder
-            cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} -ra --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
-            cd && ((python -m pytest ${DESELECTED_TESTS} -ra --disable-warnings --pyargs sklearn | tee ~/skl.out) || true)
-            export D4P=`grep -e '\d* passed.* second' ~/d4p.out`
-            export SKL=`grep -e '\d* passed.* second' ~/skl.out`
-            tar cjf /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2 ~/d4p.out ~/skl.out
-            echo "Summary of patched run: " $D4P
-            echo "Summary of unpatched run: " $SKL
-            python ~/daal4py-ci/.circleci/compare_runs.py
+            source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
       - store_artifacts:
-          path: /tmp/patched_and_unpatched_sklearn_pytest_logs.tar.bz2
+          path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+
+
+  build_master:
+    docker:
+      - image: circleci/python:3.6.7
+
+    working_directory: ~/daal4py-ci
+
+    steps:
+      - checkout
+      - run:
+          name: Checkout master
+          command: |
+            git fetch --all
+            git checkout master
+            git reset --hard origin/master
+      - run:
+          name: Setting up build environment
+          command: |
+            ls -la
+            source ./.circleci/setup_env.sh
+      - run:
+          name: Building daal4py
+          command: |
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            mkdir -p /tmp/out
+            conda build --python=36 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test conda-recipe
+      - run:
+          name: Testing sklearn patches
+          command: |
+            export PATH=~/miniconda/bin:$PATH
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            conda install -y --override-channels -c intel cython
+            conda install -q /tmp/out/*/daal4py-*.tar.bz2
+            git clone https://github.com/scikit-learn/scikit-learn.git
+            pushd scikit-learn && python setup.py install && popd
+            conda list
+            source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+      - store_artifacts:
+          path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+
+
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - build_pypi:
+          filters:
+            branches:
+              only: master
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "49 23 * * *"
+          filters:
+            branches:
+              only: test-sklearn-master
+    jobs:
+      - build_master

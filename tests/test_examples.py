@@ -52,11 +52,6 @@ class Base():
     We also use generic functions to test these, they get added later.
     """
 
-    def test_kdtree_knn_classification_batch(self):
-        import kdtree_knn_classification_batch as ex
-        (_, predict_result, test_labels) = self.call(ex)
-        self.assertTrue(np.count_nonzero(test_labels != predict_result.prediction) < 170)
-
     def test_svd_batch(self):
         import svd_batch as ex
         (data, result) = self.call(ex)
@@ -106,6 +101,7 @@ gen_examples = [
     ('gradient_boosted_classification_batch',),
     ('gradient_boosted_regression_batch',),
     ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
+    ('kdtree_knn_classification_batch', None, None),
     ('kmeans_batch', 'kmeans_batch.csv', 'centroids'),
     ('lbfgs_cr_entr_loss_batch', 'lbfgs_cr_entr_loss_batch.csv', 'minimum'),
     ('lbfgs_mse_batch', 'lbfgs_mse_batch.csv', 'minimum'),

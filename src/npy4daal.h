@@ -360,7 +360,6 @@ public:
         : NumericTable(daal::data_management::NumericTableDictionaryPtr()),
           _ary(ary)
     {
-        daal::services::ErrorID status = (daal::services::ErrorID)0;
         _ddict = Hndlr::init(_ary);
         setNumberOfRows(PyArray_DIMS(ary)[0]);
         _layout = daal::data_management::NumericTableIface::aos;
@@ -378,7 +377,7 @@ public:
         throw std::invalid_argument("Resizing numpy array through daal not supported.");
     }
 
-    virtual int getSerializationTag() const
+    virtual int getSerializationTag() const DAAL_C11_OVERRIDE
     {
         return 3333;  // independent of template arg Hndlr!
     }

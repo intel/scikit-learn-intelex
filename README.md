@@ -1,13 +1,17 @@
 # daal4py - A Convenient Python API to the Intel® Data Analytics Acceleration Library (Intel® DAAL)
 [![Build Status](https://travis-ci.com/IntelPython/daal4py.svg?branch=master)](https://travis-ci.com/IntelPython/daal4py)
-
+[![Build Status](https://dev.azure.com/frankschlimbach/daal4py/_apis/build/status/IntelPython.daal4py?branchName=master)](https://dev.azure.com/frankschlimbach/daal4py/_build/latest?definitionId=1&branchName=master)
 
 A simplified API to Intel® DAAL that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel® DAAL for either direct usage or integration into one's own framework.  
 
 - [Documentation](https://intelpython.github.io/daal4py/)
 - [Source Code](https://github.com/IntelPython/daal4py/tree/master/src)
 - [About Intel® DAAL](https://software.intel.com/en-us/intel-daal)
-- Optimization patches for scikit-learn [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) full scikit-learn test-suite
+
+Running full scikit-learn test suite with daal4p's optimization patches
+
+- [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
+- [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
 
 With this daal4py API, your Python programs can use Intel® DAAL algorithms in just one line:
 ```
@@ -36,7 +40,23 @@ The easiest way to build daal4py is using the conda-build withe the provided rec
 ## Building daal4py
 ```
 cd <checkout-dir>
-conda build conda-recipe
+conda build conda-recipe -c intel -c conda-forge
+```
+This will build the conda package and tell you where to find it (```.../daal4py*.tar.bz2```).
+
+## Installing the built daal4py conda package
+```
+conda install <path-to-conda-package-as-built-above>
+```
+To actually use your daal4py, dependent packages need to be installed. To ensure, do
+
+Linux and OsX:
+```
+conda install -c intel -c conda-forge mpich tbb daal numpy
+```
+Windows:
+```
+conda install -c intel mpi_rt tbb daal numpy
 ```
 
 # Building daal4py without conda-build

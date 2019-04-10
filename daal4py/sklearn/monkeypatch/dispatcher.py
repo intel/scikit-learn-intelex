@@ -38,6 +38,9 @@ from .k_means import KMeans as KMeans_daal4py
 from .logistic_path import logistic_regression_path as daal_optimized_logistic_path
 from .svm import SVC as SVC_daal4py
 
+from daal4py import __version__ as daal4py_version
+
+
 _mapping = {
     'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
     'kmeans':    [[(kmeans_module, 'KMeans', KMeans_daal4py), None]],
@@ -65,8 +68,9 @@ def do_unpatch(name):
     lname = name.lower()
     if lname in _mapping:
         for descriptor in _mapping[lname]:
-            which, what, replacer = descriptor[0]
-            setattr(which, what, descriptor[1])
+            if descriptor[1] is not None:
+                which, what, replacer = descriptor[0]
+                setattr(which, what, descriptor[1])
     else:
         raise ValueError("Has no patch for: " + name)
 
@@ -74,8 +78,10 @@ def do_unpatch(name):
 def enable(name=None):
     if LooseVersion(sklearn_version) < LooseVersion("0.20.0"):
         raise NotImplementedError("daal4sklearn is for scikit-learn 0.20.0 only ...")
-    elif LooseVersion(sklearn_version) > LooseVersion("0.20.2"):
-        warnings.warn("daal4sklearn {daal4py_version} has only been tested with scikit-learn 0.20.2, found version...")
+    elif LooseVersion(sklearn_version) > LooseVersion("0.20.3"):
+        warn_msg = ("daal4py {daal4py_version} has only been tested " +
+                   "with scikit-learn 0.20.3, found version: {sklearn_version}")
+        warnings.warn(warn_msg.format(daal4py_version=daal4py_version, sklearn_version=sklearn_version))
 
     if name is not None:
         do_patch(name)
