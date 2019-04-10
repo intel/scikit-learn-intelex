@@ -22,7 +22,7 @@ from collections import defaultdict, OrderedDict, namedtuple
 def wrap_algo(algo, ver):
     #return True if 'kmeans' in algo and not 'interface' in algo else False
     # Ignore some algos if using older DAAL
-    if ver < (2019, 4) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'logitboost',]):
+    if ver < (2019, 5) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'logitboost',]):
         return False
     # ignore deprecated version of stump
     if 'stump' in algo and not any(x in algo for x in ['stump::regression', 'stump::classification']):
