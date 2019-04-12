@@ -187,15 +187,23 @@ def inp2d4p(a, b):
     assert False, 'Dummy function, only its @overload should be used'
 
 @overload(inp2d4p)
-def ovl_inp2d4p(inp, dist):
-    if isinstance(inp, types.Array):
-        def inp2d4p_impl(inp, dist):
-            return (inp.ctypes, dist)
-        return inp2d4p_impl
+def ovl_inp2d4p(inp):
+    if isinstance(inp, types.Array) and inp.ndim == 2:
+        descr = None
+        if inp.dtype == types.float64:
+            descr = int(float(1))
+        elif inp.dtype == types.float32:
+            descr = int(float(2))
+        elif inp.dtype == types.intc:
+            descr = int(float(3))
+        if descr:
+            def inp2d4p_impl(inp):
+                return (inp.ctypes.data, inp.shape[0], inp.shape[1], descr)
+            return inp2d4p_impl
     if isinstance(inp, types.UnicodeType):
         raise NotImplementedError("file-input to daal4py not implemented yet for HPAT")
     if inp in algo_factory.all_nbtypes.values():
-        def inp2d4p_impl(inp, dist):
+        def inp2d4p_impl(inp):
             return (inp,)
         return inp2d4p_impl
     raise ValueError("Input type '{}' not supported".format(inp))
@@ -428,32 +436,18 @@ def lower_{2}(context, builder, typ, val):
 @overload_method(type(algo_factory.all_nbtypes['{name}']), 'compute')
 def {name}_compute(algo, {argsWdflt}):
     if isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):
-        print('2 laksdfkl')
         ityps = [{ityps}]
         sig = [algo_factory.all_nbtypes['{name}']]
         for i in ityps:
-            print('3 laksdfkl', i)
             if i == 'data_or_file':
-                print('3a laksdfkl', i)
-                sig += [types.ArrayCTypes(dtable_type), types.boolean]
+                sig += [types.voidptr, types.uint64, types.uint64, types.int64]
             else:
-                print('3b laksdfkl', i)
                 sig.append(algo_factory.all_nbtypes[i])
-        print('4 laksdfkl', algo_factory.all_nbtypes['{name}_result'])
-        try:
-            sig = signature(algo_factory.all_nbtypes['{name}_result'], *sig)
-            print('5 laksdfkl')
-            cfunc = types.ExternalFunction('compute_{cname}', sig)
-            print('6 laksdfkl')
-        except Exception as e:
-            import sys
-            print("Unexpected error:", sys.exc_info()[0])
-            raise
-        print(sig)
+        sig = signature(algo_factory.all_nbtypes['{name}_result'], *sig)
+        cfunc = types.ExternalFunction('compute_{cname}', sig)
 
         def {name}_compute_impl(algo, {argsWdflt}):
-            cargs = (algo, {cargs})
-            return cfunc(*cargs)
+            return cfunc(algo, {cargs})
 
         return {name}_compute_impl
 '''.format(name=self.name,
@@ -461,32 +455,10 @@ def {name}_compute(algo, {argsWdflt}):
            args=', '.join([x[0] for x in self.spec.input_types]),
            argsWdflt=', '.join(['{}=None'.format(x[0]) for x in self.spec.input_types]),
            ityps=', '.join(["'{}'".format(x[1]) for x in self.spec.input_types]),
-           cargs=', '.join(['inp2d4p({0}, algo!=None)'.format(x[0]) for x in self.spec.input_types]))
-
-            #print(ovl_code)
-            compute_name = '.'.join([name_stub, 'compute'])
-
-            # using bound_function for typing
-            infer_code += '''
-    @bound_function("{0}")
-    def resolve_compute(self, dict, args, kws):
-        # TODO: keyword args
-        # TODO: check args
-        return signature(algo_factory.all_nbtypes['{1}_result'], *args)
-'''.format(compute_name, self.name)
-
-            # lowering methods provided with lower_builtin
-            lower_code += '''
-@lower_builtin('{0}', algo_factory.all_nbtypes['{1}'], *[{2}])
-def lower_compute(context, builder, sig, args):
-    return gen_call(context, builder, sig, args, 'compute_{3}')
-'''.format(compute_name,
-           self.name,
-           ', '.join(["algo_factory.all_nbtypes['{}']".format(x[1]) for x in self.spec.input_types]), #if isinstance(x[1], str) else "'{}'")
-            self.spec.c_name)
+           cargs=', '.join(['*inp2d4p({0})'.format(x[0]) for x in self.spec.input_types]))
 
         try:
-            exec(infer_code+lower_code, globals(), {}) #+ovl_code
+            exec(infer_code+lower_code+ovl_code, globals(), {})
         except Exception as e:
             import sys
             print("Unexpected error:", sys.exc_info()[0])
