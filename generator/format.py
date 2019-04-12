@@ -178,6 +178,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
             self.spec          = '("{}", "{}", {}, "{}")'.format(d4pname, typ_sphinx, spec_default, hpat_dist) if name else ''
             self.sphinx        = ':param {} {}:{} {}'.format(typ_sphinx, d4pname, ' [optional, default: {}]'.format(sphinx_default) if sphinx_default else '', doc) if name else ''
 
+
         def format(self, s, *args):
             '''Helper function to format a string with attributes from given var
                {}s are replaced with the respective attributes given in args
