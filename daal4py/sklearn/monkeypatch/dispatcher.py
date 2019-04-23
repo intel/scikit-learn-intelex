@@ -31,12 +31,12 @@ from sklearn.metrics import pairwise
 
 
 from .pairwise import daal_pairwise_distances
-from .pca import PCA as PCA_daal4py
-from .ridge import Ridge as Ridge_daal4py
-from .linear import LinearRegression as LinearRegression_daal4py
-from .k_means import KMeans as KMeans_daal4py
-from .logistic_path import logistic_regression_path as daal_optimized_logistic_path
-from .svm import SVC as SVC_daal4py
+from ..decomposition.pca import PCA as PCA_daal4py
+from ..linear_model.ridge import Ridge as Ridge_daal4py
+from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
+from ..cluster.k_means import KMeans as KMeans_daal4py
+from ..linear_model.logistic_path import logistic_regression_path as daal_optimized_logistic_path
+from ..svm.svm import SVC as SVC_daal4py
 
 from daal4py import __version__ as daal4py_version
 
