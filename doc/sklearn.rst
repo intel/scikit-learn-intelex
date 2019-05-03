@@ -21,13 +21,14 @@ Currently, these include::
     6. daal4py.sklearn.linear_model.Ridge
     7. daal4py.sklearn.svm.SVC
     8. daal4py.sklearn.linear_model.logistic_regression_path 
+    9. daal4py.sklearn.linear_model.LogisticRegression 
 
 Additionally, daal4py contains code to monkey-patch the following existing scikit-learn algorithms:
 
 1. `sklearn.linear_model.LinearRegression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html>`__
 2. `sklearn.linear_model.Ridge <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html>`__ (solver='auto')
 3. `sklearn.linear_model.LogisticRegression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html>`__ and `sklearn.linear_model.LogisticRegressionCV <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegressionCV.html>`__ (solver in ['lbfgs', 'newton-cg'])
-4. `sklearn.decomposition.PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`__ (solver='full')
+4. `sklearn.decomposition.PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`__ (svd_solver='full', and introduces svd_solver='daal')
 5. `sklearn.cluster.KMeans <https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html>`__ (algo='full')
 6. `sklearn.metric.pairwise_distance <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise_distances.html>`__, with metric='cosine' or metric='correlation'
 7. `sklearn.svm.SVC <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html>`__

@@ -162,6 +162,14 @@ Patches can also be enabled programmatically::
     import daal4py.sklearn
     daal4py.sklearn.patch_sklearn()
 
-Additionally, daal4py.sklearn provides scikit-learn API compatible classes for
-k-nearest neighbors classifier, as well as random forest classifier and regressors
-which are not a drop-in replacements of the corresponding scikit-learn counterparts.
+Additionally, daal4py.sklearn contains scikit-learn API compatible :ref:`classes <sklearn>`
+which implement a subset of scikit-learn algorithms using Intel® DAAL. These classes are
+always available, whether the scikit-learn itself has been patched, or not. For example::
+
+     import sklearn, sklearn.datasets, sklearn.svm, sklearn.metrics
+     digits = sklearn.datasets.load_digits()
+     import daal4py.sklearn
+     clf_d = daal4py.sklearn.svm.SVC(kernel='rbf', gamma='scale', C = 0.5).fit(X, y)
+     clf_v = sklearn.svm.SVC(kernel='rbf', gamma='scale', C =0.5).fit(X, y)
+     sklearn.metrics.v_measure_score(y, clf_v.predict(X)) # output: 0.977068068172132
+     sklearn.metrics.v_measure_score(y, clf_d.predict(X)) # output: 0.977068068172132
