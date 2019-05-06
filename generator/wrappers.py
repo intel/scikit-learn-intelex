@@ -20,6 +20,11 @@ from collections import defaultdict, OrderedDict, namedtuple
 # given a C++ namespace and a DAAL version, return if namespace/algo should be
 # wrapped in daal4py.
 def wrap_algo(algo, ver):
+    # tailored build: return True only for specified algorithms:
+    if algo.startswith('algorithms::decision_forest'):
+        return True
+    return False
+
     #return True if 'kmeans' in algo and not 'interface' in algo else False
     # Ignore some algos if using older DAAL
     if ver < (2019, 5) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'logitboost',]):

@@ -1,0 +1,49 @@
+{% set version = '0.2019.2' %}
+{% set buildnumber = 1 %}
+
+package:
+    name: daal4py
+    version: {{version}}
+
+source:
+    path: ..
+    #git_url: https://github.com/IntelPython/daal4py.git
+
+build:
+    number: {{buildnumber}}
+    include_recipe: False
+    env:
+        - DAALROOT
+
+requirements:
+    host:
+        - python
+        - setuptools
+        - numpy >=1.15
+        - tbb-devel
+        - cython
+        - jinja2
+    run:
+        - python
+        - tbb
+        - {{ pin_compatible('numpy') }}
+
+test:
+    requires:
+        - pandas
+        - scipy
+        - scikit-learn
+    imports:
+        - daal4py
+    source_files:
+        - examples
+        - tests
+    commands:
+        - python -m unittest discover -v -s tests -p test*.py
+        - cd examples && python run_examples.py && cd ..
+
+about:
+    home: https://intelpython.github.io/daal4py/
+    license: Apache 2.0
+    license_file: LICENSE
+    summary: A convenient Python API to Intel (R) DAAL
