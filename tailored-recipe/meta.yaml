@@ -12,7 +12,7 @@ source:
 build:
     number: {{buildnumber}}
     include_recipe: False
-    env:
+    script_env:
         - DAALROOT
 
 requirements:
