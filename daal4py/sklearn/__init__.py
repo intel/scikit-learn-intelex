@@ -20,4 +20,5 @@ from .monkeypatch.dispatcher import disable as unpatch_sklearn
 from .monkeypatch.dispatcher import _patch_names as sklearn_patch_names
 
 __all__ = ["patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
-           "neighbors", "ensemble"]
+           "neighbors", "ensemble", "svm", "linear_model",
+           "cluster", "decomposition"]
