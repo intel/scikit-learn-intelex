@@ -768,11 +768,13 @@ def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 else:
                     w0[:, :coef.shape[1]] = coef
 
-    def _map_to_binary_logistic_regression():
-        nonlocal C_daal_multiplier
-        nonlocal w0
-        C_daal_multiplier = 2
-        w0 *= 2
+    C_daal_multiplier = 1
+    # commented out because this is Py3 feature
+    #def _map_to_binary_logistic_regression():
+    #    nonlocal C_daal_multiplier
+    #    nonlocal w0
+    #    C_daal_multiplier = 2
+    #    w0 *= 2
 
     if multi_class == 'multinomial':
         # fmin_l_bfgs_b and newton-cg accepts only ravelled parameters.
@@ -785,7 +787,9 @@ def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         if solver == 'lbfgs':
             if daal_ready:
                 if classes.size == 2:
-                    _map_to_binary_logistic_regression()
+                    # _map_to_binary_logistic_regression()
+                    C_daal_multiplier = 2
+                    w0 *= 2
                     daal_extra_args_func = _daal4py_logistic_loss_extra_args
                 else:
                     daal_extra_args_func = _daal4py_cross_entropy_loss_extra_args
