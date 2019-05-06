@@ -28,20 +28,6 @@ requirements:
         - tbb
         - {{ pin_compatible('numpy') }}
 
-test:
-    requires:
-        - pandas
-        - scipy
-        - scikit-learn
-    imports:
-        - daal4py
-    source_files:
-        - examples
-        - tests
-    commands:
-        - python -m unittest discover -v -s tests -p test*.py
-        - cd examples && python run_examples.py && cd ..
-
 about:
     home: https://intelpython.github.io/daal4py/
     license: Apache 2.0
