@@ -21,7 +21,9 @@ from collections import defaultdict, OrderedDict, namedtuple
 # wrapped in daal4py.
 def wrap_algo(algo, ver):
     # tailored build: return True only for specified algorithms:
-    if algo.startswith('algorithms::decision_forest'):
+    if (algo.startswith('algorithms::decision_forest') or
+        algo.startswith('algorithms::regression') or
+        algo.startswith('algorithms::classifier')):
         return True
     return False
 
