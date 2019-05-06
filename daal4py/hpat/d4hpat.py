@@ -188,6 +188,12 @@ def inp2d4p(a, b):
 
 @overload(inp2d4p)
 def ovl_inp2d4p(inp):
+    '''
+    Input arguments can be of different python types: numpy arrays, pandas DFs and files.
+    For each input type this @overload generates distinct function, each returning a tuple of the same kind:
+    (void* ptr, int64 ncols, int64 nrows, int64 layout)
+    The tuple is passed to C/'C++ where it gets decoded when generating the internal data_or_file struct.
+    '''
     if isinstance(inp, types.Array) and inp.ndim == 2:
         descr = None
         if inp.dtype == types.float64:
@@ -197,11 +203,13 @@ def ovl_inp2d4p(inp):
         elif inp.dtype == types.intc:
             descr = int(float(3))
         if descr:
-            def inp2d4p_impl(inp):
+            def inp2d4p_array(inp):
                 return (inp.ctypes.data, inp.shape[0], inp.shape[1], descr)
-            return inp2d4p_impl
+            return inp2d4p_array
     if isinstance(inp, types.UnicodeType):
-        raise NotImplementedError("file-input to daal4py not implemented yet for HPAT")
+        def inp2d4p_str(inp):
+            return (inp._data, int(float(0)), inp._length, int(float(0)))
+        return inp2d4p_str
     if inp in algo_factory.all_nbtypes.values():
         def inp2d4p_impl(inp):
             return (inp,)
@@ -440,7 +448,7 @@ def {name}_compute(algo, {argsWdflt}):
         sig = [algo_factory.all_nbtypes['{name}']]
         for i in ityps:
             if i == 'data_or_file':
-                sig += [types.voidptr, types.uint64, types.uint64, types.int64]
+                sig += [types.voidptr, types.int64, types.int64, types.int64]
             else:
                 sig.append(algo_factory.all_nbtypes[i])
         sig = signature(algo_factory.all_nbtypes['{name}_result'], *sig)
