@@ -170,12 +170,12 @@ def my_procid():
     return c_my_procid()
 
 
-cdef data_or_file * mk_data_or_file(object x):
+def _get_data(x):
     if isinstance(x, pdDataFrame):
         x = [x.loc[:,i].values for i in x]
     elif isinstance(x, pdSeries):
         x = [x.values]
-    return new data_or_file(<PyObject *>x)
+    return x
 
 
 def _str(instance, properties):
@@ -559,8 +559,8 @@ gen_compute_macro = gen_inst_algo + """
 
 {% for ia in input_args %}
 {% if "data_or_file" in ia.typ_cpp %}
-        if(!{{ia.arg_member}}->table && {{ia.arg_member}}->file.size()) {{ia.arg_member}}->table = readCSV({{ia.arg_member}}->file);
-        if({{ia.arg_member}}->table) algo{{suffix}}->input.set({{ia.value}}, {{ia.arg_member}}->table);
+        if(!{{ia.arg_member}}.table && {{ia.arg_member}}.file.size()) {{ia.arg_member}}.table = readCSV({{ia.arg_member}}.file);
+        if({{ia.arg_member}}.table) algo{{suffix}}->input.set({{ia.value}}, {{ia.arg_member}}.table);
 {% else %}
         if({{ia.arg_member}}) algo{{suffix}}->input.set({{ia.value}}, to_daal({{ia.arg_member}}));
 {% endif %}
@@ -799,6 +799,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         '''
         if self.c_ptr == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
+        {{input_args|fmt('{}', 'get_obj', sep='\n')|indent(8)}}
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
@@ -831,6 +832,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         '''
         if self.c_ptr == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
+        {{input_args|fmt('{}', 'get_obj', sep='\n')|indent(8)}}
         algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
         deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(28)}},
                             True)
