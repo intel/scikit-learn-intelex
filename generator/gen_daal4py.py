@@ -736,7 +736,7 @@ class cython_interface(object):
                             dflt = None
                         if '::NumericTablePtr' in itype:
                             #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
-                            itype = 'data_or_file *'
+                            itype = 'data_or_file &'
                         ins = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', ins)
                         tmp_input_args.insert(i, mk_var(ins + '::' + iname, itype, 'const', dflt, inpt=True, algo=func, doc=doc))
             else:

@@ -313,7 +313,7 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
 #define SETARRAY_(_T) {daal::services::SharedPtr< _T > _tmp(reinterpret_cast< _T * >(PyArray_DATA(ary)), NumpyDeleter(ary)); soatbl->setArray(_tmp, i);}
                     SET_NPY_FEATURE(PyArray_DESCR(ary)->type, SETARRAY_, throw std::invalid_argument("Found unsupported array type"));
 #undef SETARRAY_
-
+                    Py_INCREF(ary);
                 }
                 if(soatbl->getNumberOfColumns() != N) {
                     delete soatbl;

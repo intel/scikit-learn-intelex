@@ -162,8 +162,13 @@ struct data_or_file
 {
     mutable daal::data_management::NumericTablePtr table;
     std::string                                    file;
-    inline data_or_file(daal::data_management::NumericTablePtr t)
-        : table(t), file() {}
+    template<typename T>
+    inline data_or_file(T * ptr, size_t ncols, size_t nrows, ssize_t layout)
+        : table(), file()
+    {
+        if(layout > 0) throw std::invalid_argument("Supporting only homogeneous, contiguous arrays.");
+        table = daal::data_management::HomogenNumericTable<T>::create(ptr, ncols, nrows);
+    }
     inline data_or_file()
         : table(), file() {}
     data_or_file(PyObject *);
@@ -189,6 +194,7 @@ struct RAW< daal::services::SharedPtr< T > >
 template< typename T > T to_daal(T t) {return t;}
 template< typename T > daal::services::SharedPtr<T> to_daal(daal::services::SharedPtr<T>* t) {return *t;}
 inline const data_or_file & to_daal(const data_or_file * t) {return *t;}
+inline const data_or_file & to_daal(const data_or_file & t) {return t;}
 inline const data_or_file & to_daal(data_or_file * t) {return *t;}
 
 template< typename T >
