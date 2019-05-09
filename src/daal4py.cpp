@@ -388,7 +388,7 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
 	return new daal::data_management::NumericTablePtr();
 }
 
-extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t & str2id)
+daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t & str2id)
 {
     auto dc = new daal::data_management::KeyValueDataCollectionPtr(new daal::data_management::KeyValueDataCollection);
     if(dict && dict != Py_None) {
@@ -465,13 +465,13 @@ void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data
         dims[0] = (*ptr)->getNumberOfRows();
         dims[1] = (*ptr)->getNumberOfColumns();
         switch(dtype) {
-        case 0:
+        case 1:
             *data = get_nt_data_ptr< double >(ptr);
             break;
-        case 1:
+        case 2:
             *data = get_nt_data_ptr< float >(ptr);
             break;
-        case 2:
+        case 3:
             *data = get_nt_data_ptr< int >(ptr);
             break;
         default:
@@ -485,6 +485,22 @@ void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data
     return;
 }
 
+extern "C"
+daal::data_management::NumericTablePtr * from_c_array(void* ptr, size_t ncols, size_t nrows, ssize_t layout)
+{
+
+    switch(layout) {
+    case 1:
+        return new daal::data_management::NumericTablePtr(new daal::data_management::HomogenNumericTable<double>(reinterpret_cast<double*>(ptr), ncols, nrows));
+    case 2:
+        return new daal::data_management::NumericTablePtr(new daal::data_management::HomogenNumericTable<float>(reinterpret_cast<float*>(ptr), ncols, nrows));
+    case 3:
+        return new daal::data_management::NumericTablePtr(new daal::data_management::HomogenNumericTable<int>(reinterpret_cast<int*>(ptr), ncols, nrows));
+    default:
+        throw std::invalid_argument("Supporting only homogeneous, contiguous arrays of doubles, float or ints.");
+    }
+    return NULL;
+}
 
 daal::data_management::DataCollectionPtr * make_datacoll(PyObject * input)
 {

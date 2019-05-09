@@ -787,6 +787,19 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
+    def _compute(self,
+                {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
+                setup=False):
+        if self.c_ptr == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
+        algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
+        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
+        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
+        res.c_ptr = deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(40)}},
+                                        setup)
+        return res
+
+    # compute simply forwards to the C++ de-templatized manager__iface__::compute
     def compute(self,
                 {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(16)}},
                 setup=False):
@@ -797,14 +810,21 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
         :rtype: {{cytype}}
         '''
-        if self.c_ptr == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
-        algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
-        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
-        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
-        res.c_ptr = deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(40)}},
-                                        setup)
-        return res
+        return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
+
+{% if add_setup %}
+    # setup forwards to the C++ de-templatized manager__iface__::compute(..., setup_only=true)
+    def setup(self,
+             {{input_args|fmt('{}', 'decl_cy', sep=',\n')|indent(14)}}):
+        '''
+        {{algo}}.setup({{input_args|fmt('{}', 'name', sep=', ')}})
+        Setup (partial) input data for using algorithm object in other algorithms.
+
+        {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
+        :rtype: None
+        '''
+        return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, True)
+{% endif %}
 
 {% if streaming.name %}
     # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
@@ -818,24 +838,6 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         return res
 {% endif %}
 
-{% if add_setup %}
-    # setup forwards to the C++ de-templatized manager__iface__::compute(..., setup_only=true)
-    def setup(self,
-             {{input_args|fmt('{}', 'decl_cy', sep=',\n')|indent(14)}}):
-        '''
-        {{algo}}.setup({{input_args|fmt('{}', 'name', sep=', ')}})
-        Setup (partial) input data for using algorithm object in other algorithms.
-
-        {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
-        :rtype: None
-        '''
-        if self.c_ptr == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
-        algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
-        deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(28)}},
-                            True)
-        return None
-{% endif %}
 """
 
 # generates the C++ algorithm construction function
@@ -872,12 +874,14 @@ extern "C" {{algo}}__iface__ * mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', se
 
 // A C interface to compute, used for HPAT
 extern "C" void * compute_{{algo}}({{algo}}__iface__ * algo,
-{{' '*(27+(algo|length))}}{{input_args|fmt('{}', 'decl_c', sep=',\n')|indent(27+(algo|length))}})
+{{' '*(27+(algo|length))}}{{input_args|fmt('{}', 'decl_c', sep=',\n')|indent(27+(algo|length))}},
+{{' '*(27+(algo|length))}}bool setup=false)
 {
 {% if distributed.name %}
     algo->{{distributed.arg_member}} = c_num_procs() > 0;
 {% endif %}
-    void * res = algo->compute({{input_args|fmt('{}', 'arg_c', sep=',\n')|indent(31)}});
+    void * res = algo->compute({{input_args|fmt('{}', 'arg_c', sep=',\n')|indent(31)}},
+                               setup);
     return res;
 };
 """
@@ -889,7 +893,8 @@ hpat_spec.append({
     'c_name'      : '{{algo}}',
     'params'      : [{{params_all|fmt('{}', 'spec', sep=',\n')|indent(21)}}],
     'input_types' : [{{input_args|fmt('{}', 'spec', sep=',\n')|indent(21)}}],
-    'result_dist' : {{"'REP'" if step_specs is defined else "'OneD'"}}
+    'result_dist' : {{"'REP'" if step_specs is defined else "'OneD'"}},
+    'has_setup'   : {{True if add_setup else False}}
 })
 '''
 

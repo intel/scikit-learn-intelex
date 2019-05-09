@@ -28,27 +28,23 @@
 #   - sub-classing: parameters of '__interface__' types must accept derived types
 #   - boxing/unboxing of algorithms
 #   - GC: result/model objects returned by daal4py wrappers are newly allocated shared pointers, need to get gc'ed
-#   - float32 tables, input type selection etc.
-#   - key-word/optional input arguments
 #   - see fixme's below
 
 import numpy as np
 from numpy import nan
-from numba import types, cgutils, ir, njit
+from numba import types, cgutils
 from numba.extending import (intrinsic, typeof_impl, overload, overload_method,
-                             overload_attribute, box, unbox, make_attribute_wrapper,
-                             type_callable, models, register_model, lower_builtin, lower_getattr,
-                             NativeValue, lower_cast, get_cython_function_address, typeof_impl)
+                             overload_attribute, box, unbox, models, register_model,
+                             NativeValue, get_cython_function_address)
 from numba.targets.imputils import impl_ret_new_ref
-from numba.typing.templates import (signature, AbstractTemplate, infer, infer_getattr,
-                                    ConcreteTemplate, AttributeTemplate, bound_function, infer_global)
+from numba.typing.templates import signature
 from collections import namedtuple
 import warnings
 from numba.types import unicode_type
 from hpat.distributed_analysis import DistributedAnalysis, Distribution as DType
 from llvmlite import ir as lir
 from numba.targets.arrayobj import _empty_nd_impl
-from hpat.str_ext import gen_unicode_to_std_str
+from hpat.str_ext import gen_unicode_to_std_str, unicode_to_std_str, std_str_type, del_str
 from hpat.hiframes.pd_dataframe_ext import DataFrameType
 import ctypes
 
@@ -80,10 +76,15 @@ dtable_type = types.Array(types.float64, 2, 'C')
 ftable_type = types.Array(types.float32, 2, 'C')
 itable_type = types.Array(types.intc, 2, 'C')
 
+nptypes = {
+    1: dtable_type,
+    2: ftable_type,
+    3: itable_type,
+}
 d4ptypes = {
-    dtable_type: 0,
-    ftable_type: 1,
-    itable_type: 2,
+    'dtable_type': 1,
+    'ftable_type': 2,
+    'itable_type': 3,
 }
 
 d4p_dtypes = {
@@ -94,106 +95,34 @@ d4p_dtypes = {
     'OneD'    : DType.OneD,
 }
 
-def get_lir_type(context, typ):
-    '''Return llvm IR type for given numba type'''
-    # some types have no or an incorrect built-in mapping
-    lirtypes = {
-        unicode_type:   lir.IntType(8).as_pointer(),
-        types.boolean: lir.IntType(1),  # FREQ
-        dtable_type:   [lir.DoubleType().as_pointer(), lir.IntType(64), lir.IntType(64)],
-        ftable_type:   [lir.FloatType().as_pointer(), lir.IntType(64), lir.IntType(64)],
-        itable_type:   [lir.IntType(32).as_pointer(), lir.IntType(64), lir.IntType(64)], # TODO ILP
-    }
-    if isinstance(typ, str):
-        typ = algo_factory.all_nbtypes[typ]
-    return lirtypes[typ] if typ in lirtypes else context.get_data_type(typ)
+@intrinsic
+def nt2nd(typingctx, obj, dtype):
+    assert(isinstance(dtype, types.scalars.IntegerLiteral))
+    np_ary_type = nptypes[dtype.literal_value]
+    def codegen(context, builder, sig, args):  # def nt2nd(context, builder, ptr, ary_type):
+        '''Generate ir code to convert a pointer-to-daal-numeric-table to a ndarray'''
+        # we need to prepare the shape array and a pointer
+        shape_type = lir.ArrayType(lir.IntType(64), 2)
+        shape = cgutils.alloca_once(builder, shape_type)
+        data = cgutils.alloca_once(builder, lir.DoubleType().as_pointer())
+        # we can now declare and call our conversion function
+        fnty = lir.FunctionType(lir.VoidType(),
+                                [lir.IntType(8).as_pointer(), # actually pointer to numeric table
+                                 lir.DoubleType().as_pointer().as_pointer(),
+                                 shape_type.as_pointer(),
+                                 lir.IntType(8)])
+        fn = builder.module.get_or_insert_function(fnty, name='to_c_array')
+        builder.call(fn, [args[0], data, shape, context.get_constant(types.byte, dtype.literal_value)])
+        # convert to ndarray
+        shape = cgutils.unpack_tuple(builder, builder.load(shape))
+        ary = _empty_nd_impl(context, builder, np_ary_type, shape)
+        cgutils.raw_memcpy(builder, ary.data, builder.load(data), ary.nitems, ary.itemsize, align=1)
+        # we are done!
+        return impl_ret_new_ref(context, builder, np_ary_type, ary._getvalue())
+    return np_ary_type(types.voidptr, types.intc), codegen
 
 
-def nt2nd(context, builder, ptr, ary_type):
-    '''Generate ir code to convert a pointer-to-daal-numeric-table to a ndarray'''
-
-    # we need to prepare the shape array and a pointer
-    shape_type = lir.ArrayType(lir.IntType(64), 2)
-    shape = cgutils.alloca_once(builder, shape_type)
-    data = cgutils.alloca_once(builder, lir.DoubleType().as_pointer())
-    assert(ary_type in [dtable_type, ftable_type, itable_type,])
-    # we also need indicate the type of the array (e.g. what we expect)
-    d4ptype = context.get_constant(types.byte, d4ptypes[ary_type])
-    # we can now declare and call our conversion function
-    fnty = lir.FunctionType(lir.VoidType(),
-                            [lir.IntType(8).as_pointer(), # actually pointer to numeric table
-                             lir.DoubleType().as_pointer().as_pointer(),
-                             shape_type.as_pointer(),
-                             lir.IntType(8)])
-    fn = builder.module.get_or_insert_function(fnty, name='to_c_array')
-    builder.call(fn, [ptr, data, shape, d4ptype])
-    # convert to ndarray
-    shape = cgutils.unpack_tuple(builder, builder.load(shape))
-    ary = _empty_nd_impl(context, builder, ary_type, shape)
-    cgutils.raw_memcpy(builder, ary.data, builder.load(data), ary.nitems, ary.itemsize, align=1)
-    # we are done!
-    return impl_ret_new_ref(context, builder, ary_type, ary._getvalue())
-
-
-def gen_call(context, builder, sig, args, c_func):
-    '''
-    This is generating the llvm code for calling a d4p C function.
-    May also convert to ndarray.
-    Used by our dynamically generated/exec'ed @intrinsic/@lower_builtin/@lower_getattr functions below.
-    '''
-    #lir_types = [lir.IntType(8).as_pointer()]  # the first arg is always our algo object (shrd_ptr)
-    #c_args = [args[0]]                         # the first arg is always our algo object (shrd_ptr)
-    lir_types = []
-    c_args = []
-    # prepare our args (usually none for most get_* attribuutes/properties)
-    for i in range(0, len(sig.args)):
-        if sig.args[i] == unicode_type:
-            lir_types.append(get_lir_type(context, unicode_type))
-            c_args.append(gen_unicode_to_std_str(context, builder, args[i]))
-        else:
-            #if sig.args[i] == DataFrameType:
-            lirt = get_lir_type(context, sig.args[i])
-            if isinstance(lirt, list):  # Array!
-                # generate lir code to extract actual arguments
-                # collect args/types in list
-                lir_types += lirt
-                # we need to add another indicator so daal4py know what kind of array it gets
-                # e.g. it could be contiguous or an array-of-arrays.
-                lir_types.append(lir.IntType(1))
-                in_arrtype = sig.args[i]
-                in_array = context.make_array(in_arrtype)(context, builder, args[i])
-                in_shape = cgutils.unpack_tuple(builder, in_array.shape)
-                # This is a raw pointer to a contiguous array
-                ary_type = context.get_constant(types.boolean, True)
-                c_args += [in_array.data, in_shape[0], in_shape[1], ary_type]
-            else:
-                lir_types.append(lirt)
-                c_args.append(args[i])
-    #ret_typ = sig if c_func.startswith('get_') else sig.return_type
-    # Our getter might return an array, which needs special handling
-    ret_is_array = isinstance(sig.return_type, types.Array)
-    # define our llvm return type
-    c_func_ret_type = lir.IntType(8).as_pointer() if ret_is_array else context.get_data_type(sig.return_type)
-    # Now we can define the signature
-    fnty = lir.FunctionType(c_func_ret_type, lir_types)
-    # Get function
-    fn = builder.module.get_or_insert_function(fnty, name=c_func)
-    # and finally generate the call
-    ptr = builder.call(fn, c_args)
-    return nt2nd(context, builder, ptr, sig.return_type) if ret_is_array else ptr
-
-
-def inp2d4p(a, b):
-    assert False, 'Dummy function, only its @overload should be used'
-
-@overload(inp2d4p)
-def ovl_inp2d4p(inp):
-    '''
-    Input arguments can be of different python types: numpy arrays, pandas DFs and files.
-    For each input type this @overload generates distinct function, each returning a tuple of the same kind:
-    (void* ptr, int64 ncols, int64 nrows, int64 layout)
-    The tuple is passed to C/'C++ where it gets decoded when generating the internal data_or_file struct.
-    '''
+def _arr2C(inp):
     if isinstance(inp, types.Array) and inp.ndim == 2:
         descr = None
         if inp.dtype == types.float64:
@@ -206,16 +135,50 @@ def ovl_inp2d4p(inp):
             def inp2d4p_array(inp):
                 return (inp.ctypes.data, inp.shape[0], inp.shape[1], descr)
             return inp2d4p_array
+    if isinstance(inp, types.misc.NoneType):
+        def inp2d4p_none(inp):
+            return (int(float(0)), int(float(0)), int(float(0)), int(float(1)))
+        return inp2d4p_none
+    return None
+
+
+def arr2C(a):
+    assert False, 'Dummy function, only its @overload should be used'
+
+@overload(arr2C)
+def ovl_arr2C(inp):
+    '''
+    Convert a numpy array or None to daal4py's C array signature:
+    (void* ptr, int64 ncols, int64 nrows, int64 layout)
+    '''
+    r = _arr2C(inp)
+    if r != None:
+        return r
+    raise ValueError("Input type '{}' must be an array".format(inp))
+
+
+def inp2d4p(a):
+    assert False, 'Dummy function, only its @overload should be used'
+
+@overload(inp2d4p)
+def ovl_inp2d4p(inp):
+    '''
+    Input arguments can be of different python types: numpy arrays, pandas DFs and files.
+    For each input type this @overload generates distinct function, each returning a tuple of the same kind:
+    (void* ptr, int64 ncols, int64 nrows, int64 layout)
+    The tuple is passed to C/C++ where it gets decoded when generating the internal data_or_file struct.
+    '''
+    r = _arr2C(inp)
+    if r != None:
+        return r
     if isinstance(inp, types.UnicodeType):
         def inp2d4p_str(inp):
             return (inp._data, int(float(0)), inp._length, int(float(0)))
         return inp2d4p_str
-    if inp in algo_factory.all_nbtypes.values():
-        def inp2d4p_impl(inp):
-            return (inp,)
-        return inp2d4p_impl
     raise ValueError("Input type '{}' not supported".format(inp))
 
+# C function to convert a numpy array into a DAAL NT (pointer to shared ptr)
+nt_from_c_array = types.ExternalFunction('from_c_array', types.voidptr(types.voidptr, types.int64, types.int64, types.int64))
 
 ##############################################################################
 ##############################################################################
@@ -228,14 +191,15 @@ def ovl_inp2d4p(inp):
 #    - spec.input_types: list of pairs for input arguments to compute: (numba type, distribution type) [algo only]
 #    - spec.attrs: list of tuple (name, numba-type) representing result or model attributes [model/result only]
 #    - spec.result_dist: distribution type of result [algo only]
+#    - spec.has_setup: True if algo has setup method, False otherwise
 # Note: input/attribute types can be actual numba types or strings.
 #       In the latter case, the type is looked up in the list of 'own' factory-created types
 #       At this point this requires that we can put the list in a canonical order...
 
 D4PSpec = namedtuple('D4PSpec',
-                     'pyclass c_name params input_types result_dist attrs')
+                     'pyclass c_name params input_types result_dist attrs has_setup')
 # default values, only name is required
-D4PSpec.__new__.__defaults__ = (None, None, None, DType.REP, None)
+D4PSpec.__new__.__defaults__ = (None, None, None, DType.REP, None, False)
 
 ##############################################################################
 ##############################################################################
@@ -265,6 +229,7 @@ class algo_factory(object):
         'bool'        : types.boolean,
         'str'         : unicode_type,
     }
+    non_none_nbtypes = [x for x in all_nbtypes.keys() if x != 'str']
 
     def from_d4p(self, spec):
         '''
@@ -277,7 +242,8 @@ class algo_factory(object):
                            spec['c_name'],
                            params = spec['params'],
                            input_types = [(x[0], x[1].rstrip('*'), d4p_dtypes[x[3]]) for x in spec['input_types']],
-                           result_dist =  d4p_dtypes[spec['result_dist']])
+                           result_dist =  d4p_dtypes[spec['result_dist']],
+                           has_setup = spec['has_setup'])
         elif 'attrs' in spec:
             # filter out (do not support) properties for which we do not know the numba type
             attrs = []
@@ -328,17 +294,19 @@ class algo_factory(object):
         # make type and type instance for algo, its result or possibly model
         # also register their opaque data model
         self.NbType = mk_simple(self.name + '_nbtype')
-        self.all_nbtypes[self.name] = self.NbType()
+        _nbt = self.NbType()
+        self.all_nbtypes[self.name] = _nbt
 
         register_model(self.NbType)(models.OpaqueModel)
 
         # some of the classes can be parameters to others and have a default NULL/None
         # We need to cast Python None to C NULL
-        @lower_cast(types.none, self.NbType())
-        def none_to_nbtype(context, builder, fromty, toty, val):
-            zero = context.get_constant(types.intp, 0)
-            return builder.inttoptr(zero, context.get_value_type(toty))
-
+        exec(("@intrinsic\n"
+              "def {name}_from_none(typingctx, obj):\n"
+              "    def codegen(context, builder, sig, args):\n"
+              "        zero = context.get_constant(types.intp, 0)\n"
+              "        return builder.inttoptr(zero, context.get_value_type(algo_factory.all_nbtypes['{name}']))\n"
+              "    return algo_factory.all_nbtypes['{name}'](types.none), codegen\n").format(name=self.name), globals())
 
     def mk_ctor(self):
         '''
@@ -361,34 +329,42 @@ class algo_factory(object):
         # PR numba does not support kwargs when lowering/typing, so we need to fully expand arguments.
         # We can't do this with 'static' code because we do not know the argument names in advance,
         # they are provided in the D4PSpec. Hence we generate a function def as a string and python-exec it
-        # unfortunately this needs to be done for the @intrinsic and the @overload.
-        # The @intrinsic is evaluated lazily, which is probably why we cannot really bind variables here, we need to
-        # expand everything to global names (hence the format(...) below).
+        # The actual code is compiled lazily, which is probably why we cannot really bind variables here, we need to
+        # expand everything to global names (hence the format(...) below). Has this changed?
         # What a drag.
 
-        cmm_string = '''
-@overload(daal4py.{0})
-def _ovld({5}):
-    @intrinsic
-    def _cmm_{0}(typingctx, {2}):
-        def codegen(context, builder, sig, args):
-            return gen_call(context, builder, sig, args, 'mk_{1}')
-            #fnty = lir.FunctionType(lir.IntType(8).as_pointer(), # ctors always just return an opaque pointer
-            #                        [{3}])
-            #fn = builder.module.get_or_insert_function(fnty, name='mk_{1}')
-            #return builder.call(fn, args)
-        return algo_factory.all_nbtypes['{0}']({4}), codegen
-
-    def _ovld_impl({5}):
-        return _cmm_{0}({2})
-
-    return _ovld_impl
-'''.format(self.name,
-           self.spec.c_name,
-           ', '.join([x[0] for x in self.spec.params]),
-           ', '.join(['get_lir_type(context, "' + x[1] + '")' for x in self.spec.params]),
-           ', '.join(['algo_factory.all_nbtypes["' + x[1] + '"]' for x in self.spec.params]),
-           ', '.join([x[0] + ('=' + ('"{}"'.format(x[2]) if algo_factory.all_nbtypes[x[1]] == unicode_type else str(x[2])) if x[2] != None else '') for x in self.spec.params]))
+        cmm_string = ("@overload(daal4py.{name})\n"
+                      "def mk_{name}_ovld({argsWdflt}):\n"
+                      "    args = []\n"
+                      "    for i in [{ityps}]:\n"
+                      "        if i == 'str':\n"
+                      "            args.append(std_str_type)\n"
+                      "        elif i == 'table':\n"
+                      "            args += [types.voidptr, types.int64, types.int64, types.int64]\n"
+                      "        else:\n"
+                      "            args.append(algo_factory.all_nbtypes[i])\n"
+                      "    sig = signature(algo_factory.all_nbtypes['{name}'], *args)\n"
+                      "    cfunc = types.ExternalFunction('mk_{cname}', sig)\n"
+                      "\n"
+                      "    def mk_{name}({argsWdflt}):\n"
+                      "        {precall}\n"
+                      "        res = cfunc({cargs})\n"
+                      "        {postcall}\n"
+                      "        return res\n"
+                      "\n"
+                      "    return mk_{name}")
+        cmm_string = cmm_string.format(name=self.name,
+                                       cname=self.spec.c_name,
+                                       cargs=', '.join(['*arr2C({})'.format(x[0]) if x[1] == 'table' else  x[0] for x in self.spec.params]),
+                                       argsWdflt=', '.join([x[0] + ('=' + ('"{}"'.format(x[2]) if algo_factory.all_nbtypes[x[1]] == unicode_type else str(x[2]))
+                                                                    if x[2] != None else '') for x in self.spec.params]),
+                                       ityps=', '.join(["'{}'".format(x[1]) for x in self.spec.params]),
+                                       precall ='\n        '.join(['{0} = unicode_to_std_str({0})'.format(x[0])
+                                                                   if x[1] == 'str'
+                                                                   else '{arg} = {arg} if {arg} != None else {typ}_from_none({arg})'.format(typ=x[1], arg=x[0])
+                                                                   for x in self.spec.params if x[1] not in algo_factory.non_none_nbtypes]),
+                                       postcall='\n        '.join(['del_str({0})'.format(x[0]) for x in self.spec.params if x[1] == 'str']),
+        )
 
         exec(cmm_string, globals(), {})
 
@@ -396,25 +372,16 @@ def _ovld({5}):
     def mk_attrs(self):
         '''
         Provide the typing and lowering for getters and calling compute
-        Again, we can't use static code for our infer_getarr class, so we need
+        Again, we can't use static code, so we need
         to generate code that we exec.
-        Apparently the @infer_getattr/@bound_function and @lower_builtin need to
-        be in the same context, so we need to include the @lower_builtin stuff
-        there, too.
         '''
 
         if not self.spec:
             return
 
         # Initing the code we want to exec
-        lower_code = ''
-        ovl_code   = ''
-        infer_code = '''# This is our class providing the resolve_* methods
-@infer_getattr
-class AlgoAttributes_{0}(AttributeTemplate):
-    "declares numba signatures of attributes/methods of {0} objects"
-    key = algo_factory.all_nbtypes['{0}'].__class__
-'''.format(self.spec.c_name)
+        attr_code = ''
+        ovl_code  = ''
 
         # The python name stub (module + class)
         name_stub = '_'+'.'.join([self.spec.pyclass.__module__.strip('_'), self.spec.pyclass.__name__])
@@ -424,49 +391,69 @@ class AlgoAttributes_{0}(AttributeTemplate):
         if self.spec.attrs:
             for a in self.spec.attrs:
                 c_func = '_'.join(['get', self.spec.c_name, a[0]])
-                full_name = '.'.join([name_stub, a[0]])
-                # for typing we simply provide resolve_* method for each attribute
-                infer_code += '''
-    def resolve_{0}(self, obj):
-        return algo_factory.all_nbtypes['{1}']
-'''.format(a[0], a[1])
 
-                # lowering code for properties through @lower_getattr
-                lower_code += '''
-@lower_getattr(algo_factory.all_nbtypes['{0}'], '{1}') # getters have no args (other than self)
-def lower_{2}(context, builder, typ, val):
-    return gen_call(context, builder, algo_factory.all_nbtypes['{3}'](typ), [val], '{2}')
-'''.format(self.name, a[0], c_func, a[1])
+                # lowering code for properties through @overload_attribute
+                attr_code += ("@overload_attribute(algo_factory.all_nbtypes['{0}'], '{1}')\n" # getters have no args (other than self)
+                              "def {0}_get_{1}(obj):\n"
+                              "  cfunc = types.ExternalFunction('{2}', {3}(algo_factory.all_nbtypes['{0}']))\n"
+                              "  def _impl(obj):\n"
+                              "    r = cfunc(obj)\n"
+                              "    return {4}\n"
+                              "  return _impl").format(self.name,
+                                                       a[0],
+                                                       c_func,
+                                                       'types.voidptr' if a[1] in d4ptypes else a[1],
+                                                       'nt2nd(r, {})'.format(d4ptypes[a[1]]) if a[1] in d4ptypes else 'r')
 
-        # Now we handle compute method of algorithm classes
+        # Now we handle compute and setup method of algorithm classes
+        # we forward compute and setup to  the lower-level _compute method
         if self.spec.input_types:
-            ovl_code = '''
-@overload_method(type(algo_factory.all_nbtypes['{name}']), 'compute')
-def {name}_compute(algo, {argsWdflt}):
-    if isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):
-        ityps = [{ityps}]
-        sig = [algo_factory.all_nbtypes['{name}']]
-        for i in ityps:
-            if i == 'data_or_file':
-                sig += [types.voidptr, types.int64, types.int64, types.int64]
-            else:
-                sig.append(algo_factory.all_nbtypes[i])
-        sig = signature(algo_factory.all_nbtypes['{name}_result'], *sig)
-        cfunc = types.ExternalFunction('compute_{cname}', sig)
+            ovl_code += ("@overload_method(type(algo_factory.all_nbtypes['{name}']), '_compute')\n"
+                         "def {name}_compute_setup(algo, {args}, setup):\n"
+                         "    if isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):\n"
+                         "        ityps = [{ityps}]\n"
+                         "        sig = [algo_factory.all_nbtypes['{name}']]\n"
+                         "        for i in ityps:\n"
+                         "            if i == 'data_or_file':\n"
+                         "                sig += [types.voidptr, types.int64, types.int64, types.int64]\n"
+                         "            else:\n"
+                         "                sig.append(algo_factory.all_nbtypes[i])\n"
+                         "        sig.append(types.boolean)\n"
+                         "        sig = signature(algo_factory.all_nbtypes['{name}_result'], *sig)\n"
+                         "        cfunc = types.ExternalFunction('compute_{cname}', sig)\n"
+                         "\n"
+                         "        def {name}_compute_setup_impl(algo, {args}, setup):\n"
+                         "            return cfunc(algo, {cargs}, setup)\n"
+                         "\n"
+                         "        return {name}_compute_setup_impl\n"
+                         "\n"
+                         "@overload_method(type(algo_factory.all_nbtypes['{name}']), 'compute')\n"
+                         "def {name}_compute(algo, {argsWdflt}):\n"
+                         "    if isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):\n"
+                         "        def {name}_compute_impl(algo, {args}):\n"
+                         "            return algo._compute({args}, False)\n"
+                         "        return {name}_compute_impl")
 
-        def {name}_compute_impl(algo, {argsWdflt}):
-            return cfunc(algo, {cargs})
+            # Algo might have a setup call
+            if self.spec.has_setup:
+                ovl_code += ("@overload_method(type(algo_factory.all_nbtypes['{name}']), 'setup')\n"
+                             "def {name}_setup(algo, {argsWdflt}):\n"
+                             "    if {has_setup} and isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):\n"
+                             "        def {name}_setup_impl(algo, {args}):\n"
+                             "            return algo._compute({args}, True)\n"
+                             "        return {name}_setup_impl")
 
-        return {name}_compute_impl
-'''.format(name=self.name,
-           cname=self.spec.c_name,
-           args=', '.join([x[0] for x in self.spec.input_types]),
-           argsWdflt=', '.join(['{}=None'.format(x[0]) for x in self.spec.input_types]),
-           ityps=', '.join(["'{}'".format(x[1]) for x in self.spec.input_types]),
-           cargs=', '.join(['*inp2d4p({0})'.format(x[0]) for x in self.spec.input_types]))
+            ovl_code = ovl_code.format(name=self.name,
+                                       cname=self.spec.c_name,
+                                       args=', '.join([x[0] for x in self.spec.input_types]),
+                                       argsWdflt=', '.join(['{}=None'.format(x[0]) for x in self.spec.input_types]),
+                                       ityps=', '.join(["'{}'".format(x[1]) for x in self.spec.input_types]),
+                                       cargs=', '.join(['*inp2d4p({0})'.format(x[0]) if x[1] == 'data_or_file' else '({},)'.format(x[0]) for x in self.spec.input_types]),
+                                       has_setup=self.spec.has_setup)
+            # endif self.spec.input_types
 
         try:
-            exec(infer_code+lower_code+ovl_code, globals(), {})
+            exec(attr_code+ovl_code, globals(), {})
         except Exception as e:
             import sys
             print("Unexpected error:", sys.exc_info()[0])
@@ -535,6 +522,42 @@ algo_map = {}
 for a in algos:
     a.activate()
     algo_map[algo_factory.all_nbtypes[a.name]] = a
+
+@overload(daal4py.daalinit)
+def ovl_daalinit():
+    c_daalinit = types.ExternalFunction('c_daalinit', types.void(types.int32))
+    def daalinit():
+        c_daalinit()
+    return daalinit
+
+@overload(daal4py.daalfini)
+def ovl_daalfini():
+    c_daalfini = types.ExternalFunction('c_daalfini', types.void())
+    def daalfini():
+        c_daalfini()
+    return daalfini
+
+@overload(daal4py.num_threads)
+def ovl_num_threads():
+    c_num_threads = types.ExternalFunction('c_num_threads', types.uint64())
+    def num_threads():
+        return c_num_threads()
+    return num_threads
+
+@overload(daal4py.num_procs)
+def ovl_num_procs():
+    c_num_procs = types.ExternalFunction('c_num_procs', types.uint64())
+    def num_procs():
+        return c_num_procs()
+    return num_procs
+
+@overload(daal4py.my_procid)
+def ovl_my_procid():
+    c_my_procid = types.ExternalFunction('c_my_procid', types.uint64())
+    def my_procid():
+        return c_my_procid()
+    return my_procid
+
 #del algos
 
 ##############################################################################

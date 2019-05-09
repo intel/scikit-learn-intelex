@@ -158,6 +158,9 @@ struct IOManager
     }
 };
 
+// return DAAL NumericTablePtr* built from C array.
+extern "C" daal::data_management::NumericTablePtr * from_c_array(void * ptr, size_t ncols, size_t nrows, ssize_t layout);
+
 struct data_or_file
 {
     mutable daal::data_management::NumericTablePtr table;
@@ -167,21 +170,11 @@ struct data_or_file
     inline data_or_file(void * ptr, size_t ncols, size_t nrows, ssize_t layout)
         : table(), file()
     {
-        switch(layout) {
-            case 1:
-                table = daal::data_management::HomogenNumericTable<double>::create(reinterpret_cast<double*>(ptr), ncols, nrows);
-                break;
-            case 2:
-                table = daal::data_management::HomogenNumericTable<float>::create(reinterpret_cast<float*>(ptr), ncols, nrows);
-                break;
-            case 3:
-                table = daal::data_management::HomogenNumericTable<int>::create(reinterpret_cast<int*>(ptr), ncols, nrows);
-                break;
-            case 0:
-                file = std::string(reinterpret_cast<char*>(ptr), ncols);
-                break;
-            default:
-                 throw std::invalid_argument("Supporting only homogeneous, contiguous arrays of doubles, float or ints.");
+        if(layout == 0) file = std::string(reinterpret_cast<char*>(ptr), ncols);
+        else {
+            auto tmp = from_c_array(ptr, ncols, nrows, layout);
+            table = *tmp;
+            delete tmp;
         }
     }
     inline data_or_file()
