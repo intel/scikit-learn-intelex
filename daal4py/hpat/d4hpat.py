@@ -32,7 +32,7 @@
 
 import numpy as np
 from numpy import nan
-from numba import types, cgutils
+from numba import types, cgutils, objmode
 from numba.extending import (intrinsic, typeof_impl, overload, overload_method,
                              overload_attribute, box, unbox, models, register_model,
                              NativeValue, get_cython_function_address)
@@ -93,6 +93,7 @@ d4p_dtypes = {
     'TwoD'    : DType.TwoD,
     'OneD_Var': DType.OneD_Var,
     'OneD'    : DType.OneD,
+    None      : None
 }
 
 @intrinsic
@@ -296,6 +297,8 @@ class algo_factory(object):
         self.NbType = mk_simple(self.name + '_nbtype')
         _nbt = self.NbType()
         self.all_nbtypes[self.name] = _nbt
+        # FIXME: fix after Numba #3372 is resolved
+        setattr(types, 'd4p_'+self.name, _nbt)
 
         register_model(self.NbType)(models.OpaqueModel)
 
@@ -333,26 +336,16 @@ class algo_factory(object):
         # expand everything to global names (hence the format(...) below). Has this changed?
         # What a drag.
 
+        # see commit 1f502e4246b5c3df18a71df8348b1322210a149e for a true @overload
+        # which however would need handling class hierachies of algorithms (e.g. optimization solvers, engines)
         cmm_string = ("@overload(daal4py.{name})\n"
                       "def mk_{name}_ovld({argsWdflt}):\n"
-                      "    args = []\n"
-                      "    for i in [{ityps}]:\n"
-                      "        if i == 'str':\n"
-                      "            args.append(std_str_type)\n"
-                      "        elif i == 'table':\n"
-                      "            args += [types.voidptr, types.int64, types.int64, types.int64]\n"
-                      "        else:\n"
-                      "            args.append(algo_factory.all_nbtypes[i])\n"
-                      "    sig = signature(algo_factory.all_nbtypes['{name}'], *args)\n"
-                      "    cfunc = types.ExternalFunction('mk_{cname}', sig)\n"
-                      "\n"
                       "    def mk_{name}({argsWdflt}):\n"
-                      "        {precall}\n"
-                      "        res = cfunc({cargs})\n"
-                      "        {postcall}\n"
-                      "        return res\n"
-                      "\n"
-                      "    return mk_{name}")
+                      "        with objmode(r='d4p_{name}'):\n"
+                      "            r = daal4py.{name}({args})\n"
+                      "            print('alskdjfasldkfj', r)\n"
+                      "        return r\n"
+                      "    return mk_{name}\n")
         cmm_string = cmm_string.format(name=self.name,
                                        cname=self.spec.c_name,
                                        cargs=', '.join(['*arr2C({})'.format(x[0]) if x[1] == 'table' else  x[0] for x in self.spec.params]),
@@ -364,8 +357,9 @@ class algo_factory(object):
                                                                    else '{arg} = {arg} if {arg} != None else {typ}_from_none({arg})'.format(typ=x[1], arg=x[0])
                                                                    for x in self.spec.params if x[1] not in algo_factory.non_none_nbtypes]),
                                        postcall='\n        '.join(['del_str({0})'.format(x[0]) for x in self.spec.params if x[1] == 'str']),
+                                       args=', '.join([x[0] for x in  self.spec.params]),
         )
-
+        #print('llllll', cmm_string)
         exec(cmm_string, globals(), {})
 
 
@@ -399,11 +393,11 @@ class algo_factory(object):
                               "  def _impl(obj):\n"
                               "    r = cfunc(obj)\n"
                               "    return {4}\n"
-                              "  return _impl").format(self.name,
-                                                       a[0],
-                                                       c_func,
-                                                       'types.voidptr' if a[1] in d4ptypes else a[1],
-                                                       'nt2nd(r, {})'.format(d4ptypes[a[1]]) if a[1] in d4ptypes else 'r')
+                              "  return _impl\n").format(self.name,
+                                                         a[0],
+                                                         c_func,
+                                                         'types.voidptr' if a[1] in d4ptypes else a[1],
+                                                         'nt2nd(r, {})'.format(d4ptypes[a[1]]) if a[1] in d4ptypes else 'r')
 
         # Now we handle compute and setup method of algorithm classes
         # we forward compute and setup to  the lower-level _compute method
@@ -432,7 +426,7 @@ class algo_factory(object):
                          "    if isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):\n"
                          "        def {name}_compute_impl(algo, {args}):\n"
                          "            return algo._compute({args}, False)\n"
-                         "        return {name}_compute_impl")
+                         "        return {name}_compute_impl\n")
 
             # Algo might have a setup call
             if self.spec.has_setup:
@@ -440,8 +434,9 @@ class algo_factory(object):
                              "def {name}_setup(algo, {argsWdflt}):\n"
                              "    if {has_setup} and isinstance(algo, type(algo_factory.all_nbtypes['{name}'])):\n"
                              "        def {name}_setup_impl(algo, {args}):\n"
-                             "            return algo._compute({args}, True)\n"
-                             "        return {name}_setup_impl")
+                             "            algo._compute({args}, True)\n"
+                             "            return\n"
+                             "        return {name}_setup_impl\n")
 
             ovl_code = ovl_code.format(name=self.name,
                                        cname=self.spec.c_name,
@@ -450,6 +445,7 @@ class algo_factory(object):
                                        ityps=', '.join(["'{}'".format(x[1]) for x in self.spec.input_types]),
                                        cargs=', '.join(['*inp2d4p({0})'.format(x[0]) if x[1] == 'data_or_file' else '({},)'.format(x[0]) for x in self.spec.input_types]),
                                        has_setup=self.spec.has_setup)
+            #print('llllll', ovl_code)
             # endif self.spec.input_types
 
         try:
@@ -471,22 +467,10 @@ class algo_factory(object):
 
     def mk_boxing(self):
         '''provide boxing and unboxing'''
-
-        if not self.spec or self.spec.input_types:
-            # we only support models/results at this point
+        if not self.spec:
             return
 
         ll.add_symbol('unbox_'+self.spec.c_name, self.cy_unboxer())
-
-        @box(self.NbType)
-        def box_me(typ, val, c):
-            'Call Cythons contructor with the C++ pointer and return Python object.'
-            ll_intp = c.context.get_value_type(types.uintp)
-            addr = c.builder.ptrtoint(val, ll_intp)
-            v = c.box(types.uintp, addr)
-            py_obj = c.pyapi.unserialize(c.pyapi.serialize_object(self.spec.pyclass))
-            res = c.pyapi.call_function_objargs(py_obj, (v,))
-            return res
 
         @unbox(self.NbType)
         def unbox_me(typ, obj, c):
@@ -498,7 +482,20 @@ class algo_factory(object):
             # finally generate the call
             ptr = c.builder.call(fn, [obj])
             return NativeValue(ptr, is_error=c.pyapi.c_api_error())
+        
+        if self.spec.input_types:
+            # we only support boxing of models/results at this point
+            return
 
+        @box(self.NbType)
+        def box_me(typ, val, c):
+            'Call Cythons contructor with the C++ pointer and return Python object.'
+            ll_intp = c.context.get_value_type(types.uintp)
+            addr = c.builder.ptrtoint(val, ll_intp)
+            v = c.box(types.uintp, addr)
+            py_obj = c.pyapi.unserialize(c.pyapi.serialize_object(self.spec.pyclass))
+            res = c.pyapi.call_function_objargs(py_obj, (v,))
+            return res
 
 
 ##############################################################################
@@ -579,6 +576,7 @@ def _analyze_call_d4p():
         # every d4p algo gets executed by invoking "compute".
         # we need to find the algorithm that's currently called
         algo = algo_map[mod_typ]
+        rdist = algo.spec.result_dist if algo.spec.result_dist != None else DType.OneD
         # handle all input arguments and set their distribution as given by the spec
         for i in range(len(args)):
             aname = args[i].name
@@ -586,7 +584,11 @@ def _analyze_call_d4p():
             if aname not in array_dists:
                 array_dists[aname] = adist
             else:
-                min_adist = DType.OneD_Var if adist == DType.OneD else adist
+                if algo.spec.result_dist:
+                    min_adist = DType.OneD_Var if adist == DType.OneD else adist
+                else:
+                    # if algo has no distributed mode, we just follow
+                    min_adist = DType.REP
                 assert array_dists[aname].value <= DType.OneD.value, "Cannot handle unknown distribution type"
                 # bail out if there is a distribution conflict with some other use of the argument
                 # FIXME: handle DType.Thread and Disribution.REP as equivalent
@@ -596,10 +598,14 @@ def _analyze_call_d4p():
                        .format(i+1, algo.spec.input_types[i][0], algo.name, adist, array_dists[aname])
         # handle distribution of the result
         if lhs not in array_dists:
-            array_dists[lhs] = algo.spec.result_dist
+            array_dists[lhs] = rdist
         else:
-            array_dists[lhs] = DType(min(array_dists[lhs].value, algo.spec.result_dist.value))
-            min_rdist = DType.OneD_Var if algo.spec.result_dist == DType.OneD else algo.spec.result_dist
+            array_dists[lhs] = DType(min(array_dists[lhs].value, rdist.value))
+            if algo.spec.result_dist:
+                min_rdist = DType.OneD_Var if rdist == DType.OneD else algo.spec.result_dist
+            else:
+                # if algo has no distributed mode, the result dist follows the input
+                min_rdist = DType.REP
             assert array_dists[lhs].value >= min_rdist.value,\
                 'Distribution ({}) to "daal4py.{}.compute" must be at least "{}". '\
                 'Some other use of it demands "{}", though.'\

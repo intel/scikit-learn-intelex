@@ -307,6 +307,11 @@ void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
     PyArray_SetBaseObject(ary, cap);
 }
 
+template< typename T >
+static T* _daal_clone(const T & o)
+{
+    return new T(o);
+}
 
 extern "C" {
 void set_rawp_base(PyArrayObject *, void *);
