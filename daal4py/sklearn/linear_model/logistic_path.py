@@ -48,6 +48,7 @@ from sklearn.linear_model.logistic import (
     _multinomial_grad_hess,
     LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
+from sklearn.linear_model.base import (LinearClassifierMixin, SparseCoefMixin, BaseEstimator)
 
 use_daal = True
 
@@ -942,7 +943,8 @@ def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
 
 if (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
-    class LogisticRegression(LogisticRegression_original):
+    class LogisticRegression(LogisticRegression_original, BaseEstimator,
+                             LinearClassifierMixin, SparseCoefMixin):
         def __init__(self, penalty='l2', dual=False, tol=1e-4, C=1.0,
                      fit_intercept=True, intercept_scaling=1, class_weight=None,
                      random_state=None, solver='warn', max_iter=100,
@@ -965,7 +967,8 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
             self.n_jobs = n_jobs
             self.l1_ratio = l1_ratio
 else:
-    class LogisticRegression(LogisticRegression_original):
+    class LogisticRegression(LogisticRegression_original, BaseEstimator,
+                             LinearClassifierMixin, SparseCoefMixin):
         def __init__(self, penalty='l2', dual=False, tol=1e-4, C=1.0,
                      fit_intercept=True, intercept_scaling=1, class_weight=None,
                      random_state=None, solver='warn', max_iter=100,
