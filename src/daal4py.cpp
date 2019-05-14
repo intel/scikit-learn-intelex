@@ -273,7 +273,7 @@ static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
 // * list of arrays, heterogen -> DAAL SOANumericTable
 // * scipy csr_matrix -> DAAL CSRNumericTable
 //   As long as DAAL CSR is only 0-based we need to copy indices/offsets
-daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
+daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 {
     if(PyErr_Occurred()) {PyErr_Print(); PyErr_Clear();}
     if(obj && obj != Py_None) {
@@ -381,16 +381,16 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
             Py_DECREF(roffs);
             Py_DECREF(indcs);
             Py_DECREF(vals);
-            return new daal::data_management::NumericTablePtr(ret);
+            return daal::data_management::NumericTablePtr(ret);
         }
-        return new daal::data_management::NumericTablePtr(ptr);
+        return daal::data_management::NumericTablePtr(ptr);
     }
-	return new daal::data_management::NumericTablePtr();
+	return daal::data_management::NumericTablePtr();
 }
 
-extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t & str2id)
+extern daal::data_management::KeyValueDataCollectionPtr make_dnt(PyObject * dict, str2i_map_t & str2id)
 {
-    auto dc = new daal::data_management::KeyValueDataCollectionPtr(new daal::data_management::KeyValueDataCollection);
+    daal::data_management::KeyValueDataCollectionPtr dc(new daal::data_management::KeyValueDataCollection);
     if(dict && dict != Py_None) {
         if(PyDict_Check(dict)) {
             PyObject *key, *value;
@@ -399,13 +399,12 @@ extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * di
                 const char *strkey = PyString_AsString(key);
                 auto keyid = str2id.find(strkey);
                 if(keyid != str2id.end()) {
-                    daal::data_management::NumericTablePtr * tbl = make_nt(value);
+                    daal::data_management::NumericTablePtr tbl = make_nt(value);
                     if(tbl) {
-                        (**dc)[keyid->second] = daal::services::staticPointerCast<daal::data_management::SerializationIface>(*tbl);
+                        (*dc)[keyid->second] = daal::services::staticPointerCast<daal::data_management::SerializationIface>(tbl);
                     } else {
                         std::cerr << "Unexpected object '" << Py_TYPE(value)->tp_name << "' found in dict, expected an array\n";
                     }
-                    delete tbl;
                 } else {
                     std::cerr << "Unexpected key '" << Py_TYPE(key)->tp_name << "' found in dict, expected a string\n";
                 }
@@ -429,8 +428,7 @@ data_or_file::data_or_file(PyObject * input)
     } else {
         auto tmp = make_nt(input);
         if(tmp) {
-            this->table = *tmp;
-            delete tmp;
+            this->table = tmp;
         }
         if(! this->table) {
             std::cerr << "Got type '" << Py_TYPE(input)->tp_name << "' when expecting string, array, or list of 1d-arrays. Treating as None." << std::endl;
@@ -486,7 +484,7 @@ void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data
 }
 
 
-daal::data_management::DataCollectionPtr * make_datacoll(PyObject * input)
+daal::data_management::DataCollectionPtr make_datacoll(PyObject * input)
 {
     if(PyErr_Occurred()) {PyErr_Print(); PyErr_Clear();}
     if(input && input != Py_None && PyList_Check(input) && PyList_Size(input) > 0) {
@@ -497,12 +495,12 @@ daal::data_management::DataCollectionPtr * make_datacoll(PyObject * input)
             PyObject * obj = PyList_GetItem(input, i);
             if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
             auto tmp = make_nt(obj);
-            if(tmp) res->push_back(*tmp);
+            if(tmp) res->push_back(tmp);
             else throw std::runtime_error(std::string("Unexpected object '") + Py_TYPE(obj)->tp_name + "' found in list, expected an array");
         }
-        return new daal::data_management::DataCollectionPtr(res);
+        return daal::data_management::DataCollectionPtr(res);
     }
-    return NULL;
+    return daal::data_management::DataCollectionPtr();
 }
 
 

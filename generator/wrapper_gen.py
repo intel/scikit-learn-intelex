@@ -125,18 +125,20 @@ cdef extern from "daal4py.h":
 
     cdef std_string to_std_string(PyObject * o) except +
 
-    cdef PyObject * make_nda(NumericTablePtr * nt_ptr) except +
-    cdef PyObject * make_nda(list_NumericTablePtr * nt_ptr) except +
-    cdef PyObject * make_nda(dict_NumericTablePtr * nt_ptr, void *) except +
-    cdef NumericTablePtr * make_nt(PyObject * nda) except +
-    cdef list_NumericTablePtr * make_datacoll(PyObject * nda) except +
-    cdef dict_NumericTablePtr * make_dnt(PyObject * nda, void *) except +
+    cdef object make_nda(NumericTablePtr * nt_ptr) except +
+    cdef object make_nda(list_NumericTablePtr * nt_ptr) except +
+    cdef object make_nda(dict_NumericTablePtr * nt_ptr, void *) except +
+    cdef NumericTablePtr make_nt(PyObject * nda) except +
+    cdef list_NumericTablePtr make_datacoll(PyObject * nda) except +
+    cdef dict_NumericTablePtr make_dnt(PyObject * nda, void *) except +
 
     cdef T* dynamicPointerPtrCast[T,U](U*)
     cdef bool is_valid_ptrptr[T](T * o)
 
     cdef void * e2s_algorithms_pca_result_dataForTransform
     cdef void * s2e_algorithms_pca_transform
+
+    cdef T* _daal_clone[T](const T & o)
 
 NAN64 = NaN64
 NAN32 = NaN32
@@ -434,6 +436,7 @@ public:
 };
 
 typedef {{iface_name}}__iface__ c_{{iface_name}}__iface__;
+typedef daal::services::SharedPtr<{{iface_name}}__iface__> c_{{iface_name}}__iface__sptr;
 
 static {{iface_type}} to_daal(c_{{iface_name}}__iface__ * t) {return t ? t->get_ptr() : {{iface_type}}();}
 {% endmacro %}
@@ -446,8 +449,13 @@ gen_cython_iface_macro = """
 cdef extern from "daal4py_cpp.h":
     cdef cppclass c_{{iface_name}}__iface__{{'(c_'+parent|d2cy(False)+')' if parent else ''}}:
         pass
+    cdef cppclass c_{{iface_name}}__iface__sptr{{'(c_'+parent|d2cy(False)+'sptr)' if parent else ''}}:
+        c_{{iface_name}}__iface__sptr()
+        c_{{iface_name}}__iface__sptr(c_{{iface_name}}__iface__*)
+        c_{{iface_name}}__iface__sptr(c_{{iface_name}}__iface__sptr)
+        c_{{iface_name}}__iface__ * get()
+        void reset()
 
-#    ctypedef c_{{iface_name}}__iface__ c_{{iface_type|flat|strip(' *')}};
 
 {% set inl = iface_name|lower + '__iface__' %}
 {% if parent %}
@@ -455,13 +463,12 @@ cdef class {{inl}}({{parent|d2cy(False)|lower}}):
     pass
 {% else %}
 cdef class {{inl}}():
-    cdef c_{{iface_name}}__iface__ * c_ptr
+    cdef c_{{iface_name}}__iface__sptr c_ptr
 
     def __cinit__(self):
-        self.c_ptr = NULL
+        self.c_ptr.reset()
 
-    def __dealloc__(self):
-        del self.c_ptr
+    # we do not need __dealloc__(self), we store plain shared ptr
 {% endif %}
 
 hpat_spec.append({
@@ -621,9 +628,11 @@ manager_wrapper_template = gen_typedefs_macro + gen_compute_macro + """
 {% if template_decl|length == template_args|length %}
 // The type used in cython
 typedef {{algo}}__iface__  c_{{algo}}_manager__iface__;
+typedef daal::services::SharedPtr<{{algo}}__iface__>  c_{{algo}}_manager__iface__sptr;
 
 // The algo creation function
-extern "C" {{algo}}__iface__ * mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(27+2*(algo|length))}});
+extern "C" daal::services::SharedPtr<{{algo}}__iface__>
+mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(4+(algo|length))}});
 {% endif %}
 
 {% if template_decl  %}
@@ -759,11 +768,17 @@ cdef extern from "daal4py.h":
 {% if streaming.name %}
         {{result_map.class_type|flat}} finalize() except +
 {% endif %}
+    cdef cppclass c_{{algo}}_manager__iface__sptr{{'(c_'+iface[0]+'__iface__sptr)' if iface[0] else ''}}:
+        c_{{algo}}_manager__iface__sptr()
+        c_{{algo}}_manager__iface__sptr(c_{{algo}}_manager__iface__*)
+        c_{{algo}}_manager__iface__sptr(c_{{algo}}_manager__iface__sptr)
+        c_{{algo}}_manager__iface__ * get()
+        void reset()
 
 
 cdef extern from "daal4py_cpp.h":
     # declare the C++ construction function. Returns the manager__iface__ for access to de-templatized constructor
-    cdef c_{{algo}}_manager__iface__ * mk_{{algo}}({{params_all|fmt('{}', 'decl_cyext', sep=',\n')|indent(35+2*(algo|length))}}) except +
+    cdef c_{{algo}}_manager__iface__sptr mk_{{algo}}({{params_all|fmt('{}', 'decl_cyext', sep=',\n')|indent(37+2*(algo|length))}}) except +
 
 # this is our actual algorithm class for Python
 cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
@@ -782,13 +797,26 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)
-    cdef c_{{algo}}_manager__iface__ * c_ptr
+    cdef c_{{algo}}_manager__iface__sptr c_ptr
 
-    def __dealloc__(self):
-        del self.c_ptr
+    # we do not need __dealloc__(self), we store plain shared ptr
 {% endif %}
 
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
+    # compute simply forwards to the C++ de-templatized manager__iface__::compute
+    def _compute(self,
+                 {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
+                 setup=False):
+        if self.c_ptr.get() == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
+        {{input_args|fmt('{}', 'get_obj', sep='\n')|indent(8)}}
+        cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
+        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
+        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
+        res.c_ptr = deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(40)}},
+                                        setup)
+        return res
+
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
     def compute(self,
                 {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(16)}},
@@ -800,22 +828,14 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
         :rtype: {{cytype}}
         '''
-        if self.c_ptr == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
-        {{input_args|fmt('{}', 'get_obj', sep='\n')|indent(8)}}
-        algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
-        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
-        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
-        res.c_ptr = deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(40)}},
-                                        setup)
-        return res
+        return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
 
 {% if streaming.name %}
     # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
     def finalize(self):
-        if self.c_ptr == NULL:
+        if self.c_ptr.get() == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
-        algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
+        cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
         res.c_ptr = deref(algo).finalize()
@@ -833,14 +853,24 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
         :rtype: None
         '''
-        if self.c_ptr == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
-        {{input_args|fmt('{}', 'get_obj', sep='\n')|indent(8)}}
-        algo = <c_{{algo}}_manager__iface__ *>self.c_ptr
-        deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(28)}},
-                            True)
-        return None
+        return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, True)
 {% endif %}
+
+{% if streaming.name %}
+    # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
+    def finalize(self):
+        if self.c_ptr.get() == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
+        cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
+        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
+        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
+        res.c_ptr = deref(algo).finalize()
+        return res
+{% endif %}
+
+cdef api void * unbox_{{algo}}(object a):
+    algo = <{{algo}}>a
+    return _daal_clone(algo.c_ptr)
 """
 
 # generates the C++ algorithm construction function
@@ -852,7 +882,7 @@ algo_wrapper_template = """
 {{" "*indent}}if({{tmpl_spec[0][0]}} == "{{a.rsplit('::',1)[-1]}}") {
 {% if tmpl_spec|length == 1 %}
 {% set algo_type = prefix + '<' + ', '.join(args+[a]) + ' >' %}
-{{" "*(indent+4)}}return new {{algo_type}}({{params|fmt('{}', 'arg_cpp')}});
+{{" "*(indent+4)}}return daal::services::SharedPtr<{{algo}}__iface__>(new {{algo_type}}({{params|fmt('{}', 'arg_cpp')}}));
 {% else %}
 {{tfactory(tmpl_spec[1:], prefix, params, dist, args+[a], indent+4)}}
 {% endif %}
@@ -863,25 +893,29 @@ algo_wrapper_template = """
 {% endfor %}
 {%- endmacro %}
 
-extern "C" {{algo}}__iface__ * mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(27+2*(algo|length))}})
+extern "C" daal::services::SharedPtr<{{algo}}__iface__>
+mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(4+(algo|length))}})
 {
     ThreadAllow _allow_;
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', params_ds, dist=dist)}}
     std::cerr << "Error: Could not construct {{algo}}." << std::endl;
-    return NULL;
+    return daal::services::SharedPtr<{{algo}}__iface__>();
 {% else %}
-    return new {{algo}}_manager({{params_ds|fmt('{}', 'arg_cpp')}});
+    return daal::services::SharedPtr<{{algo}}__iface__>(new {{algo}}_manager({{params_ds|fmt('{}', 'arg_cpp')}}));
 {% endif %}
 }
 
-extern "C" void * compute_{{algo}}({{algo}}__iface__ * algo,
-{{' '*(27+(algo|length))}}{{input_args|fmt('{}', 'decl_c', sep=',\n')|indent(27+(algo|length))}})
+// A C interface to compute, used for HPAT
+extern "C" void * compute_{{algo}}(daal::services::SharedPtr<{{algo}}__iface__> * algo,
+{{' '*(27+(algo|length))}}{{input_args|fmt('{}', 'decl_c', sep=',\n')|indent(27+(algo|length))}},
+{{' '*(27+(algo|length))}}bool setup=false)
 {
 {% if distributed.name %}
-    algo->{{distributed.arg_member}} = c_num_procs() > 0;
+    (*algo)->{{distributed.arg_member}} = c_num_procs() > 0;
 {% endif %}
-    void * res = algo->compute({{input_args|fmt('{}', 'arg_c', sep=',\n')|indent(31)}});
+    void * res = (*algo)->compute({{input_args|fmt('{}', 'arg_c', sep=',\n')|indent(34)}},
+                                  setup);
     return res;
 };
 """
@@ -893,7 +927,8 @@ hpat_spec.append({
     'c_name'      : '{{algo}}',
     'params'      : [{{params_all|fmt('{}', 'spec', sep=',\n')|indent(21)}}],
     'input_types' : [{{input_args|fmt('{}', 'spec', sep=',\n')|indent(21)}}],
-    'result_dist' : {{"'REP'" if step_specs is defined else "'OneD'"}}
+    'result_dist' : {{"'REP'" if step_specs is defined else "None"}},
+    'has_setup'   : {{True if add_setup else False}}
 })
 '''
 
