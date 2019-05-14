@@ -315,10 +315,13 @@ cdef class {{flatname}}:
         '''
         if not is_valid_ptrptr(self.c_ptr):
             raise ValueError("Pointer to DAAL entity is NULL")
-        res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
 {% if 'NumericTablePtr' in rtype %}
-        return {{'<object>make_nda(res, e2s_algorithms_'+flatname+'_'+m[1]+')' if 'dict_NumericTablePtr' in rtype else '<object>make_nda(res)'}}
+        cdef {{rtype}} * res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
+        res_obj = {{'<object>make_nda(res, e2s_algorithms_'+flatname+'_'+m[1]+')' if 'dict_NumericTablePtr' in rtype else '<object>make_nda(res)'}}
+        del res
+        return res_obj
 {% else %}
+        res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return res
 {% endif %}
 {% endif %}
