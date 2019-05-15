@@ -472,3 +472,6 @@ class PCA(PCA_original):
             if self.whiten:
                 X_transformed /= np.sqrt(self.explained_variance_)
             return X_transformed
+
+if (lambda s: (int(s[:4]), int(s[6:])))( daal4py.__daal_link_version__[:8] ) < (2019, 4):
+    PCA = PCA_prev

@@ -16,7 +16,12 @@
 #******************************************************************************/
 
 import numpy as np
-from sklearn.externals.six import string_types
+
+import sys
+if sys.version_info[0] == 2:
+    from sklearn.externals.six import string_types
+else:
+    string_types = str
 import numbers
 import warnings
 
