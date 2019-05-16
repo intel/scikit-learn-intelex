@@ -657,7 +657,7 @@ typedef {{algo}}__iface__  c_{{algo}}_manager__iface__;
 typedef daal::services::SharedPtr<{{algo}}__iface__>  c_{{algo}}_manager__iface__sptr;
 
 // The algo creation function
-daal::services::SharedPtr<{{algo}}__iface__>
+extern "C" daal::services::SharedPtr<{{algo}}__iface__>
 mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(4+(algo|length))}});
 {% endif %}
 
@@ -943,7 +943,7 @@ algo_wrapper_template = """
 {% endfor %}
 {%- endmacro %}
 
-daal::services::SharedPtr<{{algo}}__iface__>
+extern "C" daal::services::SharedPtr<{{algo}}__iface__>
 mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(4+(algo|length))}})
 {
     ThreadAllow _allow_;
