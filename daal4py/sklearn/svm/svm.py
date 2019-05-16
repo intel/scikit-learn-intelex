@@ -259,7 +259,7 @@ def _daal4py_fit(self, X, y_inp, kernel):
     if num_classes == 2:
         self.n_support_ = np.array([np.sum(indices == -1), np.sum(indices == 1)], dtype=np.int32)
     else:
-        self.n_support_ = np.array([np.sum(indices == c) for c in self.classes_], dtype=np.int32)
+        self.n_support_ = np.array([np.sum(indices == i) for i, c in enumerate(self.classes_)], dtype=np.int32)
 
     self.probA_ = np.empty(0)
     self.probB_ = np.empty(0)
