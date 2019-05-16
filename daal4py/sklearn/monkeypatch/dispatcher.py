@@ -1,6 +1,6 @@
 #
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,11 +38,9 @@ from ..cluster.k_means import KMeans as KMeans_daal4py
 if LooseVersion(sklearn_version) >= LooseVersion("0.21.0"):
     _patched_log_reg_path_func_name = '_logistic_regression_path'
     from ..linear_model.logistic_path import _logistic_regression_path as daal_optimized_logistic_path
-    from ..linear_model.logistic_path import LogisticRegression as LogisticRegression_daal4py
 else:
     _patched_log_reg_path_func_name = 'logistic_regression_path'
     from ..linear_model.logistic_path import logistic_regression_path as daal_optimized_logistic_path
-    from ..linear_model.logistic_path import LogisticRegression as LogisticRegression_daal4py
 from ..svm.svm import SVC as SVC_daal4py
 
 from daal4py import __version__ as daal4py_version
@@ -55,10 +53,7 @@ _mapping = {
     'linear':    [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
     'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
     'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]], 
-    'logistic':  [
-        [(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None],
-        [(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None],
-    ],
+    'logistic':  [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
 }
 
 del _patched_log_reg_path_func_name
