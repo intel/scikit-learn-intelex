@@ -472,3 +472,22 @@ class PCA(PCA_original):
             if self.whiten:
                 X_transformed /= np.sqrt(self.explained_variance_)
             return X_transformed
+
+if (lambda s: (int(s[:4]), int(s[6:])))( daal4py.__daal_link_version__[:8] ) < (2019, 4):
+    class PCA(PCA_original):
+        __doc__ = PCA_original.__doc__
+
+        def __init__(self, n_components=None, copy=True, whiten=False,
+                     svd_solver='auto', tol=0.0, iterated_power='auto',
+                     random_state=None):
+            self.n_components = n_components
+            self.copy = copy
+            self.whiten = whiten
+            self.svd_solver = svd_solver
+            self.tol = tol
+            self.iterated_power = iterated_power
+            self.random_state = random_state
+
+        def _fit_full(self, X, n_components):
+            return _fit_full_copy(self, X, n_components)
+

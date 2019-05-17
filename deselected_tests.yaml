@@ -29,3 +29,6 @@ deselected_tests:
   # For Newton-CG solver, solution computed in float32 disagrees with that of float64 a little more than
   # the test expects, see https://github.com/scikit-learn/scikit-learn/pull/13645
   - linear_model/tests/test_logistic.py::test_dtype_match
+
+  # _hist_gradient_boosting tests (added in 0.21.0) times out in CircleCI
+  - ensemble/_hist_gradient_boosting/tests >=0.21.0

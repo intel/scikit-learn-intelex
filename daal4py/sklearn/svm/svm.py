@@ -22,6 +22,7 @@ import numpy as np
 from scipy import sparse as sp
 from sklearn.utils import check_random_state, check_X_y
 import sklearn.svm.classes
+import sklearn.svm.base
 import warnings
 
 from distutils.version import LooseVersion
@@ -258,7 +259,7 @@ def _daal4py_fit(self, X, y_inp, kernel):
     if num_classes == 2:
         self.n_support_ = np.array([np.sum(indices == -1), np.sum(indices == 1)], dtype=np.int32)
     else:
-        self.n_support_ = np.array([np.sum(indices == c) for c in self.classes_], dtype=np.int32)
+        self.n_support_ = np.array([np.sum(indices == i) for i, c in enumerate(self.classes_)], dtype=np.int32)
 
     self.probA_ = np.empty(0)
     self.probB_ = np.empty(0)
@@ -505,7 +506,7 @@ def predict(self, X):
     return self.classes_.take(np.asarray(y, dtype=np.intp))
 
 
-class SVC(sklearn.svm.classes.BaseSVC):
+class SVC(sklearn.svm.base.BaseSVC):
     _impl = 'c_svc'
 
     def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto_deprecated',
