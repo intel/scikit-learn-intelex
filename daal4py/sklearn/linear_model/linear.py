@@ -37,12 +37,22 @@ def _daal4py_fit(self, X, y_):
     y = make2d(y_)
     X_fptype = getFPType(X)
 
-    lr_algorithm = daal4py.linear_regression_training(
-        fptype=X_fptype,
-        interceptFlag=bool(self.fit_intercept),
-        method='qrDense'
-    )
-    lr_res = lr_algorithm.compute(X, y)
+    try:
+        lr_algorithm = daal4py.linear_regression_training(
+            fptype=X_fptype,
+            interceptFlag=bool(self.fit_intercept),
+            method='defaultDense'
+        )
+        lr_res = lr_algorithm.compute(X, y)
+    except RuntimeError:
+        # Normal system is not invertible, try QR
+        lr_algorithm = daal4py.linear_regression_training(
+            fptype=X_fptype,
+            interceptFlag=bool(self.fit_intercept),
+            method='qrDense'
+        )
+        lr_res = lr_algorithm.compute(X, y)
+        
 
     lr_model = lr_res.model
     self.daal_model_ = lr_model
