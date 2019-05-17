@@ -21,7 +21,11 @@ from sklearn.utils import (check_random_state, check_array)
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import (check_is_fitted, _num_samples)
 from sklearn.cluster.k_means_ import (k_means, _labels_inertia, _k_init, _validate_center_shape)
-from sklearn.externals.six import string_types
+import sys
+if sys.version_info[0] == 2:
+    from sklearn.externals.six import string_types
+else:
+    string_types = str
 from sklearn.utils.extmath import row_norms
 
 from sklearn.cluster import KMeans as KMeans_original

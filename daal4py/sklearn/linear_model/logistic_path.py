@@ -48,6 +48,7 @@ from sklearn.linear_model.logistic import (
     _multinomial_grad_hess,
     LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
+from sklearn.linear_model.base import (LinearClassifierMixin, SparseCoefMixin, BaseEstimator)
 
 use_daal = True
 
@@ -664,6 +665,7 @@ def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     random_state = check_random_state(random_state)
 
     multi_class = _check_multi_class(multi_class, solver, len(classes))
+    print(multi_class)
     if pos_class is None and multi_class != 'multinomial':
         if (classes.size > 2):
             raise ValueError('To fit OvR, use the pos_class argument')
@@ -676,8 +678,10 @@ def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     if sample_weight is not None:
         sample_weight = np.array(sample_weight, dtype=X.dtype, order='C')
         check_consistent_length(y, sample_weight)
+        default_weights = False
     else:
         sample_weight = np.ones(X.shape[0], dtype=X.dtype)
+        default_weights = (class_weight is None)
 
     daal_ready = use_daal and solver in ['lbfgs', 'newton-cg'] and not sparse.issparse(X)
     # If class_weights is a dict (provided by the user), the weights
@@ -847,7 +851,7 @@ def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 np.searchsorted(np.array([0, 1, 2, 3]), verbose)]
             w0, loss, info = optimize.fmin_l_bfgs_b(
                 func, w0, fprime=None,
-                args=(X, target, 1. / C, sample_weight),
+                args=extra_args,
                 iprint=iprint, pgtol=tol, maxiter=max_iter)
             if daal_ready and C_daal_multiplier == 2:
                 w0 *= 0.5
@@ -942,7 +946,8 @@ def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
 
 if (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
-    class LogisticRegression(LogisticRegression_original):
+    class LogisticRegression(LogisticRegression_original, BaseEstimator,
+                             LinearClassifierMixin, SparseCoefMixin):
         def __init__(self, penalty='l2', dual=False, tol=1e-4, C=1.0,
                      fit_intercept=True, intercept_scaling=1, class_weight=None,
                      random_state=None, solver='warn', max_iter=100,
@@ -965,7 +970,8 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
             self.n_jobs = n_jobs
             self.l1_ratio = l1_ratio
 else:
-    class LogisticRegression(LogisticRegression_original):
+    class LogisticRegression(LogisticRegression_original, BaseEstimator,
+                             LinearClassifierMixin, SparseCoefMixin):
         def __init__(self, penalty='l2', dual=False, tol=1e-4, C=1.0,
                      fit_intercept=True, intercept_scaling=1, class_weight=None,
                      random_state=None, solver='warn', max_iter=100,
