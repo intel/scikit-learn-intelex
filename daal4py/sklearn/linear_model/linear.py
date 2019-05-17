@@ -33,15 +33,17 @@ except ImportError:
 import daal4py
 from ..utils import (make2d, getFPType)
 
-def _daal4py_fit(self, X, y):
-    y = make2d(y)
+def _daal4py_fit(self, X, y_):
+    y = make2d(y_)
     X_fptype = getFPType(X)
+
     lr_algorithm = daal4py.linear_regression_training(
         fptype=X_fptype,
         interceptFlag=bool(self.fit_intercept),
-        method='qrDense')
-
+        method='qrDense'
+    )
     lr_res = lr_algorithm.compute(X, y)
+
     lr_model = lr_res.model
     self.daal_model_ = lr_model
     coefs = lr_model.Beta
@@ -49,7 +51,7 @@ def _daal4py_fit(self, X, y):
     self.intercept_ = coefs[:,0].copy(order='C')
     self.coef_ = coefs[:,1:].copy(order='C')
 
-    if self.coef_.shape[0] == 1:
+    if self.coef_.shape[0] == 1 and y_.ndim == 1:
         self.coef_ = np.ravel(self.coef_)
         self.intercept_ = self.intercept_[0]
 
@@ -61,11 +63,14 @@ def _daal4py_predict(self, X):
     _fptype = getFPType(self.coef_)
     lr_pred = daal4py.linear_regression_prediction(
         fptype=_fptype,
-        method='defaultDense')
+        method='defaultDense'
+    )
     lr_res = lr_pred.compute(X, self.daal_model_)
+
     res = lr_res.prediction
-    if res.shape[1] == 1:
+    if res.shape[1] == 1 and self.coef_.ndim == 1:
         res = np.ravel(res)
+
     return res
 
 
