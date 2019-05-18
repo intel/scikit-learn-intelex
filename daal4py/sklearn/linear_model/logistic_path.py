@@ -665,7 +665,6 @@ def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     random_state = check_random_state(random_state)
 
     multi_class = _check_multi_class(multi_class, solver, len(classes))
-    print(multi_class)
     if pos_class is None and multi_class != 'multinomial':
         if (classes.size > 2):
             raise ValueError('To fit OvR, use the pos_class argument')
