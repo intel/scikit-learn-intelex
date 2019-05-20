@@ -149,7 +149,7 @@ namespace dist_custom {
 
             for(size_t iCenter = 1; iCenter < algo._nClusters; ++iCenter) {
                 // run step2 on each rank
-                auto s2res = algo.run_step2Local(input, localNodeData, step2In);
+                auto s2res = algo.run_step2Local(input, localNodeData, step2In, false);
                 if(iCenter==1) localNodeData = s2res->get(daal::algorithms::kmeans::init::internalResult);
                 auto s2Out = s2res->get(daal::algorithms::kmeans::init::outputOfStep2ForStep3);
                 //  and gather result on root
@@ -231,24 +231,24 @@ namespace dist_custom {
             // Only one rank actually computes centroids, we need to identify rank and bcast centroids to all others
             int data_rank = not_empty(step14Out) ? rank : -1;
             MPI4DAAL::allreduce(&data_rank, 1, MPI_MAX);
-            typename Algo::iomstep2Local_type::input3_type step2In = MPI4DAAL::bcast(rank, nRanks, step14Out, data_rank);
+            daal::data_management::NumericTablePtr step2In = MPI4DAAL::bcast(rank, nRanks, step14Out, data_rank);
 
             const kmeans::init::Method method = kmeans::init::parallelPlusDense;
 
             // default value of nRounds used by all steps
             const size_t nRounds = kmeans::init::Parameter(algo._nClusters).nRounds;
 
-            // Create an algorithm object for the step 5
-            typedef kmeans::init::Distributed<step5Master, fptype, method> Step5Master;
-            SharedPtr<Step5Master> step5(rank == 0 ? new Step5Master(algo._nClusters) : NULL);
-            if(rank == 0)
-                step5->input.add(kmeans::init::inputCentroids, step2In);
+            std::vector<daal::data_management::NumericTablePtr> s2InForStep5;
+            if(rank == 0) {
+                s2InForStep5.resize(nRounds + 1);
+                s2InForStep5[0] = step2In;
+            }
 
             SharedPtr<daal::algorithms::kmeans::init::interface1::DistributedStep3MasterPlusPlusPartialResult> step3Output;
 
             for(size_t iRound = 0; iRound < nRounds; ++iRound) {
                 // run step2 on each rank
-                auto s2res = algo.run_step2Local(input, localNodeData, step2In);
+                auto s2res = algo.run_step2Local(input, localNodeData, step2In, false);
                 if(iRound==0) localNodeData = s2res->get(daal::algorithms::kmeans::init::internalResult);
                 auto s2Out = s2res->get(daal::algorithms::kmeans::init::outputOfStep2ForStep3);
                 //  and gather result on root
@@ -287,27 +287,16 @@ namespace dist_custom {
                 step2In = MPI4DAAL::bcast(rank, nRanks, step14Out, data_rank);
 
                 if(rank == 0)
-                    step5->input.add(kmeans::init::inputCentroids, step2In);
+                    s2InForStep5[iRound + 1] = step2In;
             }
 
             // One more step 2
-            kmeans::init::Distributed<step2Local, fptype, method> step2(algo._nClusters, false);
-            step2.parameter.outputForStep5Required = true;
-            step2.input.set(kmeans::init::data, input);
-            step2.input.set(kmeans::init::internalInput, localNodeData);
-            step2.input.set(kmeans::init::inputOfStep2, step2In);
-            step2.compute();
-            auto s2Out = step2.getPartialResult()->get(kmeans::init::outputOfStep2ForStep5);
+            auto s2ResForStep5 = algo.run_step2Local(input, localNodeData, step2In, true);
+            auto s2OutForStep5 = s2ResForStep5->get(daal::algorithms::kmeans::init::outputOfStep2ForStep5);
+            auto s5In = MPI4DAAL::gather(rank, nRanks, s2OutForStep5);
             if(rank == 0)
             {
-                auto s2resMaster = MPI4DAAL::gather(rank, nRanks, s2Out);
-                for(size_t i = 0; i < s2resMaster.size(); ++i)
-                    step5->input.add(kmeans::init::inputOfStep5FromStep2, s2resMaster[i]);
-
-                step5->input.set(kmeans::init::inputOfStep5FromStep3, step3Output->get(kmeans::init::outputOfStep3ForStep5));
-                step5->compute();
-                step5->finalizeCompute();
-                return mk_kmi_result<fptype, daal::algorithms::kmeans::init::parallelPlusDense>(step5->getResult()->get(kmeans::init::centroids));
+                //auto s5Res = algo.run_step5Master(s2InForStep5, s5In, step3Output->get(kmeans::init::outputOfStep3ForStep5));
             }
             return mk_kmi_result<fptype, daal::algorithms::kmeans::init::parallelPlusDense>(daal::data_management::NumericTablePtr());
         }
