@@ -142,12 +142,11 @@ static inline NTYPE as_native_shared_ptr(services::SharedPtr< const algo_manager
 
 // Our Batch input/Output manager, abstracts from input/output types
 // also defines how to get results and finalize
-template< typename A, typename I, typename O >
+template< typename A, typename O, typename... Args >
 struct IOManager
 {
     typedef O result_type;
-    typedef I input1_type;
-    typedef input1_type input_type;
+    typedef std::tuple< Args... > input_type;
 
     static result_type getResult(A & algo)
     {

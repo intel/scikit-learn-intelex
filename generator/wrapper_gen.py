@@ -479,12 +479,12 @@ gen_typedefs_macro = """
     typedef daal::{{ns}}::{{mode}} algo{{suffix}}_type;
 {% endif %}
 {% if step_spec %}
-    typedef {{step_spec.iomanager}}< algo{{suffix}}_type, {{', '.join(step_spec.input)}}, {{step_spec.output}}{{(","+",".join(step_spec.iomargs)) if step_spec.iomargs else ""}} > iom{{suffix}}_type;
+    typedef {{step_spec.iomanager}}< algo{{suffix}}_type, {{step_spec.output}}{{(","+",".join(step_spec.iomargs)) if step_spec.iomargs else ""}}, {{', '.join(step_spec.input)}} > iom{{suffix}}_type;
 {% else %}
 {% if iombatch %}
     typedef {{iombatch}} iom{{suffix}}_type;
 {% else %}
-    typedef IOManager< algo{{suffix}}_type, daal::services::SharedPtr< typename algo{{suffix}}_type::InputType >, daal::services::SharedPtr< typename algo{{suffix}}_type::ResultType > > iom{{suffix}}_type;
+    typedef IOManager< algo{{suffix}}_type, daal::services::SharedPtr< typename algo{{suffix}}_type::ResultType >, daal::services::SharedPtr< typename algo{{suffix}}_type::InputType > > iom{{suffix}}_type;
 {% endif %}
 {% endif %}
 {%- endmacro %}
@@ -528,10 +528,10 @@ gen_compute_macro = gen_inst_algo + """
 {% set input_len = step_spec.input|length %}
     (
 {% if step_spec.addinput %}{% set add_offset = 0 %}
-        {% for ia in step_spec.addinput %}const std::vector< typename {{iom}}::input{{add_offset+loop.index}}_type > & input{{add_offset+loop.index}}{{'' if add_offset+loop.index==input_len else ', '}}{% endfor %} //add inputs{% endif %}
+        {% for ia in step_spec.addinput %}const std::vector< {{step_spec.input[add_offset+loop.index-1]}} > & input{{add_offset+loop.index}}{{'' if add_offset+loop.index==input_len else ', '}}{% endfor %} //add inputs{% endif %}
 {% if step_spec.setinput %}{% set set_offset = step_spec.addinput|length if step_spec.addinput else 0 %}
 
-        {% for ia in step_spec.setinput %}const typename {{iom}}::input{{set_offset+loop.index}}_type & input{{set_offset+loop.index}}{{'' if set_offset+loop.index==input_len==input_len else ', '}}{% endfor %} //set inputs{% endif %}
+        {% for ia in step_spec.setinput %}const {{step_spec.input[set_offset+loop.index-1]}} & input{{set_offset+loop.index}}{{'' if set_offset+loop.index==input_len==input_len else ', '}}{% endfor %} //set inputs{% endif %}
 {% if step_spec.dist_params %}
 
         {% for dp in step_spec.dist_params %}, {{dp[0]}} {{dp[1]}}{% endfor %} //params{% endif %}
