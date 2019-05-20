@@ -223,9 +223,9 @@ extern "C" void to_c_array(const daal::data_management::NumericTablePtr * ptr, v
 extern PyObject * make_nda(daal::data_management::NumericTablePtr * nt_ptr);
 extern PyObject * make_nda(daal::data_management::DataCollectionPtr * nt_ptr);
 extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * nt_ptr, const i2str_map_t &);
-extern daal::data_management::NumericTablePtr * make_nt(PyObject * nda);
-extern daal::data_management::DataCollectionPtr * make_datacoll(PyObject * nda);
-extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t &);
+extern daal::data_management::NumericTablePtr make_nt(PyObject * nda);
+extern daal::data_management::DataCollectionPtr make_datacoll(PyObject * nda);
+extern daal::data_management::KeyValueDataCollectionPtr make_dnt(PyObject * dict, str2i_map_t &);
 
 extern const daal::data_management::NumericTablePtr readCSV(const std::string& fname);
 
@@ -300,6 +300,11 @@ void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
     PyArray_SetBaseObject(ary, cap);
 }
 
+template< typename T >
+static T* _daal_clone(const T & o)
+{
+    return new T(o);
+}
 
 extern "C" {
 void set_rawp_base(PyArrayObject *, void *);
