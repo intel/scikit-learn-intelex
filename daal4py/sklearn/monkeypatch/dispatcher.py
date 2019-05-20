@@ -52,7 +52,7 @@ _mapping = {
     'distances': [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
     'linear':    [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
     'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
-    'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]], 
+    'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]],
     'logistic':  [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
 }
 
@@ -86,7 +86,7 @@ def enable(name=None):
         raise NotImplementedError("daal4py patches apply  for scikit-learn >= 0.20.0 only ...")
     elif LooseVersion(sklearn_version) > LooseVersion("0.21.1"):
         warn_msg = ("daal4py {daal4py_version} has only been tested " +
-                   "with scikit-learn 0.21.1, found version: {sklearn_version}")
+                    "with scikit-learn 0.21.1, found version: {sklearn_version}")
         warnings.warn(warn_msg.format(daal4py_version=daal4py_version, sklearn_version=sklearn_version))
 
     if name is not None:

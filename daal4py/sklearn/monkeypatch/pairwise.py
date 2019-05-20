@@ -131,7 +131,7 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None, **kwds):
         from X and the jth array from Y.
 
     """
-    if (metric not in _VALID_METRICS and
+        if (metric not in _VALID_METRICS and
             not callable(metric) and metric != "precomputed"):
         raise ValueError("Unknown metric %s. "
                          "Valid metrics are %s, or 'precomputed', or a "
@@ -143,9 +143,11 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None, **kwds):
                                 " need to have non-negative values.")
         check_non_negative(X, whom=whom)
         return X
-    elif (metric == 'cosine') and (Y is None) and (not issparse(X)) and X.dtype == np.float64:
+    elif (metric == 'cosine') and (Y is None)
+         and (not issparse(X)) and X.dtype == np.float64:
         return _daal4py_cosine_distance_dense(X)
-    elif (metric == 'correlation') and (Y is None) and (not issparse(X)) and X.dtype == np.float64:
+    elif (metric == 'correlation') and (Y is None) and
+         (not issparse(X)) and X.dtype == np.float64:
         return _daal4py_correlation_distance_dense(X)
     elif metric in PAIRWISE_DISTANCE_FUNCTIONS:
         func = PAIRWISE_DISTANCE_FUNCTIONS[metric]
@@ -158,8 +160,8 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None, **kwds):
 
         dtype = bool if metric in PAIRWISE_BOOLEAN_FUNCTIONS else None
 
-        if (dtype == bool and
-                (X.dtype != bool or (Y is not None and Y.dtype != bool))):
+        if (dtype == bool
+            and (X.dtype != bool or (Y is not None and Y.dtype != bool))):
             msg = "Data was converted to boolean for metric %s" % metric
             warnings.warn(msg, DataConversionWarning)
 
@@ -175,4 +177,3 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None, **kwds):
         func = partial(distance.cdist, metric=metric, **kwds)
 
     return _parallel_pairwise(X, Y, func, n_jobs, **kwds)
-
