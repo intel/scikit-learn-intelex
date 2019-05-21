@@ -28,7 +28,7 @@ pydefaults.update({'double': 'NaN64',
                    'float': 'NaN32',
                    'int': '-1',
                    'long': '-1',
-                   'size_t': '-1',
+                   'size_t': '0xffffffff',
                    'bool': 'False',
                    'std::string' : '',
                    #'std::string &' : '""',
@@ -146,8 +146,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                 # arrays/tables need special handling for C: they are passed as (ptr, dim1, dim2)
                 if typ_cy == 'data_or_file':
                     decl_c = 'void* {0}_p, size_t {0}_nrows, size_t {0}_ncols, ssize_t {0}_layout'.format(d4pname)
-                    arg_c = 'new data_or_file({0}_p, {0}_ncols, {0}_nrows, {0}_layout)'.format(d4pname)
-                    const = ''
+                    arg_c = 'data_or_file({0}_p, {0}_ncols, {0}_nrows, {0}_layout)'.format(d4pname)
                 # default values (see above pydefaults)
                 if dflt != None:
                     pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1].replace('NumericTablePtr()', 'None')
@@ -159,6 +158,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                 else:
                     pydefault = cppdefault = sphinx_default = ''
                     spec_default = None
+                cy_ctr_default = pydefault if pydefault else '='+pydefaults[typ]
                 assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
 
                 hpat_dist = 'REP' if any(x in d4pname for x in ['model', 'inputCentroids']) else 'OneD'
@@ -176,7 +176,9 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
             self.decl_cyext    = '{}{} {}'.format(typ_cyext, ref if ref != '' else ptr, d4pname) if name else ''
             self.decl_cy       = '{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname) if name else ''
             self.decl_dflt_cpp = '{}{}{} {}{}'.format(const, typ, ref if ref != '' else ptr, d4pname, cppdefault) if name else ''
+            self.decl_ctr_cy   = '{}{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname, cy_ctr_default) if name else ''
             self.decl_dflt_cy  = '{}{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname, pydefault) if name else ''
+            self.decl_dflt_py  = '{}{}'.format(d4pname, pydefault) if name else ''
             self.decl_cpp      = '{}{}{} {}'.format(const, typ_cyext, ref if ref != '' else ptr, d4pname) if name else ''
             self.decl_member   = '{}{} _{}'.format(typ_cyext, ptr, d4pname) if name else ''
             self.arg_member    = '_{}'.format(d4pname) if name else ''

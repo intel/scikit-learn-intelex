@@ -290,8 +290,11 @@ cdef class {{flatname}}:
     def __dealloc__(self):
         del self.c_ptr
 
-    def __init__(self, int64_t ptr=0):
-        self.c_ptr = <{{class_type|flat}}>ptr
+    @staticmethod
+    def __from_ptr(int64_t ptr):
+        cdef {{flatname}} obj = {{flatname}}.__new__({{flatname}})
+        obj.c_ptr = <{{class_type|flat}}>ptr
+        return obj
 
     def __str__(self):
         return _str(self, [{% for m in enum_gets+named_gets %}'{{m[1]}}',{% endfor %}])
@@ -470,6 +473,9 @@ cdef class {{inl}}():
         self.c_ptr.reset()
 
     # we do not need __dealloc__(self), we store plain shared ptr
+
+    cdef void _from_ptr(self, void * ptr):
+        self.c_ptr = deref(<c_{{iface_name}}__iface__sptr*>ptr)
 {% endif %}
 
 hpat_spec.append({
@@ -826,20 +832,34 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     {{algo}}
     {{params_all|fmt('{}', 'sphinx', sep='\n')|indent(4)}}
     '''
-    # Init simply forwards to the C++ construction function
+    # python __init__ does nothing, we just let cython generate code for checking required args
+    def __init__(self,
+                 {{params_all|fmt('{}', 'decl_dflt_py', sep=',\n')|indent(17)}},
+                 _ptr_=-1):
+        pass
+
+    # __cinit__ simply forwards to the C++ construction function
+    # we also check if we construct from ptr
     def __cinit__(self,
-                  {{params_all|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(18)}}):
+                  {{params_all|fmt('{}', 'decl_ctr_cy', sep=',\n')|indent(18)}},
+                  int64_t _ptr_=-1):
 {% if distributed.name and streaming.name %}
         if {{[distributed, streaming]|fmt('{}', 'arg_py', sep=' and ')}}:
             raise ValueError('distributed streaming not supported')
 {% endif %}
-        self.c_ptr = mk_{{algo}}({{params_all|fmt('{}', 'arg_cyext', sep=',\n')|indent(25+(algo|length))}})
+        if _ptr_ == -1:
+            self.c_ptr = mk_{{algo}}({{params_all|fmt('{}', 'arg_cyext', sep=',\n')|indent(25+(algo|length))}})
+        else:
+            self._from_ptr(<void*>_ptr_)
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)
     cdef c_{{algo}}_manager__iface__sptr c_ptr
 
     # we do not need __dealloc__(self), we store plain shared ptr
+
+    cdef void _from_ptr(self, void * ptr):
+        self.c_ptr = deref(<c_{{algo}}_manager__iface__sptr*>ptr)
 {% endif %}
 
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
@@ -917,6 +937,11 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         res.c_ptr = deref(algo).finalize()
         return res
 {% endif %}
+
+    @staticmethod
+    def __from_ptr(int64_t ptr):
+        return {{algo}}.__new__({{algo}}, _ptr_=ptr)
+
 
 cdef api void * unbox_{{algo}}(object a):
     algo = <{{algo}}>a
