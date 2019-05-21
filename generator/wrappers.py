@@ -367,9 +367,9 @@ has_dist = {
                              addinput  = ['daal::algorithms::kmeans::init::inputCentroids','daal::algorithms::kmeans::init::inputOfStep5FromStep2'],
                              setinput  = ['daal::algorithms::kmeans::init::inputOfStep5FromStep3'],
                              inputnames = ['inputOfStep5FromStep3'],
-#                             iomargs   = ['daal::algorithms::kmeans::init::ResultId', 'daal::algorithms::kmeans::init::centroids'],
-                             output    = 'daal::algorithms::kmeans::init::DistributedStep5MasterPlusPlusPartialResultPtr',
-                             iomanager = 'PartialIOManager')
+                             iomargs   = ['daal::algorithms::kmeans::init::ResultId', 'daal::algorithms::kmeans::init::centroids'],
+                             output    = 'daal::data_management::NumericTablePtr',
+                             iomanager = 'IOManagerSingle')
                    ],
     },
     'algorithms::kmeans' : {
