@@ -297,7 +297,7 @@ namespace dist_custom {
             if(rank == 0)
             {
                 auto s5Res = algo.run_step5Master(s2InForStep5, s5In, step3Output->get(kmeans::init::outputOfStep3ForStep5));
-//                return mk_kmi_result<fptype, daal::algorithms::kmeans::init::parallelPlusDense>(s5Res->get(kmeans::init::centroids));
+                return mk_kmi_result<fptype, daal::algorithms::kmeans::init::parallelPlusDense>(s5Res);
             }
             return mk_kmi_result<fptype, daal::algorithms::kmeans::init::parallelPlusDense>(daal::data_management::NumericTablePtr());
         }
