@@ -362,6 +362,14 @@ has_dist = {
                              output    = 'daal::data_management::NumericTablePtr',
                              iomanager = 'PartialIOManagerSingle',
                              iomargs   = ['daal::algorithms::kmeans::init::DistributedStep4LocalPlusPlusPartialResultId', 'daal::algorithms::kmeans::init::outputOfStep4']),
+                       SSpec(name      = 'step5Master',
+                             input     = ['daal::data_management::NumericTablePtr', 'daal::data_management::NumericTablePtr', 'daal::data_management::SerializationIfacePtr'],
+                             addinput  = ['daal::algorithms::kmeans::init::inputCentroids','daal::algorithms::kmeans::init::inputOfStep5FromStep2'],
+                             setinput  = ['daal::algorithms::kmeans::init::inputOfStep5FromStep3'],
+                             inputnames = ['inputOfStep5FromStep3'],
+#                             iomargs   = ['daal::algorithms::kmeans::init::ResultId', 'daal::algorithms::kmeans::init::centroids'],
+                             output    = 'daal::algorithms::kmeans::init::DistributedStep5MasterPlusPlusPartialResultPtr',
+                             iomanager = 'PartialIOManager')
                    ],
     },
     'algorithms::kmeans' : {
