@@ -489,12 +489,12 @@ gen_typedefs_macro = """
     typedef daal::{{ns}}::{{mode}} algo{{suffix}}_type;
 {% endif %}
 {% if step_spec %}
-    typedef {{step_spec.iomanager}}< algo{{suffix}}_type, {{step_spec.output}}{{(","+",".join(step_spec.iomargs)) if step_spec.iomargs else ""}}, {{', '.join(step_spec.input)}} > iom{{suffix}}_type;
+    typedef {{step_spec.iomanager}}< algo{{suffix}}_type, {{step_spec.output}}{{(","+",".join(step_spec.iomargs)) if step_spec.iomargs else ""}} > iom{{suffix}}_type;
 {% else %}
 {% if iombatch %}
     typedef {{iombatch}} iom{{suffix}}_type;
 {% else %}
-    typedef IOManager< algo{{suffix}}_type, daal::services::SharedPtr< typename algo{{suffix}}_type::ResultType >, daal::services::SharedPtr< typename algo{{suffix}}_type::InputType > > iom{{suffix}}_type;
+    typedef IOManager< algo{{suffix}}_type, daal::services::SharedPtr< typename algo{{suffix}}_type::ResultType > > iom{{suffix}}_type;
 {% endif %}
 {% endif %}
 {%- endmacro %}

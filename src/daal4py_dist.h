@@ -28,11 +28,11 @@
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-// Input/Output manager for simple algos with several inputs and a single fixed result-component
+// Input/Output manager for simple algos with a single fixed result-component
 // abstracts from input/output types
 // also defines how to get results and finalize
-template<typename A, typename O, typename E, int P, typename... Args>
-struct IOManagerSingle : public IOManager< A, O, Args... >
+template< typename A, typename O, typename E, int P >
+struct IOManagerSingle : public IOManager< A, O >
 {
     static O getResult(A & algo)
     {
@@ -41,14 +41,13 @@ struct IOManagerSingle : public IOManager< A, O, Args... >
 };
 
 
-// Input/Output manager for intermediate steps with several inputs
+// Input/Output manager for intermediate steps
 // abstracts from input/output types
 // also defines how to get results and finalize
-template<typename A, typename O, typename... Args >
+template< typename A, typename O >
 struct PartialIOManager
 {
     typedef O result_type;
-    typedef std::tuple< Args... > input_type;
 
     static result_type getResult(A & algo)
     {
@@ -60,14 +59,13 @@ struct PartialIOManager
     }
 };
 
-// Input/Output manager for intermediate steps with several inputs and a single fixed result-component
+// Input/Output manager for intermediate steps with a single fixed result-component
 // abstracts from input/output types
 // also defines how to get results and finalize
-template<typename A, typename O, typename E, int P, typename... Args >
-struct PartialIOManagerSingle : public PartialIOManager< A, O, Args... >
+template< typename A, typename O, typename E, int P >
+struct PartialIOManagerSingle : public PartialIOManager< A, O >
 {
-    typedef std::tuple< Args... > input_type;
-    static typename PartialIOManager< A, O, Args... >::result_type getResult(A & algo)
+    static typename PartialIOManager< A, O >::result_type getResult(A & algo)
     {
         return algo.getPartialResult()->get(static_cast< E >(P));
     }
