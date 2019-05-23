@@ -96,13 +96,19 @@ struct MPI4DAAL
     {
         // Serialize the partial result into a data archive
         daal::data_management::InputDataArchive in_arch;
-        p_res->serialize(in_arch);
+        int mysize;
+        // Check if data exists then serialize, otherwise set size = 0
+        if(p_res) {
+            p_res->serialize(in_arch);
+            mysize = in_arch.getSizeOfArchive();
+        } else {
+            mysize = 0;
+        }
 
         // gather all partial results
         // First get all sizes, then gather on root
         int * sizes = new int[nRanks];
         int * offsets = new int[nRanks];
-        int mysize = in_arch.getSizeOfArchive();
         MPI_Gather(&mysize, 1, MPI_INT, sizes, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         int tot_sz = mysize;
@@ -123,11 +129,12 @@ struct MPI4DAAL
 
         std::vector<T> all;
         if(rank == 0) {
-            all.resize(nRanks);
             for(int i=0; i<nRanks; ++i) {
-                // FIXME: This is super-inefficient, we need to write our own DatArchive to avoid extra copy
-                daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff+offsets[i]), sizes[i]);
-                all[i] = daal::services::staticPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
+                if (sizes[i] > 0) {
+                    // FIXME: This is super-inefficient, we need to write our own DatArchive to avoid extra copy
+                    daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff+offsets[i]), sizes[i]);
+                    all.push_back(daal::services::staticPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr()));
+                }
             }
             delete [] buff;
         }
