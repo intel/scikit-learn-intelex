@@ -20,10 +20,6 @@
 #include "dist_custom.h"
 #include "map_reduce_star.h"
 
-using namespace daal;
-using namespace daal::algorithms;
-using namespace daal::services;
-
 namespace dist_custom {
 
     // unsupported methods
@@ -232,7 +228,7 @@ namespace dist_custom {
             daal::data_management::NumericTablePtr step2In = MPI4DAAL::bcast(rank, nRanks, step14Out, data_rank);
 
             // default value of nRounds used by all steps
-            const size_t nRounds = kmeans::init::Parameter(algo._nClusters).nRounds;
+            const size_t nRounds = daal::algorithms::kmeans::init::Parameter(algo._nClusters).nRounds;
 
             // vector with results of step2 for input into step5
             std::vector<daal::data_management::NumericTablePtr> s2InForStep5;
@@ -240,7 +236,8 @@ namespace dist_custom {
                 s2InForStep5.push_back(step2In);
             }
 
-            SharedPtr<daal::algorithms::kmeans::init::interface1::DistributedStep3MasterPlusPlusPartialResult> step3Output;
+            // Here we will store the output of step3 for step5
+            daal::services::interface1::SharedPtr<daal::data_management::interface1::SerializationIface> outputOfStep3ForStep5;
 
             for(size_t iRound = 0; iRound < nRounds; ++iRound) {
                 // run step2 on each rank
@@ -255,7 +252,11 @@ namespace dist_custom {
                 daal::data_management::NumericTablePtr s4In;
                 // run step3 on root and send results to non-roots
                 if(rank == 0) {
-                    step3Output = algo.run_step3Master(s3In);
+                    auto step3Output = algo.run_step3Master(s3In);
+                    // output of step3 in the last iteration will be used in step5
+                    if (iRound == nRounds - 1) {
+                        outputOfStep3ForStep5 = step3Output->get(daal::algorithms::kmeans::init::outputOfStep3ForStep5);
+                    }
                     s4In = step3Output->get(daal::algorithms::kmeans::init::outputOfStep3ForStep4, 0);
                     for(int i=1; i<nRanks; i++) {
                         MPI4DAAL::send(step3Output->get(daal::algorithms::kmeans::init::outputOfStep3ForStep4, i), i, S34TAG); // it can be NULL
@@ -297,7 +298,7 @@ namespace dist_custom {
             daal::data_management::NumericTablePtr s5Res;
             if(rank == 0)
             {
-                s5Res = algo.run_step5Master(s2InForStep5, s5In, step3Output->get(kmeans::init::outputOfStep3ForStep5));
+                s5Res = algo.run_step5Master(s2InForStep5, s5In, outputOfStep3ForStep5);
             }
             auto res = MPI4DAAL::bcast(rank, nRanks, s5Res);
             return mk_kmi_result<fptype, daal::algorithms::kmeans::init::parallelPlusDense>(res);

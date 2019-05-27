@@ -128,6 +128,7 @@ struct MPI4DAAL
                     0, MPI_COMM_WORLD);
 
         std::vector<T> all;
+        all.reserve(nRanks);
         if(rank == 0) {
             for(int i=0; i<nRanks; ++i) {
                 if (sizes[i] > 0) {
