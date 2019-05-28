@@ -34,7 +34,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/normalization.csv"
 
     # configure a covariance object
-    algo = d4p.normalization_zscore()
+    algo = d4p.normalization_zscore(doScale = True)
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
