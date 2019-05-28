@@ -20,11 +20,11 @@ class Test(unittest.TestCase):
         # forest regressor, due to different partitioning of data
         # between threads from run to run.
         # Hence skip that test
-        def dummy(**args):
+        def dummy(*args, **kwargs):
             pass
         try:
             saved = sklearn.utils.estimator_checks.check_fit_idempotent
-            sklearn.utils.estimator_checks.check_fit_idempotent = saved
+            sklearn.utils.estimator_checks.check_fit_idempotent = dummy
         except AttributeError:
             saved = None
         check_estimator(RandomForestRegressor)
