@@ -172,7 +172,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             method='defaultDense',
             nTrees=int(self.n_estimators),
             observationsPerTreeFraction=1,
-            featuresPerNode=float(_featuresPerNode),
+            featuresPerNode=int(_featuresPerNode),
             maxTreeDepth=int(0 if self.max_depth is None else self.max_depth),
             minObservationsInLeafNode=1,
             engine=daal_engine_,
@@ -219,7 +219,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             value_shape = (node_ndarray.shape[0], self.n_outputs_,
                                  self.n_classes_)
 
-            assert np.allclose(value_ndarray, value_ndarray.astype(np.intc, casting='unsafe')), "Value array is non-integer"
+            # assert np.allclose(value_ndarray, value_ndarray.astype(np.intc, casting='unsafe')), "Value array is non-integer"
 
             tree_i_state_dict = {
                 'max_depth' : tree_i_state_class.max_depth,
@@ -366,7 +366,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
             method='defaultDense',
             nTrees=int(self.n_estimators),
             observationsPerTreeFraction=1,
-            featuresPerNode=float(_featuresPerNode),
+            featuresPerNode=int(_featuresPerNode),
             maxTreeDepth=int(0 if self.max_depth is None else self.max_depth),
             minObservationsInLeafNode=1,
             engine=daal_engine,
