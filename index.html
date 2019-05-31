@@ -36,7 +36,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Input Data" href="data.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="contents.html" /> 
+    <link rel="prev" title="Contents" href="contents.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -267,17 +267,17 @@ clusters sizes
 (strong scaling: orange) which addresses possible response time requirements. It also scales with
 growing input size (weak scaling: yellow) which is needed if the data no longer fits
 into memory of a single node.</p>
-<div class="figure" id="id1">
+<div class="figure align-center" id="id1">
 <img alt="_images/d4p-linreg-scale.jpg" src="_images/d4p-linreg-scale.jpg" />
 <p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed linear regression
 of 2.15 TB of data in 1.18 seconds and 68.66 GB of data in less than
-48 milliseconds.</span></p>
+48 milliseconds.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
-<div class="figure" id="id2">
+<div class="figure align-center" id="id2">
 <img alt="_images/d4p-kmeans-scale.jpg" src="_images/d4p-kmeans-scale.jpg" />
 <p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed K-Means (10
 clusters) of 1.12 TB of data in 107.4 seconds and 35.76 GB of data
-in 4.8 seconds.</span></p>
+in 4.8 seconds.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>Configuration: Intel(R) Xeon(R) Gold 6148 CPU &#64; 2.40GHz, EIST/Turbo on 2
 sockets, 20 cores per socket, 192 GB RAM, 16 nodes connected with Infiniband,
@@ -293,8 +293,8 @@ available at <a class="reference external" href="https://github.com/IntelPython/
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>All algorithms in daal4py work the same way:</p>
 <ol class="arabic simple">
-<li>Instantiate and parameterize</li>
-<li>Run/compute on input data</li>
+<li><p>Instantiate and parameterize</p></li>
+<li><p>Run/compute on input data</p></li>
 </ol>
 <p>The below tables list the accepted arguments. Those with no default (None) are
 required arguments. All other arguments with defaults are optional and can be
@@ -321,9 +321,18 @@ To unlock performance for your application, simply run:</p>
 <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">patch_sklearn</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Additionally, daal4py.sklearn provides scikit-learn API compatible classes for
-k-nearest neighbors classifier, as well as random forest classifier and regressors
-which are not a drop-in replacements of the corresponding scikit-learn counterparts.</p>
+<p>Additionally, daal4py.sklearn contains scikit-learn API compatible <a class="reference internal" href="sklearn.html#sklearn"><span class="std std-ref">classes</span></a>
+which implement a subset of scikit-learn algorithms using Intel® DAAL. These classes are
+always available, whether the scikit-learn itself has been patched, or not. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn</span><span class="o">,</span> <span class="nn">sklearn.datasets</span><span class="o">,</span> <span class="nn">sklearn.svm</span><span class="o">,</span> <span class="nn">sklearn.metrics</span>
+<span class="n">digits</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">load_digits</span><span class="p">()</span>
+<span class="kn">import</span> <span class="nn">daal4py.sklearn</span>
+<span class="n">clf_d</span> <span class="o">=</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">svm</span><span class="o">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;rbf&#39;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">clf_v</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">svm</span><span class="o">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;rbf&#39;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">sklearn</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">v_measure_score</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">clf_v</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span> <span class="c1"># output: 0.977068068172132</span>
+<span class="n">sklearn</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">v_measure_score</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">clf_d</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span> <span class="c1"># output: 0.977068068172132</span>
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -338,7 +347,7 @@ which are not a drop-in replacements of the corresponding scikit-learn counterpa
         <a href="data.html" class="btn btn-neutral float-right" title="Input Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="contents.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="contents.html" class="btn btn-neutral float-left" title="Contents" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

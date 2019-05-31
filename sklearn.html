@@ -162,24 +162,31 @@
 provided by daal4py allows one to create scikit-learn compatible estimators,
 transformers, clusterers, etc. powered by DAAL which are nearly as efficient as
 native programs.</p>
-<p>Submodule daal4py.sklearn provides such classes.</p>
+<p>Submodule <cite>daal4py.sklearn</cite> provides such classes.</p>
 <p>Currently, these include:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">neighbors</span><span class="o">.</span><span class="n">KNeighborsClassifier</span>
 <span class="mf">2.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">ensemble</span><span class="o">.</span><span class="n">RandomForestClassifier</span>
 <span class="mf">3.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">ensemble</span><span class="o">.</span><span class="n">RandomForestRegressor</span>
+<span class="mf">4.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">KMeans</span>
+<span class="mf">5.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">PCA</span>
+<span class="mf">6.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">linear_model</span><span class="o">.</span><span class="n">Ridge</span>
+<span class="mf">7.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">svm</span><span class="o">.</span><span class="n">SVC</span>
+<span class="mf">8.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">linear_model</span><span class="o">.</span><span class="n">logistic_regression_path</span>
+<span class="mf">9.</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">linear_model</span><span class="o">.</span><span class="n">LogisticRegression</span>
 </pre></div>
 </div>
 <p>Additionally, daal4py contains code to monkey-patch the following existing scikit-learn algorithms:</p>
 <ol class="arabic simple">
-<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html">sklearn.linear_model.LinearRegression</a></li>
-<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html">sklearn.linear_model.Ridge</a> (solver=’auto’)</li>
-<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html">sklearn.linear_model.LogisticRegression</a> (solver=’lbfgs’)</li>
-<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html">sklearn.decomposition.PCA</a> (solver=’full’)</li>
-<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html">sklearn.cluster.KMeans</a> (algo=’full’)</li>
-<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise_distances.html">sklearn.metric.pairwise_distance</a>, with metric=’cosine’ or metric=’correlation’</li>
-<li><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html">sklearn.linear_model.LinearRegression</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html">sklearn.linear_model.Ridge</a> (solver=’auto’)</p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html">sklearn.linear_model.LogisticRegression</a> and <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegressionCV.html">sklearn.linear_model.LogisticRegressionCV</a> (solver in [‘lbfgs’, ‘newton-cg’])</p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html">sklearn.decomposition.PCA</a> (svd_solver=’full’, and introduces svd_solver=’daal’)</p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html">sklearn.cluster.KMeans</a> (algo=’full’)</p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise_distances.html">sklearn.metric.pairwise_distance</a>, with metric=’cosine’ or metric=’correlation’</p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></p></li>
 </ol>
 <p>Monkey-patched scikit-learn passes scikit-learn’s own test suite, with few exceptions, specified in <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/deselected_tests.yaml">deselected_tests.yaml</a>.</p>
+<p>Scikit-learn’s test suite executes <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.estimator_checks.check_estimator.html">check_estimator</a> on all added and monkey-patched classes, which are discovered by means of introspection. This assures scikit-learn API compatibility of <cite>daal4py.sklearn</cite> classes.</p>
 </div>
 
 

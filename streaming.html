@@ -171,19 +171,19 @@ actual stream. daal4py’s streaming mode allows you to process such data.</p>
 operations with computation.</p>
 <p>daal4py’s streaming mode is as easy as follows:</p>
 <ol class="arabic">
-<li><p class="first">When constructing the algorithm configure it with <code class="docutils literal notranslate"><span class="pre">streaming=True</span></code>:</p>
+<li><p>When constructing the algorithm configure it with <code class="docutils literal notranslate"><span class="pre">streaming=True</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">algo</span> <span class="o">=</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">streaming</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Repeat calling <code class="docutils literal notranslate"><span class="pre">compute(input-data)</span></code> with chunks of your input (arrays, DataFrames or
+<li><p>Repeat calling <code class="docutils literal notranslate"><span class="pre">compute(input-data)</span></code> with chunks of your input (arrays, DataFrames or
 files):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">input_files</span><span class="p">:</span>
     <span class="n">algo</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">When done with inputting, call <code class="docutils literal notranslate"><span class="pre">finalize()</span></code> to obtain the result:</p>
+<li><p>When done with inputting, call <code class="docutils literal notranslate"><span class="pre">finalize()</span></code> to obtain the result:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">algo</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -197,24 +197,29 @@ which simulates a data stream using a generator which reads a file in chunks:
 <h2>Supported Algorithms and Examples<a class="headerlink" href="#supported-algorithms-and-examples" title="Permalink to this headline">¶</a></h2>
 <p>The following algorithms support streaming:</p>
 <ul class="simple">
-<li>SVD (svd)<ul>
-<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/svd_streaming.py">SVD</a></li>
+<li><p>SVD (svd)</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/svd_streaming.py">SVD</a></p></li>
 </ul>
 </li>
-<li>Linear Regression Training (linear_regression_training)<ul>
-<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_stream.py">Linear Regression</a></li>
+<li><p>Linear Regression Training (linear_regression_training)</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_stream.py">Linear Regression</a></p></li>
 </ul>
 </li>
-<li>Ridge Regression Training (ridge_regression_training)<ul>
-<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_stream.py">Ridge Regression</a></li>
+<li><p>Ridge Regression Training (ridge_regression_training)</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_stream.py">Ridge Regression</a></p></li>
 </ul>
 </li>
-<li>Multinomial Naive Bayes Training (multinomial_naive_bayes_training)<ul>
-<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_stream.py">Naive Bayes</a></li>
+<li><p>Multinomial Naive Bayes Training (multinomial_naive_bayes_training)</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_stream.py">Naive Bayes</a></p></li>
 </ul>
 </li>
-<li>Moments of Low Order<ul>
-<li><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py">Low Order Moments</a></li>
+<li><p>Moments of Low Order</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py">Low Order Moments</a></p></li>
 </ul>
 </li>
 </ul>
