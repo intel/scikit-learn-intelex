@@ -68,17 +68,16 @@ namespace map_reduce_star_plus {
 
             // run step1 and gather all partial results
             auto s1Res = algo.run_step1Local(inputs...);
-            // we need to replace in some way exact daal::algorithms::svd::outputOfStep1ForStep2 by common definition
-            auto s1OutForStep2 = s1Res->get(daal::algorithms::svd::outputOfStep1ForStep2);
+            auto s1OutForStep2 = s1Res->get(algo.outputOfStep1ForStep2);
             auto s2InFromStep1 = MPI4DAAL::gather(rank, nRanks, s1OutForStep2);
 
-            typename Algo::iomstep2Master_type::result_type res;
-            const int S23TAG = 4004; //what it should be? unique?
+            typename Algo::iomstep2Master_type::result_type s2Res;
+            const int S23TAG = 4004;
             daal::data_management::DataCollectionPtr inputOfStep3FromStep2;
             if(rank == 0) {
-                res = algo.run_step2Master(s2InFromStep1);
+                s2Res = algo.run_step2Master(s2InFromStep1);
                 // get intputs for step3 and send them to all processes
-                auto outputOfStep2ForStep3 = std::get<1>(res)->get(daal::algorithms::svd::outputOfStep2ForStep3);
+                auto outputOfStep2ForStep3 = std::get<1>(s2Res)->get(algo.outputOfStep2ForStep3);
                 inputOfStep3FromStep2 = daal::services::staticPointerCast<daal::data_management::DataCollection>((*outputOfStep2ForStep3)[0]);
                 for(size_t i = 1; i < nRanks; i++) {
                     MPI4DAAL::send((*outputOfStep2ForStep3)[i], i, S23TAG);
@@ -87,13 +86,17 @@ namespace map_reduce_star_plus {
                 inputOfStep3FromStep2 = MPI4DAAL::recv<daal::data_management::DataCollectionPtr>(0, S23TAG);
             }
 
-            // run step3
-            auto inputOfStep3FromStep1 = s1Res->get(daal::algorithms::svd::outputOfStep1ForStep3);
+            // bcast result of step2 to all
+            auto result = MPI4DAAL::bcast(rank, nRanks, std::get<0>(s2Res));
+
+            // perform step3
+            auto inputOfStep3FromStep1 = s1Res->get(algo.outputOfStep1ForStep3);
             auto step3Output = algo.run_step3Local(inputOfStep3FromStep1, inputOfStep3FromStep2);
 
-            // we need to return std::get<0>(res) (rightSingularMatrix and singularValues) and step3Output (leftSingularMatrix) at the same time
-            // and them must be available in Python...
-            return step3Output;
+            // add result of step3
+            result->set(algo.step3Res, step3Output->get(algo.step3Res));
+
+            return result;
         }
 
         template<typename ... Ts>
