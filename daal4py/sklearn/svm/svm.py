@@ -412,7 +412,7 @@ def fit(self, X, y, sample_weight=None):
         # see comment on the other call to np.iinfo in this file
         seed = rnd.randint(np.iinfo('i').max)
 
-        if ( not sparse and not self.probability and
+        if ( not sparse and not self.probability and not self.break_ties and
              sample_weight.size == 0 and self.class_weight is None and kernel in ['linear', 'rbf']):
 
             self._daal_fit = True
@@ -513,14 +513,14 @@ class SVC(sklearn.svm.base.BaseSVC):
                  coef0=0.0, shrinking=True, probability=False,
                  tol=1e-3, cache_size=200, class_weight=None,
                  verbose=False, max_iter=-1, decision_function_shape='ovr',
-                 random_state=None):
+                 break_ties=False, random_state=None):
 
         super(SVC, self).__init__(
             kernel=kernel, degree=degree, gamma=gamma,
             coef0=coef0, tol=tol, C=C, nu=0., shrinking=shrinking,
             probability=probability, cache_size=cache_size,
             class_weight=class_weight, verbose=verbose, max_iter=max_iter,
-            decision_function_shape=decision_function_shape,
+            decision_function_shape=decision_function_shape, break_ties=break_ties,
             random_state=random_state)
 
 
