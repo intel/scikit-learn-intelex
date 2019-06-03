@@ -16,19 +16,19 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py SVD example for distributed memory systems; SPMD mode
+# daal4py QR example for distributed memory systems; SPMD mode
 # run like this:
-#    mpirun -n 4 python ./svd_spmd.py
+#    mpirun -n 4 python ./qr_spmd.py
 
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
 def main():
     # Each process gets its own data
-    infile = "./data/distributed/svd_{}.csv".format(d4p.my_procid()+1)
+    infile = "./data/distributed/qr_{}.csv".format(d4p.my_procid()+1)
 
-    # configure a SVD object
-    algo = d4p.svd(distributed=True)
+    # configure a QR object
+    algo = d4p.qr(distributed=True)
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
@@ -37,10 +37,9 @@ def main():
     data = loadtxt(infile, delimiter=',')
     result2 = algo.compute(data)
 
-    # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues
-    assert allclose(result1.leftSingularMatrix, result2.leftSingularMatrix, atol=1e-05)
-    assert allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-05)
-    assert allclose(result1.singularValues, result2.singularValues, atol=1e-05)
+    # QR result objects provide orthogonal matrix Q and matrixR
+    assert allclose(result1.matrixQ, result2.matrixQ, atol=1e-05)
+    assert allclose(result1.matrixR, result2.matrixR, atol=1e-05)
 
     return result1
 
@@ -51,6 +50,6 @@ if __name__ == "__main__":
     res = main()
     # result is available on all processes - but we print only on root
     if d4p.my_procid() == 0:
-        print("\nEach process has singularValues and rightSingularMatrix but only his part of leftSingularMatrix:\n")
+        print("\nEach process has matrixR but only his part of matrixQ:\n")
         print(res)
     d4p.daalfini()
