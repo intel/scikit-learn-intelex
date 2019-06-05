@@ -7,7 +7,10 @@ if d4p.__has_dist__:
 
 
     class Base():
-        pass
+        def test_svd_spmd(self):
+            import svd_spmd as ex
+            (data, result) = self.call(ex)
+            self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
 
 
     gen_examples = [
