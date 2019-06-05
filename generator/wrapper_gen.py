@@ -987,7 +987,7 @@ extern "C" void * compute_{{algo}}(daal::services::SharedPtr<{{algo}}__iface__> 
 {{' '*(27+(algo|length))}}bool setup=false)
 {
 {% if distributed.name %}
-    (*algo)->{{distributed.arg_member}} = c_num_procs() > 0;
+    (*algo)->{{distributed.arg_member}} = c_num_procs() > 1;
 {% endif %}
     void * res = (*algo)->compute({{input_args|fmt('{}', 'arg_c', sep=',\n')|indent(34)}},
                                   setup);
