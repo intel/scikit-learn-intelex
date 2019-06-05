@@ -72,6 +72,7 @@ required = {
     'algorithms::optimization_solver::sgd': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
     'algorithms::optimization_solver::lbfgs': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
     'algorithms::optimization_solver::adagrad': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
+    'algorithms::dbscan': [('epsilon', 'fptype'), ('minObservations', 'size_t')],
 }
 
 # Some algorithms have no public constructors and need to be instantiated with 'create'
