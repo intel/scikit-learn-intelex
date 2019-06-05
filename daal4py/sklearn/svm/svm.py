@@ -412,7 +412,7 @@ def fit(self, X, y, sample_weight=None):
         # see comment on the other call to np.iinfo in this file
         seed = rnd.randint(np.iinfo('i').max)
 
-        if ( not sparse and not self.probability and
+        if ( not sparse and not self.probability and getattr(self, 'break_ties', False) and
              sample_weight.size == 0 and self.class_weight is None and kernel in ['linear', 'rbf']):
 
             self._daal_fit = True
@@ -506,23 +506,56 @@ def predict(self, X):
     return self.classes_.take(np.asarray(y, dtype=np.intp))
 
 
-class SVC(sklearn.svm.base.BaseSVC):
-    _impl = 'c_svc'
+__base_svc_init_arg_names__ = []
 
-    def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto_deprecated',
-                 coef0=0.0, shrinking=True, probability=False,
-                 tol=1e-3, cache_size=200, class_weight=None,
-                 verbose=False, max_iter=-1, decision_function_shape='ovr',
-                 random_state=None):
+__base_svc_init_function__ = sklearn.svm.base.BaseSVC.__init__
+__base_svc_init_function_code__ = __base_svc_init_function__.__code__
 
-        super(SVC, self).__init__(
-            kernel=kernel, degree=degree, gamma=gamma,
-            coef0=coef0, tol=tol, C=C, nu=0., shrinking=shrinking,
-            probability=probability, cache_size=cache_size,
-            class_weight=class_weight, verbose=verbose, max_iter=max_iter,
-            decision_function_shape=decision_function_shape,
-            random_state=random_state)
+try:
+    # retrieve tuple of code argument names to check whether
+    # new in 0.22 keyword 'break_ties' is in it
+    __base_svc_init_arg_names__ = __base_svc_init_function_code__.co_varnames
+except:
+    pass
 
+del __base_svc_init_function__
+del __base_svc_init_function_code__
+
+
+if 'break_ties' in  __base_svc_init_arg_names__:
+    class SVC(sklearn.svm.base.BaseSVC):
+        _impl = 'c_svc'
+
+        def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto_deprecated',
+                     coef0=0.0, shrinking=True, probability=False,
+                     tol=1e-3, cache_size=200, class_weight=None,
+                     verbose=False, max_iter=-1, decision_function_shape='ovr',
+                     break_ties=False, random_state=None):
+
+            super(SVC, self).__init__(
+                kernel=kernel, degree=degree, gamma=gamma,
+                coef0=coef0, tol=tol, C=C, nu=0., shrinking=shrinking,
+                probability=probability, cache_size=cache_size,
+                class_weight=class_weight, verbose=verbose, max_iter=max_iter,
+                decision_function_shape=decision_function_shape, break_ties=break_ties,
+                random_state=random_state)
+else:
+    class SVC(sklearn.svm.base.BaseSVC):
+        _impl = 'c_svc'
+
+        def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto_deprecated',
+                     coef0=0.0, shrinking=True, probability=False,
+                     tol=1e-3, cache_size=200, class_weight=None,
+                     verbose=False, max_iter=-1, decision_function_shape='ovr',
+                     random_state=None):
+
+            super(SVC, self).__init__(
+                kernel=kernel, degree=degree, gamma=gamma,
+                coef0=coef0, tol=tol, C=C, nu=0., shrinking=shrinking,
+                probability=probability, cache_size=cache_size,
+                class_weight=class_weight, verbose=verbose, max_iter=max_iter,
+                decision_function_shape=decision_function_shape,
+                random_state=random_state)    
 
 SVC.fit = fit
 SVC.predict = predict
