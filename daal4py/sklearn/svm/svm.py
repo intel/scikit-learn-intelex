@@ -508,10 +508,19 @@ def predict(self, X):
 
 __base_svc_init_arg_names__ = []
 
+__base_svc_init_function__ = sklearn.svm.base.BaseSVC.__init__
+__base_svc_init_function_code__ = __base_svc_init_function__.__code__
+
 try:
-    __base_svc_init_arg_names__ = sklearn.svm.base.BaseSVC.__init__.co_varnames
+    # retrieve tuple of code argument names to check whether
+    # new in 0.22 keyword 'break_ties' is in it
+    __base_svc_init_arg_names__ = __base_svc_init_function_code__.co_varnames
 except:
     pass
+
+del __base_svc_init_function__
+del __base_svc_init_function_code__
+
 
 if 'break_ties' in  __base_svc_init_arg_names__:
     class SVC(sklearn.svm.base.BaseSVC):
