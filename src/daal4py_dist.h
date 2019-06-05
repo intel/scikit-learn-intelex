@@ -93,6 +93,7 @@ struct DoubleIOManager
 //////////////////////////////////////////////////////////////
 
 #include "map_reduce_star.h"
+#include "map_reduce_star_plus.h"
 #include "map_reduce_tree.h"
 #include "dist_custom.h"
 
