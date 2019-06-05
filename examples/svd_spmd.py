@@ -38,19 +38,23 @@ def main():
     result2 = algo.compute(data)
 
     # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues
+    assert result1.leftSingularMatrix.shape == data.shape
+    assert result1.singularValues.shape == (1, data.shape[1])
+    assert result1.rightSingularMatrix.shape == (data.shape[1], data.shape[1])
+
     assert allclose(result1.leftSingularMatrix, result2.leftSingularMatrix, atol=1e-05)
     assert allclose(result1.rightSingularMatrix, result2.rightSingularMatrix, atol=1e-05)
     assert allclose(result1.singularValues, result2.singularValues, atol=1e-05)
 
-    return result1
+    return data, result1
 
 
 if __name__ == "__main__":
     # Initialize SPMD mode
     d4p.daalinit()
-    res = main()
+    (_, result) = main()
     # result is available on all processes - but we print only on root
     if d4p.my_procid() == 0:
         print("\nEach process has singularValues and rightSingularMatrix but only his part of leftSingularMatrix:\n")
-        print(res)
+        print(result)
     d4p.daalfini()
