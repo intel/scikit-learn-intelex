@@ -43,12 +43,21 @@ def main(readcsv=read_csv, method='svdDense'):
     data = readcsv(infile)
     result2 = algo.compute(data)
 
-    # QR result objects provide eigenvalues, eigenvectors, means and variances
-    return result1
+    # QR result provide matrixQ and matrixR
+    assert result1.matrixQ.shape == data.shape
+    assert result1.matrixR.shape == (data.shape[1], data.shape[1])
+
+    assert np.allclose(result1.matrixQ, result2.matrixQ, atol=1e-07)
+    assert np.allclose(result1.matrixR, result2.matrixR, atol=1e-07)
+
+    if hasattr(data, 'toarray'):
+        data = data.toarray() # to make the next assertion work with scipy's csr_matrix
+    assert np.allclose(data, np.matmul(result1.matrixQ, result1.matrixR))
+
+    return data, result1
 
 
 if __name__ == "__main__":
-    result = main()
-    print("Orthogonal matrix Q:\n", result.matrixQ[:10])
-    print("Triangular matrix R:\n", result.matrixR)
+    (_, result) = main()
+    print(result)
     print('All looks good!')
