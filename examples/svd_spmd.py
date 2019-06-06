@@ -57,4 +57,5 @@ if __name__ == "__main__":
     if d4p.my_procid() == 0:
         print("\nEach process has singularValues and rightSingularMatrix but only his part of leftSingularMatrix:\n")
         print(result)
+        print('All looks good!')
     d4p.daalfini()

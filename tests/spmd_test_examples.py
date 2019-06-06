@@ -9,7 +9,12 @@ class Base():
     def test_svd_spmd(self):
         import svd_spmd as ex
         (data, result) = self.call(ex)
-        self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
+        self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix, np.diag(result.singularValues[0])), result.rightSingularMatrix)))
+
+    def test_qr_spmd(self):
+        import qr_spmd as ex
+        (data, result) = self.call(ex)
+        self.assertTrue(np.allclose(data, np.matmul(result.matrixQ, result.matrixR)))
 
 
 gen_examples = [

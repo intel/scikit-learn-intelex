@@ -37,19 +37,23 @@ def main():
     data = loadtxt(infile, delimiter=',')
     result2 = algo.compute(data)
 
-    # QR result objects provide orthogonal matrix Q and matrixR
-    assert allclose(result1.matrixQ, result2.matrixQ, atol=1e-05)
-    assert allclose(result1.matrixR, result2.matrixR, atol=1e-05)
+    # QR result provide matrixQ and matrixR
+    assert result1.matrixQ.shape == data.shape
+    assert result1.matrixR.shape == (data.shape[1], data.shape[1])
 
-    return result1
+    assert allclose(result1.matrixQ, result2.matrixQ, atol=1e-07)
+    assert allclose(result1.matrixR, result2.matrixR, atol=1e-07)
+
+    return data, result1
 
 
 if __name__ == "__main__":
     # Initialize SPMD mode
     d4p.daalinit()
-    res = main()
+    (_, result) = main()
     # result is available on all processes - but we print only on root
     if d4p.my_procid() == 0:
         print("\nEach process has matrixR but only his part of matrixQ:\n")
-        print(res)
+        print(result)
+        print('All looks good!')
     d4p.daalfini()
