@@ -17,7 +17,7 @@
 #ifndef _MAP_REDUCE_STAR_INCLUDED_
 #define _MAP_REDUCE_STAR_INCLUDED_
 
-#include "mpi4daal.h"
+#include "transceiver.h"
 
 namespace map_reduce_star {
 
@@ -29,24 +29,22 @@ public:
     typename Algo::iomstep2Master_type::result_type
     static map_reduce(Algo & algo, Ts& ... inputs)
     {
-        int rank = MPI4DAAL::rank();
-        int nRanks = MPI4DAAL::nRanks();
-
+        auto tcvr = get_transceiver();
         auto s1_result = algo.run_step1Local(inputs...);
         // gather all partial results
-        auto p_results = MPI4DAAL::gather(rank, nRanks, s1_result);
+        auto p_results = tcvr->gather(s1_result);
         // call reduction on root
         typename Algo::iomstep2Master_type::result_type res;
-        if(rank == 0) res = algo.run_step2Master(p_results);
+        if(tcvr->me() == 0) res = algo.run_step2Master(p_results);
         // bcast final result
-        return MPI4DAAL::bcast(rank, nRanks, res);
+        tcvr->bcast(res);
+        return res;
     }
 
     template<typename ... Ts>
     static typename Algo::iomstep2Master_type::result_type
     compute(Algo & algo, Ts& ... inputs)
     {
-        MPI4DAAL::init();
         return map_reduce(algo, get_table(inputs)...);
     }
 };

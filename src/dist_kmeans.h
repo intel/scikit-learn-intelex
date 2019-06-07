@@ -40,9 +40,8 @@ public:
     typename Algo::iomstep2Master__final_type::result_type
     static map_reduce(Algo & algo, const T1& input1, const T2& input2)
     {
+        auto tcvr = get_transceiver();
         T2 centroids = input2;
-        int rank = MPI4DAAL::rank();
-        int nRanks = MPI4DAAL::nRanks();
         bool done = false;
         typename Algo::iomstep2Master__final_type::result_type fres;
         size_t iter = 0;
@@ -51,13 +50,13 @@ public:
                                    ? typename Algo::algob_type::ParameterType(algo._nClusters, algo._maxIterations).accuracyThreshold
                                    : algo._accuracyThreshold;
         do {
-            if(iter) centroids = MPI4DAAL::bcast(rank, nRanks, centroids);
+            if(iter) tcvr->bcast(centroids);
             ++iter;
             auto s1_result = algo.run_step1Local(input1, centroids);
             // reduce all partial results
-            auto pres = map_reduce_tree::map_reduce_tree<Algo>::reduce(rank, nRanks, algo, s1_result);
+            auto pres = map_reduce_tree::map_reduce_tree<Algo>::reduce(algo, s1_result);
             // finalize and check convergence/end of iteration
-            if(rank == 0) {
+            if(tcvr->me() == 0) {
                 fres = algo.run_step2Master__final(std::vector< typename Algo::iomstep2Master__final_type::input1_type >(1, pres));
                 // now check if we convered/reached max_iter
                 if(iter < algo._maxIterations) {
@@ -65,6 +64,7 @@ public:
                     if(std::abs(goal - new_goal) > accuracyThreshold) {
                         centroids = fres->get(daal::algorithms::kmeans::centroids);
                         goal = new_goal;
+                        tcvr->bcast(done);
                         continue;
                     }
                 }
@@ -77,16 +77,18 @@ public:
                                                                         daal::data_management::NumericTable::doAllocate, (int)iter));
                 fres->set(daal::algorithms::kmeans::nIterations, nittab);
             }
-        } while((done = MPI4DAAL::bcast(rank, nRanks, done)) == false);
+            // root gets here if done, other ranks always
+            tcvr->bcast(done);
+        } while(done == false);
         // bcast final result
-        return MPI4DAAL::bcast(rank, nRanks, fres);
+        tcvr->bcast(fres);
+        return fres;
     }
 
     template<typename ... Ts>
     static typename Algo::iomstep2Master__final_type::result_type
     compute(Algo & algo, const Ts& ... inputs)
     {
-        MPI4DAAL::init();
         return map_reduce(algo, get_table(inputs)...);
     }
 };

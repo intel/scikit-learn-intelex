@@ -17,7 +17,7 @@
 #ifndef _MAP_REDUCE_TREE_INCLUDED_
 #define _MAP_REDUCE_TREE_INCLUDED_
 
-#include "mpi4daal.h"
+#include "transceiver.h"
 
 namespace map_reduce_tree {
 
@@ -32,8 +32,12 @@ public:
         return power;
     }
 
-    static typename Algo::iomstep1Local_type::result_type reduce(int rank, int nRanks, Algo & algo, typename Algo::iomstep1Local_type::result_type inp)
+    static typename Algo::iomstep1Local_type::result_type reduce(Algo & algo, typename Algo::iomstep1Local_type::result_type inp)
     {
+        auto tcvr = get_transceiver();
+        int rank = tcvr->me();
+        int nRanks = tcvr->nMembers();
+
         if(nRanks == 1) {
             std::vector<typename Algo::iomstep1Local_type::result_type> p_results(1, inp);
             inp = algo.run_step2Master(p_results);
@@ -44,13 +48,13 @@ public:
             for(size_t cN = N/2; cN>0; cN /= 2) {
                 if(rank >= cN) {
                     // Upper half of processes send their stuff to lower half
-                    MPI4DAAL::send(inp, rank - cN, REDTAG);
+                    tcvr->send(inp, rank - cN, REDTAG);
                     break;
                 } else if(rank + cN < nRanks) {
                     // lower half of processes receives message and computes partial reduction
                     std::vector<typename Algo::iomstep1Local_type::result_type> p_results(2);
                     p_results[0] = inp;
-                    p_results[1] = MPI4DAAL::recv<typename Algo::iomstep1Local_type::result_type>(rank + cN, REDTAG);
+                    p_results[1] = tcvr->recv<typename Algo::iomstep1Local_type::result_type>(rank + cN, REDTAG);
                     inp = algo.run_step2Master(p_results);
                 }
             }
@@ -62,23 +66,20 @@ public:
     typename Algo::iomstep2Master__final_type::result_type
     static map_reduce(Algo & algo, const Ts& ... inputs)
     {
-        int rank = MPI4DAAL::rank();
-        int nRanks = MPI4DAAL::nRanks();
-
         auto s1_result = algo.run_step1Local(inputs...);
         // reduce all partial results
-        auto pres = reduce(rank, nRanks, algo, s1_result);
+        auto pres = reduce(algo, s1_result);
         // finalize result
         auto res = algo.run_step2Master__final(std::vector< typename Algo::iomstep2Master_type::result_type >(1, pres));
         // bcast final result
-        return MPI4DAAL::bcast(rank, nRanks, res);
+        get_transceiver()->bcast(res);
+        return res;
     }
 
     template<typename ... Ts>
     static typename Algo::iomstep2Master__final_type::result_type
     compute(Algo & algo, const Ts& ... inputs)
     {
-        MPI4DAAL::init();
         return map_reduce(algo, get_table(inputs)...);
     }
 };

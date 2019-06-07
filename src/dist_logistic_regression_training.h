@@ -18,7 +18,7 @@
 #define _DIST_LOG_REG_INCLUDED_
 
 #include "dist_custom.h"
-#include "mpi4daal.h"
+#include "transceiver.h"
 #include <algorithm>
 #include <vector>
 
@@ -116,7 +116,7 @@ namespace dist_custom {
                 for (size_t b = 0; b < 1; b++) { // FIXME iterate over batches
                     const auto gradient_tbl = compute_loss(algo, x, y, weights);
                     fptype * gradient = daal::services::dynamicPointerCast< daal::data_management::HomogenNumericTable<fptype> >(gradient_tbl)->getArray();
-                    MPI4DAAL::allreduce(gradient, N, MPI_SUM); // in-place all-reduce, result available on all proces
+                    get_transceiver()->allreduce(gradient, N, MPI_SUM); // in-place all-reduce, result available on all proces
                     // we compute the "reduce" on all processes (we want the result on all anyway)
                     for (int i = 0; i < N; i++) { // FIXME: #weights == #gradient?
                         weights_ptr[i] -= learning_rate * (gradient[i] / nRanks); // div by nRanks because we need avrg
@@ -135,7 +135,7 @@ namespace dist_custom {
         static typename Algo::iomb_type::result_type
         compute(Algo & algo, const data_or_file & x, const data_or_file & y)
         {
-            MPI4DAAL::init();
+            get_transceiver()->init();
             return map_reduce(algo, get_table(x), get_table(y), 50 /* FIXME */, 0.00001 /* FIXME */);
         }
     };

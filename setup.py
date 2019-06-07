@@ -68,6 +68,7 @@ if no_dist :
     DIST_INCDIRS = []
     DIST_LIBDIRS = []
     DIST_LIBS    = []
+    DIST_CPPS    = []
 else:
     DIST_CFLAGS  = ['-D_DIST_',]
     DIST_INCDIRS = [jp(mpi_root, 'include')]
@@ -80,6 +81,7 @@ else:
         assert DIST_LIBS, "Couldn't find MPI library"
     else:
         DIST_LIBS    = ['mpi']
+    DIST_CPPS    = ['src/transceiver.cpp', 'src/mpi/mpi_transceiver.cpp']
 DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
@@ -139,7 +141,8 @@ def getpyexts():
     return cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
-                                 os.path.abspath('build/daal4py_cy.pyx')],
+                                 os.path.abspath('build/daal4py_cy.pyx')]
+                                + DIST_CPPS,
                                 depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,

@@ -526,22 +526,19 @@ int64_t string2enum(const std::string& str, str2i_map_t & strmap)
 
 
 #ifdef _DIST_
-#include "mpi4daal.h"
+#include "transceiver.h"
 #endif
 
 extern "C" {
 void c_daalinit(int nthreads)
 {
     if(nthreads > 0) daal::services::Environment::getInstance()->setNumberOfThreads(nthreads);
-#ifdef _DIST_
-    MPI4DAAL::init();
-#endif
 }
 
 void c_daalfini()
 {
 #ifdef _DIST_
-    MPI4DAAL::fini();
+    del_transceiver();
 #endif
 }
 
@@ -554,7 +551,7 @@ size_t c_num_threads()
 size_t c_num_procs()
 {
 #ifdef _DIST_
-    return MPI4DAAL::nRanks();
+    return get_transceiver()->nMembers();
 #else
     return 1;
 #endif
@@ -563,7 +560,7 @@ size_t c_num_procs()
 size_t c_my_procid()
 {
 #ifdef _DIST_
-    return MPI4DAAL::rank();
+    return get_transceiver()->me();
 #else
     return 0;
 #endif
