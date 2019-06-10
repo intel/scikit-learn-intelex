@@ -514,11 +514,11 @@ gen_inst_algo = """
 {% set ctor = '(' + params_req|fmt('to_daal({})', 'arg_member', sep=', ') + ')' %}
 {% endif %}
 {% if member %}
-_algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}}); // llllll
+_algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
 {% elif create %}
-auto {{algo}} = {{algo}}_type{{ctor}}; // llllll
+auto {{algo}} = {{algo}}_type{{ctor}};
 {% else %}
-auto {{algo}}_obj = {{algo}}_type{{ctor}}; // llllll
+auto {{algo}}_obj = {{algo}}_type{{ctor}};
         {{algo}}_type * {{algo}} = &{{algo}}_obj;
 {% endif %}
 {% if (step_spec == None or step_spec.params) and params_get and params_opt|length and not create %}

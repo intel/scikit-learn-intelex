@@ -113,6 +113,8 @@ ignore = {
     'algorithms::optimization_solver::adagrad': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
                                                  'gradientSquareSum', 'seed',], # internal stuff, deprecated
     'algorithms::optimization_solver::saga': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId', 'seed',], # internal stuff, deprecated
+    'algorithms::optimization_solver::coordinate_descent': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',], # internal stuff
+    'algorithms::optimization_solver::mse': ['optionalArgument',], # internal stuff
     'algorithms::optimization_solver::objective_function': [], # interface type
     'algorithms::optimization_solver::iterative_solver': [], # interface type
     'algorithms::normalization::minmax': ['moments'], # parameter, required an interface
@@ -121,6 +123,8 @@ ignore = {
     'algorithms::em_gmm::init': ['seed',], # deprecated
     'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
+    'algorithms::lasso_regression::training': ['optionalArgument',], # internal stuff
+    'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -500,6 +504,8 @@ no_warn = {
     'algorithms::stump::regression::prediction': ['ParameterType',],
     'algorithms::univariate_outlier_detection': ['ParameterType',],
     'algorithms::weak_learner': ['Result',],
+    'algorithms::lasso_regression': ['Result',],
+    'algorithms::lasso_regression::prediction': ['ParameterType',],
 }
 
 # we need to be more specific about numeric table types for the lowering phase in HPAT
