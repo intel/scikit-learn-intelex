@@ -123,7 +123,7 @@ ignore = {
     'algorithms::em_gmm::init': ['seed',], # deprecated
     'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
-    'algorithms::lasso_regression::training': ['optionalArgument',], # internal stuff
+    'algorithms::lasso_regression::training': ['optionalArgument', 'gramMatrix'], # internal stuff, optional input
     'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
 }
 
@@ -167,6 +167,7 @@ defaults = {
     'algorithms::ridge_regression::training': {'weights': True,},
     'algorithms::stump::classification::training': {'weights': True,},
     'algorithms::stump::regression::training': {'weights': True,},
+    'algorithms::lasso_regression::training': {'weights': True,},
 }
 
 # For enums that are used to access KeyValueDataCollections we need an inverse map
@@ -396,56 +397,6 @@ has_dist = {
         'step_specs' : [],
         'inputnames' : ['data', 'labels'],
         'inputdists' : ['OneD', 'OneD'],
-    },
-}
-
-# Algorithms might have explicitly specializations in which input/ouput/parameter types
-# are also specialized. Currently we only support this for the parameter type.
-# See older version of wrappers.py or swig_interface.py for the expected syntax.
-specialized = {
-    'algorithms::linear_regression::prediction': {
-        'Batch': {
-            'tmpl_decl': OrderedDict([
-                ('fptype', {
-                    'template_decl': 'typename',
-                    'default': 'double',
-                    'values': ['double', 'float']
-                }),
-                ('method', {
-                    'template_decl': 'daal::algorithms::linear_regression::prediction::Method',
-                    'default': 'daal::algorithms::linear_regression::prediction::defaultDense',
-                    'values': ['daal::algorithms::linear_regression::prediction::defaultDense',]
-                }),
-            ]),
-            'specs': [
-                {
-                    'template_decl': ['fptype'],
-                    'expl': OrderedDict([('method', 'daal::algorithms::linear_regression::prediction::defaultDense')]),
-                },
-            ],
-        },
-    },
-    'algorithms::ridge_regression::prediction': {
-        'Batch': {
-            'tmpl_decl': OrderedDict([
-                ('fptype', {
-                    'template_decl': 'typename',
-                    'default': 'double',
-                    'values': ['double', 'float']
-                }),
-                ('method', {
-                    'template_decl': 'daal::algorithms::ridge_regression::prediction::Method',
-                    'default': 'daal::algorithms::ridge_regression::prediction::defaultDense',
-                    'values': ['daal::algorithms::ridge_regression::prediction::defaultDense',]
-                }),
-            ]),
-            'specs': [
-                {
-                    'template_decl': ['fptype'],
-                    'expl': OrderedDict([('method', 'daal::algorithms::ridge_regression::prediction::defaultDense')]),
-                },
-            ],
-        },
     },
 }
 
