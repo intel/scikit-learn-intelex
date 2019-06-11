@@ -26,6 +26,13 @@
 // Initialization is done by calling get_transceiver(). In there the
 // actual transceiver type is selected, and the object constructed and initialized.
 // Repeated calls of get_transceiver() will not re-initialize.
+//
+// Transceiver implementations are supposed to be provided in a Python module.
+// Such a module must provide "std::shared_pointer<transceiver_iface>*" in its attribute 'transceiver'.
+// By putting this into a module we can keep the core of daal4py independent of the communication
+// package, such as MPI. It also allows us to select the communication layer at runtime.
+// The transceiver implementation can be selected by setting env var 'D4P_TRANSCEIVER' to the module name.
+// The current default is 'mpi_transceiver'.
 
 
 #ifndef _TRANSCEIVER_INCLUDED_
@@ -79,13 +86,13 @@ class transceiver_iface : public transceiver_base_iface
 {
 public:
     // Gather data from all processes on given root process
-    // @param[in]  ptr   pointer to data the process contributes to the gather
-    // @param[in]  N     number of bytes in ptr
-    // @param[in]  root  process id which collects data
-    // @param[in]  sizes number of bytes constributed by each process, relevant on root only
-    //                   might be NULL to indicate all members provide same chunksize
-    //                   must be != NULL otherwise
-    virtual void * gather(const void * ptr, size_t N, size_t root, const size_t * sizes) = 0;
+    // @param[in]  ptr    pointer to data the process contributes to the gather
+    // @param[in]  N      number of bytes in ptr
+    // @param[in]  root   process id which collects data
+    // @param[in]  sizes  number of bytes constributed by each process, relevant on root only
+    //                    Can be zero also on root if varying==false
+    // @param[in] varying set to false to indicate all members provide same chunksize
+    virtual void * gather(const void * ptr, size_t N, size_t root, const size_t * sizes, bool varying=true) = 0;
 
     // Broadcast data from root to all other processes
     // @param[inout] ptr   on root: pointer to data to be sent
@@ -139,7 +146,7 @@ public:
 
 // Default implementation for collective operations.
 // tranceiver implementations should derive from here so they can provide
-// optimizd implementations for only some of the collectives.
+// optimized implementations for only some of the collectives.
 // Also provides members m_me and m_nMembers to avoid frequent function calls.
 class transceiver_impl : public transceiver_iface
 {
@@ -156,7 +163,7 @@ public:
         m_nMembers = nMembers();
     }
 
-    virtual void * gather(const void * ptr, size_t N, size_t root, const size_t * sizes)
+    virtual void * gather(const void * ptr, size_t N, size_t root, const size_t * sizes, bool varying)
     {
         throw std::logic_error("transceiver_base::gather not yet implemented");
     }
@@ -207,7 +214,8 @@ public:
         return m_transceiver->me();
     }
 
-    // Send object of given type to recpnt
+    // Send object of given type to recpnt.
+    // Object is assumed to be a daal::serializable object.
     // @param[in] obj    object to be sent
     // @param[in] recpnt recipient
     // @param[in] tag    message tag to be matched by recipient
@@ -215,12 +223,14 @@ public:
     void send(const T& obj, size_t recpnt, size_t tag);
 
     // Receive an object of given type from sender
+    // Object is assumed to be a daal::serializable object.
     // @param[in] sender sender
     // @param[in] tag    message tag to be matched with send
     template<typename T>
     T recv(size_t sender, size_t tag);
 
     // Gather objects stored in a shared pointer on given root process
+    // Object is assumed to be a daal::serializable object.
     // @param[in]  sptr    shared pointer with object to be gathered
     // @param[in]  root    process id which collects data
     // @param[in]  varying can be set to false if objects are of identical size on all processes
@@ -228,6 +238,8 @@ public:
     std::vector<daal::services::SharedPtr<T> > gather(const daal::services::SharedPtr<T> & sptr, size_t root=0, bool varying=true);
 
     // Broadcast object from root to all other processes
+    // Object is serialized similar to memcpy(buffer, &obj, sizeof(obj)).
+    // Object is deserialized similar to memcpy(&obj, buffer, sizeof(obj)).
     // @param[inout] obj   on root: reference of object to be sent
     //                     on all other processes: reference of object to store received data
     // @param[in]    root  process id which collects data
@@ -235,6 +247,7 @@ public:
     void bcast(T & obj, size_t root=0);
 
     // Broadcast shared pointer object from root to all other processes
+    // Object is assumed to be a daal::serializable object.
     // @param[inout] obj   on root: reference of shared pointer object to be sent
     //                     on all other processes: reference of shared pointer object to store received data
     // @param[in]    root  process id which collects data
@@ -242,6 +255,8 @@ public:
     void bcast(daal::services::SharedPtr<T> & obj, size_t root=0);
 
     // Element-wise reduce given array with given operation and provide result on all processes
+    // Elements are serialized similar to memcpy(buffer, &obj, sizeof(obj)).
+    // Elements are deserialized similar to memcpy(&obj, buffer, sizeof(obj)).
     // @param[inout] inout input to reduction and result
     // @param[in]    N     number of elements in inout
     // @param[in]    op    reduction operation
@@ -250,6 +265,8 @@ public:
 
     // Element-wise reduce given array partially with given operation
     // Each process will get result of reduction from processes [0:me[ (excluding me!)
+    // Elements are serialized similar to memcpy(buffer, &obj, sizeof(obj)).
+    // Elements are deserialized similar to memcpy(&obj, buffer, sizeof(obj)).
     // @param[inout] inout input to reduction and result
     // @param[in]    N     number of elements in inout
     // @param[in]    op    reduction operation
@@ -265,10 +282,6 @@ protected:
 // Repeated calls will not re-initialize.
 extern transceiver * get_transceiver();
 
-// delete the global transceiver object
-extern void del_transceiver();
-
-
 template<typename T> struct from_std;
 template<> struct from_std<double>   { static const transceiver_iface::type_type typ = transceiver_iface::DOUBLE; };
 template<> struct from_std<float>    { static const transceiver_iface::type_type typ = transceiver_iface::FLOAT; };
@@ -279,6 +292,10 @@ template<> struct from_std<int32_t>  { static const transceiver_iface::type_type
 template<> struct from_std<uint32_t> { static const transceiver_iface::type_type typ = transceiver_iface::UINT32; };
 template<> struct from_std<int64_t>  { static const transceiver_iface::type_type typ = transceiver_iface::INT64; };
 template<> struct from_std<uint64_t> { static const transceiver_iface::type_type typ = transceiver_iface::UINT64; };
+#ifdef __APPLE__
+template<> struct from_std<long>          { static const transceiver_iface::type_type typ = transceiver_iface::INT64; };
+template<> struct from_std<unsigned long> { static const transceiver_iface::type_type typ = transceiver_iface::UINT64; };
+#endif
 
 template<typename T>
 static bool not_empty(const daal::services::SharedPtr<T> & obj)
@@ -320,6 +337,7 @@ T transceiver::recv(size_t sender, size_t tag)
             daal::byte * buf = new daal::byte[sz];
             br = m_transceiver->recv(buf, sz, sender, tag);
             assert(br == sz);
+            // It'd be nice to avoid the additional copy, need a special DatArchive (see older CnC versions of daal4py)
             daal::data_management::OutputDataArchive out_arch(buf, sz);
             res = daal::services::staticPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
             delete [] buf;
@@ -330,6 +348,7 @@ T transceiver::recv(size_t sender, size_t tag)
 template<typename T>
 std::vector<daal::services::SharedPtr<T> > transceiver::gather(const daal::services::SharedPtr<T> & obj, size_t root, bool varying)
 {
+    // we split into 2 gathers: one to send the sizes, a second to send the actual data
     if(varying == false) std::cerr << "Performance warning: no optimization implemented for non-varying gather sizes\n";
     // Serialize the partial result into a data archive
     daal::data_management::InputDataArchive in_arch;
@@ -338,8 +357,8 @@ std::vector<daal::services::SharedPtr<T> > transceiver::gather(const daal::servi
     // gather all partial results
     // First get all sizes, then gather on root
     size_t mysize = in_arch.getSizeOfArchive();
-    size_t * sizes = reinterpret_cast<size_t*>(m_transceiver->gather(&mysize, sizeof(mysize), root, NULL));
-    char * buff = reinterpret_cast<char*>(m_transceiver->gather(in_arch.getArchiveAsArraySharedPtr().get(), mysize, root, m_transceiver->me() == root ? sizes : (size_t*)-1));
+    size_t * sizes = reinterpret_cast<size_t*>(m_transceiver->gather(&mysize, sizeof(mysize), root, NULL, false));
+    char * buff = reinterpret_cast<char*>(m_transceiver->gather(in_arch.getArchiveAsArraySharedPtr().get(), mysize, root, sizes));
  
     std::vector<daal::services::SharedPtr<T> > all;
     if(m_transceiver->me() == root) {
@@ -347,7 +366,7 @@ std::vector<daal::services::SharedPtr<T> > transceiver::gather(const daal::servi
         size_t nm = m_transceiver->nMembers();
         all.resize(nm);
         for(int i=0; i<nm; ++i) {
-            // FIXME: This is inefficient, we need to write our own DatArchive to avoid extra copy
+            // This is inefficient, we need to write our own DatArchive to avoid extra copy
             daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff+offset), sizes[i]);
             all[i] = daal::services::staticPointerCast<T>(out_arch.getAsSharedPtr());
             offset += sizes[i];
@@ -369,6 +388,7 @@ void transceiver::bcast(T & obj, size_t root)
 template<typename T>
 void transceiver::bcast(daal::services::SharedPtr<T> & obj, size_t root)
 {
+    // we split into 2 messages: one to send the size, a second to send the actual data
     if(m_transceiver->me() == root) {
         // Serialize the partial result into a data archive
         daal::data_management::InputDataArchive in_arch;

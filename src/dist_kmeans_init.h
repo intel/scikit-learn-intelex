@@ -60,15 +60,15 @@ namespace dist_custom {
         typename Algo::iomb_type::result_type
         static map_reduce(Algo & algo, const daal::data_management::NumericTablePtr input)
         {
-            int rank = get_transceiver()->me();
+            auto tcvr = get_transceiver();
 
             size_t tot_rows = input->getNumberOfRows();
             size_t start_row = tot_rows;
             // first determine total number of rows
-            get_transceiver()->reduce_all(&tot_rows, 1, transceiver_iface::OP_SUM);
+            tcvr->reduce_all(&tot_rows, 1, transceiver_iface::OP_SUM);
             // determine start of my chunk
-            get_transceiver()->reduce_exscan(&start_row, 1, transceiver_iface::OP_SUM);
-            if(rank==0) start_row = 0;
+            tcvr->reduce_exscan(&start_row, 1, transceiver_iface::OP_SUM);
+            if(tcvr->me()==0) start_row = 0;
 
             auto res = map_reduce_star::map_reduce_star<Algo>::map_reduce(algo, input, tot_rows, start_row);
 
@@ -116,16 +116,17 @@ namespace dist_custom {
         static typename Algo::iomb_type::result_type
         kmi(Algo & algo, const daal::data_management::NumericTablePtr input)
         {
-            int rank = get_transceiver()->me();
-            int nRanks = get_transceiver()->nMembers();
+            auto tcvr = get_transceiver();
+            int rank = tcvr->me();
+            int nRanks = tcvr->nMembers();
 
             // first determine total number of rows
             size_t tot_rows = input->getNumberOfRows();
             size_t start_row = tot_rows;
             // first determine total number of rows
-            get_transceiver()->reduce_all(&tot_rows, 1, transceiver_iface::OP_SUM);
+            tcvr->reduce_all(&tot_rows, 1, transceiver_iface::OP_SUM);
             // determine start of my chunk
-            get_transceiver()->reduce_exscan(&start_row, 1, transceiver_iface::OP_SUM);
+            tcvr->reduce_exscan(&start_row, 1, transceiver_iface::OP_SUM);
             if(rank==0) start_row = 0;
 
             /* Internal data to be stored on the local nodes */
@@ -136,8 +137,8 @@ namespace dist_custom {
             auto step14Out = algo.run_step1Local(input, tot_rows, start_row)->get(daal::algorithms::kmeans::init::partialCentroids);
             // Only one rank actually computes centroids, we need to identify rank and bcast centroids to all others
             int data_rank = not_empty(step14Out) ? rank : -1;
-            get_transceiver()->reduce_all(&data_rank, 1, transceiver_iface::OP_MAX);
-            get_transceiver()->bcast(step14Out, data_rank);
+            tcvr->reduce_all(&data_rank, 1, transceiver_iface::OP_MAX);
+            tcvr->bcast(step14Out, data_rank);
             typename Algo::iomstep2Local_type::input3_type step2In = step14Out;
 
             pCentroids->addNumericTable(step2In);
@@ -148,7 +149,7 @@ namespace dist_custom {
                 if(iCenter==1) localNodeData = s2res->get(daal::algorithms::kmeans::init::internalResult);
                 auto s2Out = s2res->get(daal::algorithms::kmeans::init::outputOfStep2ForStep3);
                 //  and gather result on root
-                auto s3In = get_transceiver()->gather(s2Out);
+                auto s3In = tcvr->gather(s2Out);
                 const int S34TAG = 3003;
                 // The input for s4 will be stored in s4In
                 daal::data_management::NumericTablePtr s4In;
@@ -162,16 +163,16 @@ namespace dist_custom {
                             break;
                         }
                     }
-                    get_transceiver()->bcast(data_rank, 0);
+                    tcvr->bcast(data_rank, 0);
                     if(data_rank) {
-                        get_transceiver()->send(step3Output->get(daal::algorithms::kmeans::init::outputOfStep3ForStep4, data_rank), data_rank, S34TAG);
+                        tcvr->send(step3Output->get(daal::algorithms::kmeans::init::outputOfStep3ForStep4, data_rank), data_rank, S34TAG);
                     } else {
                         s4In = step3Output->get(daal::algorithms::kmeans::init::outputOfStep3ForStep4, 0);
                     }
                 } else { // non-roots get notified about who will do step 4 with output from step3
-                    get_transceiver()->bcast(data_rank, 0);
+                    tcvr->bcast(data_rank, 0);
                     if(rank == data_rank) {
-                        s4In = get_transceiver()->recv<daal::data_management::NumericTablePtr>(0, S34TAG);
+                        s4In = tcvr->recv<daal::data_management::NumericTablePtr>(0, S34TAG);
                     }
                 }
                 // only one rank actually executes step4
@@ -180,7 +181,7 @@ namespace dist_custom {
                     step14Out = algo.run_step4Local(input, localNodeData, s4In);
                 }
                 // similar to output of step1, output of step4 gets bcasted to all ranks and fed into step2 of next iteration
-                get_transceiver()->bcast(step14Out, data_rank);
+                tcvr->bcast(step14Out, data_rank);
                 step2In = step14Out;
                 pCentroids->addNumericTable(step2In);
             }

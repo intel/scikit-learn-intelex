@@ -16,11 +16,13 @@
 
 #include "mpi_transceiver.h"
 #include <mpi.h>
+#include <Python.h>
 
 void mpi_transceiver::init()
 {
     int is_initialized;
     MPI_Initialized(&is_initialized);
+    // protect against double-init
     if(!is_initialized) {
         MPI_Init(NULL, NULL);
         transceiver_impl::init();
@@ -60,10 +62,10 @@ size_t mpi_transceiver::recv(void * buff, size_t N, int sender, int tag)
     return count;
 }
 
-void * mpi_transceiver::gather(const void * ptr, size_t N, size_t root, const size_t * sizes)
+void * mpi_transceiver::gather(const void * ptr, size_t N, size_t root, const size_t * sizes, bool varying)
 {
     char * buff = NULL;
-    if(sizes) {
+    if(varying) {
         // -> gatherv
         if(m_me == root) {
             int * offsets = new int[m_nMembers];
@@ -141,4 +143,23 @@ void mpi_transceiver::reduce_all(void * inout, transceiver_iface::type_type T, s
 void mpi_transceiver::reduce_exscan(void * inout, transceiver_iface::type_type T, size_t N, transceiver_iface::operation_type op)
 {
     MPI_Exscan(MPI_IN_PLACE, inout, N, to_mpi(T), to_mpi(op), MPI_COMM_WORLD);
+}
+
+// ************************************
+// ************************************
+
+// shared pointer, will GC transceiver when shutting down
+static std::shared_ptr<mpi_transceiver> s_smt;
+
+extern "C" PyMODINIT_FUNC PyInit_mpi_transceiver(void)
+{
+    PyObject *m;
+    static struct PyModuleDef moduledef = { PyModuleDef_HEAD_INIT, "mpi_transceiver", "No docs", -1, NULL, };
+    m = PyModule_Create(&moduledef);
+    if (m == NULL)
+        return NULL;
+
+    s_smt.reset(new mpi_transceiver);
+    PyObject_SetAttrString(m, "transceiver", PyLong_FromVoidPtr((void*)(&s_smt)));
+    return m;
 }

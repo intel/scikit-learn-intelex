@@ -19,6 +19,7 @@
 
 #include "transceiver.h"
 
+// implementation of transceiver_iface using MPI
 class mpi_transceiver : public transceiver_impl
 {
 public:
@@ -36,7 +37,7 @@ public:
 
     virtual size_t recv(void * buff, size_t N, int sender, int tag);
 
-    virtual void * gather(const void * ptr, size_t N, size_t root, const size_t * sizes);
+    virtual void * gather(const void * ptr, size_t N, size_t root, const size_t * sizes, bool varying=true);
 
     virtual void bcast(void * ptr, size_t N, size_t root);
 

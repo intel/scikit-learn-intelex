@@ -537,9 +537,6 @@ void c_daalinit(int nthreads)
 
 void c_daalfini()
 {
-#ifdef _DIST_
-    del_transceiver();
-#endif
 }
 
 size_t c_num_threads()
