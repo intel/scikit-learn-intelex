@@ -56,12 +56,11 @@ elif sys.platform == 'darwin':
     lib_dir = jp(daal_root, 'lib')
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64_win')
+    lib_dir = jp(daal_root, 'Library', 'lib', 'intel64_win')
 else:
     assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
-
 
 if no_stream :
     print('\nDisabling support for streaming mode\n')

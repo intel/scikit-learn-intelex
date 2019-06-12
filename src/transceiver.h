@@ -281,6 +281,7 @@ protected:
 // @return the global transceiver object
 // Repeated calls will not re-initialize.
 extern transceiver * get_transceiver();
+extern void del_transceiver();
 
 template<typename T> struct from_std;
 template<> struct from_std<double>   { static const transceiver_iface::type_type typ = transceiver_iface::DOUBLE; };

@@ -22,6 +22,8 @@
 // shared pointer, will GC transceiver when shutting down
 static std::shared_ptr<transceiver> s_trsc;
 
+static tbb::mutex s_mtx;
+
 // We thraed-protect a static variable, which is our transceiver object.
 // If unset, we get the mutex and initialize.
 // We'll initialize at most once, and return the raw pointer to the tranceiver.
@@ -31,11 +33,10 @@ static std::shared_ptr<transceiver> s_trsc;
 #define CHECK() if(PyErr_Occurred()) { PyErr_Print(); PyGILState_Release(gilstate); throw std::runtime_error("Python Error"); }
 transceiver * get_transceiver()
 {
-    static tbb::mutex mtx;
 
-    if(s_trsc == NULL) {
-        tbb::mutex::scoped_lock lock(mtx);
-        if(s_trsc == NULL) {
+    if(!s_trsc) {
+        tbb::mutex::scoped_lock lock(s_mtx);
+        if(!s_trsc) {
             auto gilstate = PyGILState_Ensure();
 
             const char * modname = std::getenv("D4P_TRANSCEIVER");
@@ -57,3 +58,14 @@ transceiver * get_transceiver()
     return s_trsc.get();
 }
 #undef CHECK
+
+void del_transceiver()
+{
+    if(s_trsc) {
+        tbb::mutex::scoped_lock lock(s_mtx);
+        if(s_trsc) {
+            auto gilstate = PyGILState_Ensure();
+            s_trsc.reset();
+		}
+	}
+}
