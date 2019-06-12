@@ -35,6 +35,9 @@ d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ e
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
+if not no_dist and sys.version_info <= (3, 6):
+    print('distributed mode not supported for python version < 3.6\n')
+    no_dist = True
 no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
 daal_root = os.environ['DAALROOT']
 tbb_root = os.environ['TBBROOT']
@@ -137,7 +140,7 @@ def getpyexts():
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x] for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
 
-    return cythonize([Extension('_daal4py',
+    exts = cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')]
@@ -148,16 +151,19 @@ def getpyexts():
                                 extra_link_args=ela,
                                 libraries=libraries_plat,
                                 library_dirs=[daal_lib_dir],
-                                language='c++'),
-                      Extension('mpi_transceiver',
-                                MPI_CPPS,
-                                depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
-                                include_dirs=include_dir_plat + [np.get_include()] + MPI_INCDIRS,
-                                extra_compile_args=eca,
-                                extra_link_args=ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS],
-                                libraries=libraries_plat + MPI_LIBS,
-                                library_dirs=[daal_lib_dir] + MPI_LIBDIRS,
                                 language='c++')])
+    if not no_dist:
+        exts.append(Extension('mpi_transceiver',
+                              MPI_CPPS,
+                              depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
+                              include_dirs=include_dir_plat + [np.get_include()] + MPI_INCDIRS,
+                              extra_compile_args=eca,
+                              extra_link_args=ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS],
+                              libraries=libraries_plat + MPI_LIBS,
+                              library_dirs=[daal_lib_dir] + MPI_LIBDIRS,
+                              language='c++'))
+    return exts
+
 
 cfg_vars = get_config_vars()
 for key, value in get_config_vars().items():

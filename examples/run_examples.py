@@ -20,7 +20,7 @@ import struct
 import subprocess
 import sys
 
-from daal4py import __daal_link_version__ as dv
+from daal4py import __daal_link_version__ as dv, __has_dist__
 daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
 from os.path import join as jp
@@ -101,4 +101,4 @@ def run_all(nodist=False, nostream=False):
         return 0
 
 if __name__ == '__main__':
-    sys.exit(run_all('nodist' in sys.argv, 'nostream' in sys.argv))
+    sys.exit(run_all('nodist' in sys.argv or not __has_dist__, 'nostream' in sys.argv))
