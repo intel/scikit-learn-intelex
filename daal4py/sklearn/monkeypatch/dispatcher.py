@@ -15,6 +15,7 @@
 # limitations under the License.
 #******************************************************************************/
 
+import sys
 import warnings
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
@@ -81,7 +82,7 @@ def do_unpatch(name):
         raise ValueError("Has no patch for: " + name)
 
 
-def enable(name=None):
+def enable(name=None, verbose=True):
     if LooseVersion(sklearn_version) < LooseVersion("0.20.0"):
         raise NotImplementedError("daal4py patches apply  for scikit-learn >= 0.20.0 only ...")
     elif LooseVersion(sklearn_version) > LooseVersion("0.21.2"):
@@ -97,6 +98,9 @@ def enable(name=None):
     else:
         for key in _mapping:
             do_patch(key)
+    if verbose and sys.stderr is not None:
+        sys.stderr.write("Intel DAAL solvers for sklearn enabled: "
+                         "https://intelpython.github.io/daal4py/sklearn.html\n")
 
 
 def disable(name=None):
