@@ -1,4 +1,4 @@
-{% set version = '0.2019.4' %}
+{% set version = '0.2019.5' %}
 {% set buildnumber = 0 %}
 
 package:
@@ -28,8 +28,6 @@ requirements:
         - python
         - tbb
         - daal >=2019.0
-        - mpich                  # [not win]
-        - impi_rt                # [win]
         - {{ pin_compatible('numpy') }}
 
 test:
@@ -37,6 +35,8 @@ test:
         - pandas
         - scipy
         - scikit-learn
+        - mpich                  # [not win]
+        - impi_rt                # [win]
     imports:
         - daal4py
     source_files:

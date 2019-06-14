@@ -1184,6 +1184,7 @@ class wrapper_gen(object):
     def gen_footers(self, no_dist=False, no_stream=False, algos=[], version='', dist_custom_algos=[]):
         t = jenv.from_string(pyx_footer_template)
         pyx_footer = t.render(algos=algos, version=version)
+        pyx_footer += '__has_dist__ = {}\n\n'.format(not no_dist)
 
         if no_dist:
             return ('', pyx_footer, '')

@@ -387,12 +387,6 @@ has_dist = {
                              construct = '_nClusters',)
                    ],
     },
-    'algorithms::logistic_regression::training' : {
-        'pattern': 'dist_custom',
-        'step_specs' : [],
-        'inputnames' : ['data', 'labels'],
-        'inputdists' : ['OneD', 'OneD'],
-    },
 }
 
 # Algorithms might have explicitly specializations in which input/ouput/parameter types
