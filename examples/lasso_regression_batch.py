@@ -53,6 +53,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # The prediction result provides prediction
     assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
+    assert np.square(predict_result.prediction - ptdata).mean() < 2.4
 
     return (predict_result, ptdata)
 
@@ -61,4 +62,5 @@ if __name__ == "__main__":
     (predict_result, ptdata) = main()
     print("\nLasso Regression prediction results: (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", ptdata[0:10])
+    print("\nMSE error:\n", np.square(predict_result.prediction - ptdata).mean())
     print('All looks good!')
