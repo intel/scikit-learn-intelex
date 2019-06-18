@@ -123,7 +123,7 @@ ignore = {
     'algorithms::em_gmm::init': ['seed',], # deprecated
     'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
-    'algorithms::lasso_regression::training': ['optionalArgument', 'gramMatrix'], # internal stuff, optional input
+    'algorithms::lasso_regression::training': ['optionalArgument'], # internal stuff
     'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
 }
 
@@ -167,7 +167,7 @@ defaults = {
     'algorithms::ridge_regression::training': {'weights': True,},
     'algorithms::stump::classification::training': {'weights': True,},
     'algorithms::stump::regression::training': {'weights': True,},
-    'algorithms::lasso_regression::training': {'weights': True,},
+    'algorithms::lasso_regression::training': {'weights': True, 'gramMatrix': True},
 }
 
 # For enums that are used to access KeyValueDataCollections we need an inverse map
