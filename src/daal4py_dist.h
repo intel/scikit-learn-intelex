@@ -28,31 +28,11 @@
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-// Input/Output manager for simple algos with 2 inputs
+// Input/Output manager for simple algos with a single fixed result-component
 // abstracts from input/output types
 // also defines how to get results and finalize
-template< typename A, typename I1, typename I2, typename O >
-struct IOManager2 : public IOManager< A, I1, O >
-{
-    typedef I2 input2_type;
-    typedef std::tuple< I1, input2_type > input_type;
-};
-
-// Input/Output manager for simple algos with 3 inputs
-// abstracts from input/output types
-// also defines how to get results and finalize
-template< typename A, typename I1, typename I2, typename I3, typename O >
-struct IOManager3 : public IOManager2< A, I1, I2, O >
-{
-    typedef I3 input3_type;
-    typedef std::tuple< I1, I2, input3_type > input_type;
-};
-
-// Input/Output manager for simple algos with 1 input and a single fixed result-component
-// abstracts from input/output types
-// also defines how to get results and finalize
-template<typename A, typename I, typename O, typename E, int P>
-struct IOManagerSingle : public IOManager< A, I, O >
+template< typename A, typename O, typename E, int P >
+struct IOManagerSingle : public IOManager< A, O >
 {
     static O getResult(A & algo)
     {
@@ -60,36 +40,14 @@ struct IOManagerSingle : public IOManager< A, I, O >
     }
 };
 
-// Input/Output manager for simple algos with 2 inputs and a single fixed result-component
+
+// Input/Output manager for intermediate steps
 // abstracts from input/output types
 // also defines how to get results and finalize
-template<typename A, typename I1, typename I2, typename O, typename E, int P>
-struct IOManager2Single : public IOManagerSingle< A, I1, O, E, P >
-{
-    typedef I2 input2_type;
-    typedef std::tuple< I1, I2 > input_type;
-};
-
-// Input/Output manager for simple algos with 3 inputs and a single fixed result-component
-// abstracts from input/output types
-// also defines how to get results and finalize
-template<typename A, typename I1, typename I2, typename I3, typename O, typename E, int P>
-struct IOManager3Single : public IOManager2Single< A, I1, I2, O, E, P >
-{
-    typedef I3 input3_type;
-    typedef std::tuple< I1, I2, I3 > input_type;
-};
-
-
-// Input/Output manager for intermediate steps with 1 input
-// abstracts from input/output types
-// also defines how to get results and finalize
-template<typename A, typename I, typename O>
+template< typename A, typename O >
 struct PartialIOManager
 {
     typedef O result_type;
-    typedef I input1_type;
-    typedef std::tuple< input1_type > input_type;
 
     static result_type getResult(A & algo)
     {
@@ -101,56 +59,16 @@ struct PartialIOManager
     }
 };
 
-// Input/Output manager for intermediate steps with 2 inputs
+// Input/Output manager for intermediate steps with a single fixed result-component
 // abstracts from input/output types
 // also defines how to get results and finalize
-template<typename A, typename I1, typename I2, typename O>
-struct PartialIOManager2 : public PartialIOManager< A, I1, O >
+template< typename A, typename O, typename E, int P >
+struct PartialIOManagerSingle : public PartialIOManager< A, O >
 {
-    typedef I2 input2_type;
-    typedef std::tuple< I1, I2 > input_type;
-};
-
-// Input/Output manager for intermediate steps with 3 inputs
-// abstracts from input/output types
-// also defines how to get results and finalize
-template<typename A, typename I1, typename I2, typename I3, typename O>
-struct PartialIOManager3 : public PartialIOManager2< A, I1, I2, O >
-{
-    typedef I3 input3_type;
-    typedef std::tuple< I1, I2, I3 > input_type;
-};
-
-// Input/Output manager for intermediate steps with 1 input and a single fixed result-component
-// abstracts from input/output types
-// also defines how to get results and finalize
-template<typename A, typename I, typename O, typename E, int P>
-struct PartialIOManagerSingle : public PartialIOManager< A, I, O >
-{
-    static typename PartialIOManager< A, I, O >::result_type getResult(A & algo)
+    static typename PartialIOManager< A, O >::result_type getResult(A & algo)
     {
         return algo.getPartialResult()->get(static_cast< E >(P));
     }
-};
-
-// Input/Output manager for intermediate steps with 2 inputs and a single fixed result-component
-// abstracts from input/output types
-// also defines how to get results and finalize
-template<typename A, typename I1, typename I2, typename O, typename E, int P>
-struct PartialIOManager2Single : public PartialIOManagerSingle< A, I1, O, E, P >
-{
-    typedef I2 input2_type;
-    typedef std::tuple< I1, I2 > input_type;
-};
-
-// Input/Output manager for intermediate steps with 3 inputs and a single fixed result-component
-// abstracts from input/output types
-// also defines how to get results and finalize
-template<typename A, typename I1, typename I2, typename I3, typename O, typename E, int P>
-struct PartialIOManager3Single : public PartialIOManager2Single< A, I1, I2, O, E, P >
-{
-    typedef I3 input3_type;
-    typedef std::tuple< I1, I2, I3 > input_type;
 };
 
 //////////////////////////////////////////////////////////////

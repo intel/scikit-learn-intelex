@@ -28,6 +28,7 @@ using daal::step3Local;
 using daal::step4Local;
 using daal::step2Master;
 using daal::step3Master;
+using daal::step5Master;
 using daal::services::LibraryVersionInfo;
 #include "daal_compat.h"
 
@@ -141,12 +142,10 @@ static inline NTYPE as_native_shared_ptr(services::SharedPtr< const algo_manager
 
 // Our Batch input/Output manager, abstracts from input/output types
 // also defines how to get results and finalize
-template< typename A, typename I, typename O >
+template< typename A, typename O >
 struct IOManager
 {
     typedef O result_type;
-    typedef I input1_type;
-    typedef input1_type input_type;
 
     static result_type getResult(A & algo)
     {
