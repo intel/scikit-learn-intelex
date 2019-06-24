@@ -139,7 +139,7 @@ namespace dist_custom {
             int data_rank = not_empty(step14Out) ? rank : -1;
             tcvr->reduce_all(&data_rank, 1, transceiver_iface::OP_MAX);
             tcvr->bcast(step14Out, data_rank);
-            typename Algo::iomstep2Local_type::input3_type step2In = step14Out;
+            auto step2In = step14Out;
 
             pCentroids->addNumericTable(step2In);
 
