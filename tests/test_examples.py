@@ -157,6 +157,7 @@ gen_examples = [
     ('stump_regression_batch', None, None, (2020, 1)),
     ('svm_multiclass_batch', 'svm_multiclass_batch.csv', lambda r: r[0].prediction),
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
+    ('lasso_regression_batch', None, None, (2020, 0)),
 ]
 
 for example in gen_examples:
