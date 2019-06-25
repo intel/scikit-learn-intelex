@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py cholesky example for shared memory systems
+# daal4py DBSCAN example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -31,17 +31,31 @@ except:
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infile = "./data/batch/cholesky.csv"
-
-    # configure a cholesky object
-    algo = d4p.cholesky()
+    infile = "./data/batch/dbscan_dense.csv"
+    epsilon = 0.02
+    minObservations = 180
     
-    # let's provide a file directly, not a table/array
-    return algo.compute(infile)
-    # cholesky result objects provide choleskyFactor
+    # Load the data
+    data = readcsv(infile, range(2))
+
+    # configure dbscan main object: we also request the indices and observations of cluster cores
+    algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations')
+    # and compute
+    result = algo.compute(data)
+    
+    # Note: we could have done this in just one line:
+    # assignments = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations').compute(data).assignments
+
+    # DBSCAN result objects provide assignments and coreIndices/coreObservations (if requested)
+    assert result.assignments.shape == (data.shape[0], 1)
+    assert result.coreObservations.shape == (result.coreIndices.shape[0], data.shape[1])
+    
+    return result
 
 
 if __name__ == "__main__":
     result = main()
-    print("\nFactor:\n", result.choleskyFactor)
+    print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
+    print("\nFirst 10 cluster core indices:\n", result.coreIndices[0:10])
+    print("\nFirst 10 cluster core observations:\n", result.coreObservations[0:10])
     print('All looks good!')

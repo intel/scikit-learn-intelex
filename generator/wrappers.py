@@ -167,6 +167,7 @@ defaults = {
     'algorithms::ridge_regression::training': {'weights': True,},
     'algorithms::stump::classification::training': {'weights': True,},
     'algorithms::stump::regression::training': {'weights': True,},
+    'algorithms::dbscan': {'weights': True,},
     'algorithms::lasso_regression::training': {'weights': True, 'gramMatrix': True},
 }
 

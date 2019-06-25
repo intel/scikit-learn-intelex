@@ -47,6 +47,7 @@ req_version['logitboost_batch.py'] = (2020,1)
 req_version['stump_classification_batch.py'] = (2020,1)
 req_version['stump_regression_batch.py'] = (2020,1)
 req_version['saga_batch.py'] = (2019,3)
+req_version['dbscan_batch.py'] = (2020,0)
 req_version['lasso_regression_batch.py'] = (2020,0)
 
 def get_exe_cmd(ex, nodist, nostream):
