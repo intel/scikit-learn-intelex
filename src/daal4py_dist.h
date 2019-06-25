@@ -71,7 +71,7 @@ struct PartialIOManagerSingle : public PartialIOManager< A, O >
     }
 };
 
-// Input/Output manager for intermediate steps with both: result and partial result
+// Input/Output manager for intermediate steps, output is a tuple of Result and PartialResult of algo step
 // abstracts from input/output types
 // also defines how to get results and finalize
 template< typename A, typename O1, typename O2 >
