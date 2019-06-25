@@ -71,10 +71,29 @@ struct PartialIOManagerSingle : public PartialIOManager< A, O >
     }
 };
 
+// Input/Output manager for intermediate steps, output is a tuple of Result and PartialResult of algo step
+// abstracts from input/output types
+// also defines how to get results and finalize
+template< typename A, typename O1, typename O2 >
+struct DoubleIOManager
+{
+    typedef std::tuple< O1, O2 > result_type;
+
+    static result_type getResult(A & algo)
+    {
+        return std::make_tuple(algo.getResult(), algo.getPartialResult());
+    }
+    static bool needsFini()
+    {
+        return false;
+    }
+};
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 #include "map_reduce_star.h"
+#include "map_reduce_star_plus.h"
 #include "map_reduce_tree.h"
 #include "dist_custom.h"
 

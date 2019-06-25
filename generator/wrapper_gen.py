@@ -30,6 +30,7 @@
 #          {{params_req}}:    dict of required parameters and their values
 #          {{params_opt}}:    dict of parameters and their values
 #          {{params_get}}:    parameter struct getter
+#          {{enum_vals}}:     list of tuples (name, enum_val) for using in distributed algos
 #          {{step_specs}}:    distributed spec
 #          {{map_result}}:    Result enum id for getting partial result (can be FULLPARTIAL)
 #          {{iface}}:         Interface manager
@@ -750,6 +751,11 @@ public:
     typename iom{{step_specs[i].name}}_type::result_type {{sname + gen_compute(ns, input_args, params_req, params_opt, suffix=step_specs[i].name, step_spec=step_specs[i], tonative=False)}}
 
 {% endfor %}
+{% if enum_vals %}
+{% for ev in enum_vals %}
+    static const auto {{ev[0]}} = daal::{{ns}}::{{ev[1]}};
+{% endfor %}
+{% endif %}
 
 {% set inp_names = step_specs[0].inputnames if (step_specs|length > 0) else inputnames %}
     static const int NI = {{inp_names|length}};
