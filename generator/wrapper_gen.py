@@ -30,6 +30,7 @@
 #          {{params_req}}:    dict of required parameters and their values
 #          {{params_opt}}:    dict of parameters and their values
 #          {{params_get}}:    parameter struct getter
+#          {{enum_vals}}:     list of tuples (name, enum_val) for using in distributed algos
 #          {{step_specs}}:    distributed spec
 #          {{map_result}}:    Result enum id for getting partial result (can be FULLPARTIAL)
 #          {{iface}}:         Interface manager
@@ -489,12 +490,12 @@ gen_typedefs_macro = """
     typedef daal::{{ns}}::{{mode}} algo{{suffix}}_type;
 {% endif %}
 {% if step_spec %}
-    typedef {{step_spec.iomanager}}< algo{{suffix}}_type, {{', '.join(step_spec.input)}}, {{step_spec.output}}{{(","+",".join(step_spec.iomargs)) if step_spec.iomargs else ""}} > iom{{suffix}}_type;
+    typedef {{step_spec.iomanager}}< algo{{suffix}}_type, {{step_spec.output}}{{(","+",".join(step_spec.iomargs)) if step_spec.iomargs else ""}} > iom{{suffix}}_type;
 {% else %}
 {% if iombatch %}
     typedef {{iombatch}} iom{{suffix}}_type;
 {% else %}
-    typedef IOManager< algo{{suffix}}_type, daal::services::SharedPtr< typename algo{{suffix}}_type::InputType >, daal::services::SharedPtr< typename algo{{suffix}}_type::ResultType > > iom{{suffix}}_type;
+    typedef IOManager< algo{{suffix}}_type, daal::services::SharedPtr< typename algo{{suffix}}_type::ResultType > > iom{{suffix}}_type;
 {% endif %}
 {% endif %}
 {%- endmacro %}
@@ -514,11 +515,11 @@ gen_inst_algo = """
 {% set ctor = '(' + params_req|fmt('to_daal({})', 'arg_member', sep=', ') + ')' %}
 {% endif %}
 {% if member %}
-_algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}}); // llllll
+_algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
 {% elif create %}
-auto {{algo}} = {{algo}}_type{{ctor}}; // llllll
+auto {{algo}} = {{algo}}_type{{ctor}};
 {% else %}
-auto {{algo}}_obj = {{algo}}_type{{ctor}}; // llllll
+auto {{algo}}_obj = {{algo}}_type{{ctor}};
         {{algo}}_type * {{algo}} = &{{algo}}_obj;
 {% endif %}
 {% if (step_spec == None or step_spec.params) and params_get and params_opt|length and not create %}
@@ -534,24 +535,46 @@ gen_compute_macro = gen_inst_algo + """
 {% macro gen_compute(ns, input_args, params_req, params_opt, suffix="", step_spec=None, tonative=True, iomtype=None, setupmode=False) %}
 {% set iom = iomtype if iomtype else "iom"+suffix+"_type" %}
 {% if step_spec %}
-{% if step_spec.addinput %}
-(const std::vector< typename {{iom}}::input1_type > & input{{', ' + step_spec.extrainput if step_spec.extrainput else ''}})
+
+{% set input_len = step_spec.input|length %}
+    (
+{% if step_spec.addinput %}{% set add_offset = 0 %}
+        {% for ia in step_spec.addinput %}const std::vector< {{step_spec.input[add_offset+loop.index-1]}} > & input{{add_offset+loop.index}}{{'' if add_offset+loop.index==input_len else ', '}}{% endfor %} //add inputs{% endif %}
+{% if step_spec.setinput %}{% set set_offset = step_spec.addinput|length if step_spec.addinput else 0 %}
+
+        {% for ia in step_spec.setinput %}const {{step_spec.input[set_offset+loop.index-1]}} & input{{set_offset+loop.index}}{{'' if set_offset+loop.index==input_len==input_len else ', '}}{% endfor %} //set inputs{% endif %}
+{% if step_spec.dist_params %}
+
+        {% for dp in step_spec.dist_params %}, {{dp[0]}} {{dp[1]}}{% endfor %} //params{% endif %}
+{% if step_spec.extrainput %}
+
+        {{', ' + step_spec.extrainput if step_spec.extrainput else ''}} //extra inputs{% endif %}
+
+    )
     {
         {{gen_inst(ns, params_req, params_opt, params_get, create, suffix, step_spec)}}
-        int nr = 0, i = 0;
-        for(auto data = input.begin(); data != input.end(); ++data, ++i) {
+{% for dp in step_spec.dist_params %}
+        algo{{suffix}}->parameter.{{dp[1]}} = {{dp[1]}};
+{% endfor %}
+
+{% if step_spec.addinput %}
+
+        int nr, i;
+{% for ia in step_spec.addinput %}
+        nr = 0, i = 0;
+        for(auto data = input{{loop.index}}.begin(); data != input{{loop.index}}.end(); ++data, ++i) {
             if(*data) {
-                algo{{suffix}}->input.add({{step_spec.addinput}}, to_daal(*data));
+                algo{{suffix}}->input.add({{ia}}, to_daal(*data));
                 ++nr;
             }
         }
         if(nr == 0 ) return typename {{iom}}::result_type();
-{% else %}
-({% for ia in step_spec.input %}const typename {{iom}}::input{{loop.index}}_type & input{{loop.index}}{{'' if loop.last else ', '}}{% endfor %}{{', ' + step_spec.extrainput if step_spec.extrainput else ''}})
-    {
-        {{gen_inst(ns, params_req, params_opt, params_get, create, suffix, step_spec)}}
-{% for ia in step_spec.input %}
-        if(input{{loop.index}}) algo{{suffix}}->input.set({{step_spec.setinput[loop.index0]}}, to_daal(input{{loop.index}}));
+{% endfor %}
+{% endif %}
+
+{% if step_spec.setinput %}
+{% for ia in step_spec.setinput %}
+        if(input{{set_offset+loop.index}}) algo{{suffix}}->input.set({{ia}}, to_daal(input{{set_offset+loop.index}}));
 {% endfor %}
 {% endif %}
 {% if step_spec.staticinput %}{% for ia in step_spec.staticinput %}
@@ -728,6 +751,11 @@ public:
     typename iom{{step_specs[i].name}}_type::result_type {{sname + gen_compute(ns, input_args, params_req, params_opt, suffix=step_specs[i].name, step_spec=step_specs[i], tonative=False)}}
 
 {% endfor %}
+{% if enum_vals %}
+{% for ev in enum_vals %}
+    static const auto {{ev[0]}} = daal::{{ns}}::{{ev[1]}};
+{% endfor %}
+{% endif %}
 
 {% set inp_names = step_specs[0].inputnames if (step_specs|length > 0) else inputnames %}
     static const int NI = {{inp_names|length}};

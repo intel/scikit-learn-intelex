@@ -57,7 +57,7 @@ public:
             auto pres = map_reduce_tree::map_reduce_tree<Algo>::reduce(algo, s1_result);
             // finalize and check convergence/end of iteration
             if(tcvr->me() == 0) {
-                fres = algo.run_step2Master__final(std::vector< typename Algo::iomstep2Master__final_type::input1_type >(1, pres));
+                fres = algo.run_step2Master__final(std::vector< daal::algorithms::kmeans::PartialResultPtr >(1, pres));
                 // now check if we convered/reached max_iter
                 if(iter < algo._maxIterations) {
                     double new_goal = fres->get(daal::algorithms::kmeans::goalFunction)->daal::data_management::NumericTable::template getValue<double>(0, 0);

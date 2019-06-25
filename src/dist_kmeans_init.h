@@ -139,13 +139,13 @@ namespace dist_custom {
             int data_rank = not_empty(step14Out) ? rank : -1;
             tcvr->reduce_all(&data_rank, 1, transceiver_iface::OP_MAX);
             tcvr->bcast(step14Out, data_rank);
-            typename Algo::iomstep2Local_type::input3_type step2In = step14Out;
+            auto step2In = step14Out;
 
             pCentroids->addNumericTable(step2In);
 
             for(size_t iCenter = 1; iCenter < algo._nClusters; ++iCenter) {
                 // run step2 on each rank
-                auto s2res = algo.run_step2Local(input, localNodeData, step2In);
+                auto s2res = algo.run_step2Local(input, localNodeData, step2In, false);
                 if(iCenter==1) localNodeData = s2res->get(daal::algorithms::kmeans::init::internalResult);
                 auto s2Out = s2res->get(daal::algorithms::kmeans::init::outputOfStep2ForStep3);
                 //  and gather result on root

@@ -16,48 +16,44 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py QR example for shared memory systems
+# daal4py QR example for distributed memory systems; SPMD mode
+# run like this:
+#    mpirun -n 4 python ./qr_spmd.py
 
 import daal4py as d4p
-import numpy as np
+from numpy import loadtxt, allclose
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
-    read_csv = lambda f, c=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
-    # fall back to numpy loadtxt
-    read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
-
-
-def main(readcsv=read_csv, method='svdDense'):
-    infile = "./data/batch/qr.csv"
+def main():
+    # Each process gets its own data
+    infile = "./data/distributed/qr_{}.csv".format(d4p.my_procid()+1)
 
     # configure a QR object
-    algo = d4p.qr()
+    algo = d4p.qr(distributed=True)
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    data = readcsv(infile)
+    data = loadtxt(infile, delimiter=',')
     result2 = algo.compute(data)
 
     # QR result provide matrixQ and matrixR
     assert result1.matrixQ.shape == data.shape
     assert result1.matrixR.shape == (data.shape[1], data.shape[1])
 
-    assert np.allclose(result1.matrixQ, result2.matrixQ, atol=1e-07)
-    assert np.allclose(result1.matrixR, result2.matrixR, atol=1e-07)
-
-    if hasattr(data, 'toarray'):
-        data = data.toarray() # to make the next assertion work with scipy's csr_matrix
-    assert np.allclose(data, np.matmul(result1.matrixQ, result1.matrixR))
+    assert allclose(result1.matrixQ, result2.matrixQ, atol=1e-07)
+    assert allclose(result1.matrixR, result2.matrixR, atol=1e-07)
 
     return data, result1
 
 
 if __name__ == "__main__":
+    # Initialize SPMD mode
+    d4p.daalinit()
     (_, result) = main()
-    print(result)
-    print('All looks good!')
+    # result is available on all processes - but we print only on root
+    if d4p.my_procid() == 0:
+        print("\nEach process has matrixR but only his part of matrixQ:\n")
+        print(result)
+        print('All looks good!')
+    d4p.daalfini()

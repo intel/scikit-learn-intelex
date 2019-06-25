@@ -65,6 +65,19 @@ class Base():
             data = np.append(data, np.loadtxt(f, delimiter=','), axis=0)
         self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
 
+    def test_qr_batch(self):
+        import qr_batch as ex
+        (data, result) = self.call(ex)
+        self.assertTrue(np.allclose(data, np.matmul(result.matrixQ, result.matrixR)))
+
+    def test_qr_stream(self):
+        import qr_streaming as ex
+        result = self.call(ex)
+        data = np.loadtxt("./data/distributed/qr_1.csv", delimiter=',')
+        for f in ["./data/distributed/qr_{}.csv".format(i) for i in range(2,5)]:
+            data = np.append(data, np.loadtxt(f, delimiter=','), axis=0)
+        self.assertTrue(np.allclose(data, np.matmul(result.matrixQ, result.matrixR)))
+
     def test_svm_batch(self):
         testdata = np_read_csv(os.path.join(unittest_data_path, "svm_batch.csv"), range(1))
         import svm_batch as ex
@@ -145,8 +158,6 @@ gen_examples = [
     ('pca_transform_batch', 'pca_transform_batch.csv', lambda r: r[1].transformedData),
     ('pivoted_qr_batch', 'pivoted_qr.csv', 'matrixR'),
     ('quantiles_batch', 'quantiles.csv', 'quantiles'),
-    #('qr_batch', 'qr.csv', 'matrixR'),
-    #('qr_streaming', 'qr.csv', 'matrixR'),
     ('ridge_regression_batch', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
     ('ridge_regression_streaming', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
     ('saga_batch', None, None, (2019, 3)),
@@ -158,6 +169,7 @@ gen_examples = [
     ('svm_multiclass_batch', 'svm_multiclass_batch.csv', lambda r: r[0].prediction),
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
     ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2020, 0)),
+    ('lasso_regression_batch', None, None, (2020, 0)),
 ]
 
 for example in gen_examples:

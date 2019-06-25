@@ -59,8 +59,6 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 
 if __name__ == "__main__":
-    (_, result1) = main()
-    print("\nSingular values:\n", result1.singularValues)
-    print("\nRight orthogonal matrix V:\n", result1.rightSingularMatrix)
-    print("\nLeft orthogonal matrix U (first 10 rows):\n", result1.leftSingularMatrix[0:10])
+    (_, result) = main()
+    print(result)
     print('All looks good!')
