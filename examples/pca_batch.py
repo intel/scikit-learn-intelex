@@ -33,17 +33,19 @@ except:
 def main(readcsv=read_csv, method='svdDense'):
     infile = "./data/batch/pca_normalized.csv"
 
-    # 'normalization' is an optional parameter to PCA; we use z-score which could be configured differently
-    zscore = d4p.normalization_zscore()
-    # configure a PCA object
-    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
+    from daal4py.oneapi import sycl_context
+    with sycl_context('gpu'):
+        # 'normalization' is an optional parameter to PCA; we use z-score which could be configured differently
+        zscore = d4p.normalization_zscore()
+        # configure a PCA object
+        algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
     
-    # let's provide a file directly, not a table/array
-    result1 = algo.compute(infile)
+        # let's provide a file directly, not a table/array
+        result1 = algo.compute(infile)
 
-    # We can also load the data ourselfs and provide the numpy array
-    data = readcsv(infile)
-    result2 = algo.compute(data)
+        # We can also load the data ourselfs and provide the numpy array
+        data = readcsv(infile)
+        result2 = algo.compute(data)
 
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
     assert np.allclose(result1.eigenvalues, result2.eigenvalues)
