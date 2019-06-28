@@ -1,1 +1,1 @@
-from _oneapi import sycl_context
+from _oneapi import sycl_context, sycl_buffer

@@ -66,14 +66,16 @@ cdef class sycl_buffer:
     cdef void * sycl_buffer
     cdef int typ
     cdef int shape[2]
-    _ary = None   # protect from GC
+    cdef object _ary
 
     def __cinit__(self, ary):
+        print(type(ary))
         assert ary.flags['C_CONTIGUOUS'] and ary.ndim == 2
         self._ary = ary
         self.typ = np.PyArray_TYPE(ary)
         self.shape[0] = ary.shape[0]
         self.shape[1] = ary.shape[1]
+        print(self.typ, self.shape)
         self.sycl_buffer = tosycl(np.PyArray_DATA(ary), self.typ, self.shape)
 
     def __dealloc__(self):

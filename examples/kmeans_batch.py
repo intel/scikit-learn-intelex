@@ -29,25 +29,29 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
-
+from daal4py.oneapi import sycl_context, sycl_buffer
 def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/kmeans_dense.csv"
     nClusters = 20
     maxIter = 5
 
-    initrain_algo = d4p.kmeans_init(nClusters, method="randomDense")
     # Load the data
     data = readcsv(infile, range(20))
-    # compute initial centroids
-    initrain_result = initrain_algo.compute(data)
-    # The results provides the initial centroids
-    assert initrain_result.centroids.shape[0] == nClusters
 
-    # configure kmeans main object: we also request the cluster assignments
-    algo = d4p.kmeans(nClusters, maxIter, assignFlag=True)
-    # compute the clusters/centroids
-    result = algo.compute(data, initrain_result.centroids)
-    
+    with sycl_context('gpu'):
+        print(type(data))
+        data = sycl_buffer(data)
+        # compute initial centroids
+        initrain_algo = d4p.kmeans_init(nClusters, method="randomDense")
+        initrain_result = initrain_algo.compute(data)
+        # The results provides the initial centroids
+        assert initrain_result.centroids.shape[0] == nClusters
+
+        # configure kmeans main object: we also request the cluster assignments
+        algo = d4p.kmeans(nClusters, maxIter, assignFlag=True)
+        # compute the clusters/centroids
+        result = algo.compute(data, initrain_result.centroids)
+        
     # Note: we could have done this in just one line:
     # d4p.kmeans(nClusters, maxIter, assignFlag=True).compute(data, d4p.kmeans_init(nClusters, method="plusPlusDense").compute(data).centroids)
 

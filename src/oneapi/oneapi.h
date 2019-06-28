@@ -18,6 +18,7 @@
 #define __ONEAPI_H_INCLUDED__
 
 #include "daal_sycl.h"
+#include "numpy/ndarraytypes.h"
 
 #ifndef DAAL_SYCL_INTERFACE
 #include <type_traits>
@@ -73,13 +74,13 @@ static void * tosycl(void * ptr, int typ, int * shape)
 {
     switch(typ) {
     case NPY_DOUBLE:
-        return tosycl(reinterpret_cast<double>(ptr), shape);
+        return tosycl(reinterpret_cast<double*>(ptr), shape);
         break;
     case NPY_FLOAT:
-        return tosycl(reinterpret_cast<float>(ptr), shape);
+        return tosycl(reinterpret_cast<float*>(ptr), shape);
         break;
     case NPY_INT:
-        return tosycl(reinterpret_cast<int>(ptr), shape);
+        return tosycl(reinterpret_cast<int*>(ptr), shape);
         break;
     default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
     }
@@ -87,15 +88,16 @@ static void * tosycl(void * ptr, int typ, int * shape)
 
 static void del_scl_buffer(void * ptr, int typ)
 {
+    if(!ptr) return;
     switch(typ) {
     case NPY_DOUBLE:
-        delete reinterpret_cast<cl::sycl::buffer<double, 1>*>(ptr)
+        delete reinterpret_cast<cl::sycl::buffer<double, 1>*>(ptr);
         break;
     case NPY_FLOAT:
-        delete reinterpret_cast<cl::sycl::buffer<float, 1>*>(ptr)
+        delete reinterpret_cast<cl::sycl::buffer<float, 1>*>(ptr);
         break;
     case NPY_INT:
-        delete reinterpret_cast<cl::sycl::buffer<int, 1>*>(ptr)
+        delete reinterpret_cast<cl::sycl::buffer<int, 1>*>(ptr);
         break;
     default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
     }
@@ -103,7 +105,7 @@ static void del_scl_buffer(void * ptr, int typ)
 
 // take a sycl buffer and convert ti DAAL NT
 template<typename T>
-inline daal::services::SharedPtr<daal::data_management::SyclHomogenNumericTable<T> > todaalnt(T * ptr, int * shape)
+inline daal::services::SharedPtr<daal::data_management::SyclHomogenNumericTable<T> > * todaalnt(T * ptr, int * shape)
 {
     typedef daal::data_management::SyclHomogenNumericTable<T> TBL_T;
     // we need to return a pointer to safely cross language boundaries
@@ -114,13 +116,13 @@ static void * todaalnt(void* ptr, int typ, int * shape)
 {
     switch(typ) {
     case NPY_DOUBLE:
-        return todaalnt(reinterpret_cast<double>(ptr), shape);
+        return todaalnt(reinterpret_cast<double*>(ptr), shape);
         break;
     case NPY_FLOAT:
-        return todaalnt(reinterpret_cast<float>(ptr), shape);
+        return todaalnt(reinterpret_cast<float*>(ptr), shape);
         break;
     case NPY_INT:
-        return todaalnt(reinterpret_cast<int>(ptr), shape);
+        return todaalnt(reinterpret_cast<int*>(ptr), shape);
         break;
     default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
     }
