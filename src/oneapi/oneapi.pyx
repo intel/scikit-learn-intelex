@@ -24,6 +24,9 @@ from cpython.ref cimport PyObject
 cdef extern from "oneapi/oneapi.h":
     cdef cppclass PySyclExecutionContext:
         PySyclExecutionContext(const std_string & dev) except +
+    void * tosycl(void *, int, int*)
+    void * todaalnt(void*, int, int*)
+    void del_scl_buffer(void *, int)
 
     cdef std_string to_std_string(PyObject * o) except +
 
@@ -52,3 +55,31 @@ def sycl_context(dev='default'):
         # Code to release resource
         del ctxt
 
+
+cimport numpy as np
+import numpy as np
+from cpython.pycapsule cimport PyCapsule_New
+
+cdef class sycl_buffer:
+    'Sycl buffer for DAAL. A generic implementation needs to do much more.'
+
+    cdef void * sycl_buffer
+    cdef int typ
+    cdef int shape[2]
+    _ary = None   # protect from GC
+
+    def __cinit__(self, ary):
+        assert ary.flags['C_CONTIGUOUS'] and ary.ndim == 2
+        self._ary = ary
+        self.typ = np.PyArray_TYPE(ary)
+        self.shape[0] = ary.shape[0]
+        self.shape[1] = ary.shape[1]
+        self.sycl_buffer = tosycl(np.PyArray_DATA(ary), self.typ, self.shape)
+
+    def __dealloc__(self):
+        del_scl_buffer(self.sycl_buffer, self.typ)
+
+    # we need to consider how to make this usable by numba/HPAT without objmode
+    @property
+    def __2daalnt__(self):
+        return PyCapsule_New(todaalnt(self.sycl_buffer, self.typ, self.shape), NULL, NULL)

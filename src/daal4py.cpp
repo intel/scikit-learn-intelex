@@ -389,6 +389,17 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
         }
         return daal::data_management::NumericTablePtr(ptr);
     }
+    // special protocol assumes that python objects implement __2daalnt__
+    // returning a pointer to a NumericTablePtr, we have to delete the shared-pointer
+    if(PyObject_HasAttrString(obj, "__2daalnt__")) {
+        PyObject * ptr = PyObject_GetAttrString(obj, "__2daalnt__");
+        if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
+        auto nt = reinterpret_cast<daal::data_management::NumericTablePtr*>(ptr);
+        daal::data_management::NumericTablePtr ret(nt->get());
+        delete nt; // we delete the shared pointer-pointer
+        return ret;
+    }
+
 	return daal::data_management::NumericTablePtr();
 }
 

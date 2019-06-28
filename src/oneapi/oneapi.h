@@ -59,4 +59,72 @@ static std::string to_std_string(PyObject * o)
     return PyUnicode_AsUTF8(o);
 }
 
+
+// take a raw array and convert to sycl buffer
+template<typename T>
+inline cl::sycl::buffer<T, 1> * tosycl(T * ptr, int * shape)
+{
+    daal::services::Buffer<T> buff(ptr, shape[0]*shape[1]);
+    // we need to return a pointer to safely cross language boundaries
+    return new cl::sycl::buffer<T, 1>(buff.toSycl());
+}
+
+static void * tosycl(void * ptr, int typ, int * shape)
+{
+    switch(typ) {
+    case NPY_DOUBLE:
+        return tosycl(reinterpret_cast<double>(ptr), shape);
+        break;
+    case NPY_FLOAT:
+        return tosycl(reinterpret_cast<float>(ptr), shape);
+        break;
+    case NPY_INT:
+        return tosycl(reinterpret_cast<int>(ptr), shape);
+        break;
+    default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
+    }
+}
+
+static void del_scl_buffer(void * ptr, int typ)
+{
+    switch(typ) {
+    case NPY_DOUBLE:
+        delete reinterpret_cast<cl::sycl::buffer<double, 1>*>(ptr)
+        break;
+    case NPY_FLOAT:
+        delete reinterpret_cast<cl::sycl::buffer<float, 1>*>(ptr)
+        break;
+    case NPY_INT:
+        delete reinterpret_cast<cl::sycl::buffer<int, 1>*>(ptr)
+        break;
+    default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
+    }
+}
+
+// take a sycl buffer and convert ti DAAL NT
+template<typename T>
+inline daal::services::SharedPtr<daal::data_management::SyclHomogenNumericTable<T> > todaalnt(T * ptr, int * shape)
+{
+    typedef daal::data_management::SyclHomogenNumericTable<T> TBL_T;
+    // we need to return a pointer to safely cross language boundaries
+    return new daal::services::SharedPtr<TBL_T>(TBL_T::create(*reinterpret_cast<cl::sycl::buffer<T, 1>*>(ptr), shape[1], shape[0]));
+}
+
+static void * todaalnt(void* ptr, int typ, int * shape)
+{
+    switch(typ) {
+    case NPY_DOUBLE:
+        return todaalnt(reinterpret_cast<double>(ptr), shape);
+        break;
+    case NPY_FLOAT:
+        return todaalnt(reinterpret_cast<float>(ptr), shape);
+        break;
+    case NPY_INT:
+        return todaalnt(reinterpret_cast<int>(ptr), shape);
+        break;
+    default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
+    }
+}
+
+
 #endif // __ONEAPI_H_INCLUDED__
