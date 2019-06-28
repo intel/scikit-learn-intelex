@@ -99,7 +99,7 @@ def enable(name=None, verbose=True):
         for key in _mapping:
             do_patch(key)
     if verbose and sys.stderr is not None:
-        sys.stderr.write("Intel DAAL solvers for sklearn enabled: "
+        sys.stderr.write("Intel(R) DAAL solvers for sklearn enabled: "
                          "https://intelpython.github.io/daal4py/sklearn.html\n")
 
 
