@@ -39,7 +39,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Read data. Let's have 10 independent, and 1 dependent variable (for each observation)
     indep_data = readcsv(infile, range(10))
-    dep_data   = readcsv(infile, range(10,11))
+    dep_data   = readcsv(infile, range(10,12))
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
 
@@ -47,13 +47,13 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_algo = d4p.lasso_regression_prediction()
     # read test data (with same #features)
     pdata = readcsv(testfile, range(10))
-    ptdata = readcsv(testfile, range(10,11))
+    ptdata = readcsv(testfile, range(10,12))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # The prediction result provides prediction
     assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
-    assert np.square(predict_result.prediction - ptdata).mean() < 2.4
+    assert np.square(predict_result.prediction - np.array(ptdata)).mean() < 2.2
 
     return (predict_result, ptdata)
 
@@ -62,5 +62,4 @@ if __name__ == "__main__":
     (predict_result, ptdata) = main()
     print("\nLasso Regression prediction results: (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", ptdata[0:10])
-    print("\nMSE error:\n", np.square(predict_result.prediction - ptdata).mean())
     print('All looks good!')
