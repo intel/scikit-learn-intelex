@@ -32,9 +32,9 @@ except:
 
 def main(readcsv=read_csv, method='svdDense'):
     infile = "./data/batch/pca_normalized.csv"
-
-    from daal4py.oneapi import sycl_context
-    with sycl_context('gpu'):
+    import time
+    from daal4py.oneapi import sycl_context, sycl_buffer
+    with sycl_context('cpu'):
         # 'normalization' is an optional parameter to PCA; we use z-score which could be configured differently
         zscore = d4p.normalization_zscore()
         # configure a PCA object
@@ -45,7 +45,13 @@ def main(readcsv=read_csv, method='svdDense'):
 
         # We can also load the data ourselfs and provide the numpy array
         data = readcsv(infile)
-        result2 = algo.compute(data)
+        sdata = sycl_buffer(data)
+        # sdata = data
+        for i in range(40):
+            algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
+            start = time.time()
+            result2 = algo.compute(sdata)
+            print(time.time()-start)
 
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
     assert np.allclose(result1.eigenvalues, result2.eigenvalues)

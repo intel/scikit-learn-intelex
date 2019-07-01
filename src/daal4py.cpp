@@ -281,6 +281,24 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 {
     if(PyErr_Occurred()) {PyErr_Print(); PyErr_Clear();}
     if(obj && obj != Py_None) {
+	if(PyObject_HasAttrString(obj, "__2daalnt__")) {
+            static daal::data_management::NumericTablePtr ntptr;
+            if(true || !ntptr) {
+            // special protocol assumes that python objects implement __2daalnt__
+            // returning a pointer to a NumericTablePtr, we have to delete the shared-pointer
+            PyObject * _obj = PyObject_CallMethod(obj, "__2daalnt__", NULL);
+            if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
+            void * _ptr = PyCapsule_GetPointer(_obj, NULL);
+            if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
+            Py_DECREF(_obj);
+            auto nt = reinterpret_cast<daal::data_management::NumericTablePtr*>(_ptr);
+            ntptr = *nt;
+            delete nt; // we delete the shared pointer-pointer
+            }
+
+            return ntptr;
+        }
+
         daal::data_management::NumericTable * ptr = NULL;
         if(is_array(obj)) { // we got a numpy array
             PyArrayObject * ary = (PyArrayObject*)obj;
@@ -386,15 +404,6 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
             Py_DECREF(indcs);
             Py_DECREF(vals);
             return daal::data_management::NumericTablePtr(ret);
-        } else if(PyObject_HasAttrString(obj, "__2daalnt__")) {
-            // special protocol assumes that python objects implement __2daalnt__
-            // returning a pointer to a NumericTablePtr, we have to delete the shared-pointer
-            PyObject * _ptr = PyObject_GetAttrString(obj, "__2daalnt__");
-            if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
-            auto nt = reinterpret_cast<daal::data_management::NumericTablePtr*>(_ptr);
-            daal::data_management::NumericTablePtr ret(*nt);
-            delete nt; // we delete the shared pointer-pointer
-            return ret;
         }
 
         return daal::data_management::NumericTablePtr(ptr);
