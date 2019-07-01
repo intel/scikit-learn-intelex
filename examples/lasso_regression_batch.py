@@ -37,7 +37,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Configure a Lasso regression training object
     train_algo = d4p.lasso_regression_training(interceptFlag=True)
 
-    # Read data. Let's have 10 independent, and 1 dependent variable (for each observation)
+    # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
     indep_data = readcsv(infile, range(10))
     dep_data   = readcsv(infile, range(10,12))
     # Now train/compute, the result provides the model for prediction
