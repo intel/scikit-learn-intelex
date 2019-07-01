@@ -93,7 +93,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#built-for-performance">Built for Performance</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getting-daal4py">Getting daal4py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scikit-learn-patches">Scikit-Learn patches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scikit-learn-api-and-patching">Scikit-Learn API and patching</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="data.html">Data</a></li>
@@ -267,13 +267,13 @@ clusters sizes
 (strong scaling: orange) which addresses possible response time requirements. It also scales with
 growing input size (weak scaling: yellow) which is needed if the data no longer fits
 into memory of a single node.</p>
-<div class="figure align-center" id="id1">
+<div class="figure align-default" id="id1">
 <img alt="_images/d4p-linreg-scale.jpg" src="_images/d4p-linreg-scale.jpg" />
 <p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed linear regression
 of 2.15 TB of data in 1.18 seconds and 68.66 GB of data in less than
 48 milliseconds.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
-<div class="figure align-center" id="id2">
+<div class="figure align-default" id="id2">
 <img alt="_images/d4p-kmeans-scale.jpg" src="_images/d4p-kmeans-scale.jpg" />
 <p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed K-Means (10
 clusters) of 1.12 TB of data in 107.4 seconds and 35.76 GB of data
@@ -308,31 +308,13 @@ e.g. standard types (integer, float, Numpy arrays, Pandas DataFrames,
 …). Additionally, if you provide the name of a csv-file as an input argument
 daal4py will work on the entire file content.</p>
 </div>
-<div class="section" id="scikit-learn-patches">
-<h2>Scikit-Learn patches<a class="headerlink" href="#scikit-learn-patches" title="Permalink to this headline">¶</a></h2>
-<p>daal4py can dynamically patch <a class="reference internal" href="sklearn.html#sklearn"><span class="std std-ref">certain scikit-learn algorithms</span></a> to
-use Intel® DAAL as the underlying solver, while getting the same solution faster.
-To unlock performance for your application, simply run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">daal4py</span> <span class="n">my_application</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-</div>
-<p>Patches can also be enabled programmatically:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">daal4py.sklearn</span>
-<span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">patch_sklearn</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Additionally, daal4py.sklearn contains scikit-learn API compatible <a class="reference internal" href="sklearn.html#sklearn"><span class="std std-ref">classes</span></a>
-which implement a subset of scikit-learn algorithms using Intel® DAAL. These classes are
-always available, whether the scikit-learn itself has been patched, or not. For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn</span><span class="o">,</span> <span class="nn">sklearn.datasets</span><span class="o">,</span> <span class="nn">sklearn.svm</span><span class="o">,</span> <span class="nn">sklearn.metrics</span>
-<span class="n">digits</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">load_digits</span><span class="p">()</span>
-<span class="kn">import</span> <span class="nn">daal4py.sklearn</span>
-<span class="n">clf_d</span> <span class="o">=</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">svm</span><span class="o">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;rbf&#39;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">clf_v</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">svm</span><span class="o">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;rbf&#39;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">sklearn</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">v_measure_score</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">clf_v</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span> <span class="c1"># output: 0.977068068172132</span>
-<span class="n">sklearn</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">v_measure_score</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">clf_d</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span> <span class="c1"># output: 0.977068068172132</span>
-</pre></div>
-</div>
+<div class="section" id="scikit-learn-api-and-patching">
+<h2>Scikit-Learn API and patching<a class="headerlink" href="#scikit-learn-api-and-patching" title="Permalink to this headline">¶</a></h2>
+<p>daal4py exposes some DAAL solvers using a scikit-learn compatible API.</p>
+<p>daal4py can furthermore monkey-patch the <code class="docutils literal notranslate"><span class="pre">sklearn</span></code> package to use the DAAL
+solvers as drop-in replacement without any code change.</p>
+<p>Please refer to the section on <a class="reference internal" href="sklearn.html#sklearn"><span class="std std-ref">scikit-learn API and patching</span></a>
+for more details.</p>
 </div>
 </div>
 
