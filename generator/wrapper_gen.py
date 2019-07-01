@@ -872,8 +872,18 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
 {% if add_setup %}
     # setup forwards to the C++ de-templatized manager__iface__::compute(..., setup_only=true)
+{% set setup_required = [] %}
+{% set setup_optional = [] %}
+{% for ia in input_args %}
+{% if ia.name in add_setup %}
+{% set setup_required = setup_required.append(ia) %}
+{% else %}
+{% set setup_optional = setup_optional.append(ia) %}
+{% endif %}
+{% endfor %}
     def setup(self,
-             {{input_args|fmt('{}', 'decl_cy', sep=',\n')|indent(14)}}):
+              {{setup_required|fmt('{}', 'decl_cy', sep=',\n')|indent(14)}},
+              {{setup_optional|fmt('{} = None', 'decl_cy', sep=',\n')|indent(14)}}):
         '''
         {{algo}}.setup({{input_args|fmt('{}', 'name', sep=', ')}})
         Setup (partial) input data for using algorithm object in other algorithms.
