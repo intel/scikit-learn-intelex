@@ -84,12 +84,13 @@ no_constructor = {
 }
 
 # Some algorithms require a setup function, to provide input without actual compute
+# This is dictionary of algo names/list of required parameters for setup method
 # Also need to add it to doc/algorithms.rst
-add_setup = [
-    'algorithms::optimization_solver::mse',
-    'algorithms::optimization_solver::logistic_loss',
-    'algorithms::optimization_solver::cross_entropy_loss',
-]
+add_setup = {
+    'algorithms::optimization_solver::mse': ['data', 'dependentVariables'],
+    'algorithms::optimization_solver::logistic_loss': ['data', 'dependentVariables'],
+    'algorithms::optimization_solver::cross_entropy_loss': ['data', 'dependentVariables'],
+}
 
 # Some parameters/inputs are not used when C++ datastructures are shared across
 # different algos (like training and prediction)
