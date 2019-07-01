@@ -40,7 +40,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a MSE object
     mse_algo = d4p.optimization_solver_mse(nVectors)
-    mse_algo.setup(data, dep_data, None)
+    mse_algo.setup(data, dep_data)
 
     # configure an AdaGrad object
     lr = np.array([[1.0]], dtype=np.double)
