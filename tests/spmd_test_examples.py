@@ -18,14 +18,23 @@ if d4p.__has_dist__:
             self.assertTrue(np.allclose(data, np.matmul(result.matrixQ, result.matrixR)))
 
         def test_kmeans_spmd(self):
-            import kmeans_spmd as ex
-            (assignments, result) = self.call(ex)
-            data = "./data/distributed/kmeans_dense.csv"
             nClusters = 10
             maxIter = 25
+
+            data = np.loadtxt("./data/distributed/kmeans_dense.csv", delimiter=',')
+
+            rpp = int(data.shape[0]/d4p.num_procs())
+            spmd_data = data[rpp*d4p.my_procid():rpp*d4p.my_procid()+rpp,:]
+
             batch_init_res = d4p.kmeans_init(nClusters=nClusters, method="plusPlusDense").compute(data)
-            batch_result = d4p.kmeans(nClusters=nClusters, maxIterations=maxIter, assignFlag=True).compute(data, batch_init_res.centroids)
-            self.assertTrue(np.allclose(result.centroids, batch_result.centroids))
+            spmd_init_res = d4p.kmeans_init(nClusters=nClusters, method="plusPlusDense", distributed=True).compute(spmd_data)
+
+            self.assertTrue(np.allclose(batch_init_res.centroids, spmd_init_res.centroids))
+
+            batch_res = d4p.kmeans(nClusters=nClusters, maxIterations=maxIter).compute(data, batch_init_res.centroids)
+            spmd_res = d4p.kmeans(nClusters=nClusters, maxIterations=maxIter, distributed=True).compute(spmd_data, spmd_init_res.centroids)
+
+            self.assertTrue(np.allclose(batch_res.centroids, batch_res.centroids))
 
 
     gen_examples = [
