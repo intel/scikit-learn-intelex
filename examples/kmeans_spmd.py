@@ -23,11 +23,7 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-if __name__ == "__main__":
-
-    # Initialize SPMD mode
-    d4p.daalinit()
-
+def main():
     infile = "./data/distributed/kmeans_dense.csv"
     nClusters = 10
     maxIter = 25
@@ -60,8 +56,17 @@ if __name__ == "__main__":
     algo = d4p.kmeans(nClusters, 0, assignFlag=True) # maxIt=0; not distributed, we compute on local data only!
     assignments = algo.compute(data, result.centroids).assignments
 
-    print("\nFirst 10 cluster assignments:\n", assignments[0:10])
-    print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
-    print("\nObjective function value:\n", result.objectiveFunction)
-    print('All looks good!')
+    return (assignments, result)
+
+
+if __name__ == "__main__":
+    # Initialize SPMD mode
+    d4p.daalinit()
+    (assignments, result) = main()
+    # result is available on all processes - but we print only on root
+    if d4p.my_procid() == 0:
+        print("\nFirst 10 cluster assignments:\n", assignments[0:10])
+        print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
+        print("\nObjective function value:\n", result.objectiveFunction)
+        print('All looks good!')
     d4p.daalfini()

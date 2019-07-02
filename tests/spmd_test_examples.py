@@ -17,6 +17,16 @@ if d4p.__has_dist__:
             (data, result) = self.call(ex)
             self.assertTrue(np.allclose(data, np.matmul(result.matrixQ, result.matrixR)))
 
+        def test_kmeans_spmd(self):
+            import kmeans_spmd as ex
+            (assignments, result) = self.call(ex)
+            data = "./data/distributed/kmeans_dense.csv"
+            nClusters = 10
+            maxIter = 25
+            batch_init_res = d4p.kmeans_init(nClusters=nClusters, method="plusPlusDense").compute(data)
+            batch_result = d4p.kmeans(nClusters=nClusters, maxIterations=maxIter, assignFlag=True).compute(data, batch_init_res.centroids)
+            self.assertTrue(np.allclose(result.centroids, batch_result.centroids))
+
 
     gen_examples = [
         ('covariance_spmd', 'covariance.csv', 'covariance'),
