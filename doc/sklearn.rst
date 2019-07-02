@@ -27,7 +27,7 @@ Patches can also be enabled programmatically::
     import daal4py.sklearn
     daal4py.sklearn.patch_sklearn()
 
-It is possible to undo the patch with:
+It is possible to undo the patch with::
 
     daal4py.sklearn.unpatch_sklearn()
 
