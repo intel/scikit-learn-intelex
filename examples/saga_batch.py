@@ -43,7 +43,7 @@ def main(readcsv=read_csv, method='defaultDense'):
                                                          penaltyL2=0,
                                                          interceptFlag=True,
                                                          resultsToCompute='gradient')
-    logloss_algo.setup(data, dep_data, None)
+    logloss_algo.setup(data, dep_data)
 
     # configure an Saga object
     lr = np.array([[0.01]], dtype=np.double)

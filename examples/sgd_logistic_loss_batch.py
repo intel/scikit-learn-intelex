@@ -40,7 +40,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a logistic loss object
     ll_algo = d4p.optimization_solver_logistic_loss(nVectors, interceptFlag=True)
-    ll_algo.setup(data, dep_data, None)
+    ll_algo.setup(data, dep_data)
 
     # configure a SGD object
     lrs = np.array([[0.01]], dtype=np.double)

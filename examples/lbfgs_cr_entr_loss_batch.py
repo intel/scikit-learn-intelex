@@ -46,7 +46,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a function
     func = d4p.optimization_solver_cross_entropy_loss(nClasses, nVectors, interceptFlag=True)
-    func.setup(data, dep_data, None)
+    func.setup(data, dep_data)
 
     # configure a algorithm
     stepLengthSequence = np.array([[stepLength]], dtype=np.double)

@@ -764,7 +764,7 @@ class cython_interface(object):
             'model_typemap': self.prepare_modelmaps(ns),
             'result_typemap': self.prepare_resultmaps(ns),
             'create': no_constructor[fcls] if fcls in no_constructor else '',
-            'add_setup': True if ns in add_setup else False,
+            'add_setup': add_setup[ns] if ns in add_setup else None,
         }
         if not no_dist and ns in has_dist:
             retjp['dist'] = has_dist[ns]
