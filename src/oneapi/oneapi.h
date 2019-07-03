@@ -45,6 +45,7 @@ public:
         if(dev == "gpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
         else if(dev == "cpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
         else m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::default_selector()));
+        daal::services::Environment::getInstance()->setDefaultExecutionContext(*m_ctxt);
     }
     ~PySyclExecutionContext()
     {

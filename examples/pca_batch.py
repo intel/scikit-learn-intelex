@@ -34,7 +34,7 @@ def main(readcsv=read_csv, method='svdDense'):
     infile = "./data/batch/pca_normalized.csv"
     import time
     from daal4py.oneapi import sycl_context, sycl_buffer
-    with sycl_context('cpu'):
+    with sycl_context('gpu'):
         # 'normalization' is an optional parameter to PCA; we use z-score which could be configured differently
         zscore = d4p.normalization_zscore()
         # configure a PCA object
@@ -44,15 +44,22 @@ def main(readcsv=read_csv, method='svdDense'):
         result1 = algo.compute(infile)
 
         # We can also load the data ourselfs and provide the numpy array
-        data = readcsv(infile)
-        sdata = sycl_buffer(data)
-        # sdata = data
-        for i in range(40):
+        data = np.loadtxt(infile, dtype=np.float64, delimiter=',')
+        #sdata = sycl_buffer(data)
+        sdata = data
+        N = 10000
+        times = np.empty(N)
+        for i in range(N):
             algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
             start = time.time()
             result2 = algo.compute(sdata)
-            print(time.time()-start)
+            times[i] = time.time()-start
 
+    import pandas as pd
+    y = pd.Series(times)
+    x = y.rolling(5, center=True).mean()
+    print('Frist avg times:\n', x.iloc[2:6])
+    print('Last avg times:\n', x.iloc[-7:-3])
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
     assert np.allclose(result1.eigenvalues, result2.eigenvalues)
     assert np.allclose(result1.eigenvectors, result2.eigenvectors)
