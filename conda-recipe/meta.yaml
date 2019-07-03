@@ -37,6 +37,7 @@ test:
         - scikit-learn
         - mpich                  # [not win]
         - impi_rt                # [win]
+        - pytest
     imports:
         - daal4py
     source_files:
@@ -46,6 +47,7 @@ test:
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
+        - python -m pytest tests/algorithms/test*.py
         - cd examples && python run_examples.py
 
 about:
