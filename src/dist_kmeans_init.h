@@ -284,7 +284,7 @@ namespace dist_custom {
                         step4OutMerged->addNumericTable(step14OutMaster[i]);
                     }
                 }
-                tcvr->bcast(step4OutMerged, data_rank);
+                tcvr->bcast(step4OutMerged, 0);
                 step2In = daal::data_management::convertToHomogen<fptype>(*step4OutMerged.get());
 
                 // we add results of each iteration to input of step5
@@ -303,7 +303,7 @@ namespace dist_custom {
             {
                 s5Res = algo.run_step5Master(s2InForStep5, s5In, outputOfStep3ForStep5);
             }
-            tcvr->bcast(s5Res, data_rank);
+            tcvr->bcast(s5Res, 0);
             return mk_kmi_result<fptype, daal::algorithms::kmeans::init::parallelPlusDense>(s5Res);
         }
 
