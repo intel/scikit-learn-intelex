@@ -12,18 +12,19 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-/******************************************************************************/
+******************************************************************************/
 
 #ifndef __ONEAPI_H_INCLUDED__
 #define __ONEAPI_H_INCLUDED__
 
 #include "daal_sycl.h"
-#include "numpy/ndarraytypes.h"
-
 #ifndef DAAL_SYCL_INTERFACE
 #include <type_traits>
 static_assert(false, "DAAL_SYCL_INTERFACE not defined")
 #endif
+
+#include "numpy/ndarraytypes.h"
+#include "oneapi_api.h"
 
 // Wrapping DAAL's SyclExecutionContext
 // At construction time we optionally provide the device selector or a queue
@@ -129,5 +130,39 @@ static void * todaalnt(void* ptr, int typ, int * shape)
     }
 }
 
+// return a sycl::buffer from a SyclHomogenNumericTable
+template<typename T>
+inline cl::sycl::buffer<T, 1> * fromdaalnt(daal::data_management::NumericTablePtr * ptr)
+{
+    auto data = dynamic_cast< daal::data_management::SyclHomogenNumericTable< T >* >((*ptr).get());
+    if(data) {
+        daal::data_management::BlockDescriptor<T> block;
+        data->getBlockOfRows(0, data->getNumberOfRows(), daal::data_management::readOnly, block); //data is NumericTable object
+        auto daalBuffer = block.getBuffer();
+        auto syclBuffer = new cl::sycl::buffer<T, 1>(daalBuffer.toSycl());
+        data->releaseBlockOfRows(block);
+        return syclBuffer;
+    }
+    return NULL;
+}
+
+void * c_make_py_from_sycltable(void * _ptr, int typ)
+{
+    auto ptr = reinterpret_cast<daal::data_management::NumericTablePtr *>(_ptr);
+
+    switch(typ) {
+    case NPY_DOUBLE:
+        return fromdaalnt<double>(ptr);
+        break;
+    case NPY_FLOAT:
+        return fromdaalnt<float>(ptr);
+        break;
+    case NPY_INT:
+        return fromdaalnt<int>(ptr);
+        break;
+    default: throw std::invalid_argument("invalid output array type (must be double, float or int)");
+    }
+    return NULL;
+}
 
 #endif // __ONEAPI_H_INCLUDED__

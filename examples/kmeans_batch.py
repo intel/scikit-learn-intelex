@@ -36,17 +36,16 @@ def main(readcsv=read_csv, method='defaultDense'):
     maxIter = 5
 
     # Load the data
-    data = readcsv(infile, range(20))
+    csvdata = np.ascontiguousarray(readcsv(infile, range(20)).values)
 
     with sycl_context('gpu'):
-        print(type(data))
-        data = sycl_buffer(data)
+        data = sycl_buffer(csvdata)
+
         # compute initial centroids
         initrain_algo = d4p.kmeans_init(nClusters, method="randomDense")
         initrain_result = initrain_algo.compute(data)
         # The results provides the initial centroids
-        assert initrain_result.centroids.shape[0] == nClusters
-
+        #assert initrain_result.centroids.shape[0] == nClusters
         # configure kmeans main object: we also request the cluster assignments
         algo = d4p.kmeans(nClusters, maxIter, assignFlag=True)
         # compute the clusters/centroids
@@ -57,7 +56,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Kmeans result objects provide assignments (if requested), centroids, goalFunction, nIterations and objectiveFunction
     assert result.centroids.shape[0] == nClusters
-    assert result.assignments.shape == (data.shape[0], 1)
+    assert result.assignments.shape == (csvdata.shape[0], 1)
     assert result.nIterations <= maxIter
 
     return result
