@@ -204,6 +204,18 @@ namespace dist_custom {
     {
     public:
         typedef kmeans_init_manager< fptype, daal::algorithms::kmeans::init::parallelPlusDense > Algo;
+        /*
+            step1 provides input for step2, it is equivalent of step4 inside loop
+            every time when we compute input for step2 we store it, it will be used in final step5
+            then we repeat nRounds times in the loop:
+                step2 computes data for step3 on each rank
+                then we gather results from step2 and execute step3 on root
+                step3 provides inputs for step4 on each rank
+                on each rank if there is data for step4 then we run it
+                results of step4 are input for step2 of next iteration
+            after the loop we execute step2 one more time with data from last iteration of loop on each rank
+            and in step5 we select the initial centroids
+        */
         static typename Algo::iomb_type::result_type
         kmi(Algo & algo, const daal::data_management::NumericTablePtr input)
         {
@@ -281,7 +293,11 @@ namespace dist_custom {
                 {
                     for (int i = 0; i < step14OutMaster.size(); i++)
                     {
-                        step4OutMerged->addNumericTable(step14OutMaster[i]);
+                        // we expect that some of results can be NULL
+                        if(step14OutMaster[i])
+                        {
+                            step4OutMerged->addNumericTable(step14OutMaster[i]);
+                        }
                     }
                 }
                 tcvr->bcast(step4OutMerged, 0);

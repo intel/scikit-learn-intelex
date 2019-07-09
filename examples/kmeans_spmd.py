@@ -23,13 +23,13 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-def main():
+def main(method='plusPlusDense'):
     infile = "./data/distributed/kmeans_dense.csv"
     nClusters = 10
     maxIter = 25
 
     # configure a kmeans-init
-    init_algo = d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True)
+    init_algo = d4p.kmeans_init(nClusters, method=method, distributed=True)
     # Load the data
     data = loadtxt(infile, delimiter=',')
     # now slice the data, it would have been better to read only what we need, of course...

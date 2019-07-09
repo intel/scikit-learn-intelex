@@ -370,13 +370,15 @@ std::vector<daal::services::SharedPtr<T> > transceiver::gather(const daal::servi
     if(m_transceiver->me() == root) {
         size_t offset = 0;
         size_t nm = m_transceiver->nMembers();
-        all.reserve(nm);
+        all.resize(nm);
         for(int i=0; i<nm; ++i) {
             if(sizes[i] > 0) {
                 // This is inefficient, we need to write our own DatArchive to avoid extra copy
                 daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff+offset), sizes[i]);
-                all.push_back(daal::services::staticPointerCast<T>(out_arch.getAsSharedPtr()));
+                all[i] = daal::services::staticPointerCast<T>(out_arch.getAsSharedPtr());
                 offset += sizes[i];
+            } else {
+                all[i] = daal::services::SharedPtr<T>();
             }
         }
         delete [] buff;
