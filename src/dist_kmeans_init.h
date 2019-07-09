@@ -205,16 +205,19 @@ namespace dist_custom {
     public:
         typedef kmeans_init_manager< fptype, daal::algorithms::kmeans::init::parallelPlusDense > Algo;
         /*
-            step1 provides input for step2, it is equivalent of step4 inside loop
-            every time when we compute input for step2 we store it, it will be used in final step5
-            then we repeat nRounds times in the loop:
-                step2 computes data for step3 on each rank
-                then we gather results from step2 and execute step3 on root
-                step3 provides inputs for step4 on each rank
-                on each rank if there is data for step4 then we run it
-                results of step4 are input for step2 of next iteration
-            after the loop we execute step2 one more time with data from last iteration of loop on each rank
-            and in step5 we select the initial centroids
+            step1 provides initial input for step2, inside the loop step4 produces the input for step2.
+            We have to keep input for step2 because it will also be used as input for final step5.
+            Now we iterate/loop for nRounds:
+                - step2 computes on each rank
+                - we gather results from all step2's
+                - gathered data from step2 is input to step3, executed on root only
+                - output of step3 is scattered to all ranks
+                - ranks which received non-empty output from step3 will execute step4 on its data
+                - results of step4 are input for step2 of next iteration
+            After the loop
+                - we execute step2 one more time with data from last iteration of loop on each rank
+                - and finally select the initial centroids in step5 on root
+            The resulting centroids are broadcasted to all processes.
         */
         static typename Algo::iomb_type::result_type
         kmi(Algo & algo, const daal::data_management::NumericTablePtr input)
