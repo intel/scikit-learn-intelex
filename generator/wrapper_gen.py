@@ -515,7 +515,10 @@ gen_inst_algo = """
 {% set ctor = '(' + params_req|fmt('to_daal({})', 'arg_member', sep=', ') + ')' %}
 {% endif %}
 {% if member %}
-_algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
+_{{algo}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
+{% elif step_spec.keepsstate %}
+if(! _{{algo}}) _{{algo}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
+        {{algo}}_type * {{algo}} = _{{algo}}.get();
 {% elif create %}
 auto {{algo}} = {{algo}}_type{{ctor}};
 {% else %}
@@ -746,6 +749,12 @@ public:
 {{gen_typedefs(ns, template_decl, template_args, mode="Distributed", suffix=step_specs[i].name, step_spec=step_specs[i])}}
 {% endfor %}
 
+private:
+{% for i in range(step_specs|length) if step_specs[i].keepsstate %}
+    daal::services::SharedPtr< algo{{step_specs[i].name}}_type > _algo{{step_specs[i].name}};
+{% endfor %}
+
+public:
 {% for i in range(step_specs|length) %}
 {% set sname = "run_"+step_specs[i].name %}
     typename iom{{step_specs[i].name}}_type::result_type {{sname + gen_compute(ns, input_args, params_req, params_opt, suffix=step_specs[i].name, step_spec=step_specs[i], tonative=False)}}
@@ -763,6 +772,9 @@ public:
 private:
     typename iomb_type::result_type distributed()
     {
+{% for i in range(step_specs|length) if step_specs[i].keepsstate %}
+        _algo{{step_specs[i].name}}.reset();
+{% endfor %}
         return {{pattern}}::{{pattern}}< {{algo}}_manager< {{template_args|fmt('{}', 'name')}} > >::compute(*this, to_daal(_{{'), to_daal(_'.join(inp_names)}}));
     }
 {% endif %}

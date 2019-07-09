@@ -197,9 +197,10 @@ SSpec = namedtuple('step_spec', ['input',        # array of input types
                                  'params',       # indicates if init_parameters should be called
                                  'inputnames',   # array of names of input args, aligned with 'input'
                                  'inputdists',   # array of distributions (hpat) of input args, aligned with 'input'
+                                 'keepsstate',   # set to True if step needs to be called multiple times and it keeps state
                              ]
 )
-SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-4) + ([], True, ['data'], ['OneD'])
+SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-5) + ([], True, ['data'], ['OneD'], False)
 
 # We list all algos with distributed versions here.
 # The indivdual dicts get passed to jinja as global vars (as-is).
@@ -395,7 +396,8 @@ has_dist = {
                              input     = ['daal::data_management::NumericTablePtr'],
                              output    = 'daal::algorithms::kmeans::init::DistributedStep3MasterPlusPlusPartialResultPtr',
                              iomanager = 'PartialIOManager',
-                             addinput  = ['daal::algorithms::kmeans::init::inputOfStep3FromStep2, i']),
+                             addinput  = ['daal::algorithms::kmeans::init::inputOfStep3FromStep2, i'],
+                             keepsstate = True),
                        SSpec(name      = 'step4Local',
                              input     = ['daal::data_management::NumericTablePtr', 'daal::data_management::DataCollectionPtr', 'daal::data_management::NumericTablePtr'],
                              setinput  = ['daal::algorithms::kmeans::init::data', 'daal::algorithms::kmeans::init::internalInput', 'daal::algorithms::kmeans::init::inputOfStep4FromStep3'],

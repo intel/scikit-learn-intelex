@@ -351,13 +351,18 @@ std::vector<daal::services::SharedPtr<T> > transceiver::gather(const daal::servi
 {
     // we split into 2 gathers: one to send the sizes, a second to send the actual data
     if(varying == false) std::cerr << "Performance warning: no optimization implemented for non-varying gather sizes\n";
-    // Serialize the partial result into a data archive
-    daal::data_management::InputDataArchive in_arch;
-    obj->serialize(in_arch);
     
+    size_t mysize = 0;
+    daal::data_management::InputDataArchive in_arch;
+    // If we got the data then serialize the partial result into a data archive
+    // In other case the size of data to send is equal zero, send nothing
+    if (obj) {
+        obj->serialize(in_arch);
+        mysize = in_arch.getSizeOfArchive();
+    }
+
     // gather all partial results
     // First get all sizes, then gather on root
-    size_t mysize = in_arch.getSizeOfArchive();
     size_t * sizes = reinterpret_cast<size_t*>(m_transceiver->gather(&mysize, sizeof(mysize), root, NULL, false));
     char * buff = reinterpret_cast<char*>(m_transceiver->gather(in_arch.getArchiveAsArraySharedPtr().get(), mysize, root, sizes));
  
@@ -367,10 +372,14 @@ std::vector<daal::services::SharedPtr<T> > transceiver::gather(const daal::servi
         size_t nm = m_transceiver->nMembers();
         all.resize(nm);
         for(int i=0; i<nm; ++i) {
-            // This is inefficient, we need to write our own DatArchive to avoid extra copy
-            daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff+offset), sizes[i]);
-            all[i] = daal::services::staticPointerCast<T>(out_arch.getAsSharedPtr());
-            offset += sizes[i];
+            if(sizes[i] > 0) {
+                // This is inefficient, we need to write our own DatArchive to avoid extra copy
+                daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff+offset), sizes[i]);
+                all[i] = daal::services::staticPointerCast<T>(out_arch.getAsSharedPtr());
+                offset += sizes[i];
+            } else {
+                all[i] = daal::services::SharedPtr<T>();
+            }
         }
         delete [] buff;
     }

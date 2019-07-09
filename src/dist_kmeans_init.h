@@ -198,6 +198,141 @@ namespace dist_custom {
         }
     };
 
+    // specialize dist_custom for kemans_init<parallelPlusDense>
+    template< typename fptype >
+    class dist_custom< kmeans_init_manager< fptype, daal::algorithms::kmeans::init::parallelPlusDense > >
+    {
+    public:
+        typedef kmeans_init_manager< fptype, daal::algorithms::kmeans::init::parallelPlusDense > Algo;
+        /*
+            step1 provides initial input for step2, inside the loop step4 produces the input for step2.
+            We have to keep input for step2 because it will also be used as input for final step5.
+            Now we iterate/loop for nRounds:
+                - step2 computes on each rank
+                - we gather results from all step2's
+                - gathered data from step2 is input to step3, executed on root only
+                - output of step3 is scattered to all ranks
+                - ranks which received non-empty output from step3 will execute step4 on its data
+                - results of step4 are input for step2 of next iteration
+            After the loop
+                - we execute step2 one more time with data from last iteration of loop on each rank
+                - and finally select the initial centroids in step5 on root
+            The resulting centroids are broadcasted to all processes.
+        */
+        static typename Algo::iomb_type::result_type
+        kmi(Algo & algo, const daal::data_management::NumericTablePtr input)
+        {
+            auto tcvr = get_transceiver();
+            int rank = tcvr->me();
+            int nRanks = tcvr->nMembers();
+
+            // first determine total number of rows
+            size_t tot_rows = input->getNumberOfRows();
+            size_t start_row = tot_rows;
+            // first determine total number of rows
+            tcvr->reduce_all(&tot_rows, 1, transceiver_iface::OP_SUM);
+            // determine start of my chunk
+            tcvr->reduce_exscan(&start_row, 1, transceiver_iface::OP_SUM);
+            if(rank==0) start_row = 0;
+
+            // Internal data to be stored on the local nodes
+            daal::data_management::DataCollectionPtr localNodeData;
+            // First step on each rank (output var will be used for output of step4 as well)
+            auto step14Out = algo.run_step1Local(input, tot_rows, start_row)->get(daal::algorithms::kmeans::init::partialCentroids);
+            // Only one rank actually computes centroids, we need to identify rank and bcast centroids to all others
+            int data_rank = not_empty(step14Out) ? rank : -1;
+            tcvr->reduce_all(&data_rank, 1, transceiver_iface::OP_MAX);
+            tcvr->bcast(step14Out, data_rank);
+            auto step2In = step14Out;
+
+            // default value of nRounds used by all steps
+            const size_t nRounds = daal::algorithms::kmeans::init::Parameter(algo._nClusters).nRounds;
+
+            // vector with results of step2 for input into step5
+            std::vector<daal::data_management::NumericTablePtr> s2InForStep5;
+            if(rank == 0) {
+                s2InForStep5.push_back(step2In);
+            }
+
+            // Here we will store the output of step3 for step5
+            daal::services::interface1::SharedPtr<daal::data_management::interface1::SerializationIface> outputOfStep3ForStep5;
+
+            for(size_t iRound = 0; iRound < nRounds; ++iRound) {
+                // run step2 on each rank
+                auto s2res = algo.run_step2Local(input, localNodeData, step2In, false);
+                if(iRound==0) localNodeData = s2res->get(daal::algorithms::kmeans::init::internalResult);
+                auto s2Out = s2res->get(daal::algorithms::kmeans::init::outputOfStep2ForStep3);
+                //  and gather result on root
+                auto s3In = tcvr->gather(s2Out);
+
+                const int S34TAG = 3003;
+                // The input for s4 will be stored in s4In
+                daal::data_management::NumericTablePtr s4In;
+                // run step3 on root and send results to non-roots
+                if(rank == 0) {
+                    auto step3Output = algo.run_step3Master(s3In);
+                    // output of step3 in the last iteration will be used in step5
+                    if (iRound == nRounds - 1) {
+                        outputOfStep3ForStep5 = step3Output->get(daal::algorithms::kmeans::init::outputOfStep3ForStep5);
+                    }
+                    s4In = step3Output->get(daal::algorithms::kmeans::init::outputOfStep3ForStep4, 0);
+                    for(int i=1; i<nRanks; i++) {
+                        tcvr->send(step3Output->get(daal::algorithms::kmeans::init::outputOfStep3ForStep4, i), i, S34TAG); // it can be NULL
+                    }
+                } else { // non-roots get messages with output from step3
+                    s4In = tcvr->recv<daal::data_management::NumericTablePtr>(0, S34TAG);
+                }
+                // if we have a data for step4 then run it
+                if (s4In) {
+                    step14Out = algo.run_step4Local(input, localNodeData, s4In);
+                } else {
+                    step14Out = daal::data_management::NumericTablePtr();
+                }
+
+                // we need to gather all exist results on root, merge them into one table and then share it with all non-roots
+                auto step14OutMaster = tcvr->gather(step14Out);
+                daal::data_management::RowMergedNumericTablePtr step4OutMerged(new daal::data_management::RowMergedNumericTable());
+                if(rank == 0)
+                {
+                    for (int i = 0; i < step14OutMaster.size(); i++)
+                    {
+                        // we expect that some of results can be NULL
+                        if(step14OutMaster[i])
+                        {
+                            step4OutMerged->addNumericTable(step14OutMaster[i]);
+                        }
+                    }
+                }
+                tcvr->bcast(step4OutMerged, 0);
+                step2In = daal::data_management::convertToHomogen<fptype>(*step4OutMerged.get());
+
+                // we add results of each iteration to input of step5
+                if(rank == 0)
+                {
+                    s2InForStep5.push_back(step2In);
+                }
+            }
+
+            // One more step 2
+            auto s2ResForStep5 = algo.run_step2Local(input, localNodeData, step2In, true);
+            auto s2OutForStep5 = s2ResForStep5->get(daal::algorithms::kmeans::init::outputOfStep2ForStep5);
+            auto s5In = tcvr->gather(s2OutForStep5);
+            daal::data_management::NumericTablePtr s5Res;
+            if(rank == 0)
+            {
+                s5Res = algo.run_step5Master(s2InForStep5, s5In, outputOfStep3ForStep5);
+            }
+            tcvr->bcast(s5Res, 0);
+            return mk_kmi_result<fptype, daal::algorithms::kmeans::init::parallelPlusDense>(s5Res);
+        }
+
+        template<typename ... Ts>
+        static typename Algo::iomb_type::result_type
+        compute(Algo & algo, Ts& ... inputs)
+        {
+            return kmi(algo, get_table(inputs)...);
+        }
+    };
 } // namespace dist_kmeans_init {
 
 #endif // _DIST_KMEANS_INIT_INCLUDED_
