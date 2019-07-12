@@ -149,27 +149,12 @@ e.g. standard types (integer, float, Numpy arrays, Pandas DataFrames,
 ...). Additionally, if you provide the name of a csv-file as an input argument
 daal4py will work on the entire file content.
 
-Scikit-Learn patches
---------------------
-daal4py can dynamically patch :ref:`certain scikit-learn algorithms <sklearn>` to
-use Intel® DAAL as the underlying solver, while getting the same solution faster.
-To unlock performance for your application, simply run::
+Scikit-Learn API and patching
+-----------------------------
+daal4py exposes some DAAL solvers using a scikit-learn compatible API.
 
-    python -m daal4py my_application.py
+daal4py can furthermore monkey-patch the ``sklearn`` package to use the DAAL
+solvers as drop-in replacement without any code change.
 
-Patches can also be enabled programmatically::
-
-    import daal4py.sklearn
-    daal4py.sklearn.patch_sklearn()
-
-Additionally, daal4py.sklearn contains scikit-learn API compatible :ref:`classes <sklearn>`
-which implement a subset of scikit-learn algorithms using Intel® DAAL. These classes are
-always available, whether the scikit-learn itself has been patched, or not. For example::
-
-     import sklearn, sklearn.datasets, sklearn.svm, sklearn.metrics
-     digits = sklearn.datasets.load_digits()
-     import daal4py.sklearn
-     clf_d = daal4py.sklearn.svm.SVC(kernel='rbf', gamma='scale', C = 0.5).fit(X, y)
-     clf_v = sklearn.svm.SVC(kernel='rbf', gamma='scale', C =0.5).fit(X, y)
-     sklearn.metrics.v_measure_score(y, clf_v.predict(X)) # output: 0.977068068172132
-     sklearn.metrics.v_measure_score(y, clf_d.predict(X)) # output: 0.977068068172132
+Please refer to the section on :ref:`scikit-learn API and patching <sklearn>`
+for more details.
