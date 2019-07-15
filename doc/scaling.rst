@@ -43,7 +43,7 @@ That's all for the python code::
   result = kmi.compute("file{}.csv", daal4py.my_procid())
   daalfini()
 
-To actually get it exectuted on several processes use standard MPI mechanics,
+To actually get it executed on several processes use standard MPI mechanics,
 like::
 
   mpirun -n 4 python ./kmeans.py

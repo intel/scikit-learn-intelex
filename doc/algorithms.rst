@@ -52,7 +52,7 @@ Examples:
 Gradient Boosted Classification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Classification Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-tree-2>`__
+`Intel DAAL Classification Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-2>`__
 
 Examples:
 
@@ -231,7 +231,7 @@ Examples:
 Logistic Regression
 ^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Logistc Regression <https://software.intel.com/en-us/daal-programming-guide-logistic-regression>`__
+`Intel DAAL Logistic Regression <https://software.intel.com/en-us/daal-programming-guide-logistic-regression>`__
 
 Examples:
 
@@ -301,7 +301,7 @@ Examples:
 Gradient Boosted Regression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Regression Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-tree-1>`__
+`Intel DAAL Regression Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-1>`__
 
 Examples:
 
@@ -820,7 +820,7 @@ Examples:
 Hyperbolic Tangent (tanh)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-tanh>`__
+`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-hyperbolic-tangent>`__
 
 Examples:
 
