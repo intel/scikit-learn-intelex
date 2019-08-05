@@ -212,6 +212,8 @@ Support Vector Machine (SVM)
 Detailed description of parameters and semantics are described in
 `Intel DAAL SVM <https://software.intel.com/en-us/daal-programming-guide-support-vector-machine-classifier>`__
 
+Note: For the labels parameter, data is formatted as -1s and 1s
+
 Examples:
 
 - `Single-Process SVM
@@ -708,11 +710,11 @@ Examples:
 Min-Max
 ^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Min-Max <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax_batch.py>`__
+`Intel DAAL Min-Max <https://software.intel.com/en-us/daal-programming-guide-min-max>`__
 
 Examples:
 
-- `Single-Process Min-Max Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax.py>`__
+- `Single-Process Min-Max Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax_batch.py>`__
 
 .. autoclass:: daal4py.normalization_minmax
    :members: compute
