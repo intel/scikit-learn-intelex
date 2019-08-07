@@ -20,7 +20,7 @@ deselected_tests:
 
   # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
   # See: https://github.com/IntelPython/daal4py/issues/25
-  - cluster/tests/test_k_means.py::test_k_means_fit_predict <0.21.3
+  - cluster/tests/test_k_means.py::test_k_means_fit_predict
 
   # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
   # See https://github.com/IntelPython/daal4py/issues/69
