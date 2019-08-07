@@ -12,15 +12,15 @@ deselected_tests:
 
   # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
   # See: https://github.com/scikit-learn/scikit-learn/issues/12738
-  - svm/tests/test_svm.py::test_sample_weights
-  - svm/tests/test_svm.py::test_precomputed
-  - svm/tests/test_sparse.py::test_sparse
-  - svm/tests/test_sparse.py::test_svc_iris
-  - ensemble/tests/test_bagging.py::test_sparse_classification
+  - svm/tests/test_svm.py::test_sample_weights <0.21.3
+  - svm/tests/test_svm.py::test_precomputed    <0.21.3
+  - svm/tests/test_sparse.py::test_sparse      <0.21.3
+  - svm/tests/test_sparse.py::test_svc_iris    <0.21.3
+  - ensemble/tests/test_bagging.py::test_sparse_classification <0.21.3
 
   # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
   # See: https://github.com/IntelPython/daal4py/issues/25
-  - cluster/tests/test_k_means.py::test_k_means_fit_predict
+  - cluster/tests/test_k_means.py::test_k_means_fit_predict <0.21.3
 
   # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
   # See https://github.com/IntelPython/daal4py/issues/69
