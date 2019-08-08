@@ -212,6 +212,8 @@ Support Vector Machine (SVM)
 Detailed description of parameters and semantics are described in
 `Intel DAAL SVM <https://software.intel.com/en-us/daal-programming-guide-support-vector-machine-classifier>`__
 
+Note: For the labels parameter, data is formatted as -1s and 1s
+
 Examples:
 
 - `Single-Process SVM
@@ -526,6 +528,9 @@ Cross-entropy Loss
 Detailed description of parameters and semantics are described in
 `Intel DAAL Cross Entropy Loss <https://software.intel.com/en-us/daal-programming-guide-cross-entropy-loss>`__
 
+Examples:
+- `In LBFGS <https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_cr_entr_loss_batch.py>`__
+
 .. autoclass:: daal4py.optimization_solver_cross_entropy_loss
    :members: compute, setup
 .. autoclass:: daal4py.optimization_solver_cross_entropy_loss_result
@@ -695,7 +700,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Z-Score Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_zscore.py>`__
+- `Single-Process Z-Score Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_zscore_batch.py>`__
 
 .. autoclass:: daal4py.normalization_zscore
    :members: compute
@@ -709,7 +714,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Min-Max Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax.py>`__
+- `Single-Process Min-Max Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax_batch.py>`__
 
 .. autoclass:: daal4py.normalization_minmax
    :members: compute
@@ -757,16 +762,16 @@ Detailed description of parameters and semantics are described in
 Distributions
 -------------
 Detailed description of parameters and semantics are described in
-`Intel DAAL Absolute Value (abs) <https://software.intel.com/en-us/daal-programming-guide-distributions>`__
+`Intel DAAL Distributions <https://software.intel.com/en-us/daal-programming-guide-distributions>`__
 
 Bernoulli
 ^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-bernoulli>`__
+`Intel DAAL Bernoulli Distribution <https://software.intel.com/en-us/daal-programming-guide-bernoulli>`__
 
 Examples:
 
-- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli.py>`__
+- `Single-Process Bernoulli Distribution <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli_batch.py>`__
 
 .. autoclass:: daal4py.distributions_bernoulli
    :members: compute
@@ -776,11 +781,11 @@ Examples:
 Normal
 ^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-normal>`__
+`Intel DAAL Normal Distribution <https://software.intel.com/en-us/daal-programming-guide-normal>`__
 
 Examples:
 
-- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal.py>`__
+- `Single-Process Normal Distribution <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal_batch.py>`__
 
 .. autoclass:: daal4py.distributions_normal
    :members: compute
@@ -790,11 +795,11 @@ Examples:
 Uniform
 ^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-uniform>`__
+`Intel DAAL Uniform Distribution <https://software.intel.com/en-us/daal-programming-guide-uniform>`__
 
 Examples:
 
-- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform.py>`__
+- `Single-Process Uniform Distribution <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform_batch.py>`__
 
 .. autoclass:: daal4py.distributions_uniform
    :members: compute
@@ -810,7 +815,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process abs <https://github.com/IntelPython/daal4py/blob/master/examples/math_abs.py>`__
+- `Single-Process abs <https://github.com/IntelPython/daal4py/blob/master/examples/math_abs_batch.py>`__
 
 .. autoclass:: daal4py.math_abs
    :members: compute
@@ -824,7 +829,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/math_tanh.py>`__
+- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/math_tanh_batch.py>`__
 
 .. autoclass:: daal4py.math_tanh
    :members: compute
@@ -838,7 +843,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process logistic <https://github.com/IntelPython/daal4py/blob/master/examples/math_logistic.py>`__
+- `Single-Process logistic <https://github.com/IntelPython/daal4py/blob/master/examples/math_logistic_batch.py>`__
 
 .. autoclass:: daal4py.math_logistic
    :members: compute
@@ -852,7 +857,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process ReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_relu.py>`__
+- `Single-Process ReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_relu_batch.py>`__
 
 .. autoclass:: daal4py.math_relu
    :members: compute
@@ -866,7 +871,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process SmoothReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_smoothrelu.py>`__
+- `Single-Process SmoothReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_smoothrelu_batch.py>`__
 
 .. autoclass:: daal4py.math_smoothrelu
    :members: compute
@@ -959,7 +964,7 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py>`__
-- `Streaming Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py>`__
+- `Streaming Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_streaming.py>`__
 - `Multi-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_spmd.py>`__
 
 .. autoclass:: daal4py.low_order_moments
