@@ -58,7 +58,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     # we use this trick until subtracting a sparse matrix is not supported
     if hasattr(ptdata, 'toarray'):
         ptdata = ptdata.toarray()
-    assert np.square(predict_result.prediction - np.array(ptdata)).mean() < 2.2
+    assert np.square(predict_result.prediction - np.asarray(ptdata)).mean() < 2.2
 
     return (predict_result, ptdata)
 
