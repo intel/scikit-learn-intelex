@@ -1,6 +1,6 @@
 #
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import numpy as np
 
 from scipy import sparse as sp
 from sklearn.utils import check_random_state, check_X_y
+from sklearn.utils.validation import check_is_fitted
 import sklearn.svm.classes
 import sklearn.svm.base
 import warnings
@@ -278,7 +279,7 @@ def _daal_var(X):
     return ssc[0, 0] / X.size
 
 
-def __compute_gamma__(gamma, kernel, X, sparse, use_var=True):
+def __compute_gamma__(gamma, kernel, X, sparse, use_var=True, deprecation=True):
     """
     Computes actual value of 'gamma' parameter of RBF kernel
     corresponding to SVC keyword values `gamma` and `kernel`, and feature 
@@ -290,7 +291,11 @@ def __compute_gamma__(gamma, kernel, X, sparse, use_var=True):
 
     See: https://github.com/scikit-learn/scikit-learn/pull/13221 
     """
-    if gamma in ('scale', 'auto_deprecated'):
+    if deprecation:
+        _gamma_is_scale = gamma in ('scale', 'auto_deprecated')
+    else:
+        _gamma_is_scale = (gamma == 'scale')
+    if _gamma_is_scale:
         kernel_uses_gamma = (not callable(kernel) and kernel
                              not in ('linear', 'precomputed'))
         if kernel_uses_gamma:
@@ -309,7 +314,7 @@ def __compute_gamma__(gamma, kernel, X, sparse, use_var=True):
             else:
                 _gamma = 1.0
         else:
-            if kernel_uses_gamma and not np.isclose(X_sc, 1.0):
+            if kernel_uses_gamma and deprecation and not np.isclose(X_sc, 1.0):
                 # NOTE: when deprecation ends we need to remove explicitly
                 # setting `gamma` in examples (also in tests). See
                 # https://github.com/scikit-learn/scikit-learn/pull/10331
@@ -322,18 +327,27 @@ def __compute_gamma__(gamma, kernel, X, sparse, use_var=True):
             _gamma = 1.0 / X.shape[1]
     elif gamma == 'auto':
         _gamma = 1.0 / X.shape[1]
+    elif isinstance(gamma, str) and not deprecation:
+        raise ValueError(
+            "When 'gamma' is a string, it should be either 'scale' or "
+            "'auto'. Got '{}' instead.".format(gamma)
+        )
     else:
         _gamma = gamma
 
     return _gamma
 
 no_older_than_0_20_3 = None
+no_older_than_0_22 = None
 
 def _compute_gamma(*args):
     global no_older_than_0_20_3
+    global no_older_than_0_22
     if no_older_than_0_20_3 is None:
         no_older_than_0_20_3 = (LooseVersion(sklearn_version) >= LooseVersion("0.20.3"))
-    return __compute_gamma__(*args, use_var=no_older_than_0_20_3)
+    if no_older_than_0_22 is None:
+        no_older_than_0_22 = (LooseVersion(sklearn_version) < LooseVersion("0.22"))
+    return __compute_gamma__(*args, use_var=no_older_than_0_20_3, deprecation=no_older_than_0_22)
 
 
 def fit(self, X, y, sample_weight=None):
@@ -496,12 +510,23 @@ def predict(self, X):
     -------
     y_pred : array, shape (n_samples,)
     """
-    X = self._validate_for_predict(X)
-    if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
-        y = _daal4py_predict(self, X)
+    check_is_fitted(self, 'support_')
+    _break_ties = getattr(self, 'break_ties', False)
+    if _break_ties and self.decision_function_shape == 'ovo':
+        raise ValueError("break_ties must be False when "
+                         "decision_function_shape is 'ovo'")
+
+    if (_break_ties
+        and self.decision_function_shape == 'ovr'
+        and len(self.classes_) > 2):
+        y = np.argmax(self.decision_function(X), axis=1)
     else:
-        predict = self._sparse_predict if self._sparse else self._dense_predict
-        y = predict(X)
+        X = self._validate_for_predict(X)
+        if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
+            y = _daal4py_predict(self, X)
+        else:
+            predict_func = self._sparse_predict if self._sparse else self._dense_predict
+            y = predict_func(X)
 
     return self.classes_.take(np.asarray(y, dtype=np.intp))
 
@@ -526,7 +551,7 @@ if 'break_ties' in  __base_svc_init_arg_names__:
     class SVC(sklearn.svm.base.BaseSVC):
         _impl = 'c_svc'
 
-        def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto_deprecated',
+        def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='scale',
                      coef0=0.0, shrinking=True, probability=False,
                      tol=1e-3, cache_size=200, class_weight=None,
                      verbose=False, max_iter=-1, decision_function_shape='ovr',
