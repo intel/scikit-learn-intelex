@@ -53,7 +53,12 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # The prediction result provides prediction
     assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
-    assert np.square(predict_result.prediction - np.array(ptdata)).mean() < 2.2
+
+    # the example is used in tests with the scipy.sparse matrix
+    # we use this trick until subtracting a sparse matrix is not supported
+    if hasattr(ptdata, 'toarray'):
+        ptdata = ptdata.toarray()
+    assert np.square(predict_result.prediction - np.asarray(ptdata)).mean() < 2.2
 
     return (predict_result, ptdata)
 
