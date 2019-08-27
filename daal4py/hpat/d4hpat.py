@@ -24,6 +24,9 @@
 # Algorithm/Result/Model objects simply get lowered to opaque pointers.
 # Attribute access gets redirected to DAAL's actual accessor methods.
 #
+# Finally we register distribution analysis methods to hpat's distribution stage so that
+# it properly calls daal4py in distributed mode with distributed data.
+#
 # TODO:
 #   - sub-classing: parameters of '__interface__' types must accept derived types
 #   - boxing/unboxing of algorithms
@@ -87,7 +90,6 @@ d4ptypes = {
     'ftable_type': 2,
     'itable_type': 3,
 }
-
 d4p_dtypes = {
     'REP'     : DType.REP,
     'Thread'  : DType.Thread,
@@ -99,6 +101,7 @@ d4p_dtypes = {
 
 @intrinsic
 def nt2nd(typingctx, obj, dtype):
+    '''Intrinsic for converting a pointer-to-daal-numeric-table (like found in a result of compute) to a ndarray'''
     assert(isinstance(dtype, types.scalars.IntegerLiteral))
     np_ary_type = nptypes[dtype.literal_value]
     def codegen(context, builder, sig, args):  # def nt2nd(context, builder, ptr, ary_type):
@@ -124,6 +127,14 @@ def nt2nd(typingctx, obj, dtype):
     return np_ary_type(types.voidptr, types.intc), codegen
 
 def _arr2C(inp):
+    '''
+    Convert a numpy array or None to daal4py's C array signature:
+    (void* ptr, int64 ncols, int64 nrows, int64 layout)
+
+    See ovl_inp2d4p.
+
+    Return None if the input is not a numpy array.
+    '''
     if isinstance(inp, types.Array) and inp.ndim == 2:
         descr = None
         if inp.dtype == types.float64:
@@ -151,6 +162,10 @@ def ovl_arr2C(inp):
     '''
     Convert a numpy array or None to daal4py's C array signature:
     (void* ptr, int64 ncols, int64 nrows, int64 layout)
+
+    See ovl_inp2d4p.
+
+    Raise an exception for other types.
     '''
     r = _arr2C(inp)
     if r != None:
@@ -185,6 +200,7 @@ def ovl_inp2d4p(inp):
             return arr2C(ary)
         return inp2d4p_df
     if isinstance(inp, types.UnicodeType):
+        # We now expected a file-name
         def inp2d4p_str(inp):
             return (inp._data, int(float(0)), inp._length, int(float(0)))
         return inp2d4p_str
@@ -442,7 +458,7 @@ class algo_factory(object):
                          "            return algo._compute({args}, False)\n"
                          "        return {name}_compute_impl\n")
 
-            # Algo might have a setup call
+            # Algo might have a setup call, if so add @overload for it
             if self.spec.has_setup:
                 ovl_code += ("@overload_method(type(algo_factory.all_nbtypes['{name}']), 'setup')\n"
                              "def {name}_setup(algo, {argsWdflt}):\n"
@@ -528,6 +544,10 @@ algo_map = {}
 for a in algos:
     a.activate()
     algo_map[algo_factory.all_nbtypes[a.name]] = a
+
+
+###################
+# @overloads for non-algorithmic features
 
 @overload(daal4py.daalinit)
 def ovl_daalinit():
