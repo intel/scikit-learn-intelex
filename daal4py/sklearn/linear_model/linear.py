@@ -75,7 +75,10 @@ def _daal4py_predict(self, X):
         fptype=_fptype,
         method='defaultDense'
     )
-    lr_res = lr_pred.compute(X, self.daal_model_)
+    try:
+        lr_res = lr_pred.compute(X, self.daal_model_)
+    except RuntimeError:
+        raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
 
     res = lr_res.prediction
     if res.shape[1] == 1 and self.coef_.ndim == 1:
