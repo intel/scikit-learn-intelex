@@ -508,3 +508,9 @@ hpat_types = {
         'nIterations': 'itable_type',
     },
 }
+
+# algo/ns mapping to either a standard sklearn estimator (classifier, regressor, ...)
+# or to a full sklearn config (algo, mixin, fit, predict, ...)
+sklearn = {
+    'algorithms::logistic_regression' : 'classifier',
+}

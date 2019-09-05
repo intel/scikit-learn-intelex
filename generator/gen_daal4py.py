@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, wrap_algo
+from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, wrap_algo, sklearn
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 
@@ -847,7 +847,9 @@ class cython_interface(object):
         # First expand typedefs
         for ns in algos:
             self.expand_typedefs(ns)
+
         # Next, extract and prepare the data (input, parameters, results, template spec)
+        sklearn_cfg = {}
         for ns in algos:
             if not ignored(ns):
                 nn = ns.split('::')
@@ -862,11 +864,32 @@ class cython_interface(object):
                     func = '_'.join(nn)
                 algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func, no_dist, no_stream))
 
+                if ns not in ['algorithms::regression', 'algorithms::classifier'] and not any(x in ns for x in ['::training', '::prediction']):
+                    if ns in sklearn and isinstance(sklearn[ns], dict):
+                        sklearn_cfg[ns] = sklearnm[ns]
+                    elif (ns not in sklearn and 'regression' in ns) or (ns in sklearn and sklearn[ns] == 'regressor'):
+                        sklearn_cfg[ns] = {'algo':    func,
+                                           'mixin':   'RegrMixIn',
+                                           'fit':     ns+'::training::Batch',
+                                           'predict': ns+'::prediction::Batch'}
+                    elif (ns not in sklearn and 'classifi' in ns) or (ns in sklearn and sklearn[ns] == 'classifier'):
+                        sklearn_cfg[ns] = {'algo':    func,
+                                           'mixin':   'ClsfyMixIn',
+                                           'fit':     ns+'::training::Batch',
+                                           'predict': ns+'::prediction::Batch'}
+                    else:
+                        print('No sklearn estimator defined for', ns)
+
         self.prepare_model_hierachy(algoconfig)
 
         # and now we can finally generate the code
         wg = wrapper_gen(algoconfig, {cpp2hl(i): ifaces[i] for i in ifaces})
         cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end = '', '', '#define NO_IMPORT_ARRAY\n#include "daal4py_cpp.h"\n', '', '', ''
+
+        for ns in sklearn_cfg:
+            wg.gen_sklearn(ns, sklearn_cfg[ns])
+
+        exit(9)
 
         for ns in algos:
             if ns.startswith('algorithms::') and not ns.startswith('algorithms::neural_networks') and self.namespace_dict[ns].enums:

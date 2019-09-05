@@ -171,6 +171,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
             self.decl_cy       = '{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname) if name else ''
             self.decl_dflt_cpp = '{}{}{} {}{}'.format(const, typ, ref if ref != '' else ptr, d4pname, cppdefault) if name else ''
             self.decl_dflt_cy  = '{}{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname, pydefault) if name else ''
+            self.decl_dflt_py  = '{}{}'.format(d4pname, pydefault) if name else ''
             self.decl_cpp      = '{}{}{} {}'.format(const, typ_cyext, ref if ref != '' else ptr, d4pname) if name else ''
             self.decl_member   = '{}{} _{}'.format(typ_cyext, ptr, d4pname) if name else ''
             self.arg_member    = '_{}'.format(d4pname) if name else ''
