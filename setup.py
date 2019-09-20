@@ -139,11 +139,20 @@ def getpyexts():
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x] for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
 
-    exts = cythonize([Extension('_daal4py',
+    exts = cythonize([Extension('daal4py._daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')]
                                 + DIST_CPPS,
+                                depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
+                                include_dirs=include_dir_plat + [np.get_include()],
+                                extra_compile_args=eca,
+                                extra_link_args=ela,
+                                libraries=libraries_plat,
+                                library_dirs=[daal_lib_dir],
+                                language='c++'),
+                      Extension('daal4py.sklearn.d4p',
+                                [os.path.abspath('build/skl_estimators.pyx')],
                                 depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
@@ -174,7 +183,8 @@ def gen_pyx(odir):
     gtr_files = glob.glob(jp(os.path.abspath('generator'), '*')) + ['./setup.py']
     src_files = [os.path.abspath('build/daal4py_cpp.h'),
                  os.path.abspath('build/daal4py_cpp.cpp'),
-                 os.path.abspath('build/daal4py_cy.pyx')]
+                 os.path.abspath('build/daal4py_cy.pyx'),
+                 os.path.abspath('build/skl_estimators.pyx'),]
     if all(os.path.isfile(x) for x in src_files):
         src_files.sort(key=lambda x: os.path.getmtime(x))
         gtr_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)

@@ -1204,7 +1204,7 @@ class wrapper_gen(object):
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
         jparams['params_ds']  = jparams['params_req'] + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
-        jparams['params_all'] = self.get_all_params(cfg) + [cfg['distributed'], cfg['streaming']]
+        jparams['params_all'] = self.get_all_params(jparams) + [cfg['distributed'], cfg['streaming']]
         jparams['args_all']   = jparams['input_args'] + jparams['params_req'] + jparams['params_opt']
 
         for p in ['distributed', 'streaming']:
@@ -1282,26 +1282,31 @@ class wrapper_gen(object):
         jparams['duplicates'] = d_params
 
         t = jenv.from_string(sklearn_template)
-        code = t.render(**jparams)
-        print(code)
+        return t.render(**jparams)
 
 # template for sklearn estimators
 sklearn_template = '''
-class {{algo}}({{mixin}}):
-    def __init__({{params|fmt('{}', 'decl_dflt_py', sep=',\n')|indent(17)}}):
-        # duplicate params: {{duplicates|fmt('{}', 'name', sep=', ')}}
-        {{params|fmt('self.{}_ = {}', 'name', 'name', sep='\n')|indent(8)}}
-{% if fit %}
+{% macro gen_compute(name, cfg) %}
 
-    def fit(self, X, y):
-        self.fptype_ = 'double' # FIXME
-        self.fit_result = daal4py.{{fit[0]}}({{fit[1]|fmt('self.{}_', 'name', sep=',\n')|indent(35+fit[0]|length)}}).compute(X, y)
+    def {{name}}(self, X, y):
+        X = make2d(X)
+        self._fptype = getFPType(X)
+        _result = d4p.{{cfg[0]}}({{cfg[1]|fmt('self._{}', 'name', sep=',\n')|indent(23+(cfg[0]|length))}}).cfg(X, y)
+        # keep all attributes of DAAL result
+        for a in dir(_result):
+            if not a.startswith('_'):
+                setattr(self, a+'_', getattr(_result, a, None))
+{% endmacro %}
+class {{algo}}({{mixin}}):
+    def __init__(self,
+                 {{params|fmt('{}', 'decl_dflt_py', sep=',\n')|indent(17)}}):
+        # duplicate params: {{duplicates|fmt('{}', 'name', sep=', ')}}
+        {{params|fmt('self._{} = {}', 'name', 'name', sep='\n')|indent(8)}}
+{% if fit %}
+{{gen_compute('fit', fit)}}
 {% endif %}
 {% if predict %}
-
-    def predict(self, X, y):
-        self.fptype_ = 'double' # FIXME
-        self.predict_result = daal4py.{{predict[0]}}({{predict[1]|fmt('self.{}_', 'name', sep=',\n')|indent(39+predict[0]|length)}}).compute(X, y)
+{{gen_compute('predict', predict)}}
 {% endif %}
 
 '''
