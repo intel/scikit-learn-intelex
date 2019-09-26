@@ -86,7 +86,7 @@ class Base():
 
 
 gen_examples = [
-    ('adaboost_batch', None, None, (2020, 1)),
+    ('adaboost_batch', None, None, (2020, 0)),
     ('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
     ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
     ('bacon_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
@@ -198,6 +198,8 @@ class TestExCSRMatrix(Base, unittest.TestCase):
     def call(self, ex):
         # some algos do not support CSR matrices
         if  ex.__name__.startswith('sorting'):
+            self.skipTest("not supporting CSR")
+        if  ex.__name__.startswith('adaboost'):
             self.skipTest("not supporting CSR")
         method = 'singlePassCSR' if any(x in ex.__name__ for x in ['low_order_moms', 'covariance']) else 'fastCSR'
         # cannot use fastCSR ofr implicit als; bug in Intel(R) DAAL?

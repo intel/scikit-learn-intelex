@@ -41,7 +41,7 @@ else:
 req_version = defaultdict(lambda:(2019,0))
 req_version['decision_forest_classification_batch.py'] = (2019,1)
 req_version['decision_forest_regression_batch.py'] = (2019,1)
-req_version['adaboost_batch.py'] = (2020,1)
+req_version['adaboost_batch.py'] = (2020,0)
 req_version['brownboost_batch.py'] = (2020,1)
 req_version['logitboost_batch.py'] = (2020,1)
 req_version['stump_classification_batch.py'] = (2020,1)
