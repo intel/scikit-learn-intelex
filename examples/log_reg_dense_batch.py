@@ -52,7 +52,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
-                                                     resultsToCompute="computeClassesLabels|computeClassesProbabilities|computeClassesLogProbabilities")
+                                                     resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
     predict_result = predict_alg.compute(predict_data, train_result.model)
     # the prediction result provides prediction, probabilities and logProbabilities
     assert predict_result.probabilities.shape == (predict_data.shape[0], nClasses)
