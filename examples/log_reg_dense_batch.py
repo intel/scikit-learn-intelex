@@ -51,8 +51,15 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_data = readcsv(testfile, range(nFeatures))
 
     # set parameters and compute predictions
-    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
-                                                     resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
+    # previous version has different interface
+    from daal4py import __daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    if daal_version < (2020,0):
+        predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
+                                                         resultsToCompute="computeClassesLabels|computeClassesProbabilities|computeClassesLogProbabilities")
+    else:
+        predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
+                                                         resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
     predict_result = predict_alg.compute(predict_data, train_result.model)
     # the prediction result provides prediction, probabilities and logProbabilities
     assert predict_result.probabilities.shape == (predict_data.shape[0], nClasses)
