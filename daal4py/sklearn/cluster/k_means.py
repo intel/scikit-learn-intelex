@@ -63,6 +63,7 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
     def is_string(s, target_str):
         return isinstance(s, string_types) and s == target_str
 
+    deterministic = False
     if is_string(cluster_centers_0, 'k-means++'):
         _seed = random_state.randint(np.iinfo('i').max)
         daal_engine = daal4py.engines_mt19937(fptype=X_fptype, method='defaultDense', seed=_seed)
@@ -78,6 +79,7 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
         kmeans_init_res = kmeans_init.compute(X)
         centroids_ = kmeans_init_res.centroids
     elif hasattr(cluster_centers_0, '__array__'):
+        deterministic = True
         cc_arr = np.ascontiguousarray(cluster_centers_0, dtype=X.dtype)
         _validate_center_shape(X, nClusters, cc_arr)
         centroids_ = cc_arr
@@ -87,12 +89,13 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
         _validate_center_shape(X, nClusters, cc_arr)
         centroids_ = cc_arr
     elif is_string(cluster_centers_0, 'deterministic'):
+        deterministic = True
         kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype, method='defaultDense')
         kmeans_init_res = kmeans_init.compute(X)
         centroids_ = kmeans_init_res.centroids
     else:
         raise ValueError("Cluster centers should either be 'k-means++', 'random', 'deterministic' or an array")
-    return centroids_
+    return deterministic, centroids_
 
 
 def _daal4py_k_means_dense(X, nClusters, numIterations, tol, cluster_centers_0, n_init, random_state):
@@ -125,7 +128,7 @@ def _daal4py_k_means_dense(X, nClusters, numIterations, tol, cluster_centers_0, 
         # distanceType = 'euclidean')
 
     for k in range(n_init):
-        starting_centroids_ = _daal4py_compute_starting_centroids(
+        deterministic, starting_centroids_ = _daal4py_compute_starting_centroids(
             X, X_fptype, nClusters, cluster_centers_0, random_state)
 
         res = kmeans_algo.compute(X, starting_centroids_)
@@ -145,6 +148,8 @@ def _daal4py_k_means_dense(X, nClusters, numIterations, tol, cluster_centers_0, 
                     best_cluster_centers = best_cluster_centers.copy()
                 best_inertia = inertia
                 best_n_iter = int(res.nIterations[0,0])
+        if deterministic:
+            break
 
     return best_cluster_centers, best_labels, best_inertia, best_n_iter
 
