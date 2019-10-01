@@ -27,6 +27,7 @@ if sys.version_info[0] == 2:
 else:
     string_types = str
 from sklearn.utils.extmath import row_norms
+import warnings
 
 from sklearn.cluster import KMeans as KMeans_original
 
@@ -148,7 +149,11 @@ def _daal4py_k_means_dense(X, nClusters, numIterations, tol, cluster_centers_0, 
                     best_cluster_centers = best_cluster_centers.copy()
                 best_inertia = inertia
                 best_n_iter = int(res.nIterations[0,0])
-        if deterministic:
+        if deterministic and n_init != 1:
+            warnings.warn(
+                'Explicit initial center position passed: '
+                'performing only one init in k-means instead of n_init=%d'
+                % n_init, RuntimeWarning, stacklevel=2)
             break
 
     return best_cluster_centers, best_labels, best_inertia, best_n_iter
