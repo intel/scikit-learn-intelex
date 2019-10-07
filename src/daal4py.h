@@ -63,6 +63,12 @@ typedef std::string std_string;
 typedef std::unordered_map<std::string, int64_t> str2i_map_t;
 typedef std::unordered_map<int64_t, std::string> i2str_map_t;
 
+static const int DFLT_int    = std::numeric_limits<int>::max();
+static const int DFLT_sizet  = std::numeric_limits<size_t>::max();
+#ifndef _WIN32
+static const int DFLT_uint64 = std::numeric_limits<DAAL_UINT64>::max();
+#endif
+
 template< typename T >
 bool use_default(const daal::services::SharedPtr<T> * attr)
 {
@@ -88,18 +94,18 @@ inline bool use_default(const std::string & attr)
 
 inline bool use_default(const int & attr)
 {
-    return attr == -1;
+    return attr == DFLT_int;
 }
 
 inline bool use_default(const size_t & attr)
 {
-    return (long)attr == (long)-1;
+    return attr == DFLT_sizet;
 }
 
 #ifndef _WIN32
 inline bool use_default(const DAAL_UINT64 & attr)
 {
-    return (long)attr == (long)-1;
+    return attr == DFLT_uint64;
 }
 #endif
 

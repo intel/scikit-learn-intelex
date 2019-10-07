@@ -114,6 +114,8 @@ cdef class data_management_datacollection:
 cdef extern from "daal4py.h":
     cdef const double NaN64
     cdef const float  NaN32
+    cdef const int DFLT_int
+    cdef const size_t DFLT_sizet
 
     cdef cppclass data_or_file :
         data_or_file(PyObject *) except +
@@ -141,8 +143,11 @@ cdef extern from "daal4py.h":
 
     cdef T* _daal_clone[T](const T & o)
 
-NAN64 = NaN64
-NAN32 = NaN32
+
+#NAN64 = NaN64
+#NAN32 = NaN32
+#DLFT_INT = DFLT_int
+#DLFT_SIZET = DFLT_sizet
 
 
 cdef extern from "daal.h":
@@ -1286,27 +1291,30 @@ class wrapper_gen(object):
 
 # template for sklearn estimators
 sklearn_template = '''
-{% macro gen_compute(name, cfg) %}
+{% macro gen_compute(name, cfg, has_y=True, extra_arg='') %}
 
-    def {{name}}(self, X, y):
+    def {{name}}(self, X{{', y' if has_y else ''}}):
         X = make2d(X)
-        self._fptype = getFPType(X)
-        _result = d4p.{{cfg[0]}}({{cfg[1]|fmt('self._{}', 'name', sep=',\n')|indent(23+(cfg[0]|length))}}).cfg(X, y)
+{% if has_y %}
+        y = make2d(y)
+{% endif %}
+        self.fptype = getFPType(X)
+        _result = d4p.{{cfg[0]}}({{cfg[1]|fmt('self.{}', 'name', sep=',\n')|indent(23+(cfg[0]|length))}}).compute(X{{', y' if has_y else ''}}{{extra_arg}})
         # keep all attributes of DAAL result
         for a in dir(_result):
             if not a.startswith('_'):
                 setattr(self, a+'_', getattr(_result, a, None))
 {% endmacro %}
-class {{algo}}({{mixin}}):
+class {{algo}}(BaseEstimator, {{mixin}}):
     def __init__(self,
                  {{params|fmt('{}', 'decl_dflt_py', sep=',\n')|indent(17)}}):
         # duplicate params: {{duplicates|fmt('{}', 'name', sep=', ')}}
-        {{params|fmt('self._{} = {}', 'name', 'name', sep='\n')|indent(8)}}
+        {{params|fmt('self.{} = {}', 'name', 'name', sep='\n')|indent(8)}}
 {% if fit %}
 {{gen_compute('fit', fit)}}
 {% endif %}
 {% if predict %}
-{{gen_compute('predict', predict)}}
+{{gen_compute('predict', predict, False, ', self.model_')}}
 {% endif %}
 
 '''

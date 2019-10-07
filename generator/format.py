@@ -26,9 +26,8 @@ import re
 pydefaults = defaultdict(lambda: 'None')
 pydefaults.update({'double': 'NaN64',
                    'float': 'NaN32',
-                   'int': '-1',
-                   'long': '-1',
-                   'size_t': '-1',
+                   'int': 'DFLT_int',
+                   'size_t': 'DFLT_sizet',
                    'bool': 'False',
                    'std::string' : '',
                    #'std::string &' : '""',

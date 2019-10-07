@@ -257,7 +257,7 @@ static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
             // the given array is a structured numpy array.
             ptr = new NpyNumericTable<NpyStructHandler>(array);
         } else {
-            std::cerr << "Input array is neither well behaved and nor a structured array.\n";
+            std::cerr << "Input array is neither well behaved nor a structured array.\n";
         }
     } else {
         std::cerr << "Input array has wrong dimensionality (must be 2d).\n";

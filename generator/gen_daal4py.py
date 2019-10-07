@@ -867,12 +867,12 @@ class cython_interface(object):
                 if ns not in ['algorithms::regression', 'algorithms::classifier'] and not any(x in ns for x in ['::training', '::prediction']):
                     if ns in sklearn and isinstance(sklearn[ns], dict):
                         sklearn_cfg[ns] = sklearnm[ns]
-                    elif (ns not in sklearn and 'regression' in ns) or (ns in sklearn and sklearn[ns] == 'regressor'):
+                    elif (ns not in sklearn and 'regression' in ns) or (ns in sklearn and sklearn[ns] == 'classifier'):
                         sklearn_cfg[ns] = {'algo':    func,
                                            'mixin':   'ClassifierMixin',
                                            'fit':     ns+'::training::Batch',
                                            'predict': ns+'::prediction::Batch'}
-                    elif (ns not in sklearn and 'classifi' in ns) or (ns in sklearn and sklearn[ns] == 'classifier'):
+                    elif (ns not in sklearn and 'classifi' in ns) or (ns in sklearn and sklearn[ns] == 'regressor'):
                         sklearn_cfg[ns] = {'algo':    func,
                                            'mixin':   'RegressorMixin',
                                            'fit':     ns+'::training::Batch',
@@ -934,6 +934,10 @@ from sklearn.base import RegressorMixin, ClassifierMixin, BaseEstimator
 cdef extern from "daal4py.h":
     cdef const double NaN64
     cdef const float  NaN32
+    cdef const int DFLT_int
+    cdef const size_t DFLT_sizet
+
+import numpy as np
 
 '''
         for ns in sklearn_cfg:
