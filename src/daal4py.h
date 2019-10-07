@@ -157,16 +157,24 @@ struct IOManager
     }
 };
 
+// return DAAL NumericTablePtr* built from C array.
+extern "C" daal::data_management::NumericTablePtr * from_c_array(void * ptr, size_t ncols, size_t nrows, ssize_t layout);
+
 struct data_or_file
 {
     mutable daal::data_management::NumericTablePtr table;
     std::string                                    file;
-    template<typename T>
-    inline data_or_file(T * ptr, size_t ncols, size_t nrows, ssize_t layout)
+    // a generic constructor, accepting a void ptr, sizes and a layout descriptor
+    // used by HPAT to pass numpy arrays, file-names or pandas data-frames
+    inline data_or_file(void * ptr, size_t ncols, size_t nrows, ssize_t layout)
         : table(), file()
     {
-        if(layout > 0) throw std::invalid_argument("Supporting only homogeneous, contiguous arrays.");
-        table = daal::data_management::HomogenNumericTable<T>::create(ptr, ncols, nrows);
+        if(layout == 0) file = std::string(reinterpret_cast<char*>(ptr), ncols);
+        else {
+            auto tmp = from_c_array(ptr, ncols, nrows, layout);
+            table = *tmp;
+            delete tmp;
+        }
     }
     inline data_or_file()
         : table(), file() {}
