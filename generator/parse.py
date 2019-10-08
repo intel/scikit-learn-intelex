@@ -518,6 +518,8 @@ def parse_header(header, ignores):
         # first strip of eol comments if it is not the link
         if not re.search(r'https?://', l):
             l = l.split('//')[0]
+        # delete 'DAAL_DEPRECATED'
+        l = l.replace('DAAL_DEPRECATED ', '')
         # apply each parser, continue to next line if possible
         for p in parsers:
             if p.parse(l, ctxt):

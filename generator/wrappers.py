@@ -131,6 +131,7 @@ ignore = {
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
     'algorithms::lasso_regression::training': ['optionalArgument'], # internal stuff
     'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
+    'algorithms::multi_class_classifier': ['algorithms::multi_class_classifier::getTwoClassClassifierModels',] # unsupported return type ModelPtr*
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
