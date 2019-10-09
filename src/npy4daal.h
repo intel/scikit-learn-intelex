@@ -118,7 +118,7 @@ public:
         // iterate through all elements and init ddict feature accordingly
         for (Py_ssize_t i=0; i<N; i++) {
 #define SETFEATURE_(_T) _ddict->setFeature<_T>(i)
-            SET_NPY_FEATURE(descr->type, SETFEATURE_, return daal::data_management::NumericTableDictionaryPtr());
+            SET_NPY_FEATURE(descr->type, SETFEATURE_, throw std::invalid_argument("Found unsupported data type"));
 #undef SETFEATURE_
         }
 
