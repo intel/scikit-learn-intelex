@@ -123,6 +123,7 @@ class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
 
         # Fit the model
         train_algo = d4p.kdtree_knn_classification_training(fptype=fptype,
+                                                            nClasses=self.n_classes_,
                                                             engine=d4p.engines_mcg59(seed=self.seed_))
         train_result = train_algo.compute(X, y_)
 
