@@ -250,7 +250,11 @@ static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
     PyArrayObject * array = (PyArrayObject*)nda;
     if(array_numdims(array) == 2) {
         // the given numpy array is not well behaved C array but has right dimensionality
-        ptr = new NpyNumericTable<NpyNonContigHandler>(array);
+        try {
+            ptr = new NpyNumericTable<NpyNonContigHandler>(array);
+        } catch (...) {
+            ptr = NULL;
+        }
     } else if(array_numdims(nda) == 1) {
         PyArray_Descr * descr = PyArray_DESCR(array);
         if(descr->names) {
