@@ -1291,30 +1291,41 @@ class wrapper_gen(object):
 
 # template for sklearn estimators
 sklearn_template = '''
-{% macro gen_compute(name, cfg, has_y=True, extra_arg='') %}
 
-    def {{name}}(self, X{{', y' if has_y else ''}}):
-        X = make2d(X)
-{% if has_y %}
-        y = make2d(y)
-{% endif %}
-        self.fptype = getFPType(X)
-        _result = d4p.{{cfg[0]}}({{cfg[1]|fmt('self.{}', 'name', sep=',\n')|indent(23+(cfg[0]|length))}}).compute(X{{', y' if has_y else ''}}{{extra_arg}})
+class {{algo}}(BaseEstimator, {{mixin}}):
+    def __init__(self,
+                 {{params|fmt('{}', 'decl_dflt_skl', sep=',\n')|indent(17)}}):
+        # duplicate params: {{duplicates|fmt('{}', 'name', sep=', ')}}
+        {{params|fmt('self.{} = {}', 'sklname', 'name', sep='\n')|indent(8)}}
+{% if fit %}
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y, dtype=[np.float64, np.float32], y_numeric=True, multi_output=True) # FIXME csr
+        y = make2d(check_array(y, ensure_2d=False, dtype=X.dtype))
+        self._fptype = getFPType(X)
+        _algo = d4p.{{fit[0]}}({{fit[1]|fmt('self.{}', 'sklname', sep=',\n')|indent(21+(fit[0]|length))}})
+        try:
+            _result = _algo.compute(X, y)
+        except RuntimeError as exc:
+            raise ValueError from exc
         # keep all attributes of DAAL result
         for a in dir(_result):
             if not a.startswith('_'):
                 setattr(self, a+'_', getattr(_result, a, None))
-{% endmacro %}
-class {{algo}}(BaseEstimator, {{mixin}}):
-    def __init__(self,
-                 {{params|fmt('{}', 'decl_dflt_py', sep=',\n')|indent(17)}}):
-        # duplicate params: {{duplicates|fmt('{}', 'name', sep=', ')}}
-        {{params|fmt('self.{} = {}', 'name', 'name', sep='\n')|indent(8)}}
-{% if fit %}
-{{gen_compute('fit', fit)}}
+        return self
 {% endif %}
 {% if predict %}
-{{gen_compute('predict', predict, False, ', self.model_')}}
-{% endif %}
 
+    def predict(self, X):
+        if getattr(self, 'model_', None) == None:
+            raise ValueError('{{algo}}.predict was called but had not been fitted')
+        X = make2d(check_array(X, dtype=[np.float64, np.float32])) # FIXME accept_sparse='csr'
+        self._fptype = getFPType(X)
+        _algo = d4p.{{predict[0]}}({{predict[1]|fmt('self.{}', 'sklname', sep=',\n')|indent(21+(predict[0]|length))}})
+        try:
+            _result = _algo.compute(X, self.model_)
+        except RuntimeError as exc:
+            raise ValueError from exc
+        return _result.prediction if _result.prediction.shape[1] > 1 else np.reshape(_result.prediction, _result.prediction.shape[0])
+{% endif %}
 '''

@@ -514,3 +514,7 @@ hpat_types = {
 sklearn = {
     'algorithms::logistic_regression' : 'classifier',
 }
+
+skl_defaults = {
+    'nClasses': 2,
+}

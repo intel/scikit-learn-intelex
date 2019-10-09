@@ -20,6 +20,7 @@
 
 from collections import namedtuple, defaultdict
 import re
+from .wrappers import skl_defaults
 
 # default values of paramters/inputs are set by daal itself.
 # We indicate with these defaults that we want to use daal's defaults
@@ -154,9 +155,14 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                     pydefault = ''
                     cppdefault = ''
                     sphinx_default = ''
+                if pydefault == '' and d4pname in skl_defaults:
+                    skldefault = ' = {}'.format(skl_defaults[d4pname])
+                else:
+                    skldefault = pydefault
                 assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
 
             self.name          = d4pname
+            self.sklname       = d4pname if d4pname != 'fptype' else '_fptype'
             self.daalname      = name
             self.value         = value if name else ''
             self.typ_cpp       = typ if name else ''
@@ -170,7 +176,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
             self.decl_cy       = '{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname) if name else ''
             self.decl_dflt_cpp = '{}{}{} {}{}'.format(const, typ, ref if ref != '' else ptr, d4pname, cppdefault) if name else ''
             self.decl_dflt_cy  = '{}{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname, pydefault) if name else ''
-            self.decl_dflt_py  = '{}{}'.format(d4pname, pydefault) if name else ''
+            self.decl_dflt_skl = '{}{}'.format(d4pname, skldefault) if name else ''
             self.decl_cpp      = '{}{}{} {}'.format(const, typ_cyext, ref if ref != '' else ptr, d4pname) if name else ''
             self.decl_member   = '{}{} _{}'.format(typ_cyext, ptr, d4pname) if name else ''
             self.arg_member    = '_{}'.format(d4pname) if name else ''

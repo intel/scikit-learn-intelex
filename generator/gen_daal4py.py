@@ -867,14 +867,14 @@ class cython_interface(object):
                 if ns not in ['algorithms::regression', 'algorithms::classifier'] and not any(x in ns for x in ['::training', '::prediction']):
                     if ns in sklearn and isinstance(sklearn[ns], dict):
                         sklearn_cfg[ns] = sklearnm[ns]
-                    elif (ns not in sklearn and 'regression' in ns) or (ns in sklearn and sklearn[ns] == 'classifier'):
+                    elif (ns not in sklearn and 'regression' in ns) or (ns in sklearn and sklearn[ns] == 'regressor'):
                         sklearn_cfg[ns] = {'algo':    func,
-                                           'mixin':   'ClassifierMixin',
+                                           'mixin':   'MultiOutputMixin, RegressorMixin',
                                            'fit':     ns+'::training::Batch',
                                            'predict': ns+'::prediction::Batch'}
-                    elif (ns not in sklearn and 'classifi' in ns) or (ns in sklearn and sklearn[ns] == 'regressor'):
+                    elif (ns not in sklearn and 'classifi' in ns) or (ns in sklearn and sklearn[ns] == 'classifier'):
                         sklearn_cfg[ns] = {'algo':    func,
-                                           'mixin':   'RegressorMixin',
+                                           'mixin':   'MultiOutputMixin, ClassifierMixin',
                                            'fit':     ns+'::training::Batch',
                                            'predict': ns+'::prediction::Batch'}
                     else:
@@ -929,7 +929,8 @@ class cython_interface(object):
 
 import daal4py as d4p
 from daal4py.sklearn.utils import getFPType, make2d
-from sklearn.base import RegressorMixin, ClassifierMixin, BaseEstimator
+from sklearn.base import RegressorMixin, ClassifierMixin, BaseEstimator, MultiOutputMixin
+from sklearn.utils import check_array, check_X_y
 
 cdef extern from "daal4py.h":
     cdef const double NaN64
