@@ -151,7 +151,7 @@ def getpyexts():
                                 libraries=libraries_plat,
                                 library_dirs=[daal_lib_dir],
                                 language='c++'),
-                      Extension('daal4py.sklearn.d4p',
+                      Extension('daal4py.sklearn._d4p',
                                 [os.path.abspath('build/skl_estimators.pyx')],
                                 depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
                                 include_dirs=include_dir_plat + [np.get_include()],

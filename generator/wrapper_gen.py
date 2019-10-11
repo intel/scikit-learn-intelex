@@ -1290,23 +1290,38 @@ class wrapper_gen(object):
         return t.render(**jparams)
 
 # template for sklearn estimators
+# basically we create a constructor with only default args and fit/predict methods.
+# we use sklearn's validation functions to check input so we pass estimator checks.
+# we conditionally add code for classifiers (label endcoding)
 sklearn_template = '''
 
 class {{algo}}(BaseEstimator, {{mixin}}):
     def __init__(self,
                  {{params|fmt('{}', 'decl_dflt_skl', sep=',\n')|indent(17)}}):
         # duplicate params: {{duplicates|fmt('{}', 'name', sep=', ')}}
+        """
+    {{algo}}
+    {{params|fmt('{}', 'sphinx', sep='\n')|indent(4)}}
+        """
         {{params|fmt('self.{} = {}', 'sklname', 'name', sep='\n')|indent(8)}}
 {% if fit %}
 
     def fit(self, X, y):
-        X, y = check_X_y(X, y, dtype=[np.float64, np.float32], y_numeric=True, multi_output=True) # FIXME csr
+        X, y = check_X_y(X, y, dtype=[np.float64, np.float32], multi_output=True) # FIXME csr
+{% if 'ClassifierMixin' in mixin %}
+        check_classification_targets(y)
+        self._le = LabelEncoder()
+        y = self._le.fit_transform(y)
+        self.classes_ = self._le.classes_
+{% endif %}
         y = make2d(check_array(y, ensure_2d=False, dtype=X.dtype))
         self._fptype = getFPType(X)
         _algo = d4p.{{fit[0]}}({{fit[1]|fmt('self.{}', 'sklname', sep=',\n')|indent(21+(fit[0]|length))}})
         try:
             _result = _algo.compute(X, y)
         except RuntimeError as exc:
+            # DAAL reports wrong input arg as runtime error
+            # sklearn's checks expect ValueError, so we need to convert
             raise ValueError from exc
         # keep all attributes of DAAL result
         for a in dir(_result):
@@ -1325,7 +1340,16 @@ class {{algo}}(BaseEstimator, {{mixin}}):
         try:
             _result = _algo.compute(X, self.model_)
         except RuntimeError as exc:
+            # DAAL reports wrong input arg as runtime error
+            # sklearn's checks expect ValueError, so we need to convert
             raise ValueError from exc
-        return _result.prediction if _result.prediction.shape[1] > 1 else np.reshape(_result.prediction, _result.prediction.shape[0])
+        _prediction = np.reshape(_result.prediction, _result.prediction.shape[0]) if _result.prediction.shape[1] <= 1 else _result.prediction
+{% if 'ClassifierMixin' in mixin %}
+        _prediction = self._le.inverse_transform(_prediction.astype(np.int64, copy=False))
 {% endif %}
+        return _prediction
+{% endif %}
+
+__all__.append('{{algo}}')
+
 '''

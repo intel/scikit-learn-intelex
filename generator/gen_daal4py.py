@@ -864,21 +864,20 @@ class cython_interface(object):
                     func = '_'.join(nn)
                 algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func, no_dist, no_stream))
 
+                # here we prepare the skl estimator wrappers
+                # most stuff is copied verbatim, but we do some postprocessing
                 if ns not in ['algorithms::regression', 'algorithms::classifier'] and not any(x in ns for x in ['::training', '::prediction']):
-                    if ns in sklearn and isinstance(sklearn[ns], dict):
-                        sklearn_cfg[ns] = sklearnm[ns]
-                    elif (ns not in sklearn and 'regression' in ns) or (ns in sklearn and sklearn[ns] == 'regressor'):
-                        sklearn_cfg[ns] = {'algo':    func,
-                                           'mixin':   'MultiOutputMixin, RegressorMixin',
-                                           'fit':     ns+'::training::Batch',
-                                           'predict': ns+'::prediction::Batch'}
-                    elif (ns not in sklearn and 'classifi' in ns) or (ns in sklearn and sklearn[ns] == 'classifier'):
-                        sklearn_cfg[ns] = {'algo':    func,
-                                           'mixin':   'MultiOutputMixin, ClassifierMixin',
-                                           'fit':     ns+'::training::Batch',
-                                           'predict': ns+'::prediction::Batch'}
+
+                    if ns not in sklearn:
+                        print("Warning: No sklearn wrapper found for", ns)
                     else:
-                        print('No sklearn estimator defined for', ns)
+                        if sklearn[ns] == None:
+                            print("Warning: void sklearn wrapper for ", ns)
+                        else:
+                            sklearn_cfg[ns] = sklearn[ns].copy()
+                            if any(x in sklearn_cfg[ns]['mixin'] for x in ['Classifier', 'Regressor']):
+                                sklearn_cfg[ns]['fit']     = ns+'::training::Batch'
+                                sklearn_cfg[ns]['predict'] = ns+'::prediction::Batch'
 
         self.prepare_model_hierachy(algoconfig)
 
@@ -931,6 +930,8 @@ import daal4py as d4p
 from daal4py.sklearn.utils import getFPType, make2d
 from sklearn.base import RegressorMixin, ClassifierMixin, BaseEstimator, MultiOutputMixin
 from sklearn.utils import check_array, check_X_y
+from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.multiclass import check_classification_targets
 
 cdef extern from "daal4py.h":
     cdef const double NaN64
@@ -939,6 +940,8 @@ cdef extern from "daal4py.h":
     cdef const size_t DFLT_sizet
 
 import numpy as np
+
+__all__ = []
 
 '''
         for ns in sklearn_cfg:
