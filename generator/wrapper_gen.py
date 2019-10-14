@@ -1307,14 +1307,19 @@ class {{algo}}(BaseEstimator, {{mixin}}):
 {% if fit %}
 
     def fit(self, X, y):
-        X, y = check_X_y(X, y, dtype=[np.float64, np.float32], multi_output=True) # FIXME csr
 {% if 'ClassifierMixin' in mixin %}
+        X, y = check_X_y(X, y, dtype=[np.float64, np.float32], multi_output=True) # FIXME csr
         check_classification_targets(y)
         self._le = LabelEncoder()
         y = self._le.fit_transform(y)
         self.classes_ = self._le.classes_
-{% endif %}
         y = make2d(check_array(y, ensure_2d=False, dtype=X.dtype))
+{% else %}
+        X, y = check_X_y(X, y, dtype=[np.float64, np.float32], multi_output=True, y_numeric=True) # FIXME csr
+        y = make2d(y)
+{% endif %}
+        if X.shape[0] == 1:
+            raise ValueError('Refusing to fit data with one sample only.')
         self._fptype = getFPType(X)
         _algo = d4p.{{fit[0]}}({{fit[1]|fmt('self.{}', 'sklname', sep=',\n')|indent(21+(fit[0]|length))}})
         try:
