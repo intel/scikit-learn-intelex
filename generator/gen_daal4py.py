@@ -872,7 +872,7 @@ class cython_interface(object):
                         print("Warning: No sklearn wrapper found for", ns)
                     else:
                         if sklearn[ns] == None:
-                            print("Warning: void sklearn wrapper for ", ns)
+                            print("Warning: void sklearn wrapper for ", ns) # FIXME remove when done
                         else:
                             sklearn_cfg[ns] = sklearn[ns].copy()
                             if any(x in sklearn_cfg[ns]['mixin'] for x in ['Classifier', 'Regressor']):

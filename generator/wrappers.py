@@ -1,4 +1,3 @@
-
 #*******************************************************************************
 # Copyright 2014-2019 Intel Corporation
 #
@@ -509,8 +508,9 @@ hpat_types = {
     },
 }
 
-# algo/ns mapping to sklearn config (algo, mixin)
-# if needed, we can extend this for optional features used in wrapper_gen
+# algo/ns mapping to sklearn config {algo, mixin}
+# if needed, we can extend this for optional variables
+# which can then be directly used in wrapper_gen:sklearn_template
 sklearn = {
     'algorithms::association_rules': None,
     'algorithms::cholesky': None,
@@ -587,7 +587,10 @@ sklearn = {
     'algorithms::math::tanh': None,
     'algorithms::low_order_moments': None,
     'algorithms::multi_class_classifier': None,
-    'algorithms::multinomial_naive_bayes': None,
+    'algorithms::multinomial_naive_bayes': {
+        'algo':  'multinomial_naive_bayes',
+        'mixin': 'MultiOutputMixin, ClassifierMixin',
+    },
     'algorithms::normalization::minmax': None,
     'algorithms::normalization': None,
     'algorithms::normalization::zscore': None,
@@ -616,7 +619,10 @@ sklearn = {
     },
     'algorithms::sorting': None,
     'algorithms::svd': None,
-    'algorithms::svm': None,
+    'algorithms::svm': {
+        'algo':  'svm',
+        'mixin': 'MultiOutputMixin, ClassifierMixin',
+    },
 }
 
 # some DAAL algorithms have no default values for certain parameters
