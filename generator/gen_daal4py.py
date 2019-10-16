@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, wrap_algo
+from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, wrap_algo, sklearn
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 
@@ -847,7 +847,9 @@ class cython_interface(object):
         # First expand typedefs
         for ns in algos:
             self.expand_typedefs(ns)
+
         # Next, extract and prepare the data (input, parameters, results, template spec)
+        sklearn_cfg = {}
         for ns in algos:
             if not ignored(ns):
                 nn = ns.split('::')
@@ -861,6 +863,21 @@ class cython_interface(object):
                 else:
                     func = '_'.join(nn)
                 algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func, no_dist, no_stream))
+
+                # here we prepare the skl estimator wrappers
+                # most stuff is copied verbatim, but we do some postprocessing
+                if ns not in ['algorithms::regression', 'algorithms::classifier'] and not any(x in ns for x in ['::training', '::prediction']):
+
+                    if ns not in sklearn:
+                        print("Warning: No sklearn wrapper found for", ns)
+                    else:
+                        if sklearn[ns] == None:
+                            print("Warning: void sklearn wrapper for ", ns) # FIXME remove when done
+                        else:
+                            sklearn_cfg[ns] = sklearn[ns].copy()
+                            if any(x in sklearn_cfg[ns]['mixin'] for x in ['Classifier', 'Regressor']):
+                                sklearn_cfg[ns]['fit']     = ns+'::training::Batch'
+                                sklearn_cfg[ns]['predict'] = ns+'::prediction::Batch'
 
         self.prepare_model_hierachy(algoconfig)
 
@@ -906,8 +923,32 @@ class cython_interface(object):
         fts = wg.gen_footers(no_dist, no_stream, algos, version, [x for x in has_dist if has_dist[x]["pattern"] == "dist_custom"])
         pyx_end += fts[1]
 
+        skl_ests = '''# distutils: language = c++
+#cython: language_level=2
+
+import daal4py as d4p
+from daal4py.sklearn.utils import getFPType, make2d
+from sklearn.base import RegressorMixin, ClassifierMixin, BaseEstimator, MultiOutputMixin
+from sklearn.utils import check_array, check_X_y
+from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.multiclass import check_classification_targets
+
+cdef extern from "daal4py.h":
+    cdef const double NaN64
+    cdef const float  NaN32
+    cdef const int DFLT_int
+    cdef const size_t DFLT_sizet
+
+import numpy as np
+
+__all__ = []
+
+'''
+        for ns in sklearn_cfg:
+            skl_ests += wg.gen_sklearn(ns, sklearn_cfg[ns])
+
         # Finally combine the different sections and return the 3 strings
-        return(hds[0] + cpp_map + cpp_begin + fts[2] + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
+        return(hds[0] + cpp_map + cpp_begin + fts[2] + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end, skl_ests)
 
 
 ###############################################################################
@@ -925,7 +966,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     iface = cython_interface(ipath)
     iface.read()
     print('Generating sources...')
-    cpp_h, cpp_cpp, pyx_file = iface.hlapi(iface.version, no_dist, no_stream)
+    cpp_h, cpp_cpp, pyx_file, skl_ests = iface.hlapi(iface.version, no_dist, no_stream)
 
     # 'ridge_regression', parametertype is a template without any need
     with open(jp(outdir, 'daal4py_cpp.h'), 'w') as f:
@@ -940,3 +981,6 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
         f.write(pyx_file)
         f.write(pyx_gettree)
+
+    with open(jp(outdir, 'skl_estimators.pyx'), 'w') as f:
+        f.write(skl_ests)

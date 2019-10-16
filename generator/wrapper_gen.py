@@ -114,6 +114,8 @@ cdef class data_management_datacollection:
 cdef extern from "daal4py.h":
     cdef const double NaN64
     cdef const float  NaN32
+    cdef const int DFLT_int
+    cdef const size_t DFLT_sizet
 
     cdef cppclass data_or_file :
         data_or_file(PyObject *) except +
@@ -141,8 +143,11 @@ cdef extern from "daal4py.h":
 
     cdef T* _daal_clone[T](const T & o)
 
-NAN64 = NaN64
-NAN32 = NaN32
+
+#NAN64 = NaN64
+#NAN32 = NaN32
+#DLFT_INT = DFLT_int
+#DLFT_SIZET = DFLT_sizet
 
 
 cdef extern from "daal.h":
@@ -1167,6 +1172,12 @@ class wrapper_gen(object):
         for i in range(len(tmp)):
             print(i, tmp[i])
 
+
+    ##################################################################################
+    def get_all_params(self, jparams):
+        return jparams['params_req'] + (jparams['template_args'] if jparams['template_args'] else []) + jparams['params_opt']
+
+
     ##################################################################################
     def gen_wrapper(self, ns, algo):
         """
@@ -1197,8 +1208,8 @@ class wrapper_gen(object):
         jparams['add_setup']  = cfg['add_setup']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
-        jparams['params_ds'] = jparams['params_req'] + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
-        jparams['params_all'] = jparams['params_req'] + (jparams['template_args'] if jparams['template_args'] else []) + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
+        jparams['params_ds']  = jparams['params_req'] + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
+        jparams['params_all'] = self.get_all_params(jparams) + [cfg['distributed'], cfg['streaming']]
         jparams['args_all']   = jparams['input_args'] + jparams['params_req'] + jparams['params_opt']
 
         for p in ['distributed', 'streaming']:
@@ -1242,3 +1253,110 @@ class wrapper_gen(object):
             t = jenv.from_string(cpp_footer_template)
             cpp_footer = t.render(algos=algos, dist_custom_algos=dist_custom_algos)
             return ('', pyx_footer, cpp_footer)
+
+
+    ##################################################################################
+    def gen_sklearn(self, algo, sklcfg):
+        '''Generate sklearn estiamtor classes for given algo and config.'''
+        # We extract parameters for each method (fit/predict...) from the DAAL spec.
+        # We then aggreate these parameters to one set and remove duplicates.
+        # The aggregated list define the parameters to our sklearn class.
+        # For the code generator we define a dict of variables for our jinja template:
+        # * algo:  the name of the d4p algorithm (from sklcfg)
+        # * mixin: the mixing/parent class (from sklcfg)
+        # * params: list of aggregated params for our sklearn class
+        # * duplicates: list of parameters found in more than one method
+        # * fit: [optional] tuple (d4p-algo-name, list-of-parameters)
+        # * similar for predict/fit_predit/transform
+        all_params = []
+        d_params = []
+        jparams = sklcfg.copy() # we will overwrite the methods (fit, predict...) in the loop below
+
+        for method in ['fit', 'predict']:
+            if method in sklcfg:
+                m_cfg = self.algocfg[sklcfg[method]]
+                jps = m_cfg['params'].copy()
+                jps.update(m_cfg['params']['params_templ'])
+                m_params =  self.get_all_params(jps)
+                n_params = [x for x in m_params if x.name != 'fptype' and all(x.name != y.name for y in all_params)]
+                d_params += [x for x in m_params if x.name != 'fptype' and any(x.name == y.name for y in all_params)]
+                all_params += n_params
+                jparams[method] = (jps['algo'], m_params)
+
+        jparams['params']     = all_params
+        jparams['duplicates'] = d_params
+
+        t = jenv.from_string(sklearn_template)
+        return t.render(**jparams)
+
+# template for sklearn estimators
+# basically we create a constructor with only default args and fit/predict methods.
+# we use sklearn's validation functions to check input so we pass estimator checks.
+# we conditionally add code for classifiers (label endcoding)
+sklearn_template = '''
+
+class {{algo}}(BaseEstimator, {{mixin}}):
+    def __init__(self,
+                 {{params|fmt('{}', 'decl_dflt_skl', sep=',\n')|indent(17)}}):
+        # duplicate params: {{duplicates|fmt('{}', 'name', sep=', ')}}
+        """
+    {{algo}}
+    {{params|fmt('{}', 'sphinx', sep='\n')|indent(4)}}
+        """
+        {{params|fmt('self.{} = {}', 'sklname', 'name', sep='\n')|indent(8)}}
+{% if fit %}
+
+    def fit(self, X, y):
+{% if 'ClassifierMixin' in mixin %}
+        X, y = check_X_y(X, y, dtype=[np.float64, np.float32], multi_output=True) # FIXME csr
+        check_classification_targets(y)
+        self._le = LabelEncoder()
+        y = self._le.fit_transform(y)
+        self.classes_ = self._le.classes_
+        {{encode_labels}}
+        y = make2d(check_array(y, ensure_2d=False, dtype=X.dtype))
+{% else %}
+        X, y = check_X_y(X, y, dtype=[np.float64, np.float32], multi_output=True, y_numeric=True) # FIXME csr
+        y = make2d(y)
+{% endif %}
+        if X.shape[0] == 1:
+            raise ValueError('Refusing to fit data with one sample only.')
+        self._fptype = getFPType(X)
+        _algo = d4p.{{fit[0]}}({{fit[1]|fmt('self.{}', 'sklname', sep=',\n')|indent(21+(fit[0]|length))}})
+        try:
+            _result = _algo.compute(X, y)
+        except RuntimeError as exc:
+            # DAAL reports wrong input arg as runtime error
+            # sklearn's checks expect ValueError, so we need to convert
+            raise ValueError from exc
+        # keep all attributes of DAAL result
+        for a in dir(_result):
+            if not a.startswith('_'):
+                setattr(self, a+'_', getattr(_result, a, None))
+        return self
+{% endif %}
+{% if predict %}
+
+    def predict(self, X):
+        if getattr(self, 'model_', None) == None:
+            raise ValueError('{{algo}}.predict was called but had not been fitted')
+        X = make2d(check_array(X, dtype=[np.float64, np.float32])) # FIXME accept_sparse='csr'
+        self._fptype = getFPType(X)
+        _algo = d4p.{{predict[0]}}({{predict[1]|fmt('self.{}', 'sklname', sep=',\n')|indent(21+(predict[0]|length))}})
+        try:
+            _result = _algo.compute(X, self.model_)
+        except RuntimeError as exc:
+            # DAAL reports wrong input arg as runtime error
+            # sklearn's checks expect ValueError, so we need to convert
+            raise ValueError from exc
+        _prediction = np.reshape(_result.prediction, _result.prediction.shape[0]) if _result.prediction.shape[1] <= 1 else _result.prediction
+{% if 'ClassifierMixin' in mixin %}
+        {{decode_labels}}
+        _prediction = self._le.inverse_transform(_prediction.astype(np.int64, copy=False))
+{% endif %}
+        return _prediction
+{% endif %}
+
+__all__.append('{{algo}}')
+
+'''

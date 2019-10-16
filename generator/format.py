@@ -20,15 +20,15 @@
 
 from collections import namedtuple, defaultdict
 import re
+from .wrappers import skl_defaults
 
 # default values of paramters/inputs are set by daal itself.
 # We indicate with these defaults that we want to use daal's defaults
 pydefaults = defaultdict(lambda: 'None')
 pydefaults.update({'double': 'NaN64',
                    'float': 'NaN32',
-                   'int': '-1',
-                   'long': '-1',
-                   'size_t': '-1',
+                   'int': 'DFLT_int',
+                   'size_t': 'DFLT_sizet',
                    'bool': 'False',
                    'std::string' : '',
                    #'std::string &' : '""',
@@ -147,7 +147,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                     arg_c = 'data_or_file({0}_p, {0}_ncols, {0}_nrows, {0}_layout)'.format(d4pname)
                 # default values (see above pydefaults)
                 if dflt != None:
-                    pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1]
+                    pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1].replace('normEqDense', 'defaultDense')
                     sphinx_default = '"{}"'.format(pd) if typ == 'std::string' else '{}'.format(pd)
                     pydefault = ' = {}'.format(sphinx_default)
                     cppdefault = ' = {}'.format(cppdefaults[typ] if dflt == True else dflt) if dflt != None else ''
@@ -155,9 +155,14 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                     pydefault = ''
                     cppdefault = ''
                     sphinx_default = ''
+                if pydefault == '' and d4pname in skl_defaults:
+                    skldefault = ' = {}'.format(skl_defaults[d4pname])
+                else:
+                    skldefault = pydefault
                 assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl)
 
             self.name          = d4pname
+            self.sklname       = d4pname if d4pname != 'fptype' else '_fptype'
             self.daalname      = name
             self.value         = value if name else ''
             self.typ_cpp       = typ if name else ''
@@ -171,6 +176,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
             self.decl_cy       = '{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname) if name else ''
             self.decl_dflt_cpp = '{}{}{} {}{}'.format(const, typ, ref if ref != '' else ptr, d4pname, cppdefault) if name else ''
             self.decl_dflt_cy  = '{}{}{}'.format('' if any (x in typ_cy for x in notyp_cy) else typ_cy+' ', d4pname, pydefault) if name else ''
+            self.decl_dflt_skl = '{}{}'.format(d4pname, skldefault) if name else ''
             self.decl_cpp      = '{}{}{} {}'.format(const, typ_cyext, ref if ref != '' else ptr, d4pname) if name else ''
             self.decl_member   = '{}{} _{}'.format(typ_cyext, ptr, d4pname) if name else ''
             self.arg_member    = '_{}'.format(d4pname) if name else ''

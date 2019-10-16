@@ -1,4 +1,3 @@
-
 #*******************************************************************************
 # Copyright 2014-2019 Intel Corporation
 #
@@ -161,8 +160,8 @@ defaults = {
     'algorithms::gbt::regression::training': {'weights': True,},
     'algorithms::gbt::classification::training': {'weights': True,},
     'algorithms::logistic_regression::training': {'weights': True,},
-    'algorithms::decision_tree::classification::training': {'weights': True,},
-    'algorithms::decision_tree::regression::training': {'weights': True,},
+    'algorithms::decision_tree::classification::training': {'weights': True,},  # 'dataForPruning': True, 'labelsForPruning': True,},
+    'algorithms::decision_tree::regression::training': {'weights': True,},  # 'dataForPruning': True, 'dependentVariablesForPruning': True,},
     'algorithms::decision_forest::classification::training': {'weights': True,},
     'algorithms::linear_regression::training': {'weights': True,},
     'algorithms::ridge_regression::training': {'weights': True,},
@@ -507,4 +506,130 @@ hpat_types = {
         'assignments': 'itable_type',
         'nIterations': 'itable_type',
     },
+}
+
+# algo/ns mapping to sklearn config {algo, mixin}
+# if needed, we can extend this for optional variables
+# which can then be directly used in wrapper_gen:sklearn_template
+# like 'encode-labels', 'decode-labels'
+sklearn = {
+    'algorithms::association_rules': None,
+    'algorithms::cholesky': None,
+    'algorithms::covariance': None,
+    'algorithms::dbscan': None,
+    'algorithms::decision_forest::classification': {
+        'algo':  'decision_forest_classification',
+        'mixin': 'MultiOutputMixin, ClassifierMixin',
+    },
+    'algorithms::decision_forest': None,
+    'algorithms::decision_forest::regression': {
+        'algo':  'decision_forest_regression',
+        'mixin': 'MultiOutputMixin, RegressorMixin',
+    },
+    'algorithms::decision_tree::classification': {
+        'algo':  'decision_tree_classification',
+        'mixin': 'MultiOutputMixin, ClassifierMixin',
+    },
+    'algorithms::decision_tree': None,
+    'algorithms::decision_tree::regression': {
+        'algo':  'decision_tree_regression',
+        'mixin': 'MultiOutputMixin, RegressorMixin',
+    },
+    'algorithms::correlation_distance': None,
+    'algorithms::cosine_distance': None,
+    'algorithms::distributions': None,
+    'algorithms::distributions::bernoulli': None,
+    'algorithms::distributions::normal': None,
+    'algorithms::distributions::uniform': None,
+    'algorithms::em_gmm': None,
+    'algorithms::em_gmm::init': None,
+    'algorithms::engines': None,
+    'algorithms::engines::mcg59': None,
+    'algorithms::engines::mt19937': None,
+    'algorithms::engines::mt2203': None,
+    'algorithms::gbt::classification': {
+        'algo':  'gbt_classification',
+        'mixin': 'MultiOutputMixin, ClassifierMixin',
+    },
+    'algorithms::gbt': None,
+    'algorithms::gbt::regression': {
+        'algo':  'gbt_regression',
+        'mixin': 'MultiOutputMixin, RegressorMixin',
+    },
+    'algorithms::implicit_als': None,
+    'algorithms::kdtree_knn_classification': {
+        'algo':  'kdtree_knn_classification',
+        'mixin': 'MultiOutputMixin, ClassifierMixin',
+    },
+    'algorithms::kernel_function': None,
+    'algorithms::kernel_function::linear': None,
+    'algorithms::kernel_function::rbf': None,
+    'algorithms::kmeans': None,
+    'algorithms::kmeans::init': None,
+    'algorithms::lasso_regression': {
+        'algo':  'lasso_regression',
+        'mixin': 'MultiOutputMixin, RegressorMixin',
+    },
+    'algorithms::linear_model': None,
+    'algorithms::linear_regression': {
+        'algo':  'linear_regression',
+        'mixin': 'MultiOutputMixin, RegressorMixin',
+    },
+    'algorithms::logistic_regression': {
+        'algo':  'logistic_regression',
+        'mixin': 'MultiOutputMixin, ClassifierMixin',
+    },
+    'algorithms::math::abs': None,
+    'algorithms::math': None,
+    'algorithms::math::logistic': None,
+    'algorithms::math::relu': None,
+    'algorithms::math::smoothrelu': None,
+    'algorithms::math::softmax': None,
+    'algorithms::math::tanh': None,
+    'algorithms::low_order_moments': None,
+    'algorithms::multi_class_classifier': None,
+    'algorithms::multinomial_naive_bayes': {
+        'algo':  'multinomial_naive_bayes',
+        'mixin': 'MultiOutputMixin, ClassifierMixin',
+    },
+    'algorithms::normalization::minmax': None,
+    'algorithms::normalization': None,
+    'algorithms::normalization::zscore': None,
+    'algorithms::optimization_solver': None,
+    'algorithms::optimization_solver::adagrad': None,
+    'algorithms::optimization_solver::coordinate_descent': None,
+    'algorithms::optimization_solver::lbfgs': None,
+    'algorithms::optimization_solver::cross_entropy_loss': None,
+    'algorithms::optimization_solver::logistic_loss': None,
+    'algorithms::optimization_solver::mse': None,
+    'algorithms::optimization_solver::precomputed': None,
+    'algorithms::optimization_solver::sum_of_functions': None,
+    'algorithms::optimization_solver::saga': None,
+    'algorithms::optimization_solver::sgd': None,
+    'algorithms::bacon_outlier_detection': None,
+    'algorithms::multivariate_outlier_detection': None,
+    'algorithms::univariate_outlier_detection': None,
+    'algorithms::pca': None,
+    'algorithms::pca::transform': None,
+    'algorithms::pivoted_qr': None,
+    'algorithms::qr': None,
+    'algorithms::quantiles': None,
+    'algorithms::ridge_regression': {
+        'algo':  'ridge_regression',
+        'mixin': 'MultiOutputMixin, RegressorMixin',
+    },
+    'algorithms::sorting': None,
+    'algorithms::svd': None,
+    'algorithms::svm': {
+        'algo':  'svm',
+        'mixin': 'MultiOutputMixin, ClassifierMixin',
+        'encode_labels': 'if len(self.classes_) == 2:\n            y[y == 0] = -1',
+        'decode_labels': 'if len(self.classes_) == 2:\n            np.greater(_prediction, 0, out=_prediction)',
+    },
+}
+
+# some DAAL algorithms have no default values for certain parameters
+# SKL checks require default values
+skl_defaults = {
+    'nClasses': 2,
 }
