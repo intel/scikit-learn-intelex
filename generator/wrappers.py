@@ -160,8 +160,8 @@ defaults = {
     'algorithms::gbt::regression::training': {'weights': True,},
     'algorithms::gbt::classification::training': {'weights': True,},
     'algorithms::logistic_regression::training': {'weights': True,},
-    'algorithms::decision_tree::classification::training': {'weights': True,},
-    'algorithms::decision_tree::regression::training': {'weights': True,},
+    'algorithms::decision_tree::classification::training': {'weights': True,},  # 'dataForPruning': True, 'labelsForPruning': True,},
+    'algorithms::decision_tree::regression::training': {'weights': True,},  # 'dataForPruning': True, 'dependentVariablesForPruning': True,},
     'algorithms::decision_forest::classification::training': {'weights': True,},
     'algorithms::linear_regression::training': {'weights': True,},
     'algorithms::ridge_regression::training': {'weights': True,},
@@ -511,6 +511,7 @@ hpat_types = {
 # algo/ns mapping to sklearn config {algo, mixin}
 # if needed, we can extend this for optional variables
 # which can then be directly used in wrapper_gen:sklearn_template
+# like 'encode-labels', 'decode-labels'
 sklearn = {
     'algorithms::association_rules': None,
     'algorithms::cholesky': None,
@@ -622,6 +623,8 @@ sklearn = {
     'algorithms::svm': {
         'algo':  'svm',
         'mixin': 'MultiOutputMixin, ClassifierMixin',
+        'encode_labels': 'if len(self.classes_) == 2:\n            y[y == 0] = -1',
+        'decode_labels': 'if len(self.classes_) == 2:\n            np.greater(_prediction, 0, out=_prediction)',
     },
 }
 

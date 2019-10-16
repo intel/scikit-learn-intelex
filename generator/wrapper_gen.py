@@ -1313,6 +1313,7 @@ class {{algo}}(BaseEstimator, {{mixin}}):
         self._le = LabelEncoder()
         y = self._le.fit_transform(y)
         self.classes_ = self._le.classes_
+        {{encode_labels}}
         y = make2d(check_array(y, ensure_2d=False, dtype=X.dtype))
 {% else %}
         X, y = check_X_y(X, y, dtype=[np.float64, np.float32], multi_output=True, y_numeric=True) # FIXME csr
@@ -1350,6 +1351,7 @@ class {{algo}}(BaseEstimator, {{mixin}}):
             raise ValueError from exc
         _prediction = np.reshape(_result.prediction, _result.prediction.shape[0]) if _result.prediction.shape[1] <= 1 else _result.prediction
 {% if 'ClassifierMixin' in mixin %}
+        {{decode_labels}}
         _prediction = self._le.inverse_transform(_prediction.astype(np.int64, copy=False))
 {% endif %}
         return _prediction
