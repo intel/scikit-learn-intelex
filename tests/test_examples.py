@@ -86,11 +86,11 @@ class Base():
 
 
 gen_examples = [
-    ('adaboost_batch', None, None, (2020, 1)),
+    ('adaboost_batch', None, None, (2020, 0)),
     ('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
     ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
     ('bacon_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
-    ('brownboost_batch', None, None, (2020, 1)),
+    ('brownboost_batch', None, None, (2020, 0)),
     ('correlation_distance_batch', 'correlation_distance_batch.csv', lambda r: [[np.amin(r.correlationDistance)],
                                                                                 [np.amax(r.correlationDistance)],
                                                                                 [np.mean(r.correlationDistance)],
@@ -122,7 +122,7 @@ gen_examples = [
     ('linear_regression_streaming', 'linear_regression_batch.csv', lambda r: r[1].prediction),
     ('log_reg_binary_dense_batch', 'log_reg_binary_dense_batch.csv', lambda r: r[1].prediction),
     ('log_reg_dense_batch',),
-    ('logitboost_batch', None, None, (2020, 1)),
+    ('logitboost_batch', None, None, (2020, 0)),
     ('low_order_moms_dense_batch', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
                                                                                           r.maximum,
                                                                                           r.sum,
@@ -164,8 +164,8 @@ gen_examples = [
     ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
     ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),
     ('sorting_batch',),
-    ('stump_classification_batch', None, None, (2020, 1)),
-    ('stump_regression_batch', None, None, (2020, 1)),
+    ('stump_classification_batch', None, None, (2020, 0)),
+    ('stump_regression_batch', None, None, (2020, 0)),
     ('svm_multiclass_batch', 'svm_multiclass_batch.csv', lambda r: r[0].prediction),
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
     ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2019, 5)),
@@ -198,6 +198,8 @@ class TestExCSRMatrix(Base, unittest.TestCase):
     def call(self, ex):
         # some algos do not support CSR matrices
         if  ex.__name__.startswith('sorting'):
+            self.skipTest("not supporting CSR")
+        if  any (ex.__name__.startswith(x) for x in ['adaboost', 'brownboost', 'stump_classification']):
             self.skipTest("not supporting CSR")
         method = 'singlePassCSR' if any(x in ex.__name__ for x in ['low_order_moms', 'covariance']) else 'fastCSR'
         # cannot use fastCSR ofr implicit als; bug in Intel(R) DAAL?

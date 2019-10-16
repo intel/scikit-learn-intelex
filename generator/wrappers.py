@@ -20,9 +20,8 @@ from collections import defaultdict, OrderedDict, namedtuple
 # given a C++ namespace and a DAAL version, return if namespace/algo should be
 # wrapped in daal4py.
 def wrap_algo(algo, ver):
-    #return True if 'kmeans' in algo and not 'interface' in algo else False
     # Ignore some algos if using older DAAL
-    if ver < (2020, 1) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'logitboost',]):
+    if ver < (2020, 0) and any(x in algo for x in ['adaboost', 'stump', 'brownboost', 'logitboost',]):
         return False
     # ignore deprecated version of stump
     if 'stump' in algo and not any(x in algo for x in ['stump::regression', 'stump::classification']):
@@ -73,6 +72,8 @@ required = {
     'algorithms::optimization_solver::lbfgs': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
     'algorithms::optimization_solver::adagrad': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
     'algorithms::dbscan': [('epsilon', 'fptype'), ('minObservations', 'size_t')],
+    'algorithms::adaboost::prediction': [('nClasses', 'size_t')],
+    'algorithms::adaboost::training': [('nClasses', 'size_t')],
 }
 
 # Some algorithms have no public constructors and need to be instantiated with 'create'
@@ -100,13 +101,15 @@ add_setup = {
 ignore = {
     'algorithms::kmeans::init': ['firstIteration', 'outputForStep5Required',], # internal for distributed
     'algorithms::kmeans::init::interface1': ['nRowsTotal', 'offset', 'seed',], # internal for distributed, deprecated
-    'algorithms::gbt::regression::training': ['dependentVariables'], # dependentVariables from parent class is not used
+    'algorithms::gbt::regression::training': ['dependentVariables', 'weights'], # dependentVariables, weights from parent class is not used
     'algorithms::decision_forest::training': ['seed',], # deprecated
     'algorithms::decision_forest::classification::training': ['updatedEngine',], # output
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', # InputId from parent class is not used
                                                           'updatedEngine',], # output
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
+    'algorithms::linear_regression::training': ['weights',], # weights from parent class is not used
     'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
+    'algorithms::ridge_regression::training': ['weights',], # weights from parent class is not used
     'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
                                              'pastUpdateVector', 'pastWorkValue', 'seed',], # internal stuff, deprecated
     'algorithms::optimization_solver::lbfgs': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
@@ -126,6 +129,7 @@ ignore = {
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
     'algorithms::lasso_regression::training': ['optionalArgument'], # internal stuff
     'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
+    'algorithms::multi_class_classifier': ['algorithms::multi_class_classifier::getTwoClassClassifierModels',] # unsupported return type ModelPtr*
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms

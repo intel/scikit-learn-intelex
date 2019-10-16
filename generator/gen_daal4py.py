@@ -112,7 +112,7 @@ class cython_interface(object):
                'serializeImpl', 'deserializeImpl', 'serialImpl',
                'getEpsilonVal', 'getMinVal', 'getMaxVal', 'getPMMLNumType', 'getInternalNumType', 'getIndexNumType',
                'allocateNumericTableImpl', 'allocateImpl', 'allocate', 'initialize',
-               'setPartialResultStorage', 'addPartialResultStorage',]
+               'setPartialResultStorage', 'addPartialResultStorage']
 
     # files we ignore/skip
     ignore_files = ['daal_shared_ptr.h', 'daal.h', 'daal_win.h', 'algorithm_base_mode_batch.h',
