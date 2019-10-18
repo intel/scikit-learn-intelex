@@ -40,11 +40,20 @@ def main(readcsv=read_csv, method='defaultDense'):
     testfile = "./data/batch/df_classification_test.csv"
 
     # Configure a training object (5 classes)
-    train_algo = d4p.gbt_classification_training(nClasses=nClasses,
-                                                 maxIterations=maxIterations,
-                                                 minObservationsInLeafNode=minObservationsInLeafNode,
-                                                 featuresPerNode=nFeatures,
-                                                 varImportance='weight|totalCover|cover|totalGain|gain')
+    # previous version has different interface
+    from daal4py import __daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    if daal_version < (2020,0):
+        train_algo = d4p.gbt_classification_training(nClasses=nClasses,
+                                                     maxIterations=maxIterations,
+                                                     minObservationsInLeafNode=minObservationsInLeafNode,
+                                                     featuresPerNode=nFeatures)
+    else:
+        train_algo = d4p.gbt_classification_training(nClasses=nClasses,
+                                                     maxIterations=maxIterations,
+                                                     minObservationsInLeafNode=minObservationsInLeafNode,
+                                                     featuresPerNode=nFeatures,
+                                                     varImportance='weight|totalCover|cover|totalGain|gain')
 
     # Read data. Let's use 3 features per observation
     data   = readcsv(infile, range(3), t=np.float32)
@@ -52,8 +61,12 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
-    predict_algo = d4p.gbt_classification_prediction(nClasses=nClasses,
-                                                     resultsToEvaluate="computeClassLabels|computeClassProbabilities")
+    # previous version has different interface
+    if daal_version < (2020,0):
+        predict_algo = d4p.gbt_classification_prediction(nClasses=nClasses)
+    else:
+        predict_algo = d4p.gbt_classification_prediction(nClasses=nClasses,
+                                                         resultsToEvaluate="computeClassLabels|computeClassProbabilities")
     # read test data (with same #features)
     pdata = readcsv(testfile, range(3), t=np.float32)
     # now predict using the model from the training above
