@@ -83,10 +83,14 @@ if __name__ == "__main__":
     (train_result, predict_result, plabels) = main()
     print("\nGradient boosted trees prediction results (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
-    print("\nGradient boosted trees prediction probabilities (first 10 rows):\n", predict_result.probabilities[0:10])
-    print("\nvariableImportanceByWeight:\n", train_result.variableImportanceByWeight)
-    print("\nvariableImportanceByTotalCover:\n", train_result.variableImportanceByTotalCover)
-    print("\nvariableImportanceByCover:\n", train_result.variableImportanceByCover)
-    print("\nvariableImportanceByTotalGain:\n", train_result.variableImportanceByTotalGain)
-    print("\nvariableImportanceByGain:\n", train_result.variableImportanceByGain)
+    # these results are available only in new version
+    from daal4py import __daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    if daal_version >= (2020,0):
+        print("\nGradient boosted trees prediction probabilities (first 10 rows):\n", predict_result.probabilities[0:10])
+        print("\nvariableImportanceByWeight:\n", train_result.variableImportanceByWeight)
+        print("\nvariableImportanceByTotalCover:\n", train_result.variableImportanceByTotalCover)
+        print("\nvariableImportanceByCover:\n", train_result.variableImportanceByCover)
+        print("\nvariableImportanceByTotalGain:\n", train_result.variableImportanceByTotalGain)
+        print("\nvariableImportanceByGain:\n", train_result.variableImportanceByGain)
     print('All looks good!')
