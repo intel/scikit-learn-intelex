@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, wrap_algo
+from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, enum_params, wrap_algo
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 
@@ -265,11 +265,13 @@ class cython_interface(object):
 
 
 ###############################################################################
-    def to_lltype(self, t):
+    def to_lltype(self, p, t):
         """
         return low level (C++ type). Usually the same as input.
          Only very specific cases need a conversion.
         """
+        if p in enum_params:
+            return enum_params[p]
         if t in ['DAAL_UINT64']:
             return 'ResultToComputeId'
         return t
@@ -285,9 +287,6 @@ class cython_interface(object):
             '?' means we do not know what 't' is
         For classes, we also add lookups in namespaces that DAAL C++ API finds through "using".
         """
-        if t in ['DAAL_UINT64']:
-            ### FIXME
-            t = 'ResultToComputeId'
         tns, tname = splitns(t)
         if t in ['double', 'float', 'int', 'size_t',]:
             return (t, 'stdtype', '')
@@ -681,10 +680,10 @@ class cython_interface(object):
             for p in all_params:
                 pns, tmp = splitns(p)
                 if not tmp.startswith('_') and not ignored(pns, tmp):
-                    hlt = self.to_hltype(pns, all_params[p][0])
+                    llt = self.to_lltype(p, all_params[p][0])
+                    hlt = self.to_hltype(pns, llt)
                     if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                         (hlt, hlt_type, hlt_ns) = hlt
-                        llt = self.to_lltype(all_params[p][0])
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]

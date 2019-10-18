@@ -40,10 +40,20 @@ def main(readcsv=read_csv, method='defaultDense'):
     testfile = "./data/batch/df_classification_test.csv"
 
     # Configure a training object (5 classes)
-    train_algo = d4p.gbt_classification_training(nClasses=nClasses,
-                                                 maxIterations=maxIterations,
-                                                 minObservationsInLeafNode=minObservationsInLeafNode,
-                                                 featuresPerNode=nFeatures)
+    # previous version has different interface
+    from daal4py import __daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    if daal_version < (2020,0):
+        train_algo = d4p.gbt_classification_training(nClasses=nClasses,
+                                                     maxIterations=maxIterations,
+                                                     minObservationsInLeafNode=minObservationsInLeafNode,
+                                                     featuresPerNode=nFeatures)
+    else:
+        train_algo = d4p.gbt_classification_training(nClasses=nClasses,
+                                                     maxIterations=maxIterations,
+                                                     minObservationsInLeafNode=minObservationsInLeafNode,
+                                                     featuresPerNode=nFeatures,
+                                                     varImportance='weight|totalCover|cover|totalGain|gain')
 
     # Read data. Let's use 3 features per observation
     data   = readcsv(infile, range(3), t=np.float32)
@@ -51,7 +61,12 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
-    predict_algo = d4p.gbt_classification_prediction(5)
+    # previous version has different interface
+    if daal_version < (2020,0):
+        predict_algo = d4p.gbt_classification_prediction(nClasses=nClasses)
+    else:
+        predict_algo = d4p.gbt_classification_prediction(nClasses=nClasses,
+                                                         resultsToEvaluate="computeClassLabels|computeClassProbabilities")
     # read test data (with same #features)
     pdata = readcsv(testfile, range(3), t=np.float32)
     # now predict using the model from the training above
@@ -68,4 +83,14 @@ if __name__ == "__main__":
     (train_result, predict_result, plabels) = main()
     print("\nGradient boosted trees prediction results (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
+    # these results are available only in new version
+    from daal4py import __daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    if daal_version >= (2020,0):
+        print("\nGradient boosted trees prediction probabilities (first 10 rows):\n", predict_result.probabilities[0:10])
+        print("\nvariableImportanceByWeight:\n", train_result.variableImportanceByWeight)
+        print("\nvariableImportanceByTotalCover:\n", train_result.variableImportanceByTotalCover)
+        print("\nvariableImportanceByCover:\n", train_result.variableImportanceByCover)
+        print("\nvariableImportanceByTotalGain:\n", train_result.variableImportanceByTotalGain)
+        print("\nvariableImportanceByGain:\n", train_result.variableImportanceByGain)
     print('All looks good!')

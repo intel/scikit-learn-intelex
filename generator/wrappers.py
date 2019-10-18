@@ -182,6 +182,16 @@ enum_maps = {
     'algorithms::pca::ResultToComputeId' : 'result_dataForTransform',
 }
 
+# Enums are used as a values to define bit-mask in Parameter
+# Parameter itself defined as DAAL_UINT64, we can't determine possible values
+# this dict shows what Enum contain a values for Parameter
+# if such parameter is not in this dict then we think that it is 'ResultToComputeId'
+# Parameter->Enum of values
+enum_params = {
+    'algorithms::gbt::classification::training::varImportance': 'algorithms::gbt::training::VariableImportanceModes',
+    'algorithms::gbt::regression::training::varImportance': 'algorithms::gbt::training::VariableImportanceModes',
+}
+
 # The distributed algorithm configuration parameters
 # Note that all have defaults and so are optional.
 # In particular note that the name of a single input argument defaults to data.
