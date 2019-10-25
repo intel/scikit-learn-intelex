@@ -15,14 +15,14 @@
  *******************************************************************************/
 
 #include "mpi/mpi_transceiver.h"
-#include <tbb/mutex.h>
+#include <mutex>
 #include <Python.h>
 #include <cstdlib>
 
 // shared pointer, will GC transceiver when shutting down
 static std::shared_ptr<transceiver> s_trsc;
 
-static tbb::mutex s_mtx;
+static std::mutex s_mtx;
 
 // We thraed-protect a static variable, which is our transceiver object.
 // If unset, we get the mutex and initialize.
@@ -35,7 +35,7 @@ transceiver * get_transceiver()
 {
 
     if(!s_trsc) {
-        tbb::mutex::scoped_lock lock(s_mtx);
+        std::lock_guard<std::mutex> lock(s_mtx);
         if(!s_trsc) {
             auto gilstate = PyGILState_Ensure();
 
@@ -62,7 +62,7 @@ transceiver * get_transceiver()
 void del_transceiver()
 {
     if(s_trsc) {
-        tbb::mutex::scoped_lock lock(s_mtx);
+        std::lock_guard<std::mutex> lock(s_mtx);
         if(s_trsc) {
             auto gilstate = PyGILState_Ensure();
             s_trsc.reset();
