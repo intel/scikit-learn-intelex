@@ -7,7 +7,6 @@ package:
 
 source:
     path: ..
-    #git_url: https://github.com/IntelPython/daal4py.git
 
 build:
     number: {{buildnumber}}
@@ -18,7 +17,6 @@ requirements:
         - python
         - setuptools
         - numpy >=1.15
-        - tbb-devel
         - daal-devel >=2019.0
         - cython
         - jinja2
@@ -26,7 +24,6 @@ requirements:
         - impi-devel             # [win]
     run:
         - python
-        - tbb
         - daal >=2019.0
         - {{ pin_compatible('numpy') }}
 
