@@ -153,16 +153,20 @@ class transceiver_impl : public transceiver_iface
 public:
     transceiver_impl()
         : m_me(-1),
-          m_nMembers(0)
+	  m_nMembers(0),
+	  m_initialized(false)
     {}
 
     // implementations/derived classes must call this in their init()
     virtual void init()
     {
-        m_me = me();
-        m_nMembers = nMembers();
+	if (!m_initialized) {
+	    m_me = me();
+	    m_nMembers = nMembers();
+	    m_initialized = true;
+	}
     }
-
+    
     virtual void * gather(const void * ptr, size_t N, size_t root, const size_t * sizes, bool varying)
     {
         throw std::logic_error("transceiver_base::gather not yet implemented");
@@ -183,6 +187,7 @@ public:
         throw std::logic_error("transceiver_base::reduce_exscan not yet implemented");
     }
 protected:
+    bool m_initialized;
     size_t m_me;        // result of me()
     size_t m_nMembers;  // result of nMembers()
 };
