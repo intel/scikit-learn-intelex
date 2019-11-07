@@ -426,7 +426,7 @@ def fit(self, X, y, sample_weight=None):
         # see comment on the other call to np.iinfo in this file
         seed = rnd.randint(np.iinfo('i').max)
 
-        if ( not sparse and not self.probability and getattr(self, 'break_ties', False) and
+        if ( not sparse and not self.probability and not getattr(self, 'break_ties', False) and
              sample_weight.size == 0 and self.class_weight is None and kernel in ['linear', 'rbf']):
 
             self._daal_fit = True
