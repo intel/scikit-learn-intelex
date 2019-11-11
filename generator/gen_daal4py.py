@@ -115,7 +115,7 @@ class cython_interface(object):
                'setPartialResultStorage', 'addPartialResultStorage']
 
     # files we ignore/skip
-    ignore_files = ['daal_shared_ptr.h', 'daal.h', 'daal_win.h', 'algorithm_base_mode_batch.h',
+    ignore_files = ['daal_shared_ptr.h', 'daal.h', 'daal_sycl.h', 'daal_win.h', 'algorithm_base_mode_batch.h',
                     'algorithm_base.h', 'algorithm.h', 'ridge_regression_types.h', 'kdtree_knn_classification_types.h',
                     'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h',
                     'multi_class_classifier_types.h']
@@ -939,3 +939,4 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
         f.write(pyx_file)
         f.write(pyx_gettree)
+
