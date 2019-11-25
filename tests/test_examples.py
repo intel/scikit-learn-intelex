@@ -199,6 +199,9 @@ class TestExCSRMatrix(Base, unittest.TestCase):
         # cannot use fastCSR ofr implicit als; bug in Intel(R) DAAL?
         if 'implicit_als' in ex.__name__:
             method = 'defaultDense'
+        # kmeans have no special method for CSR
+        if 'kmeans' in ex.__name__:
+            method = 'randomDense'
         if hasattr(ex, 'dflt_method'):
             low_order_moms
             method = ex.dflt_method.replace('defaultDense', 'fastCSR').replace('Dense', 'CSR')

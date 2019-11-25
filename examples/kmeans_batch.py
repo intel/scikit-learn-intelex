@@ -20,6 +20,7 @@
 
 import daal4py as d4p
 import numpy as np
+from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -29,37 +30,79 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
-from daal4py.oneapi import sycl_context, sycl_buffer
-def main(readcsv=read_csv, method='defaultDense'):
+
+# Commone code for both CPU and GPU computations
+def compute(data, nClusters, maxIter, method):
+    # configure kmeans init object
+    initrain_algo = d4p.kmeans_init(nClusters, method=method)
+    # compute initial centroids
+    initrain_result = initrain_algo.compute(data)
+
+    # configure kmeans main object: we also request the cluster assignments
+    algo = d4p.kmeans(nClusters, maxIter, assignFlag=True)
+    # compute the clusters/centroids
+    return algo.compute(data, initrain_result.centroids)
+
+    # Note: we could have done this in just one line:
+    # return d4p.kmeans(nClusters, maxIter, assignFlag=True).compute(data, d4p.kmeans_init(nClusters, method=method).compute(data).centroids)
+
+
+# At this moment with sycl we are working only with numpy arrays
+def to_numpy(data):
+    try:
+        from pandas import DataFrame
+        if isinstance(data, DataFrame):
+            return np.ascontiguousarray(data.values)
+    except:
+        pass
+    try:
+        from scipy.sparse import csr_matrix
+        if isinstance(data, csr_matrix):
+            return data.toarray()
+    except:
+        pass
+    return data
+
+
+def main(readcsv=read_csv, method='randomDense'):
     infile = "./data/batch/kmeans_dense.csv"
     nClusters = 20
     maxIter = 5
 
     # Load the data
-    csvdata = np.ascontiguousarray(readcsv(infile, range(20)).values)
+    data = readcsv(infile, range(20))
 
+    # Using of the classic way (computations on CPU)
+    result_classic = compute(data, nClusters, maxIter, method)
+
+    data = to_numpy(data)
+
+    # It is possible to specify to make the computations on GPU
     with sycl_context('gpu'):
-        data = sycl_buffer(csvdata)
+        sycl_data = sycl_buffer(data)
+        result_gpu = compute(sycl_data, nClusters, maxIter, method)
 
-        # compute initial centroids
-        initrain_algo = d4p.kmeans_init(nClusters, method="randomDense")
-        initrain_result = initrain_algo.compute(data)
-        # The results provides the initial centroids
-        #assert initrain_result.centroids.shape[0] == nClusters
-        # configure kmeans main object: we also request the cluster assignments
-        algo = d4p.kmeans(nClusters, maxIter, assignFlag=True)
-        # compute the clusters/centroids
-        result = algo.compute(data, initrain_result.centroids)
-        
-    # Note: we could have done this in just one line:
-    # d4p.kmeans(nClusters, maxIter, assignFlag=True).compute(data, d4p.kmeans_init(nClusters, method="plusPlusDense").compute(data).centroids)
+    # It is possible to specify to make the computations on CPU
+    with sycl_context('cpu'):
+        sycl_data = sycl_buffer(data)
+        result_cpu = compute(sycl_data, nClusters, maxIter, method)
 
     # Kmeans result objects provide assignments (if requested), centroids, goalFunction, nIterations and objectiveFunction
-    assert result.centroids.shape[0] == nClusters
-    assert result.assignments.shape == (csvdata.shape[0], 1)
-    assert result.nIterations <= maxIter
+    assert result_classic.centroids.shape[0] == nClusters
+    assert result_classic.assignments.shape == (data.shape[0], 1)
+    assert result_classic.nIterations <= maxIter
 
-    return result
+    assert np.allclose(result_classic.centroids, result_gpu.centroids)
+    assert np.allclose(result_classic.assignments, result_gpu.assignments)
+    assert np.isclose(result_classic.objectiveFunction, result_gpu.objectiveFunction)
+    assert result_classic.nIterations == result_gpu.nIterations
+
+    assert np.allclose(result_classic.centroids, result_cpu.centroids)
+    assert np.allclose(result_classic.assignments, result_cpu.assignments)
+    assert np.isclose(result_classic.objectiveFunction, result_cpu.objectiveFunction)
+    assert result_classic.nIterations == result_cpu.nIterations
+
+    return result_classic
 
 
 if __name__ == "__main__":

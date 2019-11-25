@@ -20,6 +20,7 @@
 
 import daal4py as d4p
 import numpy as np
+from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -30,26 +31,61 @@ except:
     read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
+# Commone code for both CPU and GPU computations
+def compute(data, method):
+    # configure a covariance object
+    algo = d4p.covariance(method=method)
+    return algo.compute(data)
+
+
+# At this moment with sycl we are working only with numpy arrays
+def to_numpy(data):
+    try:
+        from pandas import DataFrame
+        if isinstance(data, DataFrame):
+            return np.ascontiguousarray(data.values)
+    except:
+        pass
+    try:
+        from scipy.sparse import csr_matrix
+        if isinstance(data, csr_matrix):
+            return data.toarray()
+    except:
+        pass
+    return data
+
+
 def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/covcormoments_dense.csv"
 
-    # configure a covariance object
-    algo = d4p.covariance()
-    
-    # let's provide a file directly, not a table/array
-    result1 = algo.compute(infile)
+    # Load the data
+    data = readcsv(infile, range(10))
 
-    # We can also load the data ourselfs and provide the numpy array
-    algo = d4p.covariance(method=method)
-    data = readcsv(infile)
-    result2 = algo.compute(data)
+    # Using of the classic way (computations on CPU)
+    result_classic = compute(data, method)
+    
+    data = to_numpy(data)
+
+    # It is possible to specify to make the computations on GPU
+    with sycl_context('gpu'):
+        sycl_data = sycl_buffer(data)
+        result_gpu = compute(sycl_data, 'defaultDense')
+
+    # It is possible to specify to make the computations on CPU
+    with sycl_context('cpu'):
+        sycl_data = sycl_buffer(data)
+        result_cpu = compute(sycl_data, 'defaultDense')
 
     # covariance result objects provide correlation, covariance and mean
-    assert np.allclose(result1.covariance, result1.covariance)
-    assert np.allclose(result1.mean, result1.mean)
-    assert np.allclose(result1.correlation, result1.correlation)
+    assert np.allclose(result_classic.covariance, result_gpu.covariance)
+    assert np.allclose(result_classic.mean, result_gpu.mean)
+    assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
-    return result1
+    assert np.allclose(result_classic.covariance, result_cpu.covariance)
+    assert np.allclose(result_classic.mean, result_cpu.mean)
+    assert np.allclose(result_classic.correlation, result_cpu.correlation)
+
+    return result_classic
 
 
 if __name__ == "__main__":

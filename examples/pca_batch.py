@@ -20,6 +20,7 @@
 
 import daal4py as d4p
 import numpy as np
+from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -30,53 +31,76 @@ except:
     read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
+# Commone code for both CPU and GPU computations
+def compute(data):
+    # 'normalization' is an optional parameter to PCA; we use z-score which could be configured differently
+    zscore = d4p.normalization_zscore()
+    # configure a PCA object
+    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
+    return algo.compute(data)
+
+
+# At this moment with sycl we are working only with numpy arrays
+def to_numpy(data):
+    try:
+        from pandas import DataFrame
+        if isinstance(data, DataFrame):
+            return np.ascontiguousarray(data.values)
+    except:
+        pass
+    try:
+        from scipy.sparse import csr_matrix
+        if isinstance(data, csr_matrix):
+            return data.toarray()
+    except:
+        pass
+    return data
+
+
 def main(readcsv=read_csv, method='svdDense'):
     infile = "./data/batch/pca_normalized.csv"
-    import time
-    from daal4py.oneapi import sycl_context, sycl_buffer
-    with sycl_context('gpu'):
-        # 'normalization' is an optional parameter to PCA; we use z-score which could be configured differently
-        zscore = d4p.normalization_zscore()
-        # configure a PCA object
-        algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
+
+    # Load the data
+    data = readcsv(infile)
+
+    # Using of the classic way (computations on CPU)
+    result_classic = compute(data)
     
-        # let's provide a file directly, not a table/array
-        result1 = algo.compute(infile)
+    data = to_numpy(data)
 
-        # We can also load the data ourselfs and provide the numpy array
-        data = np.loadtxt(infile, dtype=np.float64, delimiter=',')
-        #sdata = sycl_buffer(data)
-        sdata = data
-        N = 10000
-        times = np.empty(N)
-        for i in range(N):
-            algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
-            start = time.time()
-            result2 = algo.compute(sdata)
-            times[i] = time.time()-start
+    # It is possible to specify to make the computations on GPU
+    with sycl_context('gpu'):
+        sycl_data = sycl_buffer(data)
+        result_gpu = compute(sycl_data)
 
-    import pandas as pd
-    y = pd.Series(times)
-    x = y.rolling(5, center=True).mean()
-    print('Frist avg times:\n', x.iloc[2:6])
-    print('Last avg times:\n', x.iloc[-7:-3])
+    # It is possible to specify to make the computations on CPU
+    with sycl_context('cpu'):
+        sycl_data = sycl_buffer(data)
+        result_cpu = compute(sycl_data)
+
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
-    assert np.allclose(result1.eigenvalues, result2.eigenvalues)
-    assert np.allclose(result1.eigenvectors, result2.eigenvectors)
-    assert np.allclose(result1.means, result2.means)
-    assert np.allclose(result1.variances, result2.variances)
-    assert result1.eigenvalues.shape == (1, data.shape[1])
-    assert result1.eigenvectors.shape == (data.shape[1], data.shape[1])
-    assert result1.means.shape == (1, data.shape[1])
-    assert result1.variances.shape == (1, data.shape[1])
+    assert result_classic.eigenvalues.shape == (1, data.shape[1])
+    assert result_classic.eigenvectors.shape == (data.shape[1], data.shape[1])
+    assert result_classic.means.shape == (1, data.shape[1])
+    assert result_classic.variances.shape == (1, data.shape[1])
 
-    return result1
+    assert np.allclose(result_classic.eigenvalues, result_gpu.eigenvalues)
+    assert np.allclose(result_classic.eigenvectors, result_gpu.eigenvectors)
+    assert np.allclose(result_classic.means, result_gpu.means, atol=1e-7)
+    assert np.allclose(result_classic.variances, result_gpu.variances)
+
+    assert np.allclose(result_classic.eigenvalues, result_cpu.eigenvalues)
+    assert np.allclose(result_classic.eigenvectors, result_cpu.eigenvectors)
+    assert np.allclose(result_classic.means, result_cpu.means, atol=1e-7)
+    assert np.allclose(result_classic.variances, result_cpu.variances)
+
+    return result_classic
 
 
 if __name__ == "__main__":
-    result1 = main()
-    print("\nEigenvalues:\n", result1.eigenvalues)
-    print("\nEigenvectors:\n", result1.eigenvectors)
-    print("\nMeans:\n", result1.means)
-    print("\nVariances:\n", result1.variances)
+    result = main()
+    print("\nEigenvalues:\n", result.eigenvalues)
+    print("\nEigenvectors:\n", result.eigenvectors)
+    print("\nMeans:\n", result.means)
+    print("\nVariances:\n", result.variances)
     print('All looks good!')
