@@ -50,7 +50,7 @@ IS_LIN = False
 
 if 'linux' in sys.platform:
     IS_LIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64_lin')
+    lib_dir = jp(daal_root, 'lib', 'intel64')
 elif sys.platform == 'darwin':
     IS_MAC = True
     lib_dir = jp(daal_root, 'lib')

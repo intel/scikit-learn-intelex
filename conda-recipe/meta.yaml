@@ -11,6 +11,9 @@ source:
 build:
     number: {{buildnumber}}
     include_recipe: False
+    script_env:
+     - DPCPP_VAR
+     - DAALROOT
 
 requirements:
     host:

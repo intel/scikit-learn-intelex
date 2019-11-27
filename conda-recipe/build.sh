@@ -6,6 +6,16 @@ else
     ARGS="--old-and-unmanageable"
 fi
 
-#export NO_DIST=1
+# if dpc++ vars path is specified
+if [ ! -z "${DPCPP_VAR}" ]; then
+    source ${DPCPP_VAR}
+    export CC=clang++
+    export CXX=clang++
+fi
 
-DAAL4PY_VERSION=$PKG_VERSION TBBROOT=${PREFIX} MPIROOT=${PREFIX} DAALROOT=${PREFIX} ${PYTHON} setup.py install $ARGS
+# if DAALROOT not exists then provide PREFIX
+if [ -z "${DAALROOT}" ]; then
+    DAALROOT=${PREFIX}
+fi
+
+DAAL4PY_VERSION=$PKG_VERSION TBBROOT=${PREFIX} MPIROOT=${PREFIX} ${PYTHON} setup.py install $ARGS
