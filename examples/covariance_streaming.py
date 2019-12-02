@@ -20,26 +20,79 @@
 
 import daal4py as d4p
 import numpy as np
+from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's use a generator for getting stream from file (defined in stream.py)
 from stream import read_next
 
+
+# At this moment with sycl we are working only with numpy arrays
+def to_numpy(data):
+    try:
+        from pandas import DataFrame
+        if isinstance(data, DataFrame):
+            return np.ascontiguousarray(data.values)
+    except:
+        pass
+    try:
+        from scipy.sparse import csr_matrix
+        if isinstance(data, csr_matrix):
+            return data.toarray()
+    except:
+        pass
+    return data
+
+
 def main(readcsv=None, method='defaultDense'):
     infile = "./data/batch/covcormoments_dense.csv"
     
+    # Using of the classic way (computations on CPU)
     # configure a covariance object
     algo = d4p.covariance(streaming=True)
-
     # get the generator (defined in stream.py)...
     rn = read_next(infile, 112, readcsv)
     # ... and iterate through chunks/stream
     for chunk in rn:
         algo.compute(chunk)
-
     # finalize computation
-    result = algo.finalize()
+    result_classic = algo.finalize()
 
-    return result
+    # It is possible to specify to make the computations on GPU
+    with sycl_context('gpu'):
+        # configure a covariance object
+        algo = d4p.covariance(streaming=True)
+        # get the generator (defined in stream.py)...
+        rn = read_next(infile, 112, readcsv)
+        # ... and iterate through chunks/stream
+        for chunk in rn:
+            sycl_chunk = sycl_buffer(to_numpy(chunk))
+            algo.compute(sycl_chunk)
+        # finalize computation
+        result_gpu = algo.finalize()
+
+    # It is possible to specify to make the computations on CPU
+    with sycl_context('cpu'):
+        # configure a covariance object
+        algo = d4p.covariance(streaming=True)
+        # get the generator (defined in stream.py)...
+        rn = read_next(infile, 112, readcsv)
+        # ... and iterate through chunks/stream
+        for chunk in rn:
+            sycl_chunk = sycl_buffer(to_numpy(chunk))
+            algo.compute(sycl_chunk)
+        # finalize computation
+        result_cpu = algo.finalize()
+
+    # covariance result objects provide correlation, covariance and mean
+    assert np.allclose(result_classic.covariance, result_gpu.covariance)
+    assert np.allclose(result_classic.mean, result_gpu.mean)
+    assert np.allclose(result_classic.correlation, result_gpu.correlation)
+
+    assert np.allclose(result_classic.covariance, result_cpu.covariance)
+    assert np.allclose(result_classic.mean, result_cpu.mean)
+    assert np.allclose(result_classic.correlation, result_cpu.correlation)
+
+    return result_classic
 
 
 if __name__ == "__main__":
