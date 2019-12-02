@@ -50,6 +50,7 @@ public:
     }
     ~PySyclExecutionContext()
     {
+        daal::services::Environment::getInstance()->setDefaultExecutionContext(daal::services::CpuExecutionContext());
         delete m_ctxt;
     }
 private:
