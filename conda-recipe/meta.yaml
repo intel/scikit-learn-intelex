@@ -11,6 +11,8 @@ source:
 build:
     number: {{buildnumber}}
     include_recipe: False
+    ignore_run_exports:
+       - python
 
 requirements:
     host:
@@ -22,6 +24,9 @@ requirements:
         - jinja2
         - mpich                  # [not win]
         - impi-devel             # [win]
+    build:
+        - {{ compiler('cxx') }}
+        - {{ compiler('c') }}
     run:
         - python
         - daal >=2019.0
