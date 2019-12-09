@@ -131,9 +131,13 @@ static PyObject * _make_nda_from_homogen(daal::data_management::NumericTablePtr 
     return NULL;
 }
 
+#ifdef _DPCPP_
 #include "oneapi/oneapi_api.h"
 static int _1api_imp = import__oneapi();
-
+#else
+static int _1api_imp = -1;
+PyObject* make_py_from_sycltable(void * ptr, int typ, int d1, int d2){ return Py_None; }
+#endif
 // Convert a DAAL NT to a numpy nd-array
 // tries to avoid copying the data, instead we try to share the memory with DAAL
 PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
