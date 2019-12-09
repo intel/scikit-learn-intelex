@@ -2,24 +2,11 @@
 # FIXME: enable dist-mode
 matrix:
     include:
-        - name: "Linux-Py2"
-          os: linux
-          env:
-            - MINICONDA=Miniconda2-latest-Linux-x86_64.sh
-            - PYVER="--python=27"
         - name: "Linux-Py3"
           os: linux
           env:
             - MINICONDA=Miniconda3-latest-Linux-x86_64.sh
             - PYVER=""
-        - name: "OsX-Py2"
-          os: osx
-          osx_image: xcode8
-          env:
-            - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
-            - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
-            - MACOSX_DEPLOYMENT_TARGET="10.9"
-            - PYVER="--python=27"
         - name: "OsX-Py3"
           os: osx
           osx_image: xcode8
