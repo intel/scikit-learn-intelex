@@ -32,6 +32,8 @@ from .parse import parse_header, parse_version
 from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, enum_params, wrap_algo
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
+from shutil import copytree, rmtree
+from subprocess import call
 
 try:
     basestring
@@ -918,10 +920,17 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     global no_warn
     if warn_all:
         no_warn = {}
-    ipath = jp(daalroot, 'include', 'algorithms')
-    assert os.path.isfile(jp(ipath, 'algorithm.h')) and os.path.isfile(jp(ipath, 'model.h')),\
-           "Path/$DAALROOT '"+ipath+"' doesn't seem host DAAL headers. Please provide correct daalroot."
-    iface = cython_interface(ipath)
+    orig_path = jp(daalroot, 'include')
+    assert os.path.isfile(jp(orig_path, 'algorithms', 'algorithm.h')) and os.path.isfile(jp(orig_path, 'algorithms', 'model.h')),\
+           "Path/$DAALROOT '"+orig_path+"' doesn't seem host DAAL headers. Please provide correct daalroot."
+    head_path = jp("build", "include")
+    algo_path = jp(head_path, "algorithms")
+    rmtree(head_path, ignore_errors=True)
+    copytree(orig_path, head_path)
+    for (dirpath, dirnames, filenames) in os.walk(algo_path):
+        for filename in filenames:
+            call("clang-format -i " + jp(dirpath, filename), shell=True)
+    iface = cython_interface(algo_path)
     iface.read()
     print('Generating sources...')
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(iface.version, no_dist, no_stream)
