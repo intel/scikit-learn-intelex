@@ -23,11 +23,25 @@ import warnings
 
 import sklearn.cluster as kmeans_module
 import sklearn.svm as svm_module
-import sklearn.linear_model.logistic as logistic_module
+
+if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+    import sklearn.linear_model._logistic as logistic_module
+    from sklearn.decomposition._pca import PCA
+    _patched_log_reg_path_func_name = '_logistic_regression_path'
+    from ..linear_model._logistic_path_0_22 import _logistic_regression_path as daal_optimized_logistic_path
+else:
+    import sklearn.linear_model.logistic as logistic_module
+    from sklearn.decomposition.pca import PCA
+    if LooseVersion(sklearn_version) >= LooseVersion("0.21.0"):
+        _patched_log_reg_path_func_name = '_logistic_regression_path'
+        from ..linear_model._logistic_path_0_21 import _logistic_regression_path as daal_optimized_logistic_path
+    else:
+        _patched_log_reg_path_func_name = 'logistic_regression_path'
+        from ..linear_model._logistic_path_0_21 import logistic_regression_path as daal_optimized_logistic_path
+
 import sklearn.linear_model as linear_model_module
 import sklearn.decomposition as decomposition_module
 
-from sklearn.decomposition.pca import PCA
 from sklearn.metrics import pairwise
 
 
@@ -36,12 +50,6 @@ from ..decomposition.pca import PCA as PCA_daal4py
 from ..linear_model.ridge import Ridge as Ridge_daal4py
 from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
-if LooseVersion(sklearn_version) >= LooseVersion("0.21.0"):
-    _patched_log_reg_path_func_name = '_logistic_regression_path'
-    from ..linear_model.logistic_path import _logistic_regression_path as daal_optimized_logistic_path
-else:
-    _patched_log_reg_path_func_name = 'logistic_regression_path'
-    from ..linear_model.logistic_path import logistic_regression_path as daal_optimized_logistic_path
 from ..svm.svm import SVC as SVC_daal4py
 
 from daal4py import __version__ as daal4py_version
@@ -85,9 +93,9 @@ def do_unpatch(name):
 def enable(name=None, verbose=True):
     if LooseVersion(sklearn_version) < LooseVersion("0.20.0"):
         raise NotImplementedError("daal4py patches apply  for scikit-learn >= 0.20.0 only ...")
-    elif LooseVersion(sklearn_version) > LooseVersion("0.21.3"):
+    elif LooseVersion(sklearn_version) > LooseVersion("0.22"):
         warn_msg = ("daal4py {daal4py_version} has only been tested " +
-                    "with scikit-learn 0.21.3, found version: {sklearn_version}")
+                    "with scikit-learn 0.22.0, found version: {sklearn_version}")
         warnings.warn(warn_msg.format(
             daal4py_version=daal4py_version,
             sklearn_version=sklearn_version)
