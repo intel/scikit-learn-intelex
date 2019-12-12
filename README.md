@@ -30,7 +30,7 @@ The build-process (using setup.py) happens in 3 stages:
 3. Compiling and linking
 
 # Building daal4py using conda-build
-The easiest way to build daal4py is using the conda-build withe the provided recipe.
+The easiest way to build daal4py is using the conda-build with the provided recipe.
 
 ## Prerequisites
 * Python version 2.7 or >= 3.6
