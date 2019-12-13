@@ -228,7 +228,7 @@ class PCA(PCA_original):
 
 
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
-        check_is_fitted(self, ['mean_', 'components_'], all_or_any=all)
+        check_is_fitted(self)
 
         X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=check_X)
         fpType = getFPType(X)
@@ -462,7 +462,7 @@ class PCA(PCA_original):
         IncrementalPCA(batch_size=3, copy=True, n_components=2, whiten=False)
         >>> ipca.transform(X) # doctest: +SKIP
         """
-        check_is_fitted(self, ['mean_', 'components_'], all_or_any=all)
+        check_is_fitted(self)
 
         X = check_array(X)
         if self.n_components_ > 0:

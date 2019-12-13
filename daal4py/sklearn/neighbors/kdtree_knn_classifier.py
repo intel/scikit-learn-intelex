@@ -29,6 +29,9 @@ from sklearn.utils import check_random_state
 import daal4py as d4p
 from ..utils import getFPType
 
+from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
+
 
 class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self,
@@ -135,8 +138,10 @@ class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         # Check is fit had been called
-        check_is_fitted(self, ['n_features_',
-                               'n_classes_'])
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            check_is_fitted(self)
+        else:
+            check_is_fitted(self, ['n_features_', 'n_classes_', 'daal_model_'])
 
         # Input validation
         X = check_array(X, dtype=[np.single, np.double])
@@ -146,8 +151,6 @@ class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
         # Trivial case
         if self.n_classes_ == 1:
             return np.full(X.shape[0], self.classes_[0])
-
-        check_is_fitted(self, ['daal_model_'])
 
         # Define type of data
         fptype = getFPType(X)

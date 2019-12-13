@@ -251,7 +251,7 @@ def predict(self, X, sample_weight=None):
     labels : array, shape [n_samples,]
         Index of the cluster each sample belongs to.
     """
-    check_is_fitted(self, 'cluster_centers_')
+    check_is_fitted(self)
 
     X = self._check_test_data(X)
 

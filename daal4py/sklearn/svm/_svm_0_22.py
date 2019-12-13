@@ -510,7 +510,7 @@ def predict(self, X):
     -------
     y_pred : array, shape (n_samples,)
     """
-    check_is_fitted(self, 'support_')
+    check_is_fitted(self)
     _break_ties = getattr(self, 'break_ties', False)
     if _break_ties and self.decision_function_shape == 'ovo':
         raise ValueError("break_ties must be False when "

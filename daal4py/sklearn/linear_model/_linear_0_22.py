@@ -23,7 +23,7 @@ from sklearn.utils import check_array, check_X_y, deprecated, as_float_array
 from sklearn.linear_model._base import _rescale_data
 
 from sklearn.utils.fixes import sparse_lsqr
-from sklearn.utils.validation import _check_sample_weight, check_is_fitted
+from sklearn.utils.validation import _check_sample_weight
 
 from sklearn.linear_model import LinearRegression as LinearRegression_original
 
