@@ -131,6 +131,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.single, np.double]
         X = check_array(X, dtype=_supported_dtypes_)
+        y = np.asarray(y)
         y = np.atleast_1d(y)
 
         if y.ndim == 2 and y.shape[1] == 1:
@@ -269,6 +270,8 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             check_is_fitted(self, 'daal_model_')
         return self.daal_predict(X)
 
+    def _more_tags(self):
+        return {'multioutput': False}
 
 
 class RandomForestRegressor(skl_RandomForestRegressor):
@@ -337,6 +340,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.double, np.single]
         X = check_array(X, dtype=_supported_dtypes_)
+        y = np.asarray(y)
         y = np.atleast_1d(y)
 
         if y.ndim == 2 and y.shape[1] == 1:
@@ -447,3 +451,6 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
     def predict(self, X):
         return self.daal_predict(X)
+
+    def _more_tags(self):
+        return {'multioutput': False}
