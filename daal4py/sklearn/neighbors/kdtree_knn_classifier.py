@@ -141,7 +141,7 @@ class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             check_is_fitted(self)
         else:
-            check_is_fitted(self, ['n_features_', 'n_classes_', 'daal_model_'])
+            check_is_fitted(self, ['n_features_', 'n_classes_'])
 
         # Input validation
         X = check_array(X, dtype=[np.single, np.double])
@@ -151,6 +151,10 @@ class KNeighborsClassifier(BaseEstimator, ClassifierMixin):
         # Trivial case
         if self.n_classes_ == 1:
             return np.full(X.shape[0], self.classes_[0])
+
+        if not hasattr(self, 'daal_model_'):
+            raise ValueError(("The class {} instance does not have 'daal_model_' attribute set. "
+                              "Call 'fit' with appropriate arguments before using this method.").format(type(self).__name__))
 
         # Define type of data
         fptype = getFPType(X)

@@ -270,8 +270,13 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             check_is_fitted(self, 'daal_model_')
         return self.daal_predict(X)
 
+
     def _more_tags(self):
-        return {'multioutput': False}
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            return {'multioutput': False}
+        else:
+            return dict()
+
 
 
 class RandomForestRegressor(skl_RandomForestRegressor):
@@ -434,7 +439,10 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
 
     def daal_predict(self, X):
-        check_is_fitted(self, 'daal_model_')
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            check_is_fitted(self)
+        else:
+            check_is_fitted(self, 'daal_model_')
         X = self._validate_X_predict(X)
 
         dfr_alg = daal4py.decision_forest_regression_prediction(fptype='float')
@@ -452,5 +460,9 @@ class RandomForestRegressor(skl_RandomForestRegressor):
     def predict(self, X):
         return self.daal_predict(X)
 
+
     def _more_tags(self):
-        return {'multioutput': False}
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            return {'multioutput': False}
+        else:
+            return dict()
