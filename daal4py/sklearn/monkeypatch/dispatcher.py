@@ -50,7 +50,6 @@ from ..decomposition.pca import PCA as PCA_daal4py
 from ..linear_model.ridge import Ridge as Ridge_daal4py
 from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
-from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
 from ..svm.svm import SVC as SVC_daal4py
 
 from daal4py import __version__ as daal4py_version
@@ -64,10 +63,16 @@ _mapping = {
     'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
     'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]],
     'logistic':  [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
-    'dbscan':    [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]],
 }
 
 del _patched_log_reg_path_func_name
+
+try:
+    from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
+    _mapping['dbscan'] = [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]]
+except ImportError:
+    pass
+
 
 def do_patch(name):
     lname = name.lower()
