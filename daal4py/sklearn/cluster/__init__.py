@@ -1,4 +1,8 @@
 from .k_means import KMeans
-from .dbscan import DBSCAN
+__all__ = ['KMeans']
 
-__all__ = ['KMeans', 'DBSCAN']
+try:
+    from .dbscan import DBSCAN
+    __all__ += ['DBSCAN']
+except ImportError:
+    pass
