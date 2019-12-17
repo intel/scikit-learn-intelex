@@ -293,10 +293,9 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
             } else {
 		if(array_is_behaved_F(ary) && (PyArray_NDIM(ary) == 2)) {
 		    int _axes = 0;
-		    npy_intp i = 0;
 		    npy_intp N = PyArray_DIM(ary, 1); // number of columns
 		    npy_intp column_len = PyArray_DIM(ary, 0);
-		    int array_type = PyArray_TYPE(ary);
+		    int ary_numtype = PyArray_TYPE(ary);
 		    /*
 		     * Input is 2D F-contiguous array: represent it as SOA numeric table
 		     */
@@ -311,15 +310,14 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 
 		    soatbl = new daal::data_management::SOANumericTable(N, column_len);
 		    
-		    while (PyArray_ITER_NOTDONE(it)) {
-			PyArrayObject *slice = (PyArrayObject *) PyArray_SimpleNewFromData(1, &column_len, array_type, (void *)PyArray_ITER_DATA(it));
+		    for(npy_intp i = 0; PyArray_ITER_NOTDONE(it); ++i) {
+			PyArrayObject *slice = (PyArrayObject *) PyArray_SimpleNewFromData(1, &column_len, ary_numtype, (void *)PyArray_ITER_DATA(it));
 			PyArray_SetBaseObject(slice, (PyObject *) ary);
 			Py_INCREF(ary);
 #define SETARRAY_(_T) {daal::services::SharedPtr< _T > _tmp(reinterpret_cast< _T * >(PyArray_ITER_DATA(it)), NumpyDeleter(slice)); soatbl->setArray(_tmp, i);}
 			SET_NPY_FEATURE(PyArray_DESCR(ary)->type, SETARRAY_, throw std::invalid_argument("Found unsupported array type"));
 #undef SETARRAY_
 			PyArray_ITER_NEXT(it);
-			++i;
 		    }
 
 		    if(soatbl->getNumberOfColumns() != N) {
