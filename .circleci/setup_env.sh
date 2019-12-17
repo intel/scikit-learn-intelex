@@ -7,7 +7,7 @@ conda config --set always_yes yes --set changeps1 no
 conda update -q conda
 conda install -q conda-build
 conda create -n bld --override-channels -c intel daal daal-devel tbb
-conda install -q -n bld --override-channels -c defaults python=3.6 numpy scipy pytest pandas pyyaml joblib numpydoc
+conda install -q -n bld --override-channels -c defaults python=3.7 numpy scipy pytest pandas pyyaml joblib numpydoc
 conda install -q -n bld -c conda-forge --override-channels mpi mpich
 gcc -v
 g++ -v

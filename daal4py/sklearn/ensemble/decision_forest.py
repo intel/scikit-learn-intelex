@@ -25,6 +25,7 @@ else:
 import numbers
 import warnings
 
+
 import daal4py
 from ..utils import (make2d, getFPType)
 
@@ -37,6 +38,9 @@ from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import (check_is_fitted, check_consistent_length)
 from sklearn.base import clone
 from sklearn.exceptions import DataConversionWarning, NotFittedError
+
+from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
 
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
     if max_features is None:
@@ -127,6 +131,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.single, np.double]
         X = check_array(X, dtype=_supported_dtypes_)
+        y = np.asarray(y)
         y = np.atleast_1d(y)
 
         if y.ndim == 2 and y.shape[1] == 1:
@@ -259,8 +264,18 @@ class RandomForestClassifier(skl_RandomForestClassifier):
 
 
     def predict(self, X):
-        check_is_fitted(self, 'daal_model_')
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            check_is_fitted(self)
+        else:
+            check_is_fitted(self, 'daal_model_')
         return self.daal_predict(X)
+
+
+    def _more_tags(self):
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            return {'multioutput': False}
+        else:
+            return dict()
 
 
 
@@ -330,6 +345,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.double, np.single]
         X = check_array(X, dtype=_supported_dtypes_)
+        y = np.asarray(y)
         y = np.atleast_1d(y)
 
         if y.ndim == 2 and y.shape[1] == 1:
@@ -423,7 +439,10 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
 
     def daal_predict(self, X):
-        check_is_fitted(self, 'daal_model_')
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            check_is_fitted(self)
+        else:
+            check_is_fitted(self, 'daal_model_')
         X = self._validate_X_predict(X)
 
         dfr_alg = daal4py.decision_forest_regression_prediction(fptype='float')
@@ -440,3 +459,10 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
     def predict(self, X):
         return self.daal_predict(X)
+
+
+    def _more_tags(self):
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            return {'multioutput': False}
+        else:
+            return dict()

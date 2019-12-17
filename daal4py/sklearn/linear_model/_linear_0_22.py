@@ -23,7 +23,7 @@ from sklearn.utils import check_array, check_X_y, deprecated, as_float_array
 from sklearn.linear_model._base import _rescale_data
 
 from sklearn.utils.fixes import sparse_lsqr
-from sklearn.utils.validation import _check_sample_weight, check_is_fitted
+from sklearn.utils.validation import _check_sample_weight
 
 from sklearn.linear_model import LinearRegression as LinearRegression_original
 
@@ -48,12 +48,16 @@ def _daal4py_fit(self, X, y_):
         lr_res = lr_algorithm.compute(X, y)
     except RuntimeError:
         # Normal system is not invertible, try QR
-        lr_algorithm = daal4py.linear_regression_training(
-            fptype=X_fptype,
-            interceptFlag=bool(self.fit_intercept),
-            method='qrDense'
-        )
-        lr_res = lr_algorithm.compute(X, y)
+        try:
+            lr_algorithm = daal4py.linear_regression_training(
+                fptype=X_fptype,
+                interceptFlag=bool(self.fit_intercept),
+                method='qrDense'
+            )
+            lr_res = lr_algorithm.compute(X, y)
+        except RuntimeError:
+            # fall back on sklearn
+            return None
         
 
     lr_model = lr_res.model
@@ -126,8 +130,9 @@ def fit(self, X, y, sample_weight=None):
             not sp.issparse(X) and
             (X.dtype == np.float64 or X.dtype == np.float32) and
             sample_weight is None):
-        _daal4py_fit(self, X, y)
-        return self
+        res = _daal4py_fit(self, X, y)
+        if res is not None:
+            return res
 
     if sample_weight is not None:
         sample_weight = np.asarray(sample_weight)

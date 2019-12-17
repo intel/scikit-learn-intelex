@@ -46,13 +46,15 @@ def _daal4py_fit(self, X, y_):
         lr_res = lr_algorithm.compute(X, y)
     except RuntimeError:
         # Normal system is not invertible, try QR
-        lr_algorithm = daal4py.linear_regression_training(
-            fptype=X_fptype,
-            interceptFlag=bool(self.fit_intercept),
-            method='qrDense'
-        )
-        lr_res = lr_algorithm.compute(X, y)
-        
+        try:
+            lr_algorithm = daal4py.linear_regression_training(
+                fptype=X_fptype,
+                interceptFlag=bool(self.fit_intercept),
+                method='qrDense'
+            )
+            lr_res = lr_algorithm.compute(X, y)
+        except RuntimeError:
+            return None
 
     lr_model = lr_res.model
     self.daal_model_ = lr_model
@@ -120,8 +122,9 @@ def fit(self, X, y, sample_weight=None):
             not sp.issparse(X) and
             (X.dtype == np.float64 or X.dtype == np.float32) and
             sample_weight is None):
-        _daal4py_fit(self, X, y)
-        return self
+        res = _daal4py_fit(self, X, y)
+        if res is not None:
+            return res
 
     if sample_weight is not None and np.atleast_1d(sample_weight).ndim > 1:
         raise ValueError("Sample weights must be 1D array or scalar")

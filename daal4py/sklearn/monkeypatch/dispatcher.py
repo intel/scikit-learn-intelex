@@ -21,7 +21,7 @@ from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 import warnings
 
-import sklearn.cluster as kmeans_module
+import sklearn.cluster as cluster_module
 import sklearn.svm as svm_module
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
@@ -57,7 +57,7 @@ from daal4py import __version__ as daal4py_version
 
 _mapping = {
     'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
-    'kmeans':    [[(kmeans_module, 'KMeans', KMeans_daal4py), None]],
+    'kmeans':    [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
     'distances': [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
     'linear':    [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
     'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
@@ -66,6 +66,13 @@ _mapping = {
 }
 
 del _patched_log_reg_path_func_name
+
+try:
+    from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
+    _mapping['dbscan'] = [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]]
+except ImportError:
+    pass
+
 
 def do_patch(name):
     lname = name.lower()
