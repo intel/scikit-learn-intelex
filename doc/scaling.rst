@@ -86,3 +86,7 @@ The following algorithms support distribution:
 - Moments of Low Order (low_order_moments)
 
   - `Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_spmd.py>`_
+
+- QR Decomposition (qr)
+
+  - `QR <https://github.com/IntelPython/daal4py/blob/master/examples/qr_spmd.py>`_
