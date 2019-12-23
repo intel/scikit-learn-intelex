@@ -52,7 +52,7 @@ Examples:
 Gradient Boosted Classification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Classification Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-tree-2>`__
+`Intel DAAL Classification Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-2>`__
 
 Examples:
 
@@ -92,97 +92,89 @@ Examples:
 .. autoclass:: daal4py.kdtree_knn_classification_model
    :members:
 
-..
-    Remove this line, line above and indent below when algorithm will be added
-    AdaBoost Classification
-    ^^^^^^^^^^^^^^^^^^^^^^^
-    Detailed description of parameters and semantics are described in
-    `Intel DAAL Classification AdaBoost <https://software.intel.com/en-us/daal-programming-guide-adaboost-classifier>`__
+AdaBoost Classification
+^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Classification AdaBoost <https://software.intel.com/en-us/daal-programming-guide-adaboost-classifier>`__
 
-    Examples:
+Examples:
 
-    - `Single-Process AdaBoost Classification
-      <https://github.com/IntelPython/daal4py/blob/master/examples/adaboost_batch.py>`__
+- `Single-Process AdaBoost Classification
+  <https://github.com/IntelPython/daal4py/blob/master/examples/adaboost_batch.py>`__
 
-    .. autoclass:: daal4py.adaboost_training
-       :members: compute
-    .. autoclass:: daal4py.adaboost_training_result
-       :members:
-    .. autoclass:: daal4py.adaboost_prediction
-       :members: compute
-    .. autoclass:: daal4py.classifier_prediction_result
-       :members:
-    .. autoclass:: daal4py.adaboost_model
-       :members:
+.. autoclass:: daal4py.adaboost_training
+   :members: compute
+.. autoclass:: daal4py.adaboost_training_result
+   :members:
+.. autoclass:: daal4py.adaboost_prediction
+   :members: compute
+.. autoclass:: daal4py.classifier_prediction_result
+   :members:
+.. autoclass:: daal4py.adaboost_model
+   :members:
 
-..
-    Remove this line, line above and indent below when algorithm will be added
-    BrownBoost Classification
-    ^^^^^^^^^^^^^^^^^^^^^^^^^
-    Detailed description of parameters and semantics are described in
-    `Intel DAAL Classification BrownBoost <https://software.intel.com/en-us/daal-programming-guide-brownboost-classifier>`__
+BrownBoost Classification
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Classification BrownBoost <https://software.intel.com/en-us/daal-programming-guide-brownboost-classifier>`__
 
-    Examples:
+Examples:
 
-    - `Single-Process BrownBoost Classification
-      <https://github.com/IntelPython/daal4py/blob/master/examples/brownboost_batch.py>`__
+- `Single-Process BrownBoost Classification
+  <https://github.com/IntelPython/daal4py/blob/master/examples/brownboost_batch.py>`__
 
-    .. autoclass:: daal4py.brownboost_training
-       :members: compute
-    .. autoclass:: daal4py.brownboost_training_result
-       :members:
-    .. autoclass:: daal4py.brownboost_prediction
-       :members: compute
-    .. autoclass:: daal4py.classifier_prediction_result
-       :members:
-    .. autoclass:: daal4py.brownboost_model
-       :members:
+.. autoclass:: daal4py.brownboost_training
+   :members: compute
+.. autoclass:: daal4py.brownboost_training_result
+   :members:
+.. autoclass:: daal4py.brownboost_prediction
+   :members: compute
+.. autoclass:: daal4py.classifier_prediction_result
+   :members:
+.. autoclass:: daal4py.brownboost_model
+   :members:
 
-..
-    Remove this line, line above and indent below when algorithm will be added
-    LogitBoost Classification
-    ^^^^^^^^^^^^^^^^^^^^^^^^^
-    Detailed description of parameters and semantics are described in
-    `Intel DAAL Classification LogitBoost <https://software.intel.com/en-us/daal-programming-guide-logitboost-classifier>`__
+LogitBoost Classification
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Classification LogitBoost <https://software.intel.com/en-us/daal-programming-guide-logitboost-classifier>`__
 
-    Examples:
+Examples:
 
-    - `Single-Process LogitBoost Classification
-      <https://github.com/IntelPython/daal4py/blob/master/examples/logitboost_batch.py>`__
+- `Single-Process LogitBoost Classification
+  <https://github.com/IntelPython/daal4py/blob/master/examples/logitboost_batch.py>`__
 
-    .. autoclass:: daal4py.logitboost_training
-       :members: compute
-    .. autoclass:: daal4py.logitboost_training_result
-       :members:
-    .. autoclass:: daal4py.logitboost_prediction
-       :members: compute
-    .. autoclass:: daal4py.classifier_prediction_result
-       :members:
-    .. autoclass:: daal4py.logitboost_model
-       :members:
+.. autoclass:: daal4py.logitboost_training
+   :members: compute
+.. autoclass:: daal4py.logitboost_training_result
+   :members:
+.. autoclass:: daal4py.logitboost_prediction
+   :members: compute
+.. autoclass:: daal4py.classifier_prediction_result
+   :members:
+.. autoclass:: daal4py.logitboost_model
+   :members:
 
-..
-    Remove this line, line above and indent below when algorithm will be added
-    Stump Weak Learner Classification
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    Detailed description of parameters and semantics are described in
-    `Intel DAAL Classification Weak Learner Stump <https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier>`__
+Stump Weak Learner Classification
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Classification Weak Learner Stump <https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier>`__
 
-    Examples:
+Examples:
 
-    - `Single-Process Stump Weak Learner Classification
-      <https://github.com/IntelPython/daal4py/blob/master/examples/stump_classification_batch.py>`__
+- `Single-Process Stump Weak Learner Classification
+  <https://github.com/IntelPython/daal4py/blob/master/examples/stump_classification_batch.py>`__
 
-    .. autoclass:: daal4py.stump_classification_training
-       :members: compute
-    .. autoclass:: daal4py.stump_classification_training_result
-       :members:
-    .. autoclass:: daal4py.stump_classification_prediction
-       :members: compute
-    .. autoclass:: daal4py.classifier_prediction_result
-       :members:
-    .. autoclass:: daal4py.stump_classification_model
-       :members:
+.. autoclass:: daal4py.stump_classification_training
+   :members: compute
+.. autoclass:: daal4py.stump_classification_training_result
+   :members:
+.. autoclass:: daal4py.stump_classification_prediction
+   :members: compute
+.. autoclass:: daal4py.classifier_prediction_result
+   :members:
+.. autoclass:: daal4py.stump_classification_model
+   :members:
 
 Multinomial Naive Bayes
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -212,6 +204,8 @@ Support Vector Machine (SVM)
 Detailed description of parameters and semantics are described in
 `Intel DAAL SVM <https://software.intel.com/en-us/daal-programming-guide-support-vector-machine-classifier>`__
 
+Note: For the labels parameter, data is formatted as -1s and 1s
+
 Examples:
 
 - `Single-Process SVM
@@ -231,7 +225,7 @@ Examples:
 Logistic Regression
 ^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Logistc Regression <https://software.intel.com/en-us/daal-programming-guide-logistic-regression>`__
+`Intel DAAL Logistic Regression <https://software.intel.com/en-us/daal-programming-guide-logistic-regression>`__
 
 Examples:
 
@@ -301,7 +295,7 @@ Examples:
 Gradient Boosted Regression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Regression Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-tree-1>`__
+`Intel DAAL Regression Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-1>`__
 
 Examples:
 
@@ -341,6 +335,26 @@ Examples:
 .. autoclass:: daal4py.linear_regression_model
    :members:
 
+Least Absolute Shrinkage and Selection Operator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Least Absolute Shrinkage and Selection Operator <https://software.intel.com/en-us/daal-programming-guide-least-absolute-shrinkage-and-selection-operator>`__
+
+Examples:
+
+- `Single-Process LASSO Regression <https://github.com/IntelPython/daal4py/blob/master/examples/lasso_regression_batch.py>`__
+
+.. autoclass:: daal4py.lasso_regression_training
+   :members: compute
+.. autoclass:: daal4py.lasso_regression_training_result
+   :members:
+.. autoclass:: daal4py.lasso_regression_prediction
+   :members: compute
+.. autoclass:: daal4py.lasso_regression_prediction_result
+   :members:
+.. autoclass:: daal4py.lasso_regression_model
+   :members:
+
 Ridge Regression
 ^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
@@ -363,28 +377,26 @@ Examples:
 .. autoclass:: daal4py.ridge_regression_model
    :members:
 
-..
-    Remove this line, line above and indent below when algorithm will be added
-    Stump Weak Learner Regression
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    Detailed description of parameters and semantics are described in
-    `Intel DAAL Regression Weak Learner Stump <https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier>`__
+Stump Regression
+^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel DAAL Regression Stump <https://software.intel.com/en-us/daal-programming-guide-regression-stump>`__
 
-    Examples:
+Examples:
 
-    - `Single-Process Stump Weak Learner Regression
-      <https://github.com/IntelPython/daal4py/blob/master/examples/stump_regression_batch.py>`__
+- `Single-Process Stump Regression
+  <https://github.com/IntelPython/daal4py/blob/master/examples/stump_regression_batch.py>`__
 
-    .. autoclass:: daal4py.stump_regression_training
-       :members: compute
-    .. autoclass:: daal4py.stump_regression_training_result
-       :members:
-    .. autoclass:: daal4py.stump_regression_prediction
-       :members: compute
-    .. autoclass:: daal4py.stump_regression_prediction_result
-       :members:
-    .. autoclass:: daal4py.stump_regression_model
-       :members:
+.. autoclass:: daal4py.stump_regression_training
+   :members: compute
+.. autoclass:: daal4py.stump_regression_training_result
+   :members:
+.. autoclass:: daal4py.stump_regression_prediction
+   :members: compute
+.. autoclass:: daal4py.stump_regression_prediction_result
+   :members:
+.. autoclass:: daal4py.stump_regression_model
+   :members:
 
 Principal Component Analysis (PCA)
 ----------------------------------
@@ -443,6 +455,20 @@ Detailed description of parameters and semantics are described in
 .. autoclass:: daal4py.kmeans
    :members: compute
 .. autoclass:: daal4py.kmeans_result
+   :members:
+
+Density-Based Spatial Clustering of Applications with Noise
+-----------------------------------------------------------
+Detailed description of parameters and semantics are described in
+`Intel DAAL Density-Based Spatial Clustering of Applications with Noise <https://software.intel.com/en-us/daal-programming-guide-density-based-spatial-clustering-of-applications-with-noise>`__
+
+Examples:
+
+- `Single-Process DBSCAN <https://github.com/IntelPython/daal4py/blob/master/examples/dbscan_batch.py>`__
+
+.. autoclass:: daal4py.dbscan
+   :members: compute
+.. autoclass:: daal4py.dbscan_result
    :members:
 
 Outlier Detection
@@ -525,6 +551,9 @@ Cross-entropy Loss
 """"""""""""""""""
 Detailed description of parameters and semantics are described in
 `Intel DAAL Cross Entropy Loss <https://software.intel.com/en-us/daal-programming-guide-cross-entropy-loss>`__
+
+Examples:
+- `In LBFGS <https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_cr_entr_loss_batch.py>`__
 
 .. autoclass:: daal4py.optimization_solver_cross_entropy_loss
    :members: compute, setup
@@ -695,7 +724,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Z-Score Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_zscore.py>`__
+- `Single-Process Z-Score Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_zscore_batch.py>`__
 
 .. autoclass:: daal4py.normalization_zscore
    :members: compute
@@ -709,7 +738,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process Min-Max Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax.py>`__
+- `Single-Process Min-Max Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax_batch.py>`__
 
 .. autoclass:: daal4py.normalization_minmax
    :members: compute
@@ -757,16 +786,16 @@ Detailed description of parameters and semantics are described in
 Distributions
 -------------
 Detailed description of parameters and semantics are described in
-`Intel DAAL Absolute Value (abs) <https://software.intel.com/en-us/daal-programming-guide-distributions>`__
+`Intel DAAL Distributions <https://software.intel.com/en-us/daal-programming-guide-distributions>`__
 
 Bernoulli
 ^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-bernoulli>`__
+`Intel DAAL Bernoulli Distribution <https://software.intel.com/en-us/daal-programming-guide-bernoulli>`__
 
 Examples:
 
-- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli.py>`__
+- `Single-Process Bernoulli Distribution <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli_batch.py>`__
 
 .. autoclass:: daal4py.distributions_bernoulli
    :members: compute
@@ -776,11 +805,11 @@ Examples:
 Normal
 ^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-normal>`__
+`Intel DAAL Normal Distribution <https://software.intel.com/en-us/daal-programming-guide-normal>`__
 
 Examples:
 
-- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal.py>`__
+- `Single-Process Normal Distribution <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal_batch.py>`__
 
 .. autoclass:: daal4py.distributions_normal
    :members: compute
@@ -790,11 +819,11 @@ Examples:
 Uniform
 ^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-uniform>`__
+`Intel DAAL Uniform Distribution <https://software.intel.com/en-us/daal-programming-guide-uniform>`__
 
 Examples:
 
-- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform.py>`__
+- `Single-Process Uniform Distribution <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform_batch.py>`__
 
 .. autoclass:: daal4py.distributions_uniform
    :members: compute
@@ -810,7 +839,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process abs <https://github.com/IntelPython/daal4py/blob/master/examples/math_abs.py>`__
+- `Single-Process abs <https://github.com/IntelPython/daal4py/blob/master/examples/math_abs_batch.py>`__
 
 .. autoclass:: daal4py.math_abs
    :members: compute
@@ -820,11 +849,11 @@ Examples:
 Hyperbolic Tangent (tanh)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in
-`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-tanh>`__
+`Intel DAAL Hyperbolic Tangent (tanh) <https://software.intel.com/en-us/daal-programming-guide-hyperbolic-tangent>`__
 
 Examples:
 
-- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/math_tanh.py>`__
+- `Single-Process tanh <https://github.com/IntelPython/daal4py/blob/master/examples/math_tanh_batch.py>`__
 
 .. autoclass:: daal4py.math_tanh
    :members: compute
@@ -838,7 +867,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process logistic <https://github.com/IntelPython/daal4py/blob/master/examples/math_logistic.py>`__
+- `Single-Process logistic <https://github.com/IntelPython/daal4py/blob/master/examples/math_logistic_batch.py>`__
 
 .. autoclass:: daal4py.math_logistic
    :members: compute
@@ -852,7 +881,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process ReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_relu.py>`__
+- `Single-Process ReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_relu_batch.py>`__
 
 .. autoclass:: daal4py.math_relu
    :members: compute
@@ -866,7 +895,7 @@ Detailed description of parameters and semantics are described in
 
 Examples:
 
-- `Single-Process SmoothReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_smoothrelu.py>`__
+- `Single-Process SmoothReLU <https://github.com/IntelPython/daal4py/blob/master/examples/math_smoothrelu_batch.py>`__
 
 .. autoclass:: daal4py.math_smoothrelu
    :members: compute
@@ -959,7 +988,7 @@ Detailed description of parameters and semantics are described in
 Examples:
 
 - `Single-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py>`__
-- `Streaming Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py>`__
+- `Streaming Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_streaming.py>`__
 - `Multi-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_spmd.py>`__
 
 .. autoclass:: daal4py.low_order_moments

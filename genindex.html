@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; daal4py 0.2019.3 documentation</title>
+  <title>Index &mdash; daal4py 2020.0 documentation</title>
   
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                0.2019
+                2020
               </div>
             
           
@@ -183,12 +183,30 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="algorithms.html#daal4py.association_rules_result.antecedentItemsets">antecedentItemsets (daal4py.association_rules_result attribute)</a>
+      <li><a href="algorithms.html#daal4py.adaboost_model">adaboost_model (class in daal4py)</a>
 </li>
-      <li><a href="algorithms.html#daal4py.kmeans_result.assignments">assignments (daal4py.kmeans_result attribute)</a>
+      <li><a href="algorithms.html#daal4py.adaboost_prediction">adaboost_prediction (class in daal4py)</a>
 </li>
+      <li><a href="algorithms.html#daal4py.adaboost_training">adaboost_training (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.adaboost_training_result">adaboost_training_result (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.adaboost_model.Alpha">Alpha (daal4py.adaboost_model attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.brownboost_model.Alpha">(daal4py.brownboost_model attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="algorithms.html#daal4py.association_rules_result.antecedentItemsets">antecedentItemsets (daal4py.association_rules_result attribute)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.dbscan_result.assignments">assignments (daal4py.dbscan_result attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.kmeans_result.assignments">(daal4py.kmeans_result attribute)</a>
+</li>
+      </ul></li>
       <li><a href="algorithms.html#daal4py.association_rules">association_rules (class in daal4py)</a>
 </li>
       <li><a href="algorithms.html#daal4py.association_rules_result">association_rules_result (class in daal4py)</a>
@@ -205,9 +223,11 @@
 </li>
       <li><a href="algorithms.html#daal4py.bacon_outlier_detection_result">bacon_outlier_detection_result (class in daal4py)</a>
 </li>
-      <li><a href="algorithms.html#daal4py.linear_regression_model.Beta">Beta (daal4py.linear_regression_model attribute)</a>
+      <li><a href="algorithms.html#daal4py.lasso_regression_model.Beta">Beta (daal4py.lasso_regression_model attribute)</a>
 
       <ul>
+        <li><a href="algorithms.html#daal4py.linear_regression_model.Beta">(daal4py.linear_regression_model attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.logistic_regression_model.Beta">(daal4py.logistic_regression_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.ridge_regression_model.Beta">(daal4py.ridge_regression_model attribute)</a>
@@ -216,6 +236,14 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.svm_model.Bias">Bias (daal4py.svm_model attribute)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.brownboost_model">brownboost_model (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.brownboost_prediction">brownboost_prediction (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.brownboost_training">brownboost_training (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.brownboost_training_result">brownboost_training_result (class in daal4py)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -237,12 +265,20 @@
 </li>
       <li><a href="algorithms.html#daal4py.svm_model.ClassificationCoefficients">ClassificationCoefficients (daal4py.svm_model attribute)</a>
 </li>
-      <li><a href="algorithms.html#daal4py.classifier_prediction_result">classifier_prediction_result (class in daal4py)</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[1]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[2]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[3]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[4]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[5]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[6]</a>
+      <li><a href="algorithms.html#daal4py.classifier_prediction_result">classifier_prediction_result (class in daal4py)</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[1]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[2]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[3]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[4]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[5]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[6]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[7]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[8]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[9]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result">[10]</a>
 </li>
-      <li><a href="algorithms.html#daal4py.association_rules.compute">compute() (daal4py.association_rules method)</a>
+      <li><a href="algorithms.html#daal4py.adaboost_prediction.compute">compute() (daal4py.adaboost_prediction method)</a>
 
       <ul>
+        <li><a href="algorithms.html#daal4py.adaboost_training.compute">(daal4py.adaboost_training method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.association_rules.compute">(daal4py.association_rules method)</a>
+</li>
         <li><a href="algorithms.html#daal4py.bacon_outlier_detection.compute">(daal4py.bacon_outlier_detection method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.brownboost_prediction.compute">(daal4py.brownboost_prediction method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.brownboost_training.compute">(daal4py.brownboost_training method)</a>
 </li>
         <li><a href="algorithms.html#daal4py.cholesky.compute">(daal4py.cholesky method)</a>
 </li>
@@ -251,6 +287,8 @@
         <li><a href="algorithms.html#daal4py.cosine_distance.compute">(daal4py.cosine_distance method)</a>
 </li>
         <li><a href="algorithms.html#daal4py.covariance.compute">(daal4py.covariance method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.dbscan.compute">(daal4py.dbscan method)</a>
 </li>
         <li><a href="algorithms.html#daal4py.decision_forest_classification_prediction.compute">(daal4py.decision_forest_classification_prediction method)</a>
 </li>
@@ -304,6 +342,10 @@
 </li>
         <li><a href="algorithms.html#daal4py.kmeans_init.compute">(daal4py.kmeans_init method)</a>
 </li>
+        <li><a href="algorithms.html#daal4py.lasso_regression_prediction.compute">(daal4py.lasso_regression_prediction method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.lasso_regression_training.compute">(daal4py.lasso_regression_training method)</a>
+</li>
         <li><a href="algorithms.html#daal4py.linear_regression_prediction.compute">(daal4py.linear_regression_prediction method)</a>
 </li>
         <li><a href="algorithms.html#daal4py.linear_regression_training.compute">(daal4py.linear_regression_training method)</a>
@@ -311,6 +353,10 @@
         <li><a href="algorithms.html#daal4py.logistic_regression_prediction.compute">(daal4py.logistic_regression_prediction method)</a>
 </li>
         <li><a href="algorithms.html#daal4py.logistic_regression_training.compute">(daal4py.logistic_regression_training method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.logitboost_prediction.compute">(daal4py.logitboost_prediction method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.logitboost_training.compute">(daal4py.logitboost_training method)</a>
 </li>
         <li><a href="algorithms.html#daal4py.low_order_moments.compute">(daal4py.low_order_moments method)</a>
 </li>
@@ -366,6 +412,14 @@
 </li>
         <li><a href="algorithms.html#daal4py.sorting.compute">(daal4py.sorting method)</a>
 </li>
+        <li><a href="algorithms.html#daal4py.stump_classification_prediction.compute">(daal4py.stump_classification_prediction method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.stump_classification_training.compute">(daal4py.stump_classification_training method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.stump_regression_prediction.compute">(daal4py.stump_regression_prediction method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.stump_regression_training.compute">(daal4py.stump_regression_training method)</a>
+</li>
         <li><a href="algorithms.html#daal4py.svd.compute">(daal4py.svd method)</a>
 </li>
         <li><a href="algorithms.html#daal4py.svm_prediction.compute">(daal4py.svm_prediction method)</a>
@@ -380,6 +434,10 @@
       <li><a href="algorithms.html#daal4py.association_rules_result.confidence">confidence (daal4py.association_rules_result attribute)</a>
 </li>
       <li><a href="algorithms.html#daal4py.association_rules_result.consequentItemsets">consequentItemsets (daal4py.association_rules_result attribute)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.dbscan_result.coreIndices">coreIndices (daal4py.dbscan_result attribute)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.dbscan_result.coreObservations">coreObservations (daal4py.dbscan_result attribute)</a>
 </li>
       <li><a href="algorithms.html#daal4py.covariance_result.correlation">correlation (daal4py.covariance_result attribute)</a>
 </li>
@@ -417,6 +475,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.pca_result.dataForTransform">dataForTransform (daal4py.pca_result attribute)</a>
 </li>
+      <li><a href="algorithms.html#daal4py.dbscan">dbscan (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.dbscan_result">dbscan_result (class in daal4py)</a>
+</li>
       <li><a href="algorithms.html#daal4py.decision_forest_classification_model">decision_forest_classification_model (class in daal4py)</a>
 </li>
       <li><a href="algorithms.html#daal4py.decision_forest_classification_prediction">decision_forest_classification_prediction (class in daal4py)</a>
@@ -437,10 +499,10 @@
 </li>
       <li><a href="algorithms.html#daal4py.decision_tree_classification_model">decision_tree_classification_model (class in daal4py)</a>
 </li>
-      <li><a href="algorithms.html#daal4py.decision_tree_classification_prediction">decision_tree_classification_prediction (class in daal4py)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="algorithms.html#daal4py.decision_tree_classification_prediction">decision_tree_classification_prediction (class in daal4py)</a>
+</li>
       <li><a href="algorithms.html#daal4py.decision_tree_classification_training">decision_tree_classification_training (class in daal4py)</a>
 </li>
       <li><a href="algorithms.html#daal4py.decision_tree_classification_training_result">decision_tree_classification_training_result (class in daal4py)</a>
@@ -519,10 +581,10 @@
 </li>
       <li><a href="algorithms.html#daal4py.gbt_regression_prediction">gbt_regression_prediction (class in daal4py)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.gbt_regression_prediction_result">gbt_regression_prediction_result (class in daal4py)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.gbt_regression_training">gbt_regression_training (class in daal4py)</a>
 </li>
       <li><a href="algorithms.html#daal4py.gbt_regression_training_result">gbt_regression_training_result (class in daal4py)</a>
@@ -536,6 +598,8 @@
 </li>
       </ul></li>
       <li><a href="algorithms.html#daal4py.optimization_solver_saga_result.gradientsTable">gradientsTable (daal4py.optimization_solver_saga_result attribute)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.lasso_regression_training_result.gramMatrixId">gramMatrixId (daal4py.lasso_regression_training_result attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -551,19 +615,23 @@
 </li>
       <li><a href="algorithms.html#daal4py.implicit_als_training">implicit_als_training (class in daal4py)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.implicit_als_training_result">implicit_als_training_result (class in daal4py)</a>
 </li>
-      <li><a href="algorithms.html#daal4py.linear_regression_model.InterceptFlag">InterceptFlag (daal4py.linear_regression_model attribute)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="algorithms.html#daal4py.lasso_regression_model.InterceptFlag">InterceptFlag (daal4py.lasso_regression_model attribute)</a>
 
       <ul>
+        <li><a href="algorithms.html#daal4py.linear_regression_model.InterceptFlag">(daal4py.linear_regression_model attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.logistic_regression_model.InterceptFlag">(daal4py.logistic_regression_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.ridge_regression_model.InterceptFlag">(daal4py.ridge_regression_model attribute)</a>
 </li>
       </ul></li>
       <li><a href="algorithms.html#daal4py.implicit_als_model.ItemsFactors">ItemsFactors (daal4py.implicit_als_model attribute)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.logitboost_model.Iterations">Iterations (daal4py.logitboost_model attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -599,8 +667,24 @@
 </li>
       <li><a href="algorithms.html#daal4py.association_rules_result.largeItemsetsSupport">largeItemsetsSupport (daal4py.association_rules_result attribute)</a>
 </li>
+      <li><a href="algorithms.html#daal4py.lasso_regression_model">lasso_regression_model (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.lasso_regression_prediction">lasso_regression_prediction (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.lasso_regression_prediction_result">lasso_regression_prediction_result (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.lasso_regression_training">lasso_regression_training (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.lasso_regression_training_result">lasso_regression_training_result (class in daal4py)</a>
+</li>
       <li><a href="algorithms.html#daal4py.svd_result.leftSingularMatrix">leftSingularMatrix (daal4py.svd_result attribute)</a>
 </li>
+      <li><a href="algorithms.html#daal4py.stump_classification_model.LeftValue">LeftValue (daal4py.stump_classification_model attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.stump_regression_model.LeftValue">(daal4py.stump_regression_model attribute)</a>
+</li>
+      </ul></li>
       <li><a href="algorithms.html#daal4py.linear_regression_model">linear_regression_model (class in daal4py)</a>
 </li>
       <li><a href="algorithms.html#daal4py.linear_regression_prediction">linear_regression_prediction (class in daal4py)</a>
@@ -609,10 +693,10 @@
 </li>
       <li><a href="algorithms.html#daal4py.linear_regression_training">linear_regression_training (class in daal4py)</a>
 </li>
-      <li><a href="algorithms.html#daal4py.linear_regression_training_result">linear_regression_training_result (class in daal4py)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="algorithms.html#daal4py.linear_regression_training_result">linear_regression_training_result (class in daal4py)</a>
+</li>
       <li><a href="algorithms.html#daal4py.logistic_regression_model">logistic_regression_model (class in daal4py)</a>
 </li>
       <li><a href="algorithms.html#daal4py.logistic_regression_prediction">logistic_regression_prediction (class in daal4py)</a>
@@ -621,7 +705,17 @@
 </li>
       <li><a href="algorithms.html#daal4py.logistic_regression_training_result">logistic_regression_training_result (class in daal4py)</a>
 </li>
+      <li><a href="algorithms.html#daal4py.logitboost_model">logitboost_model (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.logitboost_prediction">logitboost_prediction (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.logitboost_training">logitboost_training (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.logitboost_training_result">logitboost_training_result (class in daal4py)</a>
+</li>
       <li><a href="algorithms.html#daal4py.multinomial_naive_bayes_model.LogP">LogP (daal4py.multinomial_naive_bayes_model attribute)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">logProbabilities (daal4py.classifier_prediction_result attribute)</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[1]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[2]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[3]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[4]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[5]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[6]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[7]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[8]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[9]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.logProbabilities">[10]</a>
 </li>
       <li><a href="algorithms.html#daal4py.multinomial_naive_bayes_model.LogTheta">LogTheta (daal4py.multinomial_naive_bayes_model attribute)</a>
 </li>
@@ -689,8 +783,6 @@
         <li><a href="algorithms.html#daal4py.pca_result.means">(daal4py.pca_result attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.low_order_moments_result.minimum">minimum (daal4py.low_order_moments_result attribute)</a>
 
       <ul>
@@ -703,9 +795,15 @@
         <li><a href="algorithms.html#daal4py.optimization_solver_sgd_result.minimum">(daal4py.optimization_solver_sgd_result attribute)</a>
 </li>
       </ul></li>
-      <li><a href="algorithms.html#daal4py.decision_forest_classification_training_result.model">model (daal4py.decision_forest_classification_training_result attribute)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="algorithms.html#daal4py.adaboost_training_result.model">model (daal4py.adaboost_training_result attribute)</a>
 
       <ul>
+        <li><a href="algorithms.html#daal4py.brownboost_training_result.model">(daal4py.brownboost_training_result attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.decision_forest_classification_training_result.model">(daal4py.decision_forest_classification_training_result attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.decision_forest_regression_training_result.model">(daal4py.decision_forest_regression_training_result attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.decision_tree_classification_training_result.model">(daal4py.decision_tree_classification_training_result attribute)</a>
@@ -720,13 +818,21 @@
 </li>
         <li><a href="algorithms.html#daal4py.kdtree_knn_classification_training_result.model">(daal4py.kdtree_knn_classification_training_result attribute)</a>
 </li>
+        <li><a href="algorithms.html#daal4py.lasso_regression_training_result.model">(daal4py.lasso_regression_training_result attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.linear_regression_training_result.model">(daal4py.linear_regression_training_result attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.logistic_regression_training_result.model">(daal4py.logistic_regression_training_result attribute)</a>
 </li>
+        <li><a href="algorithms.html#daal4py.logitboost_training_result.model">(daal4py.logitboost_training_result attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.multinomial_naive_bayes_training_result.model">(daal4py.multinomial_naive_bayes_training_result attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.ridge_regression_training_result.model">(daal4py.ridge_regression_training_result attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.stump_classification_training_result.model">(daal4py.stump_classification_training_result attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.stump_regression_training_result.model">(daal4py.stump_regression_training_result attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.svm_training_result.model">(daal4py.svm_training_result attribute)</a>
 </li>
@@ -749,9 +855,15 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="algorithms.html#daal4py.decision_forest_classification_model.NFeatures">NFeatures (daal4py.decision_forest_classification_model attribute)</a>
+      <li><a href="algorithms.html#daal4py.dbscan_result.nClusters">nClusters (daal4py.dbscan_result attribute)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.adaboost_model.NFeatures">NFeatures (daal4py.adaboost_model attribute)</a>
 
       <ul>
+        <li><a href="algorithms.html#daal4py.brownboost_model.NFeatures">(daal4py.brownboost_model attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.decision_forest_classification_model.NFeatures">(daal4py.decision_forest_classification_model attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.decision_tree_classification_model.NFeatures">(daal4py.decision_tree_classification_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.gbt_classification_model.NFeatures">(daal4py.gbt_classification_model attribute)</a>
@@ -760,7 +872,11 @@
 </li>
         <li><a href="algorithms.html#daal4py.logistic_regression_model.NFeatures">(daal4py.logistic_regression_model attribute)</a>
 </li>
+        <li><a href="algorithms.html#daal4py.logitboost_model.NFeatures">(daal4py.logitboost_model attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.multinomial_naive_bayes_model.NFeatures">(daal4py.multinomial_naive_bayes_model attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.stump_classification_model.NFeatures">(daal4py.stump_classification_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.svm_model.NFeatures">(daal4py.svm_model attribute)</a>
 </li>
@@ -793,9 +909,11 @@
         <li><a href="algorithms.html#daal4py.normalization_zscore_result.normalizedData">(daal4py.normalization_zscore_result attribute)</a>
 </li>
       </ul></li>
-      <li><a href="algorithms.html#daal4py.linear_regression_model.NumberOfBetas">NumberOfBetas (daal4py.linear_regression_model attribute)</a>
+      <li><a href="algorithms.html#daal4py.lasso_regression_model.NumberOfBetas">NumberOfBetas (daal4py.lasso_regression_model attribute)</a>
 
       <ul>
+        <li><a href="algorithms.html#daal4py.linear_regression_model.NumberOfBetas">(daal4py.linear_regression_model attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.logistic_regression_model.NumberOfBetas">(daal4py.logistic_regression_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.ridge_regression_model.NumberOfBetas">(daal4py.ridge_regression_model attribute)</a>
@@ -803,9 +921,13 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="algorithms.html#daal4py.decision_forest_classification_model.NumberOfFeatures">NumberOfFeatures (daal4py.decision_forest_classification_model attribute)</a>
+      <li><a href="algorithms.html#daal4py.adaboost_model.NumberOfFeatures">NumberOfFeatures (daal4py.adaboost_model attribute)</a>
 
       <ul>
+        <li><a href="algorithms.html#daal4py.brownboost_model.NumberOfFeatures">(daal4py.brownboost_model attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.decision_forest_classification_model.NumberOfFeatures">(daal4py.decision_forest_classification_model attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.decision_forest_regression_model.NumberOfFeatures">(daal4py.decision_forest_regression_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.decision_tree_classification_model.NumberOfFeatures">(daal4py.decision_tree_classification_model attribute)</a>
@@ -818,20 +940,30 @@
 </li>
         <li><a href="algorithms.html#daal4py.kdtree_knn_classification_model.NumberOfFeatures">(daal4py.kdtree_knn_classification_model attribute)</a>
 </li>
+        <li><a href="algorithms.html#daal4py.lasso_regression_model.NumberOfFeatures">(daal4py.lasso_regression_model attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.linear_regression_model.NumberOfFeatures">(daal4py.linear_regression_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.logistic_regression_model.NumberOfFeatures">(daal4py.logistic_regression_model attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.logitboost_model.NumberOfFeatures">(daal4py.logitboost_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.multinomial_naive_bayes_model.NumberOfFeatures">(daal4py.multinomial_naive_bayes_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.ridge_regression_model.NumberOfFeatures">(daal4py.ridge_regression_model attribute)</a>
 </li>
+        <li><a href="algorithms.html#daal4py.stump_classification_model.NumberOfFeatures">(daal4py.stump_classification_model attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.stump_regression_model.NumberOfFeatures">(daal4py.stump_regression_model attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.svm_model.NumberOfFeatures">(daal4py.svm_model attribute)</a>
 </li>
       </ul></li>
-      <li><a href="algorithms.html#daal4py.linear_regression_model.NumberOfResponses">NumberOfResponses (daal4py.linear_regression_model attribute)</a>
+      <li><a href="algorithms.html#daal4py.lasso_regression_model.NumberOfResponses">NumberOfResponses (daal4py.lasso_regression_model attribute)</a>
 
       <ul>
+        <li><a href="algorithms.html#daal4py.linear_regression_model.NumberOfResponses">(daal4py.linear_regression_model attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.ridge_regression_model.NumberOfResponses">(daal4py.ridge_regression_model attribute)</a>
 </li>
       </ul></li>
@@ -843,6 +975,14 @@
         <li><a href="algorithms.html#daal4py.gbt_classification_model.NumberOfTrees">(daal4py.gbt_classification_model attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.gbt_regression_model.NumberOfTrees">(daal4py.gbt_regression_model attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="algorithms.html#daal4py.adaboost_model.NumberOfWeakLearners">NumberOfWeakLearners (daal4py.adaboost_model attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.brownboost_model.NumberOfWeakLearners">(daal4py.brownboost_model attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.logitboost_model.NumberOfWeakLearners">(daal4py.logitboost_model attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -915,9 +1055,7 @@
 </li>
       <li><a href="algorithms.html#daal4py.pivoted_qr_result">pivoted_qr_result (class in daal4py)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="algorithms.html#daal4py.classifier_prediction_result.prediction">prediction (daal4py.classifier_prediction_result attribute)</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[1]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[2]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[3]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[4]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[5]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[6]</a>
+      <li><a href="algorithms.html#daal4py.classifier_prediction_result.prediction">prediction (daal4py.classifier_prediction_result attribute)</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[1]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[2]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[3]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[4]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[5]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[6]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[7]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[8]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[9]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.prediction">[10]</a>
 
       <ul>
         <li><a href="algorithms.html#daal4py.decision_forest_regression_prediction_result.prediction">(daal4py.decision_forest_regression_prediction_result attribute)</a>
@@ -928,11 +1066,19 @@
 </li>
         <li><a href="algorithms.html#daal4py.implicit_als_prediction_ratings_result.prediction">(daal4py.implicit_als_prediction_ratings_result attribute)</a>
 </li>
+        <li><a href="algorithms.html#daal4py.lasso_regression_prediction_result.prediction">(daal4py.lasso_regression_prediction_result attribute)</a>
+</li>
         <li><a href="algorithms.html#daal4py.linear_regression_prediction_result.prediction">(daal4py.linear_regression_prediction_result attribute)</a>
 </li>
         <li><a href="algorithms.html#daal4py.ridge_regression_prediction_result.prediction">(daal4py.ridge_regression_prediction_result attribute)</a>
 </li>
+        <li><a href="algorithms.html#daal4py.stump_regression_prediction_result.prediction">(daal4py.stump_regression_prediction_result attribute)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">probabilities (daal4py.classifier_prediction_result attribute)</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[1]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[2]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[3]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[4]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[5]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[6]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[7]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[8]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[9]</a>, <a href="algorithms.html#daal4py.classifier_prediction_result.probabilities">[10]</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -965,16 +1111,22 @@
 </li>
       <li><a href="algorithms.html#daal4py.ridge_regression_prediction">ridge_regression_prediction (class in daal4py)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.ridge_regression_prediction_result">ridge_regression_prediction_result (class in daal4py)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.ridge_regression_training">ridge_regression_training (class in daal4py)</a>
 </li>
       <li><a href="algorithms.html#daal4py.ridge_regression_training_result">ridge_regression_training_result (class in daal4py)</a>
 </li>
       <li><a href="algorithms.html#daal4py.svd_result.rightSingularMatrix">rightSingularMatrix (daal4py.svd_result attribute)</a>
 </li>
+      <li><a href="algorithms.html#daal4py.stump_classification_model.RightValue">RightValue (daal4py.stump_classification_model attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.stump_regression_model.RightValue">(daal4py.stump_regression_model attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -999,12 +1151,42 @@
 </li>
       <li><a href="algorithms.html#daal4py.sorting_result">sorting_result (class in daal4py)</a>
 </li>
+      <li><a href="algorithms.html#daal4py.stump_classification_model.SplitFeature">SplitFeature (daal4py.stump_classification_model attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.stump_regression_model.SplitFeature">(daal4py.stump_regression_model attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="algorithms.html#daal4py.stump_classification_model.SplitValue">SplitValue (daal4py.stump_classification_model attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.stump_regression_model.SplitValue">(daal4py.stump_regression_model attribute)</a>
+</li>
+      </ul></li>
       <li><a href="algorithms.html#daal4py.low_order_moments_result.standardDeviation">standardDeviation (daal4py.low_order_moments_result attribute)</a>
 </li>
-      <li><a href="algorithms.html#daal4py.low_order_moments_result.sum">sum (daal4py.low_order_moments_result attribute)</a>
+      <li><a href="algorithms.html#daal4py.stump_classification_model">stump_classification_model (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.stump_classification_prediction">stump_classification_prediction (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.stump_classification_training">stump_classification_training (class in daal4py)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="algorithms.html#daal4py.stump_classification_training_result">stump_classification_training_result (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.stump_regression_model">stump_regression_model (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.stump_regression_prediction">stump_regression_prediction (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.stump_regression_prediction_result">stump_regression_prediction_result (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.stump_regression_training">stump_regression_training (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.stump_regression_training_result">stump_regression_training_result (class in daal4py)</a>
+</li>
+      <li><a href="algorithms.html#daal4py.low_order_moments_result.sum">sum (daal4py.low_order_moments_result attribute)</a>
+</li>
       <li><a href="algorithms.html#daal4py.low_order_moments_result.sumSquares">sumSquares (daal4py.low_order_moments_result attribute)</a>
 </li>
       <li><a href="algorithms.html#daal4py.low_order_moments_result.sumSquaresCentered">sumSquaresCentered (daal4py.low_order_moments_result attribute)</a>
@@ -1067,12 +1249,46 @@
         <li><a href="algorithms.html#daal4py.math_tanh_result.value">(daal4py.math_tanh_result attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.decision_forest_classification_training_result.variableImportance">variableImportance (daal4py.decision_forest_classification_training_result attribute)</a>
 
       <ul>
         <li><a href="algorithms.html#daal4py.decision_forest_regression_training_result.variableImportance">(daal4py.decision_forest_regression_training_result attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.stump_classification_training_result.variableImportance">(daal4py.stump_classification_training_result attribute)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.stump_regression_training_result.variableImportance">(daal4py.stump_regression_training_result attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="algorithms.html#daal4py.gbt_classification_training_result.variableImportanceByCover">variableImportanceByCover (daal4py.gbt_classification_training_result attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.gbt_regression_training_result.variableImportanceByCover">(daal4py.gbt_regression_training_result attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="algorithms.html#daal4py.gbt_classification_training_result.variableImportanceByGain">variableImportanceByGain (daal4py.gbt_classification_training_result attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.gbt_regression_training_result.variableImportanceByGain">(daal4py.gbt_regression_training_result attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="algorithms.html#daal4py.gbt_classification_training_result.variableImportanceByTotalCover">variableImportanceByTotalCover (daal4py.gbt_classification_training_result attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.gbt_regression_training_result.variableImportanceByTotalCover">(daal4py.gbt_regression_training_result attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="algorithms.html#daal4py.gbt_classification_training_result.variableImportanceByTotalGain">variableImportanceByTotalGain (daal4py.gbt_classification_training_result attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.gbt_regression_training_result.variableImportanceByTotalGain">(daal4py.gbt_regression_training_result attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="algorithms.html#daal4py.gbt_classification_training_result.variableImportanceByWeight">variableImportanceByWeight (daal4py.gbt_classification_training_result attribute)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.gbt_regression_training_result.variableImportanceByWeight">(daal4py.gbt_regression_training_result attribute)</a>
 </li>
       </ul></li>
       <li><a href="algorithms.html#daal4py.low_order_moments_result.variance">variance (daal4py.low_order_moments_result attribute)</a>
@@ -1090,6 +1306,18 @@
 
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="algorithms.html#daal4py.adaboost_model.WeakLearnerModel">WeakLearnerModel() (daal4py.adaboost_model method)</a>
+
+      <ul>
+        <li><a href="algorithms.html#daal4py.brownboost_model.WeakLearnerModel">(daal4py.brownboost_model method)</a>
+</li>
+        <li><a href="algorithms.html#daal4py.logitboost_model.WeakLearnerModel">(daal4py.logitboost_model method)</a>
+</li>
+      </ul></li>
+      <li><a href="algorithms.html#daal4py.adaboost_training_result.weakLearnersErrors">weakLearnersErrors (daal4py.adaboost_training_result attribute)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="algorithms.html#daal4py.bacon_outlier_detection_result.weights">weights (daal4py.bacon_outlier_detection_result attribute)</a>
 

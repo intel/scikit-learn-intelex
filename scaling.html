@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Scaling on Distributed Memory (Multiprocessing) &mdash; daal4py 0.2019.3 documentation</title>
+  <title>Scaling on Distributed Memory (Multiprocessing) &mdash; daal4py 2020.0 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.2019
+                2020
               </div>
             
           
@@ -194,14 +194,14 @@ suffixed by a number. The code could then look like this:</p>
 </pre></div>
 </div>
 <p>That’s all for the python code:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="kn">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
 <span class="n">daalinit</span><span class="p">()</span>
 <span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s2">&quot;file</span><span class="si">{}</span><span class="s2">.csv&quot;</span><span class="p">,</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">my_procid</span><span class="p">())</span>
 <span class="n">daalfini</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>To actually get it exectuted on several processes use standard MPI mechanics,
+<p>To actually get it executed on several processes use standard MPI mechanics,
 like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpirun</span> <span class="o">-</span><span class="n">n</span> <span class="mi">4</span> <span class="n">python</span> <span class="o">./</span><span class="n">kmeans</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
@@ -251,6 +251,11 @@ daal4py can also be compiled for any other MPI implementation.</p>
 <li><p>Moments of Low Order (low_order_moments)</p>
 <ul>
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_spmd.py">Low Order Moments</a></p></li>
+</ul>
+</li>
+<li><p>QR Decomposition (qr)</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/qr_spmd.py">QR</a></p></li>
 </ul>
 </li>
 </ul>

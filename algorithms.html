@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Algorithms &mdash; daal4py 0.2019.3 documentation</title>
+  <title>Algorithms &mdash; daal4py 2020.0 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.2019
+                2020
               </div>
             
           
@@ -94,6 +94,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#decision-tree-classification">Decision Tree Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gradient-boosted-classification">Gradient Boosted Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#k-nearest-neighbors-knn">k-Nearest Neighbors (kNN)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adaboost-classification">AdaBoost Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#brownboost-classification">BrownBoost Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logitboost-classification">LogitBoost Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stump-weak-learner-classification">Stump Weak Learner Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multinomial-naive-bayes">Multinomial Naive Bayes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#support-vector-machine-svm">Support Vector Machine (SVM)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#logistic-regression">Logistic Regression</a></li>
@@ -104,7 +108,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#decision-tree-regression">Decision Tree Regression</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gradient-boosted-regression">Gradient Boosted Regression</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linear-regression">Linear Regression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#least-absolute-shrinkage-and-selection-operator">Least Absolute Shrinkage and Selection Operator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ridge-regression">Ridge Regression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stump-regression">Stump Regression</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#principal-component-analysis-pca">Principal Component Analysis (PCA)</a><ul>
@@ -116,6 +122,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#k-means">K-Means</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#density-based-spatial-clustering-of-applications-with-noise">Density-Based Spatial Clustering of Applications with Noise</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#outlier-detection">Outlier Detection</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#multivariate-outlier-detection">Multivariate Outlier Detection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#univariate-outlier-detection">Univariate Outlier Detection</a></li>
@@ -280,6 +287,7 @@
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – Number of classes</p></li>
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for Decision forest, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Decision forest computation method</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>nTrees</strong> (<em>size_t</em>) – [optional, default: -1]  Number of trees in the forest. Default is 10</p></li>
 <li><p><strong>observationsPerTreeFraction</strong> (<em>double</em>) – [optional, default: NaN64]  Fraction of observations used for a training of one tree, 0 to 1. Default is 1 (sampling with replacement)</p></li>
 <li><p><strong>featuresPerNode</strong> (<em>size_t</em>) – [optional, default: -1]  Number of features tried as possible splits per node. If 0 then sqrt(p) for classification, p/3 for regression, where p is the total number of features.</p></li>
@@ -369,6 +377,7 @@
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – Number of classes</p></li>
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the decision_forest algortithm, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] decision_forest computation method</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -396,8 +405,28 @@
 <em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#daal4py.classifier_prediction_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="attribute">
+<dt id="daal4py.classifier_prediction_result.logProbabilities">
+<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#daal4py.classifier_prediction_result.logProbabilities" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="daal4py.classifier_prediction_result.prediction">
 <code class="sig-name descname">prediction</code><a class="headerlink" href="#daal4py.classifier_prediction_result.prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.classifier_prediction_result.probabilities">
+<code class="sig-name descname">probabilities</code><a class="headerlink" href="#daal4py.classifier_prediction_result.probabilities" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -465,6 +494,8 @@
 <li><p><strong>pruning</strong> (<em>str</em>) – [optional, default: “”]  Pruning method for Decision tree</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum tree depth. 0 means unlimited depth.</p></li>
 <li><p><strong>minObservationsInLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]  Minimum number of observations in the leaf node. Can be any positive number.</p></li>
+<li><p><strong>nBins</strong> (<em>size_t</em>) – [optional, default: -1]  The number of bins used to compute probabilities of the observations belonging to the class. The only supported value for current version of the library is 1.</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -518,7 +549,9 @@
 <li><p><strong>pruning</strong> (<em>str</em>) – [optional, default: “”]  Pruning method for Decision tree</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum tree depth. 0 means unlimited depth.</p></li>
 <li><p><strong>minObservationsInLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]  Minimum number of observations in the leaf node. Can be any positive number.</p></li>
+<li><p><strong>nBins</strong> (<em>size_t</em>) – [optional, default: -1]  The number of bins used to compute probabilities of the observations belonging to the class. The only supported value for current version of the library is 1.</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -547,7 +580,27 @@
 <dd><p>Properties:</p>
 <dl class="attribute">
 <dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
 <code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -587,7 +640,7 @@
 <div class="section" id="gradient-boosted-classification">
 <h3>Gradient Boosted Classification<a class="headerlink" href="#gradient-boosted-classification" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-tree-2">Intel DAAL Classification Gradient Boosted Tree</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-2">Intel DAAL Classification Gradient Boosted Tree</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_classification_batch.py">Single-Process Gradient Boosted Classification</a></p></li>
@@ -602,6 +655,8 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for Gradient Boosted Trees, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Gradient Boosted Trees computation method</p></li>
 <li><p><strong>loss</strong> (<em>str</em>) – [optional, default: “”]  Loss function type</p></li>
+<li><p><strong>varImportance</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag VariableImportanceModes that indicates the variable importance computation modes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>splitMethod</strong> (<em>str</em>) – [optional, default: “”]  Split finding method. Default is exact</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the gradient boosted trees training algorithm. Default is 50</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal tree depth, 0 for unlimited. Default is 6</p></li>
@@ -653,6 +708,56 @@
 </dl>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="daal4py.gbt_classification_training_result.variableImportanceByCover">
+<code class="sig-name descname">variableImportanceByCover</code><a class="headerlink" href="#daal4py.gbt_classification_training_result.variableImportanceByCover" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_classification_training_result.variableImportanceByGain">
+<code class="sig-name descname">variableImportanceByGain</code><a class="headerlink" href="#daal4py.gbt_classification_training_result.variableImportanceByGain" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_classification_training_result.variableImportanceByTotalCover">
+<code class="sig-name descname">variableImportanceByTotalCover</code><a class="headerlink" href="#daal4py.gbt_classification_training_result.variableImportanceByTotalCover" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_classification_training_result.variableImportanceByTotalGain">
+<code class="sig-name descname">variableImportanceByTotalGain</code><a class="headerlink" href="#daal4py.gbt_classification_training_result.variableImportanceByTotalGain" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_classification_training_result.variableImportanceByWeight">
+<code class="sig-name descname">variableImportanceByWeight</code><a class="headerlink" href="#daal4py.gbt_classification_training_result.variableImportanceByWeight" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -665,6 +770,7 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the gbt algortithm, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] gradient boosted trees computation method</p></li>
 <li><p><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Number of iterations of the trained model to be used for prediction</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -693,7 +799,27 @@
 <dd><p>Properties:</p>
 <dl class="attribute">
 <dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
 <code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -760,6 +886,7 @@
 <li><p><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]  The option to enable/disable an usage of the input dataset in kNN model</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for random choosing elements from training dataset</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -811,6 +938,7 @@
 <li><p><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]  The option to enable/disable an usage of the input dataset in kNN model</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for random choosing elements from training dataset</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -839,7 +967,27 @@
 <dd><p>Properties:</p>
 <dl class="attribute">
 <dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
 <code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -876,6 +1024,804 @@
 </dd></dl>
 
 </div>
+<div class="section" id="adaboost-classification">
+<h3>AdaBoost Classification<a class="headerlink" href="#adaboost-classification" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-adaboost-classifier">Intel DAAL Classification AdaBoost</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/adaboost_batch.py">Single-Process AdaBoost Classification</a></p></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.adaboost_training">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">adaboost_training</code><a class="headerlink" href="#daal4py.adaboost_training" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – Number of classes</p></li>
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the AdaBoost, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] AdaBoost computation method</p></li>
+<li><p><strong>weakLearnerTraining</strong> (<em>classifier_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
+<li><p><strong>weakLearnerPrediction</strong> (<em>classifier_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the AdaBoost training algorithm</p></li>
+<li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the AdaBoost training algorithm</p></li>
+<li><p><strong>learningRate</strong> (<em>double</em>) – [optional, default: NaN64]  Multiplier for each classifier to shrink its contribution</p></li>
+<li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.adaboost_training.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">labels</em>, <em class="sig-param">weights</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.adaboost_training.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Training data set</p></li>
+<li><p><strong>labels</strong> (<em>data_or_file</em>) – Labels of the training data set</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Optional. Weights of the observations in the training data set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.adaboost_training_result" title="daal4py.adaboost_training_result">adaboost_training_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.adaboost_training_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">adaboost_training_result</code><a class="headerlink" href="#daal4py.adaboost_training_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.adaboost_training_result.model">
+<code class="sig-name descname">model</code><a class="headerlink" href="#daal4py.adaboost_training_result.model" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#daal4py.adaboost_model" title="daal4py.adaboost_model">adaboost_model</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.adaboost_training_result.weakLearnersErrors">
+<code class="sig-name descname">weakLearnersErrors</code><a class="headerlink" href="#daal4py.adaboost_training_result.weakLearnersErrors" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.adaboost_prediction">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">adaboost_prediction</code><a class="headerlink" href="#daal4py.adaboost_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – Number of classes</p></li>
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the AdaBoost, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] AdaBoost computation method</p></li>
+<li><p><strong>weakLearnerTraining</strong> (<em>classifier_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
+<li><p><strong>weakLearnerPrediction</strong> (<em>classifier_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the AdaBoost training algorithm</p></li>
+<li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the AdaBoost training algorithm</p></li>
+<li><p><strong>learningRate</strong> (<em>double</em>) – [optional, default: NaN64]  Multiplier for each classifier to shrink its contribution</p></li>
+<li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.adaboost_prediction.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">model</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.adaboost_prediction.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data set</p></li>
+<li><p><strong>model</strong> (<em>adaboost_modelptr</em>) – Input model trained by the classification algorithm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.classifier_prediction_result" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.adaboost_model">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">adaboost_model</code><a class="headerlink" href="#daal4py.adaboost_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.adaboost_model.Alpha">
+<code class="sig-name descname">Alpha</code><a class="headerlink" href="#daal4py.adaboost_model.Alpha" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.adaboost_model.NFeatures">
+<code class="sig-name descname">NFeatures</code><a class="headerlink" href="#daal4py.adaboost_model.NFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.adaboost_model.NumberOfFeatures">
+<code class="sig-name descname">NumberOfFeatures</code><a class="headerlink" href="#daal4py.adaboost_model.NumberOfFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.adaboost_model.NumberOfWeakLearners">
+<code class="sig-name descname">NumberOfWeakLearners</code><a class="headerlink" href="#daal4py.adaboost_model.NumberOfWeakLearners" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="daal4py.adaboost_model.WeakLearnerModel">
+<code class="sig-name descname">WeakLearnerModel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.adaboost_model.WeakLearnerModel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>classifier_model (or derived)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="brownboost-classification">
+<h3>BrownBoost Classification<a class="headerlink" href="#brownboost-classification" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-brownboost-classifier">Intel DAAL Classification BrownBoost</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/brownboost_batch.py">Single-Process BrownBoost Classification</a></p></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.brownboost_training">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">brownboost_training</code><a class="headerlink" href="#daal4py.brownboost_training" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for BrownBoost, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] BrownBoost computation method</p></li>
+<li><p><strong>weakLearnerTraining</strong> (<em>classifier_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
+<li><p><strong>weakLearnerPrediction</strong> (<em>classifier_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the BrownBoost training algorithm</p></li>
+<li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the BrownBoost training algorithm</p></li>
+<li><p><strong>newtonRaphsonAccuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy threshold for Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
+<li><p><strong>newtonRaphsonMaxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
+<li><p><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold needed to avoid degenerate cases in the BrownBoost training algorithm</p></li>
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.brownboost_training.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">labels</em>, <em class="sig-param">weights</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.brownboost_training.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Training data set</p></li>
+<li><p><strong>labels</strong> (<em>data_or_file</em>) – Labels of the training data set</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Optional. Weights of the observations in the training data set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.brownboost_training_result" title="daal4py.brownboost_training_result">brownboost_training_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.brownboost_training_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">brownboost_training_result</code><a class="headerlink" href="#daal4py.brownboost_training_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.brownboost_training_result.model">
+<code class="sig-name descname">model</code><a class="headerlink" href="#daal4py.brownboost_training_result.model" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#daal4py.brownboost_model" title="daal4py.brownboost_model">brownboost_model</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.brownboost_prediction">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">brownboost_prediction</code><a class="headerlink" href="#daal4py.brownboost_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the BrownBoost algorithm, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] BrownBoost computation method</p></li>
+<li><p><strong>weakLearnerTraining</strong> (<em>classifier_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
+<li><p><strong>weakLearnerPrediction</strong> (<em>classifier_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the BrownBoost training algorithm</p></li>
+<li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the BrownBoost training algorithm</p></li>
+<li><p><strong>newtonRaphsonAccuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy threshold for Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
+<li><p><strong>newtonRaphsonMaxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
+<li><p><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold needed to avoid degenerate cases in the BrownBoost training algorithm</p></li>
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.brownboost_prediction.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">model</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.brownboost_prediction.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data set</p></li>
+<li><p><strong>model</strong> (<em>brownboost_modelptr</em>) – Input model trained by the classification algorithm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.classifier_prediction_result" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.brownboost_model">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">brownboost_model</code><a class="headerlink" href="#daal4py.brownboost_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.brownboost_model.Alpha">
+<code class="sig-name descname">Alpha</code><a class="headerlink" href="#daal4py.brownboost_model.Alpha" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.brownboost_model.NFeatures">
+<code class="sig-name descname">NFeatures</code><a class="headerlink" href="#daal4py.brownboost_model.NFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.brownboost_model.NumberOfFeatures">
+<code class="sig-name descname">NumberOfFeatures</code><a class="headerlink" href="#daal4py.brownboost_model.NumberOfFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.brownboost_model.NumberOfWeakLearners">
+<code class="sig-name descname">NumberOfWeakLearners</code><a class="headerlink" href="#daal4py.brownboost_model.NumberOfWeakLearners" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="daal4py.brownboost_model.WeakLearnerModel">
+<code class="sig-name descname">WeakLearnerModel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.brownboost_model.WeakLearnerModel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>classifier_model (or derived)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="logitboost-classification">
+<h3>LogitBoost Classification<a class="headerlink" href="#logitboost-classification" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logitboost-classifier">Intel DAAL Classification LogitBoost</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/logitboost_batch.py">Single-Process LogitBoost Classification</a></p></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.logitboost_training">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">logitboost_training</code><a class="headerlink" href="#daal4py.logitboost_training" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – Number of classes</p></li>
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for LogitBoost, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “friedman”] LogitBoost computation method</p></li>
+<li><p><strong>weakLearnerTraining</strong> (<em>regression_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
+<li><p><strong>weakLearnerPrediction</strong> (<em>regression_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the LogitBoost training algorithm</p></li>
+<li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of terms in additive regression</p></li>
+<li><p><strong>weightsDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold to avoid degenerate cases when  calculating weights W</p></li>
+<li><p><strong>responsesDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold to avoid degenerate cases when  calculating responses Z</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.logitboost_training.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">labels</em>, <em class="sig-param">weights</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.logitboost_training.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Training data set</p></li>
+<li><p><strong>labels</strong> (<em>data_or_file</em>) – Labels of the training data set</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Optional. Weights of the observations in the training data set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.logitboost_training_result" title="daal4py.logitboost_training_result">logitboost_training_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.logitboost_training_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">logitboost_training_result</code><a class="headerlink" href="#daal4py.logitboost_training_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.logitboost_training_result.model">
+<code class="sig-name descname">model</code><a class="headerlink" href="#daal4py.logitboost_training_result.model" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#daal4py.logitboost_model" title="daal4py.logitboost_model">logitboost_model</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.logitboost_prediction">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">logitboost_prediction</code><a class="headerlink" href="#daal4py.logitboost_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – Number of classes</p></li>
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the LogitBoost algortithm, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] LogitBoost computation method</p></li>
+<li><p><strong>weakLearnerTraining</strong> (<em>regression_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
+<li><p><strong>weakLearnerPrediction</strong> (<em>regression_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the LogitBoost training algorithm</p></li>
+<li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of terms in additive regression</p></li>
+<li><p><strong>weightsDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold to avoid degenerate cases when  calculating weights W</p></li>
+<li><p><strong>responsesDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold to avoid degenerate cases when  calculating responses Z</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.logitboost_prediction.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">model</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.logitboost_prediction.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data set</p></li>
+<li><p><strong>model</strong> (<em>logitboost_modelptr</em>) – Input model trained by the classification algorithm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.classifier_prediction_result" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.logitboost_model">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">logitboost_model</code><a class="headerlink" href="#daal4py.logitboost_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.logitboost_model.Iterations">
+<code class="sig-name descname">Iterations</code><a class="headerlink" href="#daal4py.logitboost_model.Iterations" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.logitboost_model.NFeatures">
+<code class="sig-name descname">NFeatures</code><a class="headerlink" href="#daal4py.logitboost_model.NFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.logitboost_model.NumberOfFeatures">
+<code class="sig-name descname">NumberOfFeatures</code><a class="headerlink" href="#daal4py.logitboost_model.NumberOfFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.logitboost_model.NumberOfWeakLearners">
+<code class="sig-name descname">NumberOfWeakLearners</code><a class="headerlink" href="#daal4py.logitboost_model.NumberOfWeakLearners" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="daal4py.logitboost_model.WeakLearnerModel">
+<code class="sig-name descname">WeakLearnerModel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.logitboost_model.WeakLearnerModel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>regression_model (or derived)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="stump-weak-learner-classification">
+<h3>Stump Weak Learner Classification<a class="headerlink" href="#stump-weak-learner-classification" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier">Intel DAAL Classification Weak Learner Stump</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/stump_classification_batch.py">Single-Process Stump Weak Learner Classification</a></p></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.stump_classification_training">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">stump_classification_training</code><a class="headerlink" href="#daal4py.stump_classification_training" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the the decision stump training method, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Decision stump training method</p></li>
+<li><p><strong>splitCriterion</strong> (<em>str</em>) – [optional, default: “”]  Split criterion for stump classification</p></li>
+<li><p><strong>varImportance</strong> (<em>str</em>) – [optional, default: “”]  Variable importance computation mode</p></li>
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.stump_classification_training.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">labels</em>, <em class="sig-param">weights</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.stump_classification_training.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Training data set</p></li>
+<li><p><strong>labels</strong> (<em>data_or_file</em>) – Labels of the training data set</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Optional. Weights of the observations in the training data set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.stump_classification_training_result" title="daal4py.stump_classification_training_result">stump_classification_training_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.stump_classification_training_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">stump_classification_training_result</code><a class="headerlink" href="#daal4py.stump_classification_training_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.stump_classification_training_result.model">
+<code class="sig-name descname">model</code><a class="headerlink" href="#daal4py.stump_classification_training_result.model" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#daal4py.stump_classification_model" title="daal4py.stump_classification_model">stump_classification_model</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_classification_training_result.variableImportance">
+<code class="sig-name descname">variableImportance</code><a class="headerlink" href="#daal4py.stump_classification_training_result.variableImportance" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.stump_classification_prediction">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">stump_classification_prediction</code><a class="headerlink" href="#daal4py.stump_classification_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the decision stump prediction algorithm, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Decision stump model-based prediction method</p></li>
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.stump_classification_prediction.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">model</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.stump_classification_prediction.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data set</p></li>
+<li><p><strong>model</strong> (<em>stump_classification_modelptr</em>) – Input model trained by the classification algorithm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.classifier_prediction_result" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.stump_classification_model">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">stump_classification_model</code><a class="headerlink" href="#daal4py.stump_classification_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.stump_classification_model.LeftValue">
+<code class="sig-name descname">LeftValue</code><a class="headerlink" href="#daal4py.stump_classification_model.LeftValue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>double</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_classification_model.NFeatures">
+<code class="sig-name descname">NFeatures</code><a class="headerlink" href="#daal4py.stump_classification_model.NFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_classification_model.NumberOfFeatures">
+<code class="sig-name descname">NumberOfFeatures</code><a class="headerlink" href="#daal4py.stump_classification_model.NumberOfFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_classification_model.RightValue">
+<code class="sig-name descname">RightValue</code><a class="headerlink" href="#daal4py.stump_classification_model.RightValue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>double</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_classification_model.SplitFeature">
+<code class="sig-name descname">SplitFeature</code><a class="headerlink" href="#daal4py.stump_classification_model.SplitFeature" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_classification_model.SplitValue">
+<code class="sig-name descname">SplitValue</code><a class="headerlink" href="#daal4py.stump_classification_model.SplitValue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>double</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="multinomial-naive-bayes">
 <h3>Multinomial Naive Bayes<a class="headerlink" href="#multinomial-naive-bayes" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
@@ -897,6 +1843,7 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Computation method</p></li>
 <li><p><strong>priorClassEstimates</strong> (<em>array</em>) – [optional, default: None]  Prior class estimates</p></li>
 <li><p><strong>alpha</strong> (<em>array</em>) – [optional, default: None]  Imagined occurrences of the each word</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>distributed</strong> (<em>bool</em>) – [optional, default: False] enable distributed computation (SPMD)</p></li>
 <li><p><strong>streaming</strong> (<em>bool</em>) – [optional, default: False] enable streaming</p></li>
 </ul>
@@ -949,6 +1896,7 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Multinomial naive Bayes prediction method</p></li>
 <li><p><strong>priorClassEstimates</strong> (<em>array</em>) – [optional, default: None]  Prior class estimates</p></li>
 <li><p><strong>alpha</strong> (<em>array</em>) – [optional, default: None]  Imagined occurrences of the each word</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -977,7 +1925,27 @@
 <dd><p>Properties:</p>
 <dl class="attribute">
 <dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
 <code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1048,6 +2016,7 @@
 <h3>Support Vector Machine (SVM)<a class="headerlink" href="#support-vector-machine-svm" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
 <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-support-vector-machine-classifier">Intel DAAL SVM</a></p>
+<p>Note: For the labels parameter, data is formatted as -1s and 1s</p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/svm_batch.py">Single-Process SVM</a></p></li>
@@ -1069,6 +2038,7 @@
 <li><p><strong>shrinkingStep</strong> (<em>size_t</em>) – [optional, default: -1]  Number of iterations between the steps of shrinking optimization technique</p></li>
 <li><p><strong>kernel</strong> (<em>kernel_function_kerneliface__iface__</em>) – [optional, default: None]  Kernel function</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -1125,6 +2095,7 @@
 <li><p><strong>shrinkingStep</strong> (<em>size_t</em>) – [optional, default: -1]  Number of iterations between the steps of shrinking optimization technique</p></li>
 <li><p><strong>kernel</strong> (<em>kernel_function_kerneliface__iface__</em>) – [optional, default: None]  Kernel function</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -1153,7 +2124,27 @@
 <dd><p>Properties:</p>
 <dl class="attribute">
 <dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
 <code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1233,7 +2224,7 @@
 <div class="section" id="logistic-regression">
 <h3>Logistic Regression<a class="headerlink" href="#logistic-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic-regression">Intel DAAL Logistc Regression</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic-regression">Intel DAAL Logistic Regression</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/log_reg_binary_dense_batch.py">Single-Process Binary Class Logistic Regression</a></p></li>
@@ -1252,6 +2243,7 @@
 <li><p><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: NaN32]  L1 regularization coefficient. Default is 0 (not applied)</p></li>
 <li><p><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: NaN32]  L2 regularization coefficient. Default is 0 (not applied)</p></li>
 <li><p><strong>optimizationSolver</strong> (<em>optimization_solver_iterative_solver_batch__iface__</em>) – [optional, default: None]  Default is sgd momentum solver</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -1300,7 +2292,7 @@
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – Number of classes</p></li>
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the logistic regression algortithm, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] logistic regression computation method</p></li>
-<li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
 </dl>
@@ -1316,7 +2308,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>logistic_regression_prediction_result</p>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.classifier_prediction_result" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1329,7 +2321,27 @@
 <dd><p>Properties:</p>
 <dl class="attribute">
 <dt>
+<code class="sig-name descname">logProbabilities</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
 <code class="sig-name descname">prediction</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">probabilities</code></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1592,7 +2604,7 @@
 </dl>
 <dl class="method">
 <dt id="daal4py.decision_tree_regression_training.compute">
-<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">dependentVariables</em>, <em class="sig-param">dataForPruning</em>, <em class="sig-param">dependentVariablesForPruning</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.decision_tree_regression_training.compute" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">dependentVariables</em>, <em class="sig-param">dataForPruning</em>, <em class="sig-param">dependentVariablesForPruning</em>, <em class="sig-param">weights</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.decision_tree_regression_training.compute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do the actual computation on provided input data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1601,6 +2613,7 @@
 <li><p><strong>dependentVariables</strong> (<em>data_or_file</em>) – Values of the dependent variable for the input data</p></li>
 <li><p><strong>dataForPruning</strong> (<em>data_or_file</em>) – Pruning data set</p></li>
 <li><p><strong>dependentVariablesForPruning</strong> (<em>data_or_file</em>) – Labels of the pruning data set</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Optional. Weights of the observations in the training data set</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1696,7 +2709,7 @@
 <div class="section" id="gradient-boosted-regression">
 <h3>Gradient Boosted Regression<a class="headerlink" href="#gradient-boosted-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-tree-1">Intel DAAL Regression Gradient Boosted Tree</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-1">Intel DAAL Regression Gradient Boosted Tree</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_regression_batch.py">Single-Process Boosted Regression Regression</a></p></li>
@@ -1710,6 +2723,7 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for model-based training, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] gradient boosted trees training method</p></li>
 <li><p><strong>loss</strong> (<em>str</em>) – [optional, default: “”]  Loss function type</p></li>
+<li><p><strong>varImportance</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag VariableImportanceModes that indicates the variable importance computation modes</p></li>
 <li><p><strong>splitMethod</strong> (<em>str</em>) – [optional, default: “”]  Split finding method. Default is exact</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the gradient boosted trees training algorithm. Default is 50</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal tree depth, 0 for unlimited. Default is 6</p></li>
@@ -1756,6 +2770,56 @@
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="#daal4py.gbt_regression_model" title="daal4py.gbt_regression_model">gbt_regression_model</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_regression_training_result.variableImportanceByCover">
+<code class="sig-name descname">variableImportanceByCover</code><a class="headerlink" href="#daal4py.gbt_regression_training_result.variableImportanceByCover" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_regression_training_result.variableImportanceByGain">
+<code class="sig-name descname">variableImportanceByGain</code><a class="headerlink" href="#daal4py.gbt_regression_training_result.variableImportanceByGain" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_regression_training_result.variableImportanceByTotalCover">
+<code class="sig-name descname">variableImportanceByTotalCover</code><a class="headerlink" href="#daal4py.gbt_regression_training_result.variableImportanceByTotalCover" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_regression_training_result.variableImportanceByTotalGain">
+<code class="sig-name descname">variableImportanceByTotalGain</code><a class="headerlink" href="#daal4py.gbt_regression_training_result.variableImportanceByTotalGain" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.gbt_regression_training_result.variableImportanceByWeight">
+<code class="sig-name descname">variableImportanceByWeight</code><a class="headerlink" href="#daal4py.gbt_regression_training_result.variableImportanceByWeight" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1998,6 +3062,180 @@
 </dd></dl>
 
 </div>
+<div class="section" id="least-absolute-shrinkage-and-selection-operator">
+<h3>Least Absolute Shrinkage and Selection Operator<a class="headerlink" href="#least-absolute-shrinkage-and-selection-operator" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-least-absolute-shrinkage-and-selection-operator">Intel DAAL Least Absolute Shrinkage and Selection Operator</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/lasso_regression_batch.py">Single-Process LASSO Regression</a></p></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.lasso_regression_training">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">lasso_regression_training</code><a class="headerlink" href="#daal4py.lasso_regression_training" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for lasso regression model-based training, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] LASSO regression training method</p></li>
+<li><p><strong>lassoParameters</strong> (<em>array</em>) – [optional, default: None]  Numeric table that contains values of lasso parameters</p></li>
+<li><p><strong>optimizationSolver</strong> (<em>optimization_solver_iterative_solver_batch__iface__</em>) – [optional, default: None]  Default is coordinate descent solver</p></li>
+<li><p><strong>dataUseInComputation</strong> (<em>str</em>) – [optional, default: “”]  The flag allows to corrupt input data</p></li>
+<li><p><strong>optResultToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the optional results to compute</p></li>
+<li><p><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]  Flag that indicates whether the intercept needs to be computed</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.lasso_regression_training.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">dependentVariables</em>, <em class="sig-param">weights</em>, <em class="sig-param">gramMatrix</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.lasso_regression_training.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p></li>
+<li><p><strong>dependentVariables</strong> (<em>data_or_file</em>) – Values of the dependent variable for the input data</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  NumericTable of size 1 x n with weights of samples. Applied for all method</p></li>
+<li><p><strong>gramMatrix</strong> (<em>data_or_file</em>) – [optional, default: None]  NumericTable of size p x p with last iteration number. Applied for all method</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.lasso_regression_training_result" title="daal4py.lasso_regression_training_result">lasso_regression_training_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.lasso_regression_training_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">lasso_regression_training_result</code><a class="headerlink" href="#daal4py.lasso_regression_training_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.lasso_regression_training_result.gramMatrixId">
+<code class="sig-name descname">gramMatrixId</code><a class="headerlink" href="#daal4py.lasso_regression_training_result.gramMatrixId" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.lasso_regression_training_result.model">
+<code class="sig-name descname">model</code><a class="headerlink" href="#daal4py.lasso_regression_training_result.model" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#daal4py.lasso_regression_model" title="daal4py.lasso_regression_model">lasso_regression_model</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.lasso_regression_prediction">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">lasso_regression_prediction</code><a class="headerlink" href="#daal4py.lasso_regression_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for lasso regression model-based prediction</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.lasso_regression_prediction.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">model</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.lasso_regression_prediction.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p></li>
+<li><p><strong>model</strong> (<em>lasso_regression_modelptr</em>) – Trained lasso regression model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.lasso_regression_prediction_result" title="daal4py.lasso_regression_prediction_result">lasso_regression_prediction_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.lasso_regression_prediction_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">lasso_regression_prediction_result</code><a class="headerlink" href="#daal4py.lasso_regression_prediction_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.lasso_regression_prediction_result.prediction">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#daal4py.lasso_regression_prediction_result.prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.lasso_regression_model">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">lasso_regression_model</code><a class="headerlink" href="#daal4py.lasso_regression_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.lasso_regression_model.Beta">
+<code class="sig-name descname">Beta</code><a class="headerlink" href="#daal4py.lasso_regression_model.Beta" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.lasso_regression_model.InterceptFlag">
+<code class="sig-name descname">InterceptFlag</code><a class="headerlink" href="#daal4py.lasso_regression_model.InterceptFlag" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.lasso_regression_model.NumberOfBetas">
+<code class="sig-name descname">NumberOfBetas</code><a class="headerlink" href="#daal4py.lasso_regression_model.NumberOfBetas" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.lasso_regression_model.NumberOfFeatures">
+<code class="sig-name descname">NumberOfFeatures</code><a class="headerlink" href="#daal4py.lasso_regression_model.NumberOfFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.lasso_regression_model.NumberOfResponses">
+<code class="sig-name descname">NumberOfResponses</code><a class="headerlink" href="#daal4py.lasso_regression_model.NumberOfResponses" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="ridge-regression">
 <h3>Ridge Regression<a class="headerlink" href="#ridge-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
@@ -2154,6 +3392,176 @@
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="stump-regression">
+<h3>Stump Regression<a class="headerlink" href="#stump-regression" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-regression-stump">Intel DAAL Regression Stump</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/stump_regression_batch.py">Single-Process Stump Regression</a></p></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.stump_regression_training">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">stump_regression_training</code><a class="headerlink" href="#daal4py.stump_regression_training" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the the decision stump training method, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Decision stump training method</p></li>
+<li><p><strong>varImportance</strong> (<em>str</em>) – [optional, default: “”]  Variable importance mode. Variable importance computation is not supported for current version of the library</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.stump_regression_training.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">dependentVariables</em>, <em class="sig-param">weights</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.stump_regression_training.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p></li>
+<li><p><strong>dependentVariables</strong> (<em>data_or_file</em>) – Values of the dependent variable for the input data</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Optional. Weights of the observations in the training data set. Some values are skipped for backward compatibility.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.stump_regression_training_result" title="daal4py.stump_regression_training_result">stump_regression_training_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.stump_regression_training_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">stump_regression_training_result</code><a class="headerlink" href="#daal4py.stump_regression_training_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.stump_regression_training_result.model">
+<code class="sig-name descname">model</code><a class="headerlink" href="#daal4py.stump_regression_training_result.model" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#daal4py.stump_regression_model" title="daal4py.stump_regression_model">stump_regression_model</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_regression_training_result.variableImportance">
+<code class="sig-name descname">variableImportance</code><a class="headerlink" href="#daal4py.stump_regression_training_result.variableImportance" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.stump_regression_prediction">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">stump_regression_prediction</code><a class="headerlink" href="#daal4py.stump_regression_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the decision stump prediction algorithm, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Decision stump model-based prediction method</p></li>
+<li><p><strong>varImportance</strong> (<em>str</em>) – [optional, default: “”]  Variable importance mode. Variable importance computation is not supported for current version of the library</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.stump_regression_prediction.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">model</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.stump_regression_prediction.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p></li>
+<li><p><strong>model</strong> (<em>stump_regression_modelptr</em>) – Trained regression model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.stump_regression_prediction_result" title="daal4py.stump_regression_prediction_result">stump_regression_prediction_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.stump_regression_prediction_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">stump_regression_prediction_result</code><a class="headerlink" href="#daal4py.stump_regression_prediction_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.stump_regression_prediction_result.prediction">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#daal4py.stump_regression_prediction_result.prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.stump_regression_model">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">stump_regression_model</code><a class="headerlink" href="#daal4py.stump_regression_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.stump_regression_model.LeftValue">
+<code class="sig-name descname">LeftValue</code><a class="headerlink" href="#daal4py.stump_regression_model.LeftValue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>double</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_regression_model.NumberOfFeatures">
+<code class="sig-name descname">NumberOfFeatures</code><a class="headerlink" href="#daal4py.stump_regression_model.NumberOfFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_regression_model.RightValue">
+<code class="sig-name descname">RightValue</code><a class="headerlink" href="#daal4py.stump_regression_model.RightValue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>double</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_regression_model.SplitFeature">
+<code class="sig-name descname">SplitFeature</code><a class="headerlink" href="#daal4py.stump_regression_model.SplitFeature" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.stump_regression_model.SplitValue">
+<code class="sig-name descname">SplitValue</code><a class="headerlink" href="#daal4py.stump_regression_model.SplitValue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>double</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2340,11 +3748,11 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>nClusters</strong> (<em>size_t</em>) – Number of clusters</p></li>
-<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations of initial clusters for the K-Means algorithm, double or float</p></li>
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations of initial clusters for K-Means algorithm, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Method of computing initial clusters for the algorithm</p></li>
-<li><p><strong>nTrials</strong> (<em>size_t</em>) – [optional, default: -1]  Kmeans++ only. The number of trials to generate all clusters but the first initial cluster. See section (5) of [1]</p></li>
-<li><p><strong>oversamplingFactor</strong> (<em>double</em>) – [optional, default: NaN64]  Kmeans|| only. A fraction of nClusters being chosen in each of nRounds of kmeans||.L = nClusters* oversamplingFactor points are sampled in a round. See section (3.3) of [2]</p></li>
-<li><p><strong>nRounds</strong> (<em>size_t</em>) – [optional, default: -1]  Kmeans|| only. Number of rounds for k-means||. (oversamplingFactor*nRounds) &gt; 1 is a requirement. See section (3.3) of [2]</p></li>
+<li><p><strong>nTrials</strong> (<em>size_t</em>) – [optional, default: -1]  Kmeans++ only. The number of trials to generate all clusters but the first initial cluster.</p></li>
+<li><p><strong>oversamplingFactor</strong> (<em>double</em>) – [optional, default: NaN64]  Kmeans|| only. A fraction of nClusters being chosen in each of nRounds of kmeans||.L = nClusters* oversamplingFactor points are sampled in a round.</p></li>
+<li><p><strong>nRounds</strong> (<em>size_t</em>) – [optional, default: -1]  Kmeans|| only. Number of rounds for k-means||. (oversamplingFactor*nRounds) &gt; 1 is a requirement.</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine to be used for generating random numbers for the initialization</p></li>
 <li><p><strong>distributed</strong> (<em>bool</em>) – [optional, default: False] enable distributed computation (SPMD)</p></li>
 </ul>
@@ -2481,6 +3889,99 @@
 </dd></dl>
 
 </div>
+</div>
+<div class="section" id="density-based-spatial-clustering-of-applications-with-noise">
+<h2>Density-Based Spatial Clustering of Applications with Noise<a class="headerlink" href="#density-based-spatial-clustering-of-applications-with-noise" title="Permalink to this headline">¶</a></h2>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-density-based-spatial-clustering-of-applications-with-noise">Intel DAAL Density-Based Spatial Clustering of Applications with Noise</a></p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/dbscan_batch.py">Single-Process DBSCAN</a></p></li>
+</ul>
+<dl class="class">
+<dt id="daal4py.dbscan">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">dbscan</code><a class="headerlink" href="#daal4py.dbscan" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epsilon</strong> (<em>double</em>) – Radius of neighborhood</p></li>
+<li><p><strong>minObservations</strong> (<em>size_t</em>) – Minimal total weight of observations in neighborhood of core observation</p></li>
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations of DBSCAN, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Computation method of the algorithm</p></li>
+<li><p><strong>memorySavingMode</strong> (<em>bool</em>) – [optional, default: False]  If true then use memory saving (but slower) mode</p></li>
+<li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+<li><p><strong>blockIndex</strong> (<em>size_t</em>) – [optional, default: -1]  Unique identifier of block initially passed for computation on the local node</p></li>
+<li><p><strong>nBlocks</strong> (<em>size_t</em>) – [optional, default: -1]  Number of blocks initially passed for computation on all nodes</p></li>
+<li><p><strong>leftBlocks</strong> (<em>size_t</em>) – [optional, default: -1]  Number of blocks that will process observations with value of selected split feature lesser than selected split value</p></li>
+<li><p><strong>rightBlocks</strong> (<em>size_t</em>) – [optional, default: -1]  Number of blocks that will process observations with value of selected split feature greater than selected split value</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="daal4py.dbscan.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">weights</em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.dbscan.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Input weights of observations</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.dbscan_result" title="daal4py.dbscan_result">dbscan_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="daal4py.dbscan_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">dbscan_result</code><a class="headerlink" href="#daal4py.dbscan_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="attribute">
+<dt id="daal4py.dbscan_result.assignments">
+<code class="sig-name descname">assignments</code><a class="headerlink" href="#daal4py.dbscan_result.assignments" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.dbscan_result.coreIndices">
+<code class="sig-name descname">coreIndices</code><a class="headerlink" href="#daal4py.dbscan_result.coreIndices" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.dbscan_result.coreObservations">
+<code class="sig-name descname">coreObservations</code><a class="headerlink" href="#daal4py.dbscan_result.coreObservations" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="daal4py.dbscan_result.nClusters">
+<code class="sig-name descname">nClusters</code><a class="headerlink" href="#daal4py.dbscan_result.nClusters" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="outlier-detection">
 <h2>Outlier Detection<a class="headerlink" href="#outlier-detection" title="Permalink to this headline">¶</a></h2>
@@ -2806,6 +4307,8 @@
 <h4>Cross-entropy Loss<a class="headerlink" href="#cross-entropy-loss" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
 <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-cross-entropy-loss">Intel DAAL Cross Entropy Loss</a></p>
+<p>Examples:
+- <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_cr_entr_loss_batch.py">In LBFGS</a></p>
 <dl class="class">
 <dt id="daal4py.optimization_solver_cross_entropy_loss">
 <em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">optimization_solver_cross_entropy_loss</code><a class="headerlink" href="#daal4py.optimization_solver_cross_entropy_loss" title="Permalink to this definition">¶</a></dt>
@@ -3614,7 +5117,7 @@
 <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-z-score">Intel DAAL Z-Score</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/normalization_zscore.py">Single-Process Z-Score Normalization</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/normalization_zscore_batch.py">Single-Process Z-Score Normalization</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.normalization_zscore">
@@ -3688,7 +5191,7 @@
 <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-min-max">Intel DAAL Min-Max</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax.py">Single-Process Min-Max Normalization</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax_batch.py">Single-Process Min-Max Normalization</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.normalization_minmax">
@@ -3878,14 +5381,14 @@
 <div class="section" id="distributions">
 <h2>Distributions<a class="headerlink" href="#distributions" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-distributions">Intel DAAL Absolute Value (abs)</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-distributions">Intel DAAL Distributions</a></p>
 <div class="section" id="bernoulli">
 <h3>Bernoulli<a class="headerlink" href="#bernoulli" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-bernoulli">Intel DAAL Hyperbolic Tangent (tanh)</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-bernoulli">Intel DAAL Bernoulli Distribution</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli.py">Single-Process tanh</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli_batch.py">Single-Process Bernoulli Distribution</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.distributions_bernoulli">
@@ -3926,10 +5429,10 @@
 <div class="section" id="normal">
 <h3>Normal<a class="headerlink" href="#normal" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-normal">Intel DAAL Hyperbolic Tangent (tanh)</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-normal">Intel DAAL Normal Distribution</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal.py">Single-Process tanh</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal_batch.py">Single-Process Normal Distribution</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.distributions_normal">
@@ -3971,10 +5474,10 @@
 <div class="section" id="uniform">
 <h3>Uniform<a class="headerlink" href="#uniform" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-uniform">Intel DAAL Hyperbolic Tangent (tanh)</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-uniform">Intel DAAL Uniform Distribution</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform.py">Single-Process tanh</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform_batch.py">Single-Process Uniform Distribution</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.distributions_uniform">
@@ -4022,7 +5525,7 @@
 <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-absolute-value-abs">Intel DAAL Absolute Value (abs)</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_abs.py">Single-Process abs</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_abs_batch.py">Single-Process abs</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.math_abs">
@@ -4071,10 +5574,10 @@
 <div class="section" id="hyperbolic-tangent-tanh">
 <h3>Hyperbolic Tangent (tanh)<a class="headerlink" href="#hyperbolic-tangent-tanh" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-tanh">Intel DAAL Hyperbolic Tangent (tanh)</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-hyperbolic-tangent">Intel DAAL Hyperbolic Tangent (tanh)</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_tanh.py">Single-Process tanh</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_tanh_batch.py">Single-Process tanh</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.math_tanh">
@@ -4126,7 +5629,7 @@
 <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic">Intel DAAL Logistic</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_logistic.py">Single-Process logistic</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_logistic_batch.py">Single-Process logistic</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.math_logistic">
@@ -4178,7 +5681,7 @@
 <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-rectifier-linear-unit-relu">Intel DAAL Rectifier Linear Unit (ReLU)</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_relu.py">Single-Process ReLU</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_relu_batch.py">Single-Process ReLU</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.math_relu">
@@ -4230,7 +5733,7 @@
 <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-smooth-rectifier-linear-unit-smoothrelu">Intel DAAL Smooth Rectifier Linear Unit (ReLU)</a></p>
 <p>Examples:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_smoothrelu.py">Single-Process SmoothReLU</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_smoothrelu_batch.py">Single-Process SmoothReLU</a></p></li>
 </ul>
 <dl class="class">
 <dt id="daal4py.math_smoothrelu">
@@ -4700,7 +6203,7 @@
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py">Single-Process Low Order Moments</a></p></li>
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py">Streaming Low Order Moments</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_streaming.py">Streaming Low Order Moments</a></p></li>
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_spmd.py">Multi-Process Low Order Moments</a></p></li>
 </ul>
 <dl class="class">

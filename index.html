@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fast, Scalable and Easy Machine Learning With DAAL4PY &mdash; daal4py 0.2019.3 documentation</title>
+  <title>Fast, Scalable and Easy Machine Learning With DAAL4PY &mdash; daal4py 2020.0 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.2019
+                2020
               </div>
             
           
@@ -181,15 +181,15 @@ A simplified API gives high-level abstractions to the user with minimal boilerpl
 allowing for quick to write and easy to maintain code when utilizing Jupyter Notebooks.
 For scaling capabilities, daal4py also provides the ability to do distributed machine
 learning, giving a quick way to scale out. Its streaming mode provides a
-felxible mechanism for processing large amounts of data and/or non-contiguous
+flexible mechanism for processing large amounts of data and/or non-contiguous
 input data.</p>
-<p>For framework designers, daal4py’s has been fashioned to be built under other
+<p>For framework designers, daal4py has been fashioned to be built under other
 frameworks from both an API and feature perspective.  The machine learning models split
 the training and inference classes, allowing the model to be exported and serialized
 if desired.  This design also gives the flexibility to work directly with the model and
 associated primitives, allowing one to customize the behavior of the model itself.
 The daal4py package can be built with customized algorithm loadouts, allowing for a
-smaller footprint of dependencies when neessary.</p>
+smaller footprint of dependencies when necessary.</p>
 </div>
 <div class="section" id="api-design-and-usage">
 <h2>API Design and usage<a class="headerlink" href="#api-design-and-usage" title="Permalink to this headline">¶</a></h2>
@@ -225,21 +225,21 @@ we first create an algorithm and configure it for 10 clusters using the ‘PlusP
 </pre></div>
 </div>
 <p>The full example could look like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">kmeans_init</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="kn">import</span> <span class="n">kmeans_init</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s1">&#39;data.csv&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">centroids</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>One can even <a class="reference internal" href="scaling.html#distributed"><span class="std std-ref">run this on a cluster</span></a> by simply
 adding initializing/finalizing the network and adding a keyword-parameter:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="kn">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
 <span class="n">daalinit</span><span class="p">()</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">my_file</span><span class="p">)</span>
 <span class="n">daalfini</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Last but not least, daal4py allows <a class="reference internal" href="streaming.html#streaming"><span class="std std-ref">getting input data from streams</span></a>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="k">import</span> <span class="n">svd</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="kn">import</span> <span class="n">svd</span>
 <span class="n">algo</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">streaming</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">stream_or_filelist</span><span class="p">:</span>
     <span class="n">algo</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
