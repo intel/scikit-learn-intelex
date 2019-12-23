@@ -82,11 +82,6 @@ def main(readcsv=read_csv, method='randomDense'):
         sycl_data = sycl_buffer(data)
         result_gpu = compute(sycl_data, nClusters, maxIter, method)
 
-    # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, nClusters, maxIter, method)
-
     # Kmeans result objects provide assignments (if requested), centroids, goalFunction, nIterations and objectiveFunction
     assert result_classic.centroids.shape[0] == nClusters
     assert result_classic.assignments.shape == (data.shape[0], 1)
@@ -96,11 +91,6 @@ def main(readcsv=read_csv, method='randomDense'):
     assert np.allclose(result_classic.assignments, result_gpu.assignments)
     assert np.isclose(result_classic.objectiveFunction, result_gpu.objectiveFunction)
     assert result_classic.nIterations == result_gpu.nIterations
-
-    assert np.allclose(result_classic.centroids, result_cpu.centroids)
-    assert np.allclose(result_classic.assignments, result_cpu.assignments)
-    assert np.isclose(result_classic.objectiveFunction, result_cpu.objectiveFunction)
-    assert result_classic.nIterations == result_cpu.nIterations
 
     return result_classic
 

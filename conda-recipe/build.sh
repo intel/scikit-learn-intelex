@@ -9,8 +9,7 @@ fi
 # if dpc++ vars path is specified
 if [ ! -z "${DPCPP_VAR}" ]; then
     source ${DPCPP_VAR}
-    export CC=clang++
-    export CXX=clang++
+    export CC=dpcpp
 fi
 
 # if DAALROOT not exists then provide PREFIX
