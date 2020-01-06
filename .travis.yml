@@ -43,4 +43,4 @@ install:
   - g++ -v
 
 script:
-  - conda build -c conda-forge -c intel $PYVER --output-folder ./ conda-recipe
+  - conda build -c intel -c conda-forge $PYVER --output-folder ./ conda-recipe
