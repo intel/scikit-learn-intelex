@@ -13,7 +13,7 @@ if [ `uname` == Darwin ]; then
     export LDFLAGS="${LDFLAGS//-Wl,-dead_strip_dylibs}"
     export LDFLAGS_LD="${LDFLAGS_LD//-dead_strip_dylibs}"
     # some dead_strip_dylibs come from Python's sysconfig. Setting LDSHARED overrides that
-    export LDSHARED="-bundle -undefined dynamic_lookup -Wl,-pie -Wl,-headerpad_max_install_names"
+    export LDSHARED="-bundle -undefined dynamic_lookup -Wl,-export_dynamic -Wl,-pie -Wl,-headerpad_max_install_names"
 fi
 
 export DAAL4PY_VERSION=$PKG_VERSION
