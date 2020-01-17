@@ -14,7 +14,7 @@ fi
 
 # if DAALROOT not exists then provide PREFIX
 if [ -z "${DAALROOT}" ]; then
-    DAALROOT=${PREFIX}
+    export DAALROOT=${PREFIX}
 fi
 
 if [ `uname` == Darwin ]; then
