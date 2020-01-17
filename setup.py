@@ -92,8 +92,10 @@ else:
     MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
 if dpcpp:
     DPCPP_CFLAGS = ['-D_DPCPP_', '-DONEAPI_DAAL_USE_MKL_GPU_FUNC']
+    DPCPP_LIBS = ['OpenCL', 'sycl', 'daal_sycl']
 else:
     DPCPP_CFLAGS = []
+    DPCPP_LIBS = []
 DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
@@ -136,7 +138,7 @@ def getpyexts():
     if IS_WIN:
         libraries_plat = ['daal_core_dll']
     else:
-        libraries_plat = ['daal_core', 'daal_thread', 'daal_sycl']
+        libraries_plat = ['daal_core', 'daal_thread']
 
     if IS_MAC:
         ela.append('-stdlib=libc++')
@@ -156,7 +158,7 @@ def getpyexts():
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
-                                libraries=libraries_plat + ['sycl'],
+                                libraries=libraries_plat + DPCPP_LIBS,
                                 library_dirs=[daal_lib_dir],
                                 language='c++'),
     ])
@@ -167,7 +169,7 @@ def getpyexts():
                                         include_dirs=include_dir_plat + [np.get_include()],
                                         extra_compile_args=eca + ['-fsycl'],
                                         extra_link_args=ela,
-                                        libraries=libraries_plat + ['OpenCL', 'sycl'],
+                                        libraries=libraries_plat + DPCPP_LIBS,
                                         library_dirs=[daal_lib_dir],
                                         language='c++')))
     if not no_dist:
