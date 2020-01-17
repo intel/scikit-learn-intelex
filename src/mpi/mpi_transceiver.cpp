@@ -20,13 +20,13 @@
 
 void mpi_transceiver::init()
 {
-    int is_initialized;
-    MPI_Initialized(&is_initialized);
+    int is_mpi_initialized = 0;
+    MPI_Initialized(&is_mpi_initialized);
     // protect against double-init
-    if(!is_initialized) {
+    if(!is_mpi_initialized) {
         MPI_Init(NULL, NULL);
-        transceiver_impl::init();
     }
+    transceiver_impl::init();	
 }
 
 void mpi_transceiver::fini()

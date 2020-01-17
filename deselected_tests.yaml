@@ -12,11 +12,11 @@ deselected_tests:
 
   # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
   # See: https://github.com/scikit-learn/scikit-learn/issues/12738
-  - svm/tests/test_svm.py::test_sample_weights <0.21.3
-  - svm/tests/test_svm.py::test_precomputed    <0.21.3
-  - svm/tests/test_sparse.py::test_sparse      <0.21.3
-  - svm/tests/test_sparse.py::test_svc_iris    <0.21.3
-  - ensemble/tests/test_bagging.py::test_sparse_classification <0.21.3
+  - svm/tests/test_svm.py::test_sample_weights
+  - svm/tests/test_svm.py::test_precomputed
+  - svm/tests/test_sparse.py::test_sparse
+  - svm/tests/test_sparse.py::test_svc_iris
+  - ensemble/tests/test_bagging.py::test_sparse_classification
 
   # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
   # See: https://github.com/IntelPython/daal4py/issues/25
@@ -31,4 +31,20 @@ deselected_tests:
   - linear_model/tests/test_logistic.py::test_dtype_match
 
   # _hist_gradient_boosting tests (added in 0.21.0) times out in CircleCI
-  - ensemble/_hist_gradient_boosting/tests >=0.21.0
+  - ensemble/_hist_gradient_boosting/tests >=0.21.0,<0.21.1
+
+  # https://github.com/scikit-learn/scikit-learn/pull/15857
+  - ensemble/tests/test_stacking.py::test_stacking_cv_influence >=0.22
+
+  # This fails on certain platforms. Weighted data do not go through DAAL,
+  # unweighted do. Since convergence is not accomplished (comment in te test
+  # suggests that), coefficients are slightly different, resulting in 1 prediction
+  # disagreement.
+  - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight >=0.22.1
+
+  # test is unwarranted, but upstream refuses to change it
+  # https://github.com/scikit-learn/scikit-learn/pull/15856
+  - svm/tests/test_svm.py::test_svm_equivalence_sample_weight_C >=0.22
+
+  # 
+  - tests/test_pipeline.py::test_pipeline_memory 

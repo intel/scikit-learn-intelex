@@ -1,4 +1,4 @@
-{% set version = '0.2019.5' %}
+{% set version = '0.2020.0' %}
 {% set buildnumber = 0 %}
 
 package:
@@ -14,6 +14,8 @@ build:
     script_env:
      - DPCPP_VAR
      - DAALROOT
+    ignore_run_exports:
+       - python
 
 requirements:
     host:
@@ -25,6 +27,9 @@ requirements:
         - jinja2
         - mpich                  # [not win]
         - impi-devel             # [win]
+    build:
+        - {{ compiler('cxx') }}
+        - {{ compiler('c') }}
     run:
         - python
         - daal >=2019.0

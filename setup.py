@@ -78,7 +78,10 @@ else:
     DIST_CPPS    = ['src/transceiver.cpp']
     MPI_INCDIRS = [jp(mpi_root, 'include')]
     MPI_LIBDIRS = [jp(mpi_root, 'lib')]
-    if IS_WIN:
+    MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
+    if MPI_LIBNAME:
+        MPI_LIBS = [MPI_LIBNAME]
+    elif IS_WIN:
         if os.path.isfile(jp(mpi_root, 'lib', 'mpi.lib')):
             MPI_LIBS    = ['mpi']
         if os.path.isfile(jp(mpi_root, 'lib', 'impi.lib')):

@@ -17,4 +17,15 @@ if [ -z "${DAALROOT}" ]; then
     DAALROOT=${PREFIX}
 fi
 
-DAAL4PY_VERSION=$PKG_VERSION TBBROOT=${PREFIX} MPIROOT=${PREFIX} ${PYTHON} setup.py install $ARGS
+if [ `uname` == Darwin ]; then
+    # dead_strip_dylibs does not work with DAAL, which is underlinked by design
+    export LDFLAGS="${LDFLAGS//-Wl,-dead_strip_dylibs}"
+    export LDFLAGS_LD="${LDFLAGS_LD//-dead_strip_dylibs}"
+    # some dead_strip_dylibs come from Python's sysconfig. Setting LDSHARED overrides that
+    export LDSHARED="-bundle -undefined dynamic_lookup -Wl,-export_dynamic -Wl,-pie -Wl,-headerpad_max_install_names"
+fi
+
+export DAAL4PY_VERSION=$PKG_VERSION
+export TBBROOT=${PREFIX}
+export MPIROOT=${PREFIX}
+${PYTHON} setup.py install $ARGS

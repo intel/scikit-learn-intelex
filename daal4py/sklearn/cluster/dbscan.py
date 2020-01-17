@@ -15,10 +15,12 @@
 # limitations under the License.
 #******************************************************************************/
 
+import daal4py
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-    from ._k_means_0_22 import *
-else:
-    from ._k_means_0_21 import *
+if hasattr(daal4py, 'dbscan'):
+    if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+        from ._dbscan_0_22 import *
+    else:
+        from ._dbscan_0_21 import *
