@@ -27,6 +27,7 @@ requirements:
         - jinja2
         - mpich                  # [not win]
         - impi-devel             # [win]
+        - clang-tools
     build:
         - {{ compiler('cxx') }}
         - {{ compiler('c') }}
