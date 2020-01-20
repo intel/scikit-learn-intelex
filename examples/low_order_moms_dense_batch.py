@@ -20,7 +20,6 @@
 
 import daal4py as d4p
 import numpy as np
-from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -31,61 +30,22 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-# Commone code for both CPU and GPU computations
-def compute(data, method):
-    alg = d4p.low_order_moments(method=method)
-    return alg.compute(data)
-
-
-# At this moment with sycl we are working only with numpy arrays
-def to_numpy(data):
-    try:
-        from pandas import DataFrame
-        if isinstance(data, DataFrame):
-            return np.ascontiguousarray(data.values)
-    except:
-        pass
-    try:
-        from scipy.sparse import csr_matrix
-        if isinstance(data, csr_matrix):
-            return data.toarray()
-    except:
-        pass
-    return data
-
-
 def main(readcsv=read_csv, method="defaultDense"):
     # read data from file
     file = "./data/batch/covcormoments_dense.csv"
     data = readcsv(file, range(10))
 
-    # Using of the classic way (computations on CPU)
-    result_classic = compute(data, method)
-    
-    data = to_numpy(data)
-
-    # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
-        sycl_data = sycl_buffer(data)
-        result_gpu = compute(sycl_data, "defaultDense")
-
-    # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, "defaultDense")
+    # compute
+    alg = d4p.low_order_moments(method=method)
+    res = alg.compute(data)
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    assert(all(getattr(result_classic, name).shape==(1, data.shape[1]) for name in
+    assert(all(getattr(res, name).shape==(1, data.shape[1]) for name in
         ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
         'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']))
 
-    for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-        'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
-        assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
-        assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
-
-    return result_classic
+    return res
 
 
 if __name__ == "__main__":

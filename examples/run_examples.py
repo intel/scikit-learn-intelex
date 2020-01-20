@@ -38,6 +38,12 @@ if 8 * struct.calcsize('P') == 32:
 else:
     logdir = jp(exdir, '_results', 'intel64')
 
+try:
+    from daal4py.oneapi import sycl_context, sycl_buffer
+    sycl_available = True
+except:
+    sycl_available = False
+
 req_version = defaultdict(lambda:(2019,0))
 req_version['decision_forest_classification_batch.py'] = (2019,1)
 req_version['decision_forest_regression_batch.py'] = (2019,1)
@@ -51,6 +57,8 @@ req_version['dbscan_batch.py'] = (2019,5)
 req_version['lasso_regression_batch.py'] = (2019,5)
 
 def get_exe_cmd(ex, nodist, nostream):
+    if not sycl_available and os.path.dirname(ex).endswith("sycl"):
+        return None
     if req_version[os.path.basename(ex)] > daal_version:
         return None
     if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):

@@ -90,7 +90,6 @@ gen_examples = [
     ('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
     ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
     ('bacon_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
-    ('bf_knn_classification_batch', None, None),
     ('brownboost_batch', None, None, (2022, 0)),
     ('correlation_distance_batch', 'correlation_distance_batch.csv', lambda r: [[np.amin(r.correlationDistance)],
                                                                                 [np.amax(r.correlationDistance)],
