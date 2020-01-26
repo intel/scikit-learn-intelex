@@ -86,6 +86,7 @@ def run_all(nodist=False, nostream=False):
                     print('\n##### ' + jp(dirpath, script))
                     execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
                     if execute_string:
+                        os.chdir(dirpath)
                         proc = subprocess.Popen(execute_string if IS_WIN else ['/bin/bash', '-c', execute_string],
                                                 stdout=subprocess.PIPE,
                                                 stderr=subprocess.STDOUT,

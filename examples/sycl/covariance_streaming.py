@@ -20,6 +20,7 @@
 
 import daal4py as d4p
 import numpy as np
+import os
 from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's use a generator for getting stream from file (defined in stream.py)

@@ -20,6 +20,7 @@
 
 import daal4py as d4p
 import numpy as np
+import os
 from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's try to use pandas' fast csv reader
