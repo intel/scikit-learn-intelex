@@ -24,6 +24,8 @@ import os
 from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's use a generator for getting stream from file (defined in stream.py)
+import sys
+sys.path.insert(0, '..')
 from stream import read_next
 
 
