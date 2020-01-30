@@ -42,6 +42,7 @@ no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in tru
 daal_root = os.environ['DAALROOT']
 tbb_root = os.environ['TBBROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
+dpcpp = True if 'DPCPP_VAR' in os.environ else False
 
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
@@ -50,7 +51,7 @@ IS_LIN = False
 
 if 'linux' in sys.platform:
     IS_LIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64_lin')
+    lib_dir = jp(daal_root, 'lib', 'intel64')
 elif sys.platform == 'darwin':
     IS_MAC = True
     lib_dir = jp(daal_root, 'lib')
@@ -89,14 +90,20 @@ else:
     else:
         MPI_LIBS    = ['mpi']
     MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
+if dpcpp:
+    DPCPP_CFLAGS = ['-D_DPCPP_', '-DONEAPI_DAAL_USE_MKL_GPU_FUNC']
+    DPCPP_LIBS = ['OpenCL', 'sycl', 'daal_sycl']
+else:
+    DPCPP_CFLAGS = []
+    DPCPP_LIBS = []
 DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
-        return DIST_CFLAGS + ['-fstack-protector', '-fPIC',
-                              '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',]
+        return DIST_CFLAGS + DPCPP_CFLAGS + ['-fstack-protector', '-fPIC',
+                                             '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',]
     elif IS_WIN:
-        return DIST_CFLAGS + ['-GS',]
+        return DIST_CFLAGS + DPCPP_CFLAGS + ['-GS',]
 
 def get_sdl_ldflags():
     if IS_LIN:
@@ -151,9 +158,20 @@ def getpyexts():
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
-                                libraries=libraries_plat,
+                                libraries=libraries_plat + DPCPP_LIBS,
                                 library_dirs=[daal_lib_dir],
-                                language='c++')])
+                                language='c++'),
+    ])
+    if dpcpp:
+        exts.extend(cythonize(Extension('_oneapi',
+                                        [os.path.abspath('src/oneapi/oneapi.pyx'),],
+                                        depends=['src/oneapi/oneapi.h',],
+                                        include_dirs=include_dir_plat + [np.get_include()],
+                                        extra_compile_args=eca + ['-fsycl'],
+                                        extra_link_args=ela,
+                                        libraries=libraries_plat + DPCPP_LIBS,
+                                        library_dirs=[daal_lib_dir],
+                                        language='c++')))
     if not no_dist:
         exts.append(Extension('mpi_transceiver',
                               MPI_CPPS,
@@ -218,6 +236,7 @@ setup(  name        = "daal4py",
           ],
         setup_requires = ['numpy>=1.14', 'cython', 'jinja2'],
         packages = ['daal4py',
+                    'daal4py.oneapi',
                     'daal4py.sklearn',
                     'daal4py.sklearn.cluster',
                     'daal4py.sklearn.decomposition',

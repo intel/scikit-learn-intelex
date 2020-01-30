@@ -39,7 +39,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a training object
     train_algo = d4p.gbt_regression_training(maxIterations=maxIterations)
-    
+
     # Read data. Let's use 3 features per observation
     data = readcsv(infile, range(13), t=np.float32)
     deps = readcsv(infile, range(13,14), t=np.float32)

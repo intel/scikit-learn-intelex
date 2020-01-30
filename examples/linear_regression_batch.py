@@ -36,7 +36,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a Linear regression training object
     train_algo = d4p.linear_regression_training(interceptFlag=True)
-    
+
     # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
     indep_data = readcsv(infile, range(10))
     dep_data   = readcsv(infile, range(10,12))

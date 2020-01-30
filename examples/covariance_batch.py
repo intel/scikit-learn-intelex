@@ -35,7 +35,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a covariance object
     algo = d4p.covariance()
-    
+
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 

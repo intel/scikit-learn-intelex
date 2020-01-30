@@ -6,7 +6,16 @@ else
     ARGS="--old-and-unmanageable"
 fi
 
-#export NO_DIST=1
+# if dpc++ vars path is specified
+if [ ! -z "${DPCPP_VAR}" ]; then
+    source ${DPCPP_VAR}
+    export CC=dpcpp
+fi
+
+# if DAALROOT not exists then provide PREFIX
+if [ -z "${DAALROOT}" ]; then
+    export DAALROOT=${PREFIX}
+fi
 
 if [ `uname` == Darwin ]; then
     # dead_strip_dylibs does not work with DAAL, which is underlinked by design
@@ -19,5 +28,4 @@ fi
 export DAAL4PY_VERSION=$PKG_VERSION
 export TBBROOT=${PREFIX}
 export MPIROOT=${PREFIX}
-export DAALROOT=${PREFIX}
 ${PYTHON} setup.py install $ARGS

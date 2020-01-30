@@ -26,7 +26,7 @@ from stream import read_next
 
 def main(readcsv=None, method='defaultDense'):
     infile = "./data/batch/covcormoments_dense.csv"
-    
+
     # configure a covariance object
     algo = d4p.covariance(streaming=True)
 

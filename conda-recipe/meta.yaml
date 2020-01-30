@@ -11,6 +11,9 @@ source:
 build:
     number: {{buildnumber}}
     include_recipe: False
+    script_env:
+     - DPCPP_VAR
+     - DAALROOT
     ignore_run_exports:
        - python
 
@@ -24,6 +27,7 @@ requirements:
         - jinja2
         - mpich                  # [not win]
         - impi-devel             # [win]
+        - clang-tools
     build:
         - {{ compiler('cxx') }}
         - {{ compiler('c') }}

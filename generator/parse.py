@@ -357,7 +357,7 @@ class member_parser(object):
     """Parse class members"""
     def parse(self, l, ctxt):
         if ctxt.curr_class and ctxt.access:
-            mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?([\w_]+)\s*;', l)
+            mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?\s*([\w_]+)\s*;', l)
             if mm :
                 if mm.group(2) not in ctxt.gdict['classes'][ctxt.curr_class].members:
                     # save the destination for documentation

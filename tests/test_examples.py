@@ -103,7 +103,7 @@ gen_examples = [
     ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
     ('covariance_batch', 'covariance.csv', 'covariance'),
     ('covariance_streaming', 'covariance.csv', 'covariance'),
-    ('decision_forest_classification_batch', 'decision_forest_classification_batch.csv', lambda r: r[1].prediction, (2019, 1)),
+    ('decision_forest_classification_batch', None, lambda r: r[1].prediction, (2019, 1)), # 'decision_forest_classification_batch.csv' is outdated
     ('decision_forest_regression_batch', 'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2019, 1)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv', lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv', lambda r: r[1].prediction),
@@ -143,12 +143,6 @@ gen_examples = [
                                                                                         r.variance,
                                                                                         r.standardDeviation,
                                                                                         r.variation))),
-    ('math_abs_batch',),
-    ('math_logistic_batch',),
-    ('math_relu_batch',),
-    ('math_smoothrelu_batch',),
-    ('math_softmax_batch',),
-    ('math_tanh_batch',),
     ('multivariate_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
     ('naive_bayes_batch', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
     ('naive_bayes_streaming', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
@@ -205,6 +199,9 @@ class TestExCSRMatrix(Base, unittest.TestCase):
         # cannot use fastCSR ofr implicit als; bug in Intel(R) DAAL?
         if 'implicit_als' in ex.__name__:
             method = 'defaultDense'
+        # kmeans have no special method for CSR
+        if 'kmeans' in ex.__name__:
+            method = 'randomDense'
         if hasattr(ex, 'dflt_method'):
             low_order_moms
             method = ex.dflt_method.replace('defaultDense', 'fastCSR').replace('Dense', 'CSR')
