@@ -177,6 +177,7 @@ defaults = {
     'algorithms::stump::regression::training': {'weights': True,},
     'algorithms::dbscan': {'weights': True,},
     'algorithms::lasso_regression::training': {'weights': True, 'gramMatrix': True},
+    'algorithms::elastic_net::training': {'weights': True, 'gramMatrix': True},
 }
 
 # For enums that are used to access KeyValueDataCollections we need an inverse map
