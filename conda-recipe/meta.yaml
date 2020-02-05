@@ -25,7 +25,8 @@ requirements:
         - daal-devel >=2019.0
         - cython
         - jinja2
-        - impi-devel
+        - mpich # [osx]
+        - impi-devel # [not osx]
         - clang-tools
     build:
         - {{ compiler('cxx') }}
@@ -40,7 +41,8 @@ test:
         - pandas
         - scipy
         - scikit-learn
-        - impi_rt
+        - mpich # [osx]
+        - impi_rt # [not osx]
     imports:
         - daal4py
     source_files:
