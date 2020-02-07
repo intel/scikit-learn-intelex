@@ -29,6 +29,9 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
+# Get daal version
+from daal4py import __daal_link_version__ as dv
+daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
 def main(readcsv=read_csv, method='defaultDense'):
     # input data file
@@ -53,10 +56,10 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Now let's do some prediction
     if daal_version < (2020,1):
-        predict_algo = d4p.decision_forest_classification_prediction(5)
+        predict_algo = d4p.decision_forest_classification_prediction(nClasses=5)
     else:
-        predict_algo = d4p.decision_forest_classification_prediction(5, 'double',
-            'defaultDense', 'unweighted', 'computeClassLabels|computeClassProbabilities')
+        predict_algo = d4p.decision_forest_classification_prediction(nClasses=5,
+            resultsToEvaluate="computeClassLabels|computeClassProbabilities", votingMethod="unweighted")
     # read test data (with same #features)
     pdata = readcsv(testfile, range(3), t=np.float32)
     plabels = readcsv(testfile, range(3,4), t=np.float32)
