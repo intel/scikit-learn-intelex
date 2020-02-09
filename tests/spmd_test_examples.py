@@ -1,9 +1,10 @@
 import daal4py as d4p
+import os
 
 if d4p.__has_dist__:
     import unittest
     import numpy as np
-    from test_examples import np_read_csv, add_test
+    from test_examples import np_read_csv, add_test, daal_version, unittest_data_path
 
 
     class Base():
@@ -41,6 +42,20 @@ if d4p.__has_dist__:
 
                 self.assertTrue(np.allclose(batch_res.centroids, batch_res.centroids),
                                 "Final centroids with " + init_method + " does not match with batch algorithm")
+
+        @unittest.skipIf(daal_version < (2019, 5), "not supported in this library version")
+        def test_dbscan_spmd(self):
+            import dbscan_spmd as ex
+            result = self.call(ex)
+            test_data = np_read_csv(os.path.join(unittest_data_path, "dbscan_batch.csv"))
+            rpp = int(test_data.shape[0]/d4p.num_procs())
+            test_data = test_data[rpp*d4p.my_procid():rpp*d4p.my_procid()+rpp,:]
+            # clusters can get different indexes in batch and spmd algos, to compare them we should take care about it
+            cluster_index_dict = {}
+            for i in range(test_data.shape[0]):
+                if not test_data[i][0] in cluster_index_dict:
+                    cluster_index_dict[test_data[i][0]] = result.assignments[i][0]
+                self.assertTrue(cluster_index_dict[test_data[i][0]] == result.assignments[i][0])
 
 
     gen_examples = [
