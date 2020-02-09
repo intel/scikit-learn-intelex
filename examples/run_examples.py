@@ -55,6 +55,7 @@ req_version['stump_regression_batch.py'] = (2020,0)
 req_version['saga_batch.py'] = (2019,3)
 req_version['dbscan_batch.py'] = (2019,5)
 req_version['lasso_regression_batch.py'] = (2019,5)
+req_version['elastic_net_batch.py'] = (2021,5)
 
 def get_exe_cmd(ex, nodist, nostream):
     if not sycl_available and os.path.dirname(ex).endswith("sycl"):
