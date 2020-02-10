@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2014-2019 Intel Corporation
+* Copyright 2014-2020 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ using namespace daal::data_management;
 
 namespace dist_custom {
 
-template<typename T1>
+template< typename T1, typename T2 >
 class dist
 {
 public:
@@ -59,10 +59,10 @@ SerializationIfacePtr deserializeDAALObject(daal::byte * buff, size_t length)
     return dataArch.getAsSharedPtr();
 }
 
-typedef float algorithmFPType; /* Algorithm floating-point type */
+typedef T2 algorithmFPType; /* Algorithm floating-point type */
 
 /* Algorithm parameters */
-float epsilon;
+T2 epsilon;
 size_t minObservations;
 
 NumericTablePtr dataTable;
@@ -589,7 +589,7 @@ public:
     static typename Algo::iomb_type::result_type
     _compute(Algo & algo, const T1& input1)
     {
-        dist<T1> d;
+        dist<T1, fptype> d;
         d.epsilon = algo._epsilon;
         d.minObservations = algo._minObservations;
         d.main(input1);
