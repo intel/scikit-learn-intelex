@@ -164,6 +164,7 @@ gen_examples = [
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
     ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2019, 5)),
     ('lasso_regression_batch', None, None, (2019, 5)),
+    ('elastic_net_batch', None, None, (2021, 5)),
 ]
 
 for example in gen_examples:

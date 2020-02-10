@@ -129,7 +129,9 @@ ignore = {
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
     'algorithms::lasso_regression::training': ['optionalArgument'], # internal stuff
     'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
-    'algorithms::multi_class_classifier': ['algorithms::multi_class_classifier::getTwoClassClassifierModels',] # unsupported return type ModelPtr*
+    'algorithms::multi_class_classifier': ['algorithms::multi_class_classifier::getTwoClassClassifierModels',], # unsupported return type ModelPtr*
+    'algorithms::elastic_net::training': ['optionalArgument'], # internal stuff
+    'algorithms::elastic_net::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
@@ -175,6 +177,7 @@ defaults = {
     'algorithms::stump::regression::training': {'weights': True,},
     'algorithms::dbscan': {'weights': True,},
     'algorithms::lasso_regression::training': {'weights': True, 'gramMatrix': True},
+    'algorithms::elastic_net::training': {'weights': True, 'gramMatrix': True},
 }
 
 # For enums that are used to access KeyValueDataCollections we need an inverse map
@@ -526,6 +529,8 @@ no_warn = {
     'algorithms::weak_learner': ['Result',],
     'algorithms::lasso_regression': ['Result',],
     'algorithms::lasso_regression::prediction': ['ParameterType',],
+    'algorithms::elastic_net': ['Result',],
+    'algorithms::elastic_net::prediction': ['ParameterType',],
 }
 
 # we need to be more specific about numeric table types for the lowering phase in HPAT
