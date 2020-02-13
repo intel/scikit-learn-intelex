@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -46,7 +46,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a function
     func = d4p.optimization_solver_cross_entropy_loss(nClasses, nVectors, interceptFlag=True)
-    func.setup(data, dep_data, None)
+    func.setup(data, dep_data)
 
     # configure a algorithm
     stepLengthSequence = np.array([[stepLength]], dtype=np.double)

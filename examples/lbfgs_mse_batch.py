@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -40,7 +40,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a MSE object
     mse_algo = d4p.optimization_solver_mse(nVectors)
-    mse_algo.setup(data, dep_data, None)
+    mse_algo.setup(data, dep_data)
 
     # configure an LBFGS object
     sls = np.array([[1.0e-4]], dtype=np.double)

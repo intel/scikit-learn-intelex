@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -33,9 +33,10 @@ except:
 def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/adaboost_train.csv"
     testfile = "./data/batch/adaboost_test.csv"
+    nClasses = 2
 
     # Configure a adaboost training object
-    train_algo = d4p.adaboost_training()
+    train_algo = d4p.adaboost_training(nClasses=nClasses)
     
     # Read data. Let's have 20 independent, and 1 dependent variable (for each observation)
     indep_data = readcsv(infile, range(20))
@@ -44,7 +45,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_result = train_algo.compute(indep_data, dep_data)
 
     # Now let's do some prediction
-    predict_algo = d4p.adaboost_prediction()
+    predict_algo = d4p.adaboost_prediction(nClasses=nClasses)
     # read test data (with same #features)
     pdata = readcsv(testfile, range(20))
     # now predict using the model from the training above

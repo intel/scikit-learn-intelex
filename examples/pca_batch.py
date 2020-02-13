@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -37,7 +37,7 @@ def main(readcsv=read_csv, method='svdDense'):
     zscore = d4p.normalization_zscore()
     # configure a PCA object
     algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
-    
+
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 

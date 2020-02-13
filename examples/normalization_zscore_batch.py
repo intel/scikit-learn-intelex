@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -34,7 +34,10 @@ def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/normalization.csv"
 
     # configure a covariance object
-    algo = d4p.normalization_zscore()
+    try:
+        algo = d4p.normalization_zscore(doScale=True)
+    except NameError:
+        algo = d4p.normalization_zscore()
     
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)

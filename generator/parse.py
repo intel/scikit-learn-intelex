@@ -357,7 +357,7 @@ class member_parser(object):
     """Parse class members"""
     def parse(self, l, ctxt):
         if ctxt.curr_class and ctxt.access:
-            mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?([\w_]+)\s*;', l)
+            mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?\s*([\w_]+)\s*;', l)
             if mm :
                 if mm.group(2) not in ctxt.gdict['classes'][ctxt.curr_class].members:
                     # save the destination for documentation
@@ -518,6 +518,8 @@ def parse_header(header, ignores):
         # first strip of eol comments if it is not the link
         if not re.search(r'https?://', l):
             l = l.split('//')[0]
+        # delete 'DAAL_DEPRECATED'
+        l = l.replace('DAAL_DEPRECATED ', '')
         # apply each parser, continue to next line if possible
         for p in parsers:
             if p.parse(l, ctxt):

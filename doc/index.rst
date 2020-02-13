@@ -17,16 +17,16 @@ A simplified API gives high-level abstractions to the user with minimal boilerpl
 allowing for quick to write and easy to maintain code when utilizing Jupyter Notebooks.
 For scaling capabilities, daal4py also provides the ability to do distributed machine
 learning, giving a quick way to scale out. Its streaming mode provides a
-felxible mechanism for processing large amounts of data and/or non-contiguous
+flexible mechanism for processing large amounts of data and/or non-contiguous
 input data.
 
-For framework designers, daal4py's has been fashioned to be built under other
+For framework designers, daal4py has been fashioned to be built under other
 frameworks from both an API and feature perspective.  The machine learning models split
 the training and inference classes, allowing the model to be exported and serialized
 if desired.  This design also gives the flexibility to work directly with the model and
 associated primitives, allowing one to customize the behavior of the model itself.
 The daal4py package can be built with customized algorithm loadouts, allowing for a
-smaller footprint of dependencies when neessary.
+smaller footprint of dependencies when necessary.
 
 API Design and usage
 --------------------
@@ -149,19 +149,12 @@ e.g. standard types (integer, float, Numpy arrays, Pandas DataFrames,
 ...). Additionally, if you provide the name of a csv-file as an input argument
 daal4py will work on the entire file content.
 
-Scikit-Learn patches
---------------------
-daal4py can dynamically patch :ref:`certain scikit-learn algorithms <sklearn>` to
-use Intel® DAAL as the underlying solver, while getting the same solution faster.
-To unlock performance for your application, simply run::
+Scikit-Learn API and patching
+-----------------------------
+daal4py exposes some DAAL solvers using a scikit-learn compatible API.
 
-    python -m daal4py my_application.py
+daal4py can furthermore monkey-patch the ``sklearn`` package to use the DAAL
+solvers as drop-in replacement without any code change.
 
-Patches can also be enabled programmatically::
-
-    import daal4py.sklearn
-    daal4py.sklearn.patch_sklearn()
-
-Additionally, daal4py.sklearn provides scikit-learn API compatible classes for
-k-nearest neighbors classifier, as well as random forest classifier and regressors
-which are not a drop-in replacements of the corresponding scikit-learn counterparts.
+Please refer to the section on :ref:`scikit-learn API and patching <sklearn>`
+for more details.

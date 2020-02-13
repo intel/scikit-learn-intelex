@@ -1,5 +1,5 @@
-{% set version = '0.2019.2' %}
-{% set buildnumber = 1 %}
+{% set version = '0.2020.0' %}
+{% set buildnumber = 0 %}
 
 package:
     name: daal4py
@@ -7,29 +7,33 @@ package:
 
 source:
     path: ..
-    #git_url: https://github.com/IntelPython/daal4py.git
 
 build:
     number: {{buildnumber}}
     include_recipe: False
+    script_env:
+     - DPCPP_VAR
+     - DAALROOT
+    ignore_run_exports:
+       - python
 
 requirements:
     host:
         - python
         - setuptools
         - numpy >=1.15
-        - tbb-devel
         - daal-devel >=2019.0
         - cython
         - jinja2
-        - mpich                  # [not win]
-        - impi-devel             # [win]
+        - mpich # [osx]
+        - impi-devel # [not osx]
+        - clang-tools
+    build:
+        - {{ compiler('cxx') }}
+        - {{ compiler('c') }}
     run:
         - python
-        - tbb
         - daal >=2019.0
-        - mpich                  # [not win]
-        - impi_rt                # [win]
         - {{ pin_compatible('numpy') }}
 
 test:
@@ -37,6 +41,8 @@ test:
         - pandas
         - scipy
         - scikit-learn
+        - mpich # [osx]
+        - impi_rt # [not osx]
     imports:
         - daal4py
     source_files:
@@ -46,7 +52,7 @@ test:
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
-        - cd examples && python run_examples.py && cd ..
+        - cd examples && python run_examples.py
 
 about:
     home: https://intelpython.github.io/daal4py/

@@ -63,15 +63,17 @@ def flat(typ):
 def cy_callext(arg, typ_cy, typ_cyext, s2e=None):
     '''Where needed decorate argument with conversion when calling C++ from cython'''
     if 'data_or_file' in typ_cy:
-        return 'mk_data_or_file({0})'.format(arg)
+        return 'data_or_file(<PyObject*>{0})'.format(arg)
     if 'dict_numerictable' in typ_cy:
         return 'make_dnt(<PyObject *>' + arg + ((', ' + s2e) if s2e else '') + ')'
     if 'list_numerictable' in typ_cy:
         return 'make_datacoll(<PyObject *>' + arg + ')'
     if 'numerictable' in typ_cy:
         return 'make_nt(<PyObject *>' + arg + ')'
-    if any(typ_cy.endswith(x) for x in ['__iface__', 'model', '_result']):
+    if any(typ_cy.endswith(x) for x in ['model', '_result']):
         return arg + '.c_ptr if ' + arg + ' != None else <' + typ_cyext + ' *>0'
+    elif any(typ_cy.endswith(x) for x in ['__iface__']):
+        return arg + '.c_ptr.get() if ' + arg + ' != None else <' + typ_cyext + ' *>0'
     if 'std_string' in typ_cy:
         return 'to_std_string(<PyObject *>' + arg + ')'
     return arg
@@ -128,6 +130,11 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                 if typ_cy.endswith('ptr'):
                     typ_cy = typ_cy[:-3]
                     const = ''
+                if 'numerictable' in typ_cy:
+                    # we pass shared-ptr as ref (&), not *
+                    ref = '&'
+                    ptr = ''
+
                 # some types we accept without type in cython, because we have custom converters
                 notyp_cy = ['data_or_file', 'std_string', 'numerictable']
 
@@ -136,9 +143,8 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                 arg_c = d4pname
                 # arrays/tables need special handling for C: they are passed as (ptr, dim1, dim2)
                 if typ_cy == 'data_or_file':
-                    decl_c = 'double* {0}_p, size_t {0}_d2, size_t {0}_d1'.format(d4pname)
-                    arg_c = 'new data_or_file(daal::data_management::HomogenNumericTable< double >::create({0}_p, {0}_d2, {0}_d1))'.format(d4pname)
-                    const = ''
+                    decl_c = 'double* {0}_p, size_t {0}_nrows, size_t {0}_ncols, ssize_t {0}_layout'.format(d4pname)
+                    arg_c = 'data_or_file({0}_p, {0}_ncols, {0}_nrows, {0}_layout)'.format(d4pname)
                 # default values (see above pydefaults)
                 if dflt != None:
                     pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1]
@@ -155,6 +161,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
             self.daalname      = name
             self.value         = value if name else ''
             self.typ_cpp       = typ if name else ''
+            self.get_obj       = '{0} = _get_data({0})'.format(d4pname) if 'data_or_file' in typ else ''
             self.arg_cpp       = d4pname
             self.arg_py        = d4pname
             self.arg_cyext     = cy_callext(d4pname, typ_cy, typ_cyext, s2e) if name else ''

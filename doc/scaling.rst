@@ -43,7 +43,7 @@ That's all for the python code::
   result = kmi.compute("file{}.csv", daal4py.my_procid())
   daalfini()
 
-To actually get it exectuted on several processes use standard MPI mechanics,
+To actually get it executed on several processes use standard MPI mechanics,
 like::
 
   mpirun -n 4 python ./kmeans.py
@@ -86,3 +86,7 @@ The following algorithms support distribution:
 - Moments of Low Order (low_order_moments)
 
   - `Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_spmd.py>`_
+
+- QR Decomposition (qr)
+
+  - `QR <https://github.com/IntelPython/daal4py/blob/master/examples/qr_spmd.py>`_

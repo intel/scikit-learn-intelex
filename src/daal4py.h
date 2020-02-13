@@ -28,6 +28,7 @@ using daal::step3Local;
 using daal::step4Local;
 using daal::step2Master;
 using daal::step3Master;
+using daal::step5Master;
 using daal::services::LibraryVersionInfo;
 #include "daal_compat.h"
 
@@ -141,12 +142,10 @@ static inline NTYPE as_native_shared_ptr(services::SharedPtr< const algo_manager
 
 // Our Batch input/Output manager, abstracts from input/output types
 // also defines how to get results and finalize
-template< typename A, typename I, typename O >
+template< typename A, typename O >
 struct IOManager
 {
     typedef O result_type;
-    typedef I input1_type;
-    typedef input1_type input_type;
 
     static result_type getResult(A & algo)
     {
@@ -162,8 +161,13 @@ struct data_or_file
 {
     mutable daal::data_management::NumericTablePtr table;
     std::string                                    file;
-    inline data_or_file(daal::data_management::NumericTablePtr t)
-        : table(t), file() {}
+    template<typename T>
+    inline data_or_file(T * ptr, size_t ncols, size_t nrows, ssize_t layout)
+        : table(), file()
+    {
+        if(layout > 0) throw std::invalid_argument("Supporting only homogeneous, contiguous arrays.");
+        table = daal::data_management::HomogenNumericTable<T>::create(ptr, ncols, nrows);
+    }
     inline data_or_file()
         : table(), file() {}
     data_or_file(PyObject *);
@@ -189,6 +193,7 @@ struct RAW< daal::services::SharedPtr< T > >
 template< typename T > T to_daal(T t) {return t;}
 template< typename T > daal::services::SharedPtr<T> to_daal(daal::services::SharedPtr<T>* t) {return *t;}
 inline const data_or_file & to_daal(const data_or_file * t) {return *t;}
+inline const data_or_file & to_daal(const data_or_file & t) {return t;}
 inline const data_or_file & to_daal(data_or_file * t) {return *t;}
 
 template< typename T >
@@ -217,9 +222,9 @@ extern "C" void to_c_array(const daal::data_management::NumericTablePtr * ptr, v
 extern PyObject * make_nda(daal::data_management::NumericTablePtr * nt_ptr);
 extern PyObject * make_nda(daal::data_management::DataCollectionPtr * nt_ptr);
 extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * nt_ptr, const i2str_map_t &);
-extern daal::data_management::NumericTablePtr * make_nt(PyObject * nda);
-extern daal::data_management::DataCollectionPtr * make_datacoll(PyObject * nda);
-extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t &);
+extern daal::data_management::NumericTablePtr make_nt(PyObject * nda);
+extern daal::data_management::DataCollectionPtr make_datacoll(PyObject * nda);
+extern daal::data_management::KeyValueDataCollectionPtr make_dnt(PyObject * dict, str2i_map_t &);
 
 extern const daal::data_management::NumericTablePtr readCSV(const std::string& fname);
 
@@ -294,6 +299,11 @@ void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
     PyArray_SetBaseObject(ary, cap);
 }
 
+template< typename T >
+static T* _daal_clone(const T & o)
+{
+    return new T(o);
+}
 
 extern "C" {
 void set_rawp_base(PyArrayObject *, void *);

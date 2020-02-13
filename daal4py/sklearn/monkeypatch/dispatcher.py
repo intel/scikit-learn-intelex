@@ -1,6 +1,6 @@
 #
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,41 +15,63 @@
 # limitations under the License.
 #******************************************************************************/
 
+import sys
 import warnings
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 import warnings
 
-import sklearn.cluster as kmeans_module
+import sklearn.cluster as cluster_module
 import sklearn.svm as svm_module
-import sklearn.linear_model.logistic as logistic_module
+
+if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+    import sklearn.linear_model._logistic as logistic_module
+    from sklearn.decomposition._pca import PCA
+    _patched_log_reg_path_func_name = '_logistic_regression_path'
+    from ..linear_model._logistic_path_0_22 import _logistic_regression_path as daal_optimized_logistic_path
+else:
+    import sklearn.linear_model.logistic as logistic_module
+    from sklearn.decomposition.pca import PCA
+    if LooseVersion(sklearn_version) >= LooseVersion("0.21.0"):
+        _patched_log_reg_path_func_name = '_logistic_regression_path'
+        from ..linear_model._logistic_path_0_21 import _logistic_regression_path as daal_optimized_logistic_path
+    else:
+        _patched_log_reg_path_func_name = 'logistic_regression_path'
+        from ..linear_model._logistic_path_0_21 import logistic_regression_path as daal_optimized_logistic_path
+
 import sklearn.linear_model as linear_model_module
 import sklearn.decomposition as decomposition_module
 
-from sklearn.decomposition.pca import PCA
 from sklearn.metrics import pairwise
 
 
 from .pairwise import daal_pairwise_distances
-from .pca import PCA as PCA_daal4py
-from .ridge import Ridge as Ridge_daal4py
-from .linear import LinearRegression as LinearRegression_daal4py
-from .k_means import KMeans as KMeans_daal4py
-from .logistic_path import logistic_regression_path as daal_optimized_logistic_path
-from .svm import SVC as SVC_daal4py
+from ..decomposition.pca import PCA as PCA_daal4py
+from ..linear_model.ridge import Ridge as Ridge_daal4py
+from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
+from ..cluster.k_means import KMeans as KMeans_daal4py
+from ..svm.svm import SVC as SVC_daal4py
 
 from daal4py import __version__ as daal4py_version
 
 
 _mapping = {
     'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
-    'kmeans':    [[(kmeans_module, 'KMeans', KMeans_daal4py), None]],
+    'kmeans':    [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
     'distances': [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
     'linear':    [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
     'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
-    'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]], 
-    'logistic':  [[(logistic_module, 'logistic_regression_path', daal_optimized_logistic_path), None]],
+    'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]],
+    'logistic':  [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
 }
+
+del _patched_log_reg_path_func_name
+
+try:
+    from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
+    _mapping['dbscan'] = [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]]
+except ImportError:
+    pass
 
 
 def do_patch(name):
@@ -75,19 +97,25 @@ def do_unpatch(name):
         raise ValueError("Has no patch for: " + name)
 
 
-def enable(name=None):
+def enable(name=None, verbose=True):
     if LooseVersion(sklearn_version) < LooseVersion("0.20.0"):
-        raise NotImplementedError("daal4sklearn is for scikit-learn 0.20.0 only ...")
-    elif LooseVersion(sklearn_version) > LooseVersion("0.20.3"):
+        raise NotImplementedError("daal4py patches apply  for scikit-learn >= 0.20.0 only ...")
+    elif LooseVersion(sklearn_version) > LooseVersion("0.22.1"):
         warn_msg = ("daal4py {daal4py_version} has only been tested " +
-                   "with scikit-learn 0.20.3, found version: {sklearn_version}")
-        warnings.warn(warn_msg.format(daal4py_version=daal4py_version, sklearn_version=sklearn_version))
+                    "with scikit-learn 0.22.0, found version: {sklearn_version}")
+        warnings.warn(warn_msg.format(
+            daal4py_version=daal4py_version,
+            sklearn_version=sklearn_version)
+        )
 
     if name is not None:
         do_patch(name)
     else:
         for key in _mapping:
             do_patch(key)
+    if verbose and sys.stderr is not None:
+        sys.stderr.write("Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL) solvers for sklearn enabled: "
+                         "https://intelpython.github.io/daal4py/sklearn.html\n")
 
 
 def disable(name=None):

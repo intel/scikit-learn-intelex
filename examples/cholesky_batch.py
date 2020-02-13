@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -45,4 +45,3 @@ if __name__ == "__main__":
     result = main()
     print("\nFactor:\n", result.choleskyFactor)
     print('All looks good!')
-    np.savetxt('c.csv', result.choleskyFactor, delimiter=',')

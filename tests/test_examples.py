@@ -65,6 +65,19 @@ class Base():
             data = np.append(data, np.loadtxt(f, delimiter=','), axis=0)
         self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
 
+    def test_qr_batch(self):
+        import qr_batch as ex
+        (data, result) = self.call(ex)
+        self.assertTrue(np.allclose(data, np.matmul(result.matrixQ, result.matrixR)))
+
+    def test_qr_stream(self):
+        import qr_streaming as ex
+        result = self.call(ex)
+        data = np.loadtxt("./data/distributed/qr_1.csv", delimiter=',')
+        for f in ["./data/distributed/qr_{}.csv".format(i) for i in range(2,5)]:
+            data = np.append(data, np.loadtxt(f, delimiter=','), axis=0)
+        self.assertTrue(np.allclose(data, np.matmul(result.matrixQ, result.matrixR)))
+
     def test_svm_batch(self):
         testdata = np_read_csv(os.path.join(unittest_data_path, "svm_batch.csv"), range(1))
         import svm_batch as ex
@@ -73,11 +86,11 @@ class Base():
 
 
 gen_examples = [
-    ('adaboost_batch', None, None, (2019, 4)),
+    ('adaboost_batch', None, None, (2020, 0)),
     ('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
     ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
     ('bacon_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
-    ('brownboost_batch', None, None, (2019, 4)),
+    ('brownboost_batch', None, None, (2020, 0)),
     ('correlation_distance_batch', 'correlation_distance_batch.csv', lambda r: [[np.amin(r.correlationDistance)],
                                                                                 [np.amax(r.correlationDistance)],
                                                                                 [np.mean(r.correlationDistance)],
@@ -90,7 +103,7 @@ gen_examples = [
     ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
     ('covariance_batch', 'covariance.csv', 'covariance'),
     ('covariance_streaming', 'covariance.csv', 'covariance'),
-    ('decision_forest_classification_batch', 'decision_forest_classification_batch.csv', lambda r: r[1].prediction, (2019, 1)),
+    ('decision_forest_classification_batch', None, lambda r: r[1].prediction, (2019, 1)), # 'decision_forest_classification_batch.csv' is outdated
     ('decision_forest_regression_batch', 'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2019, 1)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv', lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv', lambda r: r[1].prediction),
@@ -109,7 +122,7 @@ gen_examples = [
     ('linear_regression_streaming', 'linear_regression_batch.csv', lambda r: r[1].prediction),
     ('log_reg_binary_dense_batch', 'log_reg_binary_dense_batch.csv', lambda r: r[1].prediction),
     ('log_reg_dense_batch',),
-    ('logitboost_batch', None, None, (2019, 4)),
+    ('logitboost_batch', None, None, (2020, 0)),
     ('low_order_moms_dense_batch', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
                                                                                           r.maximum,
                                                                                           r.sum,
@@ -130,12 +143,6 @@ gen_examples = [
                                                                                         r.variance,
                                                                                         r.standardDeviation,
                                                                                         r.variation))),
-    ('math_abs_batch',),
-    ('math_logistic_batch',),
-    ('math_relu_batch',),
-    ('math_smoothrelu_batch',),
-    ('math_softmax_batch',),
-    ('math_tanh_batch',),
     ('multivariate_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
     ('naive_bayes_batch', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
     ('naive_bayes_streaming', 'naive_bayes_batch.csv', lambda r: r[0].prediction),
@@ -145,18 +152,19 @@ gen_examples = [
     ('pca_transform_batch', 'pca_transform_batch.csv', lambda r: r[1].transformedData),
     ('pivoted_qr_batch', 'pivoted_qr.csv', 'matrixR'),
     ('quantiles_batch', 'quantiles.csv', 'quantiles'),
-    #('qr_batch', 'qr.csv', 'matrixR'),
-    #('qr_streaming', 'qr.csv', 'matrixR'),
     ('ridge_regression_batch', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
     ('ridge_regression_streaming', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
     ('saga_batch', None, None, (2019, 3)),
     ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
     ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),
     ('sorting_batch',),
-    ('stump_classification_batch', None, None, (2019, 4)),
-    ('stump_regression_batch', None, None, (2019, 4)),
+    ('stump_classification_batch', None, None, (2020, 0)),
+    ('stump_regression_batch', None, None, (2020, 0)),
     ('svm_multiclass_batch', 'svm_multiclass_batch.csv', lambda r: r[0].prediction),
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
+    ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2019, 5)),
+    ('lasso_regression_batch', None, None, (2019, 5)),
+    ('elastic_net_batch', None, None, (2021, 5)),
 ]
 
 for example in gen_examples:
@@ -186,10 +194,15 @@ class TestExCSRMatrix(Base, unittest.TestCase):
         # some algos do not support CSR matrices
         if  ex.__name__.startswith('sorting'):
             self.skipTest("not supporting CSR")
+        if  any (ex.__name__.startswith(x) for x in ['adaboost', 'brownboost', 'stump_classification']):
+            self.skipTest("not supporting CSR")
         method = 'singlePassCSR' if any(x in ex.__name__ for x in ['low_order_moms', 'covariance']) else 'fastCSR'
         # cannot use fastCSR ofr implicit als; bug in Intel(R) DAAL?
         if 'implicit_als' in ex.__name__:
             method = 'defaultDense'
+        # kmeans have no special method for CSR
+        if 'kmeans' in ex.__name__:
+            method = 'randomDense'
         if hasattr(ex, 'dflt_method'):
             low_order_moms
             method = ex.dflt_method.replace('defaultDense', 'fastCSR').replace('Dense', 'CSR')

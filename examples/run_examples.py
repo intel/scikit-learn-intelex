@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import struct
 import subprocess
 import sys
 
-from daal4py import __daal_link_version__ as dv
+from daal4py import __daal_link_version__ as dv, __has_dist__
 daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
 from os.path import join as jp
@@ -38,17 +38,28 @@ if 8 * struct.calcsize('P') == 32:
 else:
     logdir = jp(exdir, '_results', 'intel64')
 
+try:
+    from daal4py.oneapi import sycl_context, sycl_buffer
+    sycl_available = True
+except:
+    sycl_available = False
+
 req_version = defaultdict(lambda:(2019,0))
 req_version['decision_forest_classification_batch.py'] = (2019,1)
 req_version['decision_forest_regression_batch.py'] = (2019,1)
-req_version['adaboost_batch.py'] = (2019,4)
-req_version['brownboost_batch.py'] = (2019,4)
-req_version['logitboost_batch.py'] = (2019,4)
-req_version['stump_classification_batch.py'] = (2019,4)
-req_version['stump_regression_batch.py'] = (2019,4)
+req_version['adaboost_batch.py'] = (2020,0)
+req_version['brownboost_batch.py'] = (2020,0)
+req_version['logitboost_batch.py'] = (2020,0)
+req_version['stump_classification_batch.py'] = (2020,0)
+req_version['stump_regression_batch.py'] = (2020,0)
 req_version['saga_batch.py'] = (2019,3)
+req_version['dbscan_batch.py'] = (2019,5)
+req_version['lasso_regression_batch.py'] = (2019,5)
+req_version['elastic_net_batch.py'] = (2021,5)
 
 def get_exe_cmd(ex, nodist, nostream):
+    if not sycl_available and os.path.dirname(ex).endswith("sycl"):
+        return None
     if req_version[os.path.basename(ex)] > daal_version:
         return None
     if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
@@ -76,6 +87,7 @@ def run_all(nodist=False, nostream=False):
                     print('\n##### ' + jp(dirpath, script))
                     execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
                     if execute_string:
+                        os.chdir(dirpath)
                         proc = subprocess.Popen(execute_string if IS_WIN else ['/bin/bash', '-c', execute_string],
                                                 stdout=subprocess.PIPE,
                                                 stderr=subprocess.STDOUT,
@@ -101,4 +113,4 @@ def run_all(nodist=False, nostream=False):
         return 0
 
 if __name__ == '__main__':
-    sys.exit(run_all('nodist' in sys.argv, 'nostream' in sys.argv))
+    sys.exit(run_all('nodist' in sys.argv or not __has_dist__, 'nostream' in sys.argv))

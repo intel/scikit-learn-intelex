@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -40,7 +40,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a logistic loss object
     ll_algo = d4p.optimization_solver_logistic_loss(nVectors, interceptFlag=True)
-    ll_algo.setup(data, dep_data, None)
+    ll_algo.setup(data, dep_data)
 
     # configure a SGD object
     lrs = np.array([[0.01]], dtype=np.double)

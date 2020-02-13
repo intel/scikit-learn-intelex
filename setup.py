@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2019 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,10 +35,14 @@ d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ e
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
+if not no_dist and sys.version_info <= (3, 6):
+    print('distributed mode not supported for python version < 3.6\n')
+    no_dist = True
 no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
 daal_root = os.environ['DAALROOT']
 tbb_root = os.environ['TBBROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
+dpcpp = True if 'DPCPP_VAR' in os.environ else False
 
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
@@ -47,47 +51,59 @@ IS_LIN = False
 
 if 'linux' in sys.platform:
     IS_LIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64_lin')
+    lib_dir = jp(daal_root, 'lib', 'intel64')
 elif sys.platform == 'darwin':
     IS_MAC = True
     lib_dir = jp(daal_root, 'lib')
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64_win')
+    lib_dir = jp(daal_root, 'Library', 'lib', 'intel64_win')
 else:
     assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
-
 
 if no_stream :
     print('\nDisabling support for streaming mode\n')
 if no_dist :
     print('\nDisabling support for distributed mode\n')
     DIST_CFLAGS  = []
-    DIST_INCDIRS = []
-    DIST_LIBDIRS = []
-    DIST_LIBS    = []
+    DIST_CPPS    = []
+    MPI_INCDIRS = []
+    MPI_LIBDIRS = []
+    MPI_LIBS    = []
+    MPI_CPPS     = []
 else:
     DIST_CFLAGS  = ['-D_DIST_',]
-    DIST_INCDIRS = [jp(mpi_root, 'include')]
-    DIST_LIBDIRS = [jp(mpi_root, 'lib')]
-    if IS_WIN:
+    DIST_CPPS    = ['src/transceiver.cpp']
+    MPI_INCDIRS = [jp(mpi_root, 'include')]
+    MPI_LIBDIRS = [jp(mpi_root, 'lib')]
+    MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
+    if MPI_LIBNAME:
+        MPI_LIBS = [MPI_LIBNAME]
+    elif IS_WIN:
         if os.path.isfile(jp(mpi_root, 'lib', 'mpi.lib')):
-            DIST_LIBS    = ['mpi']
+            MPI_LIBS    = ['mpi']
         if os.path.isfile(jp(mpi_root, 'lib', 'impi.lib')):
-            DIST_LIBS    = ['impi']
-        assert DIST_LIBS, "Couldn't find MPI library"
+            MPI_LIBS    = ['impi']
+        assert MPI_LIBS, "Couldn't find MPI library"
     else:
-        DIST_LIBS    = ['mpi']
+        MPI_LIBS    = ['mpi']
+    MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
+if dpcpp:
+    DPCPP_CFLAGS = ['-D_DPCPP_', '-DONEAPI_DAAL_USE_MKL_GPU_FUNC']
+    DPCPP_LIBS = ['OpenCL', 'sycl', 'daal_sycl']
+else:
+    DPCPP_CFLAGS = []
+    DPCPP_LIBS = []
 DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
-        return DIST_CFLAGS + ['-fstack-protector', '-fPIC',
-                              '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',]
+        return DIST_CFLAGS + DPCPP_CFLAGS + ['-fstack-protector', '-fPIC',
+                                             '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',]
     elif IS_WIN:
-        return DIST_CFLAGS + ['-GS',]
+        return DIST_CFLAGS + DPCPP_CFLAGS + ['-GS',]
 
 def get_sdl_ldflags():
     if IS_LIN:
@@ -102,7 +118,7 @@ def get_type_defines():
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
 
 def getpyexts():
-    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',] + DIST_INCDIRS
+    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',]
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-DD4P_VERSION="'+d4p_version+'"', '-DNPY_ALLOW_THREADS=1'] + get_type_defines()
     ela = []
@@ -123,30 +139,51 @@ def getpyexts():
         libraries_plat = ['daal_core_dll']
     else:
         libraries_plat = ['daal_core', 'daal_thread']
-    libraries_plat += DIST_LIBS
 
     if IS_MAC:
         ela.append('-stdlib=libc++')
         ela.append("-Wl,-rpath,{}".format(daal_lib_dir))
-        for x in DIST_LIBDIRS:
-            ela.append("-Wl,-rpath,{}".format(x))
         ela.append("-Wl,-rpath,{}".format(jp(daal_root, '..', 'tbb', 'lib')))
     elif IS_WIN:
         ela.append('-IGNORE:4197')
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x] for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
 
-    return cythonize([Extension('_daal4py',
+    exts = cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
-                                 os.path.abspath('build/daal4py_cy.pyx')],
+                                 os.path.abspath('build/daal4py_cy.pyx')]
+                                + DIST_CPPS,
                                 depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
-                                libraries=libraries_plat,
-                                library_dirs=[daal_lib_dir] + DIST_LIBDIRS,
-                                language='c++')])
+                                libraries=libraries_plat + DPCPP_LIBS + MPI_LIBS,
+                                library_dirs=[daal_lib_dir],
+                                language='c++'),
+    ])
+    if dpcpp:
+        exts.extend(cythonize(Extension('_oneapi',
+                                        [os.path.abspath('src/oneapi/oneapi.pyx'),],
+                                        depends=['src/oneapi/oneapi.h',],
+                                        include_dirs=include_dir_plat + [np.get_include()],
+                                        extra_compile_args=eca + ['-fsycl'],
+                                        extra_link_args=ela,
+                                        libraries=libraries_plat + DPCPP_LIBS,
+                                        library_dirs=[daal_lib_dir],
+                                        language='c++')))
+    if not no_dist:
+        exts.append(Extension('mpi_transceiver',
+                              MPI_CPPS,
+                              depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
+                              include_dirs=include_dir_plat + [np.get_include()] + MPI_INCDIRS,
+                              extra_compile_args=eca,
+                              extra_link_args=ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS],
+                              libraries=libraries_plat + MPI_LIBS,
+                              library_dirs=[daal_lib_dir] + MPI_LIBDIRS,
+                              language='c++'))
+    return exts
+
 
 cfg_vars = get_config_vars()
 for key, value in get_config_vars().items():
@@ -198,9 +235,16 @@ setup(  name        = "daal4py",
             'Topic :: Software Development',
           ],
         setup_requires = ['numpy>=1.14', 'cython', 'jinja2'],
-        packages = ['daal4py', 'daal4py.sklearn',
-                    'daal4py.sklearn.neighbors',
+        packages = ['daal4py',
+                    'daal4py.oneapi',
+                    'daal4py.sklearn',
+                    'daal4py.sklearn.cluster',
+                    'daal4py.sklearn.decomposition',
                     'daal4py.sklearn.ensemble',
-                    'daal4py.sklearn.monkeypatch'],
+                    'daal4py.sklearn.linear_model',
+                    'daal4py.sklearn.neighbors',
+                    'daal4py.sklearn.monkeypatch',
+                    'daal4py.sklearn.svm',
+        ],
         ext_modules = getpyexts(),
 )

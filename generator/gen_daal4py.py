@@ -29,9 +29,11 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, specialized, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, wrap_algo
+from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, enum_params, wrap_algo
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
+from shutil import copytree, rmtree
+from subprocess import call
 
 try:
     basestring
@@ -112,10 +114,10 @@ class cython_interface(object):
                'serializeImpl', 'deserializeImpl', 'serialImpl',
                'getEpsilonVal', 'getMinVal', 'getMaxVal', 'getPMMLNumType', 'getInternalNumType', 'getIndexNumType',
                'allocateNumericTableImpl', 'allocateImpl', 'allocate', 'initialize',
-               'setPartialResultStorage', 'addPartialResultStorage',]
+               'setPartialResultStorage', 'addPartialResultStorage']
 
     # files we ignore/skip
-    ignore_files = ['daal_shared_ptr.h', 'daal.h', 'daal_win.h', 'algorithm_base_mode_batch.h',
+    ignore_files = ['daal_shared_ptr.h', 'daal.h', 'daal_sycl.h', 'daal_win.h', 'algorithm_base_mode_batch.h',
                     'algorithm_base.h', 'algorithm.h', 'ridge_regression_types.h', 'kdtree_knn_classification_types.h',
                     'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h',
                     'multi_class_classifier_types.h']
@@ -265,11 +267,13 @@ class cython_interface(object):
 
 
 ###############################################################################
-    def to_lltype(self, t):
+    def to_lltype(self, p, t):
         """
         return low level (C++ type). Usually the same as input.
          Only very specific cases need a conversion.
         """
+        if p in enum_params:
+            return enum_params[p]
         if t in ['DAAL_UINT64']:
             return 'ResultToComputeId'
         return t
@@ -285,9 +289,6 @@ class cython_interface(object):
             '?' means we do not know what 't' is
         For classes, we also add lookups in namespaces that DAAL C++ API finds through "using".
         """
-        if t in ['DAAL_UINT64']:
-            ### FIXME
-            t = 'ResultToComputeId'
         tns, tname = splitns(t)
         if t in ['double', 'float', 'int', 'size_t',]:
             return (t, 'stdtype', '')
@@ -681,10 +682,10 @@ class cython_interface(object):
             for p in all_params:
                 pns, tmp = splitns(p)
                 if not tmp.startswith('_') and not ignored(pns, tmp):
-                    hlt = self.to_hltype(pns, all_params[p][0])
+                    llt = self.to_lltype(p, all_params[p][0])
+                    hlt = self.to_hltype(pns, llt)
                     if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
                         (hlt, hlt_type, hlt_ns) = hlt
-                        llt = self.to_lltype(all_params[p][0])
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
@@ -736,7 +737,7 @@ class cython_interface(object):
                             dflt = None
                         if '::NumericTablePtr' in itype:
                             #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
-                            itype = 'data_or_file *'
+                            itype = 'data_or_file &'
                         ins = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', ins)
                         tmp_input_args.insert(i, mk_var(ins + '::' + iname, itype, 'const', dflt, inpt=True, algo=func, doc=doc))
             else:
@@ -764,7 +765,7 @@ class cython_interface(object):
             'model_typemap': self.prepare_modelmaps(ns),
             'result_typemap': self.prepare_resultmaps(ns),
             'create': no_constructor[fcls] if fcls in no_constructor else '',
-            'add_setup': True if ns in add_setup else False,
+            'add_setup': add_setup[ns] if ns in add_setup else None,
         }
         if not no_dist and ns in has_dist:
             retjp['dist'] = has_dist[ns]
@@ -919,10 +920,17 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     global no_warn
     if warn_all:
         no_warn = {}
-    ipath = jp(daalroot, 'include', 'algorithms')
-    assert os.path.isfile(jp(ipath, 'algorithm.h')) and os.path.isfile(jp(ipath, 'model.h')),\
-           "Path/$DAALROOT '"+ipath+"' doesn't seem host DAAL headers. Please provide correct daalroot."
-    iface = cython_interface(ipath)
+    orig_path = jp(daalroot, 'include')
+    assert os.path.isfile(jp(orig_path, 'algorithms', 'algorithm.h')) and os.path.isfile(jp(orig_path, 'algorithms', 'model.h')),\
+           "Path/$DAALROOT '"+orig_path+"' doesn't seem host DAAL headers. Please provide correct daalroot."
+    head_path = jp("build", "include")
+    algo_path = jp(head_path, "algorithms")
+    rmtree(head_path, ignore_errors=True)
+    copytree(orig_path, head_path)
+    for (dirpath, dirnames, filenames) in os.walk(algo_path):
+        for filename in filenames:
+            call("clang-format -i " + jp(dirpath, filename), shell=True)
+    iface = cython_interface(algo_path)
     iface.read()
     print('Generating sources...')
     cpp_h, cpp_cpp, pyx_file = iface.hlapi(iface.version, no_dist, no_stream)

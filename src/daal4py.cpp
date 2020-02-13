@@ -31,6 +31,7 @@
 #define is_array(a)            ((a) && PyArray_Check(a))
 #define array_type(a)          PyArray_TYPE((PyArrayObject*)a)
 #define array_is_behaved(a)    (PyArray_ISCARRAY_RO((PyArrayObject*)a) && array_type(a)<NPY_OBJECT)
+#define array_is_behaved_F(a)  (PyArray_ISFARRAY_RO((PyArrayObject*)a) && array_type(a)<NPY_OBJECT)
 #define array_is_native(a)     (PyArray_ISNOTSWAPPED((PyArrayObject*)a))
 #define array_numdims(a)       PyArray_NDIM((PyArrayObject*)a)
 #define array_data(a)          PyArray_DATA((PyArrayObject*)a)
@@ -131,6 +132,13 @@ static PyObject * _make_nda_from_homogen(daal::data_management::NumericTablePtr 
     return NULL;
 }
 
+#ifdef _DPCPP_
+#include "oneapi/oneapi_api.h"
+static int _1api_imp = import__oneapi();
+#else
+static int _1api_imp = -1;
+PyObject* make_py_from_sycltable(void * ptr, int typ, int d1, int d2){ return Py_None; }
+#endif
 // Convert a DAAL NT to a numpy nd-array
 // tries to avoid copying the data, instead we try to share the memory with DAAL
 PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
@@ -147,24 +155,30 @@ PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
     switch((*(*ptr)->getDictionary())[0].indexType) {
     case daal::data_management::data_feature_utils::DAAL_FLOAT64:
         if((res = _make_nda_from_homogen<double, NPY_FLOAT64>(ptr)) != NULL) return res;
+        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_FLOAT64, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         if((res = _make_nda_from_bd<double, NPY_FLOAT64>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_FLOAT32:
         if((res = _make_nda_from_homogen<float, NPY_FLOAT32>(ptr)) != NULL) return res;
+        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_FLOAT32, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         if((res = _make_nda_from_bd<float, NPY_FLOAT32>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT32_S:
         if((res = _make_nda_from_homogen<int32_t, NPY_INT32>  (ptr)) != NULL) return res;
+        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_INT32, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         if((res = _make_nda_from_bd<int32_t, NPY_INT32>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT32_U:
         if((res = _make_nda_from_homogen<uint32_t, NPY_UINT32> (ptr)) != NULL) return res;
+        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_UINT32, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT64_S:
         if((res = _make_nda_from_homogen<int64_t, NPY_INT64>  (ptr)) != NULL) return res;
+        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_INT64, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT64_U:
         if((res = _make_nda_from_homogen<uint64_t, NPY_UINT64> (ptr)) != NULL) return res;
+        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_UINT64, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         break;
     }
     // Falling back to using block-desriptors and converting to double
@@ -250,7 +264,11 @@ static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
     PyArrayObject * array = (PyArrayObject*)nda;
     if(array_numdims(array) == 2) {
         // the given numpy array is not well behaved C array but has right dimensionality
-        ptr = new NpyNumericTable<NpyNonContigHandler>(array);
+        try {
+            ptr = new NpyNumericTable<NpyNonContigHandler>(array);
+        } catch (...) {
+            ptr = NULL;
+        }
     } else if(array_numdims(nda) == 1) {
         PyArray_Descr * descr = PyArray_DESCR(array);
         if(descr->names) {
@@ -273,10 +291,28 @@ static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
 // * list of arrays, heterogen -> DAAL SOANumericTable
 // * scipy csr_matrix -> DAAL CSRNumericTable
 //   As long as DAAL CSR is only 0-based we need to copy indices/offsets
-daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
+daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 {
     if(PyErr_Occurred()) {PyErr_Print(); PyErr_Clear();}
     if(obj && obj != Py_None) {
+	if(PyObject_HasAttrString(obj, "__2daalnt__")) {
+            static daal::data_management::NumericTablePtr ntptr;
+            if(true || !ntptr) {
+            // special protocol assumes that python objects implement __2daalnt__
+            // returning a pointer to a NumericTablePtr, we have to delete the shared-pointer
+            PyObject * _obj = PyObject_CallMethod(obj, "__2daalnt__", NULL);
+            if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
+            void * _ptr = PyCapsule_GetPointer(_obj, NULL);
+            if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
+            Py_DECREF(_obj);
+            auto nt = reinterpret_cast<daal::data_management::NumericTablePtr*>(_ptr);
+            ntptr = *nt;
+            delete nt; // we delete the shared pointer-pointer
+            }
+
+            return ntptr;
+        }
+
         daal::data_management::NumericTable * ptr = NULL;
         if(is_array(obj)) { // we got a numpy array
             PyArrayObject * ary = (PyArrayObject*)obj;
@@ -286,7 +322,42 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
                 SET_NPY_FEATURE(PyArray_DESCR(ary)->type, MAKENT_, throw std::invalid_argument("Found unsupported array type"));
 #undef MAKENT_
             } else {
-                ptr = _make_npynt(obj);
+		if(array_is_behaved_F(ary) && (PyArray_NDIM(ary) == 2)) {
+		    int _axes = 0;
+		    npy_intp N = PyArray_DIM(ary, 1); // number of columns
+		    npy_intp column_len = PyArray_DIM(ary, 0);
+		    int ary_numtype = PyArray_TYPE(ary);
+		    /*
+		     * Input is 2D F-contiguous array: represent it as SOA numeric table
+		     */
+		    daal::data_management::SOANumericTable * soatbl = NULL;
+
+		    // iterate over columns
+		    PyArrayIterObject * it = (PyArrayIterObject *) PyArray_IterAllButAxis(obj, &_axes);
+		    if (it == NULL) {
+			Py_XDECREF(it);
+			throw std::runtime_error("Creating DAAL SOA table from F-contigous NumPy array failed: iterator could not be created");
+		    }
+
+		    soatbl = new daal::data_management::SOANumericTable(N, column_len);
+		    
+		    for(npy_intp i = 0; PyArray_ITER_NOTDONE(it); ++i) {
+			PyArrayObject *slice = (PyArrayObject *) PyArray_SimpleNewFromData(1, &column_len, ary_numtype, (void *)PyArray_ITER_DATA(it));
+			PyArray_SetBaseObject(slice, (PyObject *) ary);
+			Py_INCREF(ary);
+#define SETARRAY_(_T) {daal::services::SharedPtr< _T > _tmp(reinterpret_cast< _T * >(PyArray_ITER_DATA(it)), NumpyDeleter(slice)); soatbl->setArray(_tmp, i);}
+			SET_NPY_FEATURE(PyArray_DESCR(ary)->type, SETARRAY_, throw std::invalid_argument("Found unsupported array type"));
+#undef SETARRAY_
+			PyArray_ITER_NEXT(it);
+		    }
+
+		    if(soatbl->getNumberOfColumns() != N) {
+			delete soatbl;
+			throw std::runtime_error("Creating DAAL SOA table from F-contigous NumPy array failed.");
+		    }
+		    ptr = soatbl;
+		} else
+		    ptr = _make_npynt(obj);
             }
 
             if(!ptr) std::cerr << "Could not convert Python object to DAAL table.\n";
@@ -302,7 +373,7 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
                 for(auto i = 0; i < N; i++) {
                     PyArrayObject * ary = (PyArrayObject*)PyList_GetItem(obj, i);
                     if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
-                    if(i==0) soatbl = new daal::data_management::SOANumericTable(N, PyArray_DIMS(ary)[0]);
+                    if(i==0) soatbl = new daal::data_management::SOANumericTable(N, PyArray_DIM(ary, 0));
                     if(PyArray_NDIM(ary) != 1) {
                         std::cerr << "Found wrong dimensionality (" << PyArray_NDIM(ary) << ") of array in list when constructing SOA table (must be 1d)";
                         delete soatbl;
@@ -313,7 +384,7 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
 #define SETARRAY_(_T) {daal::services::SharedPtr< _T > _tmp(reinterpret_cast< _T * >(PyArray_DATA(ary)), NumpyDeleter(ary)); soatbl->setArray(_tmp, i);}
                     SET_NPY_FEATURE(PyArray_DESCR(ary)->type, SETARRAY_, throw std::invalid_argument("Found unsupported array type"));
 #undef SETARRAY_
-
+                    Py_INCREF(ary);
                 }
                 if(soatbl->getNumberOfColumns() != N) {
                     delete soatbl;
@@ -381,16 +452,18 @@ daal::data_management::NumericTablePtr * make_nt(PyObject * obj)
             Py_DECREF(roffs);
             Py_DECREF(indcs);
             Py_DECREF(vals);
-            return new daal::data_management::NumericTablePtr(ret);
+            return daal::data_management::NumericTablePtr(ret);
         }
-        return new daal::data_management::NumericTablePtr(ptr);
+
+        return daal::data_management::NumericTablePtr(ptr);
     }
-	return new daal::data_management::NumericTablePtr();
+
+    return daal::data_management::NumericTablePtr();
 }
 
-extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * dict, str2i_map_t & str2id)
+extern daal::data_management::KeyValueDataCollectionPtr make_dnt(PyObject * dict, str2i_map_t & str2id)
 {
-    auto dc = new daal::data_management::KeyValueDataCollectionPtr(new daal::data_management::KeyValueDataCollection);
+    daal::data_management::KeyValueDataCollectionPtr dc(new daal::data_management::KeyValueDataCollection);
     if(dict && dict != Py_None) {
         if(PyDict_Check(dict)) {
             PyObject *key, *value;
@@ -399,13 +472,12 @@ extern daal::data_management::KeyValueDataCollectionPtr * make_dnt(PyObject * di
                 const char *strkey = PyString_AsString(key);
                 auto keyid = str2id.find(strkey);
                 if(keyid != str2id.end()) {
-                    daal::data_management::NumericTablePtr * tbl = make_nt(value);
+                    daal::data_management::NumericTablePtr tbl = make_nt(value);
                     if(tbl) {
-                        (**dc)[keyid->second] = daal::services::staticPointerCast<daal::data_management::SerializationIface>(*tbl);
+                        (*dc)[keyid->second] = daal::services::staticPointerCast<daal::data_management::SerializationIface>(tbl);
                     } else {
                         std::cerr << "Unexpected object '" << Py_TYPE(value)->tp_name << "' found in dict, expected an array\n";
                     }
-                    delete tbl;
                 } else {
                     std::cerr << "Unexpected key '" << Py_TYPE(key)->tp_name << "' found in dict, expected a string\n";
                 }
@@ -429,8 +501,7 @@ data_or_file::data_or_file(PyObject * input)
     } else {
         auto tmp = make_nt(input);
         if(tmp) {
-            this->table = *tmp;
-            delete tmp;
+            this->table = tmp;
         }
         if(! this->table) {
             std::cerr << "Got type '" << Py_TYPE(input)->tp_name << "' when expecting string, array, or list of 1d-arrays. Treating as None." << std::endl;
@@ -486,7 +557,7 @@ void to_c_array(const daal::data_management::NumericTablePtr * ptr, void ** data
 }
 
 
-daal::data_management::DataCollectionPtr * make_datacoll(PyObject * input)
+daal::data_management::DataCollectionPtr make_datacoll(PyObject * input)
 {
     if(PyErr_Occurred()) {PyErr_Print(); PyErr_Clear();}
     if(input && input != Py_None && PyList_Check(input) && PyList_Size(input) > 0) {
@@ -497,12 +568,12 @@ daal::data_management::DataCollectionPtr * make_datacoll(PyObject * input)
             PyObject * obj = PyList_GetItem(input, i);
             if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
             auto tmp = make_nt(obj);
-            if(tmp) res->push_back(*tmp);
+            if(tmp) res->push_back(tmp);
             else throw std::runtime_error(std::string("Unexpected object '") + Py_TYPE(obj)->tp_name + "' found in list, expected an array");
         }
-        return new daal::data_management::DataCollectionPtr(res);
+        return daal::data_management::DataCollectionPtr(res);
     }
-    return NULL;
+    return daal::data_management::DataCollectionPtr();
 }
 
 
@@ -528,22 +599,19 @@ int64_t string2enum(const std::string& str, str2i_map_t & strmap)
 
 
 #ifdef _DIST_
-#include "mpi4daal.h"
+#include "transceiver.h"
 #endif
 
 extern "C" {
 void c_daalinit(int nthreads)
 {
     if(nthreads > 0) daal::services::Environment::getInstance()->setNumberOfThreads(nthreads);
-#ifdef _DIST_
-    MPI4DAAL::init();
-#endif
 }
 
 void c_daalfini()
 {
 #ifdef _DIST_
-    MPI4DAAL::fini();
+    del_transceiver();
 #endif
 }
 
@@ -556,7 +624,7 @@ size_t c_num_threads()
 size_t c_num_procs()
 {
 #ifdef _DIST_
-    return MPI4DAAL::nRanks();
+    return get_transceiver()->nMembers();
 #else
     return 1;
 #endif
@@ -565,7 +633,7 @@ size_t c_num_procs()
 size_t c_my_procid()
 {
 #ifdef _DIST_
-    return MPI4DAAL::rank();
+    return get_transceiver()->me();
 #else
     return 0;
 #endif

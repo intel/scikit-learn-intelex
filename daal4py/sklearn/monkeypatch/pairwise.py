@@ -1,6 +1,6 @@
 #
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@ from sklearn.metrics.pairwise import _parallel_pairwise, _pairwise_callable
 from sklearn.metrics.pairwise import _VALID_METRICS, PAIRWISE_DISTANCE_FUNCTIONS
 from sklearn.metrics.pairwise import PAIRWISE_BOOLEAN_FUNCTIONS
 from sklearn.metrics.pairwise import check_pairwise_arrays
+from sklearn.utils._joblib import effective_n_jobs
+from sklearn.utils.validation import check_non_negative
+import warnings
+from sklearn.exceptions import DataConversionWarning
 try:
     from sklearn.metrics.pairwise import _precompute_metric_params
 except ImportError:
@@ -48,7 +52,7 @@ def _daal4py_correlation_distance_dense(X):
     return res.correlationDistance
 
 
-def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=1, **kwds):
+def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None, **kwds):
     """ Compute the distance matrix from a vector array X and optional Y.
 
     This method takes either a vector array or a distance matrix, and returns
@@ -127,18 +131,24 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=1, **kwds):
         from X and the jth array from Y.
 
     """
-    if (metric not in _VALID_METRICS and
-            not callable(metric) and metric != "precomputed"):
+    if (metric not in _VALID_METRICS
+        and not callable(metric)
+        and metric != "precomputed"):
         raise ValueError("Unknown metric %s. "
                          "Valid metrics are %s, or 'precomputed', or a "
                          "callable" % (metric, _VALID_METRICS))
 
     if metric == "precomputed":
         X, _ = check_pairwise_arrays(X, Y, precomputed=True)
+        whom = ("`pairwise_distances`. Precomputed distance "
+                                " need to have non-negative values.")
+        check_non_negative(X, whom=whom)
         return X
-    elif (metric == 'cosine') and (Y is None) and (not issparse(X)) and X.dtype == np.float64:
+    elif ((metric == 'cosine') and (Y is None)
+          and (not issparse(X)) and X.dtype == np.float64):
         return _daal4py_cosine_distance_dense(X)
-    elif (metric == 'correlation') and (Y is None) and (not issparse(X)) and X.dtype == np.float64:
+    elif ((metric == 'correlation') and (Y is None) and
+          (not issparse(X)) and X.dtype == np.float64):
         return _daal4py_correlation_distance_dense(X)
     elif metric in PAIRWISE_DISTANCE_FUNCTIONS:
         func = PAIRWISE_DISTANCE_FUNCTIONS[metric]
@@ -151,16 +161,20 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=1, **kwds):
 
         dtype = bool if metric in PAIRWISE_BOOLEAN_FUNCTIONS else None
 
+        if (dtype == bool
+            and (X.dtype != bool or (Y is not None and Y.dtype != bool))):
+            msg = "Data was converted to boolean for metric %s" % metric
+            warnings.warn(msg, DataConversionWarning)
+
         X, Y = check_pairwise_arrays(X, Y, dtype=dtype)
 
         # precompute data-derived metric params
         params = _precompute_metric_params(X, Y, metric=metric, **kwds)
         kwds.update(**params)
 
-        if n_jobs == 1 and X is Y:
+        if effective_n_jobs(n_jobs) == 1 and X is Y:
             return distance.squareform(distance.pdist(X, metric=metric,
                                                       **kwds))
         func = partial(distance.cdist, metric=metric, **kwds)
 
     return _parallel_pairwise(X, Y, func, n_jobs, **kwds)
-
