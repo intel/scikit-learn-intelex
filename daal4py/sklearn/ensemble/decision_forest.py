@@ -187,8 +187,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             memorySavingMode=False,
             bootstrap=bool(self.bootstrap)
         )
-        if hasattr(self, '_cached_estimators_'):
-            del self._cached_estimators_
+        self._cached_estimators_ = None
         # compute
         dfc_trainingResult = dfc_algorithm.compute(X, y)
 
@@ -206,7 +205,8 @@ class RandomForestClassifier(skl_RandomForestClassifier):
     @property
     def estimators_(self):
         if hasattr(self, '_cached_estimators_'):
-            return self._cached_estimators_
+            if self._cached_estimators_:
+                return self._cached_estimators_
 
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             check_is_fitted(self)
@@ -402,8 +402,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
             bootstrap=bool(self.bootstrap)
         )
 
-        if hasattr(self, '_cached_estimators_'):
-            del self._cached_estimators_
+        self._cached_estimators_ = None
         dfr_trainingResult = dfr_algorithm.compute(X, y)
 
         # get resulting model
@@ -418,6 +417,9 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
     @property
     def estimators_(self):
+        if hasattr(self, '_cached_estimators_'):
+            if self._cached_estimators_:
+                return self._cached_estimators_
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             check_is_fitted(self)
         else:
