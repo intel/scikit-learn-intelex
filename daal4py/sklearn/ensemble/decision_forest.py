@@ -169,7 +169,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         # create algorithm
         X_fptype = getFPType(X)
         daal_engine_ = daal4py.engines_mt2203(seed=seed_, fptype=X_fptype)
-        _featuresPerNode = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=False)
+        _featuresPerNode = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=True)
 
         dfc_algorithm = daal4py.decision_forest_classification_training(
             nClasses=int(self.n_classes_),
