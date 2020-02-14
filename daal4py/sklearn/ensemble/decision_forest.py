@@ -127,7 +127,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
                           "setting for min_samples_leaf.")
 
 
-    def daal_fit(self, X, y):
+    def _daal_fit(self, X, y):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.single, np.double]
         X = check_array(X, dtype=_supported_dtypes_)
@@ -254,7 +254,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         self._cached_estimators_ = estimators_
         return estimators_
 
-    def daal_predict(self, X):
+    def _daal_predict(self, X):
         X = self._validate_X_predict(X)
 
         dfc_algorithm = daal4py.decision_forest_classification_prediction(
@@ -269,7 +269,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
 
 
     def fit(self, X, y):
-        return self.daal_fit(X, y)
+        return self._daal_fit(X, y)
 
 
     def predict(self, X):
@@ -277,7 +277,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             check_is_fitted(self)
         else:
             check_is_fitted(self, 'daal_model_')
-        return self.daal_predict(X)
+        return self._daal_predict(X)
 
 
     def _more_tags(self):
@@ -350,7 +350,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
 
     # Intel(R) DAAL only supports "mse" criterion
-    def daal_fit(self, X, y):
+    def _daal_fit(self, X, y):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.double, np.single]
         X = check_array(X, dtype=_supported_dtypes_)
@@ -459,7 +459,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
 
 
-    def daal_predict(self, X):
+    def _daal_predict(self, X):
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             check_is_fitted(self)
         else:
@@ -475,11 +475,11 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
 
     def fit(self, X, y):
-        return self.daal_fit(X, y)
+        return self._daal_fit(X, y)
 
 
     def predict(self, X):
-        return self.daal_predict(X)
+        return self._daal_predict(X)
 
 
     def _more_tags(self):
