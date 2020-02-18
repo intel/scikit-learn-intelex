@@ -232,19 +232,20 @@ extern PyObject * make_nda(daal::data_management::KeyValueDataCollectionPtr * di
 }
 
 template<typename T>
-static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
+static daal::data_management::NumericTablePtr _make_hnt(PyObject * nda)
 {
-    daal::data_management::NumericTable * ptr = NULL;
+    daal::data_management::NumericTablePtr ptr;
     PyArrayObject * array = (PyArrayObject*)nda;
 
     assert(is_array(nda) && array_is_behaved(array));
 
     if(array_numdims(array) == 2) {
         // we provide the SharedPtr with a deleter which decrements the pyref
-        ptr = new daal::data_management::HomogenNumericTable<T>(daal::services::SharedPtr<T>((T*)array_data(array),
-                                                                                             NumpyDeleter(array)),
-                                                                (size_t)array_size(array,1),
-                                                                (size_t)array_size(array,0));
+        ptr = daal::services::dynamicPointerCast<daal::data_management::NumericTable>(
+            daal::data_management::HomogenNumericTable<T>::create(daal::services::SharedPtr<T>((T*)array_data(array),
+                                                                                                     NumpyDeleter(array)),
+                                                                        (size_t)array_size(array,1),
+                                                                        (size_t)array_size(array,0)));
         // we need it increment the ref-count if we use the input array in-place
         // if we copied/converted it we already own our own reference
         if((PyObject*)array == nda) Py_INCREF(array);
@@ -255,7 +256,7 @@ static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
     return ptr;
 }
 
- static daal::data_management::NumericTable * _make_npynt(PyObject * nda)
+ static daal::data_management::NumericTablePtr _make_npynt(PyObject * nda)
  {
     daal::data_management::NumericTable * ptr = NULL;
 
@@ -281,7 +282,7 @@ static daal::data_management::NumericTable * _make_hnt(PyObject * nda)
         std::cerr << "Input array has wrong dimensionality (must be 2d).\n";
     }
 
-    return ptr;
+    return daal::data_management::NumericTablePtr(ptr);
 }
 
 // Try to convert given object to DAAL Table without copying. Currently supports
@@ -313,7 +314,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
             return ntptr;
         }
 
-        daal::data_management::NumericTable * ptr = NULL;
+        daal::data_management::NumericTablePtr ptr;
         if(is_array(obj)) { // we got a numpy array
             PyArrayObject * ary = (PyArrayObject*)obj;
 
@@ -330,16 +331,16 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 		    /*
 		     * Input is 2D F-contiguous array: represent it as SOA numeric table
 		     */
-		    daal::data_management::SOANumericTable * soatbl = NULL;
+		    daal::data_management::SOANumericTablePtr soatbl;
 
 		    // iterate over columns
 		    PyArrayIterObject * it = (PyArrayIterObject *) PyArray_IterAllButAxis(obj, &_axes);
 		    if (it == NULL) {
-			Py_XDECREF(it);
-			throw std::runtime_error("Creating DAAL SOA table from F-contigous NumPy array failed: iterator could not be created");
+                Py_XDECREF(it);
+                throw std::runtime_error("Creating DAAL SOA table from F-contigous NumPy array failed: iterator could not be created");
 		    }
 
-		    soatbl = new daal::data_management::SOANumericTable(N, column_len);
+		    soatbl = daal::data_management::SOANumericTable::create(N, column_len);
 		    
 		    for(npy_intp i = 0; PyArray_ITER_NOTDONE(it); ++i) {
 			PyArrayObject *slice = (PyArrayObject *) PyArray_SimpleNewFromData(1, &column_len, ary_numtype, (void *)PyArray_ITER_DATA(it));
@@ -352,8 +353,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 		    }
 
 		    if(soatbl->getNumberOfColumns() != N) {
-			delete soatbl;
-			throw std::runtime_error("Creating DAAL SOA table from F-contigous NumPy array failed.");
+                throw std::runtime_error("Creating DAAL SOA table from F-contigous NumPy array failed.");
 		    }
 		    ptr = soatbl;
 		} else
@@ -368,16 +368,14 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 
             if(is_array(first)) { // can handle only list of 1d arrays
                 auto N = PyList_Size(obj);
-                daal::data_management::SOANumericTable * soatbl = NULL;
+                daal::data_management::SOANumericTablePtr soatbl;
 
                 for(auto i = 0; i < N; i++) {
                     PyArrayObject * ary = (PyArrayObject*)PyList_GetItem(obj, i);
                     if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
-                    if(i==0) soatbl = new daal::data_management::SOANumericTable(N, PyArray_DIM(ary, 0));
+                    if(i==0) soatbl = daal::data_management::SOANumericTable::create(N, PyArray_DIM(ary, 0));
                     if(PyArray_NDIM(ary) != 1) {
                         std::cerr << "Found wrong dimensionality (" << PyArray_NDIM(ary) << ") of array in list when constructing SOA table (must be 1d)";
-                        delete soatbl;
-                        soatbl = NULL;
                         break;
                     }
 
@@ -387,13 +385,12 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     Py_INCREF(ary);
                 }
                 if(soatbl->getNumberOfColumns() != N) {
-                    delete soatbl;
                     throw std::runtime_error("Creating DAAL SOA table from list failed.");
                 }
                 ptr = soatbl;
             } // else not a list of 1d arrays
         } // else not a list of 1d arrays
-        if(ptr == NULL && strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0) {
+        if(!ptr && strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0) {
             daal::services::SharedPtr<daal::data_management::CSRNumericTable> ret;
             PyObject * vals  = PyObject_GetAttrString(obj, "data");
             if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
@@ -455,7 +452,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
             return daal::data_management::NumericTablePtr(ret);
         }
 
-        return daal::data_management::NumericTablePtr(ptr);
+        return ptr;
     }
 
     return daal::data_management::NumericTablePtr();
