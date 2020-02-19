@@ -103,7 +103,8 @@ gen_examples = [
     ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
     ('covariance_batch', 'covariance.csv', 'covariance'),
     ('covariance_streaming', 'covariance.csv', 'covariance'),
-    ('decision_forest_classification_batch', None, lambda r: r[1].prediction, (2019, 1)), # 'decision_forest_classification_batch.csv' is outdated
+    ('decision_forest_classification_batch', None, lambda r: r[1].prediction, (2022, 0)), # (2019, 1) is relevant but there is an issue with versions number
+                                                                                          # 'decision_forest_classification_batch.csv' is outdated
     ('decision_forest_regression_batch', 'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2019, 1)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv', lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv', lambda r: r[1].prediction),
@@ -164,7 +165,7 @@ gen_examples = [
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
     ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2019, 5)),
     ('lasso_regression_batch', None, None, (2019, 5)),
-    ('elastic_net_batch', None, None, (2021, 5)),
+    ('elastic_net_batch', None, None, (2022, 0)), # (2021, 5) is relevant but there is an issue with versions number
 ]
 
 for example in gen_examples:
