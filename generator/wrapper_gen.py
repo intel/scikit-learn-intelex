@@ -175,7 +175,7 @@ def my_procid():
 
 def _get_data(x):
     if isinstance(x, pdDataFrame):
-        x = [x.loc[:,i].values for i in x]
+        x = x.values
     elif isinstance(x, pdSeries):
         x = [x.values]
     return x
