@@ -262,8 +262,14 @@ def _daal4py_fit(self, X, y_inp, kernel):
     else:
         self._n_support = np.array([np.sum(indices == i) for i, c in enumerate(self.classes_)], dtype=np.int32)
 
-    self.probA_ = np.empty(0)
-    self.probB_ = np.empty(0)
+    try:
+        self.probA_ = np.empty(0)
+        self.probB_ = np.empty(0)
+    except AttributeError:
+        # in master probA_ and probB_ are deprecated read-only attributes
+        self._probA = np.empty(0)
+        self._probB = np.empty(0)
+
 
     return
 
