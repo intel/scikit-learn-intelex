@@ -71,6 +71,7 @@ jobs:
             conda activate bld
             conda install -y --override-channels -c intel cython
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
+            conda install -c conda-forge threadpoolctl
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
             conda list
