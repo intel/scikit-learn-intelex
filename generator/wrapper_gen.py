@@ -175,7 +175,10 @@ def my_procid():
 
 def _get_data(x):
     if isinstance(x, pdDataFrame):
-        x = x.values
+        if x._is_homogeneous_type:
+            x = x.values
+        else:
+            x = [series.values for _, series in x.items()]
     elif isinstance(x, pdSeries):
         x = [x.values]
     return x
