@@ -45,7 +45,10 @@ import sklearn.decomposition as decomposition_module
 from sklearn.metrics import pairwise
 
 
-from .pairwise import daal_pairwise_distances
+if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+    from ._pairwise_0_22 import daal_pairwise_distances
+else:
+    from ._pairwise_0_21 import daal_pairwise_distances
 from ..decomposition.pca import PCA as PCA_daal4py
 from ..linear_model.ridge import Ridge as Ridge_daal4py
 from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
