@@ -25,6 +25,7 @@ deselected_tests:
   # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
   # See https://github.com/IntelPython/daal4py/issues/69
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies >=0.20.3
+  - cluster/tests/test_k_means.py::test_relocated_clusters
 
   # For Newton-CG solver, solution computed in float32 disagrees with that of float64 a little more than
   # the test expects, see https://github.com/scikit-learn/scikit-learn/pull/13645
