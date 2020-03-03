@@ -42,6 +42,8 @@ from sklearn.exceptions import DataConversionWarning, NotFittedError
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
+daal_version = tuple(map(int, (daal4py.__daal_link_version__[0:4], daal4py.__daal_link_version__[4:8])))
+
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
     if max_features is None:
         return n_features
@@ -257,15 +259,44 @@ class RandomForestClassifier(skl_RandomForestClassifier):
     def _daal_predict(self, X):
         X = self._validate_X_predict(X)
 
-        dfc_algorithm = daal4py.decision_forest_classification_prediction(
-            nClasses = int(self.n_classes_),
-            fptype = 'float'
-            )
+        if daal_version < (2020,1):
+            dfc_algorithm = daal4py.decision_forest_classification_prediction(
+                nClasses = int(self.n_classes_),
+                fptype = 'float'
+                )
+        else:
+            dfc_algorithm = daal4py.decision_forest_classification_prediction(
+                nClasses = int(self.n_classes_),
+                fptype = 'float',
+                resultsToEvaluate="computeClassLabels"
+                )
         dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
 
         pred = dfc_predictionResult.prediction
 
         return np.take(self.classes_, pred.ravel().astype(np.int, casting='unsafe'))
+
+
+    def _daal_predict_proba(self, X):
+        X = self._validate_X_predict(X)
+
+        dfc_algorithm = daal4py.decision_forest_classification_prediction(
+            nClasses = int(self.n_classes_),
+            fptype = 'float',
+            resultsToEvaluate="computeClassProbabilities"
+            )
+        dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
+
+        pred = dfc_predictionResult.probabilities
+
+        return pred
+
+
+    def predict_proba(self, X):
+        if daal_version < (2020,1):
+            return super(RandomForestClassifier, self).predict_proba(X)
+        else:
+            return self._daal_predict_proba(X)
 
 
     def fit(self, X, y):
