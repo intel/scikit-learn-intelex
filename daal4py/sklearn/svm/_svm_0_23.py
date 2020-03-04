@@ -21,7 +21,7 @@ import numpy as np
 
 from scipy import sparse as sp
 from sklearn.utils import check_random_state, check_X_y
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, check_consistent_length, _num_samples
 import sklearn.svm._classes as svm_classes
 import sklearn.svm._base as svm_base
 import warnings
@@ -403,26 +403,27 @@ def fit(self, X, y, sample_weight=None):
         solver_type = LIBSVM_IMPL.index(self._impl)
 
         # input validation
-        if solver_type != 2 and X.shape[0] != y.shape[0]:
+        n_samples = _num_samples(X)
+        if solver_type != 2 and n_samples != y.shape[0]:
             raise ValueError("X and y have incompatible shapes.\n" +
                              "X has %s samples, but y has %s." %
-                             (X.shape[0], y.shape[0]))
+                             (n_sample, y.shape[0]))
 
-        if self.kernel == "precomputed" and X.shape[0] != X.shape[1]:
+        if self.kernel == "precomputed" and n_samples != X.shape[1]:
             raise ValueError("X.shape[0] should be equal to X.shape[1]")
 
-        if sample_weight.shape[0] > 0 and sample_weight.shape[0] != X.shape[0]:
+        if sample_weight.shape[0] > 0 and sample_weight.shape[0] != n_samples:
             raise ValueError("sample_weight and X have incompatible shapes: "
                              "%r vs %r\n"
                              "Note: Sparse matrices cannot be indexed w/"
                              "boolean masks (use `indices=True` in CV)."
                              % (sample_weight.shape, X.shape))
 
-        self._gamma = _compute_gamma(self.gamma, self.kernel, X, sparse)
-
-        kernel = self.kernel
-        if callable(kernel):
-            kernel = 'precomputed'
+        kernel = 'precomputed' if callable(self.kernel) else self.kernel
+        if kernel == 'precomputed':
+            self._gamma = 0.0
+        else:
+            self._gamma = _compute_gamma(self.gamma, kernel, X, sparse)
 
         fit = self._sparse_fit if self._sparse else self._dense_fit
         if self.verbose:  # pragma: no cover
@@ -442,7 +443,7 @@ def fit(self, X, y, sample_weight=None):
             fit(X, y, sample_weight, solver_type, kernel, random_seed=seed)
 
 
-        self.shape_fit_ = X.shape
+        self.shape_fit_ = X.shape if hasattr(X, "shape") else (n_samples, )
 
         # In binary case, we need to flip the sign of coef, intercept and
         # decision function. Use self._intercept_ and self._dual_coef_ internally.
