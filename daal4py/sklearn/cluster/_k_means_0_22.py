@@ -212,7 +212,7 @@ def fit(self, X, y=None, sample_weight=None):
         daal_ready = (self.n_clusters <= X_len)
         if daal_ready and sample_weight is not None:
             sample_weight = np.asarray(sample_weight)
-            daal_ready = (sample_weight.shape[0] == X_len) and (
+            daal_ready = (sample_weight.shape == (X_len,)) and (
                          np.allclose(sample_weight, np.ones_like(sample_weight)))
 
     if not daal_ready:

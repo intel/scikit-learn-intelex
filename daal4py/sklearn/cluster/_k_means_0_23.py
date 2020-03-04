@@ -23,6 +23,7 @@ from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import (check_is_fitted, _num_samples, _deprecate_positional_args)
 
 from sklearn.cluster._kmeans import (k_means, _labels_inertia, _k_init, _validate_center_shape)
+from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
 
 string_types = str
 
@@ -200,21 +201,26 @@ def fit(self, X, y=None, sample_weight=None):
         raise ValueError('Number of iterations should be a positive number,'
                          ' got %d instead' % self.max_iter)
 
-    if self.precompute_distances == 'auto':
-        precompute_distances = False
-    elif isinstance(self.precompute_distances, bool):
-        precompute_distances = self.precompute_distances
-    else:
-        raise ValueError("precompute_distances should be 'auto' or True/False"
-                         ", but a value of %r was passed" %
-                         self.precompute_distances)
-
     # avoid forcing order when copy_x=False
     order = "C" if self.copy_x else None
     X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
                     order=order, copy=self.copy_x)
 
-    daal_ready = not sp.issparse(X) and not precompute_distances
+    algorithm = self.algorithm
+    if algorithm == "elkan" and self.n_clusters == 1:
+        warnings.warn("algorithm='elkan' doesn't make sense for a single "
+                      "cluster. Using 'full' instead.", RuntimeWarning)
+        algorithm = "full"
+
+    if algorithm == "auto":
+        algorithm = "full" if self.n_clusters == 1 else "elkan"
+
+    if algorithm not in ["full", "elkan"]:
+        raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
+                         " {}".format(str(algorithm)))
+
+        
+    daal_ready = not sp.issparse(X)
     daal_ready = daal_ready and hasattr(X, '__array__')
 
     if daal_ready:
@@ -222,18 +228,17 @@ def fit(self, X, y=None, sample_weight=None):
         daal_ready = (self.n_clusters <= X_len)
         if daal_ready and sample_weight is not None:
             sample_weight = np.asarray(sample_weight)
-            daal_ready = (sample_weight.shape[0] == X_len) and (
+            daal_ready = (sample_weight.shape == (X_len,)) and (
                          np.allclose(sample_weight, np.ones_like(sample_weight)))
 
-    if not daal_ready:
-        return super(KMeans, self).fit(
-            X, y=y, sample_weights=sample_weights)
-    else: 
+    if daal_ready:
         X = check_array(X, dtype=[np.float64, np.float32])
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_dense(
                 X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
                 random_state)
+    else: 
+        super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
     return self
 
 

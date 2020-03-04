@@ -27,6 +27,9 @@ deselected_tests:
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies >=0.20.3
   - cluster/tests/test_k_means.py::test_relocated_clusters
 
+  # DAAL does not check convergence for tol == 0.0 for ease of benchmarking
+  - cluster/tests/test_k_means.py::test_kmeans_convergence
+
   # For Newton-CG solver, solution computed in float32 disagrees with that of float64 a little more than
   # the test expects, see https://github.com/scikit-learn/scikit-learn/pull/13645
   - linear_model/tests/test_logistic.py::test_dtype_match
