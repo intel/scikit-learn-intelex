@@ -79,6 +79,18 @@ def _process_n_components_None(self_n_components, self_svd_solver, X_shape):
     return n_components
 
 
+def _n_components_from_fraction(explained_variance_ratio, frac):
+    # number of components for which the cumulated explained
+    # variance percentage is superior to the desired threshold
+    # side='right' ensures that number of features selected
+    # their variance is always greater than n_components float
+    # passed. More discussion in issue: #15669
+    ratio_cumsum = stable_cumsum(explained_variance_ratio)
+    n_components = np.searchsorted(ratio_cumsum, frac,
+                                   side='right') + 1
+    return n_components
+    
+
 def _fit_full(self, X, n_components):
     """Fit the model by computing full SVD on X"""
     n_samples, n_features = X.shape
@@ -108,10 +120,8 @@ def _fit_full(self, X, n_components):
         n_components = \
             _infer_dimension_(explained_variance_, n_samples, n_features)
     elif 0 < n_components < 1.0:
-        # number of components for which the cumulated explained
-        # variance percentage is superior to the desired threshold
-        ratio_cumsum = explained_variance_ratio_.cumsum()
-        n_components = np.searchsorted(ratio_cumsum, n_components) + 1
+        n_components = _n_components_from_fraction(
+            explained_variance_ratio_, n_components)
 
     # Compute noise covariance using Probabilistic PCA model
     # The sigma2 maximum likelihood (cf. eq. 12.46)
@@ -201,10 +211,8 @@ class PCA(PCA_original):
             n_components = \
                 _infer_dimension_(explained_variance_, n_samples, n_features)
         elif 0 < n_components < 1.0:
-            # number of components for which the cumulated explained
-            # variance percentage is superior to the desired threshold
-            ratio_cumsum = stable_cumsum(explained_variance_ratio_)
-            n_components = np.searchsorted(ratio_cumsum, n_components) + 1
+            n_components = _n_components_from_fraction(
+                explained_variance_ratio_, n_components)
 
         # Compute noise covariance using Probabilistic PCA model
         # The sigma2 maximum likelihood (cf. eq. 12.46)
@@ -273,10 +281,8 @@ class PCA(PCA_original):
             n_components = \
                 _infer_dimension_(self.explained_variance_, n_samples, n_features)
         elif 0 < n_components < 1.0:
-            # number of components for which the cumulated explained
-            # variance percentage is superior to the desired threshold
-            ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
-            n_components = np.searchsorted(ratio_cumsum, n_components) + 1
+            n_components = _n_components_from_fraction(
+                self.explained_variance_ratio_, n_components)
 
         # Compute noise covariance using Probabilistic PCA model
         # The sigma2 maximum likelihood (cf. eq. 12.46)
@@ -320,10 +326,8 @@ class PCA(PCA_original):
             n_components = \
                _infer_dimension_(explained_variance_, n_samples, n_features)
         elif 0 < n_components < 1.0:
-            # number of components for which the cumulated explained
-            # variance percentage is superior to the desired threshold
-            ratio_cumsum = stable_cumsum(explained_variance_ratio_)
-            n_components = np.searchsorted(ratio_cumsum, n_components) + 1
+            n_components = _n_components_from_fraction(
+                explained_variance_ratio_, n_components)
 
         # Compute noise covariance using Probabilistic PCA model
         # The sigma2 maximum likelihood (cf. eq. 12.46)
