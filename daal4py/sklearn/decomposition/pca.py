@@ -18,7 +18,9 @@
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+if LooseVersion(sklearn_version) >= LooseVersion("0.23"):
+    from ._pca_0_23 import *
+elif LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     from ._pca_0_22 import *
 else:
     from ._pca_0_21 import *
