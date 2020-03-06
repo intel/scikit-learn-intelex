@@ -52,3 +52,8 @@ deselected_tests:
 
   # 
   - tests/test_pipeline.py::test_pipeline_memory 
+
+  # docstrings do not document daal_model_ attribute set by fit for
+  # LinearRegression, Ridge and SVC
+  - tests/test_docstring_parameters.py::test_fit_docstring_attributes
+  
