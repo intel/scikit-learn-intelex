@@ -179,7 +179,7 @@ def _get_data(x):
         if np.all(x_dtypes == x_dtypes[0]):
             x = x.to_numpy()
         else:
-            x = [np.asfortranarray(xi.values) for _, xi in x.items()]
+            x = [xi.to_numpy() for _, xi in x.items()]
     elif isinstance(x, pdSeries):
         x = [x.to_numpy()]
     return x
