@@ -47,5 +47,24 @@ class Test(unittest.TestCase):
         df = pd.DataFrame(X[1::3, :])
         self.verify_on_dbscan(df)
 
+    def test5(self):
+        """
+        Dataframe from C-contiguous array with heterogeneous types
+        """
+        X = np.random.randn(13024, 16)
+        df = pd.DataFrame(X)
+        df = df.astype({df.columns[1]: 'float32', df.columns[6]: 'float32'})
+        self.verify_on_dbscan(df)
+
+    def test6(self):
+        """
+        Dataframe from non-contiguous array with heterogeneous types
+        """
+        X = np.random.randn(13024*3, 16)
+        df = pd.DataFrame(X[1::3, :])
+        df = df.astype({df.columns[1]: 'float32', df.columns[6]: 'float32'})
+        self.verify_on_dbscan(df)
+
+
 if __name__ == '__main__':
     unittest.main()
