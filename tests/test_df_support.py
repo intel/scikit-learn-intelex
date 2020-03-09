@@ -66,5 +66,24 @@ class Test(unittest.TestCase):
         self.verify_on_dbscan(df)
 
 
+    def test7(self):
+        """
+        Dataframe from multi-dtype array
+        """
+        X = np.random.randn(13024, 16)
+        dt = []
+        for i in range(8):
+            dt += [('f' + str(2*i), np.float64),
+                   ('f' + str(2*i+1), np.float32)]
+        X2 = np.empty((X.shape[0],), dtype=np.dtype(dt))
+        for i, (n, _) in enumerate(dt):
+            X2[n][:] = X[:, i]
+
+        df = pd.DataFrame(X2)
+        for i, (n, _) in enumerate(dt):
+            assert np.allclose(df[n].values, X[:, i])
+        self.verify_on_dbscan(df)
+
+
 if __name__ == '__main__':
     unittest.main()
