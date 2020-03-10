@@ -85,5 +85,15 @@ class Test(unittest.TestCase):
         self.verify_on_dbscan(df)
 
 
+    def test8(self):
+        """
+        Check own data for to_numpy method
+        """
+        X = np.random.randn(13024*3, 16)
+        df = pd.DataFrame(X[1::3, :])
+        print(df.to_numpy().data, X.data)
+        self.assertTrue(np.may_share_memory(df.to_numpy(), X))
+
+
 if __name__ == '__main__':
     unittest.main()
