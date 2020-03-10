@@ -21,12 +21,10 @@ class Test(unittest.TestCase):
         Yc = np.ascontiguousarray(Y).reshape((len(Y), 1))
         alg2 = d4p.linear_regression_training(interceptFlag=True, fptype='double')
         res2 = alg2.compute(Xc, Yc)
-        print(res1.model.Beta[:10])
-        print(res2.model.Beta[:10])
         self.assertTrue(np.allclose(res1.model.Beta, res2.model.Beta))
 
 
-    def test1(self):
+    def test_c_contiguous(self):
         """
         Dataframe from C-contiguous array
         """
@@ -34,7 +32,7 @@ class Test(unittest.TestCase):
         df = pd.DataFrame(X)
         self.verify_on_dbscan(df)
 
-    def test2(self):
+    def test_f_contiguous(self):
         """
         Dataframe from F-contiguous array
         """
@@ -42,7 +40,7 @@ class Test(unittest.TestCase):
         df = pd.DataFrame(X)
         self.verify_on_dbscan(df)
 
-    def test3(self):
+    def test_not_contiguous_1(self):
         """
         Dataframe from non-contiguous array, case 1
         """
@@ -50,8 +48,7 @@ class Test(unittest.TestCase):
         df = pd.DataFrame(X[:, 2, :])
         self.verify_on_dbscan(df)
 
-
-    def test4(self):
+    def test_not_contiguous_2(self):
         """
         Dataframe from non-contiguous array, case 2
         """
@@ -59,9 +56,9 @@ class Test(unittest.TestCase):
         df = pd.DataFrame(X[1::3, :])
         self.verify_on_dbscan(df)
 
-    def test5(self):
+    def test_not_contiguous_series(self):
         """
-        Dataframe and Series from non-contiguous array, case 3
+        Dataframe and Series from non-contiguous array, case 4
         """
         X = np.random.randn(13024*3, 16)
         df = pd.DataFrame(X[1::3, 1:])
@@ -69,7 +66,7 @@ class Test(unittest.TestCase):
         print(ps.to_numpy().flags)
         self.verify_on_linear_regression(df, ps)
 
-    def test6(self):
+    def test_contiguous_heterogeneous(self):
         """
         Dataframe from C-contiguous array with heterogeneous types
         """
@@ -78,7 +75,7 @@ class Test(unittest.TestCase):
         df = df.astype({df.columns[1]: 'float32', df.columns[6]: 'float32'})
         self.verify_on_dbscan(df)
 
-    def test7(self):
+    def test_not_contiguous_heterogeneous_1(self):
         """
         Dataframe from non-contiguous array with heterogeneous types
         """
@@ -87,7 +84,20 @@ class Test(unittest.TestCase):
         df = df.astype({df.columns[1]: 'float32', df.columns[6]: 'float32'})
         self.verify_on_dbscan(df)
 
-    def test8(self):
+    def test_not_contiguous_heterogeneous_2(self):
+        """
+        Dataframe and Series from non-contiguous and heterogeneous array
+        """
+        X = np.random.randn(13024*3, 16)
+        df = pd.DataFrame(X[1::3, 1:])
+        k = 2
+        dir_dtypes = {col: 'float64' if i % 2 == 0 else 'float32' for i, col in enumerate(df.columns)}
+        df = df.astype(dir_dtypes)
+        ps = pd.Series(X[1::3, 0])
+        df['newcol'] = ps
+        self.verify_on_dbscan(df)
+
+    def test_not_contiguous_heterogeneous_3(self):
         """
         Dataframe from multi-dtype array
         """
@@ -105,13 +115,12 @@ class Test(unittest.TestCase):
             assert np.allclose(df[n].values, X[:, i])
         self.verify_on_dbscan(df)
 
-    def test9(self):
+    def test_to_numpy_not_copy(self):
         """
         Check own data for to_numpy method
         """
         X = np.random.randn(13024*3, 16)
         df = pd.DataFrame(X[1::3, :])
-        print(df.to_numpy().data, X.data)
         self.assertTrue(np.may_share_memory(df.to_numpy(), X))
 
 
