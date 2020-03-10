@@ -181,7 +181,7 @@ def _get_data(x):
         else:
             x = [xi.to_numpy() for _, xi in x.items()]
     elif isinstance(x, pdSeries):
-        x = x.to_numpy()
+        x = x.to_numpy().reshape(-1, 1)
     return x
 
 

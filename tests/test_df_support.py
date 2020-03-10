@@ -14,6 +14,18 @@ class Test(unittest.TestCase):
         self.assertTrue(np.array_equal(res1.assignments, res2.assignments))
         self.assertTrue(len(np.unique(res1.assignments)) > 2)
 
+    def verify_on_linear_regression(self, X, Y):
+        alg1 = d4p.linear_regression_training(interceptFlag=True, fptype='double')
+        res1 = alg1.compute(X, Y)
+        Xc = np.ascontiguousarray(X)
+        Yc = np.ascontiguousarray(Y).reshape((len(Y), 1))
+        alg2 = d4p.linear_regression_training(interceptFlag=True, fptype='double')
+        res2 = alg2.compute(Xc, Yc)
+        print(res1.model.Beta[:10])
+        print(res2.model.Beta[:10])
+        self.assertTrue(np.allclose(res1.model.Beta, res2.model.Beta))
+
+
     def test1(self):
         """
         Dataframe from C-contiguous array
@@ -49,6 +61,16 @@ class Test(unittest.TestCase):
 
     def test5(self):
         """
+        Dataframe and Series from non-contiguous array, case 3
+        """
+        X = np.random.randn(13024*3, 16)
+        df = pd.DataFrame(X[1::3, 1:])
+        ps = pd.Series(X[1::3, 0])
+        print(ps.to_numpy().flags)
+        self.verify_on_linear_regression(df, ps)
+
+    def test6(self):
+        """
         Dataframe from C-contiguous array with heterogeneous types
         """
         X = np.random.randn(13024, 16)
@@ -56,7 +78,7 @@ class Test(unittest.TestCase):
         df = df.astype({df.columns[1]: 'float32', df.columns[6]: 'float32'})
         self.verify_on_dbscan(df)
 
-    def test6(self):
+    def test7(self):
         """
         Dataframe from non-contiguous array with heterogeneous types
         """
@@ -65,8 +87,7 @@ class Test(unittest.TestCase):
         df = df.astype({df.columns[1]: 'float32', df.columns[6]: 'float32'})
         self.verify_on_dbscan(df)
 
-
-    def test7(self):
+    def test8(self):
         """
         Dataframe from multi-dtype array
         """
@@ -84,8 +105,7 @@ class Test(unittest.TestCase):
             assert np.allclose(df[n].values, X[:, i])
         self.verify_on_dbscan(df)
 
-
-    def test8(self):
+    def test9(self):
         """
         Check own data for to_numpy method
         """
