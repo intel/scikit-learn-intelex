@@ -340,7 +340,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 		    }
 
 		    soatbl = daal::data_management::SOANumericTable::create(N, column_len);
-		    
+
 		    for(npy_intp i = 0; PyArray_ITER_NOTDONE(it); ++i) {
 			PyArrayObject *slice = (PyArrayObject *) PyArray_SimpleNewFromData(1, &column_len, ary_numtype, (void *)PyArray_ITER_DATA(it));
 			PyArray_SetBaseObject(slice, (PyObject *) ary);
@@ -376,6 +376,12 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     if(PyArray_NDIM(ary) != 1) {
                         std::cerr << "Found wrong dimensionality (" << PyArray_NDIM(ary) << ") of array in list when constructing SOA table (must be 1d)";
                         break;
+                    }
+
+                    if (!array_is_behaved(ary))
+                    {
+                        throw std::runtime_error(std::string("Cannot operate on column: ") + std::to_string(i) +
+                            "  because it is non-contiguous. Please make it contiguous before passing it to daal4py\n");
                     }
 
 #define SETARRAY_(_T) {daal::services::SharedPtr< _T > _tmp(reinterpret_cast< _T * >(PyArray_DATA(ary)), NumpyDeleter(ary)); soatbl->setArray(_tmp, i);}

@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.com/IntelPython/daal4py.svg?branch=master)](https://travis-ci.com/IntelPython/daal4py)
 [![Build Status](https://dev.azure.com/frankschlimbach/daal4py/_apis/build/status/IntelPython.daal4py?branchName=master)](https://dev.azure.com/frankschlimbach/daal4py/_build/latest?definitionId=1&branchName=master)
 
-A simplified API to Intel® DAAL that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel® DAAL for either direct usage or integration into one's own framework.  
+A simplified API to Intel® DAAL that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel® DAAL for either direct usage or integration into one's own framework.
 
 - [Documentation](https://intelpython.github.io/daal4py/)
 - [Source Code](https://github.com/IntelPython/daal4py/tree/master/src)
@@ -22,7 +22,7 @@ You can even run this on a cluster by simple adding a keyword-parameter
 kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
 ```
 # Getting Started
-daal4py is easily built from source with the majority of the necessary prerequisites available on conda.  The instructions below detail how to gather the prerequisites, setting one's build environment, and finally building and installing the completed package.  daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if desired.  
+daal4py is easily built from source with the majority of the necessary prerequisites available on conda.  The instructions below detail how to gather the prerequisites, setting one's build environment, and finally building and installing the completed package.  daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if desired.
 
 The build-process (using setup.py) happens in 3 stages:
 1. Creating C++ and cython sources from DAAL C++ headers
@@ -80,7 +80,7 @@ Without conda-build you have to manually setup your environment before building 
 ## Setting up a build environment
 The easiest path for getting cython, DAAL, TBB, MPI etc. is by creating a conda environment and setting environment variables:
 ```
-conda create -n DAAL4PY -c intel python=3.6 impi-devel tbb-devel daal daal-include cython jinja2 numpy
+conda create -n DAAL4PY -c intel python=3.6 impi-devel tbb-devel daal daal-include cython jinja2 numpy -c conda-forge clang-tools
 conda activate DAAL4PY
 export TBBROOT=$CONDA_PREFIX
 export DAALROOT=$CONDA_PREFIX
