@@ -380,7 +380,8 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 
                     if (!array_is_behaved(ary))
                     {
-                        throw std::runtime_error("Can't get the data correctly without a copy.\n");
+                        throw std::runtime_error(std::string("Cannot operate on column: ") + std::string(i) + "  because it is non-contiguous.
+                         Please make it contiguous before passing it to daal4py\n");
                     }
 
 #define SETARRAY_(_T) {daal::services::SharedPtr< _T > _tmp(reinterpret_cast< _T * >(PyArray_DATA(ary)), NumpyDeleter(ary)); soatbl->setArray(_tmp, i);}
