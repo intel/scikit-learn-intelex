@@ -32,7 +32,7 @@ from ..utils import getFPType
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
-daal_version = tuple(map(int, (d4p.__daal_link_version__[0:4], d4p.__daal_link_version__[4:8])))
+daal_version = tuple(map(int, (d4p.__daal_run_version__[0:4], d4p.__daal_run_version__[4:8])))
 
 class GBTDAALBase(BaseEstimator):
     def __init__(self,
