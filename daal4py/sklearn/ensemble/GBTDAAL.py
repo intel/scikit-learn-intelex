@@ -201,7 +201,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
                                                              resultsToEvaluate=resultsToEvaluate)
         predict_result = predict_algo.compute(X, self.daal_model_)
 
-        if daal_version < (2020,1) or resultsToEvaluate == "computeClassLabels":
+        if resultsToEvaluate == "computeClassLabels":
             # Decode labels
             le = preprocessing.LabelEncoder()
             le.classes_ = self.classes_
@@ -233,6 +233,12 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
                     proba[k] = np.log(proba[k])
 
                 return proba
+
+
+if daal_version < (2020,1):
+    del GBTDAALClassifier.predict_proba
+    del GBTDAALClassifier.predict_log_proba
+
 
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
     def fit(self, X, y):
