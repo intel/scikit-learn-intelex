@@ -29,7 +29,7 @@ from sklearn.utils.extmath import stable_cumsum
 from scipy.sparse import issparse
 
 import daal4py
-from ..utils import getFPType
+from .._utils import getFPType
 
 
 def _daal4py_svd(X):

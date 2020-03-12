@@ -31,7 +31,7 @@ except ImportError:
     from sklearn.externals.joblib import Parallel, delayed
 
 import daal4py
-from ..utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType)
 
 def _daal4py_fit(self, X, y_):
     y = make2d(y_)

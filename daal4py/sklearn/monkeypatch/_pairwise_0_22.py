@@ -35,7 +35,7 @@ from scipy.sparse import issparse
 from scipy.spatial import distance
 
 import daal4py
-from ..utils import getFPType
+from .._utils import getFPType
 
 
 def _daal4py_cosine_distance_dense(X):
