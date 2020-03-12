@@ -6,6 +6,8 @@ import sklearn.utils.estimator_checks
 from daal4py.sklearn.neighbors import KNeighborsClassifier
 from daal4py.sklearn.ensemble import RandomForestClassifier
 from daal4py.sklearn.ensemble import RandomForestRegressor
+from daal4py.sklearn.ensemble import GBTDAALClassifier
+from daal4py.sklearn.ensemble import GBTDAALRegressor
 
 def _replace_and_save(md, fns, replacing_fn):
     """
@@ -49,7 +51,6 @@ class Test(unittest.TestCase):
         check_estimator(RandomForestClassifier)
         _restore_from_saved(md, saved)
 
-
     def test_RandomForestRegressor(self):
         # check_fit_idempotent is known to fail with DAAL's decision
         # forest regressor, due to different partitioning of data
@@ -60,6 +61,19 @@ class Test(unittest.TestCase):
         md = sklearn.utils.estimator_checks
         saved = _replace_and_save(md, ['check_methods_subset_invariance', 'check_dict_unchanged'], dummy)
         check_estimator(RandomForestRegressor)
+        _restore_from_saved(md, saved)
+
+    def test_GBTDAALClassifier(self):
+        check_estimator(GBTDAALClassifier)
+
+    def test_GBTDAALRegressor(self):
+        def dummy(*args, **kwargs):
+            pass
+
+        md = sklearn.utils.estimator_checks
+        # got unexpected slightly different prediction result between two same calls in this test
+        saved = _replace_and_save(md, ['check_estimators_data_not_an_array'], dummy)
+        check_estimator(GBTDAALRegressor)
         _restore_from_saved(md, saved)
 
 

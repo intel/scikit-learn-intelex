@@ -4,6 +4,7 @@ RandomForestClassifier and RandomForestRegressor classes.
 """
 
 from .decision_forest import (RandomForestClassifier, RandomForestRegressor)
+from .GBTDAAL import (GBTDAALClassifier, GBTDAALRegressor)
 
-__all__ = ['RandomForestClassifier', 'RandomForestRegressor']
+__all__ = ['RandomForestClassifier', 'RandomForestRegressor', 'GBTDAALClassifier', 'GBTDAALRegressor']
 
