@@ -43,6 +43,7 @@ import sklearn.linear_model as linear_model_module
 import sklearn.decomposition as decomposition_module
 
 from sklearn.metrics import pairwise
+from sklearn.utils import validation
 
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
@@ -54,6 +55,7 @@ from ..linear_model.ridge import Ridge as Ridge_daal4py
 from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..svm.svm import SVC as SVC_daal4py
+from ..utils.validation import _daal_assert_all_finite
 
 from daal4py import __version__ as daal4py_version
 
@@ -66,6 +68,7 @@ _mapping = {
     'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
     'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]],
     'logistic':  [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
+    'fin_check': [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]],
 }
 
 del _patched_log_reg_path_func_name

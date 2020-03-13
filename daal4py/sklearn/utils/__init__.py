@@ -15,10 +15,6 @@
 # limitations under the License.
 #******************************************************************************/
 
-from .monkeypatch.dispatcher import enable as patch_sklearn
-from .monkeypatch.dispatcher import disable as unpatch_sklearn
-from .monkeypatch.dispatcher import _patch_names as sklearn_patch_names
+from .validation import _daal_assert_all_finite
 
-__all__ = ["patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
-           "neighbors", "ensemble", "svm", "linear_model",
-           "cluster", "decomposition", "utils"]
+__all__ = ['_daal_assert_all_finite']
