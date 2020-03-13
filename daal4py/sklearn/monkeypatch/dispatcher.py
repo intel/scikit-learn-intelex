@@ -59,6 +59,8 @@ from ..utils.validation import _daal_assert_all_finite
 
 from daal4py import __version__ as daal4py_version
 
+from daal4py import __daal_run_version__
+daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
 
 _mapping = {
     'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
@@ -68,7 +70,6 @@ _mapping = {
     'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
     'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]],
     'logistic':  [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
-    'fin_check': [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]],
 }
 
 del _patched_log_reg_path_func_name
@@ -78,6 +79,9 @@ try:
     _mapping['dbscan'] = [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]]
 except ImportError:
     pass
+
+if daal_run_version >= (2020, 1):
+    _mapping['fin_check'] = [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]]
 
 
 def do_patch(name):

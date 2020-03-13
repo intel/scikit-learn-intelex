@@ -49,7 +49,9 @@ using daal::services::LibraryVersionInfo;
 #define PyUnicode_FromString(_x) PyString_FromString(_x)
 #endif
 
+#if INTEL_DAAL_VERSION >= 20200001
 #include "data_management/data/internal/finiteness_checker.h"
+#endif
 
 extern "C" {
 void c_daalinit(int nthreads=-1);
