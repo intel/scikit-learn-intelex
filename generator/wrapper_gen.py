@@ -212,8 +212,6 @@ cdef extern from "daal4py.h":
 
 
 def daal_assert_all_finite(X, allow_nan=False, dtype=0):
-    if X.ndim == 1:
-        X = X.reshape((-1, 1))
     return c_assert_all_finite(data_or_file(<PyObject*>X), allow_nan, dtype)
 '''
 

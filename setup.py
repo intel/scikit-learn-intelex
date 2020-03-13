@@ -245,6 +245,7 @@ setup(  name        = "daal4py",
                     'daal4py.sklearn.neighbors',
                     'daal4py.sklearn.monkeypatch',
                     'daal4py.sklearn.svm',
+                    'daal4py.sklearn.utils',
         ],
         ext_modules = getpyexts(),
 )
