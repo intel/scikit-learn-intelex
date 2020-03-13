@@ -27,7 +27,7 @@ from sklearn import preprocessing
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils import check_random_state
 import daal4py as d4p
-from ..utils import getFPType
+from .._utils import getFPType
 
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
