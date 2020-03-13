@@ -27,7 +27,7 @@ import warnings
 
 
 import daal4py
-from ..utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType)
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
 from sklearn.tree._tree import (DTYPE, Tree)

@@ -18,7 +18,7 @@
 import numpy as np
 
 import daal4py
-from ..utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType)
 
 def _resultsToCompute_string(value=True, gradient=True, hessian=False):
     results_needed = []

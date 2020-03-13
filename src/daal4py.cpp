@@ -641,3 +641,24 @@ size_t c_my_procid()
 #endif
 }
 } // extern "C"
+
+bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
+{
+#if INTEL_DAAL_VERSION >= 20200001
+    bool result;
+    auto tab = get_table(t);
+    switch(dtype) {
+    case 0:
+        result = daal::data_management::internal::allValuesAreFinite< double >(*tab, allowNaN);
+        break;
+    case 1:
+        result = daal::data_management::internal::allValuesAreFinite< float >(*tab, allowNaN);
+        break;
+    default:
+        std::cerr << "Invalid data type specified." << std::endl;
+    }
+    return result;
+#else
+    return false;
+#endif
+}

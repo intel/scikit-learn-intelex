@@ -23,7 +23,7 @@ from sklearn.linear_model._ridge import _BaseRidge
 from sklearn.linear_model._ridge import Ridge as Ridge_original
 
 import daal4py
-from ..utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType)
 
 
 def _daal4py_fit(self, X, y_):

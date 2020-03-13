@@ -43,6 +43,7 @@ import sklearn.linear_model as linear_model_module
 import sklearn.decomposition as decomposition_module
 
 from sklearn.metrics import pairwise
+from sklearn.utils import validation
 
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
@@ -54,9 +55,12 @@ from ..linear_model.ridge import Ridge as Ridge_daal4py
 from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..svm.svm import SVC as SVC_daal4py
+from ..utils.validation import _daal_assert_all_finite
 
 from daal4py import __version__ as daal4py_version
 
+from daal4py import __daal_run_version__
+daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
 
 _mapping = {
     'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
@@ -75,6 +79,9 @@ try:
     _mapping['dbscan'] = [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]]
 except ImportError:
     pass
+
+if daal_run_version >= (2020, 1):
+    _mapping['fin_check'] = [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]]
 
 
 def do_patch(name):

@@ -49,6 +49,10 @@ using daal::services::LibraryVersionInfo;
 #define PyUnicode_FromString(_x) PyString_FromString(_x)
 #endif
 
+#if INTEL_DAAL_VERSION >= 20200001
+#include "data_management/data/internal/finiteness_checker.h"
+#endif
+
 extern "C" {
 void c_daalinit(int nthreads=-1);
 void c_daalfini();
@@ -306,6 +310,10 @@ static T* _daal_clone(const T & o)
 
 extern "C" {
 void set_rawp_base(PyArrayObject *, void *);
+}
+
+extern "C" {
+bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype);
 }
 
 #endif // _HLAPI_H_INCLUDED_

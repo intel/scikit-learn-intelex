@@ -206,6 +206,13 @@ def _str(instance, properties):
             result += '\\n\\n'
         return result[:-2]
 
+
+cdef extern from "daal4py.h":
+    cdef bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype) except +
+
+
+def daal_assert_all_finite(X, allow_nan=False, dtype=0):
+    return c_assert_all_finite(data_or_file(<PyObject*>X), allow_nan, dtype)
 '''
 
 ###############################################################################
