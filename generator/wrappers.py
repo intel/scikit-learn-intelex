@@ -93,6 +93,15 @@ add_setup = {
     'algorithms::optimization_solver::cross_entropy_loss': ['data', 'dependentVariables'],
 }
 
+# Some algorithms require a function to obtain result from the algorithm instance without explicit call of compute
+# Example: optimization solvers as a parameter to other algorithms can contain their own result
+add_get_result = [
+    'algorithms::optimization_solver::coordinate_descent',
+    'algorithms::optimization_solver::mse',
+    'algorithms::optimization_solver::logistic_loss',
+    'algorithms::optimization_solver::cross_entropy_loss',
+]
+
 # Some parameters/inputs are not used when C++ datastructures are shared across
 # different algos (like training and prediction)
 # List them here for the 'ignoring' algos.

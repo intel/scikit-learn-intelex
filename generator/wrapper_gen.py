@@ -654,6 +654,9 @@ struct {{algo}}__iface__ : public {{prnt}}
     virtual {{result_map.class_type}} * compute({{input_args|fmt('{}', 'decl_cpp', sep=',\n')|indent(indent)}},
 {{' '*indent}}bool setup_only = false)
         {assert(false); return NULL;}
+{% if add_get_result %}
+    virtual {{result_map.class_type}} * get_result() {assert(false); return NULL;}
+{% endif %}
 {% if streaming.name %}
     virtual {{result_map.class_type}} * finalize() {assert(false); return NULL;}
 {% endif %}
@@ -753,6 +756,7 @@ private:
     }
 
 {% endif %}
+
 {% if step_specs is defined and distributed.name %}
     // Distributed computing
 public:
@@ -804,6 +808,14 @@ public:
         return new typename iomb_type::result_type({{batchcall}});
 {% endif %}
     }
+
+{% if add_get_result %}
+    typename iomb_type::result_type * get_result()
+    {
+        return new typename iomb_type::result_type(iomb_type::getResult(*_algob));
+    }
+{% endif %}
+
 };
 """
 
@@ -816,6 +828,9 @@ cdef extern from "daal4py.h":
 {% set indent = 17+(result_map.class_type|flat|length) %}
         {{result_map.class_type|flat}} compute({{input_args|fmt('{}', 'decl_cyext', sep=',\n')|indent(indent)}},
 {{' '*indent}}const bool setup_only) except +
+{% if add_get_result %}
+        {{result_map.class_type|flat}} get_result() except +
+{% endif %}
 {% if streaming.name %}
         {{result_map.class_type|flat}} finalize() except +
 {% endif %}
@@ -880,6 +895,17 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         :rtype: {{cytype}}
         '''
         return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
+
+{% if add_get_result %}
+    def get_result(self):
+        if self.c_ptr.get() == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
+        cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
+        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
+        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
+        res.c_ptr = deref(algo).get_result()
+        return res
+{% endif %}
 
 {% if streaming.name %}
     # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
@@ -1206,6 +1232,7 @@ class wrapper_gen(object):
         jparams.update(cfg['params']['params_templ'])
         jparams['create'] = cfg['create']
         jparams['add_setup']  = cfg['add_setup']
+        jparams['add_get_result']  = cfg['add_get_result']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
         jparams['params_ds'] = jparams['params_req'] + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
