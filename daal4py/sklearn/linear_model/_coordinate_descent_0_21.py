@@ -17,18 +17,19 @@
 
 import numpy as np
 import numbers
+import daal4py
 from scipy import sparse as sp
 from sklearn.utils import check_array, check_X_y
-from sklearn.linear_model._coordinate_descent import ElasticNet as ElasticNet_original
-#only for compliance with Sklearn
-from sklearn.utils.extmath import row_norms
-import warnings
-
-import daal4py
+from sklearn.linear_model import ElasticNet as ElasticNet_original
+from sklearn.linear_model import Lasso as Lasso_original
 from daal4py.sklearn._utils import (make2d, getFPType)
 
-def _daal4py_fit(self, X, y_, check_input):
+#only for compliance with Sklearn
+import warnings
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.utils.extmath import row_norms
 
+def _daal4py_check(self, X, y_, check_input):
     #conver to 2d format
     X = make2d(X)
     y = make2d(y_)
@@ -89,7 +90,14 @@ def _daal4py_fit(self, X, y_, check_input):
     if self.selection not in ['random', 'cyclic']:
         raise ValueError("selection should be either random or cyclic.")
 
-    #set and check penaltyL1 and penaltyL2
+    return X, y
+
+def _daal4py_fit_enet(self, X, y_, check_input):
+
+    #appropriate checks
+    X, y = _daal4py_check(self, X, y_, check_input)
+    _fptype = getFPType(X)
+
     penalty_L1 = np.asarray(self.alpha*self.l1_ratio, dtype=X.dtype)
     penalty_L2 = np.asarray(self.alpha*(1.0 - self.l1_ratio), dtype=X.dtype)
     if (penalty_L1.size != 1 or penalty_L2.size != 1):
@@ -116,9 +124,14 @@ def _daal4py_fit(self, X, y_, check_input):
     )
 
     #set warm_start
-    #if not self.warm_start or not hasattr(self, "coef_"):
-    #    inputArgument = np.zeros((y.shape[1], X.shape[1] + 1), dtype=_fptype, order='F')
-    #    cd_solver.setup(inputArgument)
+    if (self.warm_start and hasattr(self, "coef_") and isinstance(self.coef_, np.ndarray)):
+        n_rows = y.shape[1]
+        n_cols = X.shape[1] + 1
+        inputArgument = np.zeros((n_rows, n_cols), dtype = _fptype)
+        for i in range(n_rows):
+            inputArgument[i][0] = self.intercept_ if (n_rows == 1) else self.intercept_[i]
+            inputArgument[i][1:] = self.coef_[:].copy(order='C') if (n_rows == 1) else self.coef_[i,:].copy(order='C')
+        cd_solver.setup(inputArgument)
 
     elastic_net_alg = daal4py.elastic_net_training(
         fptype = _fptype,
@@ -145,15 +158,24 @@ def _daal4py_fit(self, X, y_, check_input):
     self.intercept_ = coefs[:,0].copy(order='C')
     self.coef_ = coefs[:,1:].copy(order='C')
 
-    if self.coef_.shape[0] == 1 and y.ndim == 1:
+    #only for compliance with Sklearn
+    if y.shape[1] == 1:
         self.coef_ = np.ravel(self.coef_)
+    self.intercept_ = np.ravel(self.intercept_)
+    if self.intercept_.shape[0] == 1:
         self.intercept_ = self.intercept_[0]
 
     #set n_iter_
-    if (y.shape[1] == 1):
-        self.n_iter_ = cd_solver.get_result().nIterations[0][0]
+    n_iter = cd_solver.__get_result__().nIterations[0][0]
+    if y.shape[1] == 1:
+        self.n_iter_ = n_iter
     else:
-        self.n_iter_ = np.full(y.shape[1], cd_solver.get_result().nIterations[0][0])
+        self.n_iter_ = np.full(y.shape[1], n_iter)
+
+    #only for compliance with Sklearn
+    if (self.max_iter == n_iter + 1):
+        warnings.warn("Objective did not converge. You might want to "
+                      "increase the number of iterations.", ConvergenceWarning)
 
     #only for dual_gap computation, it is not required for DAAL
     self.X = X
@@ -161,7 +183,7 @@ def _daal4py_fit(self, X, y_, check_input):
 
     return self
 
-def _daal4py_predict(self, X):
+def _daal4py_predict_enet(self, X):
     X = make2d(X)
     _fptype = getFPType(self.coef_)
 
@@ -172,6 +194,105 @@ def _daal4py_predict(self, X):
     elastic_net_res = elastic_net_palg.compute(X, self.daal_model_)
 
     res = elastic_net_res.prediction
+
+    if res.shape[1] == 1 and self.coef_.ndim == 1:
+        res = np.ravel(res)
+    return res
+
+def _daal4py_fit_lasso(self, X, y_, check_input):
+
+    #appropriate checks
+    X, y = _daal4py_check(self, X, y_, check_input)
+    _fptype = getFPType(X)
+
+    mse_alg = daal4py.optimization_solver_mse(
+        numberOfTerms = X.shape[0],
+        fptype = _fptype,
+        method = 'defaultDense'
+    )
+    mse_alg.setup(X, y, None)
+
+    cd_solver = daal4py.optimization_solver_coordinate_descent(
+        function = mse_alg,
+        fptype = _fptype,
+        method = 'defaultDense',
+        selection = self.selection,
+        seed = 0 if (self.random_state == None) else self.random_state,
+        nIterations = self.max_iter,
+        positive = self.positive,
+        accuracyThreshold = self.tol
+    )
+
+    #set warm_start
+    if (self.warm_start and hasattr(self, "coef_") and isinstance(self.coef_, np.ndarray)):
+        n_rows = y.shape[1]
+        n_cols = X.shape[1] + 1
+        inputArgument = np.zeros((n_rows, n_cols), dtype = _fptype)
+        for i in range(n_rows):
+            inputArgument[i][0] = self.intercept_ if (n_rows == 1) else self.intercept_[i]
+            inputArgument[i][1:] = self.coef_[:].copy(order='C') if (n_rows == 1) else self.coef_[i,:].copy(order='C')
+        cd_solver.setup(inputArgument)
+
+    lasso_alg = daal4py.lasso_regression_training(
+        fptype = _fptype,
+        method = 'defaultDense',
+        interceptFlag = (self.fit_intercept is True),
+        dataUseInComputation = 'doUse' if (self.copy_X == False) else 'doNotUse',
+        lassoParameters = self.alpha,
+        optimizationSolver = cd_solver
+    )
+    try:
+        if isinstance(self.precompute, np.ndarray):
+            lasso_res = lasso_alg.compute(data=X, dependentVariables=y, gramMatrix=self.precompute)
+        else:
+            lasso_res = lasso_alg.compute(data=X, dependentVariables=y)
+    except RuntimeError:
+        return None
+
+    #set coef_ and intersept_ results
+    lasso_model = lasso_res.model
+    self.daal_model_ = lasso_model
+    coefs = lasso_model.Beta
+
+    self.intercept_ = coefs[:,0].copy(order='C')
+    self.coef_ = coefs[:,1:].copy(order='C')
+
+    #only for compliance with Sklearn
+    if y.shape[1] == 1:
+        self.coef_ = np.ravel(self.coef_)
+    self.intercept_ = np.ravel(self.intercept_)
+    if self.intercept_.shape[0] == 1:
+        self.intercept_ = self.intercept_[0]
+
+    #set n_iter_
+    n_iter = cd_solver.__get_result__().nIterations[0][0]
+    if y.shape[1] == 1:
+        self.n_iter_ = n_iter
+    else:
+        self.n_iter_ = np.full(y.shape[1], n_iter)
+
+    #only for compliance with Sklearn
+    if (self.max_iter == n_iter + 1):
+        warnings.warn("Objective did not converge. You might want to "
+                      "increase the number of iterations.", ConvergenceWarning)
+
+    #only for dual_gap computation, it is not required for DAAL
+    self.X = X
+    self.y = y
+
+    return self
+
+def _daal4py_predict_lasso(self, X):
+    X = make2d(X)
+    _fptype = getFPType(self.coef_)
+
+    lasso_palg = daal4py.lasso_regression_prediction(
+        fptype=_fptype,
+        method='defaultDense'
+    )
+    lasso_res = lasso_palg.compute(X, self.daal_model_)
+
+    res = lasso_res.prediction
 
     if res.shape[1] == 1 and self.coef_.ndim == 1:
         res = np.ravel(res)
@@ -230,7 +351,7 @@ class ElasticNet(ElasticNet_original):
         else:
             self.n_iter_ = None
             self.__gap = None
-            res = _daal4py_fit(self, X, y, check_input=check_input)
+            res = _daal4py_fit_enet(self, X, y, check_input=check_input)
             if res is None:
                 if hasattr(self, 'daal_model_'):
                     del self.daal_model_
@@ -262,12 +383,12 @@ class ElasticNet(ElasticNet_original):
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
             return self._decision_function(X)
         else:
-            return _daal4py_predict(self, X)
+            return _daal4py_predict_enet(self, X)
 
 
     @property
     def dual_gap_(self):
-        if (self.__gap == None):
+        if (self.__gap is None):
             l1_reg = np.asarray(self.alpha*self.l1_ratio, dtype=getFPType(self.X)) * self.X.shape[0]
             l2_reg = np.asarray(self.alpha*(1.0 - self.l1_ratio), dtype=getFPType(self.X)) * self.X.shape[0]
             l1_reg = l2_reg.reshape((1,-1))
@@ -276,10 +397,13 @@ class ElasticNet(ElasticNet_original):
 
             if (n_targets == 1):
                 self.__gap = self.tol + 1.0
-                R = self.y - np.dot(self.X, self.coef_.T)
-                XtA = np.dot(self.X.T, R) - l2_reg * self.coef_.T
+                X_offset = np.average(self.X, axis=0)
+                y_offset = np.average(self.y, axis=0)
+                coef = np.reshape(self.coef_, (self.coef_.shape[0], 1))
+                R = (self.y - y_offset) - np.dot((self.X - X_offset), coef)
+                XtA = np.dot((self.X - X_offset).T, R) - l2_reg * coef
                 R_norm2 = np.dot(R.T, R)
-                coef_norm2 = np.dot(self.coef_, self.coef_.T)
+                coef_norm2 = np.dot(self.coef_, self.coef_)
                 dual_norm_XtA = np.max(XtA) if self.positive else np.max(np.abs(XtA))
                 if dual_norm_XtA > l1_reg:
                     const = l1_reg / dual_norm_XtA
@@ -289,13 +413,15 @@ class ElasticNet(ElasticNet_original):
                     const = 1.0
                     self.__gap = R_norm2
                 l1_norm = np.sum(np.abs(self.coef_))
-                tmp = np.dot(R.T, self.y)
-                self.__gap += (l1_reg * l1_norm - const * np.dot(R.T, self.y) + 0.5 * l2_reg * (1 + const ** 2) * coef_norm2)
+                self.__gap += (l1_reg * l1_norm - const * np.dot(R.T, (self.y - y_offset)) + 0.5 * l2_reg * (1 + const ** 2) * coef_norm2)
+                self.__gap = self.__gap[0][0]
             else:
                 self.__gap = np.full(n_targets, self.tol + 1.0)
+                X_offset = np.average(self.X, axis=0)
+                y_offset = np.average(self.y, axis=0)
                 for k in range(n_targets):
-                    R = self.y[:, k] - np.dot(self.X, self.coef_[k, :].T)
-                    XtA = np.dot(self.X.T, R) - l2_reg * self.coef_[k, :].T
+                    R = (self.y[:, k] - y_offset[k]) - np.dot((self.X - X_offset), self.coef_[k, :].T)
+                    XtA = np.dot((self.X - X_offset).T, R) - l2_reg * self.coef_[k, :].T
                     R_norm2 = np.dot(R.T, R)
                     coef_norm2 = np.dot(self.coef_[k, :], self.coef_[k, :].T)
                     dual_norm_XtA = np.max(XtA) if self.positive else np.max(np.abs(XtA))
@@ -307,8 +433,7 @@ class ElasticNet(ElasticNet_original):
                         const = 1.0
                         self.__gap[k] = R_norm2
                     l1_norm = np.sum(np.abs(self.coef_[k, :]))
-                    tmp = np.dot(R.T, self.y[:, k])
-                    self.__gap[k] += (l1_reg * l1_norm - const * np.dot(R.T, self.y[:, k]) + 0.5 * l2_reg * (1 + const ** 2) * coef_norm2)
+                    self.__gap[k] += (l1_reg * l1_norm - const * np.dot(R.T, (self.y[:, k] - y_offset[k])) + 0.5 * l2_reg * (1 + const ** 2) * coef_norm2)
         return self.__gap
 
     @dual_gap_.setter
@@ -318,3 +443,91 @@ class ElasticNet(ElasticNet_original):
     @dual_gap_.deleter
     def dual_gap_(self):
         self.__gap = None
+
+class Lasso(ElasticNet):
+    __doc__ = Lasso_original.__doc__
+
+    def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
+                 precompute=False, copy_X=True, max_iter=1000,
+                 tol=1e-4, warm_start=False, positive=False,
+                 random_state=None, selection='cyclic'):
+        super().__init__(
+            alpha=alpha, l1_ratio=1.0, fit_intercept=fit_intercept,
+            normalize=normalize, precompute=precompute, copy_X=copy_X,
+            max_iter=max_iter, tol=tol, warm_start=warm_start,
+            positive=positive, random_state=random_state,
+            selection=selection)
+        self.__gap = None
+
+    def fit(self, X, y, check_input=True):
+        """Fit model with coordinate descent.
+
+        Parameters
+        ----------
+        X : ndarray or scipy.sparse matrix, (n_samples, n_features)
+            Data
+
+        y : ndarray, shape (n_samples,) or (n_samples, n_targets)
+            Target. Will be cast to X's dtype if necessary
+
+        check_input : boolean, (default=True)
+            Allow to bypass several input checking.
+            Don't use this parameter unless you know what you do.
+
+        Notes
+        -----
+
+        Coordinate descent is an algorithm that considers each column of
+        data at a time hence it will automatically convert the X input
+        as a Fortran-contiguous numpy array if necessary.
+
+        To avoid memory re-allocation it is advised to allocate the
+        initial data in memory directly using that format.
+        """
+
+        if isinstance(X, list):
+            self.fit_shape_good_for_daal_ = True if (len(X) >= len(X[0])) else False
+        else:
+            self.fit_shape_good_for_daal_ = True if (X.shape[0] >= X.shape[1]) else False
+        if (sp.issparse(X) or
+                not self.fit_shape_good_for_daal_ or
+                not (isinstance(X, list) or X.dtype == np.float64 or X.dtype == np.float32)):
+            if hasattr(self, 'daal_model_'):
+                del self.daal_model_
+            return super(ElasticNet, self).fit(X, y, check_input=check_input)
+        else:
+            self.n_iter_ = None
+            self.__gap = None
+            res = _daal4py_fit_lasso(self, X, y, check_input=check_input)
+            if res is None:
+                if hasattr(self, 'daal_model_'):
+                    del self.daal_model_
+                return super(ElasticNet, self).fit(X, y, check_input=check_input)
+            else:
+                return res
+
+
+    def predict(self, X):
+        """Predict using the linear model
+
+        Parameters
+        ----------
+        X : array-like or sparse matrix, shape = (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        C : array, shape = (n_samples,)
+            Returns predicted values.
+        """
+
+        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
+        good_shape_for_daal = True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
+
+        if (not hasattr(self, 'daal_model_') or
+                sp.issparse(X) or
+                not good_shape_for_daal or
+                not (X.dtype == np.float64 or X.dtype == np.float32)):
+            return self._decision_function(X)
+        else:
+            return _daal4py_predict_lasso(self, X)

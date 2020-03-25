@@ -91,6 +91,7 @@ add_setup = {
     'algorithms::optimization_solver::mse': ['data', 'dependentVariables'],
     'algorithms::optimization_solver::logistic_loss': ['data', 'dependentVariables'],
     'algorithms::optimization_solver::cross_entropy_loss': ['data', 'dependentVariables'],
+    'algorithms::optimization_solver::coordinate_descent': ['inputArgument'],
 }
 
 # Some algorithms require a function to obtain result from the algorithm instance without explicit call of compute

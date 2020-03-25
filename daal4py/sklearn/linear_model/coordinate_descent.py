@@ -22,7 +22,12 @@ from daal4py import __daal_run_version__
 
 daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8]))) 
 
-if (LooseVersion(sklearn_version) >= LooseVersion("0.22") and daal_run_version >= (2020, 1)):
-    from ._coordinate_descent_0_22 import *
+if daal_run_version >= (2020, 1):
+    if (LooseVersion(sklearn_version) >= LooseVersion("0.21") and LooseVersion(sklearn_version) < LooseVersion("0.23")):
+        from ._coordinate_descent_0_21 import *
+    elif (LooseVersion(sklearn_version) >= LooseVersion("0.23")):
+        from ._coordinate_descent_0_23 import *
+    else:
+        from sklearn.linear_model._coordinate_descent import *
 else:
     from sklearn.linear_model._coordinate_descent import *
