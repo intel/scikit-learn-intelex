@@ -872,18 +872,13 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
     def _compute(self,
                  {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
-                 setup=False{% if add_get_result %}, get_precomputed_result=False{% endif %}):
+                 setup=False):
         if self.c_ptr.get() == NULL:
             raise ValueError("Pointer to DAAL entity is NULL")
+        {{input_args|fmt('{}', 'get_obj', sep='\n')|indent(8)}}
         cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
-{% if add_get_result %}
-        if get_precomputed_result:
-            res.c_ptr = deref(algo).get_result()
-            return res
-{% endif %}
-        {{input_args|fmt('{}', 'get_obj', sep='\n')|indent(8)}}
         res.c_ptr = deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(40)}},
                                         setup)
         return res
@@ -891,7 +886,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
     def compute(self,
                 {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(16)}},
-                setup=False{% if add_get_result %}, get_precomputed_result=False{% endif %}):
+                setup=False):
         '''
         {{algo}}.compute({{input_args|fmt('{}', 'name', sep=', ')}})
         Do the actual computation on provided input data.
@@ -899,7 +894,18 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
         :rtype: {{cytype}}
         '''
-        return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False{% if add_get_result %}, False{% endif %})
+        return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
+
+{% if add_get_result %}
+    def __get_result__(self):
+        if self.c_ptr.get() == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
+        cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
+        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
+        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
+        res.c_ptr = deref(algo).get_result()
+        return res
+{% endif %}
 
 {% if streaming.name %}
     # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
