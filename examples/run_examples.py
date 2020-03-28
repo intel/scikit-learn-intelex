@@ -44,9 +44,22 @@ try:
 except:
     sycl_available = False
 
+def check_version(rule, target):
+    if not isinstance(rule[0], type(target)):
+        if rule > target:
+            return False
+    else:
+        for rule_item in range(len(rule)):
+            if rule[rule_item] > target:
+                return False
+            else:
+                if rule[rule_item][0]==target[0]:
+                    break                   
+    return True
+
 req_version = defaultdict(lambda:(2019,0))
-req_version['decision_forest_classification_batch.py'] = (2022,0) # (2019,1) is relevant but there is an issue with versions number
-req_version['decision_forest_classification_traverse_batch.py'] = (2022,0) # (2019,1) is relevant but there is an issue with versions number
+req_version['decision_forest_classification_batch.py'] = (2019,1)
+req_version['decision_forest_classification_traverse_batch.py'] = (2019,1)
 req_version['decision_forest_regression_batch.py'] = (2019,1)
 req_version['adaboost_batch.py'] = (2020,0)
 req_version['brownboost_batch.py'] = (2020,0)
@@ -56,18 +69,18 @@ req_version['stump_regression_batch.py'] = (2020,0)
 req_version['saga_batch.py'] = (2019,3)
 req_version['dbscan_batch.py'] = (2019,5)
 req_version['lasso_regression_batch.py'] = (2019,5)
-req_version['elastic_net_batch.py'] = (2022,0) # (2021,5) is relevant but there is an issue with versions number
-req_version['sycl/bf_knn_classification_batch.py'] = (2022,0) # there is an issue with versions number
-req_version['sycl/gradient_boosted_regression_batch.py'] = (2022,0) # there is an issue with versions number
+req_version['elastic_net_batch.py'] = (2020,1)(2021,105)
+req_version['sycl/bf_knn_classification_batch.py'] = (2021,105)
+req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,105)
 
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
         if not sycl_available:
             return None
-        if req_version["sycl/" + os.path.basename(ex)] > daal_version:
+        if not check_version(req_version["sycl/" + os.path.basename(ex)], daal_version):
             return None
     if os.path.dirname(ex).endswith("examples"):
-        if req_version[os.path.basename(ex)] > daal_version:
+        if not check_version(req_version[os.path.basename(ex)], daal_version):
             return None
     if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
         return '"' + sys.executable + '" "' + ex + '"'
