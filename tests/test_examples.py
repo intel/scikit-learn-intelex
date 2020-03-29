@@ -47,7 +47,7 @@ csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_c
 
 def add_test(cls, e, f=None, attr=None, ver=(0,0)):
     import importlib
-    @unittest.skipIf(check_version(ver, daal_version), "not supported in this library version")
+    @unittest.skipUnless(check_version(ver, daal_version), "not supported in this library version")
     def testit(self):
         ex = importlib.import_module(e)
         result = self.call(ex)
