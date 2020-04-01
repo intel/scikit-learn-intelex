@@ -56,4 +56,14 @@ deselected_tests:
   # docstrings do not document daal_model_ attribute set by fit for
   # LinearRegression, Ridge and SVC
   - tests/test_docstring_parameters.py::test_fit_docstring_attributes
-  
+
+  # Insufficient accuracy of "coefs" and "intercept" in Elastic Net for multi-target problem
+  # https://github.com/oneapi-src/oneDAL/issues/494
+  - linear_model/tests/test_coordinate_descent.py::test_enet_multitarget >=0.21
+
+  # Insufficient accuracy of objective function in Elastic Net in case warm_start
+  # https://github.com/oneapi-src/oneDAL/issues/495
+  - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement >=0.21
+
+  # DAAL doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
+  - linear_model/tests/test_coordinate_descent.pytest_enet_sample_weight_consistency >=0.23

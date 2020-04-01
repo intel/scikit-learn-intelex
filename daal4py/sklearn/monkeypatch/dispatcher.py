@@ -53,6 +53,8 @@ else:
 from ..decomposition.pca import PCA as PCA_daal4py
 from ..linear_model.ridge import Ridge as Ridge_daal4py
 from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
+from ..linear_model.coordinate_descent import ElasticNet as ElasticNet_daal4py
+from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..svm.svm import SVC as SVC_daal4py
 from ..utils.validation import _daal_assert_all_finite
@@ -68,6 +70,8 @@ _mapping = {
     'distances': [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
     'linear':    [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
     'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
+    'elasticnet':[[(linear_model_module, 'ElasticNet', ElasticNet_daal4py), None]],
+    'lasso':     [[(linear_model_module, 'Lasso', Lasso_daal4py), None]],
     'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]],
     'logistic':  [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
 }
