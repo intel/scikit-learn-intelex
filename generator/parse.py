@@ -117,10 +117,11 @@ doc_state = enum(none=0, single=1, multi=2, template=3)
 class comment_parser(object):
     """parse documentation in comments"""
     def parse(self, l, ctxt):
-        assert not re.match(r'.*\*/(.+)', l), "Found the code after closed comment in the same line"
+        # delete comments, after which there is code in one line
+        line = l.replace('\/\*(.*?)\*\/', '') if re.match(r'.*\*/(.+)', l) else l
 
         # delete '%', it marks non-key words in DAAL Doxygen documentation
-        line = l.replace('%', '')
+        line = line.replace('%', '')
 
         # delete keys for formulas in DAAL Doxygen documentation
         line = line.replace('\\f$', '')
