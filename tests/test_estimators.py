@@ -8,6 +8,7 @@ from daal4py.sklearn.ensemble import RandomForestClassifier
 from daal4py.sklearn.ensemble import RandomForestRegressor
 from daal4py.sklearn.ensemble import GBTDAALClassifier
 from daal4py.sklearn.ensemble import GBTDAALRegressor
+from daal4py.sklearn.ensemble import AdaBoostClassifier
 
 def _replace_and_save(md, fns, replacing_fn):
     """
@@ -75,6 +76,9 @@ class Test(unittest.TestCase):
         saved = _replace_and_save(md, ['check_estimators_data_not_an_array'], dummy)
         check_estimator(GBTDAALRegressor)
         _restore_from_saved(md, saved)
+
+    def test_AdaBoostClassifier(self):
+        check_estimator(AdaBoostClassifier)
 
 
 if __name__ == '__main__':
