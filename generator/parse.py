@@ -120,6 +120,8 @@ class comment_parser(object):
         # delete comments, after which there is code in one line
         line = l.replace('\/\*(.*?)\*\/', '') if re.match(r'.*\*/(.+)', l) else l
 
+        assert not re.match(r'.*\*/(.+)', line), "Found the code after closed comment in the same line"
+
         # delete '%', it marks non-key words in DAAL Doxygen documentation
         line = line.replace('%', '')
 
