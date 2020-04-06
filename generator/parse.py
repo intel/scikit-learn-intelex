@@ -118,7 +118,7 @@ class comment_parser(object):
     """parse documentation in comments"""
     def parse(self, l, ctxt):
         # delete comments, after which there is code in one line
-        line = l.replace('\/\*(.*?)\*\/', '') if re.match(r'.*\*/(.+)', l) else l
+        line = re.sub(r'\/\*(.*?)\*\/', '', l) if re.match(r'.*\*/(.+)', l) else l
 
         assert not re.match(r'.*\*/(.+)', line), "Found the code after closed comment in the same line"
 
