@@ -3,6 +3,9 @@ import unittest
 from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
 
+from daal4py import __daal_run_version__
+daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
+
 from daal4py.sklearn.neighbors import KNeighborsClassifier
 from daal4py.sklearn.ensemble import RandomForestClassifier
 from daal4py.sklearn.ensemble import RandomForestRegressor
@@ -77,6 +80,7 @@ class Test(unittest.TestCase):
         check_estimator(GBTDAALRegressor)
         _restore_from_saved(md, saved)
 
+    @unittest.skipIf(daal_run_version < (2020, 0), "not supported in this library version")
     def test_AdaBoostClassifier(self):
         check_estimator(AdaBoostClassifier)
 
