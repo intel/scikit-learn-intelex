@@ -13,6 +13,10 @@ from daal4py.sklearn.ensemble import GBTDAALClassifier
 from daal4py.sklearn.ensemble import GBTDAALRegressor
 from daal4py.sklearn.ensemble import AdaBoostClassifier
 
+from daal4py import __daal_link_version__ as dv
+daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+
+
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
         if rule > target:
@@ -55,7 +59,7 @@ class Test(unittest.TestCase):
     def test_KNeighborsClassifier(self):
         check_estimator(KNeighborsClassifier)
 
-    @unittest.skipUnless(check_version(ver, ((2019,0),(2021, 106))), "not supported in this library version")
+    @unittest.skipUnless(check_version(((2019,0),(2021, 106)), daal_version), "not supported in this library version")
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:
