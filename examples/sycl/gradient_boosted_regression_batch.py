@@ -87,6 +87,13 @@ def main(readcsv=read_csv, method='defaultDense'):
         sycl_test_indep_data = sycl_buffer(test_indep_data)
         result_gpu = compute(sycl_train_indep_data, sycl_train_dep_data, sycl_test_indep_data, maxIterations)
 
+    # It is possible to specify to make the computations on CPU
+    with sycl_context('cpu'):
+        sycl_train_indep_data = sycl_buffer(train_indep_data)
+        sycl_train_dep_data = sycl_buffer(train_dep_data)
+        sycl_test_indep_data = sycl_buffer(test_indep_data)
+        result_cpu = compute(sycl_train_indep_data, sycl_train_dep_data, sycl_test_indep_data, maxIterations)
+
     test_dep_data = np.loadtxt(testfile, usecols=range(13,14), delimiter=',', ndmin=2, dtype=np.float32)
 
     return (result_classic, test_dep_data)
