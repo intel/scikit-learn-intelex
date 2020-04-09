@@ -13,6 +13,19 @@ from daal4py.sklearn.ensemble import GBTDAALClassifier
 from daal4py.sklearn.ensemble import GBTDAALRegressor
 from daal4py.sklearn.ensemble import AdaBoostClassifier
 
+def check_version(rule, target):
+    if not isinstance(rule[0], type(target)):
+        if rule > target:
+            return False
+    else:
+        for rule_item in range(len(rule)):
+            if rule[rule_item] > target:
+                return False
+            else:
+                if rule[rule_item][0]==target[0]:
+                    break                   
+    return True
+
 def _replace_and_save(md, fns, replacing_fn):
     """
     Replaces functions in `fns` list in `md` module with `replacing_fn`.
@@ -42,6 +55,7 @@ class Test(unittest.TestCase):
     def test_KNeighborsClassifier(self):
         check_estimator(KNeighborsClassifier)
 
+    @unittest.skipUnless(check_version(ver, ((2019,0),(2021, 106))), "not supported in this library version")
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:
