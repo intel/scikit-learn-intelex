@@ -12,5 +12,5 @@ jobs:
 
   - script: |
       call activate CB
-      conda build --override-channels -c conda-forge -c intel --output-folder=. conda-recipe
+      conda build --override-channels -c intel -c conda-forge --output-folder=. conda-recipe
     displayName: conda build
