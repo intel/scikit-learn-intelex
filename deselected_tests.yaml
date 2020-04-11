@@ -66,4 +66,4 @@ deselected_tests:
   - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement >=0.21
 
   # DAAL doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
-  - linear_model/tests/test_coordinate_descent.pytest_enet_sample_weight_consistency >=0.23
+  - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
