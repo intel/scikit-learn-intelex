@@ -99,6 +99,7 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
         if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
             return None
+            
     if os.path.dirname(ex).endswith("examples"):
         if not check_version(req_version[os.path.basename(ex)], daal_version):
             return None
