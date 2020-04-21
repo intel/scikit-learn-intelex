@@ -1,6 +1,8 @@
 import unittest
+import numpy as np
 
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.testing import assert_less
 import sklearn.utils.estimator_checks
 
 from daal4py import __daal_run_version__
@@ -101,6 +103,91 @@ class Test(unittest.TestCase):
     @unittest.skipIf(daal_run_version < (2020, 0), "not supported in this library version")
     def test_AdaBoostClassifier(self):
         check_estimator(AdaBoostClassifier)
+
+    # @unittest.skipIf(daal_run_version < (2020, ???), "not supported in this library version")
+    def test_RF_min_weight_fraction_leaf(self):
+        from sklearn.datasets import load_iris
+        iris = load_iris()
+        min_weight_fraction_leaf = np.array([0.0, 0.1, 0.5])
+        max_depth = np.array([12, 8, 6])
+
+        for i in range(3):
+            model = RandomForestClassifier(min_weight_fraction_leaf=min_weight_fraction_leaf[i],
+                                           n_estimators=10, bootstrap=False)
+            model.fit(iris.data, iris.target)
+            tree = model.estimators_[0]
+
+            assert_less(tree.tree_.max_depth, max_depth[i],
+                        "Failed with min_weight_fraction_leaf = %f"
+                        % min_weight_fraction_leaf[i])
+
+    # @unittest.skipIf(daal_run_version < (2020, ???), "not supported in this library version")
+    def test_RF_min_samples_split(self):
+        from sklearn.datasets import load_iris
+        iris = load_iris()
+        min_samples_split = np.array([2, 10, 50])
+        max_depth = np.array([12, 8, 6])
+
+        for i in range(3):
+            model = RandomForestClassifier(min_samples_split=min_samples_split[i], min_samples_leaf=1,
+                                           n_estimators=10, bootstrap=False)
+            model.fit(iris.data, iris.target)
+            tree = model.estimators_[1]
+
+            assert_less(tree.tree_.max_depth, max_depth[i],
+                        "Failed with min_samples_split = %i"
+                        % min_samples_split[i])
+
+    # @unittest.skipIf(daal_run_version < (2020, ???), "not supported in this library version")
+    def test_RF_min_samples_leaf_my(self):
+        from sklearn.datasets import load_iris
+        iris = load_iris()
+        min_samples_leaf = np.array([1, 5, 25])
+        max_depth = np.array([12, 8, 6])
+
+        for i in range(3):
+            model = RandomForestClassifier(min_samples_split=2, min_samples_leaf=min_samples_leaf[i],
+                                           n_estimators=10, bootstrap=False)
+            model.fit(iris.data, iris.target)
+            tree = model.estimators_[1]
+
+            assert_less(tree.tree_.max_depth, max_depth[i],
+                        "Failed with min_samples_leaf = %i"
+                        % min_samples_leaf[i])
+
+    # @unittest.skipIf(daal_run_version < (2020, ???), "not supported in this library version")
+    def test_RF_min_impurity_decrease(self):
+        from sklearn.datasets import load_iris
+        iris = load_iris()
+        min_impurity_decrease = np.array([0.0, 0.01, 0.1])
+        max_depth = np.array([12, 8, 6])
+
+        for i in range(3):
+            model = RandomForestClassifier(min_impurity_decrease=min_impurity_decrease[i],
+                                           n_estimators=10, bootstrap=False)
+            model.fit(iris.data, iris.target)
+            tree = model.estimators_[2]
+
+            assert_less(tree.tree_.max_depth, max_depth[i],
+                        "Failed with min_impurity_decrease = %f"
+                        % min_impurity_decrease[i])
+
+    # @unittest.skipIf(daal_run_version < (2020, ???), "not supported in this library version")
+    def test_RF_max_leaf_nodes(self):
+        from sklearn.datasets import load_iris
+        iris = load_iris()
+        max_leaf_nodes = np.array([10, 5, 2])
+        max_depth = np.array([10, 6, 3])
+
+        for i in range(3):
+            model = RandomForestClassifier(max_leaf_nodes=max_leaf_nodes[i],
+                                           n_estimators=10, bootstrap=False)
+            model.fit(iris.data, iris.target)
+            tree = model.estimators_[3]
+
+            assert_less(tree.tree_.max_depth, max_depth[i],
+                        "Failed with max_leaf_nodes = %i"
+                        % max_leaf_nodes[i])
 
 
 if __name__ == '__main__':

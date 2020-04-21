@@ -41,6 +41,7 @@ from sklearn.exceptions import DataConversionWarning, NotFittedError
 
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
+from math import ceil
 
 daal_version = tuple(map(int, (daal4py.__daal_link_version__[0:4], daal4py.__daal_link_version__[4:8])))
 
@@ -115,18 +116,50 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             warnings.warn(_class_name + ' ignores non-default settings of warm_start')
         if self.criterion != "gini":
             warnings.warn(_class_name + ' currently only supports criterion="gini"')
-        if self.min_impurity_decrease != 0.0:
-            warnings.warn(_class_name + " currently does not support min_impurity_decrease."
-                          "It currently supports min_impurity_split to control tree growth.")
+        if isinstance(self.min_samples_leaf, numbers.Integral):
+            if not 1 <= self.min_samples_leaf:
+                raise ValueError("min_samples_leaf must be at least 1 "
+                                 "or in (0, 0.5], got %s"
+                                 % self.min_samples_leaf)
+        else:  # float
+            if not 0. < self.min_samples_leaf <= 0.5:
+                raise ValueError("min_samples_leaf must be at least 1 "
+                                 "or in (0, 0.5], got %s"
+                                 % self.min_samples_leaf)
+        if isinstance(self.min_samples_split, numbers.Integral):
+            if not 2 <= self.min_samples_split:
+                raise ValueError("min_samples_split must be an integer "
+                                 "greater than 1 or a float in (0.0, 1.0]; "
+                                 "got the integer %s"
+                                 % self.min_samples_split)
+        else:  # float
+            if not 0. < self.min_samples_split <= 1.:
+                raise ValueError("min_samples_split must be an integer "
+                                 "greater than 1 or a float in (0.0, 1.0]; "
+                                 "got the float %s"
+                                 % self.min_samples_split)
+        if not 0 <= self.min_weight_fraction_leaf <= 0.5:
+            raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
+        if self.min_impurity_split is not None:
+            warnings.warn("The min_impurity_split parameter is deprecated. "
+                          "Its default value has changed from 1e-7 to 0 in "
+                          "version 0.23, and it will be removed in 0.25. "
+                          "Use the min_impurity_decrease parameter instead.",
+                          FutureWarning)
+
+            if self.min_impurity_split < 0.:
+                raise ValueError("min_impurity_split must be greater than "
+                                 "or equal to 0")
+        if self.min_impurity_decrease < 0.:
+            raise ValueError("min_impurity_decrease must be greater than "
+                             "or equal to 0")
         if self.max_leaf_nodes is not None:
-            warnings.warn(_class_name + " currently does not support non-default "
-                          "setting for max_leaf_nodes.")
-        if self.min_weight_fraction_leaf != 0.0:
-            warnings.warn(_class_name + " currently does not support non-default "
-                          "setting for min_weight_fraction_leaf.")
-        if self.min_samples_leaf != 1:
-            warnings.warn(_class_name + " currently does not support non-default "
-                          "setting for min_samples_leaf.")
+            if not isinstance(self.max_leaf_nodes, numbers.Integral):
+                raise ValueError("max_leaf_nodes must be integral number but was "
+                                 "%r" % self.max_leaf_nodes)
+            if self.max_leaf_nodes < 2:
+                raise ValueError(("max_leaf_nodes {0} must be either None "
+                                  "or larger than 1").format(self.max_leaf_nodes))
 
 
     def _daal_fit(self, X, y):
@@ -174,20 +207,26 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         _featuresPerNode = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=True)
 
         dfc_algorithm = daal4py.decision_forest_classification_training(
-            nClasses=int(self.n_classes_),
-            fptype=X_fptype,
-            method='defaultDense',
-            nTrees=int(self.n_estimators),
-            observationsPerTreeFraction=1,
-            featuresPerNode=int(_featuresPerNode),
-            maxTreeDepth=int(0 if self.max_depth is None else self.max_depth),
-            minObservationsInLeafNode=int(self.min_samples_leaf),
-            engine=daal_engine_,
-            impurityThreshold=float(0.0 if self.min_impurity_split is None else self.min_impurity_split),
-            varImportance="MDI",
-            resultsToCompute="",
-            memorySavingMode=False,
-            bootstrap=bool(self.bootstrap)
+            nClasses = int(self.n_classes_),
+            fptype = X_fptype,
+            method = 'defaultDense',
+            nTrees = int(self.n_estimators),
+            observationsPerTreeFraction = 1,
+            featuresPerNode = int(_featuresPerNode),
+            maxTreeDepth = int(0 if self.max_depth is None else self.max_depth),
+            minObservationsInLeafNode = (self.min_samples_leaf if isinstance(self.min_samples_leaf, numbers.Integral)
+                                         else int(ceil(self.min_samples_leaf * X.shape[0]))),
+            engine = daal_engine_,
+            impurityThreshold = float(0.0 if self.min_impurity_split is None else self.min_impurity_split),
+            varImportance = "MDI",
+            resultsToCompute = "",
+            memorySavingMode = False,
+            bootstrap = bool(self.bootstrap),
+            minObservationsInSplitNode = (self.min_samples_split if isinstance(self.min_samples_split, numbers.Integral)
+                                          else int(ceil(self.min_samples_split * X.shape[0]))),
+            minWeightFractionInLeafNode = self.min_weight_fraction_leaf,
+            minImpurityDecreaseInSplitNode = self.min_impurity_decrease,
+            maxLeafNodes = 0 if self.max_leaf_nodes is None else self.max_leaf_nodes
         )
         self._cached_estimators_ = None
         # compute
@@ -366,18 +405,50 @@ class RandomForestRegressor(skl_RandomForestRegressor):
             warnings.warn(_class_name + ' ignores non-default settings of warm_start')
         if self.criterion != "mse":
             warnings.warn(_class_name + ' currently only supports criterion="mse"')
-        if self.min_impurity_decrease != 0.0:
-            warnings.warn(_class_name + " currently does not support min_impurity_decrease."
-                          "It currently supports min_impurity_split to control tree growth.")
+        if isinstance(self.min_samples_leaf, numbers.Integral):
+            if not 1 <= self.min_samples_leaf:
+                raise ValueError("min_samples_leaf must be at least 1 "
+                                 "or in (0, 0.5], got %s"
+                                 % self.min_samples_leaf)
+        else:  # float
+            if not 0. < self.min_samples_leaf <= 0.5:
+                raise ValueError("min_samples_leaf must be at least 1 "
+                                 "or in (0, 0.5], got %s"
+                                 % self.min_samples_leaf)
+        if isinstance(self.min_samples_split, numbers.Integral):
+            if not 2 <= self.min_samples_split:
+                raise ValueError("min_samples_split must be an integer "
+                                 "greater than 1 or a float in (0.0, 1.0]; "
+                                 "got the integer %s"
+                                 % self.min_samples_split)
+        else:  # float
+            if not 0. < self.min_samples_split <= 1.:
+                raise ValueError("min_samples_split must be an integer "
+                                 "greater than 1 or a float in (0.0, 1.0]; "
+                                 "got the float %s"
+                                 % self.min_samples_split)
+        if not 0 <= self.min_weight_fraction_leaf <= 0.5:
+            raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
+        if self.min_impurity_split is not None:
+            warnings.warn("The min_impurity_split parameter is deprecated. "
+                          "Its default value has changed from 1e-7 to 0 in "
+                          "version 0.23, and it will be removed in 0.25. "
+                          "Use the min_impurity_decrease parameter instead.",
+                          FutureWarning)
+
+            if self.min_impurity_split < 0.:
+                raise ValueError("min_impurity_split must be greater than "
+                                 "or equal to 0")
+        if self.min_impurity_decrease < 0.:
+            raise ValueError("min_impurity_decrease must be greater than "
+                             "or equal to 0")
         if self.max_leaf_nodes is not None:
-            warnings.warn(_class_name + " currently does not support non-default "
-                          "setting for max_leaf_nodes.")
-        if self.min_weight_fraction_leaf != 0.0:
-            warnings.warn(_class_name + " currently does not support non-default "
-                          "setting for min_weight_fraction_leaf.")
-        if self.min_samples_leaf != 1:
-            warnings.warn(_class_name + " currently does not support non-default "
-                          "setting for min_samples_leaf.")
+            if not isinstance(self.max_leaf_nodes, numbers.Integral):
+                raise ValueError("max_leaf_nodes must be integral number but was "
+                                 "%r" % self.max_leaf_nodes)
+            if self.max_leaf_nodes < 2:
+                raise ValueError(("max_leaf_nodes {0} must be either None "
+                                  "or larger than 1").format(self.max_leaf_nodes))
 
 
     # Intel(R) DAAL only supports "mse" criterion
@@ -419,18 +490,25 @@ class RandomForestRegressor(skl_RandomForestRegressor):
         # create algorithm
         dfr_algorithm = daal4py.decision_forest_regression_training(
             fptype = getFPType(X),
-            method='defaultDense',
-            nTrees=int(self.n_estimators),
-            observationsPerTreeFraction=1,
-            featuresPerNode=int(_featuresPerNode),
-            maxTreeDepth=int(0 if self.max_depth is None else self.max_depth),
-            minObservationsInLeafNode=1,
-            engine=daal_engine,
-            impurityThreshold=float(0.0 if self.min_impurity_split is None else self.min_impurity_split),
-            varImportance="MDI",
-            resultsToCompute="",
-            memorySavingMode=False,
-            bootstrap=bool(self.bootstrap)
+            method = 'defaultDense',
+            nTrees = int(self.n_estimators),
+            observationsPerTreeFraction = 1,
+            featuresPerNode = int(_featuresPerNode),
+            maxTreeDepth = int(0 if self.max_depth is None else self.max_depth),
+            #minObservationsInLeafNode=1,
+            minObservationsInLeafNode = (self.min_samples_leaf if isinstance(self.min_samples_leaf, numbers.Integral)
+                                         else int(ceil(self.min_samples_leaf * X.shape[0]))),
+            engine = daal_engine,
+            impurityThreshold = float(0.0 if self.min_impurity_split is None else self.min_impurity_split),
+            varImportance = "MDI",
+            resultsToCompute = "",
+            memorySavingMode = False,
+            bootstrap = bool(self.bootstrap),
+            minObservationsInSplitNode = (self.min_samples_split if isinstance(self.min_samples_split, numbers.Integral)
+                                          else int(ceil(self.min_samples_split * X.shape[0]))),
+            minWeightFractionInLeafNode = self.min_weight_fraction_leaf,
+            minImpurityDecreaseInSplitNode = self.min_impurity_decrease,
+            maxLeafNodes = 0 if self.max_leaf_nodes is None else self.max_leaf_nodes
         )
 
         self._cached_estimators_ = None
