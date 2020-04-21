@@ -33,6 +33,7 @@ from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
 from .._utils import getFPType
+import logging
 
 def _daal_mean_var(X):
     fpt = getFPType(X)
@@ -213,6 +214,7 @@ def fit(self, X, y=None, sample_weight=None):
                          np.allclose(sample_weight, np.ones_like(sample_weight)))
 
     if not daal_ready:
+        logging.info("kmeans:fit of sklearn")
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             k_means(
                 X, n_clusters=self.n_clusters, sample_weight=sample_weight, init=self.init,
@@ -221,7 +223,8 @@ def fit(self, X, y=None, sample_weight=None):
                 tol=self.tol, random_state=random_state, copy_x=self.copy_x,
                 n_jobs=self.n_jobs, algorithm=self.algorithm,
                 return_n_iter=True)
-    else: 
+    else:
+        logging.info("kmeans:fit of daal")
         X = check_array(X, dtype=[np.float64, np.float32])
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_dense(

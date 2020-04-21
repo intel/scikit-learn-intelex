@@ -49,6 +49,7 @@ from sklearn.linear_model.logistic import (
     LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
 from sklearn.linear_model.base import (LinearClassifierMixin, SparseCoefMixin, BaseEstimator)
+import logging
 
 use_daal = True
 
@@ -486,6 +487,9 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         else:
             for i, ci in enumerate(coefs):
                 coefs[i] = np.delete(ci, 0, axis=-1)
+
+    if daal_ready: logging.info("log_reg:fit of daal")
+    else: logging.info("log_reg:fit of sklearn")
 
     return coefs, np.array(Cs), n_iter
 
@@ -940,6 +944,9 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         else:
             for i, ci in enumerate(coefs):
                 coefs[i] = np.delete(ci, 0, axis=-1)
+    
+    if daal_ready: logging.info("log_reg:fit of daal")
+    else: logging.info("log_reg:fit of sklearn")
 
     return np.array(coefs), np.array(Cs), n_iter
 
