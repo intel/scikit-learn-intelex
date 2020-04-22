@@ -31,6 +31,11 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
+try:
+    with sycl_context('gpu'):
+        gpu_available=True
+except:
+    gpu_available=False
 
 # Commone code for both CPU and GPU computations
 def compute(data, nClusters, maxIter, method):
@@ -79,7 +84,7 @@ def main(readcsv=read_csv, method='randomDense'):
     data = to_numpy(data)
     
     # It is possible to specify to make the computations on GPU
-    try:
+    if gpu_available:
         with sycl_context('gpu'):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data, nClusters, maxIter, method)
@@ -87,8 +92,6 @@ def main(readcsv=read_csv, method='randomDense'):
             assert np.allclose(result_classic.assignments, result_gpu.assignments)
             assert np.isclose(result_classic.objectiveFunction, result_gpu.objectiveFunction)
             assert result_classic.nIterations == result_gpu.nIterations
-    except:
-        pass
 
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):

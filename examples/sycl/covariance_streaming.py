@@ -28,6 +28,11 @@ import sys
 sys.path.insert(0, '..')
 from stream import read_next
 
+try:
+    with sycl_context('gpu'):
+        gpu_available=True
+except:
+    gpu_available=False
 
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
@@ -61,7 +66,7 @@ def main(readcsv=None, method='defaultDense'):
     result_classic = algo.finalize()
 
     # It is possible to specify to make the computations on GPU
-    try:
+    if gpu_available:
         with sycl_context('gpu'):
             # configure a covariance object
             algo = d4p.covariance(streaming=True)
@@ -73,8 +78,10 @@ def main(readcsv=None, method='defaultDense'):
                 algo.compute(sycl_chunk)
             # finalize computation
             result_gpu = algo.finalize()
-    except:
-        pass
+            assert np.allclose(result_classic.covariance, result_gpu.covariance)
+            assert np.allclose(result_classic.mean, result_gpu.mean)
+            assert np.allclose(result_classic.correlation, result_gpu.correlation)
+
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):
         # configure a covariance object
@@ -89,9 +96,6 @@ def main(readcsv=None, method='defaultDense'):
         result_cpu = algo.finalize()
 
     # covariance result objects provide correlation, covariance and mean
-    assert np.allclose(result_classic.covariance, result_gpu.covariance)
-    assert np.allclose(result_classic.mean, result_gpu.mean)
-    assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     assert np.allclose(result_classic.covariance, result_cpu.covariance)
     assert np.allclose(result_classic.mean, result_cpu.mean)

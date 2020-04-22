@@ -28,6 +28,12 @@ import sys
 sys.path.insert(0, '..')
 from stream import read_next
 
+try:
+    with sycl_context('gpu'):
+        gpu_available=True
+except:
+    gpu_available=False
+
 
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):

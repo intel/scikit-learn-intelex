@@ -49,11 +49,14 @@ if sycl_available:
     try:
         with sycl_context('gpu'):
             availabe_devices.append("gpu")
+    except:
+        pass
 
     try:
         with sycl_context('cpu'):
             availabe_devices.append("cpu")
-
+    except:
+        pass
 
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):

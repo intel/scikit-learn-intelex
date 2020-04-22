@@ -31,6 +31,11 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
+try:
+    with sycl_context('gpu'):
+        gpu_available=True
+except:
+    gpu_available=False
 
 # Commone code for both CPU and GPU computations
 def compute(train_data, train_labels, predict_data, nClasses):
@@ -84,7 +89,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_data = to_numpy(predict_data)
 
     # It is possible to specify to make the computations on GPU
-    try:
+    if gpu_available:
         with sycl_context('gpu'):
             sycl_train_data = sycl_buffer(train_data)
             sycl_train_labels = sycl_buffer(train_labels)
@@ -93,8 +98,7 @@ def main(readcsv=read_csv, method='defaultDense'):
             assert np.allclose(result_classic.prediction, result_gpu.prediction)
             assert np.allclose(result_classic.probabilities, result_gpu.probabilities, atol=1e-3)
             assert np.allclose(result_classic.logProbabilities, result_gpu.logProbabilities, atol=1e-2)
-    except:
-        pass
+
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):
         sycl_train_data = sycl_buffer(train_data)
