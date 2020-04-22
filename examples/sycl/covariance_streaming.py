@@ -61,18 +61,20 @@ def main(readcsv=None, method='defaultDense'):
     result_classic = algo.finalize()
 
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
-        # configure a covariance object
-        algo = d4p.covariance(streaming=True)
-        # get the generator (defined in stream.py)...
-        rn = read_next(infile, 112, readcsv)
-        # ... and iterate through chunks/stream
-        for chunk in rn:
-            sycl_chunk = sycl_buffer(to_numpy(chunk))
-            algo.compute(sycl_chunk)
-        # finalize computation
-        result_gpu = algo.finalize()
-
+    try:
+        with sycl_context('gpu'):
+            # configure a covariance object
+            algo = d4p.covariance(streaming=True)
+            # get the generator (defined in stream.py)...
+            rn = read_next(infile, 112, readcsv)
+            # ... and iterate through chunks/stream
+            for chunk in rn:
+                sycl_chunk = sycl_buffer(to_numpy(chunk))
+                algo.compute(sycl_chunk)
+            # finalize computation
+            result_gpu = algo.finalize()
+    except:
+        pass
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):
         # configure a covariance object

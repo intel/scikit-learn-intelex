@@ -81,16 +81,27 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_data = to_numpy(predict_data)
 
     # It is possible to specify to make the computations on GPU
+    try:
+        with sycl_context('gpu'):
+            sycl_train_data = sycl_buffer(train_data)
+            sycl_train_labels = sycl_buffer(train_labels)
+            sycl_predict_data = sycl_buffer(predict_data)
+            result_gpu, _ = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
+            assert np.allclose(result_classic.prediction, result_gpu.prediction)
+    except:
+        pass
+
+    # It is possible to specify to make the computations on GPU
     with sycl_context('gpu'):
         sycl_train_data = sycl_buffer(train_data)
         sycl_train_labels = sycl_buffer(train_labels)
         sycl_predict_data = sycl_buffer(predict_data)
-        result_gpu, _ = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
-
+        result_cpu, _ = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
+    
     # the prediction result provides prediction
     assert result_classic.prediction.shape == (predict_data.shape[0], train_labels.shape[1])
 
-    assert np.allclose(result_classic.prediction, result_gpu.prediction)
+    assert np.allclose(result_classic.prediction, result_cpu.prediction)
 
     return (train_result, result_classic, predict_labels)
 

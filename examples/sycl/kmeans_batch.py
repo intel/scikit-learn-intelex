@@ -77,21 +77,33 @@ def main(readcsv=read_csv, method='randomDense'):
     result_classic = compute(data, nClusters, maxIter, method)
 
     data = to_numpy(data)
-
+    
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
+    try:
+        with sycl_context('gpu'):
+            sycl_data = sycl_buffer(data)
+            result_gpu = compute(sycl_data, nClusters, maxIter, method)
+            assert np.allclose(result_classic.centroids, result_gpu.centroids)
+            assert np.allclose(result_classic.assignments, result_gpu.assignments)
+            assert np.isclose(result_classic.objectiveFunction, result_gpu.objectiveFunction)
+            assert result_classic.nIterations == result_gpu.nIterations
+    except:
+        pass
+
+    # It is possible to specify to make the computations on CPU
+    with sycl_context('cpu'):
         sycl_data = sycl_buffer(data)
-        result_gpu = compute(sycl_data, nClusters, maxIter, method)
+        result_cpu = compute(sycl_data, nClusters, maxIter, method)
 
     # Kmeans result objects provide assignments (if requested), centroids, goalFunction, nIterations and objectiveFunction
     assert result_classic.centroids.shape[0] == nClusters
     assert result_classic.assignments.shape == (data.shape[0], 1)
     assert result_classic.nIterations <= maxIter
 
-    assert np.allclose(result_classic.centroids, result_gpu.centroids)
-    assert np.allclose(result_classic.assignments, result_gpu.assignments)
-    assert np.isclose(result_classic.objectiveFunction, result_gpu.objectiveFunction)
-    assert result_classic.nIterations == result_gpu.nIterations
+    assert np.allclose(result_classic.centroids, result_cpu.centroids)
+    assert np.allclose(result_classic.assignments, result_cpu.assignments)
+    assert np.isclose(result_classic.objectiveFunction, result_cpu.objectiveFunction)
+    assert result_classic.nIterations == result_cpu.nIterations
 
     return result_classic
 

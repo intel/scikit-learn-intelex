@@ -55,8 +55,7 @@ public:
         }
         catch (cl::sycl::runtime_error const &e)
         {
-            std::cout << "Device \'" << dev << "\' was requested but runtime error occurs: " << e.what() << "\nFalling back to default device.\n";
-            m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::default_selector()));
+            std::cout << "Device \'" << dev << "\' was requested but runtime error occurs: " << e.what();
         }
         daal::services::Environment::getInstance()->setDefaultExecutionContext(*m_ctxt);
     }

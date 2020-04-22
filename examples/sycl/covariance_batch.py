@@ -68,9 +68,12 @@ def main(readcsv=read_csv, method='defaultDense'):
     data = to_numpy(data)
 
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
-        sycl_data = sycl_buffer(data)
-        result_gpu = compute(sycl_data, 'defaultDense')
+    try:
+        with sycl_context('gpu'):
+            sycl_data = sycl_buffer(data)
+            result_gpu = compute(sycl_data, 'defaultDense')
+    except:
+        pass
 
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):

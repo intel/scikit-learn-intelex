@@ -38,19 +38,22 @@ if 8 * struct.calcsize('P') == 32:
 else:
     logdir = jp(exdir, '_results', 'intel64')
 
+availabe_devices = []
 try:
     from daal4py.oneapi import sycl_context, sycl_buffer
     sycl_available = True
-    availabe_devices = []
-    with sycl_context('gpu'):
-        availabe_devices.append("gpu")
-
-    with sycl_context('cpu'):
-        availabe_devices.append("cpu")
-    
 except:
     sycl_available = False
-    availabe_devices = []
+
+if sycl_available:
+    try:
+        with sycl_context('gpu'):
+            availabe_devices.append("gpu")
+
+    try:
+        with sycl_context('cpu'):
+            availabe_devices.append("cpu")
+
 
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
@@ -90,6 +93,7 @@ req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,105)
 
 req_device = defaultdict(lambda:[])
 req_device['sycl/bf_knn_classification_batch.py'] = ["gpu"]
+req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
 
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
