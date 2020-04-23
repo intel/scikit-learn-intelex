@@ -14,6 +14,19 @@ from scipy.sparse import csr_matrix
 from daal4py import __daal_link_version__ as dv
 daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
+def check_version(rule, target):
+    if not isinstance(rule[0], type(target)):
+        if rule > target:
+            return False
+    else:
+        for rule_item in range(len(rule)):
+            if rule[rule_item] > target:
+                return False
+            else:
+                if rule[rule_item][0]==target[0]:
+                    break                   
+    return True
+
 # function reading file and returning numpy array
 def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
     if s==0 and n==np.iinfo(np.int64).max:
@@ -34,7 +47,7 @@ csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_c
 
 def add_test(cls, e, f=None, attr=None, ver=(0,0)):
     import importlib
-    @unittest.skipIf(daal_version < ver, "not supported in this library version")
+    @unittest.skipUnless(check_version(ver, daal_version), "not supported in this library version")
     def testit(self):
         ex = importlib.import_module(e)
         result = self.call(ex)
@@ -103,7 +116,7 @@ gen_examples = [
     ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
     ('covariance_batch', 'covariance.csv', 'covariance'),
     ('covariance_streaming', 'covariance.csv', 'covariance'),
-    ('decision_forest_classification_batch', None, lambda r: r[1].prediction, (2019, 1)), # 'decision_forest_classification_batch.csv' is outdated
+    ('decision_forest_classification_batch', None, lambda r: r[1].prediction, (2019, 1)),
     ('decision_forest_regression_batch', 'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2019, 1)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv', lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv', lambda r: r[1].prediction),
@@ -164,7 +177,7 @@ gen_examples = [
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
     ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2019, 5)),
     ('lasso_regression_batch', None, None, (2019, 5)),
-    ('elastic_net_batch', None, None, (2021, 5)),
+    ('elastic_net_batch', None, None, ((2020,1),(2021, 105))),
 ]
 
 for example in gen_examples:

@@ -43,8 +43,6 @@ test:
         - scikit-learn
         - mpich # [osx]
         - impi_rt # [not osx]
-    imports:
-        - daal4py
     source_files:
         - examples
         - tests
