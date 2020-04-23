@@ -33,7 +33,8 @@ except ImportError:
     from sklearn.externals.joblib import Parallel, delayed
 
 import daal4py
-from .._utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType, fit_method_uses_sklearn, fit_method_uses_daal)
+import logging
 
 def _daal4py_fit(self, X, y_):
     y = make2d(y_)
@@ -135,7 +136,10 @@ def fit(self, X, y, sample_weight=None):
             sample_weight is None):
         res = _daal4py_fit(self, X, y)
         if res is not None:
+            logging.info("sklearn.linar_model.LinearRegression.fit: " + fit_method_uses_daal)
             return res
+
+    logging.info("sklearn.linar_model.LinearRegression.fit: " + fit_method_uses_sklearn)
 
     if sample_weight is not None:
         sample_weight = np.asarray(sample_weight)
@@ -206,8 +210,10 @@ def predict(self, X):
             not good_shape_for_daal or
             not (X.dtype == np.float64 or X.dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
+        logging.info("sklearn.linar_model.LinearRegression.predict: " + fit_method_uses_sklearn)
         return self._decision_function(X)
     else:
+        logging.info("sklearn.linar_model.LinearRegression.predict: " + fit_method_uses_daal)
         X = check_array(X)
         return _daal4py_predict(self, X)
 
