@@ -95,7 +95,7 @@ def main(readcsv=read_csv, method='defaultDense'):
             assert np.allclose(result_classic.prediction, result_gpu.prediction)
 
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
+    with sycl_context('cpu'):
         sycl_train_data = sycl_buffer(train_data)
         sycl_train_labels = sycl_buffer(train_labels)
         sycl_predict_data = sycl_buffer(predict_data)
