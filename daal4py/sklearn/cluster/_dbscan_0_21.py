@@ -24,7 +24,8 @@ from sklearn.utils import (check_array, check_consistent_length)
 from sklearn.cluster import DBSCAN as DBSCAN_original
 
 import daal4py
-from daal4py.sklearn._utils import (make2d, getFPType)
+from daal4py.sklearn._utils import (make2d, getFPType, fit_method_uses_sklearn, fit_method_uses_daal)
+import logging
 
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
@@ -237,6 +238,7 @@ class DBSCAN(DBSCAN_original):
                        (self.metric == 'minkowski' and self.p == 2)) and 
                        isinstance(X, np.ndarray) and (X.dtype.kind in ['d', 'f']))
         if _daal_ready:
+            logging.info("sklearn.cluster.DBSCAN.fit: " + fit_method_uses_daal)
             core_ind, assignments = _daal_dbscan(
                 X, self.eps,
                 self.min_samples,
@@ -246,4 +248,5 @@ class DBSCAN(DBSCAN_original):
             self.components_ = np.take(X, core_ind, axis=0)
             return self
         else:
+            logging.info("sklearn.cluster.DBSCAN.fit: " + fit_method_uses_sklearn)
             return super().fit(X, y, sample_weight=sample_weight)
