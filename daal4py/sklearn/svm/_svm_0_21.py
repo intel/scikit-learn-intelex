@@ -31,7 +31,8 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType, fit_method_uses_sklearn, fit_method_uses_daal)
+import logging
 
 
 LIBSVM_IMPL = ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
@@ -428,11 +429,12 @@ def fit(self, X, y, sample_weight=None):
 
         if ( not sparse and not self.probability and not getattr(self, 'break_ties', False) and
              sample_weight.size == 0 and self.class_weight is None and kernel in ['linear', 'rbf']):
-
+            logging.info("sklearn.svm.SVC.fit: " + fit_method_uses_daal)
             self._daal_fit = True
             _daal4py_fit(self, X, y, kernel)
             self.fit_status_ = 0
         else:
+            logging.info("sklearn.svm.SVC.fit: " + fit_method_uses_sklearn)
             self._daal_fit = False
             fit(X, y, sample_weight, solver_type, kernel, random_seed=seed)
 
@@ -519,12 +521,15 @@ def predict(self, X):
     if (_break_ties
         and self.decision_function_shape == 'ovr'
         and len(self.classes_) > 2):
+        logging.info("sklearn.svm.SVC.predict: " + fit_method_uses_sklearn)
         y = np.argmax(self.decision_function(X), axis=1)
     else:
         X = self._validate_for_predict(X)
         if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
+            logging.info("sklearn.svm.SVC.predict: " + fit_method_uses_daal)
             y = _daal4py_predict(self, X)
         else:
+            logging.info("sklearn.svm.SVC.predict: " + fit_method_uses_sklearn)
             predict_func = self._sparse_predict if self._sparse else self._dense_predict
             y = predict_func(X)
 
