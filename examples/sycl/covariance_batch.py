@@ -77,9 +77,9 @@ def main(readcsv=read_csv, method='defaultDense'):
         with sycl_context('gpu'):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data, 'defaultDense')
-            assert np.allclose(result_classic.covariance, result_gpu.covariance)
-            assert np.allclose(result_classic.mean, result_gpu.mean)
-            assert np.allclose(result_classic.correlation, result_gpu.correlation)
+        assert np.allclose(result_classic.covariance, result_gpu.covariance)
+        assert np.allclose(result_classic.mean, result_gpu.mean)
+        assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):

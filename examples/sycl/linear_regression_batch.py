@@ -91,7 +91,7 @@ def main(readcsv=read_csv, method='defaultDense'):
             sycl_train_dep_data = sycl_buffer(train_dep_data)
             sycl_test_indep_data = sycl_buffer(test_indep_data)
             result_gpu, _ = compute(sycl_train_indep_data, sycl_train_dep_data, sycl_test_indep_data)
-            assert np.allclose(result_classic.prediction, result_gpu.prediction)
+        assert np.allclose(result_classic.prediction, result_gpu.prediction)
 
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):

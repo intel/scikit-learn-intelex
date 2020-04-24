@@ -80,9 +80,9 @@ def main(readcsv=None, method='defaultDense'):
                 algo.compute(sycl_chunk)
             # finalize computation
             result_gpu = algo.finalize()
-            for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-        'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
-                assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
+        for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
+                     'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
+            assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
     except:
         pass
     # It is possible to specify to make the computations on CPU
@@ -101,7 +101,7 @@ def main(readcsv=None, method='defaultDense'):
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
     for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-        'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
+                 'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
         assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
 
     return result_classic

@@ -82,16 +82,16 @@ def main(readcsv=read_csv, method='randomDense'):
     result_classic = compute(data, nClusters, maxIter, method)
 
     data = to_numpy(data)
-    
+
     # It is possible to specify to make the computations on GPU
     if gpu_available:
         with sycl_context('gpu'):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data, nClusters, maxIter, method)
-            assert np.allclose(result_classic.centroids, result_gpu.centroids)
-            assert np.allclose(result_classic.assignments, result_gpu.assignments)
-            assert np.isclose(result_classic.objectiveFunction, result_gpu.objectiveFunction)
-            assert result_classic.nIterations == result_gpu.nIterations
+        assert np.allclose(result_classic.centroids, result_gpu.centroids)
+        assert np.allclose(result_classic.assignments, result_gpu.assignments)
+        assert np.isclose(result_classic.objectiveFunction, result_gpu.objectiveFunction)
+        assert result_classic.nIterations == result_gpu.nIterations
 
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):
