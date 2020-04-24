@@ -9,5 +9,12 @@ except ImportError as e:
         raise
 
 import logging
+import warnings
 import os
-logging.basicConfig(format='%(levelname)s:%(message)s', level=os.environ.get("IDP_SKLEARN_VERBOSE"))
+l = os.environ.get("IDP_SKLEARN_VERBOSE")
+try:
+    if not l is None:
+        logging.basicConfig(format='%(levelname)s: %(message)s', level=l.upper())
+except:
+    warnings.warn('Unknown level "{}" for logging.\n'
+                    'Please, use one of "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG".'.format(l))
