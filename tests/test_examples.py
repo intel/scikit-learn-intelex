@@ -1,3 +1,21 @@
+#*******************************************************************************
+# Copyright 2014-2020 Intel Corporation
+# All Rights Reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License"), the following terms apply:
+#
+# You may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#*******************************************************************************
+
 import os
 import sys
 test_path = os.path.abspath(os.path.dirname(__file__))
@@ -24,7 +42,7 @@ def check_version(rule, target):
                 return False
             else:
                 if rule[rule_item][0]==target[0]:
-                    break                   
+                    break
     return True
 
 # function reading file and returning numpy array
@@ -69,7 +87,7 @@ class Base():
         import svd_batch as ex
         (data, result) = self.call(ex)
         self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix,np.diag(result.singularValues[0])),result.rightSingularMatrix)))
- 
+
     def test_svd_stream(self):
         import svd_streaming as ex
         result = self.call(ex)
@@ -182,7 +200,7 @@ gen_examples = [
 
 for example in gen_examples:
     add_test(Base, *example)
-    
+
 
 class TestExNpyArray(Base, unittest.TestCase):
     """

@@ -79,10 +79,10 @@ def main(readcsv=read_csv, method='svdDense'):
         with sycl_context('gpu'):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data)
-            assert np.allclose(result_classic.eigenvalues, result_gpu.eigenvalues)
-            assert np.allclose(result_classic.eigenvectors, result_gpu.eigenvectors)
-            assert np.allclose(result_classic.means, result_gpu.means, atol=1e-7)
-            assert np.allclose(result_classic.variances, result_gpu.variances)
+        assert np.allclose(result_classic.eigenvalues, result_gpu.eigenvalues)
+        assert np.allclose(result_classic.eigenvectors, result_gpu.eigenvectors)
+        assert np.allclose(result_classic.means, result_gpu.means, atol=1e-7)
+        assert np.allclose(result_classic.variances, result_gpu.variances)
 
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):

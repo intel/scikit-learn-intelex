@@ -75,9 +75,9 @@ def main(readcsv=read_csv, method="defaultDense"):
         with sycl_context('gpu'):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data, "defaultDense")
-            for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-        'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
-                assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
+        for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
+                     'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
+            assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
 
     # It is possible to specify to make the computations on CPU
     with sycl_context('cpu'):
