@@ -33,7 +33,8 @@ except ImportError:
     from sklearn.externals.joblib import Parallel, delayed
 
 import daal4py
-from .._utils import (make2d, getFPType, fit_method_uses_sklearn, fit_method_uses_daal)
+from .._utils import (make2d, getFPType, fit_method_uses_sklearn, \
+                    fit_method_uses_daal, fit_method_uses_sklearn_arter_daal)
 import logging
 
 def _daal4py_fit(self, X, y_):
@@ -134,12 +135,12 @@ def fit(self, X, y, sample_weight=None):
             not sp.issparse(X) and
             (X.dtype == np.float64 or X.dtype == np.float32) and
             sample_weight is None):
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + fit_method_uses_daal)
         res = _daal4py_fit(self, X, y)
         if res is not None:
-            logging.info("sklearn.linar_model.LinearRegression.fit: " + fit_method_uses_daal)
             return res
 
-    logging.info("sklearn.linar_model.LinearRegression.fit: " + fit_method_uses_sklearn)
+    logging.info("sklearn.linar_model.LinearRegression.fit: " + fit_method_uses_sklearn_arter_daal)
 
     if sample_weight is not None:
         sample_weight = np.asarray(sample_weight)
