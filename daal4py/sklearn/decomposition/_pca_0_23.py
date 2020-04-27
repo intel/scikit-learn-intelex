@@ -118,7 +118,7 @@ def _fit_full(self, X, n_components):
     # Postprocess the number of components required
     if n_components == 'mle':
         n_components = \
-            _infer_dimension(explained_variance_, n_samples, n_features)
+            _infer_dimension(explained_variance_, n_samples)
     elif 0 < n_components < 1.0:
         n_components = _n_components_from_fraction(
             explained_variance_ratio_, n_components)
@@ -209,7 +209,7 @@ class PCA(PCA_original):
 
         if n_components == 'mle':
             n_components = \
-                _infer_dimension(explained_variance_, n_samples, n_features)
+                _infer_dimension(explained_variance_, n_samples)
         elif 0 < n_components < 1.0:
             n_components = _n_components_from_fraction(
                 explained_variance_ratio_, n_components)
@@ -279,7 +279,7 @@ class PCA(PCA_original):
 
         if n_components == 'mle':
             n_components = \
-                _infer_dimension(self.explained_variance_, n_samples, n_features)
+                _infer_dimension(self.explained_variance_, n_samples)
         elif 0 < n_components < 1.0:
             n_components = _n_components_from_fraction(
                 self.explained_variance_ratio_, n_components)
@@ -324,7 +324,7 @@ class PCA(PCA_original):
         # Postprocess the number of components required
         if n_components == 'mle':
             n_components = \
-               _infer_dimension(explained_variance_, n_samples, n_features)
+               _infer_dimension(explained_variance_, n_samples)
         elif 0 < n_components < 1.0:
             n_components = _n_components_from_fraction(
                 explained_variance_ratio_, n_components)
