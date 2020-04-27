@@ -424,18 +424,21 @@ class PCA(PCA_original):
         if (self.svd_solver == 'daal' and isinstance(X, np.ndarray) and
                X.shape[0] >= X.shape[1]):
             # Handle n_components==None
-            logging.info("sklearn.decomposition.PCA.transform: " + fit_method_uses_daal)
             n_components = _process_n_components_None(
                 self.n_components, self.svd_solver, X.shape)
+            logging.info("sklearn.decomposition.PCA.fit: " + fit_method_uses_daal)
             self._fit_daal4py(X, n_components)
             if self.n_components_ > 0:
+                logging.info("sklearn.decomposition.PCA.transform: " + fit_method_uses_daal)
                 return self._transform_daal4py(X, whiten=self.whiten, check_X=False)
             else:
+                logging.info("sklearn.decomposition.PCA.transform: " + fit_method_uses_sklearn)
                 return np.empty((self.n_samples_, 0), dtype=X.dtype)
         else:
             U, S, V = self._fit(X)
             U = U[:, :self.n_components_]
 
+            logging.info("sklearn.decomposition.PCA.transform: " + fit_method_uses_sklearn)
             if self.whiten:
                 # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
                 U *= np.sqrt(X.shape[0] - 1)

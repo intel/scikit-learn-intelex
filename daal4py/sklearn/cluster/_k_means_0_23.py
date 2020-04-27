@@ -33,7 +33,8 @@ import warnings
 from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
-from .._utils import getFPType
+from .._utils import getFPType, fit_method_uses_sklearn, fit_method_uses_daal
+import logging
 
 def _daal_mean_var(X):
     fpt = getFPType(X)
