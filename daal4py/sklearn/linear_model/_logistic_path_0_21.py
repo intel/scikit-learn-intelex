@@ -49,7 +49,7 @@ from sklearn.linear_model.logistic import (
     LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
 from sklearn.linear_model.base import (LinearClassifierMixin, SparseCoefMixin, BaseEstimator)
-from .._utils import (fit_method_uses_sklearn, fit_method_uses_daal)
+from .._utils import (method_uses_sklearn, method_uses_daal)
 import logging
 
 use_daal = True
@@ -490,9 +490,9 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 coefs[i] = np.delete(ci, 0, axis=-1)
 
     if daal_ready:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + fit_method_uses_daal)
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + method_uses_daal)
     else:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + fit_method_uses_sklearn)
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + method_uses_sklearn)
 
     return coefs, np.array(Cs), n_iter
 
@@ -949,9 +949,9 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 coefs[i] = np.delete(ci, 0, axis=-1)
     
     if daal_ready:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + fit_method_uses_daal)
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + method_uses_daal)
     else:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + fit_method_uses_sklearn)
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + method_uses_sklearn)
 
     return np.array(coefs), np.array(Cs), n_iter
 

@@ -31,8 +31,8 @@ except ImportError:
     from sklearn.externals.joblib import Parallel, delayed
 
 import daal4py
-from .._utils import (make2d, getFPType, fit_method_uses_sklearn, \
-                    fit_method_uses_daal, fit_method_uses_sklearn_arter_daal)
+from .._utils import (make2d, getFPType, method_uses_sklearn, \
+                    method_uses_daal, method_uses_sklearn_arter_daal)
 import logging
 
 def _daal4py_fit(self, X, y_):
@@ -124,12 +124,12 @@ def fit(self, X, y, sample_weight=None):
             not sp.issparse(X) and
             (X.dtype == np.float64 or X.dtype == np.float32) and
             sample_weight is None):
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + fit_method_uses_daal)
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_daal)
         res = _daal4py_fit(self, X, y)
         if res is not None:
             return res
 
-    logging.info("sklearn.linar_model.LinearRegression.fit: " + fit_method_uses_sklearn_arter_daal)
+    logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_sklearn_arter_daal)
 
     if sample_weight is not None and np.atleast_1d(sample_weight).ndim > 1:
         raise ValueError("Sample weights must be 1D array or scalar")
@@ -186,10 +186,10 @@ def predict(self, X):
             not good_shape_for_daal or
             not (X.dtype == np.float64 or X.dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
-        logging.info("sklearn.linar_model.LinearRegression.predict: " + fit_method_uses_sklearn)
+        logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_sklearn)
         return self._decision_function(X)
     else:
-        logging.info("sklearn.linar_model.LinearRegression.predict: " + fit_method_uses_daal)
+        logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_daal)
         X = check_array(X)
         return _daal4py_predict(self, X)
 

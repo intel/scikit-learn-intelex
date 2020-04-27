@@ -33,7 +33,7 @@ import warnings
 from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
-from .._utils import getFPType, fit_method_uses_sklearn, fit_method_uses_daal
+from .._utils import getFPType, method_uses_sklearn, method_uses_daal
 import logging
 
 def _daal_mean_var(X):
@@ -233,14 +233,14 @@ def fit(self, X, y=None, sample_weight=None):
                          np.allclose(sample_weight, np.ones_like(sample_weight)))
 
     if daal_ready:
-        logging.info("sklearn.cluster.KMeans.fit: " + fit_method_uses_daal)
+        logging.info("sklearn.cluster.KMeans.fit: " + method_uses_daal)
         X = check_array(X, dtype=[np.float64, np.float32])
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_dense(
                 X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
                 random_state)
     else:
-        logging.info("sklearn.cluster.KMeans.fit: " + fit_method_uses_sklearn)
+        logging.info("sklearn.cluster.KMeans.fit: " + method_uses_sklearn)
         super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
     return self
 
@@ -273,10 +273,10 @@ def predict(self, X, sample_weight=None):
     daal_ready = sample_weight is None and hasattr(X, '__array__') # or sp.isspmatrix_csr(X)
 
     if daal_ready:
-        logging.info("sklearn.cluster.KMeans.predict: " + fit_method_uses_daal)
+        logging.info("sklearn.cluster.KMeans.predict: " + method_uses_daal)
         return _daal4py_k_means_dense(X, self.n_clusters, 0, 0.0, self.cluster_centers_, 1, None)[1]
     else:
-        logging.info("sklearn.cluster.KMeans.predict: " + fit_method_uses_sklearn)
+        logging.info("sklearn.cluster.KMeans.predict: " + method_uses_sklearn)
         x_squared_norms = row_norms(X, squared=True)
         return _labels_inertia(X, sample_weight, x_squared_norms,
                                self.cluster_centers_)[0]

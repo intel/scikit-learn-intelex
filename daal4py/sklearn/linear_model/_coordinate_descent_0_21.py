@@ -22,8 +22,8 @@ from scipy import sparse as sp
 from sklearn.utils import check_array, check_X_y
 from sklearn.linear_model import ElasticNet as ElasticNet_original
 from sklearn.linear_model import Lasso as Lasso_original
-from daal4py.sklearn._utils import (make2d, getFPType, fit_method_uses_sklearn, \
-                        fit_method_uses_daal, fit_method_uses_sklearn_arter_daal)
+from daal4py.sklearn._utils import (make2d, getFPType, method_uses_sklearn, \
+                        method_uses_daal, method_uses_sklearn_arter_daal)
 import logging
 
 #only for compliance with Sklearn
@@ -342,7 +342,7 @@ class ElasticNet(ElasticNet_original):
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
             if hasattr(self, 'daal_model_'):
                 del self.daal_model_
-            logging.info("sklearn.linear_model.ElasticNet.fit: " + fit_method_uses_sklearn)
+            logging.info("sklearn.linear_model.ElasticNet.fit: " + method_uses_sklearn)
             res_new = super(ElasticNet, self).fit(X, y, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
@@ -354,12 +354,12 @@ class ElasticNet(ElasticNet_original):
                 X = np.copy(X)
             if  not (y.flags.writeable):
                 y = np.copy(y)
-            logging.info("sklearn.linear_model.ElasticNet.fit: " + fit_method_uses_daal)
+            logging.info("sklearn.linear_model.ElasticNet.fit: " + method_uses_daal)
             res = _daal4py_fit_enet(self, X, y, check_input=check_input)
             if res is None:
                 if hasattr(self, 'daal_model_'):
                     del self.daal_model_
-                logging.info("sklearn.linear_model.ElasticNet.fit: " + fit_method_uses_sklearn_arter_daal)
+                logging.info("sklearn.linear_model.ElasticNet.fit: " + method_uses_sklearn_arter_daal)
                 res_new = super(ElasticNet, self).fit(X, y, check_input=check_input)
                 self._gap = res_new.dual_gap_
                 return res_new
@@ -388,10 +388,10 @@ class ElasticNet(ElasticNet_original):
                 sp.issparse(X) or
                 not good_shape_for_daal or
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
-            logging.info("sklearn.linear_model.ElasticNet.predict: " + fit_method_uses_sklearn)
+            logging.info("sklearn.linear_model.ElasticNet.predict: " + method_uses_sklearn)
             return self._decision_function(X)
         else:
-            logging.info("sklearn.linear_model.ElasticNet.predict: " + fit_method_uses_daal)
+            logging.info("sklearn.linear_model.ElasticNet.predict: " + method_uses_daal)
             return _daal4py_predict_enet(self, X)
 
 
@@ -509,7 +509,7 @@ class Lasso(ElasticNet):
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
             if hasattr(self, 'daal_model_'):
                 del self.daal_model_
-            logging.info("sklearn.linear_model.Lasso.fit: " + fit_method_uses_sklearn)
+            logging.info("sklearn.linear_model.Lasso.fit: " + method_uses_sklearn)
             res_new = super(ElasticNet, self).fit(X, y, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
@@ -521,12 +521,12 @@ class Lasso(ElasticNet):
                 X = np.copy(X)
             if  not (y.flags.writeable):
                 y = np.copy(y)
-            logging.info("sklearn.linear_model.Lasso.fit: " + fit_method_uses_daal)
+            logging.info("sklearn.linear_model.Lasso.fit: " + method_uses_daal)
             res = _daal4py_fit_lasso(self, X, y, check_input=check_input)
             if res is None:
                 if hasattr(self, 'daal_model_'):
                     del self.daal_model_
-                logging.info("sklearn.linear_model.Lasso.fit: " + fit_method_uses_sklearn_arter_daal)
+                logging.info("sklearn.linear_model.Lasso.fit: " + method_uses_sklearn_arter_daal)
                 res_new = super(ElasticNet, self).fit(X, y, check_input=check_input)
                 self._gap = res_new.dual_gap_
                 return res_new
@@ -554,8 +554,8 @@ class Lasso(ElasticNet):
                 sp.issparse(X) or
                 not good_shape_for_daal or
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
-            logging.info("sklearn.linear_model.Lasso.predict: " + fit_method_uses_sklearn)
+            logging.info("sklearn.linear_model.Lasso.predict: " + method_uses_sklearn)
             return self._decision_function(X)
         else:
-            logging.info("sklearn.linear_model.Lasso.predict: " + fit_method_uses_daal)
+            logging.info("sklearn.linear_model.Lasso.predict: " + method_uses_daal)
             return _daal4py_predict_lasso(self, X)
