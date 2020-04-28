@@ -48,8 +48,7 @@ public:
         else if(dev == "host") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::host_selector()));
         else
         {
-            std::cout << "Unknown device \'" << dev << "\' was specified.\nFalling back to default device.\n";
-            m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::default_selector()));
+            throw std::runtime_error(std::string("Device is not supported: ") + dev); 
         }
         daal::services::Environment::getInstance()->setDefaultExecutionContext(*m_ctxt);
     }
