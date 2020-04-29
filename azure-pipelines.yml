@@ -21,7 +21,7 @@ jobs:
           cmake                         \
           intel-opencl-icd
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
-      sudo mv /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga_
+      sudo mv -f /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
   - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
