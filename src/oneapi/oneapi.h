@@ -42,20 +42,13 @@ public:
     // Construct from given device provided as string
     PySyclExecutionContext(const std::string & dev)
         : m_ctxt(NULL)
-    {
-        try
+    {  
+        if(dev == "gpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
+        else if(dev == "cpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
+        else if(dev == "host") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::host_selector()));
+        else
         {
-            if(dev == "gpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
-            else if(dev == "cpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
-            else
-            {
-                std::cout << "Unknown device \'" << dev << "\' was specified.\nFalling back to default device.\n";
-                m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::default_selector()));
-            }
-        }
-        catch (cl::sycl::runtime_error const &e)
-        {
-            std::cout << "Device \'" << dev << "\' was requested but runtime error occurs: " << e.what() << "\nFalling back to default device.\n";
+            std::cout << "Unknown device \'" << dev << "\' was specified.\nFalling back to default device.\n";
             m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::default_selector()));
         }
         daal::services::Environment::getInstance()->setDefaultExecutionContext(*m_ctxt);

@@ -43,12 +43,11 @@ test:
         - scikit-learn
         - mpich # [osx]
         - impi_rt # [not osx]
-    imports:
-        - daal4py
     source_files:
         - examples
         - tests
     commands:
+        - python -c "import daal4py"
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py

@@ -10,6 +10,7 @@ fi
 if [ ! -z "${DPCPP_VAR}" ]; then
     source ${DPCPP_VAR}
     export CC=dpcpp
+    export CXX=dpcpp
 fi
 
 # if DAALROOT not exists then provide PREFIX

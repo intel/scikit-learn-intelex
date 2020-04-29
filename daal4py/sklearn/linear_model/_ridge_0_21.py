@@ -23,7 +23,8 @@ from sklearn.linear_model.ridge import _BaseRidge
 from sklearn.linear_model.ridge import Ridge as Ridge_original
 
 import daal4py
-from .._utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType, method_uses_sklearn, method_uses_daal)
+import logging
 
 
 def _daal4py_fit(self, X, y_):
@@ -104,8 +105,10 @@ def fit(self, X, y, sample_weight=None):
             sample_weight is not None):
         if hasattr(self, 'daal_model_'):
             del self.daal_model_
+        logging.info("sklearn.linear_model.Ridge.fit: " + method_uses_sklearn)
         return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
     else:
+        logging.info("sklearn.linear_model.Ridge.fit: " + method_uses_daal)
         self.n_iter_ = None
         return _daal4py_fit(self, X, y)
 
@@ -131,8 +134,10 @@ def predict(self, X):
             not good_shape_for_daal or
             not (X.dtype == np.float64 or X.dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
+        logging.info("sklearn.linear_model.Ridge.predict: " + method_uses_sklearn)
         return self._decision_function(X)
     else:
+        logging.info("sklearn.linear_model.Ridge.predict: " + method_uses_daal)
         return _daal4py_predict(self, X)
 
 _fit_copy = fit

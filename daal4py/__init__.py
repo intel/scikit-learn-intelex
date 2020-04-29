@@ -7,3 +7,14 @@ except ImportError as e:
         raise ImportError(s + '\n\nActivating your conda environment or sourcing mpivars.[c]sh/psxevars.[c]sh may solve the issue.\n')
     else:
         raise
+
+import logging
+import warnings
+import os
+logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
+try:
+    if not logLevel is None:
+        logging.basicConfig(format='%(levelname)s: %(message)s', level=logLevel.upper())
+except:
+    warnings.warn('Unknown level "{}" for logging.\n'
+                    'Please, use one of "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG".'.format(logLevel))

@@ -29,7 +29,8 @@ from sklearn.utils.extmath import stable_cumsum
 from scipy.sparse import issparse
 
 import daal4py
-from .._utils import getFPType
+from .._utils import getFPType, method_uses_sklearn, method_uses_daal
+import logging
 
 
 def _daal4py_svd(X):
@@ -118,7 +119,7 @@ def _fit_full(self, X, n_components):
     # Postprocess the number of components required
     if n_components == 'mle':
         n_components = \
-            _infer_dimension(explained_variance_, n_samples, n_features)
+            _infer_dimension(explained_variance_, n_samples)
     elif 0 < n_components < 1.0:
         n_components = _n_components_from_fraction(
             explained_variance_ratio_, n_components)
@@ -209,7 +210,7 @@ class PCA(PCA_original):
 
         if n_components == 'mle':
             n_components = \
-                _infer_dimension(explained_variance_, n_samples, n_features)
+                _infer_dimension(explained_variance_, n_samples)
         elif 0 < n_components < 1.0:
             n_components = _n_components_from_fraction(
                 explained_variance_ratio_, n_components)
@@ -279,7 +280,7 @@ class PCA(PCA_original):
 
         if n_components == 'mle':
             n_components = \
-                _infer_dimension(self.explained_variance_, n_samples, n_features)
+                _infer_dimension(self.explained_variance_, n_samples)
         elif 0 < n_components < 1.0:
             n_components = _n_components_from_fraction(
                 self.explained_variance_ratio_, n_components)
@@ -324,7 +325,7 @@ class PCA(PCA_original):
         # Postprocess the number of components required
         if n_components == 'mle':
             n_components = \
-               _infer_dimension(explained_variance_, n_samples, n_features)
+               _infer_dimension(explained_variance_, n_samples)
         elif 0 < n_components < 1.0:
             n_components = _n_components_from_fraction(
                 explained_variance_ratio_, n_components)
@@ -353,8 +354,10 @@ class PCA(PCA_original):
         _validate_n_components(n_components, n_samples, n_features)
 
         if n_samples > n_features and (X.dtype == np.float64 or X.dtype == np.float32):
+            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_daal)
             return self._fit_full_daal4py(X, n_components)
         else:
+            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_sklearn)
             return self._fit_full_vanilla(X, n_components)
 
 
@@ -390,10 +393,12 @@ class PCA(PCA_original):
         if self._fit_svd_solver == 'full':
             return self._fit_full(X, n_components)
         elif self._fit_svd_solver in ['arpack', 'randomized']:
+            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_sklearn)
             return self._fit_truncated(X, n_components, self._fit_svd_solver)
         elif self._fit_svd_solver == 'daal':
             if X.shape[0] < X.shape[1]:
                 raise ValueError("svd_solver='daal' is applicable for tall and skinny inputs only.")
+            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_daal)
             return self._fit_daal4py(X, n_components)
         else:
             raise ValueError("Unrecognized svd_solver='{0}'"
@@ -421,7 +426,9 @@ class PCA(PCA_original):
             # Handle n_components==None
             n_components = _process_n_components_None(
                 self.n_components, self.svd_solver, X.shape)
+            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_daal)
             self._fit_daal4py(X, n_components)
+            logging.info("sklearn.decomposition.PCA.transform: " + method_uses_daal)
             if self.n_components_ > 0:
                 return self._transform_daal4py(X, whiten=self.whiten, check_X=False)
             else:
@@ -430,6 +437,7 @@ class PCA(PCA_original):
             U, S, V = self._fit(X)
             U = U[:, :self.n_components_]
 
+            logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
             if self.whiten:
                 # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
                 U *= np.sqrt(X.shape[0] - 1)
@@ -470,9 +478,11 @@ class PCA(PCA_original):
 
         X = check_array(X)
         if self.n_components_ > 0:
+            logging.info("sklearn.decomposition.PCA.transform: " + method_uses_daal)
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=False, scale_eigenvalues=False)
         else:
+            logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
             if self.mean_ is not None:
                 X = X - self.mean_
                 X_transformed = np.dot(X, self.components_.T)

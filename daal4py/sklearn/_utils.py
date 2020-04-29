@@ -33,3 +33,6 @@ def make2d(X):
         X = X.reshape((X.size, 1))
     return X
 
+method_uses_daal = "uses Intel® DAAL solver"
+method_uses_sklearn = "uses original Scikit-learn solver"
+method_uses_sklearn_arter_daal = "uses original Scikit-learn solver, because the task was not solved with Intel® DAAL"
