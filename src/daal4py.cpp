@@ -134,7 +134,9 @@ static PyObject * _make_nda_from_homogen(daal::data_management::NumericTablePtr 
 
 #ifdef _DPCPP_
 #include "oneapi/oneapi_api.h"
-static int _1api_imp = import__oneapi();
+// Disable returning of sycl buffer from algorithms
+// static int _1api_imp = import__oneapi();
+static int _1api_imp = -1;
 #else
 static int _1api_imp = -1;
 PyObject* make_py_from_sycltable(void * ptr, int typ, int d1, int d2){ return Py_None; }
