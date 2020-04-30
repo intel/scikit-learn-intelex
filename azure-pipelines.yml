@@ -18,8 +18,10 @@ jobs:
           intel-oneapi-dpcpp-compiler   \
           intel-oneapi-dev-utilities    \
           intel-oneapi-libdpstd-devel   \
-          cmake                         \
-          intel-opencl-icd
+          cmake
+      sudo add-apt-repository ppa:intel-opencl/intel-opencl
+      sudo apt update
+      sudo apt install libze-loader libze-intel-gpu
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
       sudo mv -f /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
