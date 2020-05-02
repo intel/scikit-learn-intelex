@@ -23,14 +23,14 @@ jobs:
       sudo mv -f /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
   - script: |
-    git clone https://github.com/oneapi-src/level-zero.git
-    cd level-zero
-    mkdir build
-    cd build
-    cmake ..
-    cmake --build . --config Release
-    cmake --build . --config Release --target package
-    sudo cmake --build . --config Release --target install
+      git clone https://github.com/oneapi-src/level-zero.git
+      cd level-zero
+      mkdir build
+      cd build
+      cmake ..
+      cmake --build . --config Release
+      cmake --build . --config Release --target package
+      sudo cmake --build . --config Release --target install
     displayName: Build L0 (Workaround for Beta06)
   - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
