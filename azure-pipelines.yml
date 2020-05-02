@@ -9,6 +9,7 @@ jobs:
       rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
       echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
       sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
+      sudo add-apt-repository -y ppa:intel-opencl/intel-opencl
       sudo apt-get update
       sudo apt-get install              \
           intel-oneapi-common-vars      \
@@ -19,7 +20,9 @@ jobs:
           intel-oneapi-dev-utilities    \
           intel-oneapi-libdpstd-devel   \
           cmake                         \
-          opencl-headers
+          opencl-headers                \
+          libze-loader                  \
+          libze-intel-gpu
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
       sudo mv -f /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
