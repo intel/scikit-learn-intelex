@@ -138,9 +138,10 @@ def getpyexts():
     if IS_WIN:
         libraries_plat = ['daal_core_dll']
     else:
-        libraries_plat = ['daal_core', 'daal_thread']
         if dpcpp:
             libraries_plat = ['daal_core', 'daal_thread', 'ze_loader']
+        else:
+            libraries_plat = ['daal_core', 'daal_thread']
 
     if IS_MAC:
         ela.append('-stdlib=libc++')
