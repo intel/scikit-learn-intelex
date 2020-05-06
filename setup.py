@@ -100,7 +100,7 @@ DAAL_DEFAULT_TYPE = 'double'
 
 
 #Level Zero workaround for oneDAL Beta06
-from generator.parse import parse_version
+from generator.parse import parse_version
 
 header_path = daal_root + '/include/services/library_version_info.h'
 
