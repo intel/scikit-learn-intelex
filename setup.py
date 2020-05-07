@@ -102,13 +102,11 @@ DAAL_DEFAULT_TYPE = 'double'
 #Level Zero workaround for oneDAL Beta06
 from generator.parse import parse_version
 
-header_path = daal_root + '/include/services/library_version_info.h'
-
+header_path = os.path.join(daal_root, 'include', 'services', 'library_version_info.h') 
 
 with open(header_path) as header:
     v = parse_version(header)
     dal_build_version = (int(v[0]), int(v[2]))
-    print('Found DAAL version {}.{}'.format(*dal_build_version))
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
@@ -150,7 +148,7 @@ def getpyexts():
     if IS_WIN:
         libraries_plat = ['daal_core_dll']
     else:
-        if dal_build_version == (2021,106):
+        if dal_build_version == (2021,6):
             libraries_plat = ['daal_core', 'daal_thread', 'ze_loader']
         else:
             libraries_plat = ['daal_core', 'daal_thread']
