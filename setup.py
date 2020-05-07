@@ -90,14 +90,6 @@ else:
     else:
         MPI_LIBS    = ['mpi']
     MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
-if dpcpp:
-    DPCPP_CFLAGS = ['-D_DPCPP_', '-DONEAPI_DAAL_USE_MKL_GPU_FUNC']
-    DPCPP_LIBS = ['OpenCL', 'sycl', 'daal_sycl']
-else:
-    DPCPP_CFLAGS = []
-    DPCPP_LIBS = []
-DAAL_DEFAULT_TYPE = 'double'
-
 
 #Level Zero workaround for oneDAL Beta06
 from generator.parse import parse_version
@@ -107,6 +99,16 @@ header_path = os.path.join(daal_root, 'include', 'services', 'library_version_in
 with open(header_path) as header:
     v = parse_version(header)
     dal_build_version = (int(v[0]), int(v[2]))
+
+if dpcpp:
+    DPCPP_CFLAGS = ['-D_DPCPP_', '-DONEAPI_DAAL_USE_MKL_GPU_FUNC']
+    DPCPP_LIBS = ['OpenCL', 'sycl', 'daal_sycl']
+    if dal_build_version == (2021,6):
+            DPCPP_LIBS.append('ze_loader')
+else:
+    DPCPP_CFLAGS = []
+    DPCPP_LIBS = []
+DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
@@ -148,10 +150,7 @@ def getpyexts():
     if IS_WIN:
         libraries_plat = ['daal_core_dll']
     else:
-        if dal_build_version == (2021,6):
-            libraries_plat = ['daal_core', 'daal_thread', 'ze_loader']
-        else:
-            libraries_plat = ['daal_core', 'daal_thread']
+        libraries_plat = ['daal_core', 'daal_thread']
 
     if IS_MAC:
         ela.append('-stdlib=libc++')
