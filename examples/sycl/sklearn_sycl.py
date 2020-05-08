@@ -107,7 +107,7 @@ def dbscan():
     X = np.array([[1., 2.], [2., 2.], [2., 3.],
                   [8., 7.], [8., 8.], [25., 80.]])
     with sycl_context('gpu'):
-        clustering = DBSCAN(eps=3, min_samples=2, algorithm='brute').fit(X)
+        clustering = DBSCAN(eps=3, min_samples=2).fit(X)
     print("clustering.labels_")
     print(clustering.labels_)
     print("clustering")
