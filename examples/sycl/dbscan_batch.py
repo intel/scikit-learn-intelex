@@ -31,6 +31,12 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
+try:
+    with sycl_context('gpu'):
+        gpu_available=True
+except:
+    gpu_available=False
+
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
     try:
@@ -52,7 +58,7 @@ def to_numpy(data):
 # Common code for both CPU and GPU computations
 def compute(data, minObservations, epsilon):
     # configure dbscan main object: we also request the indices and observations of cluster cores
-    algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations', memorySavingMode=1)
+    algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations', memorySavingMode=True)
     # and compute
     return algo.compute(data)
 
@@ -70,17 +76,17 @@ def main(readcsv=read_csv, method='defaultDense'):
     data = to_numpy(data)
 
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
-        sycl_data = sycl_buffer(data)
-        result_gpu = compute(sycl_data, minObservations, epsilon)    
+    if gpu_available:
+        with sycl_context('gpu'):
+            sycl_data = sycl_buffer(data)
+            result_gpu = compute(sycl_data, minObservations, epsilon)    
+            assert np.allclose(result_classic.nClusters, result_gpu.nClusters)
+            assert np.allclose(result_classic.assignments, result_gpu.assignments)
 
-    # Note: we could have done this in just one line:
-    # assignments = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations').compute(data).assignments
+    with sycl_context('cpu'):
+        sycl_data2 = sycl_buffer(data)
+        result_cpu = compute(sycl_data2, minObservations, epsilon) 
 
-    # DBSCAN result objects provide assignments, nClusters and coreIndices/coreObservations (if requested)
-    assert np.allclose(result_classic.nClusters, result_gpu.nClusters)
-    assert np.allclose(result_classic.assignments, result_gpu.assignments)
-    
     return result_classic
 
 
