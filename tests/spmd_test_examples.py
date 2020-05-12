@@ -63,17 +63,29 @@ if d4p.__has_dist__:
 
         @unittest.skipIf(daal_version < (2019, 5), "not supported in this library version")
         def test_dbscan_spmd(self):
-            import dbscan_spmd as ex
-            result = self.call(ex)
-            test_data = np_read_csv(os.path.join(unittest_data_path, "dbscan_batch.csv"))
-            rpp = int(test_data.shape[0]/d4p.num_procs())
-            test_data = test_data[rpp*d4p.my_procid():rpp*d4p.my_procid()+rpp,:]
+            epsilon = 0.04
+            minObservations = 45
+            data = np_read_csv(os.path.join(".", 'data', 'batch', 'dbscan_dense.csv'))
+
+            batch_algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices')
+            batch_result = batch_algo.compute(data)
+
+            rpp = int(data.shape[0]/d4p.num_procs())
+            node_stride = rpp * d4p.my_procid()
+            node_range = range(node_stride, node_stride + rpp)
+            node_data = data[node_range,:]
+
+            spmd_algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, distributed=True)
+            spmd_result = spmd_algo.compute(node_data)
+
             # clusters can get different indexes in batch and spmd algos, to compare them we should take care about it
             cluster_index_dict = {}
-            for i in range(test_data.shape[0]):
-                if not test_data[i][0] in cluster_index_dict:
-                    cluster_index_dict[test_data[i][0]] = result.assignments[i][0]
-                self.assertTrue(cluster_index_dict[test_data[i][0]] == result.assignments[i][0])
+            for i in node_range:
+                # border points assignments can be different with different amount of nodes but cores are the same
+                if i in batch_result.coreIndices:
+                    if not batch_result.assignments[i][0] in cluster_index_dict:
+                        cluster_index_dict[batch_result.assignments[i][0]] = spmd_result.assignments[i - node_stride][0]
+                    self.assertTrue(cluster_index_dict[batch_result.assignments[i][0]] == spmd_result.assignments[i - node_stride][0])
 
 
     gen_examples = [
