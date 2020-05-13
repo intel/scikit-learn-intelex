@@ -23,4 +23,4 @@ __all__ = [
     "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
     "cluster", "decomposition", "ensemble",
     "linear_model", "neighbors",
-    "svm", "tree", "utils"]
+    "svm", "tree", "utils", "model_selection"]

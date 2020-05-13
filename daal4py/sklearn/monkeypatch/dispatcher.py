@@ -45,6 +45,8 @@ import sklearn.decomposition as decomposition_module
 from sklearn.metrics import pairwise
 from sklearn.utils import validation
 
+from sklearn import model_selection
+
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     from ._pairwise_0_22 import daal_pairwise_distances
@@ -58,6 +60,7 @@ from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..svm.svm import SVC as SVC_daal4py
 from ..utils.validation import _daal_assert_all_finite
+from ..model_selection import _daal_train_test_split
 
 from daal4py import __version__ as daal4py_version
 
@@ -88,6 +91,8 @@ except ImportError:
 if daal_run_version >= (2020, 1) and daal_link_version >= (2020, 1):
     _mapping['fin_check'] = [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]]
 
+if daal_run_version >= (2020, 2) and daal_link_version >= (2020, 2):
+    _mapping['tt_split'] = [[(model_selection, 'train_test_split', _daal_train_test_split), None]]
 
 def do_patch(name):
     lname = name.lower()
