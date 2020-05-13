@@ -20,6 +20,8 @@
 
 import daal4py as d4p
 import numpy as np
+import os
+from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -29,28 +31,63 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
+try:
+    with sycl_context('gpu'):
+        gpu_available=True
+except:
+    gpu_available=False
+
+# At this moment with sycl we are working only with numpy arrays
+def to_numpy(data):
+    try:
+        from pandas import DataFrame
+        if isinstance(data, DataFrame):
+            return np.ascontiguousarray(data.values)
+    except:
+        pass
+    try:
+        from scipy.sparse import csr_matrix
+        if isinstance(data, csr_matrix):
+            return data.toarray()
+    except:
+        pass
+    return data
+
+
+
+# Common code for both CPU and GPU computations
+def compute(data, minObservations, epsilon):
+    # configure dbscan main object: we also request the indices and observations of cluster cores
+    algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations', memorySavingMode=True)
+    # and compute
+    return algo.compute(data)
+
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infile = "./data/batch/dbscan_dense.csv"
+    infile = "../data/batch/dbscan_dense.csv"
     epsilon = 0.04
     minObservations = 45
     
     # Load the data
     data = readcsv(infile, range(2))
 
-    # configure dbscan main object: we also request the indices and observations of cluster cores
-    algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations')
-    # and compute
-    result = algo.compute(data)
-    
-    # Note: we could have done this in just one line:
-    # assignments = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations').compute(data).assignments
+    result_classic = compute(data, minObservations, epsilon)
 
-    # DBSCAN result objects provide assignments, nClusters and coreIndices/coreObservations (if requested)
-    assert result.assignments.shape == (data.shape[0], 1)
-    assert result.coreObservations.shape == (result.coreIndices.shape[0], data.shape[1])
-    
-    return result
+    data = to_numpy(data)
+
+    # It is possible to specify to make the computations on GPU
+    if gpu_available:
+        with sycl_context('gpu'):
+            sycl_data = sycl_buffer(data)
+            result_gpu = compute(sycl_data, minObservations, epsilon)    
+            assert np.allclose(result_classic.nClusters, result_gpu.nClusters)
+            assert np.allclose(result_classic.assignments, result_gpu.assignments)
+
+    with sycl_context('cpu'):
+        sycl_data2 = sycl_buffer(data)
+        result_cpu = compute(sycl_data2, minObservations, epsilon) 
+
+    return result_classic
 
 
 if __name__ == "__main__":
