@@ -41,5 +41,5 @@ def is_in_sycl_ctxt():
     try:
         from daal4py.oneapi import is_in_sycl_ctxt as is_in_ctx
         return is_in_ctx()
-    except:
+    except ModuleNotFoundError:
         return False
