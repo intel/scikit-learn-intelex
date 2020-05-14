@@ -20,7 +20,6 @@
 # run like this:
 #    python -m daal4py ./sklearn_sycl.py
 
-from daal4py.oneapi import sycl_context
 import numpy as np
 
 from sklearn.cluster import KMeans
@@ -31,8 +30,8 @@ from sklearn.cluster import DBSCAN
 from sklearn.datasets import load_iris
 
 try:
-    with sycl_context('gpu'):
-        gpu_available = True
+    from daal4py.oneapi import sycl_context
+    gpu_available = True
 except:
     gpu_available = False
 
