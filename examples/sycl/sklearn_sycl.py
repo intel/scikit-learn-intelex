@@ -35,6 +35,7 @@ try:
 except ModuleNotFoundError:
     sycl_available = False
 
+gpu_available = False
 if sycl_available:
     try:
         with sycl_context('gpu'):
