@@ -134,9 +134,11 @@ static PyObject * _make_nda_from_homogen(daal::data_management::NumericTablePtr 
 
 #ifdef _DPCPP_
 #include "oneapi/oneapi_api.h"
-static int _1api_imp = import__oneapi();
+// Disable returning of sycl buffer from algorithms
+// static int __oneAPI_imp = import__oneapi();
+static int __oneAPI_imp = -1;
 #else
-static int _1api_imp = -1;
+static int __oneAPI_imp = -1;
 PyObject* make_py_from_sycltable(void * ptr, int typ, int d1, int d2){ return Py_None; }
 #endif
 // Convert a DAAL NT to a numpy nd-array
@@ -155,30 +157,30 @@ PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
     switch((*(*ptr)->getDictionary())[0].indexType) {
     case daal::data_management::data_feature_utils::DAAL_FLOAT64:
         if((res = _make_nda_from_homogen<double, NPY_FLOAT64>(ptr)) != NULL) return res;
-        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_FLOAT64, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
+        if(__oneAPI_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_FLOAT64, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         if((res = _make_nda_from_bd<double, NPY_FLOAT64>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_FLOAT32:
         if((res = _make_nda_from_homogen<float, NPY_FLOAT32>(ptr)) != NULL) return res;
-        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_FLOAT32, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
+        if(__oneAPI_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_FLOAT32, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         if((res = _make_nda_from_bd<float, NPY_FLOAT32>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT32_S:
         if((res = _make_nda_from_homogen<int32_t, NPY_INT32>  (ptr)) != NULL) return res;
-        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_INT32, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
+        if(__oneAPI_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_INT32, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         if((res = _make_nda_from_bd<int32_t, NPY_INT32>(ptr)) != NULL) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT32_U:
         if((res = _make_nda_from_homogen<uint32_t, NPY_UINT32> (ptr)) != NULL) return res;
-        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_UINT32, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
+        if(__oneAPI_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_UINT32, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT64_S:
         if((res = _make_nda_from_homogen<int64_t, NPY_INT64>  (ptr)) != NULL) return res;
-        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_INT64, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
+        if(__oneAPI_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_INT64, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         break;
     case daal::data_management::data_feature_utils::DAAL_INT64_U:
         if((res = _make_nda_from_homogen<uint64_t, NPY_UINT64> (ptr)) != NULL) return res;
-        if(_1api_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_UINT64, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
+        if(__oneAPI_imp == 0 && (res = make_py_from_sycltable(ptr, NPY_UINT64, (*ptr)->getNumberOfRows(), (*ptr)->getNumberOfColumns())) != Py_None) return res;
         break;
     }
     // Falling back to using block-desriptors and converting to double

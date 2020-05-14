@@ -36,3 +36,10 @@ def make2d(X):
 method_uses_daal = "uses Intel® DAAL solver"
 method_uses_sklearn = "uses original Scikit-learn solver"
 method_uses_sklearn_arter_daal = "uses original Scikit-learn solver, because the task was not solved with Intel® DAAL"
+
+def is_in_sycl_ctxt():
+    try:
+        from daal4py.oneapi import is_in_sycl_ctxt as is_in_ctx
+        return is_in_ctx()
+    except ModuleNotFoundError:
+        return False

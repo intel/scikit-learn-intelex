@@ -45,25 +45,44 @@ cdef class sycl_execution_context:
         del self.c_ptr
 
 
+# thread-local storage
+from threading import local as threading_local
+_tls = threading_local()
+
+def _is_tls_initialized():
+    return (getattr(_tls, 'initialized', None) is not None) and (_tls.initialized == True)
+
+def _initialize_tls():
+    _tls._in_sycl_ctxt = False
+    _tls.initialized = True
+
+def _set_in_sycl_ctxt(value):
+    if not _is_tls_initialized():
+        _initialize_tls()
+    _tls._in_sycl_ctxt = value
+
+def _get_in_sycl_ctxt():
+    if not _is_tls_initialized():
+        _initialize_tls()
+    return _tls._in_sycl_ctxt
+
+def is_in_sycl_ctxt():
+    return _get_in_sycl_ctxt()
+
+
 from contextlib import contextmanager
-
-
-# Not thread-safe or re-entrant or anything...
-cdef bool _in_sycl_ctxt = False
-
 
 @contextmanager
 def sycl_context(dev='default'):
-    global _in_sycl_ctxt
     # Code to acquire resource
     ctxt = sycl_execution_context(dev)
-    _in_sycl_ctxt = True
+    _set_in_sycl_ctxt(True)
     try:
         yield ctxt
     finally:
         # Code to release resource
         del ctxt
-        _in_sycl_ctxt = False
+        _set_in_sycl_ctxt(False)
 
 
 cimport numpy as np
@@ -102,7 +121,7 @@ cdef class sycl_buffer:
         return PyCapsule_New(todaalnt(<void*>self.sycl_buffer, self.typ, self.shape), NULL, NULL)
 
 cdef api object make_py_from_sycltable(void * ptr, int typ, int d1, int d2):
-    if not _in_sycl_ctxt:
+    if not _get_in_sycl_ctxt():
         return None
     cdef void * buff = c_make_py_from_sycltable(ptr, typ)
     if buff:
