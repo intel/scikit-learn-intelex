@@ -30,6 +30,11 @@ from sklearn.cluster import DBSCAN
 
 from sklearn.datasets import load_iris
 
+try:
+    with sycl_context('gpu'):
+        gpu_available = True
+except:
+    gpu_available = False
 
 def k_means_init_x():
     print("KMeans init=X[:2]")
@@ -123,8 +128,9 @@ if __name__ == "__main__":
                 logistic_regression_newton,
                 dbscan,
                ]
-    for e in examples:
-        print("*" * 80)
-        e()
-        print("*" * 80)
-    print('All looks good!')
+    if gpu_available:
+        for e in examples:
+            print("*" * 80)
+            e()
+            print("*" * 80)
+        print('All looks good!')

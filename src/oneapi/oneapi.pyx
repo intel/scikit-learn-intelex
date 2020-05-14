@@ -50,7 +50,7 @@ from threading import local as threading_local
 _tls = threading_local()
 
 def _is_tls_initialized():
-    return (not getattr(_tls, 'initialized', None) is None) and (_tls.initialized == True)
+    return (getattr(_tls, 'initialized', None) is not None) and (_tls.initialized == True)
 
 def _initialize_tls():
     _tls._in_sycl_ctxt = False
