@@ -31,7 +31,8 @@ from sklearn.datasets import load_iris
 
 try:
     from daal4py.oneapi import sycl_context
-    gpu_available = True
+    with sycl_context('gpu'):
+        gpu_available = True
 except:
     gpu_available = False
 
