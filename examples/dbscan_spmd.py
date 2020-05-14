@@ -26,8 +26,8 @@ import numpy as np
 
 def main(method='defaultDense'):
     infile = "./data/batch/dbscan_dense.csv"
-    epsilon = 0.02
-    minObservations = 180
+    epsilon = 0.04
+    minObservations = 45
 
     # Load the data
     data = np.loadtxt(infile, delimiter=',')
