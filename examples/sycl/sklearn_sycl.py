@@ -31,17 +31,22 @@ from sklearn.datasets import load_iris
 
 try:
     from daal4py.oneapi import sycl_context
-    with sycl_context('gpu'):
-        gpu_available = True
-except:
-    gpu_available = False
+    sycl_available = True
+except ModuleNotFoundError:
+    sycl_available = False
+
+if sycl_available:
+    try:
+        with sycl_context('gpu'):
+            gpu_available = True
+    except:
+        gpu_available = False
 
 def k_means_init_x():
     print("KMeans init=X[:2]")
     X = np.array([[1., 2.], [1., 4.], [1., 0.],
                   [10., 2.], [10., 4.], [10., 0.]])
-    with sycl_context('gpu'):
-        kmeans = KMeans(n_clusters=2, random_state=0, init=X[:2]).fit(X)
+    kmeans = KMeans(n_clusters=2, random_state=0, init=X[:2]).fit(X)
     print("kmeans.labels_")
     print(kmeans.labels_)
     print("kmeans.predict([[0, 0], [12, 3]])")
@@ -54,8 +59,7 @@ def k_means_random():
     print("KMeans init='random'")
     X = np.array([[1., 2.], [1., 4.], [1., 0.],
                   [10., 2.], [10., 4.], [10., 0.]])
-    with sycl_context('gpu'):
-        kmeans = KMeans(n_clusters=2, random_state=0, init='random').fit(X)
+    kmeans = KMeans(n_clusters=2, random_state=0, init='random').fit(X)
     print("kmeans.labels_")
     print(kmeans.labels_)
     print("kmeans.predict([[0, 0], [12, 3]])")
@@ -69,8 +73,7 @@ def linear_regression():
     X = np.array([[1., 1.], [1., 2.], [2., 2.], [2., 3.]])
     # y = 1 * x_0 + 2 * x_1 + 3
     y = np.dot(X, np.array([1, 2])) + 3
-    with sycl_context('gpu'):
-        reg = LinearRegression().fit(X, y)
+    reg = LinearRegression().fit(X, y)
     print("reg.score(X, y)")
     print(reg.score(X, y))
     print("reg.coef_")
@@ -84,8 +87,7 @@ def linear_regression():
 def logistic_regression_lbfgs():
     print("LogisticRegression solver='lbfgs'")
     X, y = load_iris(return_X_y=True)
-    with sycl_context('gpu'):
-        clf = LogisticRegression(random_state=0, solver='lbfgs').fit(X, y)
+    clf = LogisticRegression(random_state=0, solver='lbfgs').fit(X, y)
     print("clf.predict(X[:2, :])")
     print(clf.predict(X[:2, :]))
     print("clf.predict_proba(X[:2, :])")
@@ -97,8 +99,7 @@ def logistic_regression_lbfgs():
 def logistic_regression_newton():
     print("LogisticRegression solver='newton-cg'")
     X, y = load_iris(return_X_y=True)
-    with sycl_context('gpu'):
-        clf = LogisticRegression(random_state=0, solver='newton-cg').fit(X, y)
+    clf = LogisticRegression(random_state=0, solver='newton-cg').fit(X, y)
     print("clf.predict(X[:2, :])")
     print(clf.predict(X[:2, :]))
     print("clf.predict_proba(X[:2, :])")
@@ -111,8 +112,7 @@ def dbscan():
     print("DBSCAN")
     X = np.array([[1., 2.], [2., 2.], [2., 3.],
                   [8., 7.], [8., 8.], [25., 80.]])
-    with sycl_context('gpu'):
-        clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
     print("clustering.labels_")
     print(clustering.labels_)
     print("clustering")
@@ -128,9 +128,20 @@ if __name__ == "__main__":
                 logistic_regression_newton,
                 dbscan,
                ]
+    devices = []
+
+    if sycl_available:
+        devices.append('host')
+        devices.append('cpu')
+
     if gpu_available:
+        devices.append('gpu')
+
+    for device in devices:
         for e in examples:
             print("*" * 80)
-            e()
+            print("device context:", device)
+            with sycl_context(device):
+                e()
             print("*" * 80)
-        print('All looks good!')
+    print('All looks good!')
