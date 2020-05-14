@@ -62,6 +62,7 @@ size_t c_my_procid();
 }
 
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;
+typedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;
 typedef std::string std_string;
 typedef std::unordered_map<std::string, int64_t> str2i_map_t;
 typedef std::unordered_map<int64_t, std::string> i2str_map_t;
