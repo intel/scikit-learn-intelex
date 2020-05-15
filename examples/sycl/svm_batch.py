@@ -31,6 +31,12 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
+try:
+    with sycl_context('gpu'):
+        gpu_available=True
+except:
+    gpu_available=False
+
 # Commone code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data, method='defaultDense'):
     # Configure a SVM object to use linear kernel
@@ -81,19 +87,14 @@ def main(readcsv=read_csv):
     predict_data = to_numpy(predict_data)
 
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
-        sycl_train_data = sycl_buffer(train_data)
-        sycl_train_labels = sycl_buffer(train_labels)
-        sycl_predict_data = sycl_buffer(predict_data)
+    if gpu_available:
+        with sycl_context('gpu'):
+            sycl_train_data = sycl_buffer(train_data)
+            sycl_train_labels = sycl_buffer(train_labels)
+            sycl_predict_data = sycl_buffer(predict_data)
 
-        predict_result_gpu, decision_function_gpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, 'thunder')
-        assert np.allclose(predict_result_gpu, predict_result_classic)
-
-    # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
-        predict_result_cpu, decision_function_cpu = compute(train_data, train_labels, sycl_predict_data, 'boser')
-        assert np.allclose(predict_result_cpu, predict_result_classic)
-        assert np.allclose(decision_function_cpu, decision_function_classic)
+            predict_result_gpu, decision_function_gpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, 'thunder')
+            assert np.allclose(predict_result_gpu, predict_result_classic)
 
     return predict_labels, predict_result_classic, decision_function_classic
 

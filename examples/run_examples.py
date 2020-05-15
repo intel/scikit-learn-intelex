@@ -68,13 +68,13 @@ def check_version(rule, target):
                 return False
             else:
                 if rule[rule_item][0]==target[0]:
-                    break                   
+                    break
     return True
 
 def check_device(rule, target):
     for rule_item in rule:
         if not rule_item in target:
-            return False             
+            return False
     return True
 
 
@@ -93,6 +93,7 @@ req_version['lasso_regression_batch.py'] = (2019,5)
 req_version['elastic_net_batch.py'] = ((2020,1),(2021,105))
 req_version['sycl/bf_knn_classification_batch.py'] = (2021,105)
 req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,105)
+req_version['sycl/svm_batch.py'] = (2021,107)
 
 req_device = defaultdict(lambda:[])
 req_device['sycl/bf_knn_classification_batch.py'] = ["gpu"]
@@ -106,7 +107,7 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
         if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
             return None
-            
+
     if os.path.dirname(ex).endswith("examples"):
         if not check_version(req_version[os.path.basename(ex)], daal_version):
             return None
