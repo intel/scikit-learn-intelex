@@ -142,7 +142,7 @@ def _daal4py_k_means_dense(X, nClusters, numIterations, tol, cluster_centers_0, 
             best_n_iter = int(res.nIterations[0,0])
             break
         else:
-            inertia = res.goalFunction[0,0]
+            inertia = res.objectiveFunction[0,0]
             if best_inertia is None or inertia < best_inertia:
                 best_labels = res.assignments.ravel()
                 best_cluster_centers = res.centroids
@@ -220,7 +220,7 @@ def fit(self, X, y=None, sample_weight=None):
         raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
                          " {}".format(str(algorithm)))
 
-        
+
     daal_ready = not sp.issparse(X)
     daal_ready = daal_ready and hasattr(X, '__array__')
 
@@ -284,7 +284,7 @@ def predict(self, X, sample_weight=None):
 
 _fit_copy = fit
 _predict_copy = predict
-    
+
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
