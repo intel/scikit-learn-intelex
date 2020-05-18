@@ -128,8 +128,9 @@ def fit(self, X, y, sample_weight=None):
         res = _daal4py_fit(self, X, y)
         if res is not None:
             return res
-
-    logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_sklearn_arter_daal)
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_sklearn_arter_daal)
+    else:
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_sklearn)
 
     if sample_weight is not None and np.atleast_1d(sample_weight).ndim > 1:
         raise ValueError("Sample weights must be 1D array or scalar")
