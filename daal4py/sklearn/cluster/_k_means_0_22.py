@@ -138,13 +138,13 @@ def _daal4py_k_means_dense(X, nClusters, numIterations, tol, cluster_centers_0, 
 
         res = kmeans_algo.compute(X, starting_centroids_)
 
-        # Per documentation, with numIterations == 0, centroids and goalFunction are not updated
+        # Per documentation, with numIterations == 0, centroids and objectiveFunction are not updated
         if numIterations == 0:
             best_labels = res.assignments[:,0]
             best_n_iter = int(res.nIterations[0,0])
             break
         else:
-            inertia = res.goalFunction[0,0]
+            inertia = res.objectiveFunction[0,0]
             if best_inertia is None or inertia < best_inertia:
                 best_labels = res.assignments.ravel()
                 best_cluster_centers = res.centroids
@@ -275,7 +275,7 @@ def predict(self, X, sample_weight=None):
 
 _fit_copy = fit
 _predict_copy = predict
-    
+
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
