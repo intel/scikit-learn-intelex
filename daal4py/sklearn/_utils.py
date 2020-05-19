@@ -17,6 +17,10 @@
 
 import numpy as np
 
+from daal4py import __daal_run_version__, __daal_link_version__
+daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
+daal_link_version = tuple(map(int, (__daal_link_version__[0:4], __daal_link_version__[4:8])))
+
 def getFPType(X):
     dt = getattr(X, 'dtype', None)
     if dt == np.double:

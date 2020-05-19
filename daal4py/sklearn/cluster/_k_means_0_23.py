@@ -33,7 +33,7 @@ import warnings
 from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
-from .._utils import getFPType, method_uses_sklearn, method_uses_daal
+from .._utils import getFPType, method_uses_sklearn, method_uses_daal, daal_run_version, daal_link_version
 import logging
 
 def _daal_mean_var(X):
@@ -100,17 +100,33 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
         raise ValueError("Cluster centers should either be 'k-means++', 'random', 'deterministic' or an array")
     return deterministic, centroids_
 
+def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
+    method = "lloydDense", accuracyThreshold = 0.0, resultsToEvaluate = "computeCentroids"):
+    kmeans_algo = None
+    if daal_run_version >= (2020, 2) and daal_link_version >= (2020, 2):
+        kmeans_algo = daal4py.kmeans(nClusters = nClusters,
+            maxIterations= maxIterations,
+            fptype = fptype,
+            resultsToEvaluate = resultsToEvaluate,
+            method = method)
+    else:
+        assigFlag = 'computeAssignments' in resultsToEvaluate
+        kmeans_algo = daal4py.kmeans(nClusters = nClusters,
+            maxIterations= maxIterations,
+            fptype = fptype,
+            assignFlag = assigFlag,
+            resultsToEvaluate = resultsToEvaluate,
+            method = method)
+    return kmeans_algo
 
 def _daal4py_k_means_predict(X, nClusters, centroids, resultsToEvaluate = 'computeAssignments'):
-    print("_daal4py_k_means_predict")
-
     if hasattr(X, '__array__'):
         X_fptype = getFPType(X)
     else:
         raise NotImplementedError("""Unsupported input type {} encountered in DAAL-based optimization of KMeans.
         You can disable DAAL-based optimizations of scikit-learn with sklearn.daal4sklearn.dispatcher.disable()""".format(type(X)))
 
-    kmeans_algo = daal4py.kmeans(
+    kmeans_algo = _daal4py_kmeans_compatibility(
         nClusters = nClusters,
         maxIterations = 0,
         fptype = X_fptype,
@@ -123,7 +139,6 @@ def _daal4py_k_means_predict(X, nClusters, centroids, resultsToEvaluate = 'compu
 
 
 def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_init, random_state):
-    print("_daal4py_k_means_dense")
     if numIterations < 0:
         raise ValueError("Wrong iterations number")
 
@@ -138,7 +153,7 @@ def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_
     best_inertia, best_cluster_centers = None, None
     best_n_iter = -1
 
-    kmeans_algo = daal4py.kmeans(
+    kmeans_algo = _daal4py_kmeans_compatibility(
         nClusters = nClusters,
         maxIterations = numIterations,
         accuracyThreshold = abs_tol,
