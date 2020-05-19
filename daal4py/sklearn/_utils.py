@@ -22,7 +22,7 @@ from daal4py import __daal_run_version__, __daal_link_version__
 def daal_check_version(trad_version, dpcpp_version):
     daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
     daal_link_version = tuple(map(int, (__daal_link_version__[0:4], __daal_link_version__[4:8])))
-    if daal_link_version[1] > 100:
+    if daal_run_version[1] > 100:
         # daal dpcpp
         return daal_run_version >= dpcpp_version and daal_link_version >= dpcpp_version
     else:
