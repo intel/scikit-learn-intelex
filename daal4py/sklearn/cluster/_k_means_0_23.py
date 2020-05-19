@@ -33,7 +33,7 @@ import warnings
 from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
-from .._utils import getFPType, method_uses_sklearn, method_uses_daal, daal_run_version, daal_link_version
+from .._utils import getFPType, method_uses_sklearn, method_uses_daal, daal_check_version
 import logging
 
 def _daal_mean_var(X):
@@ -103,7 +103,7 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
 def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
     method = "lloydDense", accuracyThreshold = 0.0, resultsToEvaluate = "computeCentroids"):
     kmeans_algo = None
-    if daal_run_version >= (2020, 2) and daal_link_version >= (2020, 2):
+    if daal_check_version((2020, 2), (2021, 107)):
         kmeans_algo = daal4py.kmeans(nClusters = nClusters,
             maxIterations= maxIterations,
             fptype = fptype,
