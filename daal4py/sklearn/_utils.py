@@ -31,15 +31,7 @@ def daal_check_version(rule, target = daal_version):
             else:
                 if rule[rule_item][0]==target[0]:
                     break
-    # daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
-    # daal_link_version = tuple(map(int, (__daal_link_version__[0:4], __daal_link_version__[4:8])))
-    # if daal_run_version[1] > 100:
-    #     # daal dpcpp
-    #     return daal_run_version >= dpcpp_version and daal_link_version >= dpcpp_version
-    # else:
-    #     # daal trad
-    #     return daal_run_version >= trad_version and daal_link_version >= trad_version
-
+    return True
 
 def getFPType(X):
     dt = getattr(X, 'dtype', None)
