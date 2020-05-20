@@ -115,7 +115,6 @@ def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
             maxIterations= maxIterations,
             fptype = fptype,
             assignFlag = assigFlag,
-            resultsToEvaluate = resultsToEvaluate,
             method = method)
     return kmeans_algo
 
