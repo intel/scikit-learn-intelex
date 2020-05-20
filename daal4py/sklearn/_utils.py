@@ -17,17 +17,28 @@
 
 import numpy as np
 
-from daal4py import __daal_run_version__, __daal_link_version__
+from daal4py import __daal_link_version__ as dv
+daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
-def daal_check_version(trad_version, dpcpp_version):
-    daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
-    daal_link_version = tuple(map(int, (__daal_link_version__[0:4], __daal_link_version__[4:8])))
-    if daal_run_version[1] > 100:
-        # daal dpcpp
-        return daal_run_version >= dpcpp_version and daal_link_version >= dpcpp_version
+def daal_check_version(rule, target = daal_version):
+    if not isinstance(rule[0], type(target)):
+        if rule > target:
+            return False
     else:
-        # daal trad
-        return daal_run_version >= trad_version and daal_link_version >= trad_version
+        for rule_item in range(len(rule)):
+            if rule[rule_item] > target:
+                return False
+            else:
+                if rule[rule_item][0]==target[0]:
+                    break
+    # daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
+    # daal_link_version = tuple(map(int, (__daal_link_version__[0:4], __daal_link_version__[4:8])))
+    # if daal_run_version[1] > 100:
+    #     # daal dpcpp
+    #     return daal_run_version >= dpcpp_version and daal_link_version >= dpcpp_version
+    # else:
+    #     # daal trad
+    #     return daal_run_version >= trad_version and daal_link_version >= trad_version
 
 
 def getFPType(X):

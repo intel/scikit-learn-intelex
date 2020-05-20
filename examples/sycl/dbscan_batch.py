@@ -54,20 +54,22 @@ def to_numpy(data):
     return data
 
 
-
 # Common code for both CPU and GPU computations
 def compute(data, minObservations, epsilon):
     # configure dbscan main object: we also request the indices and observations of cluster cores
-    algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations', memorySavingMode=True)
+    algo = d4p.dbscan(minObservations=minObservations,
+                      epsilon=epsilon,
+                      resultsToCompute='computeCoreIndices|computeCoreObservations',
+                      memorySavingMode=True)
     # and compute
     return algo.compute(data)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infile = "../data/batch/dbscan_dense.csv"
+    infile = os.path.join('..', 'data', 'batch', 'dbscan_dense.csv')
     epsilon = 0.04
     minObservations = 45
-    
+
     # Load the data
     data = readcsv(infile, range(2))
 
@@ -79,13 +81,19 @@ def main(readcsv=read_csv, method='defaultDense'):
     if gpu_available:
         with sycl_context('gpu'):
             sycl_data = sycl_buffer(data)
-            result_gpu = compute(sycl_data, minObservations, epsilon)    
+            result_gpu = compute(sycl_data, minObservations, epsilon)
             assert np.allclose(result_classic.nClusters, result_gpu.nClusters)
             assert np.allclose(result_classic.assignments, result_gpu.assignments)
+            assert np.allclose(result_classic.coreIndices, result_gpu.coreIndices)
+            assert np.allclose(result_classic.coreObservations, result_gpu.coreObservations)
 
     with sycl_context('cpu'):
-        sycl_data2 = sycl_buffer(data)
-        result_cpu = compute(sycl_data2, minObservations, epsilon) 
+        sycl_data = sycl_buffer(data)
+        result_cpu = compute(sycl_data, minObservations, epsilon)
+        assert np.allclose(result_classic.nClusters, result_cpu.nClusters)
+        assert np.allclose(result_classic.assignments, result_cpu.assignments)
+        assert np.allclose(result_classic.coreIndices, result_cpu.coreIndices)
+        assert np.allclose(result_classic.coreObservations, result_cpu.coreObservations)
 
     return result_classic
 
