@@ -11,10 +11,11 @@ except ImportError as e:
 import logging
 import warnings
 import os
+import sys
 logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
 try:
     if not logLevel is None:
-        logging.basicConfig(format='%(levelname)s: %(message)s', level=logLevel.upper())
+        logging.basicConfig(stream=sys.stdout, format='%(levelname)s: %(message)s', level=logLevel.upper())
 except:
     warnings.warn('Unknown level "{}" for logging.\n'
                     'Please, use one of "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG".'.format(logLevel))
