@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
     def test_KNeighborsClassifier(self):
         check_estimator(KNeighborsClassifier)
 
-    @unittest.skipUnless(check_version(((2019,0),(2021, 107)), daal_version), "not supported in this library version")
+    @unittest.skipUnless(check_version(((2019,0),(2021, 109)), daal_version), "not supported in this library version")
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:
