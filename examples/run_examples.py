@@ -94,6 +94,7 @@ req_version['elastic_net_batch.py'] = ((2020,1),(2021,105))
 req_version['sycl/bf_knn_classification_batch.py'] = (2021,105)
 req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,105)
 req_version['sycl/svm_batch.py'] = (2021,107)
+req_version['sycl/dbscan_batch.py'] = (2021,108) # sometimes we get 'Segmentation fault', need to be fixed
 
 req_device = defaultdict(lambda:[])
 req_device['sycl/bf_knn_classification_batch.py'] = ["gpu"]
