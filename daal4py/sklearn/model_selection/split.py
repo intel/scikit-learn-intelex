@@ -5,8 +5,6 @@ from sklearn.model_selection._split import _validate_shuffle_split
 import daal4py as d4p
 import numpy as np
 
-from timeit import default_timer as timer
-
 try:
     import mkl_random
     mkl_random_is_imported = True
@@ -57,7 +55,6 @@ def _daal_train_test_split(*arrays, **options):
     n_samples = _num_samples(arrays[0])
     n_train, n_test = _validate_shuffle_split(n_samples, test_size, train_size,
                                               default_test_size=0.25)
-
     if shuffle is False:
         if stratify is not None:
             raise ValueError(
@@ -86,30 +83,19 @@ def _daal_train_test_split(*arrays, **options):
     res = []
     for arr in arrays:
         fallback = False
-        if isinstance(arr, np.ndarray):
-            origin_type = "numpy"
-        elif pandas_is_imported:
-            if isinstance(arr, pd.core.frame.DataFrame):
-                origin_type = "pandas DataFrame"
-            elif isinstance(arr, pd.core.series.Series):
-                origin_type = "pandas Series"
+        if not isinstance(arr, np.ndarray):
+            if pandas_is_imported:
+                if not isinstance(arr, pd.core.frame.DataFrame) and not isinstance(arr, pd.core.series.Series):
+                    fallback = True
             else:
                 fallback = True
-        else:
-            fallback = True
 
         dtypes = get_dtypes(arr)
         if dtypes is None:
             fallback = True
         else:
             for i, dtype in enumerate(dtypes):
-                if dtype in [np.int32, 'int32']:
-                    dtypes[i] = 0
-                elif dtype in [np.float32, 'float32']:
-                    dtypes[i] = 1
-                elif dtype in [np.float64, 'float64']:
-                    dtypes[i] = 2
-                else:
+                if dtype not in [np.int32, np.float32, np.float64, 'int32', 'float32', 'float64']:
                     fallback = True
                     break
         if fallback:
@@ -122,71 +108,33 @@ def _daal_train_test_split(*arrays, **options):
             test = test.reshape(n_test, 1)
 
             if len(arr.shape) == 2:
+                one_dim = False
                 n_cols = arr.shape[1]
-                reshape_later = False
             else:
+                one_dim = True
                 n_cols = 1
-                reshape_later = True
 
-            unique_dtypes = set(dtypes)
-            dtypes_list = dtypes
-            if origin_type == 'pandas DataFrame':
-                if len(unique_dtypes) > 1:
-                    origin_type += ' with multiple dtypes'
-                else:
-                    origin_type += ' with one dtype'
-            if len(dtypes) == 1:
-                dtypes = dtypes * n_cols
-            dtypes = np.array(dtypes, dtype=np.int32, ndmin=2)
-
-            if origin_type == 'numpy':
-                order = 'C' if arr.flags['C_CONTIGUOUS'] == True else 'F'
-
-                train_arr = np.empty(shape=(n_train, n_cols), dtype=arr.dtype, order=order)
-                test_arr = np.empty(shape=(n_test, n_cols), dtype=arr.dtype, order=order)
-
-                d4p.daal_train_test_split(arr.reshape((arr.shape[0], n_cols), order='A'), train_arr, test_arr, train, test, dtypes)
-
-                if reshape_later:
-                    train_arr = train_arr.reshape((train_arr.shape[0],))
-                    test_arr = test_arr.reshape((test_arr.shape[0],))
-                    arr = arr.reshape((arr.shape[0],), order='A')
-
-            elif origin_type == 'pandas DataFrame with one dtype':
-                order = 'C' if arr.values.flags['C_CONTIGUOUS'] == True else 'F'
-
-                train_arr = np.empty(shape=(n_train, n_cols), dtype=arr.values.dtype, order=order)
-                test_arr = np.empty(shape=(n_test, n_cols), dtype=arr.values.dtype, order=order)
-
-                d4p.daal_train_test_split(arr.values, train_arr, test_arr, train, test, dtypes)
-
-                train_arr, test_arr = pd.DataFrame(train_arr), pd.DataFrame(test_arr)
-
-            elif origin_type == 'pandas DataFrame with multiple dtypes':
-                train_arr, test_arr = {}, {}
-                for i, col in enumerate(list(arr.columns)):
-                    train_arr[col] = np.empty(shape=(n_train,), dtype=arr.dtypes[col])
-                    test_arr[col] = np.empty(shape=(n_test,), dtype=arr.dtypes[col])
-                train_arr = pd.DataFrame(train_arr)
-                test_arr = pd.DataFrame(test_arr)
-                for i, col in enumerate(list(arr.columns)):
-                    d4p.daal_train_test_split(
-                        arr[col].values.reshape(n_train + n_test, 1),
-                        train_arr[col].values.reshape(n_train, 1),
-                        test_arr[col].values.reshape(n_test, 1),
-                        train, test, np.array([dtypes_list[i]], dtype=np.int32, ndmin=2))
-
+            arr_copy = d4p.get_data(arr)
+            if not isinstance(arr_copy, list):
+                arr_copy = arr_copy.reshape((arr_copy.shape[0], n_cols), order='A')
+            if isinstance(arr_copy, np.ndarray):
+                order = 'C' if arr_copy.flags['C_CONTIGUOUS'] == True else 'F'
+                train_arr = np.empty(shape=(n_train, n_cols), dtype=arr_copy.dtype, order=order)
+                test_arr = np.empty(shape=(n_test, n_cols), dtype=arr_copy.dtype, order=order)
+                d4p.daal_train_test_split(arr_copy, train_arr, test_arr, train, test)
+            elif isinstance(arr_copy, list):
+                train_arr = [np.empty(shape=(n_train,), dtype=el.dtype, order='C' if el.flags['C_CONTIGUOUS'] else 'F') for el in arr_copy]
+                test_arr = [np.empty(shape=(n_test,), dtype=el.dtype, order='C' if el.flags['C_CONTIGUOUS'] else 'F') for el in arr_copy]
+                d4p.daal_train_test_split(arr_copy, train_arr, test_arr, train, test)
+                train_arr = {col: train_arr[i] for i, col in enumerate(arr.columns)}
+                test_arr = {col: test_arr[i] for i, col in enumerate(arr.columns)}
             else:
-                train_arr = np.empty(shape=(n_train, 1), dtype=arr.dtype)
-                test_arr = np.empty(shape=(n_test, 1), dtype=arr.dtype)
+                raise ValueError('Array can\'t be converted to needed format')
 
-                orig = arr.array.to_numpy().reshape((arr.shape[0], 1), order='A')
-
-                d4p.daal_train_test_split(orig, train_arr, test_arr, train, test, dtypes)
-
-                train_arr = train_arr.reshape((n_train,))
-                test_arr = test_arr.reshape((n_test,))
-
+            if isinstance(arr, pd.core.frame.DataFrame):
+                train_arr, test_arr = pd.DataFrame(train_arr), pd.DataFrame(test_arr)
+            if isinstance(arr, pd.core.series.Series):
+                train_arr, test_arr = train_arr.reshape(n_train), test_arr.reshape(n_test)
                 train_arr, test_arr = pd.Series(train_arr), pd.Series(test_arr)
 
             if hasattr(arr, 'index'):

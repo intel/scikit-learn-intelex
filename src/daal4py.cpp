@@ -666,7 +666,7 @@ bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
 }
 
 void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test,
-                        data_or_file & train_idx, data_or_file & test_idx, data_or_file & column_types)
+                        data_or_file & train_idx, data_or_file & test_idx)
 {
 #if INTEL_DAAL_VERSION >= 20200002
     auto origTable = get_table(orig);
@@ -674,8 +674,7 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
     auto testTable = get_table(test);
     auto trainIdxTable = get_table(train_idx);
     auto testIdxTable = get_table(test_idx);
-    auto columnTypesTable = get_table(column_types);
-    daal::data_management::internal::trainTestSplit<int>(*origTable, *trainTable, *testTable, *trainIdxTable, *testIdxTable, *columnTypesTable);
+    daal::data_management::internal::trainTestSplit<int>(*origTable, *trainTable, *testTable, *trainIdxTable, *testIdxTable);
 #else
 #endif
 }
