@@ -30,15 +30,15 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=read_csv, method='thunder'):
     # input data file
     infile = "./data/batch/svm_two_class_train_dense.csv"
     testfile = "./data/batch/svm_two_class_test_dense.csv"
 
     # Configure a SVM object to use rbf kernel (and adjusting cachesize)
-    kern = d4p.kernel_function_linear(method=method)  # need an object that lives when creating train_algo
-    train_algo = d4p.svm_training(doShrinking=True, kernel=kern, cacheSize=600000000)
-    
+    kern = d4p.kernel_function_linear()  # need an object that lives when creating train_algo
+    train_algo = d4p.svm_training(method=method, doShrinking=True, kernel=kern, cacheSize=600000000)
+
     # Read data. Let's use features per observation
     data   = readcsv(infile, range(20))
     labels = readcsv(infile, range(20,21))
