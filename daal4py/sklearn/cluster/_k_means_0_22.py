@@ -121,12 +121,7 @@ def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
     return kmeans_algo
 
 def _daal4py_k_means_predict(X, nClusters, centroids, resultsToEvaluate = 'computeAssignments'):
-    if hasattr(X, '__array__'):
-        X_fptype = getFPType(X)
-    else:
-        raise NotImplementedError("""Unsupported input type {} encountered in DAAL-based optimization of KMeans.
-        You can disable DAAL-based optimizations of scikit-learn with sklearn.daal4sklearn.dispatcher.disable()""".format(type(X)))
-
+    X_fptype = getFPType(X)
     kmeans_algo = _daal4py_kmeans_compatibility(
         nClusters = nClusters,
         maxIterations = 0,
@@ -143,12 +138,7 @@ def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_
     if numIterations < 0:
         raise ValueError("Wrong iterations number")
 
-    if hasattr(X, '__array__'):
-        X_fptype = getFPType(X)
-    else:
-        raise NotImplementedError("""Unsupported input type {} encountered in DAAL-based optimization of KMeans.
-        You can disable DAAL-based optimizations of scikit-learn with sklearn.daal4sklearn.dispatcher.disable()""".format(type(X)))
-
+    X_fptype = getFPType(X)
     abs_tol = _tolerance(X, tol) # tol is relative tolerance
 
     best_inertia, best_cluster_centers = None, None
