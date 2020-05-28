@@ -14,7 +14,6 @@ jobs:
       sudo apt-get install              \
           intel-oneapi-common-vars      \
           intel-oneapi-common-licensing \
-          intel-oneapi-tbb-devel        \
           intel-oneapi-daal-devel       \
           intel-oneapi-dpcpp-compiler   \
           intel-oneapi-dev-utilities    \

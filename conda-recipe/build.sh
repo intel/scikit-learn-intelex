@@ -27,6 +27,5 @@ if [ `uname` == Darwin ]; then
 fi
 
 export DAAL4PY_VERSION=$PKG_VERSION
-export TBBROOT=${PREFIX}
 export MPIROOT=${PREFIX}
 ${PYTHON} setup.py install $ARGS

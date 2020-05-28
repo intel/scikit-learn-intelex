@@ -40,7 +40,6 @@ if not no_dist and sys.version_info <= (3, 6):
     no_dist = True
 no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
 daal_root = os.environ['DAALROOT']
-tbb_root = os.environ['TBBROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPP_VAR' in os.environ else False
 
@@ -130,7 +129,10 @@ def get_type_defines():
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
 
 def getpyexts():
-    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',]
+    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include',]
+    # FIXME it is a wrong place for this dependency
+    if not no_dist:
+        include_dir_plat.append(mpi_root + '/include')
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-DD4P_VERSION="'+d4p_version+'"', '-DNPY_ALLOW_THREADS=1'] + get_type_defines()
     ela = []
@@ -155,7 +157,6 @@ def getpyexts():
     if IS_MAC:
         ela.append('-stdlib=libc++')
         ela.append("-Wl,-rpath,{}".format(daal_lib_dir))
-        ela.append("-Wl,-rpath,{}".format(jp(daal_root, '..', 'tbb', 'lib')))
     elif IS_WIN:
         ela.append('-IGNORE:4197')
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x] for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
