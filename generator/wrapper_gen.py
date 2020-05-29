@@ -1153,7 +1153,7 @@ class wrapper_gen(object):
         """
         return code for initing
         """
-        cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\ntypedef daal::data_management::NumericTablePtr NumericTablePtr;"
+        cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\nusing daal::data_management::NumericTablePtr;"
         pyx = ''
         for i in self.ifaces:
             tstr = gen_cython_iface_macro + '{{gen_cython_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
