@@ -61,6 +61,7 @@ size_t c_num_procs();
 size_t c_my_procid();
 }
 
+using daal::data_management::NumericTablePtr;
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;
 typedef std::string std_string;
 typedef std::unordered_map<std::string, int64_t> str2i_map_t;
