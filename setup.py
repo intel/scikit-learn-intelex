@@ -62,6 +62,7 @@ else:
     assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
+DAAL_LIBDIRS = [daal_lib_dir]
 
 if no_stream :
     print('\nDisabling support for streaming mode\n')
@@ -108,11 +109,13 @@ if dpcpp:
     elif IS_WIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
     if dal_build_version == (2021,6):
-            DPCPP_LIBS.append('ze_loader')
-            DPCPP_LIBDIRS.append('/usr/lib/x86_64-linux-gnu')
+        DPCPP_LIBS.append('ze_loader')
+        DAAL_LIBDIRS.append('/usr/lib/x86_64-linux-gnu')
 else:
     DPCPP_CFLAGS = []
     DPCPP_LIBS = []
+    DPCPP_LIBDIRS = []
+
 DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
@@ -178,7 +181,7 @@ def getpyexts():
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
                                 libraries=libraries_plat + MPI_LIBS,
-                                library_dirs=[daal_lib_dir],
+                                library_dirs=DAAL_LIBDIRS,
                                 language='c++'),
     ])
     if dpcpp:
@@ -189,7 +192,7 @@ def getpyexts():
                                         extra_compile_args=eca + ['-fsycl'],
                                         extra_link_args=ela,
                                         libraries=libraries_plat + DPCPP_LIBS,
-                                        library_dirs=[daal_lib_dir] + DPCPP_LIBDIRS,
+                                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
                                         language='c++')))
     if not no_dist:
         exts.append(Extension('mpi_transceiver',
@@ -199,7 +202,7 @@ def getpyexts():
                               extra_compile_args=eca,
                               extra_link_args=ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS],
                               libraries=libraries_plat + MPI_LIBS,
-                              library_dirs=[daal_lib_dir] + MPI_LIBDIRS,
+                              library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
                               language='c++'))
     return exts
 
