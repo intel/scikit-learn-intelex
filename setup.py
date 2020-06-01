@@ -110,7 +110,7 @@ if dpcpp:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
     if dal_build_version == (2021,6):
         DPCPP_LIBS.append('ze_loader')
-        DAAL_LIBDIRS.append('/usr/lib/x86_64-linux-gnu')
+        DAAL_LIBDIRS.append('/usr/local/lib')
 else:
     DPCPP_CFLAGS = []
     DPCPP_LIBS = []
