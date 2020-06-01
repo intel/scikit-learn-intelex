@@ -32,7 +32,7 @@ from sklearn.datasets import load_iris
 try:
     from daal4py.oneapi import sycl_context
     sycl_available = True
-except ModuleNotFoundError:
+except:
     sycl_available = False
 
 gpu_available = False

@@ -41,7 +41,8 @@ if not no_dist and sys.version_info <= (3, 6):
 no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
 daal_root = os.environ['DAALROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
-dpcpp = True if 'DPCPP_VAR' in os.environ else False
+dpcpp = True if 'DPCPPROOT' in os.environ else False
+dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
@@ -61,6 +62,7 @@ else:
     assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
+DAAL_LIBDIRS = [daal_lib_dir]
 
 if no_stream :
     print('\nDisabling support for streaming mode\n')
@@ -102,11 +104,18 @@ with open(header_path) as header:
 if dpcpp:
     DPCPP_CFLAGS = ['-D_DPCPP_']
     DPCPP_LIBS = ['OpenCL', 'sycl', 'daal_sycl']
+    if IS_LIN:
+        DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
+    elif IS_WIN:
+        DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
     if dal_build_version == (2021,6):
-            DPCPP_LIBS.append('ze_loader')
+        DPCPP_LIBS.append('ze_loader')
+        DAAL_LIBDIRS.append('/usr/local/lib')
 else:
     DPCPP_CFLAGS = []
     DPCPP_LIBS = []
+    DPCPP_LIBDIRS = []
+
 DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
@@ -172,7 +181,7 @@ def getpyexts():
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
                                 libraries=libraries_plat + MPI_LIBS,
-                                library_dirs=[daal_lib_dir],
+                                library_dirs=DAAL_LIBDIRS,
                                 language='c++'),
     ])
     if dpcpp:
@@ -183,7 +192,7 @@ def getpyexts():
                                         extra_compile_args=eca + ['-fsycl'],
                                         extra_link_args=ela,
                                         libraries=libraries_plat + DPCPP_LIBS,
-                                        library_dirs=[daal_lib_dir],
+                                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
                                         language='c++')))
     if not no_dist:
         exts.append(Extension('mpi_transceiver',
@@ -193,7 +202,7 @@ def getpyexts():
                               extra_compile_args=eca,
                               extra_link_args=ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS],
                               libraries=libraries_plat + MPI_LIBS,
-                              library_dirs=[daal_lib_dir] + MPI_LIBDIRS,
+                              library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
                               language='c++'))
     return exts
 
