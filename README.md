@@ -52,11 +52,11 @@ To actually use your daal4py, dependent packages need to be installed. To ensure
 
 Linux and OsX:
 ```
-conda install -c intel -c conda-forge mpich tbb daal numpy
+conda install -c intel -c conda-forge mpich daal numpy
 ```
 Windows:
 ```
-conda install -c intel mpi_rt tbb daal numpy
+conda install -c intel mpi_rt daal numpy
 ```
 
 # Building daal4py without conda-build
@@ -68,9 +68,6 @@ Without conda-build you have to manually setup your environment before building 
 * Cython
 * Numpy
 * A C++ compiler with C++11 support
-* Intel(R) Threading Building Blocks (Intel® TBB) version 2018.0.4 or later (https://www.threadingbuildingblocks.org/)
-  * You can use the pre-built conda package from Intel's channel or conda-forge channel on anaconda.org (see below)
-  * Needed for distributed mode. You can disable support for distributed mode by setting NO_DIST to '1' or 'yes'
 * Intel® Data Analytics Acceleration Library (Intel® DAAL) version 2019 or later (https://github.com/01org/daal)
   * You can use the pre-built conda package from Intel channel on anaconda.org (see below)
 * MPI
@@ -78,11 +75,10 @@ Without conda-build you have to manually setup your environment before building 
   * Needed for distributed mode. You can disable support for distributed mode by setting NO_DIST to '1' or 'yes'
 
 ## Setting up a build environment
-The easiest path for getting cython, DAAL, TBB, MPI etc. is by creating a conda environment and setting environment variables:
+The easiest path for getting cython, DAAL, MPI etc. is by creating a conda environment and setting environment variables:
 ```
-conda create -n DAAL4PY python=3.6 impi-devel tbb-devel daal daal-include cython jinja2 numpy clang-tools -c intel -c conda-forge
+conda create -n DAAL4PY python=3.6 impi-devel daal daal-include cython jinja2 numpy clang-tools -c intel -c conda-forge
 conda activate DAAL4PY
-export TBBROOT=$CONDA_PREFIX
 export DAALROOT=$CONDA_PREFIX
 export MPIROOT=$CONDA_PREFIX
 ```
@@ -96,14 +92,14 @@ export MPIROOT=$CONDA_PREFIX
 If building in High Sierra or higher, one may have to run into C++ build errors related to platform targets. Utilize ```export MACOSX_DEPLOYMENT_TARGET="10.9"``` if running into platform target issues.
 
 ## Building daal4py
-Requires Intel® DAAL, Intel® TBB and MPI being properly setup, e.g. DAALROOT, TBBROOT and MPIROOT being set.
+Requires Intel® DAAL and MPI being properly setup, e.g. DAALROOT and MPIROOT being set.
 ```
 cd <checkout-dir>
 python setup.py build_ext
 ```
 
 ## Installing daal4py
-Requires Intel® DAAL, Intel® TBB and MPI being properly setup, e.g. DAALROOT, TBBROOT and MPIROOT being set.
+Requires Intel® DAAL and MPI being properly setup, e.g. DAALROOT and MPIROOT being set.
 ```
 cd <checkout-dir>
 python setup.py install
