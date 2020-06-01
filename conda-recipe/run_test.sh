@@ -19,8 +19,8 @@
 #!/bin/bash
 
 # if dpc++ vars path is specified
-if [ ! -z "${DPCPP_VAR}" ]; then
-    source ${DPCPP_VAR}
+if [ ! -z "${DPCPPROOT}" ]; then
+    source ${DPCPPROOT}/env/vars.sh
 fi
 
 # if DAALROOT is specified

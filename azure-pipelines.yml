@@ -38,7 +38,7 @@ jobs:
   - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
-      export DPCPP_VAR=/opt/intel/inteloneapi/compiler/latest/env/vars.sh
+      export DPCPPROOT=/opt/intel/inteloneapi/compiler/latest
       export DAALROOT=/opt/intel/inteloneapi/daal/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
