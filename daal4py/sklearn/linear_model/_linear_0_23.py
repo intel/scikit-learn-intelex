@@ -19,8 +19,10 @@ import numpy as np
 from scipy import sparse as sp
 from scipy import linalg
 
-from sklearn.utils import check_array, check_X_y, deprecated, as_float_array
+from sklearn.utils import deprecated, as_float_array
 from sklearn.linear_model._base import _rescale_data
+from ..utils.validation import _daal_check_array
+from ..utils.base import _daal_validate_data
 
 from sklearn.utils.fixes import sparse_lsqr
 from sklearn.utils.validation import _check_sample_weight
@@ -122,18 +124,26 @@ def fit(self, X, y, sample_weight=None):
     """
 
     n_jobs_ = self.n_jobs
-    X, y = self._validate_data(X, y, accept_sparse=['csr', 'csc', 'coo'],
+    X, y = _daal_validate_data(self, X, y, accept_sparse=['csr', 'csc', 'coo'],
                                y_numeric=True, multi_output=True)
+
+    try:
+        from pandas import DataFrame
+        from pandas.core.dtypes.cast import find_common_type
+        dtype = find_common_type(X.dtypes) if isinstance(X, DataFrame) else X.dtype
+    except ImportError:
+        dtype = X.dtype
 
     if sample_weight is not None:
         sample_weight = _check_sample_weight(sample_weight, X,
-                                             dtype=X.dtype)
+                                             dtype=dtype)
 
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = bool(X.shape[0] > X.shape[1] + int(self.fit_intercept))
+
     if (self.fit_shape_good_for_daal_ and
             not sp.issparse(X) and
-            (X.dtype == np.float64 or X.dtype == np.float32) and
+            (dtype == np.float64 or dtype == np.float32) and
             sample_weight is None):
         logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_daal)
         res = _daal4py_fit(self, X, y)
@@ -203,20 +213,32 @@ def predict(self, X):
     C : array, shape = (n_samples,)
         Returns predicted values.
     """
-    X = np.asarray(X) if not sp.issparse(X) else X
+    try:
+        from pandas import DataFrame
+        is_DataFrame = isinstance(X, DataFrame)
+    except ImportError:
+        is_DataFrame = False
+
+    X = np.asarray(X) if not sp.issparse(X) and not is_DataFrame else X
     good_shape_for_daal = True if X.ndim <= 1 else True if X.shape[0] > X.shape[1] else False
+
+    try:
+        from pandas.core.dtypes.cast import find_common_type
+        dtype = find_common_type(X.dtypes) if is_DataFrame else X.dtype
+    except ImportError:
+        dtype = X.dtype
 
     if (sp.issparse(X) or
             not hasattr(self, 'daal_model_') or
             not self.fit_shape_good_for_daal_ or
             not good_shape_for_daal or
-            not (X.dtype == np.float64 or X.dtype == np.float32) or
+            not (dtype == np.float64 or dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
         logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_sklearn)
         return self._decision_function(X)
     else:
         logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_daal)
-        X = check_array(X)
+        X = _daal_check_array(X)
         return _daal4py_predict(self, X)
 
 
