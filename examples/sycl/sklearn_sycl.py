@@ -145,4 +145,5 @@ if __name__ == "__main__":
             with sycl_context(device):
                 e()
             print("*" * 80)
+
     print('All looks good!')
