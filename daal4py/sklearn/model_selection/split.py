@@ -1,9 +1,14 @@
-from sklearn.utils import indexable, _safe_indexing
+from sklearn.utils import indexable
 from sklearn.utils.validation import _num_samples
-from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit, train_test_split
+from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from sklearn.model_selection._split import _validate_shuffle_split
 import daal4py as d4p
 import numpy as np
+
+try:
+    from sklearn.utils import _safe_indexing as safe_indexing
+except ImportError:
+    from sklearn.utils import safe_indexing
 
 try:
     import mkl_random
@@ -83,6 +88,8 @@ def _daal_train_test_split(*arrays, **options):
     res = []
     for arr in arrays:
         fallback = False
+
+        # input format check
         if not isinstance(arr, np.ndarray):
             if pandas_is_imported:
                 if not isinstance(arr, pd.core.frame.DataFrame) and not isinstance(arr, pd.core.series.Series):
@@ -90,6 +97,7 @@ def _daal_train_test_split(*arrays, **options):
             else:
                 fallback = True
 
+        # data types check
         dtypes = get_dtypes(arr)
         if dtypes is None:
             fallback = True
@@ -98,34 +106,29 @@ def _daal_train_test_split(*arrays, **options):
                 if dtype not in [np.int32, np.float32, np.float64, 'int32', 'float32', 'float64']:
                     fallback = True
                     break
+
         if fallback:
-            train = train.reshape((n_train,))
-            test = test.reshape((n_test,))
-            res.append(_safe_indexing(arr, train))
-            res.append(_safe_indexing(arr, test))
+            res.append(safe_indexing(arr, train))
+            res.append(safe_indexing(arr, test))
         else:
-            train = train.reshape(n_train, 1)
-            test = test.reshape(n_test, 1)
 
             if len(arr.shape) == 2:
-                one_dim = False
                 n_cols = arr.shape[1]
             else:
-                one_dim = True
                 n_cols = 1
 
             arr_copy = d4p.get_data(arr)
             if not isinstance(arr_copy, list):
                 arr_copy = arr_copy.reshape((arr_copy.shape[0], n_cols), order='A')
             if isinstance(arr_copy, np.ndarray):
-                order = 'C' if arr_copy.flags['C_CONTIGUOUS'] == True else 'F'
+                order = 'C' if arr_copy.flags['C_CONTIGUOUS'] else 'F'
                 train_arr = np.empty(shape=(n_train, n_cols), dtype=arr_copy.dtype, order=order)
                 test_arr = np.empty(shape=(n_test, n_cols), dtype=arr_copy.dtype, order=order)
-                d4p.daal_train_test_split(arr_copy, train_arr, test_arr, train, test)
+                d4p.daal_train_test_split(arr_copy, train_arr, test_arr, [train], [test])
             elif isinstance(arr_copy, list):
                 train_arr = [np.empty(shape=(n_train,), dtype=el.dtype, order='C' if el.flags['C_CONTIGUOUS'] else 'F') for el in arr_copy]
                 test_arr = [np.empty(shape=(n_test,), dtype=el.dtype, order='C' if el.flags['C_CONTIGUOUS'] else 'F') for el in arr_copy]
-                d4p.daal_train_test_split(arr_copy, train_arr, test_arr, train, test)
+                d4p.daal_train_test_split(arr_copy, train_arr, test_arr, [train], [test])
                 train_arr = {col: train_arr[i] for i, col in enumerate(arr.columns)}
                 test_arr = {col: test_arr[i] for i, col in enumerate(arr.columns)}
             else:
