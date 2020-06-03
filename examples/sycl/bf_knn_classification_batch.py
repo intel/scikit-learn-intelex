@@ -21,7 +21,7 @@
 import daal4py as d4p
 import numpy as np
 import os
-from dppy import device_context, device_type
+from daal4py.oneapi import sycl_context, sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -67,14 +67,18 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_data = to_numpy(predict_data)
 
     # It is possible to specify to make the computations on GPU
-    with device_context(device_type.gpu, 0) as ctx:
+    with sycl_context('gpu'):
+        sycl_train_data = sycl_buffer(train_data)
+        sycl_train_labels = sycl_buffer(train_labels)
+        sycl_predict_data = sycl_buffer(predict_data)
+
         # Create an algorithm object and call compute
         train_algo = d4p.bf_knn_classification_training(nClasses=nClasses)
-        train_result = train_algo.compute(train_data, train_labels)
+        train_result = train_algo.compute(sycl_train_data, sycl_train_labels)
 
         # Create an algorithm object and call compute
         predict_algo = d4p.bf_knn_classification_prediction()
-        predict_result = predict_algo.compute(predict_data, train_result.model)
+        predict_result = predict_algo.compute(sycl_predict_data, train_result.model)
 
     # We expect less than 170 mispredicted values
     assert np.count_nonzero(predict_labels != predict_result.prediction) < 170
