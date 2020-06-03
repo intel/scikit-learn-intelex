@@ -674,7 +674,7 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
     auto testTable = get_table(test);
     auto trainIdxTable = get_table(train_idx);
     auto testIdxTable = get_table(test_idx);
-    daal::data_management::internal::trainTestSplit<int>(*origTable, *trainTable, *testTable, *trainIdxTable, *testIdxTable);
+    daal::data_management::internal::trainTestSplit<int>(origTable, trainTable, testTable, trainIdxTable, testIdxTable);
 #else
 #endif
 }

@@ -15,6 +15,6 @@
 # limitations under the License.
 #******************************************************************************/
 
-from .split import _daal_train_test_split
+from ._split import _daal_train_test_split
 
 __all__ = ['_daal_train_test_split']
