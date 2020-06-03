@@ -60,6 +60,8 @@ cython_header = '''
 # Import the Python-level symbols of numpy
 import numpy as np
 
+from dppy import runtime
+
 # Import the C-level symbols of numpy
 cimport numpy as npc
 # import std::string support
@@ -660,7 +662,7 @@ struct {{algo}}__iface__ : public {{prnt}}
     {}
 {% set indent = 23+(result_map.class_type|length) %}
     virtual {{result_map.class_type}} * compute({{input_args|fmt('{}', 'decl_cpp', sep=',\n')|indent(indent)}},
-{{' '*indent}}bool setup_only = false)
+{{' '*indent}}bool setup_only = false, PyObject * queue = NULL)
         {assert(false); return NULL;}
 {% if add_get_result %}
     virtual {{result_map.class_type}} * get_result() {assert(false); return NULL;}
@@ -804,8 +806,11 @@ private:
 
 public:
     typename iomb_type::result_type * compute({{input_args|fmt('{}', 'decl_cpp', sep=',\n')|indent(46)}},
-                                              bool setup_only = false)
+                                              bool setup_only = false, PyObject * queue = NULL)
     {
+        std::shared_ptr<cl::sycl::queue> * queue_ptr = (std::shared_ptr<cl::sycl::queue>*)(PyCapsule_GetPointer(queue, NULL));
+        daal::services::SyclExecutionContext ctx(*(*queue_ptr));
+        daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
         {{input_args|fmt('{}', 'assign_member', sep=';\n')|indent(8)}};
 
 {% set batchcall = '('+streaming.arg_member+' ? stream() : batch(setup_only))' if streaming.name else 'batch(setup_only)'%}
@@ -835,7 +840,7 @@ cdef extern from "daal4py.h":
     cdef cppclass c_{{algo}}_manager__iface__{{'(c_'+iface[0]+'__iface__)' if iface[0] else ''}}:
 {% set indent = 17+(result_map.class_type|flat|length) %}
         {{result_map.class_type|flat}} compute({{input_args|fmt('{}', 'decl_cyext', sep=',\n')|indent(indent)}},
-{{' '*indent}}const bool setup_only) except +
+{{' '*indent}}const bool setup_only, PyObject * queue) except +
 {% if add_get_result %}
         {{result_map.class_type|flat}} get_result() except +
 {% endif %}
@@ -887,8 +892,9 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
+        queue = runtime.get_current_context().get_sycl_queue()
         res.c_ptr = deref(algo).compute({{input_args|fmt('{}', 'arg_cyext', sep=',\n')|indent(40)}},
-                                        setup)
+                                        setup, <PyObject*>queue)
         return res
 
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
@@ -1161,7 +1167,7 @@ class wrapper_gen(object):
         """
         return code for initing
         """
-        cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\n"
+        cpp = '#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include "daal_sycl.h"\n#include <daal4py_dist.h>\n\n'
         pyx = ''
         for i in self.ifaces:
             tstr = gen_cython_iface_macro + '{{gen_cython_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'

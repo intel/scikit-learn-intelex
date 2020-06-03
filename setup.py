@@ -180,7 +180,7 @@ def getpyexts():
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
-                                libraries=libraries_plat + MPI_LIBS,
+                                libraries=libraries_plat + MPI_LIBS + DPCPP_LIBS,
                                 library_dirs=DAAL_LIBDIRS,
                                 language='c++'),
     ])
