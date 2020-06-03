@@ -32,6 +32,8 @@ cdef extern from "oneapi/oneapi.h":
     std_string to_std_string(PyObject * o) except +
 
     void * c_make_py_from_sycltable(void * ptr, int typ) except +
+    void set_daal_context(PyObject* o) except +
+    void release_sycl_queue(PyObject* o) except +
 
 
 
@@ -129,3 +131,11 @@ cdef api object make_py_from_sycltable(void * ptr, int typ, int d1, int d2):
         res.__inilz__(<long>buff, typ, d1, d2)
         return res
     return None
+
+
+def set_queue_to_daal_context(q):
+    set_daal_context(<PyObject*>q)
+
+def release_queue(q):
+    release_sycl_queue(<PyObject*>q)
+

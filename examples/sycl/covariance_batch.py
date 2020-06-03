@@ -21,7 +21,7 @@
 import daal4py as d4p
 import numpy as np
 import os
-from daal4py.oneapi import sycl_context, sycl_buffer
+from daal4py.oneapi import sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -32,7 +32,8 @@ except:
     read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
-    with sycl_context('gpu'):
+    from dppy import device_context, device_type
+    with device_context(device_type.gpu, 0):
         gpu_available=True
 except:
     gpu_available=False
@@ -72,17 +73,20 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     data = to_numpy(data)
 
+    from dppy import device_context, device_type
+
     # It is possible to specify to make the computations on GPU
     if gpu_available:
-        with sycl_context('gpu'):
+        with device_context(device_type.gpu, 0):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data, 'defaultDense')
-        assert np.allclose(result_classic.covariance, result_gpu.covariance)
-        assert np.allclose(result_classic.mean, result_gpu.mean)
-        assert np.allclose(result_classic.correlation, result_gpu.correlation)
+
+            assert np.allclose(result_classic.covariance, result_gpu.covariance)
+            assert np.allclose(result_classic.mean, result_gpu.mean)
+            assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
+    with device_context(device_type.cpu, 0):
         sycl_data = sycl_buffer(data)
         result_cpu = compute(sycl_data, 'defaultDense')
 

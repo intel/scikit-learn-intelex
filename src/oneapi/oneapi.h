@@ -20,6 +20,7 @@
 #include "daal_sycl.h"
 #ifndef DAAL_SYCL_INTERFACE
 #include <type_traits>
+#include <memory>
 static_assert(false, "DAAL_SYCL_INTERFACE not defined")
 #endif
 
@@ -42,13 +43,13 @@ public:
     // Construct from given device provided as string
     PySyclExecutionContext(const std::string & dev)
         : m_ctxt(NULL)
-    {  
+    {
         if(dev == "gpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
         else if(dev == "cpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
         else if(dev == "host") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::host_selector()));
         else
         {
-            throw std::runtime_error(std::string("Device is not supported: ") + dev); 
+            throw std::runtime_error(std::string("Device is not supported: ") + dev);
         }
         daal::services::Environment::getInstance()->setDefaultExecutionContext(*m_ctxt);
     }
@@ -65,6 +66,28 @@ private:
 static std::string to_std_string(PyObject * o)
 {
     return PyUnicode_AsUTF8(o);
+}
+
+void set_daal_context(PyObject* o)
+{
+    if(PyCapsule_IsValid(o, NULL) == 0) { throw std::runtime_error("Cannot set daal context: invalid queue object"); }
+    void * ptr = PyCapsule_GetPointer(o, NULL);
+    if(PyErr_Occurred()) { PyErr_Print(); throw std::runtime_error("Python Error"); }
+
+    auto* q = (std::shared_ptr<cl::sycl::queue>*)ptr;
+    daal::services::SyclExecutionContext ctx (*(*q));
+    daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
+}
+
+void release_sycl_queue(PyObject* o)
+{
+    if(PyCapsule_IsValid(o, NULL) == 0) { throw std::runtime_error("Cannot release daal context: invalid queue object"); }
+    void * ptr = PyCapsule_GetPointer(o, NULL);
+
+    if(PyErr_Occurred()) { PyErr_Print(); throw std::runtime_error("Python Error"); }
+    delete ptr;
+
+    Py_DECREF(o);
 }
 
 

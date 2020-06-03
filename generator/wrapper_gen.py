@@ -902,7 +902,22 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
         :rtype: {{cytype}}
         '''
-        return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
+
+        import sys
+        if 'dppy' in sys.modules:
+            from dppy import runtime as rt
+            from _oneapi import set_queue_to_daal_context, release_queue
+
+            ctx = rt.get_current_context()
+            q = ctx.get_sycl_queue()
+            set_queue_to_daal_context(q)
+
+            res = self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
+
+            release_queue(q)
+            return res
+        else:
+            return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
 
 {% if add_get_result %}
     def __get_result__(self):
