@@ -136,6 +136,9 @@ cdef api object make_py_from_sycltable(void * ptr, int typ, int d1, int d2):
 def set_queue_to_daal_context(q):
     set_daal_context(<PyObject*>q)
 
+def reset_daal_context():
+    set_daal_context(NULL)
+
 def release_queue(q):
     release_sycl_queue(<PyObject*>q)
 

@@ -906,7 +906,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         import sys
         if 'dppy' in sys.modules:
             from dppy import runtime as rt
-            from _oneapi import set_queue_to_daal_context, release_queue
+            from _oneapi import set_queue_to_daal_context, release_queue, reset_daal_context
 
             ctx = rt.get_current_context()
             q = ctx.get_sycl_queue()
@@ -914,6 +914,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
             res = self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
 
+            reset_daal_context()
             release_queue(q)
             return res
         else:
