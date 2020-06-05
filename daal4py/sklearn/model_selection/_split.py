@@ -114,8 +114,10 @@ def _daal_train_test_split(*arrays, **options):
 
             if len(arr.shape) == 2:
                 n_cols = arr.shape[1]
+                reshape_later = False
             else:
                 n_cols = 1
+                reshape_later = True
 
             arr_copy = d4p.get_data(arr)
             if not isinstance(arr_copy, list):
@@ -125,6 +127,8 @@ def _daal_train_test_split(*arrays, **options):
                 train_arr = np.empty(shape=(n_train, n_cols), dtype=arr_copy.dtype, order=order)
                 test_arr = np.empty(shape=(n_test, n_cols), dtype=arr_copy.dtype, order=order)
                 d4p.daal_train_test_split(arr_copy, train_arr, test_arr, [train], [test])
+                if reshape_later:
+                    train_arr, test_arr = train_arr.reshape((n_train,)), test_arr.reshape((n_test,))
             elif isinstance(arr_copy, list):
                 train_arr = [np.empty(shape=(n_train,), dtype=el.dtype, order='C' if el.flags['C_CONTIGUOUS'] else 'F') for el in arr_copy]
                 test_arr = [np.empty(shape=(n_test,), dtype=el.dtype, order='C' if el.flags['C_CONTIGUOUS'] else 'F') for el in arr_copy]
