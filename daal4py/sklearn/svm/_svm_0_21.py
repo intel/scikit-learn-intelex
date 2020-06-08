@@ -167,6 +167,7 @@ def _daal4py_fit(self, X, y_inp, kernel):
     kf = _daal4py_kf(kernel, X_fptype, gamma = self._gamma)
 
     svm_train = daal4py.svm_training(
+        method='thunder',
         fptype=X_fptype,
         C=float(self.C),
         accuracyThreshold=float(self.tol),
@@ -283,14 +284,14 @@ def _daal_var(X):
 def __compute_gamma__(gamma, kernel, X, sparse, use_var=True, deprecation=True):
     """
     Computes actual value of 'gamma' parameter of RBF kernel
-    corresponding to SVC keyword values `gamma` and `kernel`, and feature 
+    corresponding to SVC keyword values `gamma` and `kernel`, and feature
     matrix X, with sparsity `sparse`.
 
-    In 0.20 gamma='scale' used to mean compute 'gamma' based on 
+    In 0.20 gamma='scale' used to mean compute 'gamma' based on
     column-wise standard deviation, but in 0.20.3 it was changed
     to use column-wise variance.
 
-    See: https://github.com/scikit-learn/scikit-learn/pull/13221 
+    See: https://github.com/scikit-learn/scikit-learn/pull/13221
     """
     if deprecation:
         _gamma_is_scale = gamma in ('scale', 'auto_deprecated')
@@ -389,7 +390,7 @@ def fit(self, X, y, sample_weight=None):
             raise TypeError("Sparse precomputed kernels are not supported.")
         self._sparse = sparse and not callable(self.kernel)
 
-        X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr', 
+        X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr',
                          accept_large_sparse=False)
         y = self._validate_targets(y)
 
@@ -585,7 +586,7 @@ else:
                 probability=probability, cache_size=cache_size,
                 class_weight=class_weight, verbose=verbose, max_iter=max_iter,
                 decision_function_shape=decision_function_shape,
-                random_state=random_state)    
+                random_state=random_state)
 
 SVC.fit = fit
 SVC.predict = predict
