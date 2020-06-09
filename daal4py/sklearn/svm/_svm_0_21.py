@@ -167,7 +167,6 @@ def _daal4py_fit(self, X, y_inp, kernel):
     kf = _daal4py_kf(kernel, X_fptype, gamma = self._gamma)
 
     svm_train = daal4py.svm_training(
-        method='thunder',
         fptype=X_fptype,
         C=float(self.C),
         accuracyThreshold=float(self.tol),
