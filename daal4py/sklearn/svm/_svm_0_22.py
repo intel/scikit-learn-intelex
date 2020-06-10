@@ -22,7 +22,6 @@ import numpy as np
 from scipy import sparse as sp
 from sklearn.utils import check_random_state, check_X_y
 from sklearn.utils.validation import check_is_fitted, _check_sample_weight
-from sklearn.utils.validation import check_is_fitted, check_consistent_length, _num_samples,
 
 import sklearn.svm._classes as svm_classes
 import sklearn.svm._base as svm_base
