@@ -166,9 +166,9 @@ def _daal4py_check_weight(self, X, y, sample_weight):
         ww = make2d(ww)
     return ww
 
-def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau, maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
-    svm_method = 'thunder' if daal_check_version((2020, 2), (2021, 107)) else 'boser'
-    print(svm_method)
+def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
+        maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
+    svm_method = 'thunder' if daal_check_version((2020, 2), (2021, 108)) else 'boser'
     svm_train = daal4py.svm_training(
         method=svm_method,
         fptype=fptype,
@@ -183,12 +183,11 @@ def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau, maxIterations,
     if nClasses == 2:
         algo = svm_train
     else:
+        print("Multicclaas")
         algo = daal4py.multi_class_classifier_training(
             nClasses=nClasses,
             fptype=fptype,
-            accuracyThreshold=accuracyThreshold,
             method='oneAgainstOne',
-            maxIterations=maxIterations,
             training=svm_train,
         )
 
@@ -223,8 +222,8 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel):
         nClasses=num_classes)
 
     res = algo.compute(data=X, labels=y, weights=ww)
-
     model = res.model
+    print("alg.compute")
 
     self.daal_model_ = model
 
@@ -472,7 +471,11 @@ def fit(self, X, y, sample_weight=None):
         # see comment on the other call to np.iinfo in this file
         seed = rnd.randint(np.iinfo('i').max)
 
-        if ( not sparse and not self.probability and not getattr(self, 'break_ties', False) and kernel in ['linear', 'rbf']):
+        is_support_weights = daal_check_version((2020, 2), (2021, 108)) or \
+             sample_weight.size == 0 and self.class_weight is None
+
+        if ( not sparse and not self.probability and not getattr(self, 'break_ties', False) and \
+             kernel in ['linear', 'rbf']) and is_support_weights:
             logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
             self._daal_fit = True
             _daal4py_fit(self, X, y, sample_weight, kernel)
