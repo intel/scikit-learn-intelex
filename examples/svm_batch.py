@@ -30,7 +30,7 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main(readcsv=read_csv, method='thunder'):
+def main(readcsv=read_csv, method='defaultDense'):
     # input data file
     infile = "./data/batch/svm_two_class_train_dense.csv"
     testfile = "./data/batch/svm_two_class_test_dense.csv"
