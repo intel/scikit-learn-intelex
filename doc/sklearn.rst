@@ -31,6 +31,8 @@ It is possible to undo the patch with::
 
     daal4py.sklearn.unpatch_sklearn()
 
+.. _sklearn_algorithms:
+
 Applying the monkey patch will impact the following existing scikit-learn
 algorithms:
 
@@ -51,6 +53,37 @@ In particular the tests execute `check_estimator
 on all added and monkey-patched classes, which are discovered by means of
 introspection. This assures scikit-learn API compatibility of all
 `daal4py.sklearn` classes.
+
+.. _sklearn_verbose:
+
+scikit-learn verbose
+----------------
+
+In order to find out which implementation of the algorithm is currently used,
+export the environment variable. On Linux and Mac OS::
+
+    export IDP_SKLEARN_VERBOSE=INFO
+
+On Windows::
+
+    set IDP_SKLEARN_VERBOSE=INFO
+
+For example, for linux you may use command::
+
+    IDP_SKLEARN_VERBOSE=INFO python -m daal4py my_application.py
+
+During calls of Intel-optimized scikit-learn you will receive additional prints,
+indicating the implementation called.
+These prints are available only for :ref:`Scikit-learn algorithms that the daal4py patches <sklearn_algorithms>`. 
+For example, for DBSCAN::
+
+    INFO: sklearn.cluster.DBSCAN.fit: uses Intel® DAAL solver
+
+or::
+
+    INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver
+
+
 
 .. _sklearn_api:
 
