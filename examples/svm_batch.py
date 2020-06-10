@@ -37,7 +37,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a SVM object to use rbf kernel (and adjusting cachesize)
     kern = d4p.kernel_function_linear()  # need an object that lives when creating train_algo
-    train_algo = d4p.svm_training(method=method, doShrinking=True, kernel=kern, cacheSize=600000000)
+    train_algo = d4p.svm_training(doShrinking=True, kernel=kern, cacheSize=600000000)
 
     # Read data. Let's use features per observation
     data   = readcsv(infile, range(20))
