@@ -49,11 +49,11 @@ using daal::services::LibraryVersionInfo;
 #define PyUnicode_FromString(_x) PyString_FromString(_x)
 #endif
 
-#if INTEL_DAAL_VERSION >= 20200001
+#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200001 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210106
 #include "data_management/data/internal/finiteness_checker.h"
 #endif
 
-#if INTEL_DAAL_VERSION >= 20200002
+#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200002 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210107
 #include "data_management/data/internal/train_test_split.h"
 #endif
 
