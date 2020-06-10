@@ -183,7 +183,6 @@ def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
     if nClasses == 2:
         algo = svm_train
     else:
-        print("Multicclaas")
         algo = daal4py.multi_class_classifier_training(
             nClasses=nClasses,
             fptype=fptype,
@@ -223,8 +222,6 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel):
 
     res = algo.compute(data=X, labels=y, weights=ww)
     model = res.model
-    print("alg.compute")
-
     self.daal_model_ = model
 
     if num_classes == 2:
