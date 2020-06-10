@@ -147,25 +147,6 @@ def _daal4py_kf(kernel, X_fptype, gamma=1.0):
 
     return kf
 
-def _daal4py_check_weight(self, X, y, sample_weight):
-    ww = None
-    if sample_weight.shape[0] > 0:
-        sample_weight = _check_sample_weight(sample_weight, X)
-        if np.all(sample_weight <= 0):
-            raise ValueError('Invalid input - all samples have zero or negative weights.')
-        elif np.any(sample_weight <= 0):
-            if len(np.unique(y[sample_weight > 0])) != len(self.classes_):
-                raise ValueError('Invalid input - all samples with positive weights have the same label.')
-        ww = sample_weight
-    elif self.class_weight is not None:
-        ww = np.ones(X.shape[0], dtype=np.float64)
-    if self.class_weight is not None:
-        for i, v in enumerate(self.class_weight_):
-            ww[y == i] *= v
-    if ww is not None:
-        ww = make2d(ww)
-    return ww
-
 def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
         maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
     svm_method = 'thunder' if daal_check_version((2020, 2), (2021, 108)) else 'boser'
