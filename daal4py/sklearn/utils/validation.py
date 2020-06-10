@@ -26,6 +26,7 @@ from numpy.core.numeric import ComplexWarning
 from sklearn.utils.validation import _num_samples, _ensure_no_complex_data, \
                                      _ensure_sparse_format, column_or_1d, \
                                      check_consistent_length
+from .._utils import is_DataFrame, get_dtype, get_number_of_types
 
 def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
     """Like assert_all_finite, but only for ndarray."""
@@ -34,14 +35,25 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
 
     if _get_config()['assume_finite']:
         return
-    X = np.asanyarray(X)
 
-    dt = X.dtype
+    is_df = is_DataFrame(X)
+
+    # if X is heterogeneous pandas.DataFrame then
+    # covert it to a list of arrays 
+    if is_df and get_number_of_types(X) > 1:
+        lst = []
+        for idx in X:
+            arr = X[idx].to_numpy()
+            lst.append(arr if arr.flags['C_CONTIGUOUS'] else np.ascontiguousarray(arr))
+    else:
+        X = np.asanyarray(X)
+
+    dt = get_dtype(X, is_df)
     is_float = dt.kind in 'fc'
 
     msg_err = "Input contains {} or a value too large for {!r}."
     type_err = 'infinity' if allow_nan else 'NaN, infinity'
-    err = msg_err.format(type_err, msg_dtype if msg_dtype is not None else X.dtype)
+    err = msg_err.format(type_err, msg_dtype if msg_dtype is not None else dt)
 
     if (X.ndim in [1, 2]
         and not np.any(np.equal(X.shape, 0))
@@ -49,11 +61,14 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
         ):
         if X.ndim == 1:
             X = X.reshape((-1, 1))
+
+        x_for_daal = lst if is_df and get_number_of_types(X) > 1 else X
+
         if dt == np.float64:
-            if not d4p.daal_assert_all_finite(X, allow_nan, 0):
+            if not d4p.daal_assert_all_finite(x_for_daal, allow_nan, 0):
                 raise ValueError(err)
-        elif dt == np.float32:
-            if not d4p.daal_assert_all_finite(X, allow_nan, 1):
+        if dt == np.float32:
+            if not d4p.daal_assert_all_finite(x_for_daal, allow_nan, 1):
                 raise ValueError(err)
     # First try an O(n) time, O(1) space solution for the common case that
     # everything is finite; fall back to O(n) space np.isfinite to prevent
@@ -66,9 +81,36 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
                 not allow_nan and not np.isfinite(X).all()):
             raise ValueError(err)
     # for object dtype data, we only check for NaNs (GH-13254)
-    elif X.dtype == np.dtype('object') and not allow_nan:
+    elif dt == np.dtype('object') and not allow_nan:
         if _object_dtype_isnan(X).any():
             raise ValueError("Input contains NaN")
+
+
+def _pandas_check_array(array, array_orig, force_all_finite, ensure_min_samples,
+                        ensure_min_features, copy, context):
+    if force_all_finite:
+        _daal_assert_all_finite(array, allow_nan=force_all_finite == 'allow-nan')
+
+    if ensure_min_samples > 0:
+        n_samples = _num_samples(array)
+        if n_samples < ensure_min_samples:
+            raise ValueError("Found array with %d sample(s) (shape=%s) while a"
+                             " minimum of %d is required%s."
+                             % (n_samples, array.shape, ensure_min_samples,
+                                context))
+
+    if ensure_min_features > 0:
+        n_features = array.shape[1]
+        if n_features < ensure_min_features:
+            raise ValueError("Found array with %d feature(s) (shape=%s) while"
+                             " a minimum of %d is required%s."
+                             % (n_features, array.shape, ensure_min_features,
+                                context))
+
+    if copy and np.may_share_memory(array, array_orig):
+        array = array.copy()
+
+    return array
 
 
 def _daal_check_array(array, accept_sparse=False, *, accept_large_sparse=True,
@@ -173,36 +215,11 @@ def _daal_check_array(array, accept_sparse=False, *, accept_large_sparse=True,
 
     array_orig = array
 
-    try:
-        from pandas import DataFrame, option_context
-        if isinstance(array, DataFrame) and force_all_finite != 'allow-nan':
-            if force_all_finite:
-                with option_context('mode.use_inf_as_na', True):
-                    if array.isna().any().any():
-                        raise ValueError('Input contains NaN or Inf')
-
-            if ensure_min_samples > 0:
-                n_samples = _num_samples(array)
-                if n_samples < ensure_min_samples:
-                    raise ValueError("Found array with %d sample(s) (shape=%s) while a"
-                                     " minimum of %d is required%s."
-                                     % (n_samples, array.shape, ensure_min_samples,
-                                        context))
-
-            if ensure_min_features > 0:
-                n_features = array.shape[1]
-                if n_features < ensure_min_features:
-                    raise ValueError("Found array with %d feature(s) (shape=%s) while"
-                                     " a minimum of %d is required%s."
-                                     % (n_features, array.shape, ensure_min_features,
-                                        context))
-
-            if copy and np.may_share_memory(array, array_orig):
-                array = array.copy()
-
-            return array
-    except ImportError:
-        pass
+    # a branch for heterogeneous pandas.DataFrame
+    if is_DataFrame(array) and get_number_of_types(array) > 1:
+        return _pandas_check_array(array, array_orig, force_all_finite,
+                                   ensure_min_samples, ensure_min_features,
+                                   copy, context)
 
     # store whether originally we wanted numeric dtype
     dtype_numeric = isinstance(dtype, str) and dtype == "numeric"
