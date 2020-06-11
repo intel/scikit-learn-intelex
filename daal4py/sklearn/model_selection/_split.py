@@ -43,10 +43,11 @@ def _daal_train_test_split(*arrays, **options):
     random_state = options.pop('random_state', None)
     stratify = options.pop('stratify', None)
     shuffle = options.pop('shuffle', True)
-    rng = options.pop('rng', 'MT19937')
+    rng = options.pop('rng', 'default')
 
-    available_rngs = ['MT19937', 'SFMT19937', 'MT2203', 'R250', 'WH', 'MCG31',
-                      'MCG59', 'MRG32K3A', 'PHILOX4X32X10', 'NONDETERM']
+    available_rngs = ['default', 'MT19937', 'SFMT19937', 'MT2203', 'R250',
+                      'WH', 'MCG31', 'MCG59', 'MRG32K3A', 'PHILOX4X32X10',
+                      'NONDETERM']
     if rng not in available_rngs:
         raise ValueError(
             "Wrong random numbers generator is chosen. "
@@ -75,7 +76,7 @@ def _daal_train_test_split(*arrays, **options):
                                         random_state=random_state)
             train, test = next(cv.split(X=arrays[0], y=stratify))
         else:
-            if mkl_random_is_imported and (isinstance(random_state, int) or random_state is None):
+            if mkl_random_is_imported and rng != 'default' and (isinstance(random_state, int) or random_state is None):
                 random_state = mkl_random.RandomState(random_state, rng)
                 indexes = random_state.permutation(n_train + n_test)
                 train, test = indexes[:n_train], indexes[n_train:]
