@@ -92,10 +92,10 @@ try:
 except ImportError:
     pass
 
-if daal_run_version['minor'] == 0 and daal_run_version['full'] >= 20200001 or daal_run_version['minor'] == 1 and daal_run_version['full'] >= 20210106:
+if daal_run_version['minor'] == 0 and daal_run_version['full'] >= 20200001 or daal_run_version['minor'] == 1 and daal_run_version['full'] >= 20210105:
     _mapping['fin_check'] = [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]]
 
-if daal_run_version['minor'] == 0 and daal_run_version['full'] >= 20200002 or daal_run_version['minor'] == 1 and daal_run_version['full'] >= 20210107:
+if daal_run_version['minor'] == 0 and daal_run_version['full'] >= 20200002 or daal_run_version['minor'] == 1 and daal_run_version['full'] >= 20210108:
     _mapping['tt_split'] = [[(model_selection, 'train_test_split', _daal_train_test_split), None]]
 
 def do_patch(name):

@@ -90,6 +90,7 @@ def _daal_train_test_split(*arrays, **options):
     for arr in arrays:
         fallback = False
 
+
         # input format check
         if not isinstance(arr, np.ndarray):
             if pandas_is_imported:
@@ -98,13 +99,20 @@ def _daal_train_test_split(*arrays, **options):
             else:
                 fallback = True
 
+        # dimensions check
+        if hasattr(arr, 'ndim'):
+            if arr.ndim > 2:
+                fallback = True
+        else:
+            fallback = True
+
         # data types check
         dtypes = get_dtypes(arr)
         if dtypes is None:
             fallback = True
         else:
             for i, dtype in enumerate(dtypes):
-                if dtype not in [np.int32, np.float32, np.float64, 'int32', 'float32', 'float64']:
+                if 'float' not in str(dtype) and 'int' not in str(dtype):
                     fallback = True
                     break
 

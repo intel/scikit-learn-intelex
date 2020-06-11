@@ -646,7 +646,7 @@ size_t c_my_procid()
 
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
 {
-#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200001 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210106
+#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200001 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210105
     bool result;
     auto tab = get_table(t);
     switch(dtype) {
@@ -668,7 +668,7 @@ bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
 void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test,
                         data_or_file & train_idx, data_or_file & test_idx)
 {
-#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200002 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210107
+#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200002 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210108
     auto origTable = get_table(orig);
     auto trainTable = get_table(train);
     auto testTable = get_table(test);
