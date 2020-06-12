@@ -68,36 +68,28 @@ static std::string to_std_string(PyObject * o)
     return PyUnicode_AsUTF8(o);
 }
 
-void set_daal_context(PyObject* o)
+void c_set_queue_to_daal_context(PyObject* queue_object)
 {
-    if(o != NULL)
+    if(queue_object != NULL)
     {
-        if(PyCapsule_IsValid(o, NULL) == 0) { throw std::runtime_error("Cannot set daal context: invalid queue object"); }
-        void * ptr = PyCapsule_GetPointer(o, NULL);
+        if(PyCapsule_IsValid(queue_object, NULL) == 0) { throw std::runtime_error("Cannot set daal context: invalid queue object"); }
+        cl::sycl::queue * queue_ptr = (cl::sycl::queue*)PyCapsule_GetPointer(queue_object, NULL);
         if(PyErr_Occurred()) { PyErr_Print(); throw std::runtime_error("Python Error"); }
 
-        auto* q = (std::shared_ptr<cl::sycl::queue>*)ptr;
-        daal::services::SyclExecutionContext ctx (*(*q));
+        daal::services::SyclExecutionContext ctx (*queue_ptr);
         daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
     }
     else
     {
-        daal::services::CpuExecutionContext ctx;
-        daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
+        throw std::runtime_error("Cannot set daal context: Pointer to queue object is NULL");
     }
 }
 
-void release_sycl_queue(PyObject* o)
+void c_reset_daal_context()
 {
-    if(PyCapsule_IsValid(o, NULL) == 0) { throw std::runtime_error("Cannot release daal context: invalid queue object"); }
-    void * ptr = PyCapsule_GetPointer(o, NULL);
-
-    if(PyErr_Occurred()) { PyErr_Print(); throw std::runtime_error("Python Error"); }
-    delete ptr;
-
-    Py_DECREF(o);
+    daal::services::CpuExecutionContext ctx;
+    daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
 }
-
 
 // take a raw array and convert to sycl buffer
 template<typename T>

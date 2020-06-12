@@ -221,6 +221,26 @@ cdef extern from "daal4py.h":
 
 def daal_train_test_split(orig, train, test, train_idx, test_idx):
     c_train_test_split(data_or_file(<PyObject*>orig), data_or_file(<PyObject*>train), data_or_file(<PyObject*>test), data_or_file(<PyObject*>train_idx), data_or_file(<PyObject*>test_idx))
+
+import sys
+def _execute_with_context(func):
+    def exec_func(*args, **keyArgs):
+        # we check is DPPY imported or not
+        # possible we should check are we in defined context or not
+        if 'dppy' in sys.modules:
+            from dppy import runtime as rt
+            from _oneapi import set_queue_to_daal_context, reset_daal_context
+
+            queue = rt.get_current_queue()
+            set_queue_to_daal_context(queue)
+
+            res = func(*args, **keyArgs)
+
+            reset_daal_context()
+            return res
+        else:
+            return func(*args, **keyArgs)
+    return exec_func
 '''
 
 ###############################################################################
@@ -878,6 +898,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
+    @_execute_with_context
     def _compute(self,
                  {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
                  setup=False):
@@ -902,23 +923,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         {{input_args|fmt('{}', 'sphinx', sep='\n')|indent(8)}}
         :rtype: {{cytype}}
         '''
-
-        import sys
-        if 'dppy' in sys.modules:
-            from dppy import runtime as rt
-            from _oneapi import set_queue_to_daal_context, release_queue, reset_daal_context
-
-            ctx = rt.get_current_context()
-            q = ctx.get_sycl_queue()
-            set_queue_to_daal_context(q)
-
-            res = self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
-
-            reset_daal_context()
-            release_queue(q)
-            return res
-        else:
-            return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
+        return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
 
 {% if add_get_result %}
     def __get_result__(self):
