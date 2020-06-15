@@ -48,7 +48,7 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
     else:
         X = np.asanyarray(X)
 
-    dt = get_dtype(X, is_df)
+    dt = np.dtype(get_dtype(X, is_df))
     is_float = dt.kind in 'fc'
 
     msg_err = "Input contains {} or a value too large for {!r}."
@@ -217,9 +217,12 @@ def _daal_check_array(array, accept_sparse=False, *, accept_large_sparse=True,
 
     # a branch for heterogeneous pandas.DataFrame
     if is_DataFrame(array) and get_number_of_types(array) > 1:
-        return _pandas_check_array(array, array_orig, force_all_finite,
-                                   ensure_min_samples, ensure_min_features,
-                                   copy, context)
+        from pandas.api.types import is_sparse
+        if (hasattr(array, 'sparse') or
+                not array.dtypes.apply(is_sparse).any()):
+            return _pandas_check_array(array, array_orig, force_all_finite,
+                                       ensure_min_samples, ensure_min_features,
+                                       copy, context)
 
     # store whether originally we wanted numeric dtype
     dtype_numeric = isinstance(dtype, str) and dtype == "numeric"
