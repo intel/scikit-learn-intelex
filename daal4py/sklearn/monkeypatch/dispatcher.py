@@ -64,13 +64,7 @@ from ..model_selection import _daal_train_test_split
 
 from daal4py import __version__ as daal4py_version
 
-from daal4py import __daal_run_version__, __daal_link_version__
-
-daal_run_version = tuple(map(int, (__daal_run_version__[0:8], __daal_run_version__[0:4], __daal_run_version__[4:6], __daal_run_version__[6:8])))
-daal_link_version = tuple(map(int, (__daal_link_version__[0:8], __daal_link_version__[0:4], __daal_link_version__[4:6], __daal_link_version__[6:8])))
-versions = ['full', 'major', 'minor', 'update']
-daal_run_version = {versions[i]: daal_run_version[i] for i in range(len(versions))}
-daal_link_version = {versions[i]: daal_link_version[i] for i in range(len(versions))}
+from daal4py.sklearn._utils import daal_check_version
 
 _mapping = {
     'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
@@ -92,10 +86,10 @@ try:
 except ImportError:
     pass
 
-if daal_run_version['minor'] == 0 and daal_run_version['full'] >= 20200001 or daal_run_version['minor'] == 1 and daal_run_version['full'] >= 20210105:
+if daal_check_version((2020, 1), (2021, 5)):
     _mapping['fin_check'] = [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]]
 
-if daal_run_version['minor'] == 0 and daal_run_version['full'] >= 20200002 or daal_run_version['minor'] == 1 and daal_run_version['full'] >= 20210108:
+if daal_check_version((2020, 2), (2021, 8)):
     _mapping['tt_split'] = [[(model_selection, 'train_test_split', _daal_train_test_split), None]]
 
 def do_patch(name):
