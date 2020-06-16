@@ -173,7 +173,7 @@ def my_procid():
     return c_my_procid()
 
 
-def _get_data(x):
+def get_data(x):
     if isinstance(x, pdDataFrame):
         x_dtypes = x.dtypes.values
         if np.all(x_dtypes == x_dtypes[0]):
@@ -213,6 +213,14 @@ cdef extern from "daal4py.h":
 
 def daal_assert_all_finite(X, allow_nan=False, dtype=0):
     return c_assert_all_finite(data_or_file(<PyObject*>X), allow_nan, dtype)
+
+
+cdef extern from "daal4py.h":
+    cdef void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test, data_or_file & train_idx, data_or_file & test_idx) except +
+
+
+def daal_train_test_split(orig, train, test, train_idx, test_idx):
+    c_train_test_split(data_or_file(<PyObject*>orig), data_or_file(<PyObject*>train), data_or_file(<PyObject*>test), data_or_file(<PyObject*>train_idx), data_or_file(<PyObject*>test_idx))
 '''
 
 ###############################################################################

@@ -268,6 +268,7 @@ setup(  name        = "daal4py",
                     'daal4py.sklearn.monkeypatch',
                     'daal4py.sklearn.svm',
                     'daal4py.sklearn.utils',
+                    'daal4py.sklearn.model_selection',
         ],
         ext_modules = getpyexts(),
 )
