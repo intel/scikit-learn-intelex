@@ -60,7 +60,9 @@ scikit-learn verbose
 ----------------
 
 In order to find out which implementation of the algorithm is currently used,
-export the environment variable. On Linux and Mac OS::
+export the environment variable.
+
+On Linux and Mac OS::
 
     export IDP_SKLEARN_VERBOSE=INFO
 
@@ -68,13 +70,14 @@ On Windows::
 
     set IDP_SKLEARN_VERBOSE=INFO
 
-For example, for linux you may use command::
+For example, on Linux you may use the following command::
 
     IDP_SKLEARN_VERBOSE=INFO python -m daal4py my_application.py
 
-During calls of Intel-optimized scikit-learn you will receive additional prints,
-indicating the implementation called.
-These prints are available only for :ref:`Scikit-learn algorithms that the daal4py patches <sklearn_algorithms>`. 
+During calls using Intel-optimized scikit-learn you will receive additional print statements,
+indicating which implementation being called.
+These print statements are only available for :ref:`scikit-learn algorithms that the daal4py patches <sklearn_algorithms>`.
+
 For example, for DBSCAN::
 
     INFO: sklearn.cluster.DBSCAN.fit: uses Intel® DAAL solver
