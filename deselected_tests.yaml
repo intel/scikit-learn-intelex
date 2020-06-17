@@ -69,5 +69,5 @@ deselected_tests:
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
 
   # We have difference (Max absolute difference: 1.97215226e-31) in computing of log_proba with np.log(y_proba)
-  # Looks like that our modifications in numpy give this
+  # Looks like using IDP NumPy is the cause for the failure due to use of more aggressive compiler optimization when compile NumPy UFunc loops
   - neural_network/tests/test_mlp.py::test_predict_proba_multilabel
