@@ -14,7 +14,7 @@ deselected_tests:
   # See: https://github.com/scikit-learn/scikit-learn/issues/12738
   - svm/tests/test_svm.py::test_sample_weights
   - svm/tests/test_svm.py::test_precomputed
-  - svm/tests/test_sparse.py::test_sparse
+  - svm/tests/test_sparse.py::test_sparse_realdata
   - svm/tests/test_sparse.py::test_svc_iris
   - ensemble/tests/test_bagging.py::test_sparse_classification
 
@@ -67,3 +67,7 @@ deselected_tests:
 
   # DAAL doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
+
+  # We have difference (Max absolute difference: 1.97215226e-31) in computing of log_proba with np.log(y_proba)
+  # Looks like using IDP NumPy is the cause for the failure due to use of more aggressive compiler optimization when compile NumPy UFunc loops
+  - neural_network/tests/test_mlp.py::test_predict_proba_multilabel
