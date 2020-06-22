@@ -55,21 +55,17 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
-    return (predict_result, plabels)
+    # result of classification
+    decision_result = predict_result.prediction
+    predict_labels = np.where(decision_result >=0, 1, -1)
+
+    return (decision_result, predict_lables, plabels)
 
 
 if __name__ == "__main__":
-    (predict_result, plabels) = main()
-    """
-    The return value of SVM algorithm is float data, inorder to be consistent with plabels read from csv
-    We need to binarize the result
-    """
-    for i in range(len(predict_result.prediction)):
-        if predict_result.prediction[i][0] >= 0:
-            predict_result.prediction[i][0] = 1
-        else:
-            predict_result.prediction[i][0] = -1
+    (decision_function, predict_lables, plabels) = main()
 
-    print("\nSVM classification results (first 20 observations):\n", predict_result.prediction[0:20])
+    print("\nSVM classification decision function (first 20 observations):\n", decision_function[0:20])
+    print("\nSVM classification results (first 20 observations):\n", predict_lables[0:20])
     print("\nGround truth (first 20 observations):\n", plabels[0:20])
     print('All looks good!')
