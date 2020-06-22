@@ -37,16 +37,18 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
         return
 
     is_df = is_DataFrame(X)
+    num_of_types = get_number_of_types(X)
 
     # if X is heterogeneous pandas.DataFrame then
     # covert it to a list of arrays 
-    if is_df and get_number_of_types(X) > 1:
+    if is_df and num_of_types > 1:
         lst = []
         for idx in X:
             arr = X[idx].to_numpy()
             lst.append(arr if arr.flags['C_CONTIGUOUS'] else np.ascontiguousarray(arr))
     else:
         X = np.asanyarray(X)
+        is_df = False
 
     dt = np.dtype(get_dtype(X, is_df))
     is_float = dt.kind in 'fc'
@@ -62,12 +64,12 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
         if X.ndim == 1:
             X = X.reshape((-1, 1))
 
-        x_for_daal = lst if is_df and get_number_of_types(X) > 1 else X
+        x_for_daal = lst if is_df and num_of_types > 1 else X
 
         if dt == np.float64:
             if not d4p.daal_assert_all_finite(x_for_daal, allow_nan, 0):
                 raise ValueError(err)
-        if dt == np.float32:
+        elif dt == np.float32:
             if not d4p.daal_assert_all_finite(x_for_daal, allow_nan, 1):
                 raise ValueError(err)
     # First try an O(n) time, O(1) space solution for the common case that
