@@ -161,7 +161,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
             self.daalname      = name
             self.value         = value if name else ''
             self.typ_cpp       = typ if name else ''
-            self.get_obj       = '{0} = _get_data({0})'.format(d4pname) if 'data_or_file' in typ else ''
+            self.get_obj       = '{0} = get_data({0})'.format(d4pname) if 'data_or_file' in typ else ''
             self.arg_cpp       = d4pname
             self.arg_py        = d4pname
             self.arg_cyext     = cy_callext(d4pname, typ_cy, typ_cyext, s2e) if name else ''
