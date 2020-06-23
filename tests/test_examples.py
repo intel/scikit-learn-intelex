@@ -112,8 +112,8 @@ class Base():
     def test_svm_batch(self):
         testdata = np_read_csv(os.path.join(unittest_data_path, "svm_batch.csv"), range(1))
         import svm_batch as ex
-        (predict_result, _) = self.call(ex)
-        self.assertTrue(np.absolute(predict_result.prediction - testdata).max() < np.absolute(predict_result.prediction.max() - predict_result.prediction.min()) * 0.05)
+        (decision_result, _, _) = self.call(ex)
+        self.assertTrue(np.absolute(decision_result - testdata).max() < np.absolute(decision_result.max() - decision_result.min()) * 0.05)
 
 
 gen_examples = [
