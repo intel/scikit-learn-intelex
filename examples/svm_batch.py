@@ -55,11 +55,17 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
-    return (predict_result, plabels)
+    # result of classification
+    decision_result = predict_result.prediction
+    predict_labels = np.where(decision_result >=0, 1, -1)
+
+    return (decision_result, predict_labels, plabels)
 
 
 if __name__ == "__main__":
-    (predict_result, plabels) = main()
-    print("\nSVM classification results (first 20 observations):\n", predict_result.prediction[0:20])
+    (decision_function, predict_labels, plabels) = main()
+
+    print("\nSVM classification decision function (first 20 observations):\n", decision_function[0:20])
+    print("\nSVM classification results (first 20 observations):\n", predict_labels[0:20])
     print("\nGround truth (first 20 observations):\n", plabels[0:20])
     print('All looks good!')
