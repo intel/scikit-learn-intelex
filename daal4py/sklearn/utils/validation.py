@@ -50,7 +50,7 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
         X = np.asanyarray(X)
         is_df = False
 
-    dt = np.dtype(get_dtype(X, is_df))
+    dt = np.dtype(get_dtype(X))
     is_float = dt.kind in 'fc'
 
     msg_err = "Input contains {} or a value too large for {!r}."

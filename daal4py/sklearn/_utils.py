@@ -84,10 +84,10 @@ def is_DataFrame(X):
     except ImportError:
         return False
 
-def get_dtype(X, is_dataframe):
+def get_dtype(X):
     try:
         from pandas.core.dtypes.cast import find_common_type
-        return find_common_type(X.dtypes) if is_dataframe else X.dtype
+        return find_common_type(X.dtypes) if is_DataFrame(X) else X.dtype
     except ImportError:
         return getattr(X, "dtype", None)
 

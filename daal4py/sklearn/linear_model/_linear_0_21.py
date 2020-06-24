@@ -120,7 +120,7 @@ def fit(self, X, y, sample_weight=None):
     X, y = _daal_check_X_y(X, y, accept_sparse=['csr', 'csc', 'coo'],
                            y_numeric=True, multi_output=True)
 
-    dtype = get_dtype(X, is_DataFrame(X))
+    dtype = get_dtype(X)
 
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = bool(X.shape[0] > X.shape[1] + int(self.fit_intercept))
@@ -186,7 +186,7 @@ def predict(self, X):
     is_df = is_DataFrame(X)
     X = np.asarray(X) if not sp.issparse(X) and not is_df else X
     good_shape_for_daal = True if X.ndim <= 1 else True if X.shape[0] > X.shape[1] else False
-    dtype = get_dtype(X, is_df)
+    dtype = get_dtype(X)
 
     if (sp.issparse(X) or
             not hasattr(self, 'daal_model_') or
