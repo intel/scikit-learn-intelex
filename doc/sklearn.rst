@@ -22,7 +22,7 @@ scikit-learn application by using the following commandline flag::
 
     python -m daal4py my_application.py
 
-To enable daal4py patches through an environment variable, you can set the environment variable.
+To enable daal4py patches through an environment variable, set ``USE_DAAL4PY_SKLEARN`` to 1 as shown below.
 
 On Linux and Mac OS::
 
@@ -32,7 +32,7 @@ On Windows::
 
     set USE_DAAL4PY_SKLEARN=1
 
-To disable, set the environment variable to 0.
+To disable daal4py patches, set the ``USE_DAAL4PY_SKLEARN`` environment variable to 0.
 
 Patches can also be enabled programmatically::
 
