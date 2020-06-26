@@ -22,7 +22,9 @@ scikit-learn application by using the following commandline flag::
 
     python -m daal4py my_application.py
 
-To enable daal4py patches through an environment variable, set ``USE_DAAL4PY_SKLEARN`` to 1 as shown below.
+If using scikit-learn from intel conda channel, then 
+you can enable daal4py patches through an environment variable, set ``USE_DAAL4PY_SKLEARN`` to one of the values
+``True``, ``'1'``, ``'y'``, ``'yes'``, ``'Y'``, ``'YES'``, ``'Yes'``, ``'true'``, ``'True'``, ``'TRUE'`` as shown below.
 
 On Linux and Mac OS::
 
