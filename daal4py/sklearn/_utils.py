@@ -38,14 +38,26 @@ def daal_check_version(trad_target, dpcpp_target):
         result = result and daal_link_version >= trad_target
     return result
 
-def getFPType(X):
-    dt = getattr(X, 'dtype', None)
+def parse_dtype(dt):
     if dt == np.double:
         return "double"
     elif dt == np.single:
         return "float"
     else:
         raise ValueError("Input array has unexpected dtype = {}".format(dt))
+
+def getFPType(X):
+    try:
+        from pandas import DataFrame
+        from pandas.core.dtypes.cast import find_common_type
+        if isinstance(X, DataFrame):
+            dt = find_common_type(X.dtypes)
+            return parse_dtype(dt)
+    except ImportError:
+        pass
+
+    dt = getattr(X, 'dtype', None)
+    return parse_dtype(dt)
 
 def make2d(X):
     if np.isscalar(X):
@@ -64,3 +76,21 @@ def is_in_sycl_ctxt():
         return is_in_ctx()
     except ModuleNotFoundError:
         return False
+
+def is_DataFrame(X):
+    try:
+        from pandas import DataFrame
+        return isinstance(X, DataFrame)
+    except ImportError:
+        return False
+
+def get_dtype(X):
+    try:
+        from pandas.core.dtypes.cast import find_common_type
+        return find_common_type(X.dtypes) if is_DataFrame(X) else X.dtype
+    except ImportError:
+        return getattr(X, "dtype", None)
+
+def get_number_of_types(dataframe):
+    dtypes = getattr(dataframe, "dtypes", None)
+    return 1 if dtypes is None else len(set(dtypes))
