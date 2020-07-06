@@ -36,9 +36,14 @@ try:
     with device_context(device_type.gpu, 0):
         gpu_available=True
 except:
-    gpu_available=False
+    try:
+        from daal4py.oneapi import sycl_context
+        with sycl_context('gpu'):
+            gpu_available=True
+    except:
+        gpu_available=False
 
-# Commone code for both CPU and GPU computations
+# Common code for both CPU and GPU computations
 def compute(data, method):
     # configure a covariance object
     algo = d4p.covariance(method=method)
@@ -73,11 +78,18 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     data = to_numpy(data)
 
-    from dppy import device_context, device_type
+    try:
+        from dppy import device_context, device_type
+        gpu_context = lambda: device_context(device_type.gpu, 0)
+        cpu_context = lambda: device_context(device_type.cpu, 0)
+    except:
+        from daal4py.oneapi import sycl_context
+        gpu_context = lambda: sycl_context('gpu')
+        cpu_context = lambda: sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
-        with device_context(device_type.gpu, 0):
+        with gpu_context():
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data, 'defaultDense')
 
@@ -86,7 +98,7 @@ def main(readcsv=read_csv, method='defaultDense'):
             assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     # It is possible to specify to make the computations on CPU
-    with device_context(device_type.cpu, 0):
+    with cpu_context():
         sycl_data = sycl_buffer(data)
         result_cpu = compute(sycl_data, 'defaultDense')
 

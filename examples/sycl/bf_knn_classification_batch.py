@@ -21,7 +21,7 @@
 import daal4py as d4p
 import numpy as np
 import os
-from daal4py.oneapi import sycl_context, sycl_buffer
+from daal4py.oneapi import sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -66,8 +66,15 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_labels = to_numpy(train_labels)
     predict_data = to_numpy(predict_data)
 
+    try:
+        from dppy import device_context, device_type
+        gpu_context = lambda: device_context(device_type.gpu, 0)
+    except:
+        from daal4py.oneapi import sycl_context
+        gpu_context = lambda: sycl_context('gpu')
+
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
+    with gpu_context():
         sycl_train_data = sycl_buffer(train_data)
         sycl_train_labels = sycl_buffer(train_labels)
         sycl_predict_data = sycl_buffer(predict_data)
@@ -87,7 +94,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 
 if __name__ == "__main__":
-    (predict_result, predict_labels) = main()    
+    (predict_result, predict_labels) = main()
     print("BF based KNN classification results:")
     print("Ground truth(observations #30-34):\n", predict_labels[30:35])
     print("Classification results(observations #30-34):\n", predict_result.prediction[30:35])

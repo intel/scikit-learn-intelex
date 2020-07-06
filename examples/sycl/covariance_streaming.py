@@ -21,7 +21,7 @@
 import daal4py as d4p
 import numpy as np
 import os
-from daal4py.oneapi import sycl_context, sycl_buffer
+from daal4py.oneapi import sycl_buffer
 
 # let's use a generator for getting stream from file (defined in stream.py)
 import sys
@@ -29,10 +29,16 @@ sys.path.insert(0, '..')
 from stream import read_next
 
 try:
-    with sycl_context('gpu'):
+    from dppy import device_context, device_type
+    with device_context(device_type.gpu, 0):
         gpu_available=True
 except:
-    gpu_available=False
+    try:
+        from daal4py.oneapi import sycl_context
+        with sycl_context('gpu'):
+            gpu_available=True
+    except:
+        gpu_available=False
 
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
@@ -65,9 +71,18 @@ def main(readcsv=None, method='defaultDense'):
     # finalize computation
     result_classic = algo.finalize()
 
+    try:
+        from dppy import device_context, device_type
+        gpu_context = lambda: device_context(device_type.gpu, 0)
+        cpu_context = lambda: device_context(device_type.cpu, 0)
+    except:
+        from daal4py.oneapi import sycl_context
+        gpu_context = lambda: sycl_context('gpu')
+        cpu_context = lambda: sycl_context('cpu')
+
     # It is possible to specify to make the computations on GPU
     if gpu_available:
-        with sycl_context('gpu'):
+        with gpu_context():
             # configure a covariance object
             algo = d4p.covariance(streaming=True)
             # get the generator (defined in stream.py)...
@@ -83,7 +98,7 @@ def main(readcsv=None, method='defaultDense'):
         assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
+    with cpu_context():
         # configure a covariance object
         algo = d4p.covariance(streaming=True)
         # get the generator (defined in stream.py)...
