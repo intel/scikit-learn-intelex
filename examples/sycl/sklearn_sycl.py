@@ -55,8 +55,6 @@ elif sycl_extention_available:
     except:
         gpu_available = False
 
-print(dppy_available, gpu_available)
-
 def k_means_init_x():
     print("KMeans init=X[:2]")
     X = np.array([[1., 2.], [1., 4.], [1., 0.],
