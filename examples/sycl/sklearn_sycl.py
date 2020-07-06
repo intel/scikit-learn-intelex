@@ -29,6 +29,7 @@ from sklearn.cluster import DBSCAN
 
 from sklearn.datasets import load_iris
 
+dppy_available = False
 try:
     from dppy import device_context, device_type
     dppy_available = True
@@ -43,15 +44,18 @@ gpu_available = False
 if dppy_available:
     try:
         with device_context(device_type.gpu, 0):
-        gpu_available=True
+            gpu_available = True
     except:
-        gpu_available=False
+        gpu_available = False
+
 elif sycl_extention_available:
     try:
         with sycl_context('gpu'):
             gpu_available = True
     except:
         gpu_available = False
+
+print(dppy_available, gpu_available)
 
 def k_means_init_x():
     print("KMeans init=X[:2]")
