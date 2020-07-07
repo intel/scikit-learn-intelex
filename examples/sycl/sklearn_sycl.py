@@ -29,14 +29,26 @@ from sklearn.cluster import DBSCAN
 
 from sklearn.datasets import load_iris
 
+dppy_available = False
 try:
-    from daal4py.oneapi import sycl_context
-    sycl_available = True
+    from dppy import device_context, device_type
+    dppy_available = True
 except:
-    sycl_available = False
+    try:
+        from daal4py.oneapi import sycl_context
+        sycl_extention_available = True
+    except:
+        sycl_extention_available = False
 
 gpu_available = False
-if sycl_available:
+if dppy_available:
+    try:
+        with device_context(device_type.gpu, 0):
+            gpu_available = True
+    except:
+        gpu_available = False
+
+elif sycl_extention_available:
     try:
         with sycl_context('gpu'):
             gpu_available = True
@@ -119,6 +131,13 @@ def dbscan():
     print("clustering")
     print(clustering)
 
+def get_context(device):
+    if dppy_available:
+        return device_context(device, 0)
+    elif sycl_extention_available:
+        return sycl_context(device)
+    else:
+        return None
 
 if __name__ == "__main__":
     examples = [
@@ -131,18 +150,23 @@ if __name__ == "__main__":
                ]
     devices = []
 
-    if sycl_available:
+    if dppy_available:
+        devices.append(device_type.host)
+        devices.append(device_type.cpu)
+        if gpu_available:
+            devices.append(device_type.gpu)
+
+    elif sycl_extention_available:
         devices.append('host')
         devices.append('cpu')
-
-    if gpu_available:
-        devices.append('gpu')
+        if gpu_available:
+            devices.append('gpu')
 
     for device in devices:
         for e in examples:
             print("*" * 80)
             print("device context:", device)
-            with sycl_context(device):
+            with get_context(device):
                 e()
             print("*" * 80)
 

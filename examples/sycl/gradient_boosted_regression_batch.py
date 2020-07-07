@@ -21,7 +21,7 @@
 import daal4py as d4p
 import numpy as np
 import os
-from daal4py.oneapi import sycl_context, sycl_buffer
+from daal4py.oneapi import sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -80,8 +80,15 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_dep_data = to_numpy(train_dep_data)
     test_indep_data = to_numpy(test_indep_data)
 
+    try:
+        from dppy import device_context, device_type
+        gpu_context = lambda: device_context(device_type.gpu, 0)
+    except:
+        from daal4py.oneapi import sycl_context
+        gpu_context = lambda: sycl_context('gpu')
+
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
+    with gpu_context():
         sycl_train_indep_data = sycl_buffer(train_indep_data)
         sycl_train_dep_data = sycl_buffer(train_dep_data)
         sycl_test_indep_data = sycl_buffer(test_indep_data)
