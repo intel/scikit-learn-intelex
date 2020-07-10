@@ -227,8 +227,8 @@ def _execute_with_context(func):
     def exec_func(*args, **keyArgs):
         # we check is DPPY imported or not
         # possible we should check are we in defined context or not
-        if 'dppy' in sys.modules:
-            from dppy import runtime as rt
+        if 'dppl' in sys.modules:
+            from dppl import runtime as rt
             from _oneapi import set_queue_to_daal_context, reset_daal_context
 
             queue = rt.get_current_queue()

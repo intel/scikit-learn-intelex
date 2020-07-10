@@ -32,7 +32,7 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
-    from dppy import device_context, device_type
+    from dppl import device_context, device_type
     with device_context(device_type.gpu, 0):
         gpu_available=True
 except:
@@ -83,7 +83,7 @@ def main(readcsv=read_csv, method='svdDense'):
     data = to_numpy(data)
 
     try:
-        from dppy import device_context, device_type
+        from dppl import device_context, device_type
         gpu_context = lambda: device_context(device_type.gpu, 0)
         cpu_context = lambda: device_context(device_type.cpu, 0)
     except:
