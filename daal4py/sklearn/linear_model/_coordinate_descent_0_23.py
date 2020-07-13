@@ -40,6 +40,12 @@ def _daal4py_check(self, X, y, check_input):
                       "well. You are advised to use the LinearRegression "
                       "estimator", stacklevel=2)
 
+    #check l1_ratio
+    if (not isinstance(self.l1_ratio, numbers.Number) or
+            self.l1_ratio < 0 or self.l1_ratio > 1):
+        raise ValueError("l1_ratio must be between 0 and 1; "
+                          f"got l1_ratio={self.l1_ratio}")
+
     #check precompute
     if isinstance(self.precompute, np.ndarray):
         if check_input:
