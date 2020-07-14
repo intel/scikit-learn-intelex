@@ -29,7 +29,7 @@ import logging
 #only for compliance with Sklearn
 import warnings
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.utils.extmath import row_norms
+from sklearn.preprocessing import normalize
 
 def _daal4py_check(self, X, y, check_input):
     _fptype = getFPType(X)
@@ -40,32 +40,17 @@ def _daal4py_check(self, X, y, check_input):
                       "well. You are advised to use the LinearRegression "
                       "estimator", stacklevel=2)
 
+    #check l1_ratio
+    if (not isinstance(self.l1_ratio, numbers.Number) or
+            self.l1_ratio < 0 or self.l1_ratio > 1):
+        raise ValueError("l1_ratio must be between 0 and 1; "
+                          f"got l1_ratio={self.l1_ratio}")
+
     #check precompute
     if isinstance(self.precompute, np.ndarray):
         if check_input:
             check_array(self.precompute, dtype=_fptype)
         self.precompute = make2d(self.precompute)
-        #only for compliance with Sklearn
-        if self.fit_intercept:
-            X_offset = np.average(X, axis=0, weights=None)
-            if self.normalize:
-                X_scale = row_norms(X)
-                if np.isscalar(X_scale):
-                    if X_scale == .0:
-                        X_scale = 1.
-                elif isinstance(X_scale, np.ndarray):
-                    X_scale[X_scale == 0.0] = 1.0
-            else:
-                X_scale = np.ones(X.shape[1], dtype=_fptype)
-        else:
-            X_offset = np.zeros(X.shape[1], dtype=_fptype)
-            X_scale = np.ones(X.shape[1], dtype=_fptype)
-        if (self.fit_intercept and not np.allclose(X_offset, np.zeros(X.shape[1])) or
-                self.normalize and not np.allclose(X_scale, np.ones(X.shape[1]))):
-            warnings.warn("Gram matrix was provided but X was centered"
-                          " to fit intercept, "
-                          "or X was normalized : recomputing Gram matrix.",
-                          UserWarning)
     else:
         if self.precompute not in [False, True, 'auto']:
             raise ValueError("precompute should be one of True, False, "
@@ -83,12 +68,44 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     y = make2d(y_)
     _fptype = getFPType(X)
 
+    #only for dual_gap computation, it is not required for DAAL
+    self._X = X
+    self._y = y
+
     penalty_L1 = np.asarray(self.alpha*self.l1_ratio, dtype=X.dtype)
     penalty_L2 = np.asarray(self.alpha*(1.0 - self.l1_ratio), dtype=X.dtype)
     if (penalty_L1.size != 1 or penalty_L2.size != 1):
         raise ValueError("alpha or l1_ratio length is wrong")
     penalty_L1 = penalty_L1.reshape((1,-1))
     penalty_L2 = penalty_L2.reshape((1,-1))
+
+    #normalizing and centering
+    X_offset = np.zeros(X.shape[1], dtype=X.dtype)
+    X_scale = np.ones(X.shape[1], dtype=X.dtype)
+    if y.ndim == 1:
+        y_offset = X.dtype.type(0)
+    else:
+        y_offset = np.zeros(y.shape[1], dtype=X.dtype)
+
+    if self.fit_intercept:
+        X_offset = np.average(X, axis=0)
+        if self.normalize:
+            if self.copy_X:
+                X = np.copy(X) - X_offset
+            else:
+                X -= X_offset
+            X, X_scale = normalize(X, axis=0, copy=False, return_norm=True)
+            y_offset = np.average(y, axis=0)
+            y = y - y_offset
+
+    #only for compliance with Sklearn
+    if isinstance(self.precompute, np.ndarray) and (
+        self.fit_intercept and not np.allclose(X_offset, np.zeros(X.shape[1])) or
+            self.normalize and not np.allclose(X_scale, np.ones(X.shape[1]))):
+            warnings.warn("Gram matrix was provided but X was centered"
+                          " to fit intercept, "
+                          "or X was normalized : recomputing Gram matrix.",
+                          UserWarning)
 
     mse_alg = daal4py.optimization_solver_mse(
         numberOfTerms = X.shape[0],
@@ -122,7 +139,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
         fptype = _fptype,
         method = 'defaultDense',
         interceptFlag = (self.fit_intercept is True),
-        dataUseInComputation = 'doUse' if (self.copy_X == False) else 'doNotUse',
+        dataUseInComputation = 'doUse' if ((self.copy_X is False) or (self.fit_intercept and self.normalize and self.copy_X)) else 'doNotUse',
         penaltyL1 = penalty_L1,
         penaltyL2 = penalty_L2,
         optimizationSolver = cd_solver
@@ -138,6 +155,12 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     #set coef_ and intersept_ results
     elastic_net_model = elastic_net_res.model
     self.daal_model_ = elastic_net_model
+
+    #update coefficients if normalizing and centering
+    if self.fit_intercept and self.normalize:
+        elastic_net_model.Beta[:,1:] = elastic_net_model.Beta[:,1:] / X_scale
+        elastic_net_model.Beta[:,0] = (y_offset - np.dot(X_offset, elastic_net_model.Beta[:,1:].T)).T
+
     coefs = elastic_net_model.Beta
 
     self.intercept_ = coefs[:,0].copy(order='C')
@@ -161,10 +184,6 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     if (self.max_iter == n_iter + 1):
         warnings.warn("Objective did not converge. You might want to "
                       "increase the number of iterations.", ConvergenceWarning)
-
-    #only for dual_gap computation, it is not required for DAAL
-    self._X = X
-    self._y = y
 
     return self
 
@@ -191,6 +210,38 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     X = make2d(X)
     y = make2d(y_)
     _fptype = getFPType(X)
+
+    #only for dual_gap computation, it is not required for DAAL
+    self._X = X
+    self._y = y
+
+    #normalizing and centering
+    X_offset = np.zeros(X.shape[1], dtype=X.dtype)
+    X_scale = np.ones(X.shape[1], dtype=X.dtype)
+    if y.ndim == 1:
+        y_offset = X.dtype.type(0)
+    else:
+        y_offset = np.zeros(y.shape[1], dtype=X.dtype)
+
+    if self.fit_intercept:
+        X_offset = np.average(X, axis=0)
+        if self.normalize:
+            if self.copy_X:
+                X = np.copy(X) - X_offset
+            else:
+                X -= X_offset
+            X, X_scale = normalize(X, axis=0, copy=False, return_norm=True)
+            y_offset = np.average(y, axis=0)
+            y = y - y_offset
+
+    #only for compliance with Sklearn
+    if isinstance(self.precompute, np.ndarray) and (
+        self.fit_intercept and not np.allclose(X_offset, np.zeros(X.shape[1])) or
+            self.normalize and not np.allclose(X_scale, np.ones(X.shape[1]))):
+            warnings.warn("Gram matrix was provided but X was centered"
+                          " to fit intercept, "
+                          "or X was normalized : recomputing Gram matrix.",
+                          UserWarning)
 
     mse_alg = daal4py.optimization_solver_mse(
         numberOfTerms = X.shape[0],
@@ -224,7 +275,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
         fptype = _fptype,
         method = 'defaultDense',
         interceptFlag = (self.fit_intercept is True),
-        dataUseInComputation = 'doUse' if (self.copy_X == False) else 'doNotUse',
+        dataUseInComputation = 'doUse' if ((self.copy_X is False) or (self.fit_intercept and self.normalize and self.copy_X)) else 'doNotUse',
         lassoParameters = np.asarray(self.alpha, dtype=X.dtype).reshape((1,-1)),
         optimizationSolver = cd_solver
     )
@@ -239,6 +290,12 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     #set coef_ and intersept_ results
     lasso_model = lasso_res.model
     self.daal_model_ = lasso_model
+
+    #update coefficients if normalizing and centering
+    if self.fit_intercept and self.normalize:
+        lasso_model.Beta[:,1:] = lasso_model.Beta[:,1:] / X_scale
+        lasso_model.Beta[:,0] = (y_offset - np.dot(X_offset, lasso_model.Beta[:,1:].T)).T
+
     coefs = lasso_model.Beta
 
     self.intercept_ = coefs[:,0].copy(order='C')
@@ -262,10 +319,6 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     if (self.max_iter == n_iter + 1):
         warnings.warn("Objective did not converge. You might want to "
                       "increase the number of iterations.", ConvergenceWarning)
-
-    #only for dual_gap computation, it is not required for DAAL
-    self._X = X
-    self._y = y
 
     return self
 
