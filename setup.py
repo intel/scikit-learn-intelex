@@ -103,11 +103,14 @@ with open(header_path) as header:
 
 if dpcpp:
     DPCPP_CFLAGS = ['-D_DPCPP_']
-    DPCPP_LIBS = ['OpenCL', 'sycl', 'daal_sycl']
+    DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
     if IS_LIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
     elif IS_WIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
+    if dal_build_version == (2021,7):
+        DPCPP_LIBS.remove('onedal_sycl')
+        DPCPP_LIBS.append('daal_sycl')        
     if dal_build_version == (2021,6):
         DPCPP_LIBS.append('ze_loader')
         DAAL_LIBDIRS.append('/usr/local/lib')
