@@ -471,7 +471,7 @@ def fit(self, X, y, sample_weight=None):
         is_support_weights = daal_check_version((2020, 2), (2021, 108)) or \
              sample_weight.size == 0 and self.class_weight is None
 
-        if ( not sparse and not self.probability and not getattr(self, 'break_ties', False) and \
+        if (not self.probability and not getattr(self, 'break_ties', False) and \
              kernel in ['linear', 'rbf']) and is_support_weights:
             logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
             self._daal_fit = True
