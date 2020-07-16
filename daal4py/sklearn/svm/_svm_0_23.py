@@ -136,12 +136,16 @@ def extract_dual_coef(num_classes, sv_ind_by_clf, sv_coef_by_clf, labels):
     return dual_coef, support_
 
 
-def _daal4py_kf(kernel, X_fptype, gamma=1.0):
+def _daal4py_kf(kernel, X_fptype, gamma=1.0, is_sparse=False):
+    if is_sparse:
+        method = "defaultDense"
+    else:
+        method = "fastCSR"
     if kernel == 'rbf':
         sigma_value = np.sqrt(0.5/gamma)
-        kf = daal4py.kernel_function_rbf(fptype=X_fptype, sigma=sigma_value)
+        kf = daal4py.kernel_function_rbf(fptype=X_fptype, method=method, sigma=sigma_value)
     elif kernel == 'linear':
-        kf = daal4py.kernel_function_linear(fptype=X_fptype)
+        kf = daal4py.kernel_function_linear(fptype=X_fptype, method=method)
     else:
         raise ValueError("_daal4py_fit received unexpected kernel specifiction {}.".format(kernel))
 
@@ -192,7 +196,7 @@ def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
 
     return algo
 
-def _daal4py_fit(self, X, y_inp, sample_weight, kernel):
+def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
 
     if self.C <= 0:
         raise ValueError("C <= 0")
@@ -209,7 +213,7 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel):
 
     X_fptype = getFPType(X)
 
-    kf = _daal4py_kf(kernel, X_fptype, gamma = self._gamma)
+    kf = _daal4py_kf(kernel, X_fptype, gamma=self._gamma, is_sparse=is_sparse)
     algo = _daal4py_svm_compatibility(fptype=X_fptype,
         C=float(self.C),
         accuracyThreshold=float(self.tol),
@@ -219,7 +223,6 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel):
         doShrinking=bool(self.shrinking),
         kernel=kf,
         nClasses=num_classes)
-
     res = algo.compute(data=X, labels=y, weights=ww)
     model = res.model
     self.daal_model_ = model
@@ -410,6 +413,7 @@ def fit(self, X, y, sample_weight=None):
         If X is a dense array, then the other methods will not support sparse
         matrices as input.
         """
+        print("we are in daal4py")
         rnd = check_random_state(self.random_state)
 
         sparse = sp.isspmatrix(X)
@@ -473,6 +477,7 @@ def fit(self, X, y, sample_weight=None):
 
         if (not self.probability and not getattr(self, 'break_ties', False) and \
              kernel in ['linear', 'rbf']) and is_support_weights:
+            print("using daal4py")
             logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
             self._daal_fit = True
             _daal4py_fit(self, X, y, sample_weight, kernel)
@@ -505,19 +510,23 @@ def fit(self, X, y, sample_weight=None):
 
 
 def _daal4py_predict(self, X):
+    print("in daal4py predict")
     X_fptype = getFPType(X)
     num_classes = len(self.classes_)
 
-    kf = _daal4py_kf(self.kernel, X_fptype, gamma = self._gamma)
+    kf = _daal4py_kf(self.kernel, X_fptype, gamma=self._gamma, is_sparse=sp.isspmatrix(X))
 
     svm_predict = daal4py.svm_prediction(
         fptype=X_fptype,
         method='defaultDense',
         kernel=kf
     )
+    print("alg making")
     if num_classes == 2:
+        print("2 classes")
         alg = svm_predict
     else:
+        print("multi classes")
         alg = daal4py.multi_class_classifier_prediction(
             nClasses=num_classes,
             fptype=X_fptype,
@@ -527,17 +536,46 @@ def _daal4py_predict(self, X):
             tmethod='oneAgainstOne',
             prediction=svm_predict
         )
-
+    print("alg computing")
+    print("is sparce: ", sp.isspmatrix(X))
     predictionRes = alg.compute(X, self.daal_model_)
-
+    print("alg computed")
     res = predictionRes.prediction
     res = res.ravel()
 
     if num_classes == 2:
         # Convert from Intel(R) DAAL format back to original classes
         np.greater(res, 0, out=res)
-
     return res
+
+def decision_function(self, X):
+    print("we are in df")
+    check_is_fitted(self)
+    _break_ties = getattr(self, 'break_ties', False)
+    if _break_ties and self.decision_function_shape == 'ovo':
+        raise ValueError("break_ties must be False when "
+                         "decision_function_shape is 'ovo'")
+
+    if (_break_ties
+        and self.decision_function_shape == 'ovr'
+        and len(self.classes_) > 2):
+        print("self df")
+        logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
+        decision_result = np.argmax(decision_function(X), axis=1)
+    else:
+        print("in else")
+        X = self._validate_for_predict(X)
+        if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
+            print("daal4py predict")
+            logging.info("sklearn.svm.SVC.predict: " + method_uses_daal)
+            decision_result = _daal4py_predict(self, X)
+        else:
+            print("predict func")
+            logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
+            predict_func = self._sparse_predict if self._sparse else self._dense_predict
+            decision_result = predict_func(X)
+    print("we are out of df")        
+    return decision_result
 
 
 def predict(self, X):
@@ -555,27 +593,7 @@ def predict(self, X):
     -------
     y_pred : array, shape (n_samples,)
     """
-    check_is_fitted(self)
-    _break_ties = getattr(self, 'break_ties', False)
-    if _break_ties and self.decision_function_shape == 'ovo':
-        raise ValueError("break_ties must be False when "
-                         "decision_function_shape is 'ovo'")
-
-    if (_break_ties
-        and self.decision_function_shape == 'ovr'
-        and len(self.classes_) > 2):
-        logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
-        y = np.argmax(self.decision_function(X), axis=1)
-    else:
-        X = self._validate_for_predict(X)
-        if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
-            logging.info("sklearn.svm.SVC.predict: " + method_uses_daal)
-            y = _daal4py_predict(self, X)
-        else:
-            logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
-            predict_func = self._sparse_predict if self._sparse else self._dense_predict
-            y = predict_func(X)
-
+    y = self.decision_function(X)
     return self.classes_.take(np.asarray(y, dtype=np.intp))
 
 
@@ -612,9 +630,9 @@ class SVC(svm_base.BaseSVC):
             decision_function_shape=decision_function_shape, break_ties=break_ties,
             random_state=random_state)
 
-
 SVC.fit = fit
 SVC.predict = predict
+SVC.decision_function = decision_function
 SVC._dual_coef_ = property(_dual_coef_getter, _dual_coef_setter)
 SVC._intercept_ = property(_intercept_getter, _intercept_setter)
 SVC.__doc__ = svm_classes.SVC.__doc__
