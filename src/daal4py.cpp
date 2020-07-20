@@ -71,7 +71,7 @@ public:
     void operator() (const void *ptr) DAAL_C11_OVERRIDE
     {
         void* new_ptr = (void*)ptr;
-        free(new_ptr);
+        //free(new_ptr);
     }
     VoidDeleter& operator=(const VoidDeleter&) = delete;
 };
@@ -455,22 +455,38 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     std::cout << "converting" << std::endl;
                     size_t * c_indcs = (size_t*)array_data(np_indcs);
                     size_t n = array_size(np_indcs, 0);
-                    size_t * c_indcs_one_based = (size_t*)malloc(n * sizeof(size_t));;
-                    for(size_t i=0; i<n; ++i) c_indcs_one_based[i] = c_indcs[i] + 1;
-
+                    std::cout << "indcs size: " << n << std::endl;
+                    size_t * c_indcs_one_based = new size_t[n];
+                    for(size_t i=0; i<n; ++i) { 
+                        c_indcs_one_based[i] = c_indcs[i] + 1;
+                        if (i < 15) {
+                            std::cout << c_indcs_one_based[i] << " ";
+                        }
+                    }
+                    std::cout << std::endl;
                     size_t * c_roffs = (size_t*)array_data(np_roffs);
                     n = array_size(np_roffs, 0);
-                    size_t * c_roffs_one_based = (size_t*)malloc(n * sizeof(size_t));
-                    for(size_t i=0; i<n; ++i) c_roffs_one_based[i] = c_roffs[i] + 1;
+                    std::cout << "roffs size: " << n << std::endl;
+                    size_t * c_roffs_one_based = new size_t[n];
+                    for(size_t i=0; i<n; ++i) {
+                        c_roffs_one_based[i] = c_roffs[i] + 1;
+                        if (i < 15) {
+                            std::cout << c_roffs_one_based[i] << " ";
+                        }
+                    }
+                    std::cout << std::endl;
                     size_t c_nc = (size_t)PyInt_AsSsize_t(nc);
                     if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
                     size_t c_nr = (size_t)PyInt_AsSsize_t(nr);
                     if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
-
+                    auto indcs_ptr = daal::services::SharedPtr<size_t>(c_indcs_one_based);
+                    auto roffs_ptr = daal::services::SharedPtr<size_t>(c_roffs_one_based);
+                    std::cout << indcs_ptr << std::endl;
+                    std::cout << roffs_ptr << std::endl;
 #define MKCSR_(_T)                                                      \
                     ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>((_T*)array_data(np_vals), NumpyDeleter((PyArrayObject*)np_vals)), \
-                                                                         daal::services::SharedPtr<size_t>(c_indcs_one_based, VoidDeleter()), \
-                                                                         daal::services::SharedPtr<size_t>(c_roffs_one_based, VoidDeleter()), \
+                                                                         daal::services::SharedPtr<size_t>(c_indcs, NumpyDeleter((PyArrayObject*)np_indcs)), \
+                                                                         daal::services::SharedPtr<size_t>(c_roffs, NumpyDeleter((PyArrayObject*)np_roffs)), \
                                                                          c_nc, \
                                                                          c_nr)
                     SET_NPY_FEATURE(array_type(np_vals), MKCSR_, throw std::invalid_argument("Found unsupported data type in csr_matrix"));

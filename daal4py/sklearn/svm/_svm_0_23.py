@@ -551,35 +551,35 @@ def _daal4py_predict(self, X):
         np.greater(res, 0, out=res)
     return res
 
-def decision_function(self, X):
-    print("we are in df")
-    check_is_fitted(self)
-    _break_ties = getattr(self, 'break_ties', False)
-    if _break_ties and self.decision_function_shape == 'ovo':
-        raise ValueError("break_ties must be False when "
-                         "decision_function_shape is 'ovo'")
+# def decision_function(self, X):
+#     print("we are in df")
+#     check_is_fitted(self)
+#     _break_ties = getattr(self, 'break_ties', False)
+#     if _break_ties and self.decision_function_shape == 'ovo':
+#         raise ValueError("break_ties must be False when "
+#                          "decision_function_shape is 'ovo'")
 
-    if (_break_ties
-        and self.decision_function_shape == 'ovr'
-        and len(self.classes_) > 2):
-        print("self df")
-        logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
-        decision_result = np.argmax(decision_function(X), axis=1)
-    else:
-        print("in else")
-        X = self._validate_for_predict(X)
-        if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
-            print("daal4py predict")
-            logging.info("sklearn.svm.SVC.predict: " + method_uses_daal)
-            decision_result = _daal4py_predict(self, X)
-        else:
-            print("predict func")
-            logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
-            predict_func = self._sparse_predict if self._sparse else self._dense_predict
-            decision_result = predict_func(X)
-    print("we are out of df")
-    print("df shape", decision_result.shape)   
-    return decision_result
+#     if (_break_ties
+#         and self.decision_function_shape == 'ovr'
+#         and len(self.classes_) > 2):
+#         print("self df")
+#         logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
+#         decision_result = np.argmax(decision_function(X), axis=1)
+#     else:
+#         print("in else")
+#         X = self._validate_for_predict(X)
+#         if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
+#             print("daal4py predict")
+#             logging.info("sklearn.svm.SVC.predict: " + method_uses_daal)
+#             decision_result = _daal4py_predict(self, X)
+#         else:
+#             print("predict func")
+#             logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
+#             predict_func = self._sparse_predict if self._sparse else self._dense_predict
+#             decision_result = predict_func(X)
+#     print("we are out of df")
+#     print("df shape", decision_result.shape)   
+#     return decision_result
 
 
 def predict(self, X):
@@ -597,9 +597,28 @@ def predict(self, X):
     -------
     y_pred : array, shape (n_samples,)
     """
-    y = self.decision_function(X)
-    return self.classes_.take(np.asarray(y, dtype=np.intp))
+    check_is_fitted(self)
+    _break_ties = getattr(self, 'break_ties', False)
+    if _break_ties and self.decision_function_shape == 'ovo':
+        raise ValueError("break_ties must be False when "
+                         "decision_function_shape is 'ovo'")
 
+    if (_break_ties
+        and self.decision_function_shape == 'ovr'
+        and len(self.classes_) > 2):
+        logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
+        y = np.argmax(self.decision_function(X), axis=1)
+    else:
+        X = self._validate_for_predict(X)
+        if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
+            logging.info("sklearn.svm.SVC.predict: " + method_uses_daal)
+            y = _daal4py_predict(self, X)
+        else:
+            logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
+            predict_func = self._sparse_predict if self._sparse else self._dense_predict
+            y = predict_func(X)
+
+    return self.classes_.take(np.asarray(y, dtype=np.intp))
 
 __base_svc_init_arg_names__ = []
 
@@ -636,7 +655,6 @@ class SVC(svm_base.BaseSVC):
 
 SVC.fit = fit
 SVC.predict = predict
-SVC.decision_function = decision_function
 SVC._dual_coef_ = property(_dual_coef_getter, _dual_coef_setter)
 SVC._intercept_ = property(_intercept_getter, _intercept_setter)
 SVC.__doc__ = svm_classes.SVC.__doc__
