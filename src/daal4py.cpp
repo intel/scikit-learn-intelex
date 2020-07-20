@@ -19,8 +19,8 @@
 #include <cstring>
 #include <Python.h>
 #include "daal4py.h"
-#include "npy4daal.h"
-
+#include "npy4daal.h" 
+#include <stdlib.h> 
 
 // ************************************************************************************
 // ************************************************************************************
@@ -61,6 +61,19 @@ public:
     NumpyDeleter& operator=(const NumpyDeleter&) = delete;
 private:
     PyArrayObject* _ndarray;
+};
+
+class VoidDeleter : public daal::services::DeleterIface 
+{
+public:
+    VoidDeleter() = default;
+    VoidDeleter(const  VoidDeleter & o) = default;
+    void operator() (const void *ptr) DAAL_C11_OVERRIDE
+    {
+        void* new_ptr = (void*)ptr;
+        free(new_ptr);
+    }
+    VoidDeleter& operator=(const VoidDeleter&) = delete;
 };
 
 // define our own free functions for wrapping python objects holding our shared pointers
@@ -295,9 +308,12 @@ static daal::data_management::NumericTablePtr _make_hnt(PyObject * nda)
 //   As long as DAAL CSR is only 0-based we need to copy indices/offsets
 daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 {
+    std::cout << "making table" << std::endl;
     if(PyErr_Occurred()) {PyErr_Print(); PyErr_Clear();}
     if(obj && obj != Py_None) {
+        std::cout << "at != obj" << std::endl;
 	if(PyObject_HasAttrString(obj, "__2daalnt__")) {
+            std::cout << "at __2daalnt__" << std::endl;
             static daal::data_management::NumericTablePtr ntptr;
             if(true || !ntptr) {
             // special protocol assumes that python objects implement __2daalnt__
@@ -314,9 +330,10 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 
             return ntptr;
         }
-
+        std::cout << "before management" << std::endl;
         daal::data_management::NumericTablePtr ptr;
         if(is_array(obj)) { // we got a numpy array
+            std::cout << "is array" << std::endl;
             PyArrayObject * ary = (PyArrayObject*)obj;
 
             if(array_is_behaved(ary)) {
@@ -324,7 +341,9 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 SET_NPY_FEATURE(PyArray_DESCR(ary)->type, MAKENT_, throw std::invalid_argument("Found unsupported array type"));
 #undef MAKENT_
             } else {
+        std::cout << "in else" << std::endl;        
 		if(array_is_behaved_F(ary) && (PyArray_NDIM(ary) == 2)) {
+            std::cout << "at 2 ary" << std::endl;
 		    int _axes = 0;
 		    npy_intp N = PyArray_DIM(ary, 1); // number of columns
 		    npy_intp column_len = PyArray_DIM(ary, 0);
@@ -347,6 +366,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 			PyArrayObject *slice = (PyArrayObject *) PyArray_SimpleNewFromData(1, &column_len, ary_numtype, (void *)PyArray_ITER_DATA(it));
 			PyArray_SetBaseObject(slice, (PyObject *) ary);
 			Py_INCREF(ary);
+            std::cout << "after ary before define" << std::endl;
 #define SETARRAY_(_T) {daal::services::SharedPtr< _T > _tmp(reinterpret_cast< _T * >(PyArray_ITER_DATA(it)), NumpyDeleter(slice)); soatbl->setArray(_tmp, i);}
 			SET_NPY_FEATURE(PyArray_DESCR(ary)->type, SETARRAY_, throw std::invalid_argument("Found unsupported array type"));
 #undef SETARRAY_
@@ -364,6 +384,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
             if(!ptr) std::cerr << "Could not convert Python object to DAAL table.\n";
 
         } else if(PyList_Check(obj) && PyList_Size(obj) > 0) { // a list of arrays for SOA?
+            std::cout << "Py list size" << std::endl;
             PyObject * first = PyList_GetItem(obj, 0);
             if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
 
@@ -397,7 +418,9 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 ptr = soatbl;
             } // else not a list of 1d arrays
         } // else not a list of 1d arrays
+        std::cout << "before !ptr" << std::endl;
         if(!ptr && strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0) {
+            std::cout << "in !ptr" << std::endl;
             daal::services::SharedPtr<daal::data_management::CSRNumericTable> ret;
             PyObject * vals  = PyObject_GetAttrString(obj, "data");
             if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
@@ -428,23 +451,25 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 
                 if(np_indcs && np_roffs && np_vals && nr && nc) {
                     // for now, increment indcs by 1
+                    std::cout << "converting" << std::endl;
                     size_t * c_indcs = (size_t*)array_data(np_indcs);
                     size_t n = array_size(np_indcs, 0);
-                    for(size_t i=0; i<n; ++i) c_indcs[i] += 1;
+                    size_t * c_indcs_one_based = (size_t*)malloc(n * sizeof(size_t));;
+                    for(size_t i=0; i<n; ++i) c_indcs_one_based[i] = c_indcs[i] + 1;
 
                     size_t * c_roffs = (size_t*)array_data(np_roffs);
                     n = array_size(np_roffs, 0);
-                    for(size_t i=0; i<n; ++i) c_roffs[i] += 1;
-
+                    size_t * c_roffs_one_based = (size_t*)malloc(n * sizeof(size_t));
+                    for(size_t i=0; i<n; ++i) c_roffs_one_based[i] = c_roffs[i] + 1;
                     size_t c_nc = (size_t)PyInt_AsSsize_t(nc);
                     if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
                     size_t c_nr = (size_t)PyInt_AsSsize_t(nr);
                     if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
 
 #define MKCSR_(_T)                                                      \
-                    ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>((_T*)array_data(np_vals), NumpyDeleter((PyArrayObject*)np_vals)), \
-                                                                         daal::services::SharedPtr<size_t>(c_indcs, NumpyDeleter((PyArrayObject*)np_indcs)), \
-                                                                         daal::services::SharedPtr<size_t>(c_roffs, NumpyDeleter((PyArrayObject*)np_roffs)), \
+                    ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>((_T*)array_data(np_vals), VoidDeleter()), \
+                                                                         daal::services::SharedPtr<size_t>(c_indcs_one_based, VoidDeleter()), \
+                                                                         daal::services::SharedPtr<size_t>(c_roffs_one_based, VoidDeleter()), \
                                                                          c_nc, \
                                                                          c_nr)
                     SET_NPY_FEATURE(array_type(np_vals), MKCSR_, throw std::invalid_argument("Found unsupported data type in csr_matrix"));
@@ -458,7 +483,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
             Py_DECREF(vals);
             return daal::data_management::NumericTablePtr(ret);
         }
-
+        std::cout << "after !ptr" << std::endl;
         return ptr;
     }
 

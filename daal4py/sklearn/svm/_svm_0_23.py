@@ -29,7 +29,6 @@ import warnings
 from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
 
-
 import daal4py
 from .._utils import (make2d, getFPType, method_uses_sklearn, method_uses_daal, daal_check_version)
 import logging
@@ -212,7 +211,8 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
         y[y == 0] = -1
 
     X_fptype = getFPType(X)
-
+    print("setting kf")
+    print("X : ", X.shape)
     kf = _daal4py_kf(kernel, X_fptype, gamma=self._gamma, is_sparse=is_sparse)
     algo = _daal4py_svm_compatibility(fptype=X_fptype,
         C=float(self.C),
@@ -223,11 +223,13 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
         doShrinking=bool(self.shrinking),
         kernel=kf,
         nClasses=num_classes)
+    print("computing")
     res = algo.compute(data=X, labels=y, weights=ww)
+    print("computed")
     model = res.model
     self.daal_model_ = model
-
     if num_classes == 2:
+        print("binary")
         # binary
         two_class_sv_ind_ = model.SupportIndices
         two_class_sv_ind_ = two_class_sv_ind_.ravel()
@@ -247,6 +249,7 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
         self.intercept_ = np.array([model.Bias])
 
     else:
+        print("multi-class")
         # multi-class
         intercepts = []
         coefs = []
@@ -574,7 +577,8 @@ def decision_function(self, X):
             logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
             predict_func = self._sparse_predict if self._sparse else self._dense_predict
             decision_result = predict_func(X)
-    print("we are out of df")        
+    print("we are out of df")
+    print("df shape", decision_result.shape)   
     return decision_result
 
 
