@@ -19,8 +19,8 @@
 #include <cstring>
 #include <Python.h>
 #include "daal4py.h"
-#include "npy4daal.h" 
-#include <stdlib.h> 
+#include "npy4daal.h"
+
 
 // ************************************************************************************
 // ************************************************************************************
@@ -75,6 +75,7 @@ public:
     }
     VoidDeleter& operator=(const VoidDeleter&) = delete;
 };
+
 
 // define our own free functions for wrapping python objects holding our shared pointers
 void daalsp_free_cap(PyObject * cap)
@@ -467,7 +468,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     if(PyErr_Occurred()) {PyErr_Print(); throw std::runtime_error("Python Error");}
 
 #define MKCSR_(_T)                                                      \
-                    ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>((_T*)array_data(np_vals), VoidDeleter()), \
+                    ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>((_T*)array_data(np_vals), NumpyDeleter((PyArrayObject*)np_vals)), \
                                                                          daal::services::SharedPtr<size_t>(c_indcs_one_based, VoidDeleter()), \
                                                                          daal::services::SharedPtr<size_t>(c_roffs_one_based, VoidDeleter()), \
                                                                          c_nc, \
