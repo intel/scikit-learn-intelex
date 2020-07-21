@@ -138,7 +138,6 @@ def extract_dual_coef(num_classes, sv_ind_by_clf, sv_coef_by_clf, labels):
 def _daal4py_kf(kernel, X_fptype, gamma=1.0, is_sparse=False):
     if is_sparse:
         method = "fastCSR"
-       
     else:
         method = "defaultDense"
     if kernel == 'rbf':
@@ -292,6 +291,10 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
             sv_coef_by_clf, # classification coefficients by two-class classifiers
             y.squeeze().astype(np.intp, copy=False)   # integer labels
         )
+        print("NEAR SPARSE: ", is_sparse)
+        if is_sparse:
+            print("MAKING SPARSE")
+            self.dual_coef_ = sp.csr_matrix(self.dual_coef_)
         self.support_vectors_ = X[self.support_]
         self.intercept_ = np.array(intercepts)
 
@@ -487,7 +490,7 @@ def fit(self, X, y, sample_weight=None):
             print("using daal4py")
             logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
             self._daal_fit = True
-            _daal4py_fit(self, X, y, sample_weight, kernel)
+            _daal4py_fit(self, X, y, sample_weight, kernel, is_sparse=sparse)
             self.fit_status_ = 0
         else:
             print("fit")
