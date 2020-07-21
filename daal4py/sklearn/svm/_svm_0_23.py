@@ -137,9 +137,10 @@ def extract_dual_coef(num_classes, sv_ind_by_clf, sv_coef_by_clf, labels):
 
 def _daal4py_kf(kernel, X_fptype, gamma=1.0, is_sparse=False):
     if is_sparse:
-        method = "defaultDense"
-    else:
         method = "fastCSR"
+       
+    else:
+        method = "defaultDense"
     if kernel == 'rbf':
         sigma_value = np.sqrt(0.5/gamma)
         kf = daal4py.kernel_function_rbf(fptype=X_fptype, method=method, sigma=sigma_value)
@@ -213,6 +214,9 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
     X_fptype = getFPType(X)
     print("setting kf")
     print("X : ", X.shape)
+    print("y : ", y.shape)
+    print(is_sparse)
+    print(type(X))
     kf = _daal4py_kf(kernel, X_fptype, gamma=self._gamma, is_sparse=is_sparse)
     algo = _daal4py_svm_compatibility(fptype=X_fptype,
         C=float(self.C),
@@ -486,6 +490,7 @@ def fit(self, X, y, sample_weight=None):
             _daal4py_fit(self, X, y, sample_weight, kernel)
             self.fit_status_ = 0
         else:
+            print("fit")
             logging.info("sklearn.svm.SVC.fit: " + method_uses_sklearn)
             self._daal_fit = False
             fit(X, y, sample_weight, solver_type, kernel, random_seed=seed)
