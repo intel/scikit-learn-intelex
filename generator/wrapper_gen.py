@@ -222,6 +222,15 @@ cdef extern from "daal4py.h":
 def daal_train_test_split(orig, train, test, train_idx, test_idx):
     c_train_test_split(data_or_file(<PyObject*>orig), data_or_file(<PyObject*>train), data_or_file(<PyObject*>test), data_or_file(<PyObject*>train_idx), data_or_file(<PyObject*>test_idx))
 
+
+cdef extern from "daal4py.h":
+    cdef void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state) except +
+
+
+def daal_generate_shuffled_indices(idx, random_state):
+    c_generate_shuffled_indices(data_or_file(<PyObject*>idx), data_or_file(<PyObject*>random_state))
+
+
 import sys
 def _execute_with_context(func):
     def exec_func(*args, **keyArgs):
