@@ -23,7 +23,6 @@ jobs:
           libze-loader                  \
           libze-intel-gpu
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
-      sudo mv -f /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
   - script: |
       git clone https://github.com/oneapi-src/level-zero.git
