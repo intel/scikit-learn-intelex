@@ -137,6 +137,10 @@ ignore = {
     'algorithms::em_gmm::init': ['seed',], # deprecated
     'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
+    'algorithms::kdtree_knn_classification::prediction': ['algorithms::classifier::prediction::ResultId',
+                                                          'algorithms::classifier::prediction::Result'],
+    'algorithms::bf_knn_classification::prediction': ['algorithms::classifier::prediction::ResultId',
+                                                      'algorithms::classifier::prediction::Result'],
     'algorithms::lasso_regression::training': ['optionalArgument'], # internal stuff
     'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
     'algorithms::multi_class_classifier': [ 'algorithms::multi_class_classifier::getTwoClassClassifierModels'], # unsupported return type ModelPtr*
