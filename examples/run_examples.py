@@ -22,6 +22,7 @@ import sys
 
 from daal4py import __daal_link_version__ as dv, __has_dist__
 daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+print('DAAL version:', daal_version)
 
 from os.path import join as jp
 from time import gmtime, strftime
