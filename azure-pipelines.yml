@@ -17,24 +17,10 @@ jobs:
           intel-oneapi-daal-devel       \
           intel-oneapi-dpcpp-compiler   \
           intel-oneapi-dev-utilities    \
-          intel-oneapi-libdpstd-devel   \
-          cmake                         \
-          opencl-headers                \
-          libze-loader                  \
-          libze-intel-gpu
+          intel-oneapi-libdpstd-devel   
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
-  - script: |
-      git clone https://github.com/oneapi-src/level-zero.git
-      cd level-zero
-      mkdir build
-      cd build
-      cmake ..
-      cmake --build . --config Release
-      cmake --build . --config Release --target package
-      sudo cmake --build . --config Release --target install
-    displayName: Build L0 (Workaround for Beta06)
   - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
