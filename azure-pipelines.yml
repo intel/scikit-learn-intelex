@@ -40,6 +40,7 @@ jobs:
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       export DAALROOT=/opt/intel/oneapi/daal/latest
+      export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       conda build --override-channels -c conda-forge -c intel conda-recipe
