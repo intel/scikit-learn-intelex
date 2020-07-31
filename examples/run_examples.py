@@ -92,6 +92,7 @@ req_version['saga_batch.py'] = ((2020,0),(2021,109)) # hangs in beta08, need to 
 req_version['dbscan_batch.py'] = (2019,5)
 req_version['lasso_regression_batch.py'] = (2019,5)
 req_version['elastic_net_batch.py'] = ((2020,1),(2021,105))
+req_version['cosine_distance_batch.py'] = ((2020,0),(2021,109)) # hangs in beta08, need to be fixed
 req_version['sycl/bf_knn_classification_batch.py'] = (2021,105)
 req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,105)
 req_version['sycl/svm_batch.py'] = (2021,107)
