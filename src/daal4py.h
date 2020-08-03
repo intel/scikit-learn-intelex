@@ -326,4 +326,8 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
                         data_or_file & train_idx, data_or_file & test_idx);
 }
 
+extern "C" {
+void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state);
+}
+
 #endif // _HLAPI_H_INCLUDED_

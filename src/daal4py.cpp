@@ -678,3 +678,13 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
 #else
 #endif
 }
+
+void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state)
+{
+#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200003 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210109
+    auto idxTable = get_table(idx);
+    auto randomStateTable = get_table(random_state);
+    daal::data_management::internal::generateShuffledIndices<int>(idxTable, randomStateTable);
+#else
+#endif
+}
