@@ -14,6 +14,7 @@ build:
     script_env:
      - DPCPPROOT
      - DAALROOT
+     - TBBROOT
     ignore_run_exports:
        - python
 
