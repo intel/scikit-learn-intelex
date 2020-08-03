@@ -23,7 +23,7 @@ jobs:
           libze-loader                  \
           libze-intel-gpu
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
-      sudo mv -f /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga /opt/intel/inteloneapi/compiler/latest/linux/lib/oclfpga_
+      sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
   - script: |
       git clone https://github.com/oneapi-src/level-zero.git
@@ -38,8 +38,9 @@ jobs:
   - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
-      export DPCPPROOT=/opt/intel/inteloneapi/compiler/latest
-      export DAALROOT=/opt/intel/inteloneapi/daal/latest
+      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+      export DAALROOT=/opt/intel/oneapi/daal/latest
+      export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       conda build --override-channels -c conda-forge -c intel conda-recipe
