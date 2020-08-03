@@ -12,7 +12,6 @@ deselected_tests:
 
   # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
   # See: https://github.com/scikit-learn/scikit-learn/issues/12738
-  - svm/tests/test_svm.py::test_sample_weights
   - svm/tests/test_svm.py::test_precomputed
   - svm/tests/test_sparse.py::test_sparse_realdata
   - svm/tests/test_sparse.py::test_svc_iris
