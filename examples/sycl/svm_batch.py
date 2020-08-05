@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2020 Intel Corporation
+# Copyright 2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py logistic regression example for shared memory systems
+# daal4py SVM example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -44,14 +44,19 @@ except:
         gpu_available=False
 
 # Commone code for both CPU and GPU computations
-def compute(train_data, train_labels, predict_data, nClasses):
-    # set parameters and train
-    train_alg = d4p.logistic_regression_training(nClasses=nClasses, interceptFlag=True)
-    train_result = train_alg.compute(train_data, train_labels)
-    # set parameters and compute predictions
-    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses)
-    return predict_alg.compute(predict_data, train_result.model), train_result
+def compute(train_indep_data, train_dep_data, test_indep_data, method='defaultDense'):
+    # Configure a SVM object to use linear kernel
+    kernel_function = d4p.kernel_function_linear(method='defaultDense', k=1.0, b=0.0)
+    train_algo = d4p.svm_training(method=method, kernel=kernel_function, C=1.0, accuracyThreshold=1e-3, tau=1e-8, cacheSize=600000000)
 
+    train_result = train_algo.compute(train_indep_data, train_dep_data)
+
+    # Create an algorithm object and call compute
+    predict_algo = d4p.svm_prediction(kernel=kernel_function)
+    predict_result = predict_algo.compute(test_indep_data, train_result.model)
+    decision_result = predict_result.prediction
+    predict_labels = np.where(decision_result >=0, 1, -1)
+    return predict_labels, decision_result
 
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
@@ -70,22 +75,18 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=read_csv, method='defaultDense'):
-    nClasses = 2
+def main(readcsv=read_csv):
+    # input data file
+    train_file = os.path.join('..', 'data', 'batch', 'svm_two_class_train_dense.csv')
+    predict_file = os.path.join('..', 'data', 'batch', 'svm_two_class_test_dense.csv')
+
     nFeatures = 20
+    train_data = readcsv(train_file, range(nFeatures))
+    train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1))
+    predict_data = readcsv(predict_file, range(nFeatures))
+    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1))
 
-    # read training data from file with 20 features per observation and 1 class label
-    trainfile = os.path.join('..', 'data', 'batch', 'binary_cls_train.csv')
-    train_data = readcsv(trainfile, range(nFeatures))
-    train_labels = readcsv(trainfile, range(nFeatures, nFeatures + 1))
-
-    # read testing data from file with 20 features per observation
-    testfile = os.path.join('..', 'data', 'batch', 'binary_cls_test.csv')
-    predict_data = readcsv(testfile, range(nFeatures))
-    predict_labels = readcsv(testfile, range(nFeatures, nFeatures + 1))
-
-    # Using of the classic way (computations on CPU)
-    result_classic, train_result = compute(train_data, train_labels, predict_data, nClasses)
+    predict_result_classic, decision_function_classic = compute(train_data, train_labels, predict_data, 'boser')
 
     train_data = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
@@ -94,11 +95,9 @@ def main(readcsv=read_csv, method='defaultDense'):
     try:
         from dppl import device_context, device_type
         gpu_context = lambda: device_context(device_type.gpu, 0)
-        cpu_context = lambda: device_context(device_type.cpu, 0)
     except:
         from daal4py.oneapi import sycl_context
         gpu_context = lambda: sycl_context('gpu')
-        cpu_context = lambda: sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
@@ -106,27 +105,17 @@ def main(readcsv=read_csv, method='defaultDense'):
             sycl_train_data = sycl_buffer(train_data)
             sycl_train_labels = sycl_buffer(train_labels)
             sycl_predict_data = sycl_buffer(predict_data)
-            result_gpu, _ = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
-        assert np.allclose(result_classic.prediction, result_gpu.prediction)
 
-    # It is possible to specify to make the computations on GPU
-    with cpu_context():
-        sycl_train_data = sycl_buffer(train_data)
-        sycl_train_labels = sycl_buffer(train_labels)
-        sycl_predict_data = sycl_buffer(predict_data)
-        result_cpu, _ = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
+            predict_result_gpu, decision_function_gpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, 'thunder')
+            assert np.allclose(predict_result_gpu, predict_result_classic)
 
-    # the prediction result provides prediction
-    assert result_classic.prediction.shape == (predict_data.shape[0], train_labels.shape[1])
-
-    assert np.allclose(result_classic.prediction, result_cpu.prediction)
-
-    return (train_result, result_classic, predict_labels)
+    return predict_labels, predict_result_classic, decision_function_classic
 
 
 if __name__ == "__main__":
-    (train_result, predict_result, predict_labels) = main()
-    print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
-    print("\nLogistic regression prediction results (first 10 rows):\n", predict_result.prediction[0:10])
-    print("\nGround truth (first 10 rows):\n", predict_labels[0:10])
+    predict_labels, predict_result, decision_function = main()
+    np.set_printoptions(precision=0)
+    print("\nSVM classification decision function (first 10 observations):\n", decision_function[0:10])
+    print("\nSVM classification predict result (first 10 observations):\n", predict_result[0:10])
+    print("\nGround truth (first 10 observations):\n", predict_labels[0:10])
     print('All looks good!')

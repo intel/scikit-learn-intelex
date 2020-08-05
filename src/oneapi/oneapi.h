@@ -20,6 +20,7 @@
 #include "daal_sycl.h"
 #ifndef DAAL_SYCL_INTERFACE
 #include <type_traits>
+#include <memory>
 static_assert(false, "DAAL_SYCL_INTERFACE not defined")
 #endif
 
@@ -43,20 +44,12 @@ public:
     PySyclExecutionContext(const std::string & dev)
         : m_ctxt(NULL)
     {
-        try
+        if(dev == "gpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
+        else if(dev == "cpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
+        else if(dev == "host") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::host_selector()));
+        else
         {
-            if(dev == "gpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
-            else if(dev == "cpu") m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
-            else
-            {
-                std::cout << "Unknown device \'" << dev << "\' was specified.\nFalling back to default device.\n";
-                m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::default_selector()));
-            }
-        }
-        catch (cl::sycl::runtime_error const &e)
-        {
-            std::cout << "Device \'" << dev << "\' was requested but runtime error occurs: " << e.what() << "\nFalling back to default device.\n";
-            m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::default_selector()));
+            throw std::runtime_error(std::string("Device is not supported: ") + dev);
         }
         daal::services::Environment::getInstance()->setDefaultExecutionContext(*m_ctxt);
     }
@@ -75,6 +68,28 @@ static std::string to_std_string(PyObject * o)
     return PyUnicode_AsUTF8(o);
 }
 
+void c_set_queue_to_daal_context(PyObject* queue_object)
+{
+    if(queue_object != NULL)
+    {
+        if(PyCapsule_IsValid(queue_object, NULL) == 0) { throw std::runtime_error("Cannot set daal context: invalid queue object"); }
+        cl::sycl::queue * queue_ptr = (cl::sycl::queue*)PyCapsule_GetPointer(queue_object, NULL);
+        if(PyErr_Occurred()) { PyErr_Print(); throw std::runtime_error("Python Error"); }
+
+        daal::services::SyclExecutionContext ctx (*queue_ptr);
+        daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
+    }
+    else
+    {
+        throw std::runtime_error("Cannot set daal context: Pointer to queue object is NULL");
+    }
+}
+
+void c_reset_daal_context()
+{
+    daal::services::CpuExecutionContext ctx;
+    daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
+}
 
 // take a raw array and convert to sycl buffer
 template<typename T>

@@ -33,7 +33,8 @@ import warnings
 from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
-from .._utils import getFPType
+from .._utils import getFPType, method_uses_sklearn, method_uses_daal, daal_check_version
+import logging
 
 def _daal_mean_var(X):
     fpt = getFPType(X)
@@ -99,35 +100,56 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
         raise ValueError("Cluster centers should either be 'k-means++', 'random', 'deterministic' or an array")
     return deterministic, centroids_
 
+def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
+    method = "lloydDense", accuracyThreshold = 0.0, resultsToEvaluate = "computeCentroids"):
+    kmeans_algo = None
+    if daal_check_version((2020, 2), (2021, 107)):
+        kmeans_algo = daal4py.kmeans(nClusters = nClusters,
+            maxIterations= maxIterations,
+            fptype = fptype,
+            resultsToEvaluate = resultsToEvaluate,
+            method = method)
+    else:
+        assigFlag = 'computeAssignments' in resultsToEvaluate
 
-def _daal4py_k_means_dense(X, nClusters, numIterations, tol, cluster_centers_0, n_init, random_state):
+        kmeans_algo = daal4py.kmeans(nClusters = nClusters,
+            maxIterations= maxIterations,
+            fptype = fptype,
+            assignFlag = assigFlag,
+            method = method)
+    return kmeans_algo
 
+def _daal4py_k_means_predict(X, nClusters, centroids, resultsToEvaluate = 'computeAssignments'):
+    X_fptype = getFPType(X)
+    kmeans_algo = _daal4py_kmeans_compatibility(
+        nClusters = nClusters,
+        maxIterations = 0,
+        fptype = X_fptype,
+        resultsToEvaluate = resultsToEvaluate,
+        method = 'defaultDense')
+
+    res = kmeans_algo.compute(X, centroids)
+
+    return res.assignments[:,0], res.objectiveFunction[0,0]
+
+
+def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_init, random_state):
     if numIterations < 0:
         raise ValueError("Wrong iterations number")
 
-    if hasattr(X, '__array__'):
-        X_fptype = getFPType(X)
-    else:
-        raise NotImplementedError("""Unsupported input type {} encountered in DAAL-based optimization of KMeans.
-        You can disable DAAL-based optimizations of scikit-learn with sklearn.daal4sklearn.dispatcher.disable()""".format(type(X)))
-
+    X_fptype = getFPType(X)
     abs_tol = _tolerance(X, tol) # tol is relative tolerance
 
-    best_labels, best_inertia, best_cluster_centers = None, None, None
+    best_inertia, best_cluster_centers = None, None
     best_n_iter = -1
 
-    if numIterations == 0:
-        n_init = 1
-
-    kmeans_algo = daal4py.kmeans(
+    kmeans_algo = _daal4py_kmeans_compatibility(
         nClusters = nClusters,
         maxIterations = numIterations,
-        assignFlag = True,
         accuracyThreshold = abs_tol,
         fptype = X_fptype,
-        # gamma = 1.0, # only relevant for categorical features of which we should have none
-        method = 'defaultDense') #,
-        # distanceType = 'euclidean')
+        resultsToEvaluate = 'computeCentroids',
+        method = 'defaultDense')
 
     for k in range(n_init):
         deterministic, starting_centroids_ = _daal4py_compute_starting_centroids(
@@ -135,21 +157,13 @@ def _daal4py_k_means_dense(X, nClusters, numIterations, tol, cluster_centers_0, 
 
         res = kmeans_algo.compute(X, starting_centroids_)
 
-        # Per documentation, with numIterations == 0, centroids and goalFunction are not updated
-        if numIterations == 0:
-            best_labels = res.assignments[:,0]
+        inertia = res.objectiveFunction[0,0]
+        if best_inertia is None or inertia < best_inertia:
+            best_cluster_centers = res.centroids
+            if n_init > 1:
+                best_cluster_centers = best_cluster_centers.copy()
+            best_inertia = inertia
             best_n_iter = int(res.nIterations[0,0])
-            break
-        else:
-            inertia = res.goalFunction[0,0]
-            if best_inertia is None or inertia < best_inertia:
-                best_labels = res.assignments.ravel()
-                best_cluster_centers = res.centroids
-                if n_init > 1:
-                    best_labels = best_labels.copy()
-                    best_cluster_centers = best_cluster_centers.copy()
-                best_inertia = inertia
-                best_n_iter = int(res.nIterations[0,0])
         if deterministic and n_init != 1:
             warnings.warn(
                 'Explicit initial center position passed: '
@@ -157,6 +171,8 @@ def _daal4py_k_means_dense(X, nClusters, numIterations, tol, cluster_centers_0, 
                 % n_init, RuntimeWarning, stacklevel=2)
             break
 
+    flag_compute = 'computeAssignments|computeExactObjectiveFunction'
+    best_labels, best_inertia = _daal4py_k_means_predict(X, nClusters, best_cluster_centers, flag_compute)
     return best_cluster_centers, best_labels, best_inertia, best_n_iter
 
 
@@ -219,7 +235,7 @@ def fit(self, X, y=None, sample_weight=None):
         raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
                          " {}".format(str(algorithm)))
 
-        
+
     daal_ready = not sp.issparse(X)
     daal_ready = daal_ready and hasattr(X, '__array__')
 
@@ -232,12 +248,14 @@ def fit(self, X, y=None, sample_weight=None):
                          np.allclose(sample_weight, np.ones_like(sample_weight)))
 
     if daal_ready:
+        logging.info("sklearn.cluster.KMeans.fit: " + method_uses_daal)
         X = check_array(X, dtype=[np.float64, np.float32])
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
-            _daal4py_k_means_dense(
+            _daal4py_k_means_fit(
                 X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
                 random_state)
-    else: 
+    else:
+        logging.info("sklearn.cluster.KMeans.fit: " + method_uses_sklearn)
         super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
     return self
 
@@ -270,8 +288,10 @@ def predict(self, X, sample_weight=None):
     daal_ready = sample_weight is None and hasattr(X, '__array__') # or sp.isspmatrix_csr(X)
 
     if daal_ready:
-        return _daal4py_k_means_dense(X, self.n_clusters, 0, 0.0, self.cluster_centers_, 1, None)[1]
+        logging.info("sklearn.cluster.KMeans.predict: " + method_uses_daal)
+        return _daal4py_k_means_predict(X, self.n_clusters, self.cluster_centers_)[0]
     else:
+        logging.info("sklearn.cluster.KMeans.predict: " + method_uses_sklearn)
         x_squared_norms = row_norms(X, squared=True)
         return _labels_inertia(X, sample_weight, x_squared_norms,
                                self.cluster_centers_)[0]
@@ -279,7 +299,7 @@ def predict(self, X, sample_weight=None):
 
 _fit_copy = fit
 _predict_copy = predict
-    
+
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 

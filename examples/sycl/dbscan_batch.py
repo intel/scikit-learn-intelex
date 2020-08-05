@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py PCA example for shared memory systems
+# daal4py DBSCAN example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -43,16 +43,6 @@ except:
     except:
         gpu_available=False
 
-# Commone code for both CPU and GPU computations
-def compute(data, nComponents):
-    # configure a PCA object and perform PCA
-    pca_algo = d4p.pca(isDeterministic=True, resultsToCompute="mean|variance|eigenvalue")
-    pca_res = pca_algo.compute(data)
-    # Apply transform with whitening because means and eigenvalues are provided
-    pcatrans_algo = d4p.pca_transform(nComponents=nComponents)
-    return pcatrans_algo.compute(data, pca_res.eigenvectors, pca_res.dataForTransform)
-
-
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
     try:
@@ -70,15 +60,26 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=read_csv, method='svdDense'):
-    dataFileName = os.path.join('..', 'data', 'batch', 'pca_transform.csv')
-    nComponents = 2
+# Common code for both CPU and GPU computations
+def compute(data, minObservations, epsilon):
+    # configure dbscan main object: we also request the indices and observations of cluster cores
+    algo = d4p.dbscan(minObservations=minObservations,
+                      epsilon=epsilon,
+                      resultsToCompute='computeCoreIndices|computeCoreObservations',
+                      memorySavingMode=True)
+    # and compute
+    return algo.compute(data)
 
-    # read data
-    data = readcsv(dataFileName, range(3))
 
-    # Using of the classic way (computations on CPU)
-    result_classic = compute(data, nComponents)
+def main(readcsv=read_csv, method='defaultDense'):
+    infile = os.path.join('..', 'data', 'batch', 'dbscan_dense.csv')
+    epsilon = 0.04
+    minObservations = 45
+
+    # Load the data
+    data = readcsv(infile, range(2))
+
+    result_classic = compute(data, minObservations, epsilon)
 
     data = to_numpy(data)
 
@@ -92,25 +93,31 @@ def main(readcsv=read_csv, method='svdDense'):
         cpu_context = lambda: sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
+    print('gpu', gpu_available)
     if gpu_available:
         with gpu_context():
             sycl_data = sycl_buffer(data)
-            result_gpu = compute(sycl_data, nComponents)
-        assert np.allclose(result_classic.transformedData, result_gpu.transformedData)
+            result_gpu = compute(sycl_data, minObservations, epsilon)
+            assert np.allclose(result_classic.nClusters, result_gpu.nClusters)
+            assert np.allclose(result_classic.assignments, result_gpu.assignments)
+            assert np.allclose(result_classic.coreIndices, result_gpu.coreIndices)
+            assert np.allclose(result_classic.coreObservations, result_gpu.coreObservations)
 
-    # It is possible to specify to make the computations on CPU
     with cpu_context():
         sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, nComponents)
+        result_cpu = compute(sycl_data, minObservations, epsilon)
+        assert np.allclose(result_classic.nClusters, result_cpu.nClusters)
+        assert np.allclose(result_classic.assignments, result_cpu.assignments)
+        assert np.allclose(result_classic.coreIndices, result_cpu.coreIndices)
+        assert np.allclose(result_classic.coreObservations, result_cpu.coreObservations)
 
-    # pca_transform_result objects provides transformedData
-    assert np.allclose(result_classic.transformedData, result_cpu.transformedData)
-
-    return (result_classic)
+    return result_classic
 
 
 if __name__ == "__main__":
-    pcatrans_res = main()
-    # print results of tranform
-    print(pcatrans_res)
+    result = main()
+    print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
+    print("\nFirst 10 cluster core indices:\n", result.coreIndices[0:10])
+    print("\nFirst 10 cluster core observations:\n", result.coreObservations[0:10])
+    print("\nNumber of clusters:\n", result.nClusters)
     print('All looks good!')

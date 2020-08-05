@@ -22,7 +22,7 @@
 #include "map_reduce_tree.h"
 
 namespace dist_custom {
-    
+
 template<typename fptype, daal::algorithms::kmeans::Method method>
 class dist_custom< kmeans_manager< fptype, method > >
 {
@@ -60,7 +60,7 @@ public:
                 fres = algo.run_step2Master__final(std::vector< daal::algorithms::kmeans::PartialResultPtr >(1, pres));
                 // now check if we convered/reached max_iter
                 if(iter < algo._maxIterations) {
-                    double new_goal = fres->get(daal::algorithms::kmeans::goalFunction)->daal::data_management::NumericTable::template getValue<double>(0, 0);
+                    double new_goal = fres->get(daal::algorithms::kmeans::objectiveFunction)->daal::data_management::NumericTable::template getValue<double>(0, 0);
                     if(std::abs(goal - new_goal) > accuracyThreshold) {
                         centroids = fres->get(daal::algorithms::kmeans::centroids);
                         goal = new_goal;

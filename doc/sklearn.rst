@@ -22,6 +22,20 @@ scikit-learn application by using the following commandline flag::
 
     python -m daal4py my_application.py
 
+If you are using Scikit-Learn from Intel® Distribution for Python, then
+you can enable daal4py patches through an environment variable. To do this, set ``USE_DAAL4PY_SKLEARN`` to one of the values
+``True``, ``'1'``, ``'y'``, ``'yes'``, ``'Y'``, ``'YES'``, ``'Yes'``, ``'true'``, ``'True'`` or ``'TRUE'`` as shown below.
+
+On Linux and Mac OS::
+
+    export USE_DAAL4PY_SKLEARN=1
+
+On Windows::
+
+    set USE_DAAL4PY_SKLEARN=1
+
+To disable daal4py patches, set the ``USE_DAAL4PY_SKLEARN`` environment variable to 0.
+
 Patches can also be enabled programmatically::
 
     import daal4py.sklearn
@@ -30,6 +44,8 @@ Patches can also be enabled programmatically::
 It is possible to undo the patch with::
 
     daal4py.sklearn.unpatch_sklearn()
+
+.. _sklearn_algorithms:
 
 Applying the monkey patch will impact the following existing scikit-learn
 algorithms:
@@ -51,6 +67,36 @@ In particular the tests execute `check_estimator
 on all added and monkey-patched classes, which are discovered by means of
 introspection. This assures scikit-learn API compatibility of all
 `daal4py.sklearn` classes.
+
+.. _sklearn_verbose:
+
+scikit-learn verbose
+----------------
+
+To find out which implementation of the algorithm is currently used,
+set the environment variable.
+
+On Linux and Mac OS::
+
+    export IDP_SKLEARN_VERBOSE=INFO
+
+On Windows::
+
+    set IDP_SKLEARN_VERBOSE=INFO
+
+During the calls that use Intel-optimized scikit-learn, you will receive additional print statements
+that indicate which implementation is being called.
+These print statements are only available for :ref:`scikit-learn algorithms with daal4py patches <sklearn_algorithms>`.
+
+For example, for DBSCAN you get one of these print statements depending on which implementation is used::
+
+    INFO: sklearn.cluster.DBSCAN.fit: uses Intel® DAAL solver
+
+::
+
+    INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver
+
+
 
 .. _sklearn_api:
 

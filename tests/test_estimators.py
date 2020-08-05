@@ -1,3 +1,21 @@
+#*******************************************************************************
+# Copyright 2014-2020 Intel Corporation
+# All Rights Reserved.
+#
+# This software is licensed under the Apache License, Version 2.0 (the
+# "License"), the following terms apply:
+#
+# You may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#*******************************************************************************
+
 import unittest
 
 from sklearn.utils.estimator_checks import check_estimator
@@ -12,6 +30,23 @@ from daal4py.sklearn.ensemble import RandomForestRegressor
 from daal4py.sklearn.ensemble import GBTDAALClassifier
 from daal4py.sklearn.ensemble import GBTDAALRegressor
 from daal4py.sklearn.ensemble import AdaBoostClassifier
+
+from daal4py import __daal_link_version__ as dv
+daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+
+
+def check_version(rule, target):
+    if not isinstance(rule[0], type(target)):
+        if rule > target:
+            return False
+    else:
+        for rule_item in range(len(rule)):
+            if rule[rule_item] > target:
+                return False
+            else:
+                if rule[rule_item][0]==target[0]:
+                    break
+    return True
 
 def _replace_and_save(md, fns, replacing_fn):
     """
@@ -42,6 +77,7 @@ class Test(unittest.TestCase):
     def test_KNeighborsClassifier(self):
         check_estimator(KNeighborsClassifier)
 
+    @unittest.skipUnless(check_version(((2019,0),(2021, 107)), daal_version), "not supported in this library version")
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:

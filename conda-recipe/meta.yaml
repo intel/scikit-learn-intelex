@@ -12,8 +12,9 @@ build:
     number: {{buildnumber}}
     include_recipe: False
     script_env:
-     - DPCPP_VAR
+     - DPCPPROOT
      - DAALROOT
+     - TBBROOT
     ignore_run_exports:
        - python
 
@@ -22,7 +23,7 @@ requirements:
         - python
         - setuptools
         - numpy >=1.15
-        - daal-devel >=2019.0
+        - daal-devel >=2020.2
         - cython
         - jinja2
         - mpich # [osx]
@@ -33,7 +34,7 @@ requirements:
         - {{ compiler('c') }}
     run:
         - python
-        - daal >=2019.0
+        - daal >=2020.2
         - {{ pin_compatible('numpy') }}
 
 test:
@@ -43,15 +44,15 @@ test:
         - scikit-learn
         - mpich # [osx]
         - impi_rt # [not osx]
-    imports:
-        - daal4py
     source_files:
         - examples
         - tests
     commands:
+        - python -c "import daal4py"
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
+        - python -m daal4py examples/sycl/sklearn_sycl.py
         - cd examples && python run_examples.py
 
 about:

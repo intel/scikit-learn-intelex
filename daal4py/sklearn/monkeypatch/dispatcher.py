@@ -45,6 +45,8 @@ import sklearn.decomposition as decomposition_module
 from sklearn.metrics import pairwise
 from sklearn.utils import validation
 
+from sklearn import model_selection
+
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     from ._pairwise_0_22 import daal_pairwise_distances
@@ -58,12 +60,11 @@ from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..svm.svm import SVC as SVC_daal4py
 from ..utils.validation import _daal_assert_all_finite
+from ..model_selection import _daal_train_test_split
 
 from daal4py import __version__ as daal4py_version
 
-from daal4py import __daal_run_version__, __daal_link_version__
-daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
-daal_link_version = tuple(map(int, (__daal_link_version__[0:4], __daal_link_version__[4:8])))
+from daal4py.sklearn._utils import daal_check_version
 
 _mapping = {
     'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
@@ -85,9 +86,11 @@ try:
 except ImportError:
     pass
 
-if daal_run_version >= (2020, 1) and daal_link_version >= (2020, 1):
+if daal_check_version((2020, 1), (2021, 5)):
     _mapping['fin_check'] = [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]]
 
+if daal_check_version((2020, 2), (2021, 8)):
+    _mapping['tt_split'] = [[(model_selection, 'train_test_split', _daal_train_test_split), None]]
 
 def do_patch(name):
     lname = name.lower()
@@ -115,9 +118,9 @@ def do_unpatch(name):
 def enable(name=None, verbose=True):
     if LooseVersion(sklearn_version) < LooseVersion("0.20.0"):
         raise NotImplementedError("daal4py patches apply  for scikit-learn >= 0.20.0 only ...")
-    elif LooseVersion(sklearn_version) > LooseVersion("0.22.1"):
+    elif LooseVersion(sklearn_version) > LooseVersion("0.23.1"):
         warn_msg = ("daal4py {daal4py_version} has only been tested " +
-                    "with scikit-learn 0.22.0, found version: {sklearn_version}")
+                    "with scikit-learn 0.23.1, found version: {sklearn_version}")
         warnings.warn(warn_msg.format(
             daal4py_version=daal4py_version,
             sklearn_version=sklearn_version)

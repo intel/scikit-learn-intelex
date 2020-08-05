@@ -49,8 +49,12 @@ using daal::services::LibraryVersionInfo;
 #define PyUnicode_FromString(_x) PyString_FromString(_x)
 #endif
 
-#if INTEL_DAAL_VERSION >= 20200001
+#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200001 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210105
 #include "data_management/data/internal/finiteness_checker.h"
+#endif
+
+#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200002 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210108
+#include "data_management/data/internal/train_test_split.h"
 #endif
 
 extern "C" {
@@ -61,6 +65,7 @@ size_t c_num_procs();
 size_t c_my_procid();
 }
 
+using daal::data_management::NumericTablePtr;
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;
 typedef std::string std_string;
 typedef std::unordered_map<std::string, int64_t> str2i_map_t;
@@ -314,6 +319,15 @@ void set_rawp_base(PyArrayObject *, void *);
 
 extern "C" {
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype);
+}
+
+extern "C" {
+void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test,
+                        data_or_file & train_idx, data_or_file & test_idx);
+}
+
+extern "C" {
+void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state);
 }
 
 #endif // _HLAPI_H_INCLUDED_

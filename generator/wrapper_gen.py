@@ -173,7 +173,7 @@ def my_procid():
     return c_my_procid()
 
 
-def _get_data(x):
+def get_data(x):
     if isinstance(x, pdDataFrame):
         x_dtypes = x.dtypes.values
         if np.all(x_dtypes == x_dtypes[0]):
@@ -213,6 +213,43 @@ cdef extern from "daal4py.h":
 
 def daal_assert_all_finite(X, allow_nan=False, dtype=0):
     return c_assert_all_finite(data_or_file(<PyObject*>X), allow_nan, dtype)
+
+
+cdef extern from "daal4py.h":
+    cdef void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test, data_or_file & train_idx, data_or_file & test_idx) except +
+
+
+def daal_train_test_split(orig, train, test, train_idx, test_idx):
+    c_train_test_split(data_or_file(<PyObject*>orig), data_or_file(<PyObject*>train), data_or_file(<PyObject*>test), data_or_file(<PyObject*>train_idx), data_or_file(<PyObject*>test_idx))
+
+
+cdef extern from "daal4py.h":
+    cdef void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state) except +
+
+
+def daal_generate_shuffled_indices(idx, random_state):
+    c_generate_shuffled_indices(data_or_file(<PyObject*>idx), data_or_file(<PyObject*>random_state))
+
+
+import sys
+def _execute_with_context(func):
+    def exec_func(*args, **keyArgs):
+        # we check is DPPY imported or not
+        # possible we should check are we in defined context or not
+        if 'dppl' in sys.modules:
+            from dppl import runtime as rt
+            from _oneapi import set_queue_to_daal_context, reset_daal_context
+
+            queue = rt.get_current_queue()
+            set_queue_to_daal_context(queue)
+
+            res = func(*args, **keyArgs)
+
+            reset_daal_context()
+            return res
+        else:
+            return func(*args, **keyArgs)
+    return exec_func
 '''
 
 ###############################################################################
@@ -870,6 +907,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
+    @_execute_with_context
     def _compute(self,
                  {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
                  setup=False):

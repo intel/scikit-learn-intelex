@@ -21,7 +21,8 @@ import numpy as np
 
 from scipy import sparse as sp
 from sklearn.utils import check_random_state, check_X_y
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, _check_sample_weight
+
 import sklearn.svm._classes as svm_classes
 import sklearn.svm._base as svm_base
 import warnings
@@ -31,7 +32,8 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType, method_uses_sklearn, method_uses_daal, daal_check_version)
+import logging
 
 
 LIBSVM_IMPL = ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
@@ -146,15 +148,61 @@ def _daal4py_kf(kernel, X_fptype, gamma=1.0):
 
     return kf
 
+def _daal4py_check_weight(self, X, y, sample_weight):
+    ww = None
+    if sample_weight.shape[0] > 0:
+        sample_weight = _check_sample_weight(sample_weight, X)
+        if np.all(sample_weight <= 0):
+            raise ValueError('Invalid input - all samples have zero or negative weights.')
+        elif np.any(sample_weight <= 0):
+            if len(np.unique(y[sample_weight > 0])) != len(self.classes_):
+                raise ValueError('Invalid input - all samples with positive weights have the same label.')
+        ww = sample_weight
+    elif self.class_weight is not None:
+        ww = np.ones(X.shape[0], dtype=np.float64)
+    if self.class_weight is not None:
+        for i, v in enumerate(self.class_weight_):
+            ww[y == i] *= v
+    if ww is not None:
+        ww = make2d(ww)
+    return ww
 
-def _daal4py_fit(self, X, y_inp, kernel):
+def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
+        maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
+    svm_method = 'thunder' if daal_check_version((2020, 2), (2021, 108)) else 'boser'
+    svm_train = daal4py.svm_training(
+        method=svm_method,
+        fptype=fptype,
+        C=C,
+        accuracyThreshold=accuracyThreshold,
+        tau=tau,
+        maxIterations=maxIterations,
+        cacheSize=cacheSize,
+        doShrinking=doShrinking,
+        kernel=kernel
+    )
+    if nClasses == 2:
+        algo = svm_train
+    else:
+        algo = daal4py.multi_class_classifier_training(
+            nClasses=nClasses,
+            fptype=fptype,
+            method='oneAgainstOne',
+            training=svm_train,
+        )
+
+    return algo
+
+
+def _daal4py_fit(self, X, y_inp, sample_weight, kernel):
 
     if self.C <= 0:
         raise ValueError("C <= 0")
-
-    y = make2d(y_inp)
     num_classes = len(self.classes_)
 
+    ww = _daal4py_check_weight(self, X, y_inp, sample_weight)
+
+    y = make2d(y_inp)
     if num_classes == 2:
         # Intel(R) DAAL requires binary classes to be 1 and -1. sklearn normalizes
         # the classes to 0 and 1, so we temporarily replace the 0s with -1s.
@@ -164,35 +212,18 @@ def _daal4py_fit(self, X, y_inp, kernel):
     X_fptype = getFPType(X)
 
     kf = _daal4py_kf(kernel, X_fptype, gamma = self._gamma)
-
-    svm_train = daal4py.svm_training(
-        fptype=X_fptype,
+    algo = _daal4py_svm_compatibility(fptype=X_fptype,
         C=float(self.C),
         accuracyThreshold=float(self.tol),
         tau=1e-12,
         maxIterations=int(self.max_iter if self.max_iter > 0 else 2**30),
         cacheSize=int(self.cache_size * 1024 * 1024),
         doShrinking=bool(self.shrinking),
-        # shrinkingStep=,
-        kernel=kf
-    )
+        kernel=kf,
+        nClasses=num_classes)
 
-    if num_classes == 2:
-        algo = svm_train
-    else:
-        algo = daal4py.multi_class_classifier_training(
-            nClasses=num_classes,
-            fptype=X_fptype,
-            accuracyThreshold=float(self.tol),
-            method='oneAgainstOne',
-            maxIterations=int(self.max_iter if self.max_iter > 0 else 2**30),
-            training=svm_train,
-            #prediction=svm_predict
-        )
-
-    res = algo.compute(X, y)
+    res = algo.compute(data=X, labels=y, weights=ww)
     model = res.model
-
     self.daal_model_ = model
 
     if num_classes == 2:
@@ -288,14 +319,14 @@ def _daal_var(X):
 def __compute_gamma__(gamma, kernel, X, sparse, use_var=True, deprecation=True):
     """
     Computes actual value of 'gamma' parameter of RBF kernel
-    corresponding to SVC keyword values `gamma` and `kernel`, and feature 
+    corresponding to SVC keyword values `gamma` and `kernel`, and feature
     matrix X, with sparsity `sparse`.
 
-    In 0.20 gamma='scale' used to mean compute 'gamma' based on 
+    In 0.20 gamma='scale' used to mean compute 'gamma' based on
     column-wise standard deviation, but in 0.20.3 it was changed
     to use column-wise variance.
 
-    See: https://github.com/scikit-learn/scikit-learn/pull/13221 
+    See: https://github.com/scikit-learn/scikit-learn/pull/13221
     """
     if deprecation:
         _gamma_is_scale = gamma in ('scale', 'auto_deprecated')
@@ -394,7 +425,7 @@ def fit(self, X, y, sample_weight=None):
             raise TypeError("Sparse precomputed kernels are not supported.")
         self._sparse = sparse and not callable(self.kernel)
 
-        X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr', 
+        X, y = check_X_y(X, y, dtype=np.float64, order='C', accept_sparse='csr',
                          accept_large_sparse=False)
         y = self._validate_targets(y)
 
@@ -432,13 +463,18 @@ def fit(self, X, y, sample_weight=None):
         # see comment on the other call to np.iinfo in this file
         seed = rnd.randint(np.iinfo('i').max)
 
-        if ( not sparse and not self.probability and not getattr(self, 'break_ties', False) and
-             sample_weight.size == 0 and self.class_weight is None and kernel in ['linear', 'rbf']):
+        is_support_weights = daal_check_version((2020, 2), (2021, 108)) or \
+             sample_weight.size == 0 and self.class_weight is None
 
+        if ( not sparse and not self.probability and not getattr(self, 'break_ties', False) and \
+             kernel in ['linear', 'rbf']) and is_support_weights:
+
+            logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
             self._daal_fit = True
-            _daal4py_fit(self, X, y, kernel)
+            _daal4py_fit(self, X, y, sample_weight, kernel)
             self.fit_status_ = 0
         else:
+            logging.info("sklearn.svm.SVC.fit: " + method_uses_sklearn)
             self._daal_fit = False
             fit(X, y, sample_weight, solver_type, kernel, random_seed=seed)
 
@@ -525,12 +561,15 @@ def predict(self, X):
     if (_break_ties
         and self.decision_function_shape == 'ovr'
         and len(self.classes_) > 2):
+        logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
         y = np.argmax(self.decision_function(X), axis=1)
     else:
         X = self._validate_for_predict(X)
         if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
+            logging.info("sklearn.svm.SVC.predict: " + method_uses_daal)
             y = _daal4py_predict(self, X)
         else:
+            logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
             predict_func = self._sparse_predict if self._sparse else self._dense_predict
             y = predict_func(X)
 
@@ -586,7 +625,7 @@ else:
                 probability=probability, cache_size=cache_size,
                 class_weight=class_weight, verbose=verbose, max_iter=max_iter,
                 decision_function_shape=decision_function_shape,
-                random_state=random_state)    
+                random_state=random_state)
 
 SVC.fit = fit
 SVC.predict = predict

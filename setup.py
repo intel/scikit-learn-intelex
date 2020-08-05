@@ -40,9 +40,9 @@ if not no_dist and sys.version_info <= (3, 6):
     no_dist = True
 no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
 daal_root = os.environ['DAALROOT']
-tbb_root = os.environ['TBBROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
-dpcpp = True if 'DPCPP_VAR' in os.environ else False
+dpcpp = True if 'DPCPPROOT' in os.environ else False
+dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
@@ -62,6 +62,7 @@ else:
     assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
+DAAL_LIBDIRS = [daal_lib_dir]
 
 if no_stream :
     print('\nDisabling support for streaming mode\n')
@@ -90,12 +91,31 @@ else:
     else:
         MPI_LIBS    = ['mpi']
     MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
+
+#Level Zero workaround for oneDAL Beta06
+from generator.parse import parse_version
+
+header_path = os.path.join(daal_root, 'include', 'services', 'library_version_info.h')
+
+with open(header_path) as header:
+    v = parse_version(header)
+    dal_build_version = (int(v[0]), int(v[2]))
+
 if dpcpp:
-    DPCPP_CFLAGS = ['-D_DPCPP_', '-DONEAPI_DAAL_USE_MKL_GPU_FUNC']
-    DPCPP_LIBS = ['OpenCL', 'sycl', 'daal_sycl']
+    DPCPP_CFLAGS = ['-D_DPCPP_']
+    DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
+    if IS_LIN:
+        DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
+    elif IS_WIN:
+        DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
+    if dal_build_version == (2021,7):
+        DPCPP_LIBS.remove('onedal_sycl')
+        DPCPP_LIBS.append('daal_sycl')        
 else:
     DPCPP_CFLAGS = []
     DPCPP_LIBS = []
+    DPCPP_LIBDIRS = []
+
 DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
@@ -118,7 +138,10 @@ def get_type_defines():
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
 
 def getpyexts():
-    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include', tbb_root + '/include',]
+    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include',]
+    # FIXME it is a wrong place for this dependency
+    if not no_dist:
+        include_dir_plat.append(mpi_root + '/include')
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-DD4P_VERSION="'+d4p_version+'"', '-DNPY_ALLOW_THREADS=1'] + get_type_defines()
     ela = []
@@ -143,7 +166,6 @@ def getpyexts():
     if IS_MAC:
         ela.append('-stdlib=libc++')
         ela.append("-Wl,-rpath,{}".format(daal_lib_dir))
-        ela.append("-Wl,-rpath,{}".format(jp(daal_root, '..', 'tbb', 'lib')))
     elif IS_WIN:
         ela.append('-IGNORE:4197')
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x] for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
@@ -158,8 +180,8 @@ def getpyexts():
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
-                                libraries=libraries_plat + DPCPP_LIBS + MPI_LIBS,
-                                library_dirs=[daal_lib_dir],
+                                libraries=libraries_plat + MPI_LIBS,
+                                library_dirs=DAAL_LIBDIRS,
                                 language='c++'),
     ])
     if dpcpp:
@@ -170,7 +192,7 @@ def getpyexts():
                                         extra_compile_args=eca + ['-fsycl'],
                                         extra_link_args=ela,
                                         libraries=libraries_plat + DPCPP_LIBS,
-                                        library_dirs=[daal_lib_dir],
+                                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
                                         language='c++')))
     if not no_dist:
         exts.append(Extension('mpi_transceiver',
@@ -180,7 +202,7 @@ def getpyexts():
                               extra_compile_args=eca,
                               extra_link_args=ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS],
                               libraries=libraries_plat + MPI_LIBS,
-                              library_dirs=[daal_lib_dir] + MPI_LIBDIRS,
+                              library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
                               language='c++'))
     return exts
 
@@ -246,6 +268,7 @@ setup(  name        = "daal4py",
                     'daal4py.sklearn.monkeypatch',
                     'daal4py.sklearn.svm',
                     'daal4py.sklearn.utils',
+                    'daal4py.sklearn.model_selection',
         ],
         ext_modules = getpyexts(),
 )
