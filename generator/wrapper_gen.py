@@ -79,6 +79,16 @@ except:
     class pdSeries:
         pass
 
+try:
+    from modin import pandas
+    mdDataFrame = pandas.DataFrame
+    mdSeries = pandas.Series
+except:
+    class mdDataFrame:
+        pass
+    class mdSeries:
+        pass
+
 npc.import_array()
 
 hpat_spec = []
@@ -174,13 +184,13 @@ def my_procid():
 
 
 def get_data(x):
-    if isinstance(x, pdDataFrame):
+    if isinstance(x, pdDataFrame) or isinstance(x, mdDataFrame):
         x_dtypes = x.dtypes.values
         if np.all(x_dtypes == x_dtypes[0]):
             x = x.to_numpy()
         else:
             x = [xi.to_numpy() for _, xi in x.items()]
-    elif isinstance(x, pdSeries):
+    elif isinstance(x, pdSeries) or isinstance(x, mdSeries):
         x = x.to_numpy().reshape(-1, 1)
     return x
 
