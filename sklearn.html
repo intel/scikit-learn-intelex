@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Scikit-Learn API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#daal-accelerated-scikit-learn">DAAL accelerated scikit-learn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scikit-learn-verbose">scikit-learn verbose</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scikit-learn-api">scikit-learn API</a></li>
 </ul>
 </li>
@@ -175,6 +176,18 @@ scikit-learn application by using the following commandline flag:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">daal4py</span> <span class="n">my_application</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
+<p>If you are using Scikit-Learn from Intel® Distribution for Python, then
+you can enable daal4py patches through an environment variable. To do this, set <code class="docutils literal notranslate"><span class="pre">USE_DAAL4PY_SKLEARN</span></code> to one of the values
+<code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">'1'</span></code>, <code class="docutils literal notranslate"><span class="pre">'y'</span></code>, <code class="docutils literal notranslate"><span class="pre">'yes'</span></code>, <code class="docutils literal notranslate"><span class="pre">'Y'</span></code>, <code class="docutils literal notranslate"><span class="pre">'YES'</span></code>, <code class="docutils literal notranslate"><span class="pre">'Yes'</span></code>, <code class="docutils literal notranslate"><span class="pre">'true'</span></code>, <code class="docutils literal notranslate"><span class="pre">'True'</span></code> or <code class="docutils literal notranslate"><span class="pre">'TRUE'</span></code> as shown below.</p>
+<p>On Linux and Mac OS:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">USE_DAAL4PY_SKLEARN</span><span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>On Windows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">USE_DAAL4PY_SKLEARN</span><span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>To disable daal4py patches, set the <code class="docutils literal notranslate"><span class="pre">USE_DAAL4PY_SKLEARN</span></code> environment variable to 0.</p>
 <p>Patches can also be enabled programmatically:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">daal4py.sklearn</span>
 <span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">patch_sklearn</span><span class="p">()</span>
@@ -184,7 +197,7 @@ scikit-learn application by using the following commandline flag:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">daal4py</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">unpatch_sklearn</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Applying the monkey patch will impact the following existing scikit-learn
+<p id="sklearn-algorithms">Applying the monkey patch will impact the following existing scikit-learn
 algorithms:</p>
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html">sklearn.linear_model.LinearRegression</a></p></li>
@@ -201,6 +214,29 @@ suite, with few exceptions, specified in <a class="reference external" href="htt
 on all added and monkey-patched classes, which are discovered by means of
 introspection. This assures scikit-learn API compatibility of all
 <cite>daal4py.sklearn</cite> classes.</p>
+</div>
+<div class="section" id="scikit-learn-verbose">
+<span id="sklearn-verbose"></span><h2>scikit-learn verbose<a class="headerlink" href="#scikit-learn-verbose" title="Permalink to this headline">¶</a></h2>
+<p>To find out which implementation of the algorithm is currently used,
+set the environment variable.</p>
+<p>On Linux and Mac OS:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">IDP_SKLEARN_VERBOSE</span><span class="o">=</span><span class="n">INFO</span>
+</pre></div>
+</div>
+<p>On Windows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">IDP_SKLEARN_VERBOSE</span><span class="o">=</span><span class="n">INFO</span>
+</pre></div>
+</div>
+<p>During the calls that use Intel-optimized scikit-learn, you will receive additional print statements
+that indicate which implementation is being called.
+These print statements are only available for <a class="reference internal" href="#sklearn-algorithms"><span class="std std-ref">scikit-learn algorithms with daal4py patches</span></a>.</p>
+<p>For example, for DBSCAN you get one of these print statements depending on which implementation is used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>INFO: sklearn.cluster.DBSCAN.fit: uses Intel® DAAL solver
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">DBSCAN</span><span class="o">.</span><span class="n">fit</span><span class="p">:</span> <span class="n">uses</span> <span class="n">original</span> <span class="n">Scikit</span><span class="o">-</span><span class="n">learn</span> <span class="n">solver</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="scikit-learn-api">
 <span id="sklearn-api"></span><h2>scikit-learn API<a class="headerlink" href="#scikit-learn-api" title="Permalink to this headline">¶</a></h2>
