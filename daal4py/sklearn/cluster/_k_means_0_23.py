@@ -296,7 +296,7 @@ def predict(self, X, sample_weight=None):
 
     X = self._check_test_data(X)
 
-    daal_ready = sample_weight is None and hasattr(X, '__array__') or sp.isspmatrix_csr(X)
+    daal_ready = sample_weight is None and hasattr(X, '__array__') # or sp.isspmatrix_csr(X)
 
     if daal_ready:
         logging.info("sklearn.cluster.KMeans.predict: " + method_uses_daal)
