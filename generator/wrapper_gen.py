@@ -185,17 +185,9 @@ def my_procid():
 
 def get_data(x):
     if isinstance(x, pdDataFrame):
-        x_dtypes = x.dtypes.values
-        if np.all(x_dtypes == x_dtypes[0]):
-            x = x.to_numpy()
-        else:
-            x = [xi.to_numpy() for _, xi in x.items()]
+        x = x.to_numpy()
     elif isinstance(x, mdDataFrame):
-        x_dtypes = x.dtypes.values
-        if np.all(x_dtypes == x_dtypes[0]):
-            x = x.to_numpy()
-        else:
-            x = [xi.to_numpy() for _, xi in x.items()]
+        x = x.to_numpy()
     elif isinstance(x, pdSeries):
         x = x.to_numpy().reshape(-1, 1)
     elif isinstance(x, mdSeries):
