@@ -22,7 +22,7 @@ from sklearn.utils import (check_random_state, check_array)
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import (check_is_fitted, _num_samples, _deprecate_positional_args)
 
-from sklearn.cluster._kmeans import (k_means, _labels_inertia, _k_init, _validate_center_shape)
+from sklearn.cluster._kmeans import (k_means, _labels_inertia, _k_init)
 from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
 
 string_types = str
@@ -35,6 +35,17 @@ from sklearn.cluster import KMeans as KMeans_original
 import daal4py
 from .._utils import getFPType, method_uses_sklearn, method_uses_daal, daal_check_version
 import logging
+
+def _validate_center_shape(X, n_centers, centers):
+    """Check if centers is compatible with X and n_centers"""
+    if centers.shape[0] != n_centers:
+        raise ValueError(
+            f"The shape of the initial centers {centers.shape} does not "
+            f"match the number of clusters {n_centers}.")
+    if centers.shape[1] != X.shape[1]:
+        raise ValueError(
+            f"The shape of the initial centers {centers.shape} does not "
+            f"match the number of features of the data {X.shape[1]}.")
 
 def _daal_mean_var(X):
     fpt = getFPType(X)
