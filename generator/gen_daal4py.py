@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, add_get_result, enum_maps, enum_params, wrap_algo
+from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, add_get_result, enum_maps, enum_params, wrap_algo, result_to_compue
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 from shutil import copytree, rmtree
@@ -119,8 +119,7 @@ class cython_interface(object):
     # files we ignore/skip
     ignore_files = ['daal_shared_ptr.h', 'daal.h', 'daal_sycl.h', 'daal_win.h', 'algorithm_base_mode_batch.h',
                     'algorithm_base.h', 'algorithm.h', 'ridge_regression_types.h', 'kdtree_knn_classification_types.h',
-                    'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h',
-                    'multi_class_classifier_types.h']
+                    'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h']
 
     done = []
 
@@ -148,6 +147,8 @@ class cython_interface(object):
                     with open(fname, "r") as header:
                         parsed_data = parse_header(header, cython_interface.ignores)
 
+                    # if parsed_data['enums']:
+                    #     print(filename, parsed_data['enums'])
                     ns = cleanup_ns(fname, parsed_data['ns'])
                     # Now let's update the namespace; more than one file might contribute to the same ns
                     if ns:
@@ -177,6 +178,9 @@ class cython_interface(object):
                         if parsed_data['need_methods']:
                             self.namespace_dict[ns].need_methods = True
 
+        print(self.namespace_dict['algorithms::multi_class_classifier'].children)
+        print(self.namespace_dict['algorithms::multi_class_classifier'].enums)
+        print(self.namespace_dict['algorithms::multi_class_classifier'].headers)
         with open(jp(self.include_root, '..', 'services', 'library_version_info.h')) as header:
             v = parse_version(header)
             self.version = (int(v[0]), int(v[2]))
@@ -644,6 +648,7 @@ class cython_interface(object):
             param_classes = self.get_all_parameter_classes(ns)
             all_params = OrderedDict()
             opt_params = {}
+
             for p in param_classes:
                 parms = self.get_all_attrs(p[0], p[1].name, 'members', ns)
                 assert '::' not in p[1].name
@@ -663,6 +668,11 @@ class cython_interface(object):
                 for a in parms:
                     if a not in all_params:
                         all_params[a] = parms[a]
+
+            if ns in 'algorithms::multi_class_classifier::prediction':
+                print('AAAAAAA')
+                print(all_params)
+
 
             bcls = '::'.join([ns, 'Batch'])
             if bcls in no_constructor:
@@ -689,6 +699,15 @@ class cython_interface(object):
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
+                            if ns in result_to_compue.keys():
+                                thetype = result_to_compue[ns]
+
+                            if ns in 'algorithms::multi_class_classifier::prediction':
+                                print('BBB')
+                                print(thetype)
+                                print(hlt_ns)
+                                print(hlt)
+
                         else:
                             thetype = (hlt if hlt else all_params[p])
                         if thetype != None and tmp != None:
@@ -873,6 +892,9 @@ class cython_interface(object):
         for ns in algos:
             if ns.startswith('algorithms::') and not ns.startswith('algorithms::neural_networks') and self.namespace_dict[ns].enums:
                 cpp_begin += 'static str2i_map_t s2e_' + ns.replace('::', '_') + ' =\n{\n'
+                if ns in 'algorithms::multi_class_classifier':
+                    print(ns, self.namespace_dict[ns].enums)
+
                 for e in  self.namespace_dict[ns].enums:
                     for v in self.namespace_dict[ns].enums[e]:
                         vv = ns + '::' + v
