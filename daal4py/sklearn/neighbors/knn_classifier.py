@@ -21,6 +21,7 @@
 import numpy as np
 import numbers
 import warnings
+from functools import partial
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn import preprocessing
@@ -55,7 +56,7 @@ from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.validation import check_non_negative
 from sklearn.exceptions import DataConversionWarning, EfficiencyWarning
-from sklearn.neighbors._base import _is_sorted_by_data, _check_precomputed, _tree_query_parallel_helper
+from sklearn.neighbors._base import _is_sorted_by_data, _check_precomputed, _tree_query_parallel_helper, _kneighbors_from_graph
 
 
 class KNeighborsMixin:
@@ -188,11 +189,16 @@ class KNeighborsMixin:
         n_jobs = effective_n_jobs(self.n_jobs)
         chunked_results = None
 
-        if self._fit_method in ['brute', 'kd_tree'] \
-        and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean'):
+        try:
             fptype = getFPType(X)
+        except ValueError:
+            fptype = None
 
-            if self.algorithm == 'brute':
+        if self._fit_method in ['brute'] \
+        and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
+        and fptype is not None:
+
+            if self._fit_method == 'brute':
                 knn_classification_training = d4p.bf_knn_classification_training
                 knn_classification_prediction = d4p.bf_knn_classification_prediction
             else:
@@ -201,21 +207,27 @@ class KNeighborsMixin:
 
             training_alg = knn_classification_training(
                 fptype=fptype,
-                method='defaultDense',
-                k=n_neighbors,
-                nClasses=2
+                method='defaultDense'
             )
 
-            training_result = training_alg.compute(self._fit_X, np.ones(shape=(self._fit_X.shape[0], 1), dtype=np.int32))
+            fit_X = d4p.get_data(self._fit_X)
+            training_result = training_alg.compute(fit_X, np.empty(shape=(fit_X.shape[0], 1)))
 
             prediction_alg = knn_classification_prediction(
                 fptype=fptype,
                 method='defaultDense',
                 k=n_neighbors,
-                nClasses=2
+                # resultsToCompute='computeIndicesOfNeightbors|computeDistances'
             )
 
+            X = d4p.get_data(X)
             prediction_result = prediction_alg.compute(X, training_result.model)
+
+            # with open("/data/datae/onedal_python_benchmarks/knn_tests/bf/knn_log.txt", "a") as log:
+            #     log.write("unsup,{},{},{},{},{},{},{},{}\n".format(self._fit_method, self.effective_metric_, fptype, n_neighbors,
+            #                                                        str(type(prediction_result)), str(type(training_result.model)),
+            #                                                        str(knn_classification_training), str(knn_classification_prediction)))
+
             if return_distance:
                 results = prediction_result.distances, prediction_result.indices
             else:
@@ -413,10 +425,15 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin,
         """
         X = check_array(X, accept_sparse='csr')
 
-        if self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree'] \
-        and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean'):
-
+        try:
             fptype = getFPType(X)
+        except ValueError:
+            fptype = None
+
+        if self.weights in ['uniform', 'distance'] and self.algorithm in ['brute'] \
+        and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
+        and self._y.ndim == 1 and fptype is not None:
+
             n_classes = len(self.classes_)
 
             if self.algorithm == 'brute':
@@ -433,18 +450,19 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin,
                 nClasses=n_classes
             )
 
-            training_result = training_alg.compute(self._fit_X, self._y.reshape(self._y.shape[0], 1))
+            fit_X = d4p.get_data(self._fit_X)
+            training_result = training_alg.compute(fit_X, self._y.reshape(self._y.shape[0], 1))
 
             prediction_alg = knn_classification_prediction(
                 fptype=fptype,
                 method='defaultDense',
                 k=self.n_neighbors,
-                nClasses=n_classes,
-                # resultsToCompute="classLabels"
+                nClasses=n_classes
             )
 
+            X = d4p.get_data(X)
             prediction_result = prediction_alg.compute(X, training_result.model)
-            return prediction_result.prediction
+            return prediction_result.prediction.ravel().astype(self._y.dtype)
 
         else:
             neigh_dist, neigh_ind = self.kneighbors(X)
