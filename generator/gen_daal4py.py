@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, add_get_result, enum_maps, enum_params, wrap_algo
+from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, add_get_result, enum_maps, enum_params, wrap_algo, result_to_compue
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 from shutil import copytree, rmtree
@@ -119,8 +119,8 @@ class cython_interface(object):
     # files we ignore/skip
     ignore_files = ['daal_shared_ptr.h', 'daal.h', 'daal_sycl.h', 'daal_win.h', 'algorithm_base_mode_batch.h',
                     'algorithm_base.h', 'algorithm.h', 'ridge_regression_types.h', 'kdtree_knn_classification_types.h',
-                    'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h',
-                    'multi_class_classifier_types.h']
+                    'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h']
+
 
     done = []
 
@@ -147,7 +147,8 @@ class cython_interface(object):
                     #print('reading ' +  fname)
                     with open(fname, "r") as header:
                         parsed_data = parse_header(header, cython_interface.ignores)
-
+                    # if parsed_data['enums']:
+                    #     print(filename, parsed_data['enums'])
                     ns = cleanup_ns(fname, parsed_data['ns'])
                     # Now let's update the namespace; more than one file might contribute to the same ns
                     if ns:
@@ -176,7 +177,9 @@ class cython_interface(object):
                         self.namespace_dict[ns].headers.append(fname.replace(self.include_root, '').lstrip('/'))
                         if parsed_data['need_methods']:
                             self.namespace_dict[ns].need_methods = True
-
+        print(self.namespace_dict['algorithms::multi_class_classifier'].children)
+        print(self.namespace_dict['algorithms::multi_class_classifier'].enums)
+        print(self.namespace_dict['algorithms::multi_class_classifier'].headers)
         with open(jp(self.include_root, '..', 'services', 'library_version_info.h')) as header:
             v = parse_version(header)
             self.version = (int(v[0]), int(v[2]))
@@ -644,6 +647,7 @@ class cython_interface(object):
             param_classes = self.get_all_parameter_classes(ns)
             all_params = OrderedDict()
             opt_params = {}
+
             for p in param_classes:
                 parms = self.get_all_attrs(p[0], p[1].name, 'members', ns)
                 assert '::' not in p[1].name
@@ -689,6 +693,8 @@ class cython_interface(object):
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
+                            if ns in result_to_compue.keys():
+                                thetype = result_to_compue[ns]
                         else:
                             thetype = (hlt if hlt else all_params[p])
                         if thetype != None and tmp != None:
