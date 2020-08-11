@@ -193,7 +193,7 @@ def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_
     flag_compute = 'computeAssignments|computeExactObjectiveFunction'
     best_labels, best_inertia = _daal4py_k_means_predict(X, nClusters, best_cluster_centers, flag_compute)
 
-    distinct_clusters = len(set(best_labels))
+    distinct_clusters = np.unique(best_labels).size
     if distinct_clusters < nClusters:
         warnings.warn(
             "Number of distinct clusters ({}) found smaller than "
