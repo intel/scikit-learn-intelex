@@ -28,6 +28,7 @@ deselected_tests:
 
   # DAAL does not check convergence for tol == 0.0 for ease of benchmarking
   - cluster/tests/test_k_means.py::test_kmeans_convergence
+  - cluster/tests/test_k_means.py::test_kmeans_verbose
 
   # For Newton-CG solver, solution computed in float32 disagrees with that of float64 a little more than
   # the test expects, see https://github.com/scikit-learn/scikit-learn/pull/13645

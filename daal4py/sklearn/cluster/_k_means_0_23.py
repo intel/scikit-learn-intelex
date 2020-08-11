@@ -27,6 +27,7 @@ from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
 
 string_types = str
 
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils.extmath import row_norms
 import warnings
 
@@ -72,7 +73,7 @@ def _tolerance(X, rtol):
         mean_var = _daal_mean_var(X)
     return mean_var * rtol
 
-def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_0, random_state):
+def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_0, verbose, random_state):
 
     def is_string(s, target_str):
         return isinstance(s, string_types) and s == target_str
@@ -108,7 +109,11 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
         kmeans_init_res = kmeans_init.compute(X)
         centroids_ = kmeans_init_res.centroids
     else:
-        raise ValueError("Cluster centers should either be 'k-means++', 'random', 'deterministic' or an array")
+        raise ValueError(
+                f"init should be either 'k-means++', 'random', a ndarray or a "
+                f"callable, got '{cluster_centers_0}' instead.")
+    if verbose:
+        print("Initialization complete")
     return deterministic, centroids_
 
 def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
@@ -144,7 +149,7 @@ def _daal4py_k_means_predict(X, nClusters, centroids, resultsToEvaluate = 'compu
     return res.assignments[:,0], res.objectiveFunction[0,0]
 
 
-def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_init, random_state):
+def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_init, verbose, random_state):
     if numIterations < 0:
         raise ValueError("Wrong iterations number")
 
@@ -164,11 +169,14 @@ def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_
 
     for k in range(n_init):
         deterministic, starting_centroids_ = _daal4py_compute_starting_centroids(
-            X, X_fptype, nClusters, cluster_centers_0, random_state)
+            X, X_fptype, nClusters, cluster_centers_0, verbose, random_state)
 
         res = kmeans_algo.compute(X, starting_centroids_)
 
         inertia = res.objectiveFunction[0,0]
+        if verbose:
+            print(f"Iteration {k}, inertia {inertia}.")
+
         if best_inertia is None or inertia < best_inertia:
             best_cluster_centers = res.centroids
             if n_init > 1:
@@ -184,6 +192,15 @@ def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_
 
     flag_compute = 'computeAssignments|computeExactObjectiveFunction'
     best_labels, best_inertia = _daal4py_k_means_predict(X, nClusters, best_cluster_centers, flag_compute)
+
+    distinct_clusters = len(set(best_labels))
+    if distinct_clusters < nClusters:
+        warnings.warn(
+            "Number of distinct clusters ({}) found smaller than "
+            "n_clusters ({}). Possibly due to duplicate points "
+            "in X.".format(distinct_clusters, nClusters),
+            ConvergenceWarning, stacklevel=2) # for passing test case "test_kmeans_warns_less_centers_than_unique_points"
+
     return best_cluster_centers, best_labels, best_inertia, best_n_iter
 
 
@@ -219,14 +236,14 @@ def fit(self, X, y=None, sample_weight=None):
     self._n_threads = _openmp_effective_n_threads(self._n_threads)
 
     if self.n_init <= 0:
-        raise ValueError("Invalid number of initializations."
-                         " n_init=%d must be bigger than zero." % self.n_init)
+        raise ValueError(
+                f"n_init should be > 0, got {self.n_init} instead.")
 
     random_state = check_random_state(self.random_state)
 
     if self.max_iter <= 0:
-        raise ValueError('Number of iterations should be a positive number,'
-                         ' got %d instead' % self.max_iter)
+        raise ValueError(
+                f"max_iter should be > 0, got {self.max_iter} instead.")
 
     # avoid forcing order when copy_x=False
     order = "C" if self.copy_x else None
@@ -264,7 +281,7 @@ def fit(self, X, y=None, sample_weight=None):
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_fit(
                 X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
-                random_state)
+                self.verbose, random_state)
     else:
         logging.info("sklearn.cluster.KMeans.fit: " + method_uses_sklearn)
         super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
@@ -296,7 +313,7 @@ def predict(self, X, sample_weight=None):
 
     X = self._check_test_data(X)
 
-    daal_ready = sample_weight is None and hasattr(X, '__array__') # or sp.isspmatrix_csr(X)
+    daal_ready = sample_weight is None and hasattr(X, '__array__') or sp.isspmatrix_csr(X)
 
     if daal_ready:
         logging.info("sklearn.cluster.KMeans.predict: " + method_uses_daal)
