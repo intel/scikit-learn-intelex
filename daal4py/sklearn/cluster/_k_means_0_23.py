@@ -77,20 +77,23 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
 
     def is_string(s, target_str):
         return isinstance(s, string_types) and s == target_str
-
+    is_sparse = sp.isspmatrix(X)
+    default_method = "lloydCSR" if is_sparse else "defaultDense"
+    plus_plus_method = "plusPlusCSR" if is_sparse else "plusPlusDense"
+    random_method = "randomCSR" if is_sparse else "randomDense"    
     deterministic = False
     if is_string(cluster_centers_0, 'k-means++'):
         _seed = random_state.randint(np.iinfo('i').max)
-        daal_engine = daal4py.engines_mt19937(fptype=X_fptype, method='defaultDense', seed=_seed)
+        daal_engine = daal4py.engines_mt19937(fptype=X_fptype, method="defaultDense", seed=_seed)
         _n_local_trials = 2 + int(np.log(nClusters))
         kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype,
-                                          nTrials=_n_local_trials, method='plusPlusDense', engine=daal_engine)
+                                          nTrials=_n_local_trials, method=plus_plus_method, engine=daal_engine)
         kmeans_init_res = kmeans_init.compute(X)
         centroids_ = kmeans_init_res.centroids
     elif is_string(cluster_centers_0, 'random'):
         _seed = random_state.randint(np.iinfo('i').max)
-        daal_engine = daal4py.engines_mt19937(seed=_seed, fptype=X_fptype, method='defaultDense')
-        kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype, method='randomDense', engine=daal_engine)
+        daal_engine = daal4py.engines_mt19937(seed=_seed, fptype=X_fptype, method="defaultDense")
+        kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype, method=random_method, engine=daal_engine)
         kmeans_init_res = kmeans_init.compute(X)
         centroids_ = kmeans_init_res.centroids
     elif hasattr(cluster_centers_0, '__array__'):
@@ -105,7 +108,7 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
         centroids_ = cc_arr
     elif is_string(cluster_centers_0, 'deterministic'):
         deterministic = True
-        kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype, method='defaultDense')
+        kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype, method=default_method)
         kmeans_init_res = kmeans_init.compute(X)
         centroids_ = kmeans_init_res.centroids
     else:
@@ -137,12 +140,16 @@ def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
 
 def _daal4py_k_means_predict(X, nClusters, centroids, resultsToEvaluate = 'computeAssignments'):
     X_fptype = getFPType(X)
+    is_sparse = sp.isspmatrix(X)
+    method = "lloydCSR" if is_sparse else "defaultDense"
+    print("X type predict: ", type(X))
+    print("method predict: ", method)
     kmeans_algo = _daal4py_kmeans_compatibility(
         nClusters = nClusters,
         maxIterations = 0,
         fptype = X_fptype,
         resultsToEvaluate = resultsToEvaluate,
-        method = 'defaultDense')
+        method = method)
 
     res = kmeans_algo.compute(X, centroids)
 
@@ -155,17 +162,19 @@ def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_
 
     X_fptype = getFPType(X)
     abs_tol = _tolerance(X, tol) # tol is relative tolerance
-
+    print("X type fit: ", type(X))
+    is_sparse = sp.isspmatrix(X)
+    method = "lloydCSR" if is_sparse else "defaultDense"
     best_inertia, best_cluster_centers = None, None
     best_n_iter = -1
-
+    print("method fit: ", method)
     kmeans_algo = _daal4py_kmeans_compatibility(
         nClusters = nClusters,
         maxIterations = numIterations,
         accuracyThreshold = abs_tol,
         fptype = X_fptype,
         resultsToEvaluate = 'computeCentroids',
-        method = 'defaultDense')
+        method = method)
 
     for k in range(n_init):
         deterministic, starting_centroids_ = _daal4py_compute_starting_centroids(
@@ -246,9 +255,9 @@ def fit(self, X, y=None, sample_weight=None):
                 f"max_iter should be > 0, got {self.max_iter} instead.")
 
     # avoid forcing order when copy_x=False
-    order = "C" if self.copy_x else None
-    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
-                    order=order, copy=self.copy_x)
+    # order = "C" if self.copy_x else None
+    # X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
+    #                 order=order, copy=self.copy_x)
 
     algorithm = self.algorithm
     if algorithm == "elkan" and self.n_clusters == 1:
@@ -264,9 +273,8 @@ def fit(self, X, y=None, sample_weight=None):
                          " {}".format(str(algorithm)))
 
 
-    daal_ready = not sp.issparse(X)
-    daal_ready = daal_ready and hasattr(X, '__array__')
-
+    daal_ready = True
+    print("X type: ", type(X))
     if daal_ready:
         X_len = _num_samples(X)
         daal_ready = (self.n_clusters <= X_len)
@@ -277,7 +285,7 @@ def fit(self, X, y=None, sample_weight=None):
 
     if daal_ready:
         logging.info("sklearn.cluster.KMeans.fit: " + method_uses_daal)
-        X = check_array(X, dtype=[np.float64, np.float32])
+        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_fit(
                 X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
@@ -313,8 +321,7 @@ def predict(self, X, sample_weight=None):
 
     X = self._check_test_data(X)
 
-    daal_ready = sample_weight is None and hasattr(X, '__array__')
-    daal_ready = daal_ready or sp.isspmatrix_csr(X)
+    daal_ready = sample_weight is None and hasattr(X, '__array__') or sp.isspmatrix_csr(X)
 
     if daal_ready:
         logging.info("sklearn.cluster.KMeans.predict: " + method_uses_daal)
@@ -345,6 +352,7 @@ class KMeans(KMeans_original):
             copy_x=copy_x, n_jobs=n_jobs, algorithm=algorithm)
 
     def fit(self, X, y=None, sample_weight=None):
+        print("We are in daal4py")
         return _fit_copy(self, X, y=y, sample_weight=sample_weight)
 
     def predict(self, X, sample_weight=None):
