@@ -78,12 +78,11 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
     def is_string(s, target_str):
         return isinstance(s, string_types) and s == target_str
     is_sparse = sp.isspmatrix(X)
-    default_method = "lloydCSR" if is_sparse else "defaultDense"
-    plus_plus_method = "plusPlusCSR" if is_sparse else "plusPlusDense"
-    random_method = "randomCSR" if is_sparse else "randomDense"    
+    
     deterministic = False
     if is_string(cluster_centers_0, 'k-means++'):
         _seed = random_state.randint(np.iinfo('i').max)
+        plus_plus_method = "plusPlusCSR" if is_sparse else "plusPlusDense"
         daal_engine = daal4py.engines_mt19937(fptype=X_fptype, method="defaultDense", seed=_seed)
         _n_local_trials = 2 + int(np.log(nClusters))
         kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype,
@@ -92,6 +91,7 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
         centroids_ = kmeans_init_res.centroids
     elif is_string(cluster_centers_0, 'random'):
         _seed = random_state.randint(np.iinfo('i').max)
+        random_method = "randomCSR" if is_sparse else "randomDense"
         daal_engine = daal4py.engines_mt19937(seed=_seed, fptype=X_fptype, method="defaultDense")
         kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype, method=random_method, engine=daal_engine)
         kmeans_init_res = kmeans_init.compute(X)
@@ -108,6 +108,7 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
         centroids_ = cc_arr
     elif is_string(cluster_centers_0, 'deterministic'):
         deterministic = True
+        default_method = "lloydCSR" if is_sparse else "defaultDense"
         kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype, method=default_method)
         kmeans_init_res = kmeans_init.compute(X)
         centroids_ = kmeans_init_res.centroids
@@ -142,8 +143,6 @@ def _daal4py_k_means_predict(X, nClusters, centroids, resultsToEvaluate = 'compu
     X_fptype = getFPType(X)
     is_sparse = sp.isspmatrix(X)
     method = "lloydCSR" if is_sparse else "defaultDense"
-    print("X type predict: ", type(X))
-    print("method predict: ", method)
     kmeans_algo = _daal4py_kmeans_compatibility(
         nClusters = nClusters,
         maxIterations = 0,
@@ -162,12 +161,10 @@ def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_
 
     X_fptype = getFPType(X)
     abs_tol = _tolerance(X, tol) # tol is relative tolerance
-    print("X type fit: ", type(X))
     is_sparse = sp.isspmatrix(X)
     method = "lloydCSR" if is_sparse else "defaultDense"
     best_inertia, best_cluster_centers = None, None
     best_n_iter = -1
-    print("method fit: ", method)
     kmeans_algo = _daal4py_kmeans_compatibility(
         nClusters = nClusters,
         maxIterations = numIterations,
@@ -274,7 +271,6 @@ def fit(self, X, y=None, sample_weight=None):
 
 
     daal_ready = True
-    print("X type: ", type(X))
     if daal_ready:
         X_len = _num_samples(X)
         daal_ready = (self.n_clusters <= X_len)
@@ -352,7 +348,6 @@ class KMeans(KMeans_original):
             copy_x=copy_x, n_jobs=n_jobs, algorithm=algorithm)
 
     def fit(self, X, y=None, sample_weight=None):
-        print("We are in daal4py")
         return _fit_copy(self, X, y=y, sample_weight=sample_weight)
 
     def predict(self, X, sample_weight=None):
