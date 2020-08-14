@@ -207,7 +207,9 @@ class KNeighborsMixin:
 
             training_alg = knn_classification_training(
                 fptype=fptype,
-                method='defaultDense'
+                method='defaultDense',
+                k=n_neighbors,
+                resultsToCompute='computeIndicesOfNeightbors|computeDistances'
             )
 
             fit_X = d4p.get_data(self._fit_X)
@@ -217,7 +219,7 @@ class KNeighborsMixin:
                 fptype=fptype,
                 method='defaultDense',
                 k=n_neighbors,
-                # resultsToCompute='computeIndicesOfNeightbors|computeDistances'
+                resultsToCompute='computeIndicesOfNeightbors|computeDistances'
             )
 
             X = d4p.get_data(X)
@@ -447,17 +449,23 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin,
                 fptype=fptype,
                 method='defaultDense',
                 k=self.n_neighbors,
-                nClasses=n_classes
+                nClasses=n_classes,
+                resultsToCompute='computeClassLabels|computeIndicesOfNeightbors|computeDistances',
+                voteWeights='voteUniform' if self.weights == 'uniform' else 'voteDistance'
             )
 
             fit_X = d4p.get_data(self._fit_X)
-            training_result = training_alg.compute(fit_X, self._y.reshape(self._y.shape[0], 1))
+            _y = d4p.get_data(self._y)
+            _y = _y.reshape(_y.shape[0], 1)
+            training_result = training_alg.compute(fit_X, _y)
 
             prediction_alg = knn_classification_prediction(
                 fptype=fptype,
                 method='defaultDense',
                 k=self.n_neighbors,
-                nClasses=n_classes
+                nClasses=n_classes,
+                resultsToCompute='computeClassLabels|computeIndicesOfNeightbors|computeDistances',
+                voteWeights='voteUniform' if self.weights == 'uniform' else 'voteDistance'
             )
 
             X = d4p.get_data(X)
