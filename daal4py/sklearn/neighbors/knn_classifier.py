@@ -194,7 +194,7 @@ class KNeighborsMixin:
         except ValueError:
             fptype = None
 
-        if self._fit_method in ['brute'] \
+        if self._fit_method in ['brute', 'kd_tree'] \
         and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
         and fptype is not None:
 
@@ -432,7 +432,7 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin,
         except ValueError:
             fptype = None
 
-        if self.weights in ['uniform', 'distance'] and self.algorithm in ['brute'] \
+        if self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and self._y.ndim == 1 and fptype is not None:
 
@@ -450,7 +450,6 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin,
                 method='defaultDense',
                 k=self.n_neighbors,
                 nClasses=n_classes,
-                resultsToCompute='computeClassLabels|computeIndicesOfNeightbors|computeDistances',
                 voteWeights='voteUniform' if self.weights == 'uniform' else 'voteDistance'
             )
 
@@ -464,7 +463,6 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin,
                 method='defaultDense',
                 k=self.n_neighbors,
                 nClasses=n_classes,
-                resultsToCompute='computeClassLabels|computeIndicesOfNeightbors|computeDistances',
                 voteWeights='voteUniform' if self.weights == 'uniform' else 'voteDistance'
             )
 
