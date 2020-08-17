@@ -77,7 +77,7 @@ Without conda-build you have to manually setup your environment before building 
 ## Setting up a build environment
 The easiest path for getting cython, DAAL, MPI etc. is by creating a conda environment and setting environment variables:
 ```
-conda create -n DAAL4PY python=3.6 impi-devel daal daal-include cython jinja2 numpy clang-tools -c intel -c conda-forge
+conda create -n DAAL4PY python=3.6 impi-devel daal daal-include cython jinja2 numpy clang-tools pandas scikit-learn -c intel -c conda-forge
 conda activate DAAL4PY
 export DAALROOT=$CONDA_PREFIX
 export MPIROOT=$CONDA_PREFIX
