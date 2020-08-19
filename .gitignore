@@ -1,5 +1,6 @@
 # build artefacts
 *.so
+*.egg
 build
 daal4py.egg-info
 **/__pycache__
