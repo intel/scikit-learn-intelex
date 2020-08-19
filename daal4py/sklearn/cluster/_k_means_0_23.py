@@ -251,11 +251,6 @@ def fit(self, X, y=None, sample_weight=None):
         raise ValueError(
                 f"max_iter should be > 0, got {self.max_iter} instead.")
 
-    # avoid forcing order when copy_x=False
-    # order = "C" if self.copy_x else None
-    # X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
-    #                 order=order, copy=self.copy_x)
-
     algorithm = self.algorithm
     if algorithm == "elkan" and self.n_clusters == 1:
         warnings.warn("algorithm='elkan' doesn't make sense for a single "
