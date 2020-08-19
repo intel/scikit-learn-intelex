@@ -73,10 +73,20 @@ try:
     import pandas
     pdDataFrame = pandas.DataFrame
     pdSeries = pandas.Series
-except:
+except ImportError:
     class pdDataFrame:
         pass
     class pdSeries:
+        pass
+
+try:
+    from modin import pandas
+    mdDataFrame = pandas.DataFrame
+    mdSeries = pandas.Series
+except ImportError:
+    class mdDataFrame:
+        pass
+    class mdSeries:
         pass
 
 npc.import_array()
@@ -173,11 +183,19 @@ def my_procid():
     return c_my_procid()
 
 
-def _get_data(x):
+def get_data(x):
     if isinstance(x, pdDataFrame):
-        x = [x.loc[:,i].values for i in x]
+        x_dtypes = x.dtypes.values
+        if np.all(x_dtypes == x_dtypes[0]):
+            x = x.to_numpy()
+        else:
+            x = [xi.to_numpy() for _, xi in x.items()]
+    elif isinstance(x, mdDataFrame):
+        x = x.to_numpy()
     elif isinstance(x, pdSeries):
-        x = [x.values]
+        x = x.to_numpy().reshape(-1, 1)
+    elif isinstance(x, mdSeries):
+        x = x.to_numpy().reshape(-1, 1)
     return x
 
 
@@ -202,6 +220,50 @@ def _str(instance, properties):
             result += '\\n\\n'
         return result[:-2]
 
+
+cdef extern from "daal4py.h":
+    cdef bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype) except +
+
+
+def daal_assert_all_finite(X, allow_nan=False, dtype=0):
+    return c_assert_all_finite(data_or_file(<PyObject*>X), allow_nan, dtype)
+
+
+cdef extern from "daal4py.h":
+    cdef void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test, data_or_file & train_idx, data_or_file & test_idx) except +
+
+
+def daal_train_test_split(orig, train, test, train_idx, test_idx):
+    c_train_test_split(data_or_file(<PyObject*>orig), data_or_file(<PyObject*>train), data_or_file(<PyObject*>test), data_or_file(<PyObject*>train_idx), data_or_file(<PyObject*>test_idx))
+
+
+cdef extern from "daal4py.h":
+    cdef void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state) except +
+
+
+def daal_generate_shuffled_indices(idx, random_state):
+    c_generate_shuffled_indices(data_or_file(<PyObject*>idx), data_or_file(<PyObject*>random_state))
+
+
+import sys
+def _execute_with_context(func):
+    def exec_func(*args, **keyArgs):
+        # we check is DPPY imported or not
+        # possible we should check are we in defined context or not
+        if 'dppl' in sys.modules:
+            from dppl import runtime as rt
+            from _oneapi import set_queue_to_daal_context, reset_daal_context
+
+            queue = rt.get_current_queue()
+            set_queue_to_daal_context(queue)
+
+            res = func(*args, **keyArgs)
+
+            reset_daal_context()
+            return res
+        else:
+            return func(*args, **keyArgs)
+    return exec_func
 '''
 
 ###############################################################################
@@ -643,6 +705,9 @@ struct {{algo}}__iface__ : public {{prnt}}
     virtual {{result_map.class_type}} * compute({{input_args|fmt('{}', 'decl_cpp', sep=',\n')|indent(indent)}},
 {{' '*indent}}bool setup_only = false)
         {assert(false); return NULL;}
+{% if add_get_result %}
+    virtual {{result_map.class_type}} * get_result() {assert(false); return NULL;}
+{% endif %}
 {% if streaming.name %}
     virtual {{result_map.class_type}} * finalize() {assert(false); return NULL;}
 {% endif %}
@@ -742,6 +807,7 @@ private:
     }
 
 {% endif %}
+
 {% if step_specs is defined and distributed.name %}
     // Distributed computing
 public:
@@ -793,6 +859,14 @@ public:
         return new typename iomb_type::result_type({{batchcall}});
 {% endif %}
     }
+
+{% if add_get_result %}
+    typename iomb_type::result_type * get_result()
+    {
+        return new typename iomb_type::result_type(iomb_type::getResult(*_algob));
+    }
+{% endif %}
+
 };
 """
 
@@ -805,6 +879,9 @@ cdef extern from "daal4py.h":
 {% set indent = 17+(result_map.class_type|flat|length) %}
         {{result_map.class_type|flat}} compute({{input_args|fmt('{}', 'decl_cyext', sep=',\n')|indent(indent)}},
 {{' '*indent}}const bool setup_only) except +
+{% if add_get_result %}
+        {{result_map.class_type|flat}} get_result() except +
+{% endif %}
 {% if streaming.name %}
         {{result_map.class_type|flat}} finalize() except +
 {% endif %}
@@ -844,6 +921,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
+    @_execute_with_context
     def _compute(self,
                  {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
                  setup=False):
@@ -869,6 +947,17 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         :rtype: {{cytype}}
         '''
         return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
+
+{% if add_get_result %}
+    def __get_result__(self):
+        if self.c_ptr.get() == NULL:
+            raise ValueError("Pointer to DAAL entity is NULL")
+        cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
+        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
+        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
+        res.c_ptr = deref(algo).get_result()
+        return res
+{% endif %}
 
 {% if streaming.name %}
     # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
@@ -1116,7 +1205,7 @@ class wrapper_gen(object):
         """
         return code for initing
         """
-        cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\ntypedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;"
+        cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\n"
         pyx = ''
         for i in self.ifaces:
             tstr = gen_cython_iface_macro + '{{gen_cython_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
@@ -1195,6 +1284,7 @@ class wrapper_gen(object):
         jparams.update(cfg['params']['params_templ'])
         jparams['create'] = cfg['create']
         jparams['add_setup']  = cfg['add_setup']
+        jparams['add_get_result']  = cfg['add_get_result']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
         jparams['params_ds'] = jparams['params_req'] + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]

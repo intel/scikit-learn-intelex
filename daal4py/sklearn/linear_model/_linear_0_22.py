@@ -19,8 +19,9 @@ import numpy as np
 from scipy import sparse as sp
 from scipy import linalg
 
-from sklearn.utils import check_array, check_X_y, deprecated, as_float_array
+from sklearn.utils import deprecated, as_float_array
 from sklearn.linear_model._base import _rescale_data
+from ..utils.validation import _daal_check_array, _daal_check_X_y
 
 from sklearn.utils.fixes import sparse_lsqr
 from sklearn.utils.validation import _check_sample_weight
@@ -33,7 +34,10 @@ except ImportError:
     from sklearn.externals.joblib import Parallel, delayed
 
 import daal4py
-from ..utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType, method_uses_sklearn, \
+                    method_uses_daal, method_uses_sklearn_arter_daal,
+                    is_DataFrame, get_dtype)
+import logging
 
 def _daal4py_fit(self, X, y_):
     y = make2d(y_)
@@ -66,6 +70,9 @@ def _daal4py_fit(self, X, y_):
 
     self.intercept_ = coefs[:,0].copy(order='C')
     self.coef_ = coefs[:,1:].copy(order='C')
+    self.n_features_in_ = X.shape[1]
+    self.rank_ = X.shape[1]
+    self.singular_ = np.full((X.shape[1],), np.nan)
 
     if self.coef_.shape[0] == 1 and y_.ndim == 1:
         self.coef_ = np.ravel(self.coef_)
@@ -117,22 +124,29 @@ def fit(self, X, y, sample_weight=None):
     """
 
     n_jobs_ = self.n_jobs
-    X, y = check_X_y(X, y, accept_sparse=['csr', 'csc', 'coo'],
-                     y_numeric=True, multi_output=True)
+    X, y = _daal_check_X_y(X, y, accept_sparse=['csr', 'csc', 'coo'],
+                           y_numeric=True, multi_output=True)
+
+    dtype = get_dtype(X)
 
     if sample_weight is not None:
         sample_weight = _check_sample_weight(sample_weight, X,
-                                             dtype=X.dtype)
+                                             dtype=dtype)
 
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = bool(X.shape[0] > X.shape[1] + int(self.fit_intercept))
+
     if (self.fit_shape_good_for_daal_ and
             not sp.issparse(X) and
-            (X.dtype == np.float64 or X.dtype == np.float32) and
+            (dtype == np.float64 or dtype == np.float32) and
             sample_weight is None):
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_daal)
         res = _daal4py_fit(self, X, y)
         if res is not None:
             return res
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_sklearn_arter_daal)
+    else:
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_sklearn)
 
     if sample_weight is not None:
         sample_weight = np.asarray(sample_weight)
@@ -194,18 +208,22 @@ def predict(self, X):
     C : array, shape = (n_samples,)
         Returns predicted values.
     """
-    X = np.asarray(X) if not sp.issparse(X) else X
+    is_df = is_DataFrame(X)
+    X = np.asarray(X) if not sp.issparse(X) and not is_df else X
     good_shape_for_daal = True if X.ndim <= 1 else True if X.shape[0] > X.shape[1] else False
+    dtype = get_dtype(X)
 
     if (sp.issparse(X) or
             not hasattr(self, 'daal_model_') or
             not self.fit_shape_good_for_daal_ or
             not good_shape_for_daal or
-            not (X.dtype == np.float64 or X.dtype == np.float32) or
+            not (dtype == np.float64 or dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
+        logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_sklearn)
         return self._decision_function(X)
     else:
-        X = check_array(X)
+        logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_daal)
+        X = _daal_check_array(X)
         return _daal4py_predict(self, X)
 
 

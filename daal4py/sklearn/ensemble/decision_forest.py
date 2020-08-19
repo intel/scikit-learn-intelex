@@ -27,7 +27,7 @@ import warnings
 
 
 import daal4py
-from ..utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType)
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
 from sklearn.tree._tree import (DTYPE, Tree)
@@ -41,6 +41,8 @@ from sklearn.exceptions import DataConversionWarning, NotFittedError
 
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
+
+daal_version = tuple(map(int, (daal4py.__daal_link_version__[0:4], daal4py.__daal_link_version__[4:8])))
 
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
     if max_features is None:
@@ -127,7 +129,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
                           "setting for min_samples_leaf.")
 
 
-    def daal_fit(self, X, y):
+    def _daal_fit(self, X, y):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.single, np.double]
         X = check_array(X, dtype=_supported_dtypes_)
@@ -169,7 +171,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         # create algorithm
         X_fptype = getFPType(X)
         daal_engine_ = daal4py.engines_mt2203(seed=seed_, fptype=X_fptype)
-        _featuresPerNode = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=False)
+        _featuresPerNode = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=True)
 
         dfc_algorithm = daal4py.decision_forest_classification_training(
             nClasses=int(self.n_classes_),
@@ -179,7 +181,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             observationsPerTreeFraction=1,
             featuresPerNode=int(_featuresPerNode),
             maxTreeDepth=int(0 if self.max_depth is None else self.max_depth),
-            minObservationsInLeafNode=1,
+            minObservationsInLeafNode=int(self.min_samples_leaf),
             engine=daal_engine_,
             impurityThreshold=float(0.0 if self.min_impurity_split is None else self.min_impurity_split),
             varImportance="MDI",
@@ -187,6 +189,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             memorySavingMode=False,
             bootstrap=bool(self.bootstrap)
         )
+        self._cached_estimators_ = None
         # compute
         dfc_trainingResult = dfc_algorithm.compute(X, y)
 
@@ -194,6 +197,23 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         model = dfc_trainingResult.model
         self.daal_model_ = model
 
+        # compute oob_score_
+        if self.oob_score:
+            self._set_oob_score(X, y)
+
+        return self
+
+
+    @property
+    def estimators_(self):
+        if hasattr(self, '_cached_estimators_'):
+            if self._cached_estimators_:
+                return self._cached_estimators_
+
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            check_is_fitted(self)
+        else:
+            check_is_fitted(self, 'daal_model_')
         # convert model to estimators
         est = DecisionTreeClassifier(
             criterion=self.criterion,
@@ -206,7 +226,6 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             min_impurity_decrease=self.min_impurity_decrease,
             min_impurity_split=self.min_impurity_split,
             random_state=None)
-        
         # we need to set est.tree_ field with Trees constructed from Intel(R) DAAL solution
         estimators_ = []
         for i in range(self.n_estimators):
@@ -217,15 +236,13 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             est_i.classes_ = self.classes_
             est_i.n_classes_ = self.n_classes_
             # treeState members: 'class_count', 'leaf_count', 'max_depth', 'node_ar', 'node_count', 'value_ar'
-            tree_i_state_class = daal4py.getTreeState(model, i, self.n_classes_)
+            tree_i_state_class = daal4py.getTreeState(self.daal_model_, i, self.n_classes_)
 
             node_ndarray = tree_i_state_class.node_ar
             value_ndarray = tree_i_state_class.value_ar
             value_shape = (node_ndarray.shape[0], self.n_outputs_,
                                  self.n_classes_)
-
             # assert np.allclose(value_ndarray, value_ndarray.astype(np.intc, casting='unsafe')), "Value array is non-integer"
-
             tree_i_state_dict = {
                 'max_depth' : tree_i_state_class.max_depth,
                 'node_count' : tree_i_state_class.node_count,
@@ -236,22 +253,23 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
 
-        self.estimators_ = estimators_
+        self._cached_estimators_ = estimators_
+        return estimators_
 
-        # compute oob_score_
-        if self.oob_score:
-            self._set_oob_score(X, y)
-
-        return self
-
-
-    def daal_predict(self, X):
+    def _daal_predict(self, X):
         X = self._validate_X_predict(X)
 
-        dfc_algorithm = daal4py.decision_forest_classification_prediction(
-            nClasses = int(self.n_classes_),
-            fptype = 'float'
-            )
+        if daal_version < (2020,1):
+            dfc_algorithm = daal4py.decision_forest_classification_prediction(
+                nClasses = int(self.n_classes_),
+                fptype = 'float'
+                )
+        else:
+            dfc_algorithm = daal4py.decision_forest_classification_prediction(
+                nClasses = int(self.n_classes_),
+                fptype = 'float',
+                resultsToEvaluate="computeClassLabels"
+                )
         dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
 
         pred = dfc_predictionResult.prediction
@@ -259,8 +277,30 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         return np.take(self.classes_, pred.ravel().astype(np.int, casting='unsafe'))
 
 
+    def _daal_predict_proba(self, X):
+        X = self._validate_X_predict(X)
+
+        dfc_algorithm = daal4py.decision_forest_classification_prediction(
+            nClasses = int(self.n_classes_),
+            fptype = 'float',
+            resultsToEvaluate="computeClassProbabilities"
+            )
+        dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
+
+        pred = dfc_predictionResult.probabilities
+
+        return pred
+
+
+    def predict_proba(self, X):
+        if daal_version < (2020,1):
+            return super(RandomForestClassifier, self).predict_proba(X)
+        else:
+            return self._daal_predict_proba(X)
+
+
     def fit(self, X, y):
-        return self.daal_fit(X, y)
+        return self._daal_fit(X, y)
 
 
     def predict(self, X):
@@ -268,7 +308,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
             check_is_fitted(self)
         else:
             check_is_fitted(self, 'daal_model_')
-        return self.daal_predict(X)
+        return self._daal_predict(X)
 
 
     def _more_tags(self):
@@ -341,7 +381,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
 
     # Intel(R) DAAL only supports "mse" criterion
-    def daal_fit(self, X, y):
+    def _daal_fit(self, X, y):
         self._check_daal_supported_parameters()
         _supported_dtypes_ = [np.double, np.single]
         X = check_array(X, dtype=_supported_dtypes_)
@@ -393,12 +433,28 @@ class RandomForestRegressor(skl_RandomForestRegressor):
             bootstrap=bool(self.bootstrap)
         )
 
+        self._cached_estimators_ = None
         dfr_trainingResult = dfr_algorithm.compute(X, y)
 
         # get resulting model
         model = dfr_trainingResult.model
         self.daal_model_ = model
 
+        # compute oob_score_
+        if self.oob_score:
+            self._set_oob_score(X, y)
+
+        return self
+
+    @property
+    def estimators_(self):
+        if hasattr(self, '_cached_estimators_'):
+            if self._cached_estimators_:
+                return self._cached_estimators_
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            check_is_fitted(self)
+        else:
+            check_is_fitted(self, 'daal_model_')
         # convert model to estimators
         est = DecisionTreeRegressor(
             criterion=self.criterion,
@@ -419,7 +475,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
             est_i.n_features_ = self.n_features_
             est_i.n_outputs_ = self.n_outputs_
 
-            tree_i_state_class = daal4py.getTreeState(model, i)
+            tree_i_state_class = daal4py.getTreeState(self.daal_model_, i)
             tree_i_state_dict = {
                 'max_depth' : tree_i_state_class.max_depth,
                 'node_count' : tree_i_state_class.node_count,
@@ -430,15 +486,11 @@ class RandomForestRegressor(skl_RandomForestRegressor):
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
 
-        self.estimators_ = estimators_
-        # compute oob_score_
-        if self.oob_score:
-            self._set_oob_score(X, y)
-
-        return self
+        return estimators_
 
 
-    def daal_predict(self, X):
+
+    def _daal_predict(self, X):
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             check_is_fitted(self)
         else:
@@ -454,11 +506,11 @@ class RandomForestRegressor(skl_RandomForestRegressor):
 
 
     def fit(self, X, y):
-        return self.daal_fit(X, y)
+        return self._daal_fit(X, y)
 
 
     def predict(self, X):
-        return self.daal_predict(X)
+        return self._daal_predict(X)
 
 
     def _more_tags(self):

@@ -25,7 +25,8 @@ from sklearn.utils.validation import _check_sample_weight
 from sklearn.cluster import DBSCAN as DBSCAN_original
 
 import daal4py
-from daal4py.sklearn.utils import (make2d, getFPType)
+from daal4py.sklearn._utils import (make2d, getFPType, method_uses_sklearn, method_uses_daal, is_in_sycl_ctxt)
+import logging
 
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
@@ -42,10 +43,12 @@ def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     XX = make2d(X)
 
     fpt = getFPType(XX)
+    memorySavingMode = True if is_in_sycl_ctxt() else False
     alg = daal4py.dbscan(
         method='defaultDense',
         epsilon=float(eps),
         minObservations=int(min_samples),
+        memorySavingMode=memorySavingMode,
         resultsToCompute="computeCoreIndices")
 
     daal_res = alg.compute(XX, ww)
@@ -236,6 +239,7 @@ class DBSCAN(DBSCAN_original):
                        (self.metric == 'minkowski' and self.p == 2)) and 
                        isinstance(X, np.ndarray) and (X.dtype.kind in ['d', 'f']))
         if _daal_ready:
+            logging.info("sklearn.cluster.DBSCAN.fit: " + method_uses_daal)
             core_ind, assignments = _daal_dbscan(
                 X, self.eps,
                 self.min_samples,
@@ -245,4 +249,5 @@ class DBSCAN(DBSCAN_original):
             self.components_ = np.take(X, core_ind, axis=0)
             return self
         else:
+            logging.info("sklearn.cluster.DBSCAN.fit: " + method_uses_sklearn)
             return super().fit(X, y, sample_weight=sample_weight)

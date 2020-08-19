@@ -21,7 +21,7 @@
 import daal4py as d4p
 import numpy as np
 import os
-from daal4py.oneapi import sycl_context, sycl_buffer
+from daal4py.oneapi import sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -31,6 +31,17 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
+try:
+    from dppl import device_context, device_type
+    with device_context(device_type.gpu, 0):
+        gpu_available=True
+except:
+    try:
+        from daal4py.oneapi import sycl_context
+        with sycl_context('gpu'):
+            gpu_available=True
+    except:
+        gpu_available=False
 
 # Commone code for both CPU and GPU computations
 def compute(train_data, train_labels, predict_data, nClasses):
@@ -83,15 +94,28 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_labels = to_numpy(train_labels)
     predict_data = to_numpy(predict_data)
 
+    try:
+        from dppl import device_context, device_type
+        gpu_context = lambda: device_context(device_type.gpu, 0)
+        cpu_context = lambda: device_context(device_type.cpu, 0)
+    except:
+        from daal4py.oneapi import sycl_context
+        gpu_context = lambda: sycl_context('gpu')
+        cpu_context = lambda: sycl_context('cpu')
+
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
-        sycl_train_data = sycl_buffer(train_data)
-        sycl_train_labels = sycl_buffer(train_labels)
-        sycl_predict_data = sycl_buffer(predict_data)
-        result_gpu, _ = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
+    if gpu_available:
+        with gpu_context():
+            sycl_train_data = sycl_buffer(train_data)
+            sycl_train_labels = sycl_buffer(train_labels)
+            sycl_predict_data = sycl_buffer(predict_data)
+            result_gpu, _ = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
+        assert np.allclose(result_classic.prediction, result_gpu.prediction)
+        assert np.allclose(result_classic.probabilities, result_gpu.probabilities, atol=1e-3)
+        assert np.allclose(result_classic.logProbabilities, result_gpu.logProbabilities, atol=1e-2)
 
     # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
+    with cpu_context():
         sycl_train_data = sycl_buffer(train_data)
         sycl_train_labels = sycl_buffer(train_labels)
         sycl_predict_data = sycl_buffer(predict_data)
@@ -102,10 +126,6 @@ def main(readcsv=read_csv, method='defaultDense'):
     assert result_classic.logProbabilities.shape == (predict_data.shape[0], nClasses)
     predict_labels = np.loadtxt(testfile, usecols=range(nFeatures, nFeatures + 1), delimiter=',', ndmin=2)
     assert np.count_nonzero(result_classic.prediction-predict_labels)/predict_labels.shape[0] < 0.025
-
-    assert np.allclose(result_classic.prediction, result_gpu.prediction)
-    assert np.allclose(result_classic.probabilities, result_gpu.probabilities, atol=1e-3)
-    assert np.allclose(result_classic.logProbabilities, result_gpu.logProbabilities, atol=1e-2)
 
     assert np.allclose(result_classic.prediction, result_cpu.prediction)
     assert np.allclose(result_classic.probabilities, result_cpu.probabilities)

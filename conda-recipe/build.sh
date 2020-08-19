@@ -7,8 +7,8 @@ else
 fi
 
 # if dpc++ vars path is specified
-if [ ! -z "${DPCPP_VAR}" ]; then
-    source ${DPCPP_VAR}
+if [ ! -z "${DPCPPROOT}" ]; then
+    source ${DPCPPROOT}/env/vars.sh
     export CC=dpcpp
 fi
 
@@ -26,6 +26,5 @@ if [ `uname` == Darwin ]; then
 fi
 
 export DAAL4PY_VERSION=$PKG_VERSION
-export TBBROOT=${PREFIX}
 export MPIROOT=${PREFIX}
 ${PYTHON} setup.py install $ARGS

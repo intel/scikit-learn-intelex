@@ -21,7 +21,7 @@
 import daal4py as d4p
 import numpy as np
 import os
-from daal4py.oneapi import sycl_context, sycl_buffer
+from daal4py.oneapi import sycl_buffer
 
 # let's try to use pandas' fast csv reader
 try:
@@ -31,6 +31,17 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
+try:
+    from dppl import device_context, device_type
+    with device_context(device_type.gpu, 0):
+        gpu_available=True
+except:
+    try:
+        from daal4py.oneapi import sycl_context
+        with sycl_context('gpu'):
+            gpu_available=True
+    except:
+        gpu_available=False
 
 # Commone code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data):
@@ -79,17 +90,35 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_dep_data = to_numpy(train_dep_data)
     test_indep_data = to_numpy(test_indep_data)
 
+    try:
+        from dppl import device_context, device_type
+        gpu_context = lambda: device_context(device_type.gpu, 0)
+        cpu_context = lambda: device_context(device_type.cpu, 0)
+    except:
+        from daal4py.oneapi import sycl_context
+        gpu_context = lambda: sycl_context('gpu')
+        cpu_context = lambda: sycl_context('cpu')
+
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
+    if gpu_available:
+        with gpu_context():
+            sycl_train_indep_data = sycl_buffer(train_indep_data)
+            sycl_train_dep_data = sycl_buffer(train_dep_data)
+            sycl_test_indep_data = sycl_buffer(test_indep_data)
+            result_gpu, _ = compute(sycl_train_indep_data, sycl_train_dep_data, sycl_test_indep_data)
+        assert np.allclose(result_classic.prediction, result_gpu.prediction)
+
+    # It is possible to specify to make the computations on CPU
+    with cpu_context():
         sycl_train_indep_data = sycl_buffer(train_indep_data)
         sycl_train_dep_data = sycl_buffer(train_dep_data)
         sycl_test_indep_data = sycl_buffer(test_indep_data)
-        result_gpu, _ = compute(sycl_train_indep_data, sycl_train_dep_data, sycl_test_indep_data)
+        result_cpu, _ = compute(sycl_train_indep_data, sycl_train_dep_data, sycl_test_indep_data)
 
     # The prediction result provides prediction
     assert result_classic.prediction.shape == (test_dep_data.shape[0], test_dep_data.shape[1])
 
-    assert np.allclose(result_classic.prediction, result_gpu.prediction)
+    assert np.allclose(result_classic.prediction, result_cpu.prediction)
 
     return (train_result, result_classic, test_dep_data)
 

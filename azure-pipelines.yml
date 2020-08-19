@@ -1,4 +1,36 @@
 jobs:
+- job: DPCPP
+  pool:
+    vmImage: 'ubuntu-18.04'
+  steps:
+  - script: |
+      wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+      sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+      rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+      echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+      sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
+      sudo apt-get update
+      sudo apt-get install              \
+          intel-oneapi-common-vars      \
+          intel-oneapi-common-licensing \
+          intel-oneapi-daal-devel       \
+          intel-oneapi-dpcpp-compiler   \
+          intel-oneapi-dev-utilities    \
+          intel-oneapi-libdpstd-devel
+      sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
+      sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
+    displayName: 'apt-get'
+  - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
+    displayName: Create Anaconda environment
+  - script: |
+      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+      export DAALROOT=/opt/intel/oneapi/daal/latest
+      export TBBROOT=/opt/intel/oneapi/tbb/latest
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      conda build --override-channels -c conda-forge -c intel conda-recipe
+    displayName: conda build
+
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'

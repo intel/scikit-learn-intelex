@@ -15,21 +15,7 @@
 # limitations under the License.
 #******************************************************************************/
 
-import numpy as np
+from .validation import _daal_assert_all_finite
 
-def getFPType(X):
-    dt = getattr(X, 'dtype', None)
-    if dt == np.double:
-        return "double"
-    elif dt == np.single:
-        return "float"
-    else:
-        raise ValueError("Input array has unexpected dtype = {}".format(dt))
-
-def make2d(X):
-    if np.isscalar(X):
-        X = np.asarray(X)[np.newaxis, np.newaxis]
-    elif isinstance(X, np.ndarray) and X.ndim == 1:
-        X = X.reshape((X.size, 1))
-    return X
-
+__all__ = ['_daal_assert_all_finite', '_daal_check_array', '_daal_check_X_y',
+           '_daal_validate_data']

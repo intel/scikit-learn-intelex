@@ -23,6 +23,7 @@ jobs:
             conda build --python=37 --override-channels -c conda-forge -c intel -c defaults --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
+          no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
@@ -65,12 +66,14 @@ jobs:
             conda build --python=37 --override-channels -c conda-forge -c intel --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
+          no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             conda install -y --override-channels -c intel cython
             conda install -q /tmp/out/*/daal4py-*.tar.bz2
+            conda install -c conda-forge threadpoolctl
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
             conda list

@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, enum_maps, enum_params, wrap_algo
+from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, add_get_result, enum_maps, enum_params, wrap_algo
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 from shutil import copytree, rmtree
@@ -766,6 +766,7 @@ class cython_interface(object):
             'result_typemap': self.prepare_resultmaps(ns),
             'create': no_constructor[fcls] if fcls in no_constructor else '',
             'add_setup': add_setup[ns] if ns in add_setup else None,
+            'add_get_result': True if ns in add_get_result else None,
         }
         if not no_dist and ns in has_dist:
             retjp['dist'] = has_dist[ns]

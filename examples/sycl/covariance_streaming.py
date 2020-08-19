@@ -21,13 +21,24 @@
 import daal4py as d4p
 import numpy as np
 import os
-from daal4py.oneapi import sycl_context, sycl_buffer
+from daal4py.oneapi import sycl_buffer
 
 # let's use a generator for getting stream from file (defined in stream.py)
 import sys
 sys.path.insert(0, '..')
 from stream import read_next
 
+try:
+    from dppl import device_context, device_type
+    with device_context(device_type.gpu, 0):
+        gpu_available=True
+except:
+    try:
+        from daal4py.oneapi import sycl_context
+        with sycl_context('gpu'):
+            gpu_available=True
+    except:
+        gpu_available=False
 
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
@@ -60,21 +71,34 @@ def main(readcsv=None, method='defaultDense'):
     # finalize computation
     result_classic = algo.finalize()
 
+    try:
+        from dppl import device_context, device_type
+        gpu_context = lambda: device_context(device_type.gpu, 0)
+        cpu_context = lambda: device_context(device_type.cpu, 0)
+    except:
+        from daal4py.oneapi import sycl_context
+        gpu_context = lambda: sycl_context('gpu')
+        cpu_context = lambda: sycl_context('cpu')
+
     # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
-        # configure a covariance object
-        algo = d4p.covariance(streaming=True)
-        # get the generator (defined in stream.py)...
-        rn = read_next(infile, 112, readcsv)
-        # ... and iterate through chunks/stream
-        for chunk in rn:
-            sycl_chunk = sycl_buffer(to_numpy(chunk))
-            algo.compute(sycl_chunk)
-        # finalize computation
-        result_gpu = algo.finalize()
+    if gpu_available:
+        with gpu_context():
+            # configure a covariance object
+            algo = d4p.covariance(streaming=True)
+            # get the generator (defined in stream.py)...
+            rn = read_next(infile, 112, readcsv)
+            # ... and iterate through chunks/stream
+            for chunk in rn:
+                sycl_chunk = sycl_buffer(to_numpy(chunk))
+                algo.compute(sycl_chunk)
+            # finalize computation
+            result_gpu = algo.finalize()
+        assert np.allclose(result_classic.covariance, result_gpu.covariance)
+        assert np.allclose(result_classic.mean, result_gpu.mean)
+        assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
+    with cpu_context():
         # configure a covariance object
         algo = d4p.covariance(streaming=True)
         # get the generator (defined in stream.py)...
@@ -87,9 +111,6 @@ def main(readcsv=None, method='defaultDense'):
         result_cpu = algo.finalize()
 
     # covariance result objects provide correlation, covariance and mean
-    assert np.allclose(result_classic.covariance, result_gpu.covariance)
-    assert np.allclose(result_classic.mean, result_gpu.mean)
-    assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     assert np.allclose(result_classic.covariance, result_cpu.covariance)
     assert np.allclose(result_classic.mean, result_cpu.mean)

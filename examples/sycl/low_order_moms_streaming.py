@@ -21,12 +21,24 @@
 import daal4py as d4p
 import numpy as np
 import os
-from daal4py.oneapi import sycl_context, sycl_buffer
+from daal4py.oneapi import sycl_buffer
 
 # let's use a generator for getting stream from file (defined in stream.py)
 import sys
 sys.path.insert(0, '..')
 from stream import read_next
+
+try:
+    from dppl import device_context, device_type
+    with device_context(device_type.gpu, 0):
+        gpu_available=True
+except:
+    try:
+        from daal4py.oneapi import sycl_context
+        with sycl_context('gpu'):
+            gpu_available=True
+    except:
+        gpu_available=False
 
 
 # At this moment with sycl we are working only with numpy arrays
@@ -61,21 +73,35 @@ def main(readcsv=None, method='defaultDense'):
     # finalize computation
     result_classic = algo.finalize()
 
-    # It is possible to specify to make the computations on GPU
-    with sycl_context('gpu'):
-        # Configure a low order moments object for streaming
-        algo = d4p.low_order_moments(streaming=True)
-        # get the generator (defined in stream.py)...
-        rn = read_next(infile, 55, readcsv)
-        # ... and iterate through chunks/stream
-        for chunk in rn:
-            sycl_chunk = sycl_buffer(to_numpy(chunk))
-            algo.compute(sycl_chunk)
-        # finalize computation
-        result_gpu = algo.finalize()
+    try:
+        from dppl import device_context, device_type
+        gpu_context = lambda: device_context(device_type.gpu, 0)
+        cpu_context = lambda: device_context(device_type.cpu, 0)
+    except:
+        from daal4py.oneapi import sycl_context
+        gpu_context = lambda: sycl_context('gpu')
+        cpu_context = lambda: sycl_context('cpu')
 
+    # It is possible to specify to make the computations on GPU
+    try:
+        with gpu_context():
+            # Configure a low order moments object for streaming
+            algo = d4p.low_order_moments(streaming=True)
+            # get the generator (defined in stream.py)...
+            rn = read_next(infile, 55, readcsv)
+            # ... and iterate through chunks/stream
+            for chunk in rn:
+                sycl_chunk = sycl_buffer(to_numpy(chunk))
+                algo.compute(sycl_chunk)
+            # finalize computation
+            result_gpu = algo.finalize()
+        for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
+                     'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
+            assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
+    except:
+        pass
     # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
+    with cpu_context():
         # Configure a low order moments object for streaming
         algo = d4p.low_order_moments(streaming=True)
         # get the generator (defined in stream.py)...
@@ -90,8 +116,7 @@ def main(readcsv=None, method='defaultDense'):
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
     for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-        'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
-        assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
+                 'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
         assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
 
     return result_classic

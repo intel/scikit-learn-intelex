@@ -29,7 +29,7 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
-# Get daal version
+# Get Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL) version
 from daal4py import __daal_link_version__ as dv
 daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
 
