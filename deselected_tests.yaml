@@ -25,6 +25,7 @@ deselected_tests:
   # See https://github.com/IntelPython/daal4py/issues/69
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies >=0.20.3
   - cluster/tests/test_k_means.py::test_relocated_clusters
+  - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters
 
   # DAAL does not check convergence for tol == 0.0 for ease of benchmarking
   - cluster/tests/test_k_means.py::test_kmeans_convergence
