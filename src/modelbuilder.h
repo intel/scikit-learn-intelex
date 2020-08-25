@@ -21,16 +21,16 @@
 
 #include <daal.h>
 
-typedef daal::algorithms::decision_forest::classification::ModelBuilder c_decision_forest_classification_ModelBuilder;
-typedef c_decision_forest_classification_ModelBuilder::NodeId c_NodeId;
-typedef c_decision_forest_classification_ModelBuilder::TreeId c_TreeId;
+typedef daal::algorithms::gbt::classification::ModelBuilder c_gbt_classification_ModelBuilder;
 
-#define c_noParent c_decision_forest_classification_ModelBuilder::noParent
+typedef c_gbt_classification_ModelBuilder::NodeId c_NodeId;
+typedef c_gbt_classification_ModelBuilder::TreeId c_TreeId;
 
-static daal::algorithms::decision_forest::classification::ModelPtr *
-get_decision_forest_classification_modelbuilder_Model(daal::algorithms::decision_forest::classification::ModelBuilder * obj_)
+#define c_noParent c_gbt_classification_ModelBuilder::noParent
+
+static daal::algorithms::gbt::classification::ModelPtr * get_gbt_classification_modelbuilder_Model(daal::algorithms::gbt::classification::ModelBuilder * obj_)
 {
-    return RAW< daal::algorithms::decision_forest::classification::ModelPtr >()(obj_->getModel());
+    return RAW<daal::algorithms::gbt::classification::ModelPtr>()(obj_->getModel());
 }
 
 #endif // _MODELBUILDER_INCLUDED_

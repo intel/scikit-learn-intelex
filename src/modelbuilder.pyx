@@ -15,7 +15,7 @@
 #******************************************************************************/
 
 # We expose DAAL's directly through Cython
-# Currently only DF is available.
+# Currently only GBT is available.
 # The model builder object is retrieved through calling model_builder.
 # We will extend this once we know how other model builders willl work in DAAL
 
@@ -24,78 +24,81 @@ cdef extern from "modelbuilder.h":
     ctypedef size_t c_TreeId
     cdef size_t c_noParent
 
-    cdef cppclass c_decision_forest_classification_ModelBuilder:
-        c_decision_forest_classification_ModelBuilder(size_t nClasses, size_t nTrees) except +
-        c_TreeId createTree(size_t nNodes)
-        c_NodeId addLeafNode(c_TreeId treeId, c_NodeId parentId, size_t position, size_t classLabel)
+    cdef cppclass c_gbt_classification_ModelBuilder:
+        c_gbt_classification_ModelBuilder(size_t nFeatures, size_t nIterations, size_t nClasses) except +
+        c_TreeId createTree(size_t nNodes, size_t classLabel)
+        c_NodeId addLeafNode(c_TreeId treeId, c_NodeId parentId, size_t position, double response)
         c_NodeId addSplitNode(c_TreeId treeId, c_NodeId parentId, size_t position, size_t featureIndex, double featureValue)
 
-    cdef decision_forest_classification_ModelPtr * get_decision_forest_classification_modelbuilder_Model(c_decision_forest_classification_ModelBuilder *);
+    cdef gbt_classification_ModelPtr * get_gbt_classification_modelbuilder_Model(c_gbt_classification_ModelBuilder *)
 
 
-cdef class decision_forest_classification_modelbuilder:
+cdef class gbt_classification_modelbuilder:
     '''
-    Model Builder for decision forest.
+    Model Builder for gradient boosted trees.
     '''
-    cdef c_decision_forest_classification_ModelBuilder * c_ptr
+    cdef c_gbt_classification_ModelBuilder * c_ptr
+    cdef size_t nFeatures
 
-    def __cinit__(self, size_t nClasses, size_t nTrees):
-        self.c_ptr = new c_decision_forest_classification_ModelBuilder(nClasses, nTrees)
+    def __cinit__(self, size_t nFeatures, size_t nIterations, size_t nClasses):
+        self.c_ptr = new c_gbt_classification_ModelBuilder(nFeatures, nIterations, nClasses)
 
     def __dealloc__(self):
         del self.c_ptr
 
-    def create_tree(self, size_t nNodes):
+    def create_tree(self, size_t nNodes, size_t classLabel):
         '''
-        Create one tree of the forest.
+        Create certain tree in the gradient boosted trees classification model for certain class
 
-        :param size_t nNodes: Number of nodes this tree will have
-        :rtype: tree-handle
+        :param size_t nNodes: number of nodes in created tree
+        :param size_t classLabel: label of class for which tree is created. classLabel bellows interval from 0 to (nClasses - 1)
+        :rtype: tree identifier
         '''
-        return self.c_ptr.createTree(nNodes)
+        return self.c_ptr.createTree(nNodes, classLabel)
 
-    def add_leaf(self, c_TreeId treeId, size_t classLabel, c_NodeId parentId=c_noParent, size_t position=0):
+    def add_leaf(self, c_TreeId treeId, double response, c_NodeId parentId=c_noParent, size_t position=0):
         '''
-        Add a leaf node to given tree.
+        Create Leaf node and add it to certain tree
 
-        :param tree-handle treeId: tree to which node should be added
-        :param size_t classLabel: class-label
-        :param node-handle parentId: parent of new node, if not given add a root node [optional, default: no parent] 
-        :param size_t position: position in root node [optional, default: 0]
-        :rtype: node-handle
+        :param tree-handle treeId: tree to which new node is added
+        :param node-handle parentId: parent node to which new node is added (use noParent for root node)
+        :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
+        :param double response: response value for leaf node to be predicted
+        :rtype: node identifier
         '''
-        return self.c_ptr.addLeafNode(treeId, parentId, position, classLabel)
+        return self.c_ptr.addLeafNode(treeId, parentId, position, response)
 
     def add_split(self, c_TreeId treeId, size_t featureIndex, double featureValue, c_NodeId parentId=c_noParent, size_t position=0):
         '''
-        Add a split node to given tree.
+        Create Split node and add it to certain tree.
 
-        :param tree-handle treeId: tree to which node should be added
-        :param size_t featureIndex: index of split feature
-        :param double featureValue: split value
-        :param node-handle parentId: parent of new node, if not given add a root node [optional, default: no parent] 
-        :param size_t position: position in root node [optional, default: 0]
-        :rtype: node-handle
+        :param tree-handle treeId: tree to which node is added
+        :param node-handle parentId: parent node to which new node is added (use noParent for root node)
+        :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
+        :param size_t featureIndex: feature index for spliting
+        :param double featureValue: feature value for spliting
+        :rtype: node identifier
         '''
         return self.c_ptr.addSplitNode(treeId, parentId, position, featureIndex, featureValue)
 
     def model(self):
         '''
-        Return the decision forest model to be used for decision forest prediction
+        Get built model
 
-        :rtype: decision_forest_classification_model
+        :rtype: gbt_classification_model
         '''
-        cdef decision_forest_classification_model res = decision_forest_classification_model.__new__(decision_forest_classification_model)
-        res.c_ptr = get_decision_forest_classification_modelbuilder_Model(self.c_ptr)
+        cdef gbt_classification_model res = gbt_classification_model.__new__(gbt_classification_model)
+        res.c_ptr = get_gbt_classification_modelbuilder_Model(self.c_ptr)
         return res
 
 
-def model_builder(nTrees=1, nClasses=2):
+def model_builder(nFeatures, nIterations, nClasses = 2):
     '''
-    Currently we support only decision forest classification models.
+    Currently we support only gradient bossted trees classification models.
     The future may bring us more.
 
-    :param size_t nTrees: Number of trees in the decision forest
+    :param size_t nFeatures: Number of features in training data
+    :param size_t nIterations: Number of trees in model for each class
     :param size_t nClasses: Number of classes in model
     '''
-    return decision_forest_classification_modelbuilder(nClasses, nTrees)
+    return gbt_classification_modelbuilder(nFeatures, nIterations, nClasses)
