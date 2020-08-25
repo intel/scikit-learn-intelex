@@ -288,6 +288,19 @@ def fit(self, X, y=None, sample_weight=None):
     return self
 
 
+def _daal4py_check_test_data(self, X):
+    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
+                    accept_large_sparse=False)
+    n_samples, n_features = X.shape
+    expected_n_features = self.cluster_centers_.shape[1]
+    if not n_features == expected_n_features:
+        raise ValueError(
+            f"Incorrect number of features. Got {n_features} features, "
+            f"expected {expected_n_features}.")
+
+    return X
+
+
 def predict(self, X, sample_weight=None):
     """Predict the closest cluster each sample in X belongs to.
 
@@ -311,7 +324,7 @@ def predict(self, X, sample_weight=None):
     """
     check_is_fitted(self)
 
-    X = self._check_test_data(X)
+    X = _daal4py_check_test_data(self, X)
 
     daal_ready = sample_weight is None and hasattr(X, '__array__')
     daal_ready = daal_ready or sp.isspmatrix_csr(X)
