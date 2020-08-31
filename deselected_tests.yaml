@@ -75,4 +75,5 @@ deselected_tests:
 
   # On small datasets, the regression coefficients for multi-target problem differ from scikit-learn. Coefficients matches for first label only.
   # For big data the coefficients are close.
+  # See: https://github.com/IntelPython/daal4py/issues/275
   - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties
