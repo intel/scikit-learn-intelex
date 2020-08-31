@@ -225,11 +225,6 @@ class KNeighborsMixin:
             X = d4p.get_data(X)
             prediction_result = prediction_alg.compute(X, training_result.model)
 
-            # with open("/data/datae/onedal_python_benchmarks/knn_tests/bf/knn_log.txt", "a") as log:
-            #     log.write("unsup,{},{},{},{},{},{},{},{}\n".format(self._fit_method, self.effective_metric_, fptype, n_neighbors,
-            #                                                        str(type(prediction_result)), str(type(training_result.model)),
-            #                                                        str(knn_classification_training), str(knn_classification_prediction)))
-
             if return_distance:
                 results = prediction_result.distances, prediction_result.indices
             else:
