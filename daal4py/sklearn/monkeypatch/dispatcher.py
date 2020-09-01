@@ -22,6 +22,7 @@ from distutils.version import LooseVersion
 import warnings
 
 import sklearn.cluster as cluster_module
+import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
@@ -58,6 +59,8 @@ from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
 from ..linear_model.coordinate_descent import ElasticNet as ElasticNet_daal4py
 from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
+from ..ensemble.decision_forest import RandomForestRegressor as RandomForestRegressor_daal4py
+from ..ensemble.decision_forest import RandomForestClassifier as RandomForestClassifier_daal4py
 from ..svm.svm import SVC as SVC_daal4py
 from ..utils.validation import _daal_assert_all_finite
 from ..model_selection import _daal_train_test_split
@@ -67,15 +70,17 @@ from daal4py import __version__ as daal4py_version
 from daal4py.sklearn._utils import daal_check_version
 
 _mapping = {
-    'pca':       [[(decomposition_module, 'PCA', PCA_daal4py), None]],
-    'kmeans':    [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
-    'distances': [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
-    'linear':    [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
-    'ridge':     [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
-    'elasticnet':[[(linear_model_module, 'ElasticNet', ElasticNet_daal4py), None]],
-    'lasso':     [[(linear_model_module, 'Lasso', Lasso_daal4py), None]],
-    'svm':       [[(svm_module, 'SVC', SVC_daal4py), None]],
-    'logistic':  [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
+    'pca':           [[(decomposition_module, 'PCA', PCA_daal4py), None]],
+    'kmeans':        [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
+    'distances':     [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
+    'linear':        [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
+    'ridge':         [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
+    'elasticnet':    [[(linear_model_module, 'ElasticNet', ElasticNet_daal4py), None]],
+    'lasso':         [[(linear_model_module, 'Lasso', Lasso_daal4py), None]],
+    'svm':           [[(svm_module, 'SVC', SVC_daal4py), None]],
+    'logistic':      [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
+    'df_classifier':[[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]],
+    'df_regressor':[[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]],
 }
 
 del _patched_log_reg_path_func_name
