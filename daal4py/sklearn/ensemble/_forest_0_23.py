@@ -88,32 +88,53 @@ def _get_n_samples_bootstrap(n_samples, max_samples):
     msg = "`max_samples` should be int or float, but got type '{}'"
     raise TypeError(msg.format(type(max_samples)))
 
-def _daal_fit_classifier(self, X, y):
-    #_check_daal_supported_parameters_classifier(self)
-#    _supported_dtypes_ = [np.single, np.double]
-#    X = check_array(X, dtype=_supported_dtypes_)
-#    y = np.asarray(y)
-#    y = np.atleast_1d(y)
-#
-#    if y.ndim == 2 and y.shape[1] == 1:
-#        warnings.warn("A column-vector y was passed when a 1d array was"
-#             " expected. Please change the shape of y to "
-#             "(n_samples,), for example using ravel().",
-#             DataConversionWarning, stacklevel=2)
-#
-#    check_consistent_length(X, y)
-#
-#    if y.ndim == 1:
-#        # reshape is necessary to preserve the data contiguity against vs
-#        # [:, np.newaxis] that does not.
-#        y = np.reshape(y, (-1, 1))
-#
-#    self.n_outputs_ = y.shape[1]
-#
-#    if self.n_outputs_ != 1:
-#        _class_name = self.__class__.__name__
-#        raise ValueError(_class_name + " does not currently support multi-output data. Consider using OneHotEncoder")
+def _check_parameters(self):
+    if isinstance(self.min_samples_leaf, numbers.Integral):
+        if not 1 <= self.min_samples_leaf:
+            raise ValueError("min_samples_leaf must be at least 1 "
+                             "or in (0, 0.5], got %s"
+                             % self.min_samples_leaf)
+    else:  # float
+        if not 0. < self.min_samples_leaf <= 0.5:
+            raise ValueError("min_samples_leaf must be at least 1 "
+                             "or in (0, 0.5], got %s"
+                             % self.min_samples_leaf)
+    if isinstance(self.min_samples_split, numbers.Integral):
+        if not 2 <= self.min_samples_split:
+            raise ValueError("min_samples_split must be an integer "
+                             "greater than 1 or a float in (0.0, 1.0]; "
+                             "got the integer %s"
+                             % self.min_samples_split)
+    else:  # float
+        if not 0. < self.min_samples_split <= 1.:
+            raise ValueError("min_samples_split must be an integer "
+                             "greater than 1 or a float in (0.0, 1.0]; "
+                             "got the float %s"
+                             % self.min_samples_split)
+    if not 0 <= self.min_weight_fraction_leaf <= 0.5:
+        raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
+    if self.min_impurity_split is not None:
+        warnings.warn("The min_impurity_split parameter is deprecated. "
+                      "Its default value has changed from 1e-7 to 0 in "
+                      "version 0.23, and it will be removed in 0.25. "
+                      "Use the min_impurity_decrease parameter instead.",
+                      FutureWarning)
 
+        if self.min_impurity_split < 0.:
+            raise ValueError("min_impurity_split must be greater than "
+                             "or equal to 0")
+    if self.min_impurity_decrease < 0.:
+        raise ValueError("min_impurity_decrease must be greater than "
+                         "or equal to 0")
+    if self.max_leaf_nodes is not None:
+        if not isinstance(self.max_leaf_nodes, numbers.Integral):
+            raise ValueError("max_leaf_nodes must be integral number but was "
+                             "%r" % self.max_leaf_nodes)
+        if self.max_leaf_nodes < 2:
+            raise ValueError(("max_leaf_nodes {0} must be either None "
+                              "or larger than 1").format(self.max_leaf_nodes))
+
+def _daal_fit_classifier(self, X, y):
     y = check_array(y, ensure_2d=False, dtype=None)
     y, _ = self._validate_y_class_weight(y)
     n_classes_ = self.n_classes_[0]
@@ -140,8 +161,6 @@ def _daal_fit_classifier(self, X, y):
     if not self.bootstrap and self.oob_score:
         raise ValueError("Out of bag estimation only available"
                          " if bootstrap=True")
-    
-    print(f"self.min_samples_leaf = {self.min_samples_leaf}")
 
     dfc_algorithm = daal4py.decision_forest_classification_training(
         nClasses = int(n_classes_),
@@ -215,12 +234,11 @@ def _daal_predict_proba(self, X):
     return pred
 
 def _fit_classifier(self, X, y, sample_weight=None):
-    print("CLASSIFIER FIT")
     if sp.issparse(y):
         raise ValueError(
             "sparse multilabel-indicator for y is not supported."
         )
-    _check_parameters(self, is_classification=True)
+    _check_parameters(self)
 
     daal_ready = (self.warm_start == False
         and self.criterion == "gini"
@@ -252,91 +270,132 @@ def _fit_classifier(self, X, y, sample_weight=None):
             daal_ready = False
 
     if daal_ready:
-        print(" DAAL CLASSIFIER FIT")
         _daal_fit_classifier(self, X, y)
 
         if not hasattr(self, "estimators_"):
-            print("IN not HAS ATTR")
             self.estimators_ = self._estimators_
         
         # Decapsulate classes_ attributes
-        if hasattr(self, "classes_") and self.n_outputs_ == 1:
-            print("Decapsulate n_classes")
-            self.n_classes_ = self.n_classes_[0]
-            self.classes_ = self.classes_[0]
+        self.n_classes_ = self.n_classes_[0]
+        self.classes_ = self.classes_[0]
         return self
 
     else:
-        print("SKLEARN CLASSIFIER FIT")
         return super(RandomForestClassifier, self).fit(X, y, sample_weight=sample_weight)
 
-#def _predict_classifier(self, X):
-#    print("DAAL CLASSIFIER PREDICT")
-#
-#    return super(RandomForestClassifier, self).predict(X)
+def _daal_fit_regressor(self, X, y):
+    self.n_features_ = X.shape[1]
+    rs_ = check_random_state(self.random_state)
+ 
+    if not self.bootstrap and self.oob_score:
+        raise ValueError("Out of bag estimation only available"
+                         " if bootstrap=True")
+ 
+    X_fptype = getFPType(X)
+    seed_ = rs_.randint(0, np.iinfo('i').max)
+    daal_engine = daal4py.engines_mt2203(seed=seed_, fptype=X_fptype)
+ 
+    _featuresPerNode = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=False)
 
-def _check_parameters(self, is_classification=False):
-        #_class_name = self.__class__.__name__
-        #if self.n_jobs != 1:
-        #    warnings.warn(_class_name + ' ignores non-default settings of n_jobs')
-        #if self.verbose != 0:
-        #    warnings.wanr(_class_name + ' ignores non-default settings of verbose')
-        #if self.warm_start:
-        #    warnings.warn(_class_name + ' ignores non-default settings of warm_start')
-        #if self.criterion != "gini":
-        #    warnings.warn(_class_name + ' currently only supports criterion="gini"')
-        if isinstance(self.min_samples_leaf, numbers.Integral):
-            if not 1 <= self.min_samples_leaf:
-                raise ValueError("min_samples_leaf must be at least 1 "
-                                 "or in (0, 0.5], got %s"
-                                 % self.min_samples_leaf)
-        else:  # float
-            if not 0. < self.min_samples_leaf <= 0.5:
-                raise ValueError("min_samples_leaf must be at least 1 "
-                                 "or in (0, 0.5], got %s"
-                                 % self.min_samples_leaf)
-        if isinstance(self.min_samples_split, numbers.Integral):
-            if not 2 <= self.min_samples_split:
-                raise ValueError("min_samples_split must be an integer "
-                                 "greater than 1 or a float in (0.0, 1.0]; "
-                                 "got the integer %s"
-                                 % self.min_samples_split)
-        else:  # float
-            if not 0. < self.min_samples_split <= 1.:
-                raise ValueError("min_samples_split must be an integer "
-                                 "greater than 1 or a float in (0.0, 1.0]; "
-                                 "got the float %s"
-                                 % self.min_samples_split)
-        if not 0 <= self.min_weight_fraction_leaf <= 0.5:
-            raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
-        if self.min_impurity_split is not None:
-            warnings.warn("The min_impurity_split parameter is deprecated. "
-                          "Its default value has changed from 1e-7 to 0 in "
-                          "version 0.23, and it will be removed in 0.25. "
-                          "Use the min_impurity_decrease parameter instead.",
-                          FutureWarning)
-
-            if self.min_impurity_split < 0.:
-                raise ValueError("min_impurity_split must be greater than "
-                                 "or equal to 0")
-        if self.min_impurity_decrease < 0.:
-            raise ValueError("min_impurity_decrease must be greater than "
-                             "or equal to 0")
-        if self.max_leaf_nodes is not None:
-            if not isinstance(self.max_leaf_nodes, numbers.Integral):
-                raise ValueError("max_leaf_nodes must be integral number but was "
-                                 "%r" % self.max_leaf_nodes)
-            if self.max_leaf_nodes < 2:
-                raise ValueError(("max_leaf_nodes {0} must be either None "
-                                  "or larger than 1").format(self.max_leaf_nodes))
+    n_samples_bootstrap = _get_n_samples_bootstrap(
+        n_samples=X.shape[0],
+        max_samples=self.max_samples
+    )
+ 
+    # create algorithm
+    dfr_algorithm = daal4py.decision_forest_regression_training(
+        fptype = getFPType(X),
+        method = 'defaultDense',
+        nTrees = int(self.n_estimators),
+        observationsPerTreeFraction = n_samples_bootstrap if self.bootstrap == True else 1.,
+        featuresPerNode = int(_featuresPerNode),
+        maxTreeDepth = int(0 if self.max_depth is None else self.max_depth),
+        minObservationsInLeafNode = (self.min_samples_leaf if isinstance(self.min_samples_leaf, numbers.Integral)
+                                     else int(ceil(self.min_samples_leaf * X.shape[0]))),
+        engine = daal_engine,
+        impurityThreshold = float(0.0 if self.min_impurity_split is None else self.min_impurity_split),
+        varImportance = "MDI",
+        resultsToCompute = "",
+        memorySavingMode = False,
+        bootstrap = bool(self.bootstrap),
+        minObservationsInSplitNode = (self.min_samples_split if isinstance(self.min_samples_split, numbers.Integral)
+                                      else int(ceil(self.min_samples_split * X.shape[0]))),
+        minWeightFractionInLeafNode = self.min_weight_fraction_leaf,
+        minImpurityDecreaseInSplitNode = self.min_impurity_decrease,
+        maxLeafNodes = 0 if self.max_leaf_nodes is None else self.max_leaf_nodes
+    )
+ 
+    self._cached_estimators_ = None
+    dfr_trainingResult = dfr_algorithm.compute(X, y)
+ 
+    # get resulting model
+    model = dfr_trainingResult.model
+    self.daal_model_ = model
+ 
+    # compute oob_score_
+    if self.oob_score:
+        self.estimators_ = self._estimators_
+        self._set_oob_score(X, y)
+ 
+    return self
 
 def _fit_regressor(self, X, y, sample_weight=None):
-    print("DAAL REGRESSOR FIT")
-    return super(RandomForestRegressor, self).fit(X, y, sample_weight=sample_weight)
+    if sp.issparse(y):
+        raise ValueError(
+            "sparse multilabel-indicator for y is not supported."
+        )
+    _check_parameters(self)
 
-def _predict_regressor(self, X):
-    print("DAAL REGRESSOR PREDICT")
-    return super(RandomForestRegressor, self).predict(X)
+    daal_ready = (self.warm_start == False
+        and self.criterion == "mse"
+        and self.ccp_alpha == 0.0
+        and sample_weight is None
+        and not sp.issparse(X))
+
+    if daal_ready:
+        _supported_dtypes_ = [np.double, np.single]
+        X = check_array(X, dtype=_supported_dtypes_)
+        y = np.asarray(y)
+        y = np.atleast_1d(y)
+     
+        if y.ndim == 2 and y.shape[1] == 1:
+            warnings.warn("A column-vector y was passed when a 1d array was"
+                 " expected. Please change the shape of y to "
+                 "(n_samples,), for example using ravel().",
+                 DataConversionWarning, stacklevel=2)
+     
+        y = check_array(y, ensure_2d=False, dtype=X.dtype)
+        check_consistent_length(X, y)
+     
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
+     
+        self.n_outputs_ = y.shape[1]
+        if self.n_outputs_ != 1:
+            daal_ready = False
+
+    if daal_ready:
+        _daal_fit_regressor(self, X, y)
+
+        if not hasattr(self, "estimators_"):
+            self.estimators_ = self._estimators_
+        return self
+
+    else:
+        return super(RandomForestRegressor, self).fit(X, y, sample_weight=sample_weight)
+    
+
+def _daal_predict_regressor(self, X):
+    X = self._validate_X_predict(X)
+
+    dfr_alg = daal4py.decision_forest_regression_prediction(fptype='float')
+    dfr_predictionResult = dfr_alg.compute(X, self.daal_model_)
+
+    pred = dfr_predictionResult.prediction
+
+    return pred.ravel()
 
 class RandomForestClassifier(RandomForestClassifier_original):
     __doc__ = RandomForestClassifier_original.__doc__
@@ -478,7 +537,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
 
     @property
     def _estimators_(self):
-        print("IN ESTIMATORS")
         if hasattr(self, '_cached_estimators_'):
             if self._cached_estimators_:
                 return self._cached_estimators_
@@ -625,5 +683,53 @@ class RandomForestRegressor(RandomForestRegressor_original):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
+        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
 
-        return _predict_regressor(self, X)
+        if (not hasattr(self, 'daal_model_') or 
+                sp.issparse(X) or self.n_outputs_ != 1 or
+                not (X.dtype == np.float64 or X.dtype == np.float32)):
+            return super(RandomForestRegressor, self).predict(X)
+        else:
+            return _daal_predict_regressor(self, X)
+
+    @property
+    def _estimators_(self):
+        if hasattr(self, '_cached_estimators_'):
+            if self._cached_estimators_:
+                return self._cached_estimators_
+        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+            check_is_fitted(self)
+        else:
+            check_is_fitted(self, 'daal_model_')
+        # convert model to estimators
+        est = DecisionTreeRegressor(
+            criterion=self.criterion,
+            max_depth=self.max_depth,
+            min_samples_split=self.min_samples_split,
+            min_samples_leaf=self.min_samples_leaf,
+            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+            max_features=self.max_features,
+            max_leaf_nodes=self.max_leaf_nodes,
+            min_impurity_decrease=self.min_impurity_decrease,
+            min_impurity_split=self.min_impurity_split,
+            random_state=None)
+
+        # we need to set est.tree_ field with Trees constructed from Intel(R) DAAL solution
+        estimators_ = []
+        for i in range(self.n_estimators):
+            est_i = clone(est)
+            est_i.n_features_ = self.n_features_
+            est_i.n_outputs_ = self.n_outputs_
+
+            tree_i_state_class = daal4py.getTreeState(self.daal_model_, i)
+            tree_i_state_dict = {
+                'max_depth' : tree_i_state_class.max_depth,
+                'node_count' : tree_i_state_class.node_count,
+                'nodes' : tree_i_state_class.node_ar,
+                'values': tree_i_state_class.value_ar }
+
+            est_i.tree_ = Tree(self.n_features_, np.array([1], dtype=np.intp), self.n_outputs_)
+            est_i.tree_.__setstate__(tree_i_state_dict)
+            estimators_.append(est_i)
+
+        return estimators_
