@@ -942,11 +942,15 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     with open(jp(outdir, 'daal4py_cpp.cpp'), 'w') as f:
         f.write(cpp_cpp)
 
-
     with open(jp('src', 'gettree.pyx'), 'r') as f:
         pyx_gettree = f.read()
+
+    pyx_modelbuilder = ''
+    if 'algorithms::decision_forest::classification' in iface.namespace_dict and 'ModelBuilder' in iface.namespace_dict['algorithms::decision_forest::classification'].classes:
+        with open(jp('src', 'modelbuilder.pyx'), 'r') as f:
+            pyx_modelbuilder = f.read()
 
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
         f.write(pyx_file)
         f.write(pyx_gettree)
-
+        f.write(pyx_modelbuilder)
