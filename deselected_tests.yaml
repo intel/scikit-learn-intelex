@@ -72,3 +72,8 @@ deselected_tests:
   # We have difference (Max absolute difference: 1.97215226e-31) in computing of log_proba with np.log(y_proba)
   # Looks like using IDP NumPy is the cause for the failure due to use of more aggressive compiler optimization when compile NumPy UFunc loops
   - neural_network/tests/test_mlp.py::test_predict_proba_multilabel
+
+  # On small datasets, the regression coefficients for multi-target problem differ from scikit-learn. Coefficients matches for first label only.
+  # For big data the coefficients are close.
+  # See: https://github.com/IntelPython/daal4py/issues/275
+  - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties
