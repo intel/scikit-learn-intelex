@@ -946,7 +946,10 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
         pyx_gettree = f.read()
 
     pyx_modelbuilder = ''
-    if 'algorithms::gbt::classification' in iface.namespace_dict and 'ModelBuilder' in iface.namespace_dict['algorithms::gbt::classification'].classes:
+    if 'algorithms::gbt::classification' in iface.namespace_dict and \
+       'ModelBuilder' in iface.namespace_dict['algorithms::gbt::classification'].classes or \
+       'algorithms::gbt::regression' in iface.namespace_dict and \
+       'ModelBuilder' in iface.namespace_dict['algorithms::gbt::regression'].classes:
         with open(jp('src', 'modelbuilder.pyx'), 'r') as f:
             pyx_modelbuilder = f.read()
 
