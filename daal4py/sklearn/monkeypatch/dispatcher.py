@@ -59,8 +59,8 @@ from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
 from ..linear_model.coordinate_descent import ElasticNet as ElasticNet_daal4py
 from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
-from ..ensemble.decision_forest import RandomForestRegressor as RandomForestRegressor_daal4py
-from ..ensemble.decision_forest import RandomForestClassifier as RandomForestClassifier_daal4py
+from ..ensemble.forest import RandomForestRegressor as RandomForestRegressor_daal4py
+from ..ensemble.forest import RandomForestClassifier as RandomForestClassifier_daal4py
 from ..svm.svm import SVC as SVC_daal4py
 from ..utils.validation import _daal_assert_all_finite
 from ..model_selection import _daal_train_test_split
@@ -68,7 +68,6 @@ from ..model_selection import _daal_train_test_split
 from daal4py import __version__ as daal4py_version
 
 from daal4py.sklearn._utils import daal_check_version
-
 _mapping = {
     'pca':           [[(decomposition_module, 'PCA', PCA_daal4py), None]],
     'kmeans':        [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
@@ -78,9 +77,7 @@ _mapping = {
     'elasticnet':    [[(linear_model_module, 'ElasticNet', ElasticNet_daal4py), None]],
     'lasso':         [[(linear_model_module, 'Lasso', Lasso_daal4py), None]],
     'svm':           [[(svm_module, 'SVC', SVC_daal4py), None]],
-    'logistic':      [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
-    'df_classifier':[[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]],
-    'df_regressor':[[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]],
+    'logistic':      [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]]
 }
 
 del _patched_log_reg_path_func_name
@@ -96,6 +93,10 @@ if daal_check_version((2020, 1), (2021, 5)):
 
 if daal_check_version((2020, 2), (2021, 8)):
     _mapping['tt_split'] = [[(model_selection, 'train_test_split', _daal_train_test_split), None]]
+
+if daal_check_version((2020, 3), (2021, 9)):
+    _mapping['df_classifier'] = [[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]]
+    _mapping['df_regressor']  = [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]]
 
 def do_patch(name):
     lname = name.lower()

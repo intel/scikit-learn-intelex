@@ -44,9 +44,6 @@ from distutils.version import LooseVersion
 from math import ceil
 from scipy import sparse as sp
 
-daal_version = tuple(map(int, (daal4py.__daal_link_version__[0:4], daal4py.__daal_link_version__[4:8])))
-
-
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
     if max_features is None:
         return n_features
@@ -208,18 +205,12 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
 
 def _daal_predict_classifier(self, X):
     X = self._validate_X_predict(X)
-
-    if daal_version < (2020,1):
-        dfc_algorithm = daal4py.decision_forest_classification_prediction(
-            nClasses = int(self.n_classes_),
-            fptype = 'float'
-            )
-    else:
-        dfc_algorithm = daal4py.decision_forest_classification_prediction(
-            nClasses = int(self.n_classes_),
-            fptype = 'float',
-            resultsToEvaluate="computeClassLabels"
-            )
+    X_fptype = getFPType(X)
+    dfc_algorithm = daal4py.decision_forest_classification_prediction(
+        nClasses = int(self.n_classes_),
+        fptype = X_fptype,
+        resultsToEvaluate="computeClassLabels"
+        )
     dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
 
     pred = dfc_predictionResult.prediction
@@ -228,10 +219,10 @@ def _daal_predict_classifier(self, X):
 
 def _daal_predict_proba(self, X):
     X = self._validate_X_predict(X)
-
+    X_fptype = getFPType(X)
     dfc_algorithm = daal4py.decision_forest_classification_prediction(
         nClasses = int(self.n_classes_),
-        fptype = 'float',
+        fptype = X_fptype,
         resultsToEvaluate="computeClassProbabilities"
         )
     dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
@@ -401,8 +392,8 @@ def _fit_regressor(self, X, y, sample_weight=None):
 
 def _daal_predict_regressor(self, X):
     X = self._validate_X_predict(X)
-
-    dfr_alg = daal4py.decision_forest_regression_prediction(fptype='float')
+    X_fptype = getFPType(X)
+    dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)
     dfr_predictionResult = dfr_alg.compute(X, self.daal_model_)
 
     pred = dfr_predictionResult.prediction
