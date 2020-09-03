@@ -26,7 +26,8 @@ import numbers
 import warnings
 
 import daal4py
-from .._utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType, method_uses_sklearn, method_uses_daal)
+import logging
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
 from sklearn.tree._tree import (DTYPE, Tree)
@@ -34,8 +35,7 @@ from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_or
 from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
 from sklearn.utils import (check_random_state, check_array)
 from sklearn.utils.multiclass import check_classification_targets
-from sklearn.utils.validation import (check_is_fitted, check_consistent_length)
-#from sklearn.ensemble._forest import _get_n_samples_bootstrap
+from sklearn.utils.validation import (check_is_fitted, check_consistent_length, _check_sample_weight)
 from sklearn.base import clone
 from sklearn.exceptions import DataConversionWarning, NotFittedError
 
@@ -134,13 +134,20 @@ def _check_parameters(self):
             raise ValueError(("max_leaf_nodes {0} must be either None "
                               "or larger than 1").format(self.max_leaf_nodes))
 
-def _daal_fit_classifier(self, X, y):
+def _daal_fit_classifier(self, X, y, sample_weight=None):
     y = check_array(y, ensure_2d=False, dtype=None)
-    y, _ = self._validate_y_class_weight(y)
+    y, expanded_class_weight = self._validate_y_class_weight(y)
     n_classes_ = self.n_classes_[0]
     classes_ = self.classes_[0]
-
     self.n_features_ = X.shape[1]
+
+    if expanded_class_weight is not None:
+        if sample_weight is not None:
+            sample_weight = sample_weight * expanded_class_weight
+        else:
+            sample_weight = expanded_class_weight
+    if sample_weight is not None:
+        sample_weight = [sample_weight]
 
     rs_ = check_random_state(self.random_state)
     seed_ = rs_.randint(0, np.iinfo('i').max)
@@ -186,7 +193,7 @@ def _daal_fit_classifier(self, X, y):
     )
     self._cached_estimators_ = None
     # compute
-    dfc_trainingResult = dfc_algorithm.compute(X, y)
+    dfc_trainingResult = dfc_algorithm.compute(X, y, sample_weight)
 
     # get resulting model
     model = dfc_trainingResult.model
@@ -239,12 +246,13 @@ def _fit_classifier(self, X, y, sample_weight=None):
             "sparse multilabel-indicator for y is not supported."
         )
     _check_parameters(self)
+    if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X)
 
     daal_ready = (self.warm_start == False
         and self.criterion == "gini"
         and self.ccp_alpha == 0.0
-        and sample_weight is None
-        and self.class_weight is None and not sp.issparse(X))
+        and not sp.issparse(X))
 
     if daal_ready:
         _supported_dtypes_ = [np.single, np.double]
@@ -270,7 +278,8 @@ def _fit_classifier(self, X, y, sample_weight=None):
             daal_ready = False
 
     if daal_ready:
-        _daal_fit_classifier(self, X, y)
+        logging.info("sklearn.ensemble.RandomForestClassifier.fit: " + method_uses_daal)
+        _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
 
         if not hasattr(self, "estimators_"):
             self.estimators_ = self._estimators_
@@ -281,9 +290,10 @@ def _fit_classifier(self, X, y, sample_weight=None):
         return self
 
     else:
+        logging.info("sklearn.ensemble.RandomForestClassifier.fit: " + method_uses_sklearn)
         return super(RandomForestClassifier, self).fit(X, y, sample_weight=sample_weight)
 
-def _daal_fit_regressor(self, X, y):
+def _daal_fit_regressor(self, X, y, sample_weight=None):
     self.n_features_ = X.shape[1]
     rs_ = check_random_state(self.random_state)
  
@@ -326,7 +336,7 @@ def _daal_fit_regressor(self, X, y):
     )
  
     self._cached_estimators_ = None
-    dfr_trainingResult = dfr_algorithm.compute(X, y)
+    dfr_trainingResult = dfr_algorithm.compute(X, y, sample_weight)
  
     # get resulting model
     model = dfr_trainingResult.model
@@ -345,11 +355,12 @@ def _fit_regressor(self, X, y, sample_weight=None):
             "sparse multilabel-indicator for y is not supported."
         )
     _check_parameters(self)
+    if sample_weight is not None:
+        sample_weight = _check_sample_weight(sample_weight, X)
 
     daal_ready = (self.warm_start == False
         and self.criterion == "mse"
         and self.ccp_alpha == 0.0
-        and sample_weight is None
         and not sp.issparse(X))
 
     if daal_ready:
@@ -377,13 +388,14 @@ def _fit_regressor(self, X, y, sample_weight=None):
             daal_ready = False
 
     if daal_ready:
-        _daal_fit_regressor(self, X, y)
+        logging.info("sklearn.ensemble.RandomForestRegressor.fit: " + method_uses_daal)
+        _daal_fit_regressor(self, X, y, sample_weight=sample_weight)
 
         if not hasattr(self, "estimators_"):
             self.estimators_ = self._estimators_
         return self
-
     else:
+        logging.info("sklearn.ensemble.RandomForestRegressor.fit: " + method_uses_sklearn)
         return super(RandomForestRegressor, self).fit(X, y, sample_weight=sample_weight)
     
 
@@ -498,8 +510,10 @@ class RandomForestClassifier(RandomForestClassifier_original):
         if (not hasattr(self, 'daal_model_') or 
                 sp.issparse(X) or self.n_outputs_ != 1 or
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
+            logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + method_uses_sklearn)
             return super(RandomForestClassifier, self).predict(X)
         else:
+            logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + method_uses_daal)
             return _daal_predict_classifier(self, X)
 
     def predict_proba(self, X):
@@ -531,8 +545,10 @@ class RandomForestClassifier(RandomForestClassifier_original):
         if (not hasattr(self, 'daal_model_') or 
                 sp.issparse(X) or self.n_outputs_ != 1 or
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
+            logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + method_uses_sklearn)
             return super(RandomForestClassifier, self).predict_proba(X)
         else:
+            logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + method_uses_daal)
             return _daal_predict_proba(self, X)
 
     @property
@@ -688,8 +704,10 @@ class RandomForestRegressor(RandomForestRegressor_original):
         if (not hasattr(self, 'daal_model_') or 
                 sp.issparse(X) or self.n_outputs_ != 1 or
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
+            logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + method_uses_sklearn)
             return super(RandomForestRegressor, self).predict(X)
         else:
+            logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + method_uses_daal)
             return _daal_predict_regressor(self, X)
 
     @property
