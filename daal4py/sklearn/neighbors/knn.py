@@ -20,43 +20,26 @@
 
 import numpy as np
 import numbers
-import warnings
-from functools import partial
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn import preprocessing
-from sklearn.utils.multiclass import check_classification_targets
-from sklearn.utils import check_random_state
 import daal4py as d4p
 from .._utils import getFPType
-
-from sklearn import __version__ as sklearn_version
+from functools import partial
+from sklearn.base import ClassifierMixin
+from sklearn.utils.validation import check_array, check_is_fitted
 from distutils.version import LooseVersion
-
 from scipy import stats
 from sklearn.utils.extmath import weighted_mode
-from sklearn.utils.validation import _is_arraylike, _num_samples
+from sklearn.utils.validation import _num_samples
 from sklearn.neighbors._base import \
     _check_weights, _get_weights, \
-    NeighborsBase, \
-    RadiusNeighborsMixin, SupervisedIntegerMixin
-from sklearn.utils import check_array
+    NeighborsBase, SupervisedIntegerMixin
 from sklearn.utils.validation import _deprecate_positional_args
-
-
 from scipy.sparse import csr_matrix, issparse
 import joblib
 from joblib import Parallel, delayed, effective_n_jobs
-
 from sklearn.metrics import pairwise_distances_chunked
-from sklearn.metrics.pairwise import PAIRWISE_DISTANCE_FUNCTIONS
 from sklearn.utils import gen_even_slices
-from sklearn.utils import _to_object_array
-from sklearn.utils.multiclass import check_classification_targets
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils.validation import check_non_negative
-from sklearn.exceptions import DataConversionWarning, EfficiencyWarning
-from sklearn.neighbors._base import _is_sorted_by_data, _check_precomputed, _tree_query_parallel_helper, _kneighbors_from_graph
+from sklearn.neighbors._base import \
+    _check_precomputed, _tree_query_parallel_helper, _kneighbors_from_graph
 
 
 class KNeighborsMixin:
@@ -205,22 +188,20 @@ class KNeighborsMixin:
                 knn_classification_training = d4p.kdtree_knn_classification_training
                 knn_classification_prediction = d4p.kdtree_knn_classification_prediction
 
-            training_alg = knn_classification_training(
-                fptype=fptype,
-                method='defaultDense',
-                k=n_neighbors,
-                resultsToCompute='computeIndicesOfNeightbors|computeDistances'
-            )
+            alg_params = {
+                'fptype': fptype,
+                'method': 'defaultDense',
+                'k': n_neighbors,
+                'resultsToCompute': 'computeIndicesOfNeightbors|computeDistances',
+                'resultsToEvaluate': ''
+            }
+
+            training_alg = knn_classification_training(**alg_params)
 
             fit_X = d4p.get_data(self._fit_X)
-            training_result = training_alg.compute(fit_X, np.empty(shape=(fit_X.shape[0], 1)))
+            training_result = training_alg.compute(fit_X)
 
-            prediction_alg = knn_classification_prediction(
-                fptype=fptype,
-                method='defaultDense',
-                k=n_neighbors,
-                resultsToCompute='computeIndicesOfNeightbors|computeDistances'
-            )
+            prediction_alg = knn_classification_prediction(**alg_params)
 
             X = d4p.get_data(X)
             prediction_result = prediction_alg.compute(X, training_result.model)
@@ -440,26 +421,22 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin,
                 knn_classification_training = d4p.kdtree_knn_classification_training
                 knn_classification_prediction = d4p.kdtree_knn_classification_prediction
 
-            training_alg = knn_classification_training(
-                fptype=fptype,
-                method='defaultDense',
-                k=self.n_neighbors,
-                nClasses=n_classes,
-                voteWeights='voteUniform' if self.weights == 'uniform' else 'voteDistance'
-            )
+            alg_params = {
+                'fptype': fptype,
+                'method': 'defaultDense',
+                'k': self.n_neighbors,
+                'nClasses': n_classes,
+                'voteWeights': 'voteUniform' if self.weights == 'uniform' else 'voteDistance'
+            }
+
+            training_alg = knn_classification_training(**alg_params)
 
             fit_X = d4p.get_data(self._fit_X)
             _y = d4p.get_data(self._y)
             _y = _y.reshape(_y.shape[0], 1)
             training_result = training_alg.compute(fit_X, _y)
 
-            prediction_alg = knn_classification_prediction(
-                fptype=fptype,
-                method='defaultDense',
-                k=self.n_neighbors,
-                nClasses=n_classes,
-                voteWeights='voteUniform' if self.weights == 'uniform' else 'voteDistance'
-            )
+            prediction_alg = knn_classification_prediction(**alg_params)
 
             X = d4p.get_data(X)
             prediction_result = prediction_alg.compute(X, training_result.model)
