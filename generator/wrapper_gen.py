@@ -69,6 +69,11 @@ from cpython.ref cimport PyObject
 from cython.operator cimport dereference as deref
 from libc.stdint cimport int64_t
 
+from typing import List, Deque, Dict, Any
+from collections import deque
+from os import remove
+import json
+
 try:
     import pandas
     pdDataFrame = pandas.DataFrame
@@ -245,13 +250,7 @@ def daal_generate_shuffled_indices(idx, random_state):
     c_generate_shuffled_indices(data_or_file(<PyObject*>idx), data_or_file(<PyObject*>random_state))
 
 
-from typing import List, Deque, Dict, Any
-from collections import deque
-from os import remove
-import json
-import numpy as np
-
-def lgbm_to_daal(model: Any) -> Any:
+def get_gbt_model_from_lgbm(model: Any) -> Any:
     class Node:
         def __init__(self, tree: Dict[str, Any], parent_id: int, position: int):
             self.tree = tree
@@ -341,7 +340,7 @@ def lgbm_to_daal(model: Any) -> Any:
     return mb.model()
 
 
-def xgb_to_daal(booster: Any) -> Any:
+def get_gbt_model_from_xgboost(booster: Any) -> Any:
     class Node:
         def __init__(self, tree: str, parent_id: int, position: int):
             self.tree = tree
