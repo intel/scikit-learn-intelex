@@ -50,46 +50,46 @@ cdef class gbt_classification_modelbuilder:
     '''
     cdef c_gbt_classification_ModelBuilder * c_ptr
 
-    def __cinit__(self, size_t nFeatures, size_t nIterations, size_t nClasses):
-        self.c_ptr = new c_gbt_classification_ModelBuilder(nFeatures, nIterations, nClasses)
+    def __cinit__(self, size_t n_features, size_t n_iterations, size_t n_classes):
+        self.c_ptr = new c_gbt_classification_ModelBuilder(n_features, n_iterations, n_classes)
 
     def __dealloc__(self):
         del self.c_ptr
 
-    def create_tree(self, size_t nNodes, size_t classLabel):
+    def create_tree(self, size_t n_nodes, size_t class_label):
         '''
         Create certain tree in the gradient boosted trees classification model for certain class
 
-        :param size_t nNodes: number of nodes in created tree
-        :param size_t classLabel: label of class for which tree is created. classLabel bellows interval from 0 to (nClasses - 1)
+        :param size_t n_nodes: number of nodes in created tree
+        :param size_t class_label: label of class for which tree is created. classLabel bellows interval from 0 to (nClasses - 1)
         :rtype: tree identifier
         '''
-        return self.c_ptr.createTree(nNodes, classLabel)
+        return self.c_ptr.createTree(n_nodes, class_label)
 
-    def add_leaf(self, c_gbt_clf_TreeId treeId, double response, c_gbt_clf_NodeId parentId=c_gbt_clf_noParent, size_t position=0):
+    def add_leaf(self, c_gbt_clf_TreeId tree_id, double response, c_gbt_clf_NodeId parent_id=c_gbt_clf_noParent, size_t position=0):
         '''
         Create Leaf node and add it to certain tree
 
-        :param tree-handle treeId: tree to which new node is added
-        :param node-handle parentId: parent node to which new node is added (use noParent for root node)
+        :param tree-handle tree_id: tree to which new node is added
+        :param node-handle parent_id: parent node to which new node is added (use noParent for root node)
         :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
         :param double response: response value for leaf node to be predicted
         :rtype: node identifier
         '''
-        return self.c_ptr.addLeafNode(treeId, parentId, position, response)
+        return self.c_ptr.addLeafNode(tree_id, parent_id, position, response)
 
-    def add_split(self, c_gbt_clf_TreeId treeId, size_t featureIndex, double featureValue, c_gbt_clf_NodeId parentId=c_gbt_clf_noParent, size_t position=0):
+    def add_split(self, c_gbt_clf_TreeId tree_id, size_t feature_index, double feature_value, c_gbt_clf_NodeId parent_id=c_gbt_clf_noParent, size_t position=0):
         '''
         Create Split node and add it to certain tree.
 
-        :param tree-handle treeId: tree to which node is added
-        :param node-handle parentId: parent node to which new node is added (use noParent for root node)
+        :param tree-handle tree_id: tree to which node is added
+        :param node-handle parent_id: parent node to which new node is added (use noParent for root node)
         :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
-        :param size_t featureIndex: feature index for spliting
-        :param double featureValue: feature value for spliting
+        :param size_t feature_index: feature index for spliting
+        :param double feature_value: feature value for spliting
         :rtype: node identifier
         '''
-        return self.c_ptr.addSplitNode(treeId, parentId, position, featureIndex, featureValue)
+        return self.c_ptr.addSplitNode(tree_id, parent_id, position, feature_index, feature_value)
 
     def model(self):
         '''
@@ -108,45 +108,45 @@ cdef class gbt_regression_modelbuilder:
     '''
     cdef c_gbt_regression_ModelBuilder * c_ptr
 
-    def __cinit__(self, size_t nFeatures, size_t nIterations):
-        self.c_ptr = new c_gbt_regression_ModelBuilder(nFeatures, nIterations)
+    def __cinit__(self, size_t n_features, size_t n_iterations):
+        self.c_ptr = new c_gbt_regression_ModelBuilder(n_features, n_iterations)
 
     def __dealloc__(self):
         del self.c_ptr
 
-    def create_tree(self, size_t nNodes):
+    def create_tree(self, size_t n_nodes):
         '''
         Create certain tree in the gradient boosted trees regression model
 
-        :param size_t nNodes: number of nodes in created tree
+        :param size_t n_nodes: number of nodes in created tree
         :rtype: tree identifier
         '''
-        return self.c_ptr.createTree(nNodes)
+        return self.c_ptr.createTree(n_nodes)
 
-    def add_leaf(self, c_gbt_reg_TreeId treeId, double response, c_gbt_reg_NodeId parentId=c_gbt_reg_noParent, size_t position=0):
+    def add_leaf(self, c_gbt_reg_TreeId tree_id, double response, c_gbt_reg_NodeId parent_id=c_gbt_reg_noParent, size_t position=0):
         '''
         Create Leaf node and add it to certain tree
 
-        :param tree-handle treeId: tree to which new node is added
-        :param node-handle parentId: parent node to which new node is added (use noParent for root node)
+        :param tree-handle tree_id: tree to which new node is added
+        :param node-handle parent_id: parent node to which new node is added (use noParent for root node)
         :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
         :param double response: response value for leaf node to be predicted
         :rtype: node identifier
         '''
-        return self.c_ptr.addLeafNode(treeId, parentId, position, response)
+        return self.c_ptr.addLeafNode(tree_id, parent_id, position, response)
 
-    def add_split(self, c_gbt_reg_TreeId treeId, size_t featureIndex, double featureValue, c_gbt_reg_NodeId parentId=c_gbt_reg_noParent, size_t position=0):
+    def add_split(self, c_gbt_reg_TreeId tree_id, size_t feature_index, double feature_value, c_gbt_reg_NodeId parent_id=c_gbt_reg_noParent, size_t position=0):
         '''
         Create Split node and add it to certain tree.
 
-        :param tree-handle treeId: tree to which node is added
-        :param node-handle parentId: parent node to which new node is added (use noParent for root node)
+        :param tree-handle tree_id: tree to which node is added
+        :param node-handle parent_id: parent node to which new node is added (use noParent for root node)
         :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
-        :param size_t featureIndex: feature index for spliting
-        :param double featureValue: feature value for spliting
+        :param size_t feature_index: feature index for spliting
+        :param double feature_value: feature value for spliting
         :rtype: node identifier
         '''
-        return self.c_ptr.addSplitNode(treeId, parentId, position, featureIndex, featureValue)
+        return self.c_ptr.addSplitNode(tree_id, parent_id, position, feature_index, feature_value)
 
     def model(self):
         '''
@@ -159,22 +159,22 @@ cdef class gbt_regression_modelbuilder:
         return res
 
 
-def gbt_clf_model_builder(nFeatures, nIterations, nClasses = 2):
+def gbt_clf_model_builder(n_features, n_iterations, n_classes = 2):
     '''
     Model builder for gradient boosted trees classification
 
-    :param size_t nFeatures: Number of features in training data
-    :param size_t nIterations: Number of trees in model for each class
-    :param size_t nClasses: Number of classes in model
+    :param size_t n_features: Number of features in training data
+    :param size_t n_iterations: Number of trees in model for each class
+    :param size_t n_classes: Number of classes in model
     '''
-    return gbt_classification_modelbuilder(nFeatures, nIterations, nClasses)
+    return gbt_classification_modelbuilder(n_features, n_iterations, n_classes)
 
 
-def gbt_reg_model_builder(nFeatures, nIterations):
+def gbt_reg_model_builder(n_features, n_iterations):
     '''
     Model builder for gradient boosted trees regression
 
-    :param size_t nFeatures: Number of features in training data
-    :param size_t nIterations: Number of trees in the model
+    :param size_t n_features: Number of features in training data
+    :param size_t n_iterations: Number of trees in the model
     '''
-    return gbt_regression_modelbuilder(nFeatures, nIterations)
+    return gbt_regression_modelbuilder(n_features, n_iterations)
