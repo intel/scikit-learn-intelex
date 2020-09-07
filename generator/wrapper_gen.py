@@ -245,58 +245,228 @@ def daal_generate_shuffled_indices(idx, random_state):
     c_generate_shuffled_indices(data_or_file(<PyObject*>idx), data_or_file(<PyObject*>random_state))
 
 
-from typing import List, Dict, Any
+from typing import List, Deque, Dict, Any
+from collections import deque
+from os import remove
+import json
+import numpy as np
 
-class Node:
-    def __init__(self, tree: Dict[str, Any], parentId: int, position: int):
-        self.tree = tree
-        self.parentId = parentId
-        self.position = position
+def lgbm_to_daal(model: Any) -> Any:
+    class Node:
+        def __init__(self, tree: Dict[str, Any], parentId: int, position: int):
+            self.tree = tree
+            self.parentId = parentId
+            self.position = position
 
-
-def model_builder_lgbm(lgb_model: Dict[str, Any]) -> Any:
-    if "name" not in lgb_model or lgb_model["name"] != "tree" or "version" not in lgb_model:
-        # TODO: Probably need more appropriate checks
-        raise ValueError("This function only works for LightGBM models")
+    lgb_model = model.dump_model()
 
     nFeatures = lgb_model["max_feature_idx"] + 1
     nIterations = len(lgb_model["tree_info"]) / lgb_model["num_tree_per_iteration"]
     nClasses = lgb_model["num_tree_per_iteration"]
-    if nClasses == 1:
+
+    is_regression = False
+    objective_fun = lgb_model["objective"]
+    if nClasses > 2:
+        if objective_fun == "multiclass":
+            print("Found multiclass classification")
+        else:
+            raise TypeError(
+                "multiclass (softmax) objective is only supported for multiclass classification")
+    elif objective_fun == "binary":  # nClasses == 1
+        print("Found binary classification")
         nClasses = 2
+    else:
+        print("Found regression")
+        is_regression = True
 
-    mb = daal4py.model_builder(nFeatures=nFeatures, nIterations=nIterations, nClasses=nClasses)
+    if is_regression:
+        mb = daal4py.gbt_reg_model_builder(nFeatures=nFeatures, nIterations=nIterations)
+    else:
+        mb = daal4py.gbt_clf_model_builder(
+            nFeatures=nFeatures, nIterations=nIterations, nClasses=nClasses)
 
+    classLabel = 0
+    iterations_counter = 0
     for tree in lgb_model["tree_info"]:
-        treeId = mb.create_tree(nNodes=tree["num_leaves"]*2-1, classLabel=0)
+        if is_regression:
+            treeId = mb.create_tree(tree["num_leaves"]*2-1)
+        else:
+            treeId = mb.create_tree(nNodes=tree["num_leaves"]*2-1, classLabel=classLabel)
+
+        iterations_counter += 1
+        if iterations_counter == nIterations:
+            iterations_counter = 0
+            classLabel += 1
         struct = tree["tree_structure"]
+
+        # root is leaf
         if "leaf_index" in struct:
             mb.add_leaf(treeId=treeId, response=struct["leaf_value"])
             continue
+
+        # add root
         parentId = mb.add_split(
             treeId=treeId, featureIndex=struct["split_feature"],
             featureValue=struct["threshold"])
 
+        # create stack
         node_stack: List[Node] = [Node(struct["left_child"], parentId, 0),
                                   Node(struct["right_child"], parentId, 1)]
+
+        # dfs through it
         while node_stack:
             struct = node_stack[-1].tree
             parentId = node_stack[-1].parentId
             position = node_stack[-1].position
             node_stack.pop()
 
+            # current node is leaf
             if "leaf_index" in struct:
                 mb.add_leaf(
                     treeId=treeId, response=struct["leaf_value"],
                     parentId=parentId, position=position)
                 continue
+
+            # current node is split
             parentId = mb.add_split(
                 treeId=treeId, featureIndex=struct["split_feature"],
                 featureValue=struct["threshold"],
                 parentId=parentId, position=position)
 
+            # append children
             node_stack.append(Node(struct["left_child"], parentId, 0))
             node_stack.append(Node(struct["right_child"], parentId, 1))
+
+    return mb.model()
+
+
+def xgb_to_daal(booster: Any) -> Any:
+    class Node:
+        def __init__(self, tree: str, parentId: int, position: int):
+            self.tree = tree
+            self.parentId = parentId
+            self.position = position
+
+    booster.dump_model("raw.txt")
+    with open("raw.txt", "r") as read_file:
+        xgb_model = read_file.read()
+    remove("./raw.txt")
+
+    xgb_config = json.loads(booster.save_config())
+
+    max_depth = int(xgb_config["learner"]["gradient_booster"]["updater"]["grow_quantile_histmaker"][
+        "train_param"]["max_depth"])
+    nFeatures = int(xgb_config["learner"]["learner_model_param"]["num_feature"])
+    nClasses = int(xgb_config["learner"]["learner_model_param"]["num_class"])
+
+    is_regression = False
+    objective_fun = xgb_config["learner"]["learner_train_param"]["objective"]
+    if nClasses > 2:
+        if objective_fun in ["multi:softprob", "multi:softmax"]:
+            print("Found multiclass classification")
+        else:
+            raise TypeError(
+                "multi:softprob and multi:softmax are only supported for multiclass classification")
+    elif objective_fun.find("binary:") == 0:
+        if objective_fun in ["binary:logistic", "binary:logitraw"]:
+            print("Found binary classification")
+            nClasses = 2
+        else:
+            raise TypeError(
+                "binary:logistic and binary:logitraw are only supported for binary classification")
+    else:
+        print("Found regression. If it's not, your objective is not supported")
+        is_regression = True
+
+    last_booster_start = xgb_model.rfind("booster[") + 8
+    nIterations = int((int(xgb_model[last_booster_start:xgb_model.find(
+        "]", last_booster_start)]) + 1) / (nClasses if nClasses > 2 else 1))
+
+    if is_regression:
+        mb = daal4py.gbt_reg_model_builder(nFeatures=nFeatures, nIterations=nIterations + 1)
+    else:
+        mb = daal4py.gbt_clf_model_builder(
+            nFeatures=nFeatures, nIterations=nIterations, nClasses=nClasses)
+
+    if is_regression:
+        # Additional iteration
+        treeId = mb.create_tree(1)
+        mb.add_leaf(treeId=treeId, response=0.5)
+
+    classLabel = 0
+    iterations_counter = 0
+    for tree in xgb_model.expandtabs(1).replace(" ", "").split("booster[")[1:]:
+        if is_regression:
+            treeId = mb.create_tree(len(tree.split("\n")) - 1)
+        else:
+            treeId = mb.create_tree(nNodes=len(tree.split("\n")) - 1, classLabel=classLabel)
+
+        iterations_counter += 1
+        if iterations_counter == nIterations:
+            iterations_counter = 0
+            classLabel += 1
+        sub_tree = tree[tree.find("\n")+1:]
+
+        # root is leaf
+        if sub_tree.find("leaf") == sub_tree.find(":") + 1:
+            mb.add_leaf(
+                treeId=treeId, response=float(
+                    sub_tree[sub_tree.find("=") + 1: sub_tree.find("\n")]))
+            continue
+
+        # add root
+        featureIndex = int(sub_tree[sub_tree.find("f") + 1:sub_tree.find("<")])
+        featureValue = np.nextafter(
+            np.single(sub_tree[sub_tree.find("<") + 1: sub_tree.find("]")]),
+            np.single(-np.inf))
+        parentId = mb.add_split(treeId=treeId, featureIndex=featureIndex, featureValue=featureValue)
+
+        # create queue
+        yes_idx = sub_tree[sub_tree.find("yes=") + 4:sub_tree.find(",no")]
+        no_idx = sub_tree[sub_tree.find("no=") + 3:sub_tree.find(",missing")]
+        node_queue: Deque[Node] = deque()
+        node_queue.append(
+            Node(
+                sub_tree
+                [sub_tree.find("\n" + yes_idx + ":") + 1: sub_tree.find("\n" + no_idx + ":") + 1],
+                parentId, 0))
+        node_queue.append(Node(sub_tree[sub_tree.find("\n" + no_idx + ":") + 1:], parentId, 1))
+
+        # bfs through it
+        while node_queue:
+            sub_tree = node_queue[0].tree
+            parentId = node_queue[0].parentId
+            position = node_queue[0].position
+            node_queue.popleft()
+
+            # current node is leaf
+            if sub_tree.find("leaf") == sub_tree.find(":") + 1:
+                mb.add_leaf(
+                    treeId=treeId,
+                    response=float(sub_tree[sub_tree.find("=") + 1: sub_tree.find("\n")]),
+                    parentId=parentId, position=position)
+                continue
+
+            # current node is split
+            featureIndex = int(sub_tree[sub_tree.find("f") + 1:sub_tree.find("<")])
+            featureValue = np.nextafter(
+                np.single(sub_tree[sub_tree.find("<") + 1: sub_tree.find("]")]),
+                np.single(-np.inf))
+            parentId = mb.add_split(treeId=treeId, featureIndex=featureIndex,
+                                    featureValue=featureValue, parentId=parentId, position=position)
+
+            # append to queue
+            yes_idx = sub_tree[sub_tree.find("yes=") + 4:sub_tree.find(",no")]
+            no_idx = sub_tree[sub_tree.find("no=") + 3:sub_tree.find(",missing")]
+            node_queue.append(
+                Node(
+                    sub_tree
+                    [sub_tree.find("\n" + yes_idx + ":") + 1: sub_tree.find("\n" + no_idx + ":") + 1],
+                    parentId, 0))
+            node_queue.append(
+                Node(
+                    sub_tree[sub_tree.find("\n" + no_idx + ":") + 1:],
+                    parentId, 1))
 
     return mb.model()
 
