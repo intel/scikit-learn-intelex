@@ -510,11 +510,9 @@ def fit(self, X, y, sample_weight=None):
         self.fit_status_ = 0
 
         if self.probability:
-            t0 = timeit.default_timer()
             params = self.get_params()
             params["probability"] = False
             params["decision_function_shape"] = 'ovr'
-
             try:
                 cv = StratifiedKFold(
                     n_splits=5, random_state=self.random_state, shuffle=True)
@@ -522,7 +520,6 @@ def fit(self, X, y, sample_weight=None):
                                                        cv=cv.split(
                     X, y, sample_weight),
                     method='sigmoid').fit(X, y, sample_weight)
-
             except ValueError:
                 cv = StratifiedKFold(
                     n_splits=3, random_state=self.random_state, shuffle=True)
@@ -530,10 +527,6 @@ def fit(self, X, y, sample_weight=None):
                                                        cv=cv.split(
                     X, y, sample_weight),
                     method='sigmoid').fit(X, y, sample_weight)
-
-            t1 = timeit.default_timer()
-            print('[daal] compute fit probability: ', t1-t0)
-
     else:
         logging.info("sklearn.svm.SVC.fit: " + method_uses_sklearn)
         self._daal_fit = False
@@ -714,7 +707,7 @@ def decision_function(self, X):
     transformation of ovo decision function.
     """
 
-    if getattr(self, '_daal_fit', False):
+    if getattr(self, '_daal_fit', False) and daal_check_version((2020, 4), (2021, 109)) :
         logging.info("sklearn.svm.SVC.decision_function: " + method_uses_daal)
         X = self._validate_for_predict(X)
         dec = _daal4py_predict(self, X, is_decision_function=True)

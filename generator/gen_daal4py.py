@@ -144,11 +144,8 @@ class cython_interface(object):
             for filename in filenames:
                 if filename.endswith('.h') and not 'neural_networks' in dirpath and not any(filename.endswith(x) for x in cython_interface.ignore_files):
                     fname = jp(dirpath,filename)
-                    #print('reading ' +  fname)
                     with open(fname, "r") as header:
                         parsed_data = parse_header(header, cython_interface.ignores)
-                    # if parsed_data['enums']:
-                    #     print(filename, parsed_data['enums'])
                     ns = cleanup_ns(fname, parsed_data['ns'])
                     # Now let's update the namespace; more than one file might contribute to the same ns
                     if ns:
@@ -177,9 +174,6 @@ class cython_interface(object):
                         self.namespace_dict[ns].headers.append(fname.replace(self.include_root, '').lstrip('/'))
                         if parsed_data['need_methods']:
                             self.namespace_dict[ns].need_methods = True
-        print(self.namespace_dict['algorithms::multi_class_classifier'].children)
-        print(self.namespace_dict['algorithms::multi_class_classifier'].enums)
-        print(self.namespace_dict['algorithms::multi_class_classifier'].headers)
         with open(jp(self.include_root, '..', 'services', 'library_version_info.h')) as header:
             v = parse_version(header)
             self.version = (int(v[0]), int(v[2]))
@@ -647,7 +641,6 @@ class cython_interface(object):
             param_classes = self.get_all_parameter_classes(ns)
             all_params = OrderedDict()
             opt_params = {}
-
             for p in param_classes:
                 parms = self.get_all_attrs(p[0], p[1].name, 'members', ns)
                 assert '::' not in p[1].name
