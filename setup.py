@@ -111,9 +111,6 @@ if dpcpp:
     if dal_build_version == (2021,7):
         DPCPP_LIBS.remove('onedal_sycl')
         DPCPP_LIBS.append('daal_sycl')        
-    if dal_build_version == (2021,6):
-        DPCPP_LIBS.append('ze_loader')
-        DAAL_LIBDIRS.append('/usr/local/lib')
 else:
     DPCPP_CFLAGS = []
     DPCPP_LIBS = []

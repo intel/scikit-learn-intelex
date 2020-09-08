@@ -73,10 +73,20 @@ try:
     import pandas
     pdDataFrame = pandas.DataFrame
     pdSeries = pandas.Series
-except:
+except ImportError:
     class pdDataFrame:
         pass
     class pdSeries:
+        pass
+
+try:
+    from modin import pandas
+    mdDataFrame = pandas.DataFrame
+    mdSeries = pandas.Series
+except ImportError:
+    class mdDataFrame:
+        pass
+    class mdSeries:
         pass
 
 npc.import_array()
@@ -180,7 +190,11 @@ def get_data(x):
             x = x.to_numpy()
         else:
             x = [xi.to_numpy() for _, xi in x.items()]
+    elif isinstance(x, mdDataFrame):
+        x = x.to_numpy()
     elif isinstance(x, pdSeries):
+        x = x.to_numpy().reshape(-1, 1)
+    elif isinstance(x, mdSeries):
         x = x.to_numpy().reshape(-1, 1)
     return x
 
@@ -221,6 +235,15 @@ cdef extern from "daal4py.h":
 
 def daal_train_test_split(orig, train, test, train_idx, test_idx):
     c_train_test_split(data_or_file(<PyObject*>orig), data_or_file(<PyObject*>train), data_or_file(<PyObject*>test), data_or_file(<PyObject*>train_idx), data_or_file(<PyObject*>test_idx))
+
+
+cdef extern from "daal4py.h":
+    cdef void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state) except +
+
+
+def daal_generate_shuffled_indices(idx, random_state):
+    c_generate_shuffled_indices(data_or_file(<PyObject*>idx), data_or_file(<PyObject*>random_state))
+
 
 import sys
 def _execute_with_context(func):

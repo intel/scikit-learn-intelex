@@ -28,3 +28,9 @@ if [ ! -z "${DAALROOT}" ]; then
     conda remove daal --force -y
     source ${DAALROOT}/env/vars.sh
 fi
+
+# if TBBROOT is specified
+if [ ! -z "${TBBROOT}" ]; then
+    conda remove tbb --force -y
+    source ${TBBROOT}/env/vars.sh
+fi

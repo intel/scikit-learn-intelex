@@ -4,6 +4,7 @@ from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from sklearn.model_selection._split import _validate_shuffle_split
 import daal4py as d4p
 import numpy as np
+from daal4py.sklearn._utils import daal_check_version
 
 try:
     from sklearn.utils import _safe_indexing as safe_indexing
@@ -43,11 +44,11 @@ def _daal_train_test_split(*arrays, **options):
     random_state = options.pop('random_state', None)
     stratify = options.pop('stratify', None)
     shuffle = options.pop('shuffle', True)
-    rng = options.pop('rng', 'default')
+    rng = options.pop('rng', 'OPTIMIZED_MT19937')
 
     available_rngs = ['default', 'MT19937', 'SFMT19937', 'MT2203', 'R250',
                       'WH', 'MCG31', 'MCG59', 'MRG32K3A', 'PHILOX4X32X10',
-                      'NONDETERM']
+                      'NONDETERM', 'OPTIMIZED_MT19937']
     if rng not in available_rngs:
         raise ValueError(
             "Wrong random numbers generator is chosen. "
@@ -76,10 +77,16 @@ def _daal_train_test_split(*arrays, **options):
                                         random_state=random_state)
             train, test = next(cv.split(X=arrays[0], y=stratify))
         else:
-            if mkl_random_is_imported and rng != 'default' and (isinstance(random_state, int) or random_state is None):
+            if mkl_random_is_imported and rng not in ['default', 'OPTIMIZED_MT19937'] and (isinstance(random_state, int) or random_state is None):
                 random_state = mkl_random.RandomState(random_state, rng)
                 indexes = random_state.permutation(n_train + n_test)
-                train, test = indexes[:n_train], indexes[n_train:]
+                test, train = indexes[:n_test], indexes[n_test:]
+            elif rng == 'OPTIMIZED_MT19937' and daal_check_version((2020, 3), (2021, 9)) and (isinstance(random_state, int) or random_state is None):
+                indexes = np.empty(shape=(n_train + n_test,), dtype=np.int64 if n_train + n_test > 2 ** 31 - 1 else np.int32)
+                random_state = np.random.RandomState(random_state)
+                random_state = random_state.get_state()[1]
+                d4p.daal_generate_shuffled_indices([indexes], [random_state])
+                test, train = indexes[:n_test], indexes[n_test:]
             else:
                 cv = ShuffleSplit(test_size=n_test,
                                   train_size=n_train,
@@ -154,8 +161,6 @@ def _daal_train_test_split(*arrays, **options):
                 train_arr, test_arr = pd.Series(train_arr), pd.Series(test_arr)
 
             if hasattr(arr, 'index'):
-                train = train.reshape((n_train,))
-                test = test.reshape((n_test,))
                 train_arr.index = train
                 test_arr.index = test
 
