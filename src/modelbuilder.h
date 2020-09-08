@@ -21,23 +21,23 @@
 
 #include <daal.h>
 
-typedef daal::algorithms::gbt::classification::ModelBuilder c_gbt_classification_ModelBuilder;
-typedef daal::algorithms::gbt::regression::ModelBuilder c_gbt_regression_ModelBuilder;
+typedef daal::algorithms::gbt::classification::ModelBuilder c_gbt_classification_model_builder;
+typedef daal::algorithms::gbt::regression::ModelBuilder c_gbt_regression_model_builder;
 
-typedef c_gbt_classification_ModelBuilder::NodeId c_gbt_clf_NodeId;
-typedef c_gbt_classification_ModelBuilder::TreeId c_gbt_clf_TreeId;
-typedef c_gbt_regression_ModelBuilder::NodeId c_gbt_reg_NodeId;
-typedef c_gbt_regression_ModelBuilder::TreeId c_gbt_reg_TreeId;
+typedef c_gbt_classification_model_builder::NodeId c_gbt_clf_node_id;
+typedef c_gbt_classification_model_builder::TreeId c_gbt_clf_tree_id;
+typedef c_gbt_regression_model_builder::NodeId c_gbt_reg_node_id;
+typedef c_gbt_regression_model_builder::TreeId c_gbt_reg_tree_id;
 
-#define c_gbt_clf_noParent c_gbt_classification_ModelBuilder::noParent
-#define c_gbt_reg_noParent c_gbt_regression_ModelBuilder::noParent
+#define c_gbt_clf_no_parent c_gbt_classification_model_builder::noParent
+#define c_gbt_reg_no_parent c_gbt_regression_model_builder::noParent
 
-static daal::algorithms::gbt::classification::ModelPtr * get_gbt_classification_modelbuilder_Model(daal::algorithms::gbt::classification::ModelBuilder * obj_)
+static daal::algorithms::gbt::classification::ModelPtr * get_gbt_classification_model_builder_model(daal::algorithms::gbt::classification::ModelBuilder * obj_)
 {
     return RAW<daal::algorithms::gbt::classification::ModelPtr>()(obj_->getModel());
 }
 
-static daal::algorithms::gbt::regression::ModelPtr * get_gbt_regression_modelbuilder_Model(daal::algorithms::gbt::regression::ModelBuilder * obj_)
+static daal::algorithms::gbt::regression::ModelPtr * get_gbt_regression_model_builder_model(daal::algorithms::gbt::regression::ModelBuilder * obj_)
 {
     return RAW<daal::algorithms::gbt::regression::ModelPtr>()(obj_->getModel());
 }

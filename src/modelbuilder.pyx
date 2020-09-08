@@ -20,38 +20,38 @@
 # We will extend this once we know how other model builders willl work in DAAL
 
 cdef extern from "modelbuilder.h":
-    ctypedef size_t c_gbt_clf_NodeId
-    ctypedef size_t c_gbt_clf_TreeId
-    ctypedef size_t c_gbt_reg_NodeId
-    ctypedef size_t c_gbt_reg_TreeId
+    ctypedef size_t c_gbt_clf_node_id
+    ctypedef size_t c_gbt_clf_tree_id
+    ctypedef size_t c_gbt_reg_node_id
+    ctypedef size_t c_gbt_reg_tree_id
 
-    cdef size_t c_gbt_clf_noParent
-    cdef size_t c_gbt_reg_noParent
+    cdef size_t c_gbt_clf_no_parent
+    cdef size_t c_gbt_reg_no_parent
 
-    cdef cppclass c_gbt_classification_ModelBuilder:
-        c_gbt_classification_ModelBuilder(size_t nFeatures, size_t nIterations, size_t nClasses) except +
-        c_gbt_clf_TreeId createTree(size_t nNodes, size_t classLabel)
-        c_gbt_clf_NodeId addLeafNode(c_gbt_clf_TreeId treeId, c_gbt_clf_NodeId parentId, size_t position, double response)
-        c_gbt_clf_NodeId addSplitNode(c_gbt_clf_TreeId treeId, c_gbt_clf_NodeId parentId, size_t position, size_t featureIndex, double featureValue)
+    cdef cppclass c_gbt_classification_model_builder:
+        c_gbt_classification_model_builder(size_t nFeatures, size_t nIterations, size_t nClasses) except +
+        c_gbt_clf_tree_id createTree(size_t nNodes, size_t classLabel)
+        c_gbt_clf_node_id addLeafNode(c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, double response)
+        c_gbt_clf_node_id addSplitNode(c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue)
 
-    cdef cppclass c_gbt_regression_ModelBuilder:
-        c_gbt_regression_ModelBuilder(size_t nFeatures, size_t nIterations) except +
-        c_gbt_reg_TreeId createTree(size_t nNodes)
-        c_gbt_reg_NodeId addLeafNode(c_gbt_reg_TreeId treeId, c_gbt_reg_NodeId parentId, size_t position, double response)
-        c_gbt_reg_NodeId addSplitNode(c_gbt_reg_TreeId treeId, c_gbt_reg_NodeId parentId, size_t position, size_t featureIndex, double featureValue)
+    cdef cppclass c_gbt_regression_model_builder:
+        c_gbt_regression_model_builder(size_t nFeatures, size_t nIterations) except +
+        c_gbt_reg_tree_id createTree(size_t nNodes)
+        c_gbt_reg_node_id addLeafNode(c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, double response)
+        c_gbt_reg_node_id addSplitNode(c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue)
 
-    cdef gbt_classification_ModelPtr * get_gbt_classification_modelbuilder_Model(c_gbt_classification_ModelBuilder *)
-    cdef gbt_regression_ModelPtr * get_gbt_regression_modelbuilder_Model(c_gbt_regression_ModelBuilder *)
+    cdef gbt_classification_ModelPtr * get_gbt_classification_model_builder_model(c_gbt_classification_model_builder *)
+    cdef gbt_regression_ModelPtr * get_gbt_regression_model_builder_model(c_gbt_regression_model_builder *)
 
 
-cdef class gbt_classification_modelbuilder:
+cdef class gbt_classification_model_builder:
     '''
     Model Builder for gradient boosted trees.
     '''
-    cdef c_gbt_classification_ModelBuilder * c_ptr
+    cdef c_gbt_classification_model_builder * c_ptr
 
     def __cinit__(self, size_t n_features, size_t n_iterations, size_t n_classes):
-        self.c_ptr = new c_gbt_classification_ModelBuilder(n_features, n_iterations, n_classes)
+        self.c_ptr = new c_gbt_classification_model_builder(n_features, n_iterations, n_classes)
 
     def __dealloc__(self):
         del self.c_ptr
@@ -66,7 +66,7 @@ cdef class gbt_classification_modelbuilder:
         '''
         return self.c_ptr.createTree(n_nodes, class_label)
 
-    def add_leaf(self, c_gbt_clf_TreeId tree_id, double response, c_gbt_clf_NodeId parent_id=c_gbt_clf_noParent, size_t position=0):
+    def add_leaf(self, c_gbt_clf_tree_id tree_id, double response, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
         '''
         Create Leaf node and add it to certain tree
 
@@ -78,7 +78,7 @@ cdef class gbt_classification_modelbuilder:
         '''
         return self.c_ptr.addLeafNode(tree_id, parent_id, position, response)
 
-    def add_split(self, c_gbt_clf_TreeId tree_id, size_t feature_index, double feature_value, c_gbt_clf_NodeId parent_id=c_gbt_clf_noParent, size_t position=0):
+    def add_split(self, c_gbt_clf_tree_id tree_id, size_t feature_index, double feature_value, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
         '''
         Create Split node and add it to certain tree.
 
@@ -98,18 +98,18 @@ cdef class gbt_classification_modelbuilder:
         :rtype: gbt_classification_model
         '''
         cdef gbt_classification_model res = gbt_classification_model.__new__(gbt_classification_model)
-        res.c_ptr = get_gbt_classification_modelbuilder_Model(self.c_ptr)
+        res.c_ptr = get_gbt_classification_model_builder_model(self.c_ptr)
         return res
 
 
-cdef class gbt_regression_modelbuilder:
+cdef class gbt_regression_model_builder:
     '''
     Model Builder for gradient boosted trees.
     '''
-    cdef c_gbt_regression_ModelBuilder * c_ptr
+    cdef c_gbt_regression_model_builder * c_ptr
 
     def __cinit__(self, size_t n_features, size_t n_iterations):
-        self.c_ptr = new c_gbt_regression_ModelBuilder(n_features, n_iterations)
+        self.c_ptr = new c_gbt_regression_model_builder(n_features, n_iterations)
 
     def __dealloc__(self):
         del self.c_ptr
@@ -123,7 +123,7 @@ cdef class gbt_regression_modelbuilder:
         '''
         return self.c_ptr.createTree(n_nodes)
 
-    def add_leaf(self, c_gbt_reg_TreeId tree_id, double response, c_gbt_reg_NodeId parent_id=c_gbt_reg_noParent, size_t position=0):
+    def add_leaf(self, c_gbt_reg_tree_id tree_id, double response, c_gbt_reg_node_id parent_id=c_gbt_reg_no_parent, size_t position=0):
         '''
         Create Leaf node and add it to certain tree
 
@@ -135,7 +135,7 @@ cdef class gbt_regression_modelbuilder:
         '''
         return self.c_ptr.addLeafNode(tree_id, parent_id, position, response)
 
-    def add_split(self, c_gbt_reg_TreeId tree_id, size_t feature_index, double feature_value, c_gbt_reg_NodeId parent_id=c_gbt_reg_noParent, size_t position=0):
+    def add_split(self, c_gbt_reg_tree_id tree_id, size_t feature_index, double feature_value, c_gbt_reg_node_id parent_id=c_gbt_reg_no_parent, size_t position=0):
         '''
         Create Split node and add it to certain tree.
 
@@ -155,7 +155,7 @@ cdef class gbt_regression_modelbuilder:
         :rtype: gbt_regression_model
         '''
         cdef gbt_regression_model res = gbt_regression_model.__new__(gbt_regression_model)
-        res.c_ptr = get_gbt_regression_modelbuilder_Model(self.c_ptr)
+        res.c_ptr = get_gbt_regression_model_builder_model(self.c_ptr)
         return res
 
 
@@ -167,7 +167,7 @@ def gbt_clf_model_builder(n_features, n_iterations, n_classes = 2):
     :param size_t n_iterations: Number of trees in model for each class
     :param size_t n_classes: Number of classes in model
     '''
-    return gbt_classification_modelbuilder(n_features, n_iterations, n_classes)
+    return gbt_classification_model_builder(n_features, n_iterations, n_classes)
 
 
 def gbt_reg_model_builder(n_features, n_iterations):
@@ -177,4 +177,4 @@ def gbt_reg_model_builder(n_features, n_iterations):
     :param size_t n_features: Number of features in training data
     :param size_t n_iterations: Number of trees in the model
     '''
-    return gbt_regression_modelbuilder(n_features, n_iterations)
+    return gbt_regression_model_builder(n_features, n_iterations)
