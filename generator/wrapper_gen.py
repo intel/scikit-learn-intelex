@@ -73,6 +73,7 @@ from typing import List, Deque, Dict, Any
 from collections import deque
 from os import remove
 import json
+import re
 
 try:
     import pandas
@@ -265,6 +266,7 @@ def get_gbt_model_from_lgbm(model: Any) -> Any:
 
     is_regression = False
     objective_fun = lgb_model["objective"]
+    print("OBJ:   " + objective_fun)
     if n_classes > 2:
         if "multiclass" in objective_fun:
             print("Found multiclass classification")
@@ -353,8 +355,9 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
 
     xgb_config = json.loads(booster.save_config())
 
-    max_depth = int(xgb_config["learner"]["gradient_booster"]["updater"]["grow_quantile_histmaker"][
-        "train_param"]["max_depth"])
+    updater = list(xgb_config["learner"]["gradient_booster"]["updater"].keys())[0]
+    max_depth = int(xgb_config["learner"]["gradient_booster"]
+                    ["updater"][updater]["train_param"]["max_depth"])
     n_features = int(xgb_config["learner"]["learner_model_param"]["num_feature"])
     n_classes = int(xgb_config["learner"]["learner_model_param"]["num_class"])
     base_score = float(xgb_config["learner"]["learner_model_param"]["base_score"])
@@ -414,7 +417,12 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             continue
 
         # add root
-        feature_index = int(sub_tree[sub_tree.find("f") + 1:sub_tree.find("<")])
+        try:
+            feature_name = sub_tree[sub_tree.find("[") + 1:sub_tree.find("<")]
+            str_index = re.sub(r'[^0-9]', '', feature_name)
+            feature_index = int(str_index)
+        except ValueError:
+            raise TypeError("Feature names must be integers")
         feature_value = np.nextafter(
             np.single(sub_tree[sub_tree.find("<") + 1: sub_tree.find("]")]),
             np.single(-np.inf))
@@ -448,7 +456,12 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
                 continue
 
             # current node is split
-            feature_index = int(sub_tree[sub_tree.find("f") + 1:sub_tree.find("<")])
+            try:
+                feature_name = sub_tree[sub_tree.find("[") + 1:sub_tree.find("<")]
+                str_index = re.sub(r'[^0-9]', '', feature_name)
+                feature_index = int(str_index)
+            except ValueError:
+                raise TypeError("Feature names must be integers")
             feature_value = np.nextafter(
                 np.single(sub_tree[sub_tree.find("<") + 1: sub_tree.find("]")]),
                 np.single(-np.inf))
