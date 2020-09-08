@@ -155,9 +155,9 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     # create algorithm
     X_fptype = getFPType(X)
     daal_engine_ = daal4py.engines_mt2203(seed=seed_, fptype=X_fptype)
-    _featuresPerNode = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=True)
+    features_per_node_ = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=True)
 
-    n_samples_bootstrap = _get_n_samples_bootstrap(
+    n_samples_bootstrap_ = _get_n_samples_bootstrap(
         n_samples=X.shape[0],
         max_samples=self.max_samples
     )
@@ -171,8 +171,8 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
         fptype = X_fptype,
         method = 'defaultDense',
         nTrees = int(self.n_estimators),
-        observationsPerTreeFraction = n_samples_bootstrap if self.bootstrap == True else 1.,
-        featuresPerNode = int(_featuresPerNode),
+        observationsPerTreeFraction = n_samples_bootstrap_ if self.bootstrap == True else 1.,
+        featuresPerNode = int(features_per_node_),
         maxTreeDepth = int(0 if self.max_depth is None else self.max_depth),
         minObservationsInLeafNode = (self.min_samples_leaf if isinstance(self.min_samples_leaf, numbers.Integral)
                                      else int(ceil(self.min_samples_leaf * X.shape[0]))),
@@ -588,7 +588,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 'node_count' : tree_i_state_class.node_count,
                 'nodes' : tree_i_state_class.node_ar,
                 'values': tree_i_state_class.value_ar }
-            # 
             est_i.tree_ = Tree(self.n_features_, np.array([n_classes_], dtype=np.intp), self.n_outputs_)
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
