@@ -265,7 +265,6 @@ def get_gbt_model_from_lgbm(model: Any) -> Any:
 
     is_regression = False
     objective_fun = lgb_model["objective"]
-    print("OBJ:   " + objective_fun)
     if n_classes > 2:
         if "multiclass" in objective_fun:
             print("Found multiclass classification")
@@ -280,9 +279,9 @@ def get_gbt_model_from_lgbm(model: Any) -> Any:
         is_regression = True
 
     if is_regression:
-        mb = daal4py.gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations)
+        mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations)
     else:
-        mb = daal4py.gbt_clf_model_builder(
+        mb = gbt_clf_model_builder(
             n_features=n_features, n_iterations=n_iterations, n_classes=n_classes)
 
     class_label = 0
@@ -385,33 +384,33 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
 
     # Create + base iteration
     if is_regression:
-        mb = daal4py.gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations + 1)
+        mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations + 1)
 
         tree_id = mb.create_tree(1)
         mb.add_leaf(tree_id=tree_id, response=base_score)
     else:
-        mb = daal4py.gbt_clf_model_builder(
+        mb = gbt_clf_model_builder(
             n_features=n_features, n_iterations=n_iterations, n_classes=n_classes)
 
     class_label = 0
     iterations_counter = 0
     for tree in xgb_model.expandtabs(1).replace(" ", "").split("booster[")[1:]:
         if is_regression:
-            tree_id = mb.create_tree(len(tree.split("\n")) - 1)
+            tree_id = mb.create_tree(len(tree.split("\\n")) - 1)
         else:
-            tree_id = mb.create_tree(n_nodes=len(tree.split("\n")) - 1, class_label=class_label)
+            tree_id = mb.create_tree(n_nodes=len(tree.split("\\n")) - 1, class_label=class_label)
 
         iterations_counter += 1
         if iterations_counter == n_iterations:
             iterations_counter = 0
             class_label += 1
-        sub_tree = tree[tree.find("\n")+1:]
+        sub_tree = tree[tree.find("\\n")+1:]
 
         # root is leaf
         if sub_tree.find("leaf") == sub_tree.find(":") + 1:
             mb.add_leaf(
                 tree_id=tree_id, response=float(
-                    sub_tree[sub_tree.find("=") + 1: sub_tree.find("\n")]))
+                    sub_tree[sub_tree.find("=") + 1: sub_tree.find("\\n")]))
             continue
 
         # add root
@@ -429,9 +428,9 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
         node_queue.append(
             Node(
                 sub_tree
-                [sub_tree.find("\n" + yes_idx + ":") + 1: sub_tree.find("\n" + no_idx + ":") + 1],
+                [sub_tree.find("\\n" + yes_idx + ":") + 1: sub_tree.find("\\n" + no_idx + ":") + 1],
                 parent_id, 0))
-        node_queue.append(Node(sub_tree[sub_tree.find("\n" + no_idx + ":") + 1:], parent_id, 1))
+        node_queue.append(Node(sub_tree[sub_tree.find("\\n" + no_idx + ":") + 1:], parent_id, 1))
 
         # bfs through it
         while node_queue:
@@ -444,7 +443,7 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             if sub_tree.find("leaf") == sub_tree.find(":") + 1:
                 mb.add_leaf(
                     tree_id=tree_id,
-                    response=float(sub_tree[sub_tree.find("=") + 1: sub_tree.find("\n")]),
+                    response=float(sub_tree[sub_tree.find("=") + 1: sub_tree.find("\\n")]),
                     parent_id=parent_id, position=position)
                 continue
 
@@ -463,11 +462,11 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             node_queue.append(
                 Node(
                     sub_tree
-                    [sub_tree.find("\n" + yes_idx + ":") + 1: sub_tree.find("\n" + no_idx + ":") + 1],
+                    [sub_tree.find("\\n" + yes_idx + ":") + 1: sub_tree.find("\\n" + no_idx + ":") + 1],
                     parent_id, 0))
             node_queue.append(
                 Node(
-                    sub_tree[sub_tree.find("\n" + no_idx + ":") + 1:],
+                    sub_tree[sub_tree.find("\\n" + no_idx + ":") + 1:],
                     parent_id, 1))
 
     return mb.model()
