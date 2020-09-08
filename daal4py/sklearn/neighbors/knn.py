@@ -193,7 +193,7 @@ class KNeighborsMixin:
                 'method': 'defaultDense',
                 'k': n_neighbors,
                 'resultsToCompute': 'computeIndicesOfNeightbors|computeDistances',
-                'resultsToEvaluate': ''
+                'resultsToEvaluate': 'none'
             }
 
             training_alg = knn_classification_training(**alg_params)
@@ -426,7 +426,8 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin,
                 'method': 'defaultDense',
                 'k': self.n_neighbors,
                 'nClasses': n_classes,
-                'voteWeights': 'voteUniform' if self.weights == 'uniform' else 'voteDistance'
+                'voteWeights': 'voteUniform' if self.weights == 'uniform' else 'voteDistance',
+                'resultsToEvaluate': 'computeClassLabels'
             }
 
             training_alg = knn_classification_training(**alg_params)
