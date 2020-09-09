@@ -1,5 +1,5 @@
 #
-# *******************************************************************************
+#*******************************************************************************
 # Copyright 2014-2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ******************************************************************************/
+#******************************************************************************/
 
 from __future__ import print_function
 
@@ -674,11 +674,11 @@ def predict_proba(self):
     self._check_proba()
     if getattr(self, '_daal_fit', False):
         logging.info("sklearn.svm.SVC.predict_proba: " + method_uses_daal)
-        return self._daal4py_predict_proba
+        algo = self._daal4py_predict_proba
     else:
         logging.info("sklearn.svm.SVC.predict_proba: " + method_uses_sklearn)
-        return self._predict_proba
-
+        algo = self._predict_proba
+    return algo
 
 def decision_function(self, X):
     """Evaluates the decision function for the samples in X.

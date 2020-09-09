@@ -686,7 +686,7 @@ class cython_interface(object):
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
-                            if ns in result_to_compue.keys():
+                            if ns in result_to_compue.keys() and result_to_compue[ns] in p:
                                 thetype = result_to_compue[ns]
                         else:
                             thetype = (hlt if hlt else all_params[p])

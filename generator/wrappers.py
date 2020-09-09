@@ -525,6 +525,7 @@ no_warn = {
     'algorithms::math::smoothrelu': ['ParameterType',],
     'algorithms::math::softmax': ['ParameterType',],
     'algorithms::math::tanh': ['ParameterType',],
+    'algorithms::multi_class_classifier': ['Result',],
     'algorithms::multinomial_naive_bayes': ['Result',],
     'algorithms::multivariate_outlier_detection': ['ParameterType',],
     'algorithms::normalization': ['Result',],
