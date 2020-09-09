@@ -267,10 +267,7 @@ def get_gbt_model_from_lgbm(model: Any) -> Any:
     is_regression = False
     objective_fun = lgb_model["objective"]
     if n_classes > 2:
-        if "multiclass" in objective_fun:
-            # Needed for future verbose
-            # print("Found multiclass classification")
-        else:
+        if "multiclass" not in objective_fun:
             raise TypeError(
                 "multiclass (softmax) objective is only supported for multiclass classification")
     elif "binary" in objective_fun:  # nClasses == 1
@@ -367,11 +364,8 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
     is_regression = False
     objective_fun = xgb_config["learner"]["learner_train_param"]["objective"]
     if n_classes > 2:
-        if objective_fun in ["multi:softprob", "multi:softmax"]:
-            # Needed for future verbose
-            # print("Found multiclass classification")
-        else:
-            raise TypeError(
+        if objective_fun not in ["multi:softprob", "multi:softmax"]:
+           raise TypeError(
                 "multi:softprob and multi:softmax are only supported for multiclass classification")
     elif objective_fun.find("binary:") == 0:
         if objective_fun in ["binary:logistic", "binary:logitraw"]:
