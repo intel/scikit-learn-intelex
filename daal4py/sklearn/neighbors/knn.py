@@ -184,12 +184,15 @@ class KNeighborsMixin:
             if self._fit_method == 'brute':
                 knn_classification_training = d4p.bf_knn_classification_training
                 knn_classification_prediction = d4p.bf_knn_classification_prediction
+                # Brute force method always computes in doubles due to precision need
+                compute_fptype = 'double'
             else:
                 knn_classification_training = d4p.kdtree_knn_classification_training
                 knn_classification_prediction = d4p.kdtree_knn_classification_prediction
+                compute_fptype = fptype
 
             alg_params = {
-                'fptype': fptype,
+                'fptype': compute_fptype,
                 'method': 'defaultDense',
                 'k': n_neighbors,
                 'resultsToCompute': 'computeIndicesOfNeightbors|computeDistances',
@@ -207,7 +210,7 @@ class KNeighborsMixin:
             prediction_result = prediction_alg.compute(X, training_result.model)
 
             if return_distance:
-                results = prediction_result.distances, prediction_result.indices
+                results = prediction_result.distances.astype(fptype), prediction_result.indices
             else:
                 results = prediction_result.indices
 
@@ -417,12 +420,15 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin,
             if self.algorithm == 'brute':
                 knn_classification_training = d4p.bf_knn_classification_training
                 knn_classification_prediction = d4p.bf_knn_classification_prediction
+                # Brute force method always computes in doubles due to precision need
+                compute_fptype = 'double'
             else:
                 knn_classification_training = d4p.kdtree_knn_classification_training
                 knn_classification_prediction = d4p.kdtree_knn_classification_prediction
+                compute_fptype = fptype
 
             alg_params = {
-                'fptype': fptype,
+                'fptype': compute_fptype,
                 'method': 'defaultDense',
                 'k': self.n_neighbors,
                 'nClasses': n_classes,
