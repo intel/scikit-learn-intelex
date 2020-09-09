@@ -42,8 +42,8 @@ def main(readcsv=read_csv, method='defaultDense'):
     y_test = readcsv(test_file, range(3, 4), t=np.float32)
 
     # Datasets creation
-    xgb_train = xgb.DMatrix(X_train, label=y_train)
-    xgb_test = xgb.DMatrix(X_test)
+    xgb_train = xgb.DMatrix(X_train, label=np.array(y_train))
+    xgb_test = xgb.DMatrix(X_test, label=np.array(y_test))
 
     # training parameters setting
     params = {

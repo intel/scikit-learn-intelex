@@ -42,7 +42,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     y_test = readcsv(test_file, range(3, 4), t=np.float32)
 
     # Datasets creation
-    lgb_train = lgb.Dataset(X_train, y_train, free_raw_data=False)
+    lgb_train = lgb.Dataset(X_train, np.array(y_train).reshape(X_train.shape[0]), free_raw_data=False)
 
     # training parameters setting
     params = {
