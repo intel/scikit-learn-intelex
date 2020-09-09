@@ -36,7 +36,6 @@ def main(readcsv=read_csv, method='defaultDense'):
     test_file = "./data/batch/df_classification_test.csv"
 
     # Data reading
-    feature_names = ["feature_" + str(i) for i in range(3)]
     X_train = readcsv(train_file, range(3), t=np.float32)
     y_train = readcsv(train_file, range(3, 4), t=np.float32)
     X_test = readcsv(test_file, range(3), t=np.float32)

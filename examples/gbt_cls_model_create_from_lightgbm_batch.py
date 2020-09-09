@@ -21,7 +21,6 @@
 import daal4py as d4p
 import lightgbm as lgb
 import numpy as np
-import pandas as pd
 
 # let's try to use pandas' fast csv reader
 try:
