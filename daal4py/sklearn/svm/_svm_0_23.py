@@ -312,12 +312,8 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
         self.intercept_ = np.array(intercepts)
 
     indices = y.take(self.support_, axis=0)
-    if num_classes == 2:
-        self._n_support = np.array(
-            [np.sum(indices == -1), np.sum(indices == 1)], dtype=np.int32)
-    else:
-        self._n_support = np.array(
-            [np.sum(indices == i) for i, c in enumerate(self.classes_)], dtype=np.int32)
+    self._n_support = np.array(
+        [np.sum(indices == i) for i, c in enumerate(self.classes_)], dtype=np.int32)
 
     self._probA = np.empty(0)
     self._probB = np.empty(0)
@@ -501,9 +497,10 @@ def fit(self, X, y, sample_weight=None):
     # see comment on the other call to np.iinfo in this file
     seed = rnd.randint(np.iinfo('i').max)
 
-    self._sparse_support = not is_sparse or is_sparse and daal_check_version((2020, 4), (2021, 109))
+    self._sparse_support = not is_sparse or is_sparse and daal_check_version((2020, 3), (2021, 109))
+    probability_support = not self.probability or self.probability and daal_check_version((2020, 3), (2021, 109))
 
-    if kernel in ['linear', 'rbf'] and self._sparse_support :
+    if kernel in ['linear', 'rbf'] and self._sparse_support and probability_support:
         logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
         sample_weight = _daal4py_check_weight(self, X, y, sample_weight)
 
@@ -709,7 +706,7 @@ def decision_function(self, X):
     transformation of ovo decision function.
     """
 
-    if getattr(self, '_daal_fit', False) and (daal_check_version((2020, 4), (2021, 109)) 
+    if getattr(self, '_daal_fit', False) and (daal_check_version((2020, 3), (2021, 109)) 
                                               or len(self.classes_) == 2):
         logging.info("sklearn.svm.SVC.decision_function: " + method_uses_daal)
         X = self._validate_for_predict(X)

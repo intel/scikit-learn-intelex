@@ -169,6 +169,7 @@ class cython_interface(object):
                                     self.namespace_dict[subns] = namespace(subns)
                                 self.namespace_dict[subns].classes[tmp[1]] = parsed_data['classes'][c]
                                 self.namespace_dict[subns].classes[tmp[1]].name = tmp[1]
+
                         self.namespace_dict[ns].enums.update(parsed_data['enums'])
                         self.namespace_dict[ns].typedefs.update(parsed_data['typedefs'])
                         self.namespace_dict[ns].headers.append(fname.replace(self.include_root, '').lstrip('/'))
@@ -686,8 +687,9 @@ class cython_interface(object):
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
-                            if ns in result_to_compute .keys() and result_to_compute[ns] in p:
-                                thetype = result_to_compute [ns]
+                            if ns in result_to_compute.keys():
+                                if result_to_compute[ns].rsplit('::', 1)[-1] in self.namespace_dict[get_parent(ns)].enums.keys():
+                                    thetype = result_to_compute[ns]
                         else:
                             thetype = (hlt if hlt else all_params[p])
                         if thetype != None and tmp != None:
