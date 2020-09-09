@@ -227,7 +227,7 @@ class TestExCSRMatrix(Base, unittest.TestCase):
         # some algos do not support CSR matrices
         if  ex.__name__.startswith('sorting'):
             self.skipTest("not supporting CSR")
-        if  any (ex.__name__.startswith(x) for x in ['adaboost', 'brownboost', 'stump_classification']):
+        if  any (ex.__name__.startswith(x) for x in ['adaboost', 'brownboost', 'stump_classification', 'gbt_cls_model_create']):
             self.skipTest("not supporting CSR")
         method = 'singlePassCSR' if any(x in ex.__name__ for x in ['low_order_moms', 'covariance']) else 'fastCSR'
         # cannot use fastCSR ofr implicit als; bug in Intel(R) DAAL?

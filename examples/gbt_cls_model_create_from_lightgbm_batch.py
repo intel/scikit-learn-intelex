@@ -62,15 +62,15 @@ def main(readcsv=read_csv, method='defaultDense'):
     lgb_model = lgb.train(params, lgb_train, valid_sets=lgb_train)
 
     # LightGBM prediction
-    lgb_prediction = lgb_model.predict(X_test)
-    lgb_errors_count = np.count_nonzero(np.argmax(lgb_prediction, axis=1) - np.ravel(y_test))
+    lgb_prediction = np.argmax(lgb_model.predict(X_test), axis=1)
+    lgb_errors_count = np.count_nonzero(lgb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
     daal_model = d4p.get_gbt_model_from_lgbm(lgb_model)
 
     # daal4py prediction
     daal_predict_algo = d4p.gbt_classification_prediction(
-        nClasses=5, resultsToEvaluate="computeClassLabels", fptype='float')
+        nClasses=params["num_class"], resultsToEvaluate="computeClassLabels", fptype='float')
     daal_prediction = daal_predict_algo.compute(X_test, daal_model)
     daal_errors_count = np.count_nonzero(daal_prediction.prediction - y_test)
     assert np.absolute(lgb_errors_count - daal_errors_count) == 0
@@ -80,7 +80,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     (lgb_prediction, lgb_errors_count, daal_prediction, daal_errors_count, y_test) = main()
-    print("\nLightGBM prediction results (first 10 rows):\n", np.argmax(lgb_prediction[0:10], axis=1))
+    print("\nLightGBM prediction results (first 10 rows):\n", lgb_prediction[0:10])
     print("\ndaal4py prediction results (first 10 rows):\n", daal_prediction[0:10])
     print("\nGround truth (first 10 rows):\n", y_test[0:10])
 

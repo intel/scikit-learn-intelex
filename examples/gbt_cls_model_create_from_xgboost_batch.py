@@ -71,7 +71,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # daal4py prediction
     daal_predict_algo = d4p.gbt_classification_prediction(
-        nClasses=5, resultsToEvaluate="computeClassLabels", fptype='float')
+        nClasses=params["num_class"], resultsToEvaluate="computeClassLabels", fptype='float')
     daal_prediction = daal_predict_algo.compute(X_test, daal_model)
     daal_errors_count = np.count_nonzero(daal_prediction.prediction - y_test)
     assert np.absolute(xgb_errors_count - daal_errors_count) == 0
