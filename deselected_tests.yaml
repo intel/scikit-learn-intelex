@@ -77,3 +77,7 @@ deselected_tests:
   # For big data the coefficients are close.
   # See: https://github.com/IntelPython/daal4py/issues/275
   - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties
+
+  # Different number of iterations because of instability of kmeans
+  # https://github.com/IntelPython/daal4py/issues/277
+  - cluster/tests/test_k_means.py::test_kmeans_elkan_results

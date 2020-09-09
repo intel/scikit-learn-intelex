@@ -107,6 +107,7 @@ def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
             maxIterations= maxIterations,
             fptype = fptype,
             resultsToEvaluate = resultsToEvaluate,
+            accuracyThreshold=accuracyThreshold,
             method = method)
     else:
         assigFlag = 'computeAssignments' in resultsToEvaluate
@@ -114,6 +115,7 @@ def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
             maxIterations= maxIterations,
             fptype = fptype,
             assignFlag = assigFlag,
+            accuracyThreshold=accuracyThreshold,
             method = method)
     return kmeans_algo
 
