@@ -69,7 +69,7 @@ def main():
         nClasses=5, resultsToEvaluate="computeClassLabels", fptype='float')
     daal_prediction = daal_predict_algo.compute(X_test, daal_model)
     daal_errors_count = np.count_nonzero(daal_prediction.prediction - y_test)
-    assert np.absolute(xgb_errors_count - daal_errors_count) < 2
+    assert np.absolute(xgb_errors_count - daal_errors_count) == 0
 
     return (xgb_prediction, xgb_errors_count, np.ravel(daal_prediction.prediction), daal_errors_count, np.ravel(y_test))
 
