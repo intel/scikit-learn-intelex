@@ -39,9 +39,11 @@ requirements:
 
 test:
     requires:
+        - lightgbm
         - pandas
         - scipy
         - scikit-learn
+        - xgboost
         - mpich # [osx]
         - impi_rt # [not osx]
     source_files:
