@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, add_get_result, enum_maps, enum_params, wrap_algo, result_to_compue
+from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, add_get_result, enum_maps, enum_params, wrap_algo, result_to_compute
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 from shutil import copytree, rmtree
@@ -686,8 +686,8 @@ class cython_interface(object):
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
-                            if ns in result_to_compue.keys() and result_to_compue[ns] in p:
-                                thetype = result_to_compue[ns]
+                            if ns in result_to_compute .keys() and result_to_compute[ns] in p:
+                                thetype = result_to_compute [ns]
                         else:
                             thetype = (hlt if hlt else all_params[p])
                         if thetype != None and tmp != None:

@@ -208,7 +208,7 @@ enum_params = {
 }
 
 # For enums ResultToComputeId which has the same definition in the base class.
-result_to_compue = {
+result_to_compute = {
     'algorithms::multi_class_classifier::prediction' : 'algorithms::multi_class_classifier::ResultToComputeId',
 }
 

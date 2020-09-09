@@ -101,7 +101,7 @@ def map_sv_to_columns_in_dual_coef_matrix(sv_ind_by_class):
 
 
 def map_to_lexicographic(n):
-    """ Returns permutation of reverse lexicographics to 
+    """ Returns permutation of reverse lexicographics to
     lexicographics orders for pairs of n consecutive integer indexes
     """
     from itertools import (combinations, count)
@@ -118,7 +118,7 @@ def permute_list(li, perm):
 
 
 def extract_dual_coef(num_classes, sv_ind_by_clf, sv_coef_by_clf, labels):
-    """ Construct dual coefficients array in SKLearn peculiar layout, 
+    """ Construct dual coefficients array in SKLearn peculiar layout,
     as well corresponding support vector indexes
     """
     sv_ind_by_class = group_indices_by_class(
@@ -501,7 +501,9 @@ def fit(self, X, y, sample_weight=None):
     # see comment on the other call to np.iinfo in this file
     seed = rnd.randint(np.iinfo('i').max)
 
-    if kernel in ['linear', 'rbf']:
+    self._sparse_support = not is_sparse or is_sparse and daal_check_version((2020, 4), (2021, 109))
+
+    if kernel in ['linear', 'rbf'] and self._sparse_support :
         logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
         sample_weight = _daal4py_check_weight(self, X, y, sample_weight)
 
@@ -707,7 +709,8 @@ def decision_function(self, X):
     transformation of ovo decision function.
     """
 
-    if getattr(self, '_daal_fit', False) and daal_check_version((2020, 4), (2021, 109)) :
+    if getattr(self, '_daal_fit', False) and (daal_check_version((2020, 4), (2021, 109)) 
+                                              or len(self.classes_) == 2):
         logging.info("sklearn.svm.SVC.decision_function: " + method_uses_daal)
         X = self._validate_for_predict(X)
         dec = _daal4py_predict(self, X, is_decision_function=True)
