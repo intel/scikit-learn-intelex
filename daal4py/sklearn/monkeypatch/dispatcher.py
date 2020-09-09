@@ -94,7 +94,7 @@ if daal_check_version((2020, 1), (2021, 5)):
 if daal_check_version((2020, 2), (2021, 8)):
     _mapping['tt_split'] = [[(model_selection, 'train_test_split', _daal_train_test_split), None]]
 
-if daal_check_version((2020, 4), (2021, 9)):
+if daal_check_version((2020, 3), (2021, 9)):
     _mapping['df_classifier'] = [[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]]
     _mapping['df_regressor']  = [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]]
 
