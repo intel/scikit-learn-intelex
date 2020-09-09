@@ -23,16 +23,24 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-def main():
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+    read_csv = lambda f, c=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except:
+    # fall back to numpy loadtxt
+    read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
+
+def main(readcsv=read_csv, method='defaultDense'):
     # Path to data
     train_file = "./data/batch/df_classification_train.csv"
     test_file = "./data/batch/df_classification_test.csv"
 
     # Data reading
-    X_train = pd.read_csv(train_file, usecols=range(3), dtype=np.float32)
-    y_train = pd.read_csv(train_file, usecols=range(3, 4), dtype=np.float32)
-    X_test = pd.read_csv(test_file, usecols=range(3), dtype=np.float32)
-    y_test = pd.read_csv(test_file, usecols=range(3, 4), dtype=np.float32)
+    X_train = readcsv(train_file, range(3), t=np.float32)
+    y_train = readcsv(train_file, range(3, 4), t=np.float32)
+    X_test = readcsv(test_file, range(3), t=np.float32)
+    y_test = readcsv(test_file, range(3, 4), t=np.float32)
 
     # Datasets creation
     lgb_train = lgb.Dataset(X_train, y_train, free_raw_data=False)
