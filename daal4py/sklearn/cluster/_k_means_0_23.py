@@ -123,7 +123,6 @@ def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_
 def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype = "double",
     method = "lloydDense", accuracyThreshold = 0.0, resultsToEvaluate = "computeCentroids"):
     kmeans_algo = None
-    accuracyThreshold = 1e-6 if accuracyThreshold == 0.0 else accuracyThreshold
     if daal_check_version((2020, 2), (2021, 107)):
         kmeans_algo = daal4py.kmeans(nClusters = nClusters,
             maxIterations= maxIterations,
