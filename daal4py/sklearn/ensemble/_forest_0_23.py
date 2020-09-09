@@ -171,7 +171,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
         fptype = X_fptype,
         method = 'defaultDense',
         nTrees = int(self.n_estimators),
-        observationsPerTreeFraction = n_samples_bootstrap_ if self.bootstrap == True else 1.,
+        observationsPerTreeFraction = n_samples_bootstrap_ if self.bootstrap is True else 1.,
         featuresPerNode = int(features_per_node_),
         maxTreeDepth = int(0 if self.max_depth is None else self.max_depth),
         minObservationsInLeafNode = (self.min_samples_leaf if isinstance(self.min_samples_leaf, numbers.Integral)
@@ -240,7 +240,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
     if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
 
-    daal_ready = (self.warm_start == False
+    daal_ready = (self.warm_start is False
         and self.criterion == "gini"
         and self.ccp_alpha == 0.0
         and not sp.issparse(X))
@@ -308,7 +308,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
         fptype = getFPType(X),
         method = 'defaultDense',
         nTrees = int(self.n_estimators),
-        observationsPerTreeFraction = n_samples_bootstrap if self.bootstrap == True else 1.,
+        observationsPerTreeFraction = n_samples_bootstrap if self.bootstrap is True else 1.,
         featuresPerNode = int(_featuresPerNode),
         maxTreeDepth = int(0 if self.max_depth is None else self.max_depth),
         minObservationsInLeafNode = (self.min_samples_leaf if isinstance(self.min_samples_leaf, numbers.Integral)
@@ -349,7 +349,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
     if sample_weight is not None:
         sample_weight = _check_sample_weight(sample_weight, X)
 
-    daal_ready = (self.warm_start == False
+    daal_ready = (self.warm_start is False
         and self.criterion == "mse"
         and self.ccp_alpha == 0.0
         and not sp.issparse(X))
