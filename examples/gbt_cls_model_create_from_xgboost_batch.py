@@ -21,16 +21,11 @@
 import daal4py as d4p
 import xgboost as xgb
 import numpy as np
+import pandas as pd
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
-    read_csv = lambda f, c=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
-    # fall back to numpy loadtxt
-    read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
+pd_read_csv = lambda f, c=None, t=np.float64: pd.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=pd_read_csv, method='defaultDense'):
     # Path to data
     train_file = "./data/batch/df_classification_train.csv"
     test_file = "./data/batch/df_classification_test.csv"
