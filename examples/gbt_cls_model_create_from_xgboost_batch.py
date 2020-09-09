@@ -58,7 +58,6 @@ def main():
 
     # XGBoost prediction
     xgb_prediction = xgb_model.predict(xgb_test)
-    print("XGB:", xgb_prediction[0:10])
     xgb_errors_count = np.count_nonzero(xgb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py

@@ -50,11 +50,11 @@ test:
         - tests
     commands:
         - python -c "import daal4py"
+        - pip install lightgbm xgboost
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
         - python -m daal4py examples/sycl/sklearn_sycl.py
-        - pip install lightgbm xgboost
         - cd examples && python run_examples.py
 
 about:

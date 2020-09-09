@@ -266,18 +266,20 @@ def get_gbt_model_from_lgbm(model: Any) -> Any:
 
     is_regression = False
     objective_fun = lgb_model["objective"]
-    print("OBJ:   " + objective_fun)
     if n_classes > 2:
         if "multiclass" in objective_fun:
-            print("Found multiclass classification")
+            # Needed for future verbose
+            # print("Found multiclass classification")
         else:
             raise TypeError(
                 "multiclass (softmax) objective is only supported for multiclass classification")
     elif "binary" in objective_fun:  # nClasses == 1
-        print("Found binary classification")
+        # Needed for future verbose
+        # print("Found binary classification")
         n_classes = 2
     else:
-        print("Found regression")
+        # Needed for future verbose
+        # print("Found regression")
         is_regression = True
 
     if is_regression:
@@ -366,19 +368,22 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
     objective_fun = xgb_config["learner"]["learner_train_param"]["objective"]
     if n_classes > 2:
         if objective_fun in ["multi:softprob", "multi:softmax"]:
-            print("Found multiclass classification")
+            # Needed for future verbose
+            # print("Found multiclass classification")
         else:
             raise TypeError(
                 "multi:softprob and multi:softmax are only supported for multiclass classification")
     elif objective_fun.find("binary:") == 0:
         if objective_fun in ["binary:logistic", "binary:logitraw"]:
-            print("Found binary classification")
+            # Needed for future verbose
+            # print("Found binary classification")
             n_classes = 2
         else:
             raise TypeError(
                 "binary:logistic and binary:logitraw are only supported for binary classification")
     else:
-        print("Found regression. If it's not, your objective is not supported")
+        # Needed for future verbose
+        # print("Found regression. If it's not, your objective is not supported")
         is_regression = True
 
     last_booster_start = xgb_model.rfind("booster[") + 8
