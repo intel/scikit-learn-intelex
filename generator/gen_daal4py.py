@@ -29,7 +29,7 @@ from os.path import join as jp
 from collections import defaultdict, OrderedDict
 from jinja2 import Template
 from .parse import parse_header, parse_version
-from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, add_get_result, enum_maps, enum_params, wrap_algo
+from .wrappers import required, ignore, defaults, has_dist, ifaces, no_warn, no_constructor, add_setup, add_get_result, enum_maps, enum_params, wrap_algo, result_to_compute
 from .wrapper_gen import wrapper_gen, typemap_wrapper_template
 from .format import mk_var
 from shutil import copytree, rmtree
@@ -119,8 +119,8 @@ class cython_interface(object):
     # files we ignore/skip
     ignore_files = ['daal_shared_ptr.h', 'daal.h', 'daal_sycl.h', 'daal_win.h', 'algorithm_base_mode_batch.h',
                     'algorithm_base.h', 'algorithm.h', 'ridge_regression_types.h', 'kdtree_knn_classification_types.h',
-                    'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h',
-                    'multi_class_classifier_types.h']
+                    'multinomial_naive_bayes_types.h', 'daal_kernel_defines.h', 'linear_regression_types.h']
+
 
     done = []
 
@@ -144,10 +144,8 @@ class cython_interface(object):
             for filename in filenames:
                 if filename.endswith('.h') and not 'neural_networks' in dirpath and not any(filename.endswith(x) for x in cython_interface.ignore_files):
                     fname = jp(dirpath,filename)
-                    #print('reading ' +  fname)
                     with open(fname, "r") as header:
                         parsed_data = parse_header(header, cython_interface.ignores)
-
                     ns = cleanup_ns(fname, parsed_data['ns'])
                     # Now let's update the namespace; more than one file might contribute to the same ns
                     if ns:
@@ -171,12 +169,12 @@ class cython_interface(object):
                                     self.namespace_dict[subns] = namespace(subns)
                                 self.namespace_dict[subns].classes[tmp[1]] = parsed_data['classes'][c]
                                 self.namespace_dict[subns].classes[tmp[1]].name = tmp[1]
+
                         self.namespace_dict[ns].enums.update(parsed_data['enums'])
                         self.namespace_dict[ns].typedefs.update(parsed_data['typedefs'])
                         self.namespace_dict[ns].headers.append(fname.replace(self.include_root, '').lstrip('/'))
                         if parsed_data['need_methods']:
                             self.namespace_dict[ns].need_methods = True
-
         with open(jp(self.include_root, '..', 'services', 'library_version_info.h')) as header:
             v = parse_version(header)
             self.version = (int(v[0]), int(v[2]))
@@ -689,6 +687,9 @@ class cython_interface(object):
                         pval = None
                         if hlt_type == 'enum':
                             thetype = hlt_ns + '::' + llt.rsplit('::', 1)[-1]
+                            if ns in result_to_compute.keys():
+                                if result_to_compute[ns].rsplit('::', 1)[-1] in self.namespace_dict[get_parent(ns)].enums.keys():
+                                    thetype = result_to_compute[ns]
                         else:
                             thetype = (hlt if hlt else all_params[p])
                         if thetype != None and tmp != None:

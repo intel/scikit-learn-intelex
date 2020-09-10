@@ -139,7 +139,8 @@ ignore = {
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
     'algorithms::lasso_regression::training': ['optionalArgument'], # internal stuff
     'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
-    'algorithms::multi_class_classifier': ['algorithms::multi_class_classifier::getTwoClassClassifierModels',], # unsupported return type ModelPtr*
+    'algorithms::multi_class_classifier': [ 'algorithms::multi_class_classifier::getTwoClassClassifierModels'], # unsupported return type ModelPtr*
+    'algorithms::multi_class_classifier::prediction': [ 'algorithms::classifier::prediction::ResultId', 'algorithms::classifier::prediction::Result'],
     'algorithms::elastic_net::training': ['optionalArgument'], # internal stuff
     'algorithms::elastic_net::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
 }
@@ -204,6 +205,11 @@ enum_maps = {
 enum_params = {
     'algorithms::gbt::classification::training::varImportance': 'algorithms::gbt::training::VariableImportanceModes',
     'algorithms::gbt::regression::training::varImportance': 'algorithms::gbt::training::VariableImportanceModes',
+}
+
+# For enums ResultToComputeId which has the same definition in the base class.
+result_to_compute = {
+    'algorithms::multi_class_classifier::prediction': 'algorithms::multi_class_classifier::ResultToComputeId',
 }
 
 # The distributed algorithm configuration parameters

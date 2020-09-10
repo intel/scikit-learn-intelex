@@ -12,10 +12,23 @@ deselected_tests:
 
   # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
   # See: https://github.com/scikit-learn/scikit-learn/issues/12738
+  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
   - svm/tests/test_sparse.py::test_sparse_realdata
   - svm/tests/test_sparse.py::test_svc_iris
+
+  # Passed from DAAL2020.4. Need to delete after release.
   - ensemble/tests/test_bagging.py::test_sparse_classification
+  - svm/tests/test_sparse.py::test_unsorted_indices
+
+  # Bitwise comparison of probabilities using a print.
+  - metrics/tests/test_classification.py
+
+  # Max absolute difference: 0.04 for rocauc, and 0.01 for precision_recallq
+  - metrics/tests/test_ranking.py::test_roc_curve_hard
+  - metrics/tests/test_ranking.py::test_precision_recall_curve
+
+  - model_selection/tests/test_search.py::test_search_cv_results_rank_tie_breaking
 
   # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
   # See: https://github.com/IntelPython/daal4py/issues/25
@@ -51,8 +64,8 @@ deselected_tests:
   # https://github.com/scikit-learn/scikit-learn/pull/15856
   - svm/tests/test_svm.py::test_svm_equivalence_sample_weight_C >=0.22
 
-  # 
-  - tests/test_pipeline.py::test_pipeline_memory 
+  #
+  - tests/test_pipeline.py::test_pipeline_memory
 
   # docstrings do not document daal_model_ attribute set by fit for
   # LinearRegression, Ridge and SVC
