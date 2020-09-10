@@ -116,7 +116,6 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
     with open("raw.txt", "r") as read_file:
         xgb_model = read_file.read()
     remove("./raw.txt")
-    print("get_gbt_model_from_xgboost")
     xgb_config = json.loads(booster.save_config())
 
     updater = list(xgb_config["learner"]["gradient_booster"]["updater"].keys())[0]
