@@ -61,7 +61,7 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     lgb_errors_count = np.count_nonzero(lgb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
-    daal_model = d4p.get_gbt_model_from_lgbm(lgb_model)
+    daal_model = d4p.get_gbt_model_from_lightgbm(lgb_model)
 
     # daal4py prediction
     daal_predict_algo = d4p.gbt_classification_prediction(

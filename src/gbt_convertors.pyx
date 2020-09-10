@@ -20,7 +20,7 @@ from os import remove
 import json
 import re
 
-def get_gbt_model_from_lgbm(model: Any) -> Any:
+def get_gbt_model_from_lightgbm(model: Any) -> Any:
     class Node:
         def __init__(self, tree: Dict[str, Any], parent_id: int, position: int):
             self.tree = tree
