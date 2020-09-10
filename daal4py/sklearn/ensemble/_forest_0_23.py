@@ -331,7 +331,6 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
  
     self._cached_estimators_ = None
 
-    print(f"sample_weight = {sample_weight}")
     dfr_trainingResult = dfr_algorithm.compute(X, y, sample_weight)
  
     # get resulting model
