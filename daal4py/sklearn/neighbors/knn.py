@@ -1,5 +1,5 @@
 # *******************************************************************************
-# Copyright 2014-2020 Intel Corporation
+# Copyright 2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -16,34 +16,21 @@
 # limitations under the License.
 # *******************************************************************************
 
-# daal4py KNN scikit-learn-compatible estimator class
+# daal4py KNN scikit-learn-compatible estimator classes
 
 import numpy as np
 import numbers
 import daal4py as d4p
-from .._utils import getFPType
-from functools import partial
-from sklearn.base import ClassifierMixin
+from .._utils import getFPType, daal_check_version
 from sklearn.utils.validation import check_array, check_is_fitted
-from distutils.version import LooseVersion
-from scipy import stats
-from sklearn.utils.extmath import weighted_mode
-from sklearn.utils.validation import _num_samples
-from sklearn.neighbors._base import \
-    _check_weights, _get_weights, \
-    NeighborsBase, SupervisedIntegerMixin, KNeighborsMixin
-from sklearn.neighbors._classification import KNeighborsClassifier
-from sklearn.utils.validation import _deprecate_positional_args
-from scipy.sparse import csr_matrix, issparse
-import joblib
-from joblib import Parallel, delayed, effective_n_jobs
-from sklearn.metrics import pairwise_distances_chunked
-from sklearn.utils import gen_even_slices
-from sklearn.neighbors._base import \
-    _check_precomputed, _tree_query_parallel_helper, _kneighbors_from_graph
+
+from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
+from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
+from joblib import effective_n_jobs
+from sklearn.neighbors._base import _check_precomputed
 
 
-class KNeighborsMixinOneDAL(KNeighborsMixin):
+class KNeighborsMixin(BaseKNeighborsMixin):
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
 
@@ -82,7 +69,6 @@ class KNeighborsMixinOneDAL(KNeighborsMixin):
                 (n_samples_fit, n_neighbors)
             )
 
-        n_jobs = effective_n_jobs(self.n_jobs)
         chunked_results = None
 
         try:
@@ -90,7 +76,7 @@ class KNeighborsMixinOneDAL(KNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if self._fit_method in ['brute'] \
+        if daal_check_version((2020, 4), (2021, 9)) and self._fit_method in ['brute', 'kd_tree'] \
         and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
         and fptype is not None:
 
@@ -108,9 +94,11 @@ class KNeighborsMixinOneDAL(KNeighborsMixin):
                 'fptype': compute_fptype,
                 'method': 'defaultDense',
                 'k': n_neighbors,
-                'resultsToCompute': 'computeIndicesOfNeightbors|computeDistances',
+                'resultsToCompute': 'computeIndicesOfNeightbors',
                 'resultsToEvaluate': 'none'
             }
+            if return_distance:
+                alg_params['resultsToCompute'] += '|computeDistances'
 
             training_alg = knn_classification_training(**alg_params)
 
@@ -127,7 +115,7 @@ class KNeighborsMixinOneDAL(KNeighborsMixin):
             else:
                 results = prediction_result.indices
         else:
-            return super(KNeighborsMixinOneDAL, self).kneighbors(X, n_neighbors, return_distance)
+            return super(KNeighborsMixin, self).kneighbors(X, n_neighbors, return_distance)
 
         if chunked_results is not None:
             if return_distance:
@@ -167,7 +155,7 @@ class KNeighborsMixinOneDAL(KNeighborsMixin):
             return neigh_ind
 
 
-class KNeighborsClassifierOneDAL(KNeighborsClassifier, KNeighborsMixinOneDAL):
+class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
     def predict(self, X):
         X = check_array(X, accept_sparse='csr')
 
@@ -176,7 +164,8 @@ class KNeighborsClassifierOneDAL(KNeighborsClassifier, KNeighborsMixinOneDAL):
         except ValueError:
             fptype = None
 
-        if self.weights in ['uniform', 'distance'] and self.algorithm in ['brute'] \
+        if daal_check_version((2020, 4), (2021, 9)) \
+        and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and self._y.ndim == 1 and fptype is not None:
 
@@ -198,7 +187,8 @@ class KNeighborsClassifierOneDAL(KNeighborsClassifier, KNeighborsMixinOneDAL):
                 'k': self.n_neighbors,
                 'nClasses': n_classes,
                 'voteWeights': 'voteUniform' if self.weights == 'uniform' else 'voteDistance',
-                'resultsToEvaluate': 'computeClassLabels'
+                'resultsToEvaluate': 'computeClassLabels',
+                'resultsToCompute': ''
             }
 
             training_alg = knn_classification_training(**alg_params)
@@ -214,4 +204,4 @@ class KNeighborsClassifierOneDAL(KNeighborsClassifier, KNeighborsMixinOneDAL):
             prediction_result = prediction_alg.compute(X, training_result.model)
             return prediction_result.prediction.ravel().astype(self._y.dtype)
         else:
-            return super(KNeighborsClassifierOneDAL, self).kneighbors(X)
+            return super(KNeighborsClassifier, self).predict(X)
