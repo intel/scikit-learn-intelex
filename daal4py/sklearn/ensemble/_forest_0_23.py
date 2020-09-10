@@ -302,6 +302,9 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
         n_samples=X.shape[0],
         max_samples=self.max_samples
     )
+
+    if sample_weight is not None:
+        sample_weight = [sample_weight]
  
     # create algorithm
     dfr_algorithm = daal4py.decision_forest_regression_training(
@@ -327,6 +330,8 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     )
  
     self._cached_estimators_ = None
+
+    print(f"sample_weight = {sample_weight}")
     dfr_trainingResult = dfr_algorithm.compute(X, y, sample_weight)
  
     # get resulting model
