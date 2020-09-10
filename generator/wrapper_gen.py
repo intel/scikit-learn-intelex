@@ -51,13 +51,6 @@ from pprint import pprint
 import re
 from .wrappers import hpat_types
 
-# from typing import List, Deque, Dict, Any
-# from collections import deque
-# from os import remove
-# import json
-# import re
-
-
 ###############################################################################
 # generic utility functions/defs needed by generated code
 cython_header = '''
