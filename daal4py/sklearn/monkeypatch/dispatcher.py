@@ -67,8 +67,8 @@ from ..svm.svm import SVC as SVC_daal4py
 from ..utils.validation import _daal_assert_all_finite
 from ..model_selection import _daal_train_test_split
 
-from ..neighbors import KNeighborsClassifier
-from ..neighbors import KNeighborsMixin
+from ..neighbors import KNeighborsClassifier as KNeighborsClassifier_daal4py
+from ..neighbors import KNeighborsMixin as KNeighborsMixin_daal4py
 
 from daal4py import __version__ as daal4py_version
 
