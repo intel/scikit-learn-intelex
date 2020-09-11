@@ -497,8 +497,8 @@ def fit(self, X, y, sample_weight=None):
     # see comment on the other call to np.iinfo in this file
     seed = rnd.randint(np.iinfo('i').max)
 
-    self._sparse_support = not is_sparse or is_sparse and daal_check_version((2020, 3), (2021, 109))
-    probability_support = not self.probability or self.probability and daal_check_version((2020, 3), (2021, 109))
+    self._sparse_support = not is_sparse or is_sparse and daal_check_version((2020, 3))
+    probability_support = not self.probability or self.probability and daal_check_version((2020, 3))
 
     if kernel in ['linear', 'rbf'] and self._sparse_support and probability_support:
         logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
@@ -706,7 +706,7 @@ def decision_function(self, X):
     transformation of ovo decision function.
     """
 
-    if getattr(self, '_daal_fit', False) and (daal_check_version((2020, 3), (2021, 109)) 
+    if getattr(self, '_daal_fit', False) and (daal_check_version((2020, 3)) 
                                               or len(self.classes_) == 2):
         logging.info("sklearn.svm.SVC.decision_function: " + method_uses_daal)
         X = self._validate_for_predict(X)
