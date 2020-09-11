@@ -48,7 +48,7 @@ def check_version(rule, target):
 def check_libraries(rule):
     for rule_item in rule:
         try:
-            import rule_item
+            __import__(rule_item, fromlist=[''])
         except ImportError:
             return False
     return True
