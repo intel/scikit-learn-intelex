@@ -82,7 +82,7 @@ def check_library(rule):
     for rule_item in rule:
         try:
             import rule_item
-        except:
+        except ImportError:
             return False
     return True
 
