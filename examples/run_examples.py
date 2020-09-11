@@ -79,7 +79,7 @@ def check_device(rule, target):
     return True
 
 def check_library(rule):
-    for rule_item in rules:
+    for rule_item in rule:
         try:
             import rule_item
         except:
