@@ -3,6 +3,7 @@ The 'daal4py.sklearn.neighbors' module implements the k-nearest neighbors
 algorithm.
 """
 
-from .kdtree_knn_classifier import KNeighborsClassifier
+from .knn import KNeighborsClassifier
+from .knn import KNeighborsMixin
 
-__all__ = ['KNeighborsClassifier']
+__all__ = ['KNeighborsClassifier', 'KNeighborsMixin']

@@ -137,6 +137,10 @@ ignore = {
     'algorithms::em_gmm::init': ['seed',], # deprecated
     'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
+    'algorithms::kdtree_knn_classification::prediction': ['algorithms::classifier::prediction::ResultId',
+                                                          'algorithms::classifier::prediction::Result'],
+    'algorithms::bf_knn_classification::prediction': ['algorithms::classifier::prediction::ResultId',
+                                                      'algorithms::classifier::prediction::Result'],
     'algorithms::lasso_regression::training': ['optionalArgument'], # internal stuff
     'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
     'algorithms::multi_class_classifier': [ 'algorithms::multi_class_classifier::getTwoClassClassifierModels'], # unsupported return type ModelPtr*
@@ -172,8 +176,8 @@ defaults = {
     'algorithms::brownboost::training': {'weights': True,},
     'algorithms::logitboost::training': {'weights': True,},
     'algorithms::svm::training': {'weights': True,},
-    'algorithms::kdtree_knn_classification::training': {'weights': True,},
-    'algorithms::bf_knn_classification::training': {'weights': True,},
+    'algorithms::kdtree_knn_classification::training': {'weights': True, 'labels': True,},
+    'algorithms::bf_knn_classification::training': {'weights': True, 'labels': True,},
     'algorithms::multi_class_classifier::training': {'weights': True,},
     'algorithms::multinomial_naive_bayes::training': {'weights': True,},
     'algorithms::gbt::regression::training': {'weights': True,},
