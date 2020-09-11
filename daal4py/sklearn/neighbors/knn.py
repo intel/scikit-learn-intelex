@@ -76,7 +76,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version((2020, 3), (2021, 9)) and self._fit_method in ['brute', 'kd_tree'] \
+        if daal_check_version((2020, 3)) and self._fit_method in ['brute', 'kd_tree'] \
         and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
         and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_daal)
@@ -166,7 +166,7 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version((2020, 3), (2021, 9)) \
+        if daal_check_version((2020, 3)) \
         and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and self._y.ndim == 1 and fptype is not None and not sp.issparse(X):
