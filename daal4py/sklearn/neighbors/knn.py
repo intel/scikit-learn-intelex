@@ -21,12 +21,13 @@ import numpy as np
 import numbers
 import daal4py as d4p
 from scipy import sparse as sp
-from .._utils import getFPType, daal_check_version
+from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_uses_daal
 from sklearn.utils.validation import check_array, check_is_fitted
 from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
 from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
 from joblib import effective_n_jobs
 from sklearn.neighbors._base import _check_precomputed
+import logging
 
 
 class KNeighborsMixin(BaseKNeighborsMixin):
@@ -78,6 +79,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         if daal_check_version((2020, 3), (2021, 9)) and self._fit_method in ['brute', 'kd_tree'] \
         and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
         and fptype is not None and not sp.issparse(X):
+            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_daal)
 
             if self._fit_method == 'brute':
                 knn_classification_training = d4p.bf_knn_classification_training
@@ -114,6 +116,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             else:
                 results = prediction_result.indices
         else:
+            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_sklearn)
             return super(KNeighborsMixin, self).kneighbors(X, n_neighbors, return_distance)
 
         if chunked_results is not None:
@@ -167,6 +170,7 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
         and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and self._y.ndim == 1 and fptype is not None and not sp.issparse(X):
+            logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_daal)
 
             n_classes = len(self.classes_)
 
@@ -203,4 +207,5 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
             prediction_result = prediction_alg.compute(X, training_result.model)
             return prediction_result.prediction.ravel().astype(self._y.dtype)
         else:
+            logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
             return super(KNeighborsClassifier, self).predict(X)
