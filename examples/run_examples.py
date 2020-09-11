@@ -78,6 +78,14 @@ def check_device(rule, target):
             return False
     return True
 
+def check_library(rule):
+    for rule_item in rules:
+        try:
+            import rule_item
+        except:
+            return False
+    return True
+
 
 req_version = defaultdict(lambda:(2019,0))
 req_version['adaboost_batch.py'] = (2020,0)
@@ -104,6 +112,10 @@ req_device = defaultdict(lambda:[])
 req_device['sycl/bf_knn_classification_batch.py'] = ["gpu"]
 req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
 
+req_library = defaultdict(lambda:[])
+req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
+req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
+
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
         if not sycl_available:
@@ -115,6 +127,8 @@ def get_exe_cmd(ex, nodist, nostream):
 
     if os.path.dirname(ex).endswith("examples"):
         if not check_version(req_version[os.path.basename(ex)], daal_version):
+            return None
+        if not check_library(req_library[os.path.basename(ex)]):
             return None
     if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
         return '"' + sys.executable + '" "' + ex + '"'

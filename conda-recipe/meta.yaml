@@ -40,7 +40,6 @@ requirements:
 test:
     requires:
         - pandas
-        - pip
         - scipy
         - scikit-learn
         - mpich # [osx]
@@ -50,7 +49,6 @@ test:
         - tests
     commands:
         - python -c "import daal4py"
-        - pip install lightgbm xgboost
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
