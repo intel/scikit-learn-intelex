@@ -45,6 +45,15 @@ def check_version(rule, target):
                     break
     return True
 
+def check_libraries(rule):
+    for rule_item in rule:
+        try:
+            __import__(rule_item, fromlist=[''])
+        except ImportError:
+            return False
+    return True
+
+
 # function reading file and returning numpy array
 def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
     if s==0 and n==np.iinfo(np.int64).max:
@@ -63,9 +72,10 @@ pd_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: pd.read_csv(f, usecol
 csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
 
 
-def add_test(cls, e, f=None, attr=None, ver=(0,0)):
+def add_test(cls, e, f=None, attr=None, ver=(0,0), req_libs=[]):
     import importlib
     @unittest.skipUnless(check_version(ver, daal_version), "not supported in this library version")
+    @unittest.skipUnless(check_libraries(req_libs), "cannot import required libraries")
     def testit(self):
         ex = importlib.import_module(e)
         result = self.call(ex)
@@ -142,8 +152,8 @@ gen_examples = [
     ('distributions_normal_batch',),
     ('distributions_uniform_batch',),
     ('em_gmm_batch', 'em_gmm.csv', lambda r: r.covariances[0]),
-    ('gbt_cls_model_create_from_lightgbm_batch', None, None, ((2020, 2), (2021, 109))),
-    ('gbt_cls_model_create_from_xgboost_batch', None, None, ((2020, 2), (2021, 109))),
+    ('gbt_cls_model_create_from_lightgbm_batch', None, None, ((2020, 2), (2021, 109)), ['lightgbm']),
+    ('gbt_cls_model_create_from_xgboost_batch', None, None, ((2020, 2), (2021, 109)), ['xgboost']),
     ('gradient_boosted_classification_batch',),
     ('gradient_boosted_regression_batch',),
     ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
@@ -202,7 +212,6 @@ gen_examples = [
 
 for example in gen_examples:
     add_test(Base, *example)
-
 
 class TestExNpyArray(Base, unittest.TestCase):
     """

@@ -39,10 +39,11 @@ requirements:
 
 test:
     requires:
+        - lightgbm # [not win]
         - pandas
-        - pip
         - scipy
         - scikit-learn
+        - xgboost # [not win]
         - mpich # [osx]
         - impi_rt # [not osx]
     source_files:
@@ -50,7 +51,6 @@ test:
         - tests
     commands:
         - python -c "import daal4py"
-        - pip install lightgbm xgboost
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
