@@ -96,5 +96,4 @@ def check_sample_weight(weight):
     ratio = D4P_accuracy / SK_accuracy
 
     assert ratio >= 0.9, 'Failed testing sample weights, sample_weight_type = ' + weight[1]
-
     

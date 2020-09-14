@@ -103,4 +103,3 @@ def check_data_formats_diff(distance, algorithm, weight, k):
         for j, res in enumerate(alg_results[i]):
             if (res == alg_results[0][j]).mean() != 1:
                 raise ValueError('Results are different between formats')
-
