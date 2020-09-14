@@ -186,6 +186,7 @@ defaults = {
     'algorithms::decision_tree::classification::training': {'weights': True,},
     'algorithms::decision_tree::regression::training': {'weights': True,},
     'algorithms::decision_forest::classification::training': {'weights': True,},
+    'algorithms::decision_forest::regression::training': {'weights': True,},
     'algorithms::linear_regression::training': {'weights': True,},
     'algorithms::ridge_regression::training': {'weights': True,},
     'algorithms::stump::classification::training': {'weights': True,},
