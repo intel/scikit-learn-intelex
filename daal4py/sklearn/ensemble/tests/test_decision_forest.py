@@ -15,7 +15,7 @@
 # limitations under the License.
 #******************************************************************************/
 
-import unittest
+import pytest
 import random
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
@@ -23,69 +23,77 @@ from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from daal4py.sklearn.ensemble import RandomForestClassifier as D4PRandomForestClassifier
 
-class Test(unittest.TestCase):
+def make_dataset(n_samples, n_features, random_state=37):
+    x, y = make_classification(n_samples, n_features, random_state=random_state)
+    return x, y
 
-    def make_dataset(n_samples, n_features, random_state=37):
-        x, y = make_classification(n_samples, n_features, random_state=random_state)
-        return x, y
+CLASS_WEIGHTS_IRIS = [
+    {0: 0, 1: 0, 2: 0},
+    {0: 0, 1: 1, 2: 1},
+    {0: 1, 1: 2, 2: 3},
+    {0: 10, 1: 5, 2: 4},
+    {0: random.uniform(1, 50), 1: random.uniform(1, 50), 2: random.uniform(1, 50)},
+    {0: random.uniform(50, 100), 1: random.uniform(50, 100), 2: random.uniform(50, 100)},
+    {0: random.uniform(1, 1000), 1: random.uniform(1, 1000), 2: random.uniform(1, 1000)},
+    {0: random.uniform(1, 10), 1: random.uniform(50, 100), 2: random.uniform(1, 100)},
+    {0: random.uniform(1, 10), 1: random.uniform(1, 100), 2: random.uniform(1, 1000)},
+    {0: random.uniform(1, 2000), 1: random.uniform(1, 2000), 2: random.uniform(1, 2000)},
+    {0: 50, 1: 50, 2: 50},
+    'balanced',
+]
 
-    def test_class_weight(self):
-        X, y = load_iris(return_X_y =True)
-        X_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=31)
-        weights = [
-            {0: 0, 1: 0, 2: 0},
-            {0: 0, 1: 1, 2: 1},
-            {0: 1, 1: 2, 2: 3},
-            {0: 10, 1: 5, 2: 4},
-            {0: random.uniform(1, 50), 1: random.uniform(1, 50), 2: random.uniform(1, 50)},
-            {0: random.uniform(50, 100), 1: random.uniform(50, 100), 2: random.uniform(50, 100)},
-            {0: random.uniform(1, 1000), 1: random.uniform(1, 1000), 2: random.uniform(1, 1000)},
-            {0: 50, 1: 50, 2: 50},
-            'balanced',
-        ]
+@pytest.mark.parametrize('weight', CLASS_WEIGHTS_IRIS)
+def test_class_weight_iris(weight):
+    check_class_weight_iris(weight)
 
-        for weight in weights:
-            SK_model = SKRandomForestClassifier(class_weight=weight)
-            D4P_model = D4PRandomForestClassifier(class_weight=weight)
+def check_class_weight_iris(weight):
+    X, y = load_iris(return_X_y =True)
+    X_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=31)  
+    
+    SK_model = SKRandomForestClassifier(class_weight=weight)
+    D4P_model = D4PRandomForestClassifier(class_weight=weight)
 
-            SK_predict = SK_model.fit(X_train, y_train).predict(x_test)
-            D4P_predict = D4P_model.fit(X_train, y_train).predict(x_test)
+    SK_predict = SK_model.fit(X_train, y_train).predict(x_test)
+    D4P_predict = D4P_model.fit(X_train, y_train).predict(x_test)
 
-            SK_accuracy = accuracy_score(SK_predict, y_test)
-            D4P_accuracy = accuracy_score(D4P_predict, y_test)
-            ratio = D4P_accuracy / SK_accuracy
+    SK_accuracy = accuracy_score(SK_predict, y_test)
+    D4P_accuracy = accuracy_score(D4P_predict, y_test)
+    ratio = D4P_accuracy / SK_accuracy
 
-            assert ratio >= 0.9, 'Failed in testing class weights, weight = ' + str(weight) + ', Accuracy ratio = ' + str(ratio)
+    assert ratio >= 0.9
 
-    def make_filled_list(list_size, fill):
-        return [fill for i in range(list_size)]
+def make_filled_list(list_size, fill):
+    return [fill for i in range(list_size)]
 
-    def test_sample_weight(self):
-        X, y = load_iris(return_X_y =True)
-        X_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=31)
-        weights = [
-            (Test.make_filled_list(X_train.shape[0], 0), '0'),
-            (Test.make_filled_list(X_train.shape[0], 1), '1'),
-            (Test.make_filled_list(X_train.shape[0], 5), '5'),
-            (Test.make_filled_list(X_train.shape[0], 50), '50'),
-            (Test.make_filled_list(X_train.shape[0], random.uniform(1, 5000)), 'Random'),
-            (Test.make_filled_list(X_train.shape[0], random.uniform(1, 5000)), 'Random'),
-            (Test.make_filled_list(X_train.shape[0], random.uniform(1, 5000)), 'Random'),
-            (Test.make_filled_list(X_train.shape[0], random.uniform(1, 5000)), 'Random'),
-            (Test.make_filled_list(X_train.shape[0], random.uniform(1, 5000)), 'Random'),
-        ]
-        for weight in weights:
-            SK_model = SKRandomForestClassifier()
-            D4P_model = D4PRandomForestClassifier()
+SAMPLE_WEIGHTS_IRIS = [
+    (make_filled_list(100, 0), '0'),
+    (make_filled_list(100, 1), '1'),
+    (make_filled_list(100, 5), '5'),
+    (make_filled_list(100, 50), '50'),
+    (make_filled_list(100, random.uniform(1, 50)), 'Random [1, 50]'),
+    (make_filled_list(100, random.uniform(1, 100)), 'Random [1, 100]'),
+    (make_filled_list(100, random.uniform(1, 500)), 'Random [1, 500]'),
+    (make_filled_list(100, random.uniform(1, 1000)), 'Random [1, 1000]'),
+    (make_filled_list(100, random.uniform(1, 5000)), 'Random [1, 5000]'),
+]
 
-            SK_predict = SK_model.fit(X_train, y_train, sample_weight=weight[0]).predict(x_test)
-            D4P_predict = D4P_model.fit(X_train, y_train, sample_weight=weight[0]).predict(x_test)
+@pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
+def test_sample_weight_iris(weight):
+    check_sample_weight(weight)
 
-            SK_accuracy = accuracy_score(SK_predict, y_test)
-            D4P_accuracy = accuracy_score(D4P_predict, y_test)
-            ratio = D4P_accuracy / SK_accuracy
+def check_sample_weight(weight):
+    X, y = load_iris(return_X_y =True)
+    X_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=31)
+        
+    SK_model = SKRandomForestClassifier()
+    D4P_model = D4PRandomForestClassifier()
 
-            assert ratio >= 0.9, 'Failed in testing sample weights, list filled ' + weight[1] + ', Accuracy ratio = ' + str(ratio)
+    SK_predict = SK_model.fit(X_train, y_train, sample_weight=weight[0]).predict(x_test)
+    D4P_predict = D4P_model.fit(X_train, y_train, sample_weight=weight[0]).predict(x_test)
 
-if __name__ == '__main__':
-    unittest.main()
+    SK_accuracy = accuracy_score(SK_predict, y_test)
+    D4P_accuracy = accuracy_score(D4P_predict, y_test)
+    ratio = D4P_accuracy / SK_accuracy
+
+    assert ratio >= 0.9, 'Failed testing sample weights, sample_weight_type = ' + weight[1]
+    
