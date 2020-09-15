@@ -32,5 +32,9 @@ fi
 # if TBBROOT is specified
 if [ ! -z "${TBBROOT}" ]; then
     conda remove tbb --force -y
-    source ${TBBROOT}/env/vars.sh
+    if [ -e ${TBBROOT}/env/vars.sh ]; then
+        source ${TBBROOT}/env/vars.sh
+    else
+        export LD_LIBRARY_PATH=${TBBROOT}/lib/intel64:${LD_LIBRARY_PATH}
+    fi
 fi
