@@ -28,9 +28,9 @@ WEIGHTS = ['uniform', 'distance']
 KS = [1, 3, 7, 25]
 
 
-def make_dataset(n_samples=256, n_features=5, n_classes=2, random_state=777):
-    x, y = make_classification(n_samples=n_samples, n_features=n_features, n_classes=n_classes, random_state=random_state)
-    return train_test_split(x, y, random_state=777, test_size=0.5, shuffle=True)
+def make_dataset(n_samples=256, n_features=5, n_classes=2, test_size=0.5, shuffle=True):
+    x, y = make_classification(n_samples=n_samples, n_features=n_features, n_classes=n_classes, random_state=777)
+    return train_test_split(x, y, random_state=777, test_size=test_size, shuffle=shuffle)
 
 @pytest.mark.parametrize('distance', DISTANCES)
 @pytest.mark.parametrize('algorithm', ALGORITHMS)

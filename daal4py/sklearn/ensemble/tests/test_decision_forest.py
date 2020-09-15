@@ -23,10 +23,6 @@ from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from daal4py.sklearn.ensemble import RandomForestClassifier as D4PRandomForestClassifier
 
-def make_dataset(n_samples, n_features, random_state=37):
-    x, y = make_classification(n_samples, n_features, random_state=random_state)
-    return x, y
-
 CLASS_WEIGHTS_IRIS = [
     {0: 0, 1: 0, 2: 0},
     {0: 0, 1: 1, 2: 1},
@@ -46,7 +42,7 @@ CLASS_WEIGHTS_IRIS = [
 def test_class_weight_iris(weight):
     check_class_weight_iris(weight)
 
-def check_class_weight_iris(weight):
+def check_class_weight_iris(weight, check_ratio=0.9):
     X, y = load_iris(return_X_y =True)
     X_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=31)  
     
@@ -60,7 +56,7 @@ def check_class_weight_iris(weight):
     D4P_accuracy = accuracy_score(D4P_predict, y_test)
     ratio = D4P_accuracy / SK_accuracy
 
-    assert ratio >= 0.9
+    assert ratio >= check_ratio
 
 def make_filled_list(list_size, fill):
     return [fill for i in range(list_size)]
@@ -81,7 +77,7 @@ SAMPLE_WEIGHTS_IRIS = [
 def test_sample_weight_iris(weight):
     check_sample_weight(weight)
 
-def check_sample_weight(weight):
+def check_sample_weight(weight, check_ratio=0.9):
     X, y = load_iris(return_X_y =True)
     X_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=31)
         
@@ -95,5 +91,5 @@ def check_sample_weight(weight):
     D4P_accuracy = accuracy_score(D4P_predict, y_test)
     ratio = D4P_accuracy / SK_accuracy
 
-    assert ratio >= 0.9, 'Failed testing sample weights, sample_weight_type = ' + weight[1]
+    assert ratio >= check_ratio, 'Failed testing sample weights, sample_weight_type = ' + weight[1]
     
