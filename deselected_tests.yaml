@@ -96,6 +96,7 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
 
   # Insufficient prediction accuracy for decision forest regression
+  # Case test_boston will be renamed since 0.24 version on test_regression
   # This problem will be fixed
   - ensemble/tests/test_forest.py::test_memory_layout
   - ensemble/tests/test_forest.py::test_regression
