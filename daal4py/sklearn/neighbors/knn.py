@@ -166,6 +166,11 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
     def predict(self, X):
         X = check_array(X, accept_sparse='csr')
 
+        n_features = getattr(self, 'n_features_in_', None)
+        shape = getattr(X, 'shape', None)
+        if n_features and shape and len(shape) > 1 and shape[1] != n_features:
+            raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
+
         try:
             fptype = getFPType(X)
         except ValueError:
