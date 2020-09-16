@@ -22,12 +22,13 @@ import numbers
 import daal4py as d4p
 from scipy import sparse as sp
 from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_uses_daal
-from sklearn.utils.validation import check_array, check_is_fitted
+from sklearn.utils.validation import check_array, check_is_fitted, _num_samples
 from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
 from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
 from joblib import effective_n_jobs
 from sklearn.neighbors._base import _check_precomputed
 import logging
+from ._base import _get_weights
 
 
 class KNeighborsMixin(BaseKNeighborsMixin):
@@ -161,6 +162,9 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
     def predict(self, X):
         X = check_array(X, accept_sparse='csr')
 
+        if hasattr(self, 'n_features_in_') and X.shape[1] != self.n_features_in_:
+            raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
+
         try:
             fptype = getFPType(X)
         except ValueError:
@@ -209,3 +213,60 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
         else:
             logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
             return super(KNeighborsClassifier, self).predict(X)
+
+    def predict_proba(self, X):
+        """Return probability estimates for the test data X.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_queries, n_features), \
+                or (n_queries, n_indexed) if metric == 'precomputed'
+            Test samples.
+
+        Returns
+        -------
+        p : ndarray of shape (n_queries, n_classes), or a list of n_outputs
+            of such arrays if n_outputs > 1.
+            The class probabilities of the input samples. Classes are ordered
+            by lexicographic order.
+        """
+        X = check_array(X, accept_sparse='csr')
+
+        if hasattr(self, 'n_features_in_') and X.shape[1] != self.n_features_in_:
+            raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
+
+        neigh_dist, neigh_ind = self.kneighbors(X)
+
+        classes_ = self.classes_
+        _y = self._y
+        if not self.outputs_2d_:
+            _y = self._y.reshape((-1, 1))
+            classes_ = [self.classes_]
+
+        n_queries = _num_samples(X)
+
+        weights = _get_weights(neigh_dist, self.weights)
+        if weights is None:
+            weights = np.ones_like(neigh_ind)
+
+        all_rows = np.arange(X.shape[0])
+        probabilities = []
+        for k, classes_k in enumerate(classes_):
+            pred_labels = _y[:, k][neigh_ind]
+            proba_k = np.zeros((n_queries, classes_k.size))
+
+            # a simple ':' index doesn't work right
+            for i, idx in enumerate(pred_labels.T):  # loop is O(n_neighbors)
+                proba_k[all_rows, idx] += weights[:, i]
+
+            # normalize 'votes' into real [0,1] probabilities
+            normalizer = proba_k.sum(axis=1)[:, np.newaxis]
+            normalizer[normalizer == 0.0] = 1.0
+            proba_k /= normalizer
+
+            probabilities.append(proba_k)
+
+        if not self.outputs_2d_:
+            probabilities = probabilities[0]
+
+        return probabilities
