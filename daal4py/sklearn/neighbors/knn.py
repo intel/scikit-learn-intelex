@@ -192,7 +192,11 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
 
             self.classes_ = self.classes_[0]
             self._y = self._y.ravel()
+            self.n_samples_fit_ = X.shape[0]
             self.n_features_in_ = X.shape[1]
+            self.effective_metric_ = 'euclidean'
+            self._fit_method = self.algorithm
+            self._fit_X = X.data
 
             params = {
                 'method': 'defaultDense',
