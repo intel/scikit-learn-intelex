@@ -28,7 +28,6 @@ from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeigh
 from joblib import effective_n_jobs
 from sklearn.neighbors._base import _check_precomputed
 import logging
-import warnings
 
 
 def configure_algorithm(classifier, fptype, params):
@@ -175,10 +174,13 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
         except ValueError:
             fptype = None
 
+        numeric_type = True if np.issubdtype(X.dtype, np.number) and np.issubdtype(y.dtype, np.number) else False
+        single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
+
         if daal_check_version((2020, 3)) \
         and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
-        and fptype is not None and not sp.issparse(X):
+        and single_output and fptype is not None and not sp.issparse(X) and numeric_type:
             logging.info("sklearn.neighbors.KNeighborsClassifier.fit: " + method_uses_daal)
 
             y = make2d(y)
@@ -196,7 +198,7 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
             self.n_features_in_ = X.shape[1]
             self.effective_metric_ = 'euclidean'
             self._fit_method = self.algorithm
-            self._fit_X = X.data
+            self._fit_X = X
 
             params = {
                 'method': 'defaultDense',
@@ -214,7 +216,6 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
             return self
         else:
             logging.info("sklearn.neighbors.KNeighborsClassifier.fit: " + method_uses_sklearn)
-
             return super(KNeighborsClassifier, self).fit(X, y)
 
     def predict(self, X):
@@ -247,9 +248,9 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
             }
 
             _, predict_alg = configure_algorithm(self, fptype, params)
-
             prediction_result = predict_alg.compute(X, self.daal_model_)
-            return prediction_result.prediction.ravel().astype(self._y.dtype)
+
+            return prediction_result.prediction.ravel().astype(self.classes_[0].dtype)
         else:
             logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
             return super(KNeighborsClassifier, self).predict(X)
