@@ -100,7 +100,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
                 'fptype': compute_fptype,
                 'method': 'defaultDense',
                 'k': n_neighbors,
-                'resultsToCompute': 'computeIndicesOfNeightbors',
+                'resultsToCompute': 'computeIndicesOfNeighbors',
                 'resultsToEvaluate': 'none'
             }
             if return_distance:
