@@ -54,7 +54,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_labels = readcsv(predict_file, range(nFeatures, nFeatures+1))
                         
     # Create an algorithm object and call compute
-    predict_algo = d4p.kdtree_knn_classification_prediction()
+    predict_algo = d4p.kdtree_knn_classification_prediction(nClasses=nClasses)
     predict_result = predict_algo.compute(predict_data, train_result.model)
     
     # We expect less than 170 mispredicted values
