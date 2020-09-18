@@ -130,3 +130,6 @@ deselected_tests:
 
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
+
+  # We raise an exception when n_classes < 2, skikit-learn doesn't
+  - neighbors/tests/test_neighbors.py::test_neighbors_badargs
