@@ -200,12 +200,13 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
             method = self.algorithm
 
             if (method == 'auto'):
-                if    (n_features >= 13)
+                if    (n_features > 13)
                    or (n_features == 8  and self.n_samples_fit_ <= 10000)
                    or (n_features == 9  and self.n_samples_fit_ <= 20000)
                    or (n_features == 10 and self.n_samples_fit_ <= 50000)
                    or (n_features == 11 and self.n_samples_fit_ <= 1000000)
-                   or (n_features == 12 and self.n_samples_fit_ <= 2000000):
+                   or (n_features == 12 and self.n_samples_fit_ <= 2000000)
+                   or (n_features == 13 and self.n_samples_fit_ <= 5000000):
                     method = 'brute'
                 else:
                     method = 'kd_tree'
