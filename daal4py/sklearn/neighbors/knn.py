@@ -81,12 +81,25 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version((2020, 3)) and self._fit_method in ['brute', 'kd_tree'] \
+        if daal_check_version((2020, 3)) and self._fit_method in ['brute', 'kd_tree', 'auto'] \
         and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
         and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_daal)
 
-            if self._fit_method == 'brute':
+            method = self._fit_method
+
+            if (method == 'auto'):
+                if    (n_features >= 13)
+                   or (n_features == 8  and n_samples_fit <= 10000)
+                   or (n_features == 9  and n_samples_fit <= 20000)
+                   or (n_features == 10 and n_samples_fit <= 50000)
+                   or (n_features == 11 and n_samples_fit <= 1000000)
+                   or (n_features == 12 and n_samples_fit <= 2000000):
+                    method = 'brute'
+                else:
+                    method = 'kd_tree'
+
+            if method == 'brute':
                 knn_classification_training = d4p.bf_knn_classification_training
                 knn_classification_prediction = d4p.bf_knn_classification_prediction
                 # Brute force method always computes in doubles due to precision need
@@ -177,14 +190,27 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
             fptype = None
 
         if daal_check_version((2020, 3)) \
-        and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree'] \
+        and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and self._y.ndim == 1 and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_daal)
 
             n_classes = len(self.classes_)
 
-            if self.algorithm == 'brute':
+            method = self.algorithm
+
+            if (method == 'auto'):
+                if    (n_features >= 13)
+                   or (n_features == 8  and self.n_samples_fit_ <= 10000)
+                   or (n_features == 9  and self.n_samples_fit_ <= 20000)
+                   or (n_features == 10 and self.n_samples_fit_ <= 50000)
+                   or (n_features == 11 and self.n_samples_fit_ <= 1000000)
+                   or (n_features == 12 and self.n_samples_fit_ <= 2000000):
+                    method = 'brute'
+                else:
+                    method = 'kd_tree'
+
+            if method == 'brute':
                 knn_classification_training = d4p.bf_knn_classification_training
                 knn_classification_prediction = d4p.bf_knn_classification_prediction
                 # Brute force method always computes in doubles due to precision need
