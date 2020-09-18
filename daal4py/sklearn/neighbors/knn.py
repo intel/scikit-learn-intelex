@@ -32,21 +32,32 @@ from sklearn.neighbors._kd_tree import KDTree
 import logging
 
 
-def configure_algorithm(classifier, fptype, params):
+def training_algorithm(classifier, fptype, params):
     if classifier.algorithm == 'brute':
         train_alg = d4p.bf_knn_classification_training
-        predict_alg = d4p.bf_knn_classification_prediction
         # Brute force method always computes in doubles due to precision need
         compute_fptype = 'double'
     else:
         train_alg = d4p.kdtree_knn_classification_training
+        compute_fptype = fptype
+
+    params['fptype'] = compute_fptype
+
+    return train_alg(**params)
+
+
+def prediction_algorithm(classifier, fptype, params):
+    if classifier.algorithm == 'brute':
+        predict_alg = d4p.bf_knn_classification_prediction
+        # Brute force method always computes in doubles due to precision need
+        compute_fptype = 'double'
+    else:
         predict_alg = d4p.kdtree_knn_classification_prediction
         compute_fptype = fptype
 
     params['fptype'] = compute_fptype
 
-    return train_alg(**params), predict_alg(**params)
-
+    return predict_alg(**params)
 
 class KNeighborsMixin(BaseKNeighborsMixin):
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
@@ -115,12 +126,12 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             if return_distance:
                 params['resultsToCompute'] += '|computeDistances'
 
-            train_alg, predict_alg = configure_algorithm(self, fptype, params)
-
             fit_X = d4p.get_data(self._fit_X)
+            train_alg = training_algorithm(self, fptype, params)
             training_result = train_alg.compute(fit_X)
 
             X = d4p.get_data(X)
+            predict_alg = prediction_algorithm(self, fptype, params)
             prediction_result = predict_alg.compute(X, training_result.model)
 
             if return_distance:
@@ -215,7 +226,7 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
                 'resultsToCompute': ''
             }
 
-            train_alg, _ = configure_algorithm(self, fptype, params)
+            train_alg = training_algorithm(self, fptype, params)
             y = y.reshape(y.shape[0], 1)
             self.daal_model_ = train_alg.compute(X, y).model
 
@@ -253,7 +264,7 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
                 'resultsToCompute': ''
             }
 
-            _, predict_alg = configure_algorithm(self, fptype, params)
+            predict_alg = prediction_algorithm(self, fptype, params)
             prediction_result = predict_alg.compute(X, self.daal_model_)
 
             return prediction_result.prediction.ravel().astype(self.classes_[0].dtype)
