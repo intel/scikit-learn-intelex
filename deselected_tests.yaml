@@ -127,3 +127,6 @@ deselected_tests:
   - tests/test_common.py::test_estimators
   - tests/test_multioutput.py::test_multi_output_classification
   - utils/tests/test_estimator_checks.py::test_check_estimator_clones
+
+  # Different behavior when 1 class enters the input
+  - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
