@@ -26,7 +26,9 @@ from sklearn.utils.validation import check_array, check_is_fitted
 from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
 from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
 from joblib import effective_n_jobs
-from sklearn.neighbors._base import _check_precomputed
+from sklearn.neighbors._base import _check_precomputed, NeighborsBase
+from sklearn.neighbors._ball_tree import BallTree
+from sklearn.neighbors._kd_tree import KDTree
 import logging
 
 
@@ -97,7 +99,9 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version((2020, 3)) and self._fit_method in ['brute', 'kd_tree'] \
+        fit_X_correct_type = isinstance(self._fit_X, np.ndarray)
+
+        if daal_check_version((2020, 3)) and fit_X_correct_type and self._fit_method in ['brute', 'kd_tree'] \
         and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
         and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_daal)
@@ -167,17 +171,19 @@ class KNeighborsMixin(BaseKNeighborsMixin):
 
 class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
     def fit(self, X, y):
-        X, y = self._validate_data(X, y, accept_sparse="csr", multi_output=True)
+        X_incorrect_type = isinstance(X, NeighborsBase) or isinstance(X, BallTree) or isinstance(X, KDTree)
+
+        if not X_incorrect_type:
+            X, y = self._validate_data(X, y, accept_sparse="csr", multi_output=True)
+            numeric_type = True if np.issubdtype(X.dtype, np.number) and np.issubdtype(y.dtype, np.number) else False
+            single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
 
         try:
             fptype = getFPType(X)
         except ValueError:
             fptype = None
 
-        numeric_type = True if np.issubdtype(X.dtype, np.number) and np.issubdtype(y.dtype, np.number) else False
-        single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
-
-        if daal_check_version((2020, 3)) \
+        if daal_check_version((2020, 3)) and not X_incorrect_type \
         and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and single_output and fptype is not None and not sp.issparse(X) and numeric_type:
