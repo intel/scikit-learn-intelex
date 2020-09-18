@@ -133,3 +133,6 @@ deselected_tests:
 
   # Failed in KD-tree. Will fix to next release DAAL.
   - ensemble/tests/test_bagging.py::test_classification
+
+  # We raise an exception when n_classes < 2, skikit-learn doesn't
+  - neighbors/tests/test_neighbors.py::test_neighbors_badargs

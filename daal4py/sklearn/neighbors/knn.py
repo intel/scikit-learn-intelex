@@ -30,6 +30,7 @@ from sklearn.neighbors._base import _check_precomputed, NeighborsBase
 from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._kd_tree import KDTree
 from sklearn.utils.multiclass import check_classification_targets
+from sklearn.preprocessing import LabelEncoder
 import logging
 
 
@@ -61,20 +62,20 @@ def prediction_algorithm(method, fptype, params):
     return predict_alg(**params)
 
 
-def parse_auto_method(method, n_samples, n_features):
+def parse_auto_method(clf, method, n_samples, n_features):
+    result_method = method
+
     if (method == 'auto'):
-        if    (n_features > 13) \
-           or (n_features == 8  and n_samples <= 10000) \
-           or (n_features == 9  and n_samples <= 20000) \
-           or (n_features == 10 and n_samples <= 50000) \
-           or (n_features == 11 and n_samples <= 1000000) \
-           or (n_features == 12 and n_samples <= 2000000) \
-           or (n_features == 13 and n_samples <= 5000000):
-            return 'brute'
+        if clf.metric == 'precomputed' or n_features > 15 or \
+           (clf.n_neighbors is not None and clf.n_neighbors >= clf.n_neighbors // 2):
+            result_method = 'brute'
         else:
-            return 'kd_tree'
-    else:
-        return method
+            if clf.effective_metric_ in KDTree.valid_metrics:
+                result_method = 'kd_tree'
+            else:
+                result_method = 'brute'
+
+    return result_method
 
 
 class KNeighborsMixin(BaseKNeighborsMixin):
@@ -144,7 +145,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             if return_distance:
                 params['resultsToCompute'] += '|computeDistances'
 
-            method = parse_auto_method(self._fit_method, self.n_samples_fit_, n_features)
+            method = parse_auto_method(self, self._fit_method, self.n_samples_fit_, n_features)
 
             fit_X = d4p.get_data(self._fit_X)
             train_alg = training_algorithm(method, fptype, params)
@@ -224,18 +225,16 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
             self.outputs_2d_ = False
 
             check_classification_targets(y)
-            self.classes_ = []
-            self._y = np.empty(y.shape, dtype=np.int)
-            for k in range(self._y.shape[1]):
-                classes, self._y[:, k] = np.unique(y[:, k], return_inverse=True)
-                self.classes_.append(classes)
 
-            self.classes_ = self.classes_[0]
+            # Encode labels
+            le = LabelEncoder()
+            le.fit(y)
+            self.classes_ = le.classes_
+            self._y = le.transform(y)
+
             n_classes = len(self.classes_)
             if n_classes < 2:
                 raise ValueError("Training data only contain information about one class.")
-            if (y >= n_classes).any():
-                raise ValueError("Labels must be from 0 to n_classes-1.")
 
             self._y = self._y.ravel()
             self.n_samples_fit_ = X.shape[0]
@@ -253,10 +252,9 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
                 'resultsToCompute': ''
             }
 
-            method = parse_auto_method(self.algorithm, self.n_samples_fit_, self.n_features_in_)
+            method = parse_auto_method(self, self.algorithm, self.n_samples_fit_, self.n_features_in_)
             train_alg = training_algorithm(method, fptype, params)
-            y = y.reshape(y.shape[0], 1)
-            self.daal_model_ = train_alg.compute(X, y).model
+            self.daal_model_ = train_alg.compute(X, self._y.reshape(y.shape[0], 1)).model
 
             return self
         else:
@@ -291,11 +289,14 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
                 'resultsToCompute': ''
             }
 
-            method = parse_auto_method(self.algorithm, self.n_samples_fit_, n_features)
+            method = parse_auto_method(self, self.algorithm, self.n_samples_fit_, n_features)
             predict_alg = prediction_algorithm(method, fptype, params)
             prediction_result = predict_alg.compute(X, self.daal_model_)
 
-            return prediction_result.prediction.ravel().astype(self.classes_[0].dtype)
+            # Decode labels
+            le = LabelEncoder()
+            le.classes_ = self.classes_
+            return le.inverse_transform(prediction_result.prediction.ravel().astype(self._y.dtype)).astype(self.classes_[0].dtype)
         else:
             logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
             return super(KNeighborsClassifier, self).predict(X)
