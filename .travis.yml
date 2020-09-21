@@ -10,11 +10,11 @@ matrix:
         - name: "OsX-Py3"
           os: osx
           osx_image: xcode10.1
+          compiler: clang
           env:
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
             - MACOSX_DEPLOYMENT_TARGET="10.9"
             - PYVER=""
-        - compiler: clang
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
