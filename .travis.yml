@@ -16,8 +16,8 @@ matrix:
             - MACOSX_DEPLOYMENT_TARGET="10.9"
             - PYVER=""
 
-before_install:
-  - eval "${MATRIX_EVAL}"
+# before_install:
+#   - eval "${MATRIX_EVAL}"
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
@@ -29,8 +29,9 @@ install:
   - conda install -q conda-build
   # Useful for debugging any issues with conda
   - conda info -a
-  - gcc -v
-  - g++ -v
+  - echo ${CC}
+  - echo ${CXX}
+  - ${CXX} --version
 
 script:
   - conda build -c conda-forge -c intel $PYVER --output-folder ./ conda-recipe
