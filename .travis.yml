@@ -26,7 +26,7 @@ install:
   - conda install -q conda-build
   # Useful for debugging any issues with conda
   - conda info -a
-  - ${CXX} --version
+#   - ${CXX} --version
 
 script:
   - conda build -c conda-forge -c intel $PYVER --output-folder ./ conda-recipe
