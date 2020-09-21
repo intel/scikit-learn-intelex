@@ -16,9 +16,6 @@ matrix:
             - MACOSX_DEPLOYMENT_TARGET="10.9"
             - PYVER=""
 
-# before_install:
-#   - eval "${MATRIX_EVAL}"
-
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
