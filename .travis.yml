@@ -26,8 +26,8 @@ install:
   - conda install -q conda-build
   # Useful for debugging any issues with conda
   - conda info -a
-  - echo ${CC}
-  - echo ${CXX}
+  - export CC=gcc
+  - export CXX=g++
   - ${CXX} --version
 
 script:
