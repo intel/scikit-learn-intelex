@@ -9,12 +9,12 @@ matrix:
             - PYVER=""
         - name: "OsX-Py3"
           os: osx
-          osx_image: xcode8
+          osx_image: xcode10.1
           env:
-            - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
             - MACOSX_DEPLOYMENT_TARGET="10.9"
             - PYVER=""
+        - compiler: clang
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
@@ -26,8 +26,6 @@ install:
   - conda install -q conda-build
   # Useful for debugging any issues with conda
   - conda info -a
-  - export CC=gcc-7
-  - export CXX=g++-7
   - ${CXX} --version
 
 script:
