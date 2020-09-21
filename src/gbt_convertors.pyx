@@ -191,6 +191,9 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
         # create queue
         yes_idx = sub_tree[sub_tree.find("yes=") + 4:sub_tree.find(",no")]
         no_idx = sub_tree[sub_tree.find("no=") + 3:sub_tree.find(",missing")]
+        mis_idx = sub_tree[sub_tree.find("missing=") + 8:sub_tree.find("\n")]
+        if mis_idx != no_idx:
+            raise TypeError("Missing values are not supported in daa4py Gradient Boosting Trees")
         node_queue: Deque[Node] = deque()
         node_queue.append(
             Node(
@@ -231,6 +234,9 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             # append to queue
             yes_idx = sub_tree[sub_tree.find("yes=") + 4:sub_tree.find(",no")]
             no_idx = sub_tree[sub_tree.find("no=") + 3:sub_tree.find(",missing")]
+            mis_idx = sub_tree[sub_tree.find("missing=") + 8:sub_tree.find("\n")]
+            if mis_idx != no_idx:
+                raise TypeError("Missing values are not supported in daa4py Gradient Boosting Trees")
             node_queue.append(
                 Node(
                     sub_tree
