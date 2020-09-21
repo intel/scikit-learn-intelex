@@ -17,8 +17,8 @@ matrix:
             - PYVER=""
 
 before_install:
-    - eval "${MATRIX_EVAL}"
-    
+  - eval "${MATRIX_EVAL}"
+
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
