@@ -66,7 +66,7 @@ def parse_auto_method(clf, method, n_samples, n_features):
     result_method = method
 
     if (method == 'auto'):
-        if clf.metric == 'precomputed' or n_features > 15 or \
+        if clf.metric == 'precomputed' or n_features > 11 or \
            (clf.n_neighbors is not None and clf.n_neighbors >= clf.n_neighbors // 2):
             result_method = 'brute'
         else:
