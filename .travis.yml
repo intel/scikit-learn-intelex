@@ -9,7 +9,7 @@ matrix:
             - PYVER=""
         - name: "OsX-Py3"
           os: osx
-          osx_image: xcode10.1
+          osx_image: xcode12
           compiler: clang
           env:
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
