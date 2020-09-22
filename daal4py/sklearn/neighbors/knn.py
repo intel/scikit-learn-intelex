@@ -21,13 +21,61 @@ import numpy as np
 import numbers
 import daal4py as d4p
 from scipy import sparse as sp
-from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_uses_daal
+from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_uses_daal, make2d
 from sklearn.utils.validation import check_array, check_is_fitted
 from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
 from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
 from joblib import effective_n_jobs
-from sklearn.neighbors._base import _check_precomputed
+from sklearn.neighbors._base import _check_precomputed, NeighborsBase
+from sklearn.neighbors._ball_tree import BallTree
+from sklearn.neighbors._kd_tree import KDTree
+from sklearn.utils.multiclass import check_classification_targets
+from sklearn.preprocessing import LabelEncoder
 import logging
+
+
+def training_algorithm(method, fptype, params):
+    if method == 'brute':
+        train_alg = d4p.bf_knn_classification_training
+        # Brute force method always computes in doubles due to precision need
+        compute_fptype = 'double'
+    else:
+        train_alg = d4p.kdtree_knn_classification_training
+        compute_fptype = fptype
+
+    params['fptype'] = compute_fptype
+
+    return train_alg(**params)
+
+
+def prediction_algorithm(method, fptype, params):
+    if method == 'brute':
+        predict_alg = d4p.bf_knn_classification_prediction
+        # Brute force method always computes in doubles due to precision need
+        compute_fptype = 'double'
+    else:
+        predict_alg = d4p.kdtree_knn_classification_prediction
+        compute_fptype = fptype
+
+    params['fptype'] = compute_fptype
+
+    return predict_alg(**params)
+
+
+def parse_auto_method(clf, method, n_samples, n_features):
+    result_method = method
+
+    if (method == 'auto'):
+        if clf.metric == 'precomputed' or n_features > 11 or \
+           (clf.n_neighbors is not None and clf.n_neighbors >= clf.n_neighbors // 2):
+            result_method = 'brute'
+        else:
+            if clf.effective_metric_ in KDTree.valid_metrics:
+                result_method = 'kd_tree'
+            else:
+                result_method = 'brute'
+
+    return result_method
 
 
 class KNeighborsMixin(BaseKNeighborsMixin):
@@ -81,40 +129,31 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version((2020, 3)) and self._fit_method in ['brute', 'kd_tree'] \
+        fit_X_correct_type = isinstance(self._fit_X, np.ndarray)
+
+        if daal_check_version((2020, 3)) and fit_X_correct_type and self._fit_method in ['brute', 'kd_tree', 'auto'] \
         and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
         and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_daal)
 
-            if self._fit_method == 'brute':
-                knn_classification_training = d4p.bf_knn_classification_training
-                knn_classification_prediction = d4p.bf_knn_classification_prediction
-                # Brute force method always computes in doubles due to precision need
-                compute_fptype = 'double'
-            else:
-                knn_classification_training = d4p.kdtree_knn_classification_training
-                knn_classification_prediction = d4p.kdtree_knn_classification_prediction
-                compute_fptype = fptype
-
-            alg_params = {
-                'fptype': compute_fptype,
+            params = {
                 'method': 'defaultDense',
                 'k': n_neighbors,
                 'resultsToCompute': 'computeIndicesOfNeighbors',
                 'resultsToEvaluate': 'none'
             }
             if return_distance:
-                alg_params['resultsToCompute'] += '|computeDistances'
+                params['resultsToCompute'] += '|computeDistances'
 
-            training_alg = knn_classification_training(**alg_params)
+            method = parse_auto_method(self, self._fit_method, self.n_samples_fit_, n_features)
 
             fit_X = d4p.get_data(self._fit_X)
-            training_result = training_alg.compute(fit_X)
-
-            prediction_alg = knn_classification_prediction(**alg_params)
+            train_alg = training_algorithm(method, fptype, params)
+            training_result = train_alg.compute(fit_X)
 
             X = d4p.get_data(X)
-            prediction_result = prediction_alg.compute(X, training_result.model)
+            predict_alg = prediction_algorithm(method, fptype, params)
+            prediction_result = predict_alg.compute(X, training_result.model)
 
             if return_distance:
                 results = prediction_result.distances.astype(fptype), prediction_result.indices
@@ -163,6 +202,65 @@ class KNeighborsMixin(BaseKNeighborsMixin):
 
 
 class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
+    def fit(self, X, y):
+        X_incorrect_type = isinstance(X, (NeighborsBase, BallTree,BallTree))
+
+        if not X_incorrect_type:
+            X, y = self._validate_data(X, y, accept_sparse="csr", multi_output=True)
+            numeric_type = True if np.issubdtype(X.dtype, np.number) and np.issubdtype(y.dtype, np.number) else False
+            single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
+
+        try:
+            fptype = getFPType(X)
+        except ValueError:
+            fptype = None
+
+        if daal_check_version((2020, 3)) and not X_incorrect_type \
+        and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
+        and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
+        and single_output and fptype is not None and not sp.issparse(X) and numeric_type:
+            logging.info("sklearn.neighbors.KNeighborsClassifier.fit: " + method_uses_daal)
+
+            y = make2d(y)
+            self.outputs_2d_ = False
+
+            check_classification_targets(y)
+
+            # Encode labels
+            le = LabelEncoder()
+            le.fit(y)
+            self.classes_ = le.classes_
+            self._y = le.transform(y)
+
+            n_classes = len(self.classes_)
+            if n_classes < 2:
+                raise ValueError("Training data only contain information about one class.")
+
+            self._y = self._y.ravel()
+            self.n_samples_fit_ = X.shape[0]
+            self.n_features_in_ = X.shape[1]
+            self.effective_metric_ = 'euclidean'
+            self._fit_method = self.algorithm
+            self._fit_X = X
+
+            params = {
+                'method': 'defaultDense',
+                'k': self.n_neighbors,
+                'nClasses': n_classes,
+                'voteWeights': 'voteUniform' if self.weights == 'uniform' else 'voteDistance',
+                'resultsToEvaluate': 'computeClassLabels',
+                'resultsToCompute': ''
+            }
+
+            method = parse_auto_method(self, self.algorithm, self.n_samples_fit_, self.n_features_in_)
+            train_alg = training_algorithm(method, fptype, params)
+            self.daal_model_ = train_alg.compute(X, self._y.reshape(y.shape[0], 1)).model
+
+            return self
+        else:
+            logging.info("sklearn.neighbors.KNeighborsClassifier.fit: " + method_uses_sklearn)
+            return super(KNeighborsClassifier, self).fit(X, y)
+
     def predict(self, X):
         X = check_array(X, accept_sparse='csr')
 
@@ -176,46 +274,29 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version((2020, 3)) \
-        and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree'] \
+        if daal_check_version((2020, 3)) and hasattr(self, 'daal_model_') \
+        and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and self._y.ndim == 1 and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_daal)
 
-            n_classes = len(self.classes_)
-
-            if self.algorithm == 'brute':
-                knn_classification_training = d4p.bf_knn_classification_training
-                knn_classification_prediction = d4p.bf_knn_classification_prediction
-                # Brute force method always computes in doubles due to precision need
-                compute_fptype = 'double'
-            else:
-                knn_classification_training = d4p.kdtree_knn_classification_training
-                knn_classification_prediction = d4p.kdtree_knn_classification_prediction
-                compute_fptype = fptype
-
-            alg_params = {
-                'fptype': compute_fptype,
+            params = {
                 'method': 'defaultDense',
                 'k': self.n_neighbors,
-                'nClasses': n_classes,
+                'nClasses': len(self.classes_),
                 'voteWeights': 'voteUniform' if self.weights == 'uniform' else 'voteDistance',
                 'resultsToEvaluate': 'computeClassLabels',
                 'resultsToCompute': ''
             }
 
-            training_alg = knn_classification_training(**alg_params)
+            method = parse_auto_method(self, self.algorithm, self.n_samples_fit_, n_features)
+            predict_alg = prediction_algorithm(method, fptype, params)
+            prediction_result = predict_alg.compute(X, self.daal_model_)
 
-            fit_X = d4p.get_data(self._fit_X)
-            _y = d4p.get_data(self._y)
-            _y = _y.reshape(_y.shape[0], 1)
-            training_result = training_alg.compute(fit_X, _y)
-
-            prediction_alg = knn_classification_prediction(**alg_params)
-
-            X = d4p.get_data(X)
-            prediction_result = prediction_alg.compute(X, training_result.model)
-            return prediction_result.prediction.ravel().astype(self._y.dtype)
+            # Decode labels
+            le = LabelEncoder()
+            le.classes_ = self.classes_
+            return le.inverse_transform(prediction_result.prediction.ravel().astype(self._y.dtype)).astype(self.classes_[0].dtype)
         else:
             logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
             return super(KNeighborsClassifier, self).predict(X)
