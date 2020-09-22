@@ -156,6 +156,7 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
 
     class_label = 0
     iterations_counter = 0
+    mis_eq_yes = None
     for tree in xgb_model.expandtabs(1).replace(" ", "").split("booster[")[1:]:
         if is_regression:
             tree_id = mb.create_tree(len(tree.split("\n")) - 1)
@@ -191,6 +192,16 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
         # create queue
         yes_idx = sub_tree[sub_tree.find("yes=") + 4:sub_tree.find(",no")]
         no_idx = sub_tree[sub_tree.find("no=") + 3:sub_tree.find(",missing")]
+        mis_idx = sub_tree[sub_tree.find("missing=") + 8:sub_tree.find("\n")]
+        if mis_eq_yes is None:
+            if mis_idx == yes_idx:
+                mis_eq_yes = True
+            elif mis_idx == no_idx:
+                mis_eq_yes = False
+            else:
+                raise TypeError("Missing values are not supported in daa4py Gradient Boosting Trees")
+        elif mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
+            raise TypeError("Missing values are not supported in daa4py Gradient Boosting Trees")
         node_queue: Deque[Node] = deque()
         node_queue.append(
             Node(
@@ -231,6 +242,9 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             # append to queue
             yes_idx = sub_tree[sub_tree.find("yes=") + 4:sub_tree.find(",no")]
             no_idx = sub_tree[sub_tree.find("no=") + 3:sub_tree.find(",missing")]
+            mis_idx = sub_tree[sub_tree.find("missing=") + 8:sub_tree.find("\n")]
+            if mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
+                raise TypeError("Missing values are not supported in daa4py Gradient Boosting Trees")
             node_queue.append(
                 Node(
                     sub_tree

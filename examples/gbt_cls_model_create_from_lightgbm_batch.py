@@ -54,7 +54,7 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     }
 
     # Training
-    lgb_model = lgb.train(params, lgb_train, valid_sets=lgb_train)
+    lgb_model = lgb.train(params, lgb_train, valid_sets=lgb_train, verbose_eval=False)
 
     # LightGBM prediction
     lgb_prediction = np.argmax(lgb_model.predict(X_test), axis=1)
