@@ -17,11 +17,15 @@
 
 import pytest
 import random
+import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import mean_squared_error
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from daal4py.sklearn.ensemble import RandomForestClassifier as D4PRandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
+from daal4py.sklearn.ensemble import RandomForestRegressor as D4PRandomForestRegressor
 
 CLASS_WEIGHTS_IRIS = [
     {0: 0, 1: 0, 2: 0},
@@ -39,10 +43,10 @@ CLASS_WEIGHTS_IRIS = [
 ]
 
 @pytest.mark.parametrize('weight', CLASS_WEIGHTS_IRIS)
-def test_class_weight_iris(weight):
-    check_class_weight_iris(weight)
+def test_classifier_class_weight_iris(weight):
+    check_classifierclass_weight_iris(weight)
 
-def check_class_weight_iris(weight, check_ratio=0.9):
+def check_classifierclass_weight_iris(weight, check_ratio=0.85):
     X, y = load_iris(return_X_y =True)
     X_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=31)  
     
@@ -55,29 +59,25 @@ def check_class_weight_iris(weight, check_ratio=0.9):
     SK_accuracy = accuracy_score(SK_predict, y_test)
     D4P_accuracy = accuracy_score(D4P_predict, y_test)
     ratio = D4P_accuracy / SK_accuracy
-
     assert ratio >= check_ratio
 
-def make_filled_list(list_size, fill):
-    return [fill for i in range(list_size)]
-
 SAMPLE_WEIGHTS_IRIS = [
-    (make_filled_list(100, 0), '0'),
-    (make_filled_list(100, 1), '1'),
-    (make_filled_list(100, 5), '5'),
-    (make_filled_list(100, 50), '50'),
-    (make_filled_list(100, random.uniform(1, 50)), 'Random [1, 50]'),
-    (make_filled_list(100, random.uniform(1, 100)), 'Random [1, 100]'),
-    (make_filled_list(100, random.uniform(1, 500)), 'Random [1, 500]'),
-    (make_filled_list(100, random.uniform(1, 1000)), 'Random [1, 1000]'),
-    (make_filled_list(100, random.uniform(1, 5000)), 'Random [1, 5000]'),
+    (np.full_like(range(100), 0), 'Only 0'),
+    (np.full_like(range(100), 1), 'Only 1'),
+    (np.full_like(range(100), 5), 'Only 5'),
+    (np.full_like(range(100), 50), 'Only 50'),
+    (np.random.rand(100), 'Uniform distribution'),
+    (np.random.normal(1000, 10, 100), 'Gaussian distribution'),
+    (np.random.exponential(5, 100), 'Exponential distribution'),
+    (np.random.poisson(lam=10, size=100), 'Poisson distribution'),
+    (np.random.rayleigh(scale=1, size=100), 'Rayleigh distribution'),
 ]
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
-def test_sample_weight_iris(weight):
-    check_sample_weight(weight)
+def test_classifier_sample_weight_iris(weight):
+    check_classifier_sample_weight(weight)
 
-def check_sample_weight(weight, check_ratio=0.9):
+def check_classifier_sample_weight(weight, check_ratio=0.9):
     X, y = load_iris(return_X_y =True)
     X_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=31)
         
@@ -90,6 +90,24 @@ def check_sample_weight(weight, check_ratio=0.9):
     SK_accuracy = accuracy_score(SK_predict, y_test)
     D4P_accuracy = accuracy_score(D4P_predict, y_test)
     ratio = D4P_accuracy / SK_accuracy
-
     assert ratio >= check_ratio, 'Failed testing sample weights, sample_weight_type = ' + weight[1]
-    
+
+@pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
+def test_regressor_sample_weight_iris(weight):
+    if weight[0][0] != 0:
+        check_regressor_sample_weight(weight)
+
+def check_regressor_sample_weight(weight, check_ratio=1.4):
+    X, y = load_iris(return_X_y =True)
+    X_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=31)
+        
+    SK_model = SKRandomForestRegressor()
+    D4P_model = D4PRandomForestRegressor()
+
+    SK_predict = SK_model.fit(X_train, y_train, sample_weight=weight[0]).predict(x_test)
+    D4P_predict = D4P_model.fit(X_train, y_train, sample_weight=weight[0]).predict(x_test)
+
+    SK_accuracy = mean_squared_error(SK_predict, y_test)
+    D4P_accuracy = mean_squared_error(D4P_predict, y_test)
+    ratio = D4P_accuracy / SK_accuracy
+    assert ratio <= check_ratio, 'Failed while testing regression sample weights, sample_weight_type = ' + weight[1]

@@ -27,7 +27,6 @@ ALGORITHMS = ['brute', 'kd_tree', 'auto']
 WEIGHTS = ['uniform', 'distance']
 KS = [1, 3, 7, 25]
 
-
 def make_dataset(n_samples=256, n_features=5, n_classes=2, test_size=0.5, shuffle=True):
     x, y = make_classification(n_samples=n_samples, n_features=n_features, n_classes=n_classes, random_state=777)
     return train_test_split(x, y, random_state=777, test_size=test_size, shuffle=shuffle)
@@ -53,13 +52,11 @@ def check_determenistic(distance, algorithm, weight, k):
         distances, indices = alg.kneighbors(x_test)
         labels = alg.predict(x_test)
         alg_results.append((distances, indices, labels))
-        print((y_test == labels).mean())
-
+        
     for i in range(1, N_TRIES):
         for j, res in enumerate(alg_results[i]):
-            if (res == alg_results[0][j]).mean() != 1:
-                raise ValueError('Results are different between runs for {} {} {} k={}'.format(
-                    algorithm, weight, distance, k))
+            assert (res == alg_results[0][j]).mean() == 1, 'Results are different between runs for {} {} {} k={}'.format(
+                algorithm, weight, distance, k)
 
 def convert_data(data, class_name=np.array, order='C', dtype=np.float64):
     if order == 'C':
@@ -101,5 +98,4 @@ def check_data_formats_diff(distance, algorithm, weight, k):
 
     for i in range(1, len(alg_results)):
         for j, res in enumerate(alg_results[i]):
-            if (res == alg_results[0][j]).mean() != 1:
-                raise ValueError('Results are different between formats')
+            assert (res == alg_results[0][j]).mean() == 1, 'Results are different between formats'
