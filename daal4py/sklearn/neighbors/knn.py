@@ -203,7 +203,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
 
 class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
     def fit(self, X, y):
-        X_incorrect_type = isinstance(X, NeighborsBase) or isinstance(X, BallTree) or isinstance(X, KDTree)
+        X_incorrect_type = isinstance(X, (NeighborsBase, BallTree,BallTree))
 
         if not X_incorrect_type:
             X, y = self._validate_data(X, y, accept_sparse="csr", multi_output=True)
