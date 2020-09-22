@@ -45,6 +45,7 @@ test:
         - scikit-learn
         - threadpoolctl
         - xgboost # [not win]
+        - pytest
         - mpich # [osx]
         - impi_rt # [not osx]
     source_files:
