@@ -25,12 +25,14 @@ from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_
 from sklearn.utils.validation import check_array, check_is_fitted
 from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
 from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
+from sklearn.neighbors._unsupervised import NearestNeighbors as BaseNearestNeighbors
 from joblib import effective_n_jobs
 from sklearn.neighbors._base import _check_precomputed, NeighborsBase
 from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._kd_tree import KDTree
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.preprocessing import LabelEncoder
+
 import logging
 
 
@@ -86,6 +88,8 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
 
         check_is_fitted(self)
+
+        print("DAAL kneighbors")
 
         if n_neighbors is None:
             n_neighbors = self.n_neighbors
@@ -300,3 +304,25 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
         else:
             logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
             return super(KNeighborsClassifier, self).predict(X)
+
+class NearestNeighbors(BaseNearestNeighbors, KNeighborsMixin):
+
+    def __init__(self, n_neighbors=5,
+                 radius=1.0,
+                 algorithm='auto',
+                 leaf_size=30,
+                 metric='minkowski',
+                 p=2,
+                 metric_params=None,
+                 n_jobs=None):
+        print("NN DAAL constructor")
+        super().__init__(
+              n_neighbors=n_neighbors,
+              radius=radius,
+              algorithm=algorithm,
+              leaf_size=leaf_size,
+              metric=metric,
+              p=p,
+              metric_params=metric_params,
+              n_jobs=n_jobs)
+        

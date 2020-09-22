@@ -5,5 +5,6 @@ algorithm.
 
 from .knn import KNeighborsClassifier
 from .knn import KNeighborsMixin
+from .knn import NearestNeighbors
 
-__all__ = ['KNeighborsClassifier', 'KNeighborsMixin']
+__all__ = ['KNeighborsClassifier', 'KNeighborsMixin', 'NearestNeighbors']
