@@ -75,7 +75,7 @@ def _restore_from_saved(md, saved_dict):
 
 class Test(unittest.TestCase):
     def test_KNeighborsClassifier(self):
-        check_estimator(KNeighborsClassifier)
+        check_estimator(KNeighborsClassifier(algorithm='kd_tree'))
 
     @unittest.skipUnless(check_version(((2019,0),(2021, 107)), daal_version), "not supported in this library version")
     def test_RandomForestClassifier(self):
