@@ -156,9 +156,9 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             prediction_result = predict_alg.compute(X, training_result.model)
 
             if return_distance:
-                results = prediction_result.distances.astype(fptype), prediction_result.indices
+                results = prediction_result.distances.astype(fptype), prediction_result.indices.astype(int)
             else:
-                results = prediction_result.indices
+                results = prediction_result.indices.astype(int)
         else:
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_sklearn)
             return super(KNeighborsMixin, self).kneighbors(X, n_neighbors, return_distance)
@@ -221,10 +221,10 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
         and single_output and fptype is not None and not sp.issparse(X) and numeric_type:
             logging.info("sklearn.neighbors.KNeighborsClassifier.fit: " + method_uses_daal)
 
-            y = make2d(y)
             self.outputs_2d_ = False
 
             check_classification_targets(y)
+            y = make2d(y)
 
             # Encode labels
             le = LabelEncoder()
@@ -255,7 +255,6 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
             method = parse_auto_method(self, self.algorithm, self.n_samples_fit_, self.n_features_in_)
             train_alg = training_algorithm(method, fptype, params)
             self.daal_model_ = train_alg.compute(X, self._y.reshape(y.shape[0], 1)).model
-
             return self
         else:
             logging.info("sklearn.neighbors.KNeighborsClassifier.fit: " + method_uses_sklearn)
