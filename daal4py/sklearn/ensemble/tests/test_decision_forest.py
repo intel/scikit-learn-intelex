@@ -20,9 +20,6 @@ from daal4py import __daal_run_version__, __daal_link_version__
 daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
 daal_link_version = tuple(map(int, (__daal_link_version__[0:4], __daal_link_version__[4:8])))
 
-if daal_run_version < (2020, 3) or daal_link_version < (2020, 3):
-    exit(0)
-
 import pytest
 import random
 import numpy as np
@@ -52,7 +49,8 @@ CLASS_WEIGHTS_IRIS = [
 
 @pytest.mark.parametrize('weight', CLASS_WEIGHTS_IRIS)
 def test_classifier_class_weight_iris(weight):
-    check_classifier_class_weight_iris(weight)
+    if daal_run_version >= (2020, 3) and daal_link_version >= (2020, 3):
+        check_classifier_class_weight_iris(weight)
 
 def check_classifier_class_weight_iris(weight, check_ratio=0.85):
     X, y = load_iris(return_X_y =True)
@@ -83,7 +81,8 @@ SAMPLE_WEIGHTS_IRIS = [
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
 def test_classifier_sample_weight_iris(weight):
-    check_classifier_sample_weight(weight)
+    if daal_run_version >= (2020, 3) and daal_link_version >= (2020, 3):
+        check_classifier_sample_weight(weight)
 
 def check_classifier_sample_weight(weight, check_ratio=0.9):
     X, y = load_iris(return_X_y =True)
@@ -102,7 +101,7 @@ def check_classifier_sample_weight(weight, check_ratio=0.9):
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
 def test_regressor_sample_weight_iris(weight):
-    if weight[1] != 'Only 0':
+    if daal_run_version >= (2020, 3) and daal_link_version >= (2020, 3) and weight[1] != 'Only 0':
         check_regressor_sample_weight(weight)
 
 def check_regressor_sample_weight(weight, check_ratio=1.4):
