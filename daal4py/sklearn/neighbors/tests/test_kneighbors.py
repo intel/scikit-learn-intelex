@@ -17,7 +17,7 @@
 
 import pytest
 import numpy as np
-
+from daal4py.sklearn._utils import daal_check_version
 from daal4py.sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_classification
@@ -36,7 +36,8 @@ def make_dataset(n_samples=256, n_features=5, n_classes=2, test_size=0.5, shuffl
 @pytest.mark.parametrize('weight', WEIGHTS)
 @pytest.mark.parametrize('k', KS)
 def test_check_determenistic(distance, algorithm, weight, k):
-    check_determenistic(distance, algorithm, weight, k)
+    if daal_check_version((2020, 3)):
+        check_determenistic(distance, algorithm, weight, k)
 
 def check_determenistic(distance, algorithm, weight, k):
     N_TRIES = 5
@@ -70,11 +71,11 @@ def convert_data(data, class_name=np.array, order='C', dtype=np.float64):
 @pytest.mark.parametrize('weight', WEIGHTS)
 @pytest.mark.parametrize('k', KS)
 def test_data_formats_diff(distance, algorithm, weight, k):
-    check_data_formats_diff(distance, algorithm, weight, k)
+    if daal_check_version((2020, 3)):
+        check_data_formats_diff(distance, algorithm, weight, k)
 
 def check_data_formats_diff(distance, algorithm, weight, k):
     pd = pytest.importorskip('pandas')
-
     data_formats = [pd.DataFrame, np.array]
     orders = ['C', 'F']
 
