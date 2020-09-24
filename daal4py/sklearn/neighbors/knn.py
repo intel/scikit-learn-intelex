@@ -222,9 +222,7 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
             logging.info("sklearn.neighbors.KNeighborsClassifier.fit: " + method_uses_daal)
 
             self.outputs_2d_ = False
-
             check_classification_targets(y)
-            y = make2d(y)
 
             # Encode labels
             le = LabelEncoder()
