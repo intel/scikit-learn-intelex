@@ -150,7 +150,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                     pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1]
                     sphinx_default = '"{}"'.format(pd) if typ == 'std::string' else '{}'.format(pd)
                     pydefault = ' = {}'.format(sphinx_default)
-                    cppdefault = ' = {}'.format(cppdefaults[typ] if dflt == True else dflt) if dflt != None else ''
+                    cppdefault = ' = {}'.format(cppdefaults[typ] if dflt == True else dflt)
                 else:
                     pydefault = ''
                     cppdefault = ''
