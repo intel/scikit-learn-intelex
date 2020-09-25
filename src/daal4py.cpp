@@ -824,25 +824,25 @@ extern "C"
 
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
 {
-bool result;
-auto tab = get_table(t);
-switch (dtype)
-{
-case 0: result = daal::data_management::internal::allValuesAreFinite<double>(*tab, allowNaN); break;
-case 1: result = daal::data_management::internal::allValuesAreFinite<float>(*tab, allowNaN); break;
-default: std::cerr << "Invalid data type specified." << std::endl;
-}
-return result;
+    bool result;
+    auto tab = get_table(t);
+    switch (dtype)
+    {
+        case 0: result = daal::data_management::internal::allValuesAreFinite<double>(*tab, allowNaN); break;
+        case 1: result = daal::data_management::internal::allValuesAreFinite<float>(*tab, allowNaN); break;
+        default: std::cerr << "Invalid data type specified." << std::endl;
+    }
+    return result;
 }
 
 void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test, data_or_file & train_idx, data_or_file & test_idx)
 {
-auto origTable     = get_table(orig);
-auto trainTable    = get_table(train);
-auto testTable     = get_table(test);
-auto trainIdxTable = get_table(train_idx);
-auto testIdxTable  = get_table(test_idx);
-daal::data_management::internal::trainTestSplit<int>(origTable, trainTable, testTable, trainIdxTable, testIdxTable);
+    auto origTable     = get_table(orig);
+    auto trainTable    = get_table(train);
+    auto testTable     = get_table(test);
+    auto trainIdxTable = get_table(train_idx);
+    auto testIdxTable  = get_table(test_idx);
+    daal::data_management::internal::trainTestSplit<int>(origTable, trainTable, testTable, trainIdxTable, testIdxTable);
 }
 
 void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state)
