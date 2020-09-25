@@ -486,7 +486,7 @@ class PCA(PCA_original):
             if self.mean_ is not None:
                 X = X - self.mean_
             X_transformed = np.dot(X, self.components_.T)
-            if self.whiten and X_transformed is not None:
+            if self.whiten:
                 X_transformed /= np.sqrt(self.explained_variance_)
             return X_transformed
 
