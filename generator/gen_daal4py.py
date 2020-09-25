@@ -177,8 +177,8 @@ class cython_interface(object):
                             self.namespace_dict[ns].need_methods = True
         with open(jp(self.include_root, '..', 'services', 'library_version_info.h')) as header:
             v = parse_version(header)
-            self.version = (int(v[0]), int(v[2]))
-            print('Found DAAL version {}.{}'.format(*self.version))
+            self.version = (int(v[0]), int(v[1]), int(v[2]), str(v[3]))
+            print('Found DAAL version {}.{}.{}{}'.format(*self.version))
 
 
 ###############################################################################
