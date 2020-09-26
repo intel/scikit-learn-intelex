@@ -40,11 +40,11 @@ requirements:
 
 test:
     requires:
-        - lightgbm # [not win]
+        - lightgbm # [lnx]
         - pandas
         - scipy
         - scikit-learn
-        - xgboost # [not win]
+        - xgboost # [lnx]
         - mpich # [osx]
         - impi_rt # [not osx]
     source_files:
