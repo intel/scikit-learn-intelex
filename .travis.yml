@@ -12,10 +12,9 @@ matrix:
           osx_image: xcode12
           compiler: clang
           env:
-            - PYTHON=3.7
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
             - MACOSX_DEPLOYMENT_TARGET="10.9"
-            - PYVER=""
+            - PYVER="python37"
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
