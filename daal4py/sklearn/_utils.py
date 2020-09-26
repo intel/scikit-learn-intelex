@@ -17,26 +17,21 @@
 
 import numpy as np
 
-from daal4py import __daal_link_version__, __daal_run_version__
+from daal4py import __daal_link_version__ as dv, __has_dist__
 
-def daal_check_version(trad_target, dpcpp_target = None):
-    daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
-    daal_link_version = tuple(map(int, (__daal_link_version__[0:4], __daal_link_version__[4:8])))
-    result = True
-    if daal_run_version[1] > 100:
-        # daal dpcpp
-        result = result and daal_run_version >= dpcpp_target if dpcpp_target is not None else False
+def daal_check_version(rule):
+    target = tuple(map(int, (dv[0:4], dv[4:8], dv[8:9])))
+    if not isinstance(rule[0], type(target)):
+        if rule > target:
+            return False
     else:
-        # daal trad
-        result = result and daal_run_version >= trad_target
-
-    if daal_link_version[1] > 100:
-        # daal dpcpp
-        result = result and daal_link_version >= dpcpp_target if dpcpp_target is not None else False
-    else:
-        # daal trad
-        result = result and daal_link_version >= trad_target
-    return result
+        for rule_item in range(len(rule)):
+            if rule[rule_item] > target:
+                return False
+            else:
+                if rule[rule_item][0]==target[0]:
+                    break
+    return True
 
 def parse_dtype(dt):
     if dt == np.double:

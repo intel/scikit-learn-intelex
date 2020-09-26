@@ -21,8 +21,9 @@ import unittest
 from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
 
-from daal4py import __daal_run_version__
-daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
+from daal4py import __daal_link_version__ as dv, __has_dist__
+daal_version = tuple(map(int, (dv[0:4], dv[4:8], dv[8:9])))
+print('DAAL version:', daal_version)
 
 from daal4py.sklearn.neighbors import KNeighborsClassifier
 from daal4py.sklearn.ensemble.decision_forest import RandomForestClassifier
@@ -77,7 +78,7 @@ class Test(unittest.TestCase):
     def test_KNeighborsClassifier(self):
         check_estimator(KNeighborsClassifier)
 
-    @unittest.skipUnless(check_version(((2019,0),(2021, 107)), daal_version), "not supported in this library version")
+    @unittest.skipUnless(check_version(((2019,0),(2021, 107,'B')), daal_version), "not supported in this library version")
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:
@@ -116,7 +117,7 @@ class Test(unittest.TestCase):
         check_estimator(GBTDAALRegressor)
         _restore_from_saved(md, saved)
 
-    @unittest.skipIf(daal_run_version < (2020, 0), "not supported in this library version")
+    @unittest.skipUnless(check_version(((2020,0)), daal_version), "not supported in this library version")
     def test_AdaBoostClassifier(self):
         check_estimator(AdaBoostClassifier)
 

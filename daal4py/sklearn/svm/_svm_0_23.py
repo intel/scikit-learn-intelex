@@ -189,7 +189,7 @@ def _daal4py_check_weight(self, X, y, sample_weight):
 def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
                                maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
     svm_method = 'thunder' if daal_check_version(
-        (2020, 2), (2021, 108)) else 'boser'
+        (2020, 2), (2021, 108, 'B')) else 'boser'
     svm_train = daal4py.svm_training(
         method=svm_method,
         fptype=fptype,

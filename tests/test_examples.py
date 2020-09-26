@@ -30,7 +30,7 @@ import pandas as pd
 from scipy.sparse import csr_matrix
 
 from daal4py import __daal_link_version__ as dv
-daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+daal_version = tuple(map(int, (dv[0:4], dv[4:8], dv[8:9])))
 
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
@@ -152,8 +152,8 @@ gen_examples = [
     ('distributions_normal_batch',),
     ('distributions_uniform_batch',),
     ('em_gmm_batch', 'em_gmm.csv', lambda r: r.covariances[0]),
-    ('gbt_cls_model_create_from_lightgbm_batch', None, None, ((2020, 2), (2021, 109)), ['lightgbm']),
-    ('gbt_cls_model_create_from_xgboost_batch', None, None, ((2020, 2), (2021, 109)), ['xgboost']),
+    ('gbt_cls_model_create_from_lightgbm_batch', None, None, ((2020, 2), (2021, 109, 'B')), ['lightgbm']),
+    ('gbt_cls_model_create_from_xgboost_batch', None, None, ((2020, 2), (2021, 109, 'B')), ['xgboost']),
     ('gradient_boosted_classification_batch',),
     ('gradient_boosted_regression_batch',),
     ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
@@ -207,7 +207,7 @@ gen_examples = [
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
     ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2019, 5)),
     ('lasso_regression_batch', None, None, (2019, 5)),
-    ('elastic_net_batch', None, None, ((2020,1),(2021, 105))),
+    ('elastic_net_batch', None, None, ((2020,1),(2021, 105, 'B'))),
 ]
 
 for example in gen_examples:

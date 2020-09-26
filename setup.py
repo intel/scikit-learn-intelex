@@ -107,10 +107,7 @@ if dpcpp:
     if IS_LIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
     elif IS_WIN:
-        DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
-    if dal_build_version == (2021,1,7,'b'):
-        DPCPP_LIBS.remove('onedal_sycl')
-        DPCPP_LIBS.append('daal_sycl')        
+        DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]      
 else:
     DPCPP_CFLAGS = []
     DPCPP_LIBS = []
