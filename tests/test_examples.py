@@ -37,12 +37,11 @@ def check_version(rule, target):
         if rule > target:
             return False
     else:
-        for rule_item in range(len(rule)):
-            if rule[rule_item] > target:
+        for i, rule_item in enumerate(rule):
+            if rule_item > target:
                 return False
-            else:
-                if rule[rule_item][0]==target[0]:
-                    break
+            if rule_item[0]==target[0]:
+                break
     return True
 
 def check_libraries(rule):
