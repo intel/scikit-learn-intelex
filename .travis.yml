@@ -14,7 +14,7 @@ matrix:
             - MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
             - MACOSX_DEPLOYMENT_TARGET="10.9"
-            - PYVER="python37"
+            - PYVER=""
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
@@ -23,10 +23,10 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda install -q conda-build
+  - conda install -c conda-forge conda-forge::conda-build
   # Useful for debugging any issues with conda
   - conda info -a
-#   - ${CXX} --version
+  - gcc --version
 
 script:
-  - conda build -c conda-forge -c intel $PYVER --output-folder ./ conda-recipe
+  - conda build -c intel -c conda-forge --numpy=1.16 $PYVER --output-folder ./ conda-recipe
