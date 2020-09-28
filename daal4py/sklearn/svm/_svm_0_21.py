@@ -149,7 +149,7 @@ def _daal4py_kf(kernel, X_fptype, gamma=1.0):
 
 def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
         maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
-    svm_method = 'thunder' if daal_check_version((2020, 2), (2021, 108, 'B')) else 'boser'
+    svm_method = 'thunder' if daal_check_version(((2020, 2), (2021, 108, 'B'))) else 'boser'
     svm_train = daal4py.svm_training(
         method=svm_method,
         fptype=fptype,
