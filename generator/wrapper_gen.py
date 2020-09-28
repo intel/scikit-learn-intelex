@@ -1112,7 +1112,7 @@ def getTreeState(model, i=0, n_classes=1):
     return state
 
 
-cdef extern from "version.h":
+cdef extern from "daal4py_version.h":
     cdef const long long INTEL_DAAL_VERSION
     cdef const long long __INTEL_DAAL_BUILD_DATE
     cdef const char __INTEL_DAAL_STATUS__
