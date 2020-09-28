@@ -37,7 +37,7 @@ def check_version(rule, target):
         if rule > target:
             return False
     else:
-        for i, rule_item in enumerate(rule):
+        for rule_item in rule:
             if rule_item > target:
                 return False
             if rule_item[0]==target[0]:
