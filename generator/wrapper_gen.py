@@ -1112,7 +1112,7 @@ def getTreeState(model, i=0, n_classes=1):
     return state
 
 
-cdef extern from "daal.h":
+cdef extern from "version.h":
     cdef const long long INTEL_DAAL_VERSION
     cdef const long long __INTEL_DAAL_BUILD_DATE
     cdef const char __INTEL_DAAL_STATUS__
@@ -1121,9 +1121,6 @@ cdef extern from "daal.h":
         int majorVersion, minorVersion, updateVersion
         char * build_rev
 __version__ = "{}".format({{version}})
-#ifndef __INTEL_DAAL_STATUS__
-  #define __INTEL_DAAL_STATUS__ 'P'
-#endif
 __daal_link_version__ = "{}{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_STATUS__, __INTEL_DAAL_BUILD_DATE)
 cdef _get__daal_run_version__():
     cdef LibraryVersionInfo li
