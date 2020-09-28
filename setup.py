@@ -115,7 +115,7 @@ if dpcpp:
         DPCPP_LIBS.append('daal_sycl')
 
     if dpctl:
-        # TODO: dpctl directory paths rely on conda environment
+        # At now, dpctl directory paths rely on conda environment
         DPCTL_LIBDIRS = [jp(dpctl_root, 'lib')]
         DPCTL_INCDIRS = [jp(dpctl_root, 'include')]
         DPCTL_LIBS = ['DPPLSyclInterface']

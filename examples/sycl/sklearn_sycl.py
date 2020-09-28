@@ -134,7 +134,7 @@ def dbscan():
 def get_context(device):
     if dpctx_available:
         return device_context(device, 0)
-    elif sycl_extention_available:
+    if sycl_extention_available:
         return sycl_context(device)
     else:
         return None
