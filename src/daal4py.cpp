@@ -824,37 +824,30 @@ extern "C"
 
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
 {
-#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200001 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210105
     bool result;
     auto tab = get_table(t);
     switch (dtype)
     {
-    case 0: result = daal::data_management::internal::allValuesAreFinite<double>(*tab, allowNaN); break;
-    case 1: result = daal::data_management::internal::allValuesAreFinite<float>(*tab, allowNaN); break;
-    default: std::cerr << "Invalid data type specified." << std::endl;
+        case 0: result = daal::data_management::internal::allValuesAreFinite<double>(*tab, allowNaN); break;
+        case 1: result = daal::data_management::internal::allValuesAreFinite<float>(*tab, allowNaN); break;
+        default: std::cerr << "Invalid data type specified." << std::endl;
     }
     return result;
-#else
-    return false;
-#endif
 }
 
 void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test, data_or_file & train_idx, data_or_file & test_idx)
 {
-#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200002 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210108
     auto origTable     = get_table(orig);
     auto trainTable    = get_table(train);
     auto testTable     = get_table(test);
     auto trainIdxTable = get_table(train_idx);
     auto testIdxTable  = get_table(test_idx);
     daal::data_management::internal::trainTestSplit<int>(origTable, trainTable, testTable, trainIdxTable, testIdxTable);
-#else
-#endif
 }
 
 void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state)
 {
-#if __INTEL_DAAL_MINOR__ == 0 && INTEL_DAAL_VERSION >= 20200003 || __INTEL_DAAL_MINOR__ == 1 && INTEL_DAAL_VERSION >= 20210109
+#if __INTEL_DAAL_MAJOR__ == 2020 && INTEL_DAAL_VERSION >= 20200003 || __INTEL_DAAL_MAJOR__ >= 2021
     auto idxTable         = get_table(idx);
     auto randomStateTable = get_table(random_state);
     daal::data_management::internal::generateShuffledIndices<int>(idxTable, randomStateTable);
