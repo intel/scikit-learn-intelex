@@ -43,6 +43,8 @@ daal_root = os.environ['DAALROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
+dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
+dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
@@ -110,7 +112,17 @@ if dpcpp:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
     if dal_build_version == (2021,7):
         DPCPP_LIBS.remove('onedal_sycl')
-        DPCPP_LIBS.append('daal_sycl')        
+        DPCPP_LIBS.append('daal_sycl')
+
+    if dpctl:
+        # TODO: dpctl directory paths rely on conda environment
+        DPCTL_LIBDIRS = [jp(dpctl_root, 'lib')]
+        DPCTL_INCDIRS = [jp(dpctl_root, 'include')]
+        DPCTL_LIBS = ['DPPLSyclInterface']
+    else:
+        DPCTL_INCDIRS = []
+        DPCTL_LIBDIRS = []
+        DPCTL_LIBS = []
 else:
     DPCPP_CFLAGS = []
     DPCPP_LIBS = []
@@ -194,6 +206,18 @@ def getpyexts():
                                         libraries=libraries_plat + DPCPP_LIBS,
                                         library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
                                         language='c++')))
+    if dpctl:
+        exts.extend(cythonize(Extension('_dpctl_interop',
+                                        [os.path.abspath('src/dpctl_interop/dpctl_interop.pyx'),
+                                         os.path.abspath('src/dpctl_interop/daal_context_service.cpp'),],
+                                        depends=['src/dpctl_interop/daal_context_service.h',],
+                                        include_dirs=include_dir_plat + DPCTL_INCDIRS,
+                                        extra_compile_args=eca + ['-fsycl'],
+                                        extra_link_args=ela,
+                                        libraries=libraries_plat + DPCPP_LIBS + DPCTL_LIBS,
+                                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS + DPCTL_LIBDIRS,
+                                        language='c++')))
+
     if not no_dist:
         exts.append(Extension('mpi_transceiver',
                               MPI_CPPS,

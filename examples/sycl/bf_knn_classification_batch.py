@@ -67,7 +67,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_data = to_numpy(predict_data)
 
     try:
-        from dppl import device_context, device_type
+        from dpctx import device_context, device_type
         gpu_context = lambda: device_context(device_type.gpu, 0)
     except:
         from daal4py.oneapi import sycl_context
