@@ -22,7 +22,7 @@ import os
 if d4p.__has_dist__:
     import unittest
     import numpy as np
-    from test_examples import np_read_csv, add_test, daal_version, unittest_data_path
+    from test_examples import np_read_csv, add_test, daal_version, unittest_data_path, check_version
 
 
     class Base():
@@ -61,7 +61,7 @@ if d4p.__has_dist__:
                 self.assertTrue(np.allclose(batch_res.centroids, batch_res.centroids),
                                 "Final centroids with " + init_method + " does not match with batch algorithm")
 
-        @unittest.skipIf(daal_version < (2019, 5), "not supported in this library version")
+        @unittest.skipUnless(check_version(((2019,5)), daal_version), "not supported in this library version")
         def test_dbscan_spmd(self):
             epsilon = 0.04
             minObservations = 45
