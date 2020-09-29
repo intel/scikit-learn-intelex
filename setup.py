@@ -193,15 +193,22 @@ def getpyexts():
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
                                 libraries=libraries_plat + MPI_LIBS,
-                                library_dirs=DAAL_LIBDIRS,
+                                library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
                                 language='c++'),
     ])
+
+    eca_dpcpp = eca.copy()
+    if IS_WIN:
+        eca_dpcpp.remove('/MD')
+        eca_dpcpp += ['/MT'] # daal_sycl is static lib - requires to link standard library statically
+    eca_dpcpp += ['-fsycl']
+
     if dpcpp:
         exts.extend(cythonize(Extension('_oneapi',
                                         [os.path.abspath('src/oneapi/oneapi.pyx'),],
                                         depends=['src/oneapi/oneapi.h',],
                                         include_dirs=include_dir_plat + [np.get_include()],
-                                        extra_compile_args=eca + ['-fsycl'],
+                                        extra_compile_args=eca_dpcpp,
                                         extra_link_args=ela,
                                         libraries=libraries_plat + DPCPP_LIBS,
                                         library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
@@ -212,7 +219,7 @@ def getpyexts():
                                          os.path.abspath('src/dpctl_interop/daal_context_service.cpp'),],
                                         depends=['src/dpctl_interop/daal_context_service.h',],
                                         include_dirs=include_dir_plat + DPCTL_INCDIRS,
-                                        extra_compile_args=eca + ['-fsycl'],
+                                        extra_compile_args=eca_dpcpp,
                                         extra_link_args=ela,
                                         libraries=libraries_plat + DPCPP_LIBS + DPCTL_LIBS,
                                         library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS + DPCTL_LIBDIRS,
