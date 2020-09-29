@@ -156,7 +156,10 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         PyObject * py_data       = _make_npy_from_data<T, NPTYPE>(data_copy, n);
         n                        = csr_ptr->getNumberOfColumns();
         size_t * col_indices_copy = (size_t *)malloc(n * sizeof(size_t));
-        assert(col_indices_copy);
+        if (!col_indices_copy)
+        {
+            return NULL;
+        }
         for (size_t i = 0; i < n; ++i)
         {
             col_indices_copy[i] = col_indices_ptr[i] - 1;
@@ -164,7 +167,10 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         PyObject * py_col        = _make_npy_from_data<size_t, NPTYPE>(col_indices_copy, n);
         n                        = csr_ptr->getNumberOfRows();
         size_t * row_offsets_copy = (size_t *)malloc(n * sizeof(size_t));
-        assert(row_offsets_copy);
+        if (!row_offsets_copy)
+        {
+            return NULL;
+        }
         for (size_t i = 0; i < n; ++i)
         {
             row_offsets_copy[i] = row_offsets_ptr[i] - 1;
