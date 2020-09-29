@@ -32,6 +32,7 @@ from scipy.sparse import csr_matrix
 from daal4py import __daal_link_version__ as dv
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
 daal_version = tuple(map(int, (dv[0:4], dv[4:8], dv[8:9])))
+print('DAAL version:', __daal_link_version__)
 print('DAAL version:', daal_version)
 
 def check_version(rule, target):
@@ -73,7 +74,7 @@ pd_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: pd.read_csv(f, usecol
 csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
 
 
-def add_test(cls, e, f=None, attr=None, ver=(), req_libs=[]):
+def add_test(cls, e, f=None, attr=None, ver=(0,0), req_libs=[]):
     import importlib
     @unittest.skipUnless(check_version(ver, daal_version), str(ver) + " not supported in this library version " + str(daal_version))
     @unittest.skipUnless(check_libraries(req_libs), "cannot import required libraries " + str(req_libs))
