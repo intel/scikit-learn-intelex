@@ -38,7 +38,7 @@ def check_version(rule, target):
         if rule > target:
             return False
     else:
-        for i, rule_item in enumerate(rule):
+        for rule_item in rule:
             if rule_item > target:
                 return False
             if rule_item[0]==target[0]:
@@ -72,10 +72,10 @@ pd_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: pd.read_csv(f, usecol
 csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
 
 
-def add_test(cls, e, f=None, attr=None, ver=(0,0), req_libs=[]):
+def add_test(cls, e, f=None, attr=None, ver=(), req_libs=[]):
     import importlib
-    @unittest.skipUnless(check_version(ver, daal_version), "not supported in this library version")
-    @unittest.skipUnless(check_libraries(req_libs), "cannot import required libraries")
+    @unittest.skipUnless(check_version(ver, daal_version), str(ver) + " not supported in this library version " + str(daal_version))
+    @unittest.skipUnless(check_libraries(req_libs), "cannot import required libraries " + str(req_libs))
     def testit(self):
         ex = importlib.import_module(e)
         result = self.call(ex)
