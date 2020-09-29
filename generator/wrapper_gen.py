@@ -248,19 +248,19 @@ def _execute_with_context(func):
     def exec_func(*args, **keyArgs):
         # we check is DPPY imported or not
         # possible we should check are we in defined context or not
-        if 'dppl' in sys.modules:
-            from dppl import runtime as rt
-            from _oneapi import set_queue_to_daal_context, reset_daal_context
+        if 'dpctl' in sys.modules:
+            from dpctl import is_in_device_context, get_current_queue
 
-            queue = rt.get_current_queue()
-            set_queue_to_daal_context(queue)
+            if is_in_device_context():
+                from _dpctl_interop import set_current_queue_to_daal_context, reset_daal_context
 
-            res = func(*args, **keyArgs)
+                set_current_queue_to_daal_context()
+                res = func(*args, **keyArgs)
+                reset_daal_context()
 
-            reset_daal_context()
-            return res
-        else:
-            return func(*args, **keyArgs)
+                return res
+
+        return func(*args, **keyArgs)
     return exec_func
 '''
 

@@ -485,7 +485,7 @@ class PCA(PCA_original):
             logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
             if self.mean_ is not None:
                 X = X - self.mean_
-                X_transformed = np.dot(X, self.components_.T)
+            X_transformed = np.dot(X, self.components_.T)
             if self.whiten:
                 X_transformed /= np.sqrt(self.explained_variance_)
             return X_transformed

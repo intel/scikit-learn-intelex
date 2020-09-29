@@ -43,6 +43,8 @@ daal_root = os.environ['DAALROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
+dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
+dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
 #itac_root = os.environ['VT_ROOT']
 IS_WIN = False
@@ -107,7 +109,21 @@ if dpcpp:
     if IS_LIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
     elif IS_WIN:
-        DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]      
+        DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
+
+    if dpctl:
+        # if custom dpctl library directory is specified
+        if 'DPCTL_LIBPATH' in os.environ:
+            DPCTL_LIBDIRS = [os.environ['DPCTL_LIBPATH']]
+        else:
+            DPCTL_LIBDIRS = [jp(dpctl_root, 'lib')]
+        DPCTL_INCDIRS = [jp(dpctl_root, 'include')]
+        DPCTL_LIBS = ['DPPLSyclInterface']
+    else:
+        DPCTL_INCDIRS = []
+        DPCTL_LIBDIRS = []
+        DPCTL_LIBS = []
+
 else:
     DPCPP_CFLAGS = []
     DPCPP_LIBS = []
@@ -178,19 +194,38 @@ def getpyexts():
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
                                 libraries=libraries_plat + MPI_LIBS,
-                                library_dirs=DAAL_LIBDIRS,
+                                library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
                                 language='c++'),
     ])
+
+    eca_dpcpp = eca.copy()
+    if IS_WIN:
+        eca_dpcpp.remove('/MD')
+        eca_dpcpp += ['/MT'] # daal_sycl is static lib - requires to link standard library statically
+    eca_dpcpp += ['-fsycl']
+
     if dpcpp:
         exts.extend(cythonize(Extension('_oneapi',
                                         [os.path.abspath('src/oneapi/oneapi.pyx'),],
                                         depends=['src/oneapi/oneapi.h',],
                                         include_dirs=include_dir_plat + [np.get_include()],
-                                        extra_compile_args=eca + ['-fsycl'],
+                                        extra_compile_args=eca_dpcpp,
                                         extra_link_args=ela,
                                         libraries=libraries_plat + DPCPP_LIBS,
                                         library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
                                         language='c++')))
+    if dpctl:
+        exts.extend(cythonize(Extension('_dpctl_interop',
+                                        [os.path.abspath('src/dpctl_interop/dpctl_interop.pyx'),
+                                         os.path.abspath('src/dpctl_interop/daal_context_service.cpp'),],
+                                        depends=['src/dpctl_interop/daal_context_service.h',],
+                                        include_dirs=include_dir_plat + DPCTL_INCDIRS,
+                                        extra_compile_args=eca_dpcpp,
+                                        extra_link_args=ela,
+                                        libraries=libraries_plat + DPCPP_LIBS + DPCTL_LIBS,
+                                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS + DPCTL_LIBDIRS,
+                                        language='c++')))
+
     if not no_dist:
         exts.append(Extension('mpi_transceiver',
                               MPI_CPPS,

@@ -399,7 +399,7 @@ class cython_interface(object):
             # Probably a template, sigh
             # For now, let's just cut off the template paramters.
             # Let's hope we don't need anything more sophisticated (like if there are actually specializations...)
-            c = ret[1].split('<', 1)[0] if ret else res.split('<')[0]
+            c = ret[1].split('<', 1)[0]
             n = self.get_ns(ns, c)
             ret = (n, splitns(c)[1]) if n else None
             # ret = (self.get_ns(ns, res.split('<')[0]), tmp[1])
@@ -679,7 +679,7 @@ class cython_interface(object):
 
             for p in all_params:
                 pns, tmp = splitns(p)
-                if not tmp.startswith('_') and not ignored(pns, tmp):
+                if tmp is not None and not tmp.startswith('_') and not ignored(pns, tmp):
                     llt = self.to_lltype(p, all_params[p][0])
                     hlt = self.to_hltype(pns, llt)
                     if hlt and hlt[1] in ['stdtype', 'enum', 'class']:
@@ -692,7 +692,7 @@ class cython_interface(object):
                                     thetype = result_to_compute[ns]
                         else:
                             thetype = (hlt if hlt else all_params[p])
-                        if thetype != None and tmp != None:
+                        if thetype is not None:
                             thetype = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', thetype)
                             doc = all_params[p][1]
                             if any(tmp == x.name for x in params_req):

@@ -68,29 +68,6 @@ static std::string to_std_string(PyObject * o)
     return PyUnicode_AsUTF8(o);
 }
 
-void c_set_queue_to_daal_context(PyObject* queue_object)
-{
-    if(queue_object != NULL)
-    {
-        if(PyCapsule_IsValid(queue_object, NULL) == 0) { throw std::runtime_error("Cannot set daal context: invalid queue object"); }
-        cl::sycl::queue * queue_ptr = (cl::sycl::queue*)PyCapsule_GetPointer(queue_object, NULL);
-        if(PyErr_Occurred()) { PyErr_Print(); throw std::runtime_error("Python Error"); }
-
-        daal::services::SyclExecutionContext ctx (*queue_ptr);
-        daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
-    }
-    else
-    {
-        throw std::runtime_error("Cannot set daal context: Pointer to queue object is NULL");
-    }
-}
-
-void c_reset_daal_context()
-{
-    daal::services::CpuExecutionContext ctx;
-    daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
-}
-
 // take a raw array and convert to sycl buffer
 template<typename T>
 inline cl::sycl::buffer<T, 1> * tosycl(T * ptr, int * shape)
