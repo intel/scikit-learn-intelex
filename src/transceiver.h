@@ -202,6 +202,7 @@ public:
         : m_transceiver(t)
     {
         m_transceiver->init();
+        m_inited = true;
     }
     
     ~transceiver()
