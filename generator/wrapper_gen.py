@@ -1121,7 +1121,8 @@ cdef extern from "daal4py_version.h":
         int majorVersion, minorVersion, updateVersion
         char * build_rev
 __version__ = "{}".format({{version}})
-__daal_link_version__ = "{}{}_{}".format(INTEL_DAAL_VERSION, <bytes>__INTEL_DAAL_STATUS__, __INTEL_DAAL_BUILD_DATE)
+__daal_link_version__ = "{}{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_BUILD_DATE)
+__daal_product_status__"{}".format(<bytes>__INTEL_DAAL_STATUS__)
 cdef _get__daal_run_version__():
     cdef LibraryVersionInfo li
     return "{}{}{}_{}".format(li.majorVersion, str(li.minorVersion).zfill(2), str(li.updateVersion).zfill(2), li.build_rev)
