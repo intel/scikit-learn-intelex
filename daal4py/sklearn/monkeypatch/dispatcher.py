@@ -67,7 +67,6 @@ from ..utils.validation import _daal_assert_all_finite
 from ..model_selection import _daal_train_test_split
 
 from ..neighbors import KNeighborsClassifier as KNeighborsClassifier_daal4py
-from ..neighbors import KNeighborsMixin as KNeighborsMixin_daal4py
 
 from daal4py import __version__ as daal4py_version
 
@@ -82,8 +81,7 @@ _mapping = {
     'lasso':         [[(linear_model_module, 'Lasso', Lasso_daal4py), None]],
     'svm':           [[(svm_module, 'SVC', SVC_daal4py), None]],
     'logistic':      [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
-    'knn_clsf':      [[(neighbors_module, 'KNeighborsClassifier', KNeighborsClassifier_daal4py), None]],
-    'knn_mxn':       [[(neighbors_module, 'KNeighborsMixin', KNeighborsMixin_daal4py), None]]
+    'knn_clsf':      [[(neighbors_module, 'KNeighborsClassifier', KNeighborsClassifier_daal4py), None]]
 }
 
 del _patched_log_reg_path_func_name
