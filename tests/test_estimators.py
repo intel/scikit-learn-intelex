@@ -23,7 +23,7 @@ import sklearn.utils.estimator_checks
 
 from daal4py import __daal_link_version__ as dv, __has_dist__
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
-daal_version = tuple(map(int, (dv[0:4], dv[4:8])), dv[8:9])
+daal_version = (int(dv[0:4]), int(dv[4:8]), dv[8:9])
 print('DAAL version:', daal_version)
 
 from daal4py.sklearn.neighbors import KNeighborsClassifier
