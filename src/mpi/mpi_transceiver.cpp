@@ -33,7 +33,7 @@ void mpi_transceiver::fini()
 {
     MPI_Finalize();
 }
-    
+
 size_t mpi_transceiver::nMembers()
 {
     int size;

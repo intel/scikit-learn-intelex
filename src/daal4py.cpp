@@ -52,7 +52,7 @@ public:
         // We need to protect calls to python API
         // Note: at termination time, even when no threads are running, this breaks without the protection
         PyGILState_STATE gstate = PyGILState_Ensure();
-        assert((void *)array_data(_ndarray) == ptr);
+        assert(static_cast<void *>(array_data(_ndarray)) == ptr);
         Py_DECREF(_ndarray);
         PyGILState_Release(gstate);
     }
@@ -66,7 +66,7 @@ private:
 // define our own free functions for wrapping python objects holding our shared pointers
 void daalsp_free_cap(PyObject * cap)
 {
-    VSP * sp = (VSP *)PyCapsule_GetPointer(cap, NULL);
+    VSP * sp = static_cast<VSP *>(PyCapsule_GetPointer(cap, NULL));
     if (sp) delete sp;
 }
 
@@ -90,13 +90,13 @@ template <typename T, int NPTYPE>
 static PyObject * _sp_to_nda(daal::services::SharedPtr<T> & sp, size_t nr, size_t nc)
 {
     npy_intp dims[2] = { static_cast<npy_intp>(nr), static_cast<npy_intp>(nc) };
-    PyObject * obj   = PyArray_SimpleNewFromData(2, dims, NPTYPE, (void *)sp.get());
+    PyObject * obj   = PyArray_SimpleNewFromData(2, dims, NPTYPE, static_cast<void *>(sp.get()));
     if (!obj) throw std::invalid_argument("conversion to numpy array failed");
-    set_sp_base((PyArrayObject *)obj, sp);
+    set_sp_base(static_cast<PyArrayObject *>(obj), sp);
     return obj;
 }
 
-// get a block of Rows from NT and then craete nd-array from it
+// get a block of Rows from NT and then create nd-array from it
 // DAAL potentially makes a copy when creating the BlockDesriptor
 template <typename T, int NPTYPE>
 static PyObject * _make_nda_from_bd(daal::data_management::NumericTablePtr * ptr)
@@ -117,7 +117,7 @@ static PyObject * _make_nda_from_bd(daal::data_management::NumericTablePtr * ptr
     return _sp_to_nda<T, NPTYPE>(data_tmp, block.getNumberOfRows(), block.getNumberOfColumns());
 }
 
-// Most efficient conversion if NT is a HomogeNumericTable
+// Most efficient conversion if NT is a HomogenNumericTable
 // We do not need to make a copy and can use the raw data pointer directly.
 template <typename T, int NPTYPE>
 static PyObject * _make_nda_from_homogen(daal::data_management::NumericTablePtr * ptr)
@@ -135,7 +135,7 @@ template <typename T, int NPTYPE>
 static PyObject * _make_npy_from_data(T * data, size_t n)
 {
     npy_intp dims[1] = { static_cast<npy_intp>(n) };
-    PyObject * obj   = PyArray_SimpleNewFromData(1, dims, NPTYPE, (void *)data);
+    PyObject * obj   = PyArray_SimpleNewFromData(1, dims, NPTYPE, static_cast<void *>(data));
     if (!obj) throw std::invalid_argument("conversion to numpy array failed");
     return obj;
 }
