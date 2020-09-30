@@ -95,10 +95,10 @@ try:
 except ImportError:
     pass
 
-if daal_check_version(((2020, 1), (2021, 5, 'B'))):
+if daal_check_version(((2020, 1), (2021,'B',5))):
     _mapping['fin_check'] = [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]]
 
-if daal_check_version(((2020, 2), (2021, 8, 'B'))):
+if daal_check_version(((2020, 2), (2021,'B',8))):
     _mapping['tt_split'] = [[(model_selection, 'train_test_split', _daal_train_test_split), None]]
 
 if daal_check_version((2020, 3)):

@@ -31,8 +31,7 @@ from scipy.sparse import csr_matrix
 
 from daal4py import __daal_link_version__ as dv
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
-daal_version = (int(dv[0:4]), int(dv[4:8]), dv[8:9])
-print('DAAL version:', dv)
+daal_version = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
 print('DAAL version:', daal_version)
 
 def check_version(rule, target):
@@ -154,8 +153,8 @@ gen_examples = [
     ('distributions_normal_batch',),
     ('distributions_uniform_batch',),
     ('em_gmm_batch', 'em_gmm.csv', lambda r: r.covariances[0]),
-    ('gbt_cls_model_create_from_lightgbm_batch', None, None, ((2020, 2), (2021, 109, 'B')), ['lightgbm']),
-    ('gbt_cls_model_create_from_xgboost_batch', None, None, ((2020, 2), (2021, 109, 'B')), ['xgboost']),
+    ('gbt_cls_model_create_from_lightgbm_batch', None, None, ((2020, 2), (2021, 'B', 109)), ['lightgbm']),
+    ('gbt_cls_model_create_from_xgboost_batch', None, None, ((2020, 2), (2021, 'B', 109)), ['xgboost']),
     ('gradient_boosted_classification_batch',),
     ('gradient_boosted_regression_batch',),
     ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
@@ -209,7 +208,7 @@ gen_examples = [
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
     ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2019, 5)),
     ('lasso_regression_batch', None, None, (2019, 5)),
-    ('elastic_net_batch', None, None, ((2020,1),(2021, 105, 'B'))),
+    ('elastic_net_batch', None, None, ((2020,1),(2021, 'B', 105))),
 ]
 
 for example in gen_examples:

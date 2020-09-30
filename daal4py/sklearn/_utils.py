@@ -21,7 +21,7 @@ from daal4py import __daal_link_version__ as dv, __has_dist__
 
 def daal_check_version(rule):
     # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
-    target = (int(dv[0:4]), int(dv[4:8]), dv[8:9])
+    target = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
     if not isinstance(rule[0], type(target)):
         if rule > target:
             return False

@@ -81,7 +81,7 @@ def _daal_train_test_split(*arrays, **options):
                 random_state = mkl_random.RandomState(random_state, rng)
                 indexes = random_state.permutation(n_train + n_test)
                 test, train = indexes[:n_test], indexes[n_test:]
-            elif rng == 'OPTIMIZED_MT19937' and daal_check_version(((2020, 3), (2021, 9, 'B'))) and (isinstance(random_state, int) or random_state is None):
+            elif rng == 'OPTIMIZED_MT19937' and daal_check_version(((2020, 3), (2021,'B',9))) and (isinstance(random_state, int) or random_state is None):
                 indexes = np.empty(shape=(n_train + n_test,), dtype=np.int64 if n_train + n_test > 2 ** 31 - 1 else np.int32)
                 random_state = np.random.RandomState(random_state)
                 random_state = random_state.get_state()[1]

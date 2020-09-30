@@ -23,7 +23,7 @@ import sklearn.utils.estimator_checks
 
 from daal4py import __daal_link_version__ as dv, __has_dist__
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
-daal_version = (int(dv[0:4]), int(dv[4:8]), dv[8:9])
+daal_version = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
 print('DAAL version:', daal_version)
 
 from daal4py.sklearn.neighbors import KNeighborsClassifier
@@ -74,7 +74,7 @@ class Test(unittest.TestCase):
     def test_KNeighborsClassifier(self):
         check_estimator(KNeighborsClassifier(algorithm='kd_tree'))
 
-    @unittest.skipUnless(check_version(((2019,0),(2021, 107,'B')), daal_version), "not supported in this library version")
+    @unittest.skipUnless(check_version(((2019,0),(2021,'B', 107)), daal_version), "not supported in this library version")
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:
