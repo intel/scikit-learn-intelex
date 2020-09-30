@@ -201,6 +201,7 @@ toSKLearnTreeObjectVisitor<M>::toSKLearnTreeObjectVisitor(size_t _depth, size_t 
     : node_id(0),
       parents(arange<ssize_t>(-1, _depth-1))
 {
+    max_n_classes = _max_n_classes;
     node_count = _n_nodes;
     max_depth = _depth;
     leaf_count = _n_leafs;
