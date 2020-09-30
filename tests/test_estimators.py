@@ -71,10 +71,11 @@ def _restore_from_saved(md, saved_dict):
 
 
 class Test(unittest.TestCase):
+    @unittest.skipUnless(check_version(((2019,'P',0),(2021,'B', 111)), daal_version), "not supported in this library version")
     def test_KNeighborsClassifier(self):
         check_estimator(KNeighborsClassifier(algorithm='kd_tree'))
 
-    @unittest.skipUnless(check_version(((2019,0),(2021,'B', 107)), daal_version), "not supported in this library version")
+    @unittest.skipUnless(check_version(((2019,'P',0),(2021,'B', 107)), daal_version), "not supported in this library version")
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:
@@ -113,7 +114,7 @@ class Test(unittest.TestCase):
         check_estimator(GBTDAALRegressor)
         _restore_from_saved(md, saved)
 
-    @unittest.skipUnless(check_version(((2020,0)), daal_version), "not supported in this library version")
+    @unittest.skipUnless(check_version(((2020,'P',0)), daal_version), "not supported in this library version")
     def test_AdaBoostClassifier(self):
         check_estimator(AdaBoostClassifier)
 

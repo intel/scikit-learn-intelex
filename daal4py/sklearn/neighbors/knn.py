@@ -131,7 +131,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
 
         fit_X_correct_type = isinstance(self._fit_X, np.ndarray)
 
-        if daal_check_version((2020, 3)) and fit_X_correct_type and self._fit_method in ['brute', 'kd_tree', 'auto'] \
+        if daal_check_version((2020,'P', 3)) and fit_X_correct_type and self._fit_method in ['brute', 'kd_tree', 'auto'] \
         and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
         and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_daal)
@@ -215,7 +215,7 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version((2020, 3)) and not X_incorrect_type \
+        if daal_check_version((2020,'P', 3)) and not X_incorrect_type \
         and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and single_output and fptype is not None and not sp.issparse(X) and numeric_type:
@@ -271,7 +271,7 @@ class KNeighborsClassifier(BaseKNeighborsClassifier, KNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version((2020, 3)) and hasattr(self, 'daal_model_') \
+        if daal_check_version((2020,'P', 3)) and hasattr(self, 'daal_model_') \
         and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and self._y.ndim == 1 and fptype is not None and not sp.issparse(X):

@@ -65,7 +65,7 @@ def check_version(rule, target):
         if rule > target:
             return False
     else:
-        for i, rule_item in enumerate(rule):
+        for rule_item in rule:
             if rule_item > target:
                 return False
             if rule_item[0]==target[0]:
@@ -87,21 +87,21 @@ def check_library(rule):
     return True
 
 
-req_version = defaultdict(lambda:(2019,0))
-req_version['adaboost_batch.py'] = (2020,0)
-req_version['brownboost_batch.py'] = (2020,0)
-req_version['dbscan_batch.py'] = (2019,5)
-req_version['decision_forest_classification_batch.py'] = (2019,1)
-req_version['decision_forest_classification_traverse_batch.py'] = (2019,1)
-req_version['decision_forest_regression_batch.py'] = (2019,1)
-req_version['elastic_net_batch.py'] = ((2020,1),(2021,'B',105))
-req_version['gbt_cls_model_create_from_lightgbm_batch.py'] = ((2020, 2), (2021,'B', 109))
-req_version['gbt_cls_model_create_from_xgboost_batch.py'] = ((2020, 2), (2021,'B', 109))
-req_version['lasso_regression_batch.py'] = (2019,5)
-req_version['logitboost_batch.py'] = (2020,0)
-req_version['saga_batch.py'] = (2019,3)
-req_version['stump_classification_batch.py'] = (2020,0)
-req_version['stump_regression_batch.py'] = (2020,0)
+req_version = defaultdict(lambda:(2019,'P',0))
+req_version['adaboost_batch.py'] = (2020,'P',0)
+req_version['brownboost_batch.py'] = (2020,'P',0)
+req_version['dbscan_batch.py'] = (2019,'P',5)
+req_version['decision_forest_classification_batch.py'] = (2019,'P',1)
+req_version['decision_forest_classification_traverse_batch.py'] = (2019,'P',1)
+req_version['decision_forest_regression_batch.py'] = (2019,'P',1)
+req_version['elastic_net_batch.py'] = ((2020,'P',1),(2021,'B',105))
+req_version['gbt_cls_model_create_from_lightgbm_batch.py'] = ((2020,'P', 2), (2021,'B', 109))
+req_version['gbt_cls_model_create_from_xgboost_batch.py'] = ((2020,'P', 2), (2021,'B', 109))
+req_version['lasso_regression_batch.py'] = (2019,'P',5)
+req_version['logitboost_batch.py'] = (2020,'P',0)
+req_version['saga_batch.py'] = (2019,'P',3)
+req_version['stump_classification_batch.py'] = (2020,'P',0)
+req_version['stump_regression_batch.py'] = (2020,'P',0)
 req_version['sycl/bf_knn_classification_batch.py'] = (2021,'B',105)
 req_version['sycl/dbscan_batch.py'] = (2021,'B',110) # hangs in beta08, need to be fixed
 req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,'B',105)
