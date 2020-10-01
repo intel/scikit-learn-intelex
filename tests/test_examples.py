@@ -32,7 +32,6 @@ from scipy.sparse import csr_matrix
 from daal4py import __daal_link_version__ as dv
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
 daal_version = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
-print('DAAL version:', dv)
 print('DAAL version:', daal_version)
 
 def check_version(rule, target):
