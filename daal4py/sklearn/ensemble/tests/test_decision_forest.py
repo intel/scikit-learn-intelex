@@ -16,23 +16,30 @@
 # ****************************************************************************
 
 from daal4py.sklearn._utils import daal_check_version
-import pytest
 import numpy as np
+import pytest
 import random
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import log_loss
 from sklearn.metrics import mean_squared_error
-from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
-from daal4py.sklearn.ensemble \
-    import RandomForestClassifier as D4PRandomForestClassifier
+from sklearn.metrics import roc_auc_score
 from sklearn.ensemble \
-    import RandomForestRegressor as SKRandomForestRegressor
+    import RandomForestClassifier as ScikitRandomForestClassifier
 from daal4py.sklearn.ensemble \
-    import RandomForestRegressor as D4PRandomForestRegressor
+    import RandomForestClassifier as DaalRandomForestClassifier
+from sklearn.ensemble \
+    import RandomForestRegressor as ScikitRandomForestRegressor
+from daal4py.sklearn.ensemble \
+    import RandomForestRegressor as DaalRandomForestRegressor
+from sklearn.preprocessing import label_binarize
+from sklearn.multiclass import OneVsRestClassifier
 
 N_TRIES = 10
-
+CHECK_RATIO_CLASSIFIER = 0.85
+CHECK_RATIO_REGRESSOR = 1.3
+IRIS = load_iris()
 CLASS_WEIGHTS_IRIS = [
     {0: 0, 1: 0, 2: 0},
     {0: 0, 1: 1, 2: 1},
@@ -73,31 +80,32 @@ CLASS_WEIGHTS_IRIS = [
 ]
 
 
+def check_classifier_class_weight_iris(weight):
+    for _ in range(N_TRIES):
+        x_train, x_test, y_train, y_test = \
+            train_test_split(IRIS.data, IRIS.target, 
+                             test_size=0.3, random_state=31)
+
+        scikit_model = ScikitRandomForestClassifier(class_weight=weight, 
+                                                    random_state=777)
+        daal4py_model = DaalRandomForestClassifier(class_weight=weight, 
+                                                   random_state=777)
+
+        scikit_predict = scikit_model.fit(x_train, y_train).predict(x_test)
+        daal4py_predict = daal4py_model.fit(x_train, y_train).predict(x_test)
+
+        scikit_accuracy = accuracy_score(scikit_predict, y_test)
+        daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
+
+        ratio = daal4py_accuracy / scikit_accuracy
+        assert ratio >= CHECK_RATIO_CLASSIFIER, ('Classifier class weight: scikit_accuracy=%f,\
+            daal4py_accuracy=%f' % (scikit_accuracy, daal4py_accuracy))
+
+
 @pytest.mark.parametrize('weight', CLASS_WEIGHTS_IRIS)
 def test_classifier_class_weight_iris(weight):
     if daal_check_version((2020, 3)):
         check_classifier_class_weight_iris(weight)
-
-
-def check_classifier_class_weight_iris(weight, check_ratio=0.85):
-    alg_results = []
-    for _ in range(N_TRIES):
-        X, y = load_iris(return_X_y=True)
-        X_train, x_test, y_train, y_test = \
-            train_test_split(X, y, test_size=0.33, random_state=31)
-
-        SK_model = SKRandomForestClassifier(class_weight=weight)
-        D4P_model = D4PRandomForestClassifier(class_weight=weight)
-
-        SK_predict = SK_model.fit(X_train, y_train).predict(x_test)
-        D4P_predict = D4P_model.fit(X_train, y_train).predict(x_test)
-
-        SK_accuracy = accuracy_score(SK_predict, y_test)
-        D4P_accuracy = accuracy_score(D4P_predict, y_test)
-        ratio = D4P_accuracy / SK_accuracy
-        alg_results.append(ratio)
-
-    assert np.mean(alg_results) >= check_ratio
 
 SAMPLE_WEIGHTS_IRIS = [
     (np.full_like(range(100), 0), 'Only 0'),
@@ -112,62 +120,57 @@ SAMPLE_WEIGHTS_IRIS = [
 ]
 
 
+def check_classifier_sample_weight(weight, check_ratio=0.9):
+    for _ in range(N_TRIES):
+        x_train, x_test, y_train, y_test = \
+            train_test_split(IRIS.data, IRIS.target, 
+                             test_size=0.33, random_state=31)
+
+        scikit_model = ScikitRandomForestClassifier(random_state=777)
+        daal4py_model = DaalRandomForestClassifier(random_state=777)
+
+        scikit_predict = scikit_model.fit(x_train, y_train,
+                                  sample_weight=weight[0]).predict(x_test)
+        daal4py_predict = daal4py_model.fit(x_train, y_train,
+                                    sample_weight=weight[0]).predict(x_test)
+
+        scikit_accuracy = accuracy_score(scikit_predict, y_test)
+        daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
+        ratio = daal4py_accuracy / scikit_accuracy
+        assert ratio >= CHECK_RATIO_CLASSIFIER, \
+            ('Classifier sample weights: sample_weight_type=%s,scikit_accuracy=%f,\
+            daal4py_accuracy=%f' % (weight[1], scikit_accuracy, daal4py_accuracy))
+
+
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
 def test_classifier_sample_weight_iris(weight):
     if daal_check_version((2020, 3)):
         check_classifier_sample_weight(weight)
 
 
-def check_classifier_sample_weight(weight, check_ratio=0.9):
-    alg_results = []
+def check_regressor_sample_weight(weight, check_ratio=1.1):
     for _ in range(N_TRIES):
-        X, y = load_iris(return_X_y=True)
-        X_train, x_test, y_train, y_test = \
-            train_test_split(X, y, test_size=0.33, random_state=31)
+        x_train, x_test, y_train, y_test = \
+            train_test_split(IRIS.data, IRIS.target, 
+                             test_size=0.33, random_state=31)
 
-        SK_model = SKRandomForestClassifier()
-        D4P_model = D4PRandomForestClassifier()
+        scikit_model = ScikitRandomForestRegressor(random_state=777)
+        daal4py_model = DaalRandomForestRegressor(random_state=777)
 
-        SK_predict = SK_model.fit(X_train, y_train,
+        scikit_predict = scikit_model.fit(x_train, y_train,
                                   sample_weight=weight[0]).predict(x_test)
-        D4P_predict = D4P_model.fit(X_train, y_train,
+        daal4py_predict = daal4py_model.fit(x_train, y_train,
                                     sample_weight=weight[0]).predict(x_test)
 
-        SK_accuracy = accuracy_score(SK_predict, y_test)
-        D4P_accuracy = accuracy_score(D4P_predict, y_test)
-        ratio = D4P_accuracy / SK_accuracy
-        alg_results.append(ratio)
-
-    assert np.mean(alg_results) >= check_ratio, \
-        'Failed testing sample weights, sample_weight_type = ' + weight[1]
+        scikit_accuracy = mean_squared_error(scikit_predict, y_test)
+        daal4py_accuracy = mean_squared_error(daal4py_predict, y_test)
+        ratio = daal4py_accuracy / scikit_accuracy
+        assert ratio <= CHECK_RATIO_REGRESSOR, \
+            ('Regression sample weights: sample_weight_type=%s,scikit_accuracy=%f,\
+            daal4py_accuracy=%f' % (weight[1], scikit_accuracy, daal4py_accuracy))
 
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
 def test_regressor_sample_weight_iris(weight):
     if daal_check_version((2020, 3)) and weight[1] != 'Only 0':
         check_regressor_sample_weight(weight)
-
-
-def check_regressor_sample_weight(weight, check_ratio=1.4):
-    alg_results = []
-    for _ in range(N_TRIES):
-        X, y = load_iris(return_X_y=True)
-        X_train, x_test, y_train, y_test = \
-            train_test_split(X, y, test_size=0.33, random_state=31)
-
-        SK_model = SKRandomForestRegressor()
-        D4P_model = D4PRandomForestRegressor()
-
-        SK_predict = SK_model.fit(X_train, y_train,
-                                  sample_weight=weight[0]).predict(x_test)
-        D4P_predict = D4P_model.fit(X_train, y_train,
-                                    sample_weight=weight[0]).predict(x_test)
-
-        SK_accuracy = mean_squared_error(SK_predict, y_test)
-        D4P_accuracy = mean_squared_error(D4P_predict, y_test)
-        ratio = D4P_accuracy / SK_accuracy
-        alg_results.append(ratio)
-
-    assert np.mean(alg_results) <= check_ratio, \
-        'Failed while testing regression sample weights, \
-        sample_weight_type = ' + weight[1]
