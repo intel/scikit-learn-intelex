@@ -92,7 +92,7 @@ static PyObject * _sp_to_nda(daal::services::SharedPtr<T> & sp, size_t nr, size_
     npy_intp dims[2] = { static_cast<npy_intp>(nr), static_cast<npy_intp>(nc) };
     PyObject * obj   = PyArray_SimpleNewFromData(2, dims, NPTYPE, static_cast<void *>(sp.get()));
     if (!obj) throw std::invalid_argument("conversion to numpy array failed");
-    set_sp_base(static_cast<PyArrayObject *>(obj), sp);
+    set_sp_base(reinterpret_cast<PyArrayObject *>(obj), sp);
     return obj;
 }
 
@@ -152,12 +152,12 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         csr_ptr->getArrays<T>(&data_ptr, &col_indices_ptr, &row_offsets_ptr);
         size_t n      = csr_ptr->getDataSize();
         T * data_copy = static_cast<T *>(daal::services::daal_malloc(n * sizeof(T)));
-        if (!data_copy) throw std::bad_alloc;
+        if (!data_copy) throw std::bad_alloc();
         std::copy(data_ptr, data_ptr + n, data_copy);
         PyObject * py_data       = _make_npy_from_data<T, NPTYPE>(data_copy, n);
         n                        = csr_ptr->getNumberOfColumns();
         size_t * col_indices_copy = static_cast<size_t *>(daal::services::daal_malloc(n * sizeof(size_t)));
-        if (!col_indices_copy) throw std::bad_alloc;
+        if (!col_indices_copy) throw std::bad_alloc();
         for (size_t i = 0; i < n; ++i)
         {
             col_indices_copy[i] = col_indices_ptr[i] - 1;
@@ -165,7 +165,7 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         PyObject * py_col        = _make_npy_from_data<size_t, NPTYPE>(col_indices_copy, n);
         n                        = csr_ptr->getNumberOfRows();
         size_t * row_offsets_copy = static_cast<size_t *>(daal::services::daal_malloc(n * sizeof(size_t)));
-        if (!row_offsets_copy) throw std::bad_alloc;
+        if (!row_offsets_copy) throw std::bad_alloc();
         for (size_t i = 0; i < n; ++i)
         {
             row_offsets_copy[i] = row_offsets_ptr[i] - 1;
@@ -305,7 +305,7 @@ template <typename T>
 static daal::data_management::NumericTablePtr _make_hnt(PyObject * nda)
 {
     daal::data_management::NumericTablePtr ptr;
-    PyArrayObject * array = static_cast<PyArrayObject *>(nda);
+    PyArrayObject * array = reinterpret_cast<PyArrayObject *>(nda);
 
     assert(is_array(nda) && array_is_behaved(array));
 
@@ -315,7 +315,7 @@ static daal::data_management::NumericTablePtr _make_hnt(PyObject * nda)
         ptr = daal::data_management::HomogenNumericTable<T>::create(daal::services::SharedPtr<T>((T *)array_data(array), NumpyDeleter(array)), (size_t)array_size(array, 1), (size_t)array_size(array, 0));
         // we need it increment the ref-count if we use the input array in-place
         // if we copied/converted it we already own our own reference
-        if (static_cast<PyObject *>(array) == nda) Py_INCREF(array);
+        if (reinterpret_cast<PyObject *>(array) == nda) Py_INCREF(array);
     }
     else
     {
@@ -331,7 +331,7 @@ static daal::data_management::NumericTablePtr _make_npynt(PyObject * nda)
 
     assert(is_array(nda));
 
-    PyArrayObject * array = static_cast<PyArrayObject *>(nda);
+    PyArrayObject * array = reinterpret_cast<PyArrayObject *>(nda);
     if (array_numdims(array) == 2)
     {
         // the given numpy array is not well behaved C array but has right dimensionality
@@ -411,7 +411,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
         daal::data_management::NumericTablePtr ptr;
         if (is_array(obj))
         { // we got a numpy array
-            PyArrayObject * ary = static_cast<PyArrayObject *>(obj);
+            PyArrayObject * ary = reinterpret_cast<PyArrayObject *>(obj);
 
             if (array_is_behaved(ary))
             {
@@ -433,7 +433,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     daal::data_management::SOANumericTablePtr soatbl;
 
                     // iterate over columns
-                    PyArrayIterObject * it = static_cast<PyArrayIterObject *>(PyArray_IterAllButAxis(obj, &_axes));
+                    PyArrayIterObject * it = reinterpret_cast<PyArrayIterObject *>(PyArray_IterAllButAxis(obj, &_axes));
                     if (it == NULL)
                     {
                         Py_XDECREF(it);
@@ -444,8 +444,8 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 
                     for (npy_intp i = 0; PyArray_ITER_NOTDONE(it); ++i)
                     {
-                        PyArrayObject * slice = static_cast<PyArrayObject *>(PyArray_SimpleNewFromData(1, &column_len, ary_numtype, static_cast<void *>(PyArray_ITER_DATA(it))));
-                        PyArray_SetBaseObject(slice, static_cast<PyObject *>(ary));
+                        PyArrayObject * slice = reinterpret_cast<PyArrayObject *>(PyArray_SimpleNewFromData(1, &column_len, ary_numtype, static_cast<void *>(PyArray_ITER_DATA(it))));
+                        PyArray_SetBaseObject(slice, reinterpret_cast<PyObject *>(ary));
                         Py_INCREF(ary);
 #define SETARRAY_(_T)                                                                                           \
     {                                                                                                           \
@@ -485,7 +485,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 
                 for (auto i = 0; i < N; i++)
                 {
-                    PyArrayObject * ary = static_cast<PyArrayObject *>(PyList_GetItem(obj, i));
+                    PyArrayObject * ary = reinterpret_cast<PyArrayObject *>(PyList_GetItem(obj, i));
                     if (PyErr_Occurred())
                     {
                         PyErr_Print();
@@ -609,7 +609,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                         PyErr_Print();
                         throw std::runtime_error("Python Error");
                     }
-#define MKCSR_(_T) ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>(static_cast<_T *>(array_data(np_vals)), NumpyDeleter(static_cast<PyArrayObject *>(np_vals))), daal::services::SharedPtr<size_t>(c_indcs_one_based, daal::services::ServiceDeleter()), daal::services::SharedPtr<size_t>(c_roffs_one_based, daal::services::ServiceDeleter()), c_nc, c_nr)
+#define MKCSR_(_T) ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>(reinterpret_cast<_T *>(array_data(np_vals)), NumpyDeleter(reinterpret_cast<PyArrayObject *>(np_vals))), daal::services::SharedPtr<size_t>(c_indcs_one_based, daal::services::ServiceDeleter()), daal::services::SharedPtr<size_t>(c_roffs_one_based, daal::services::ServiceDeleter()), c_nc, c_nr)
                     SET_NPY_FEATURE(array_type(np_vals), MKCSR_, throw std::invalid_argument("Found unsupported data type in csr_matrix"));
 #undef MKCSR_
                 }
@@ -663,7 +663,7 @@ extern daal::data_management::KeyValueDataCollectionPtr make_dnt(PyObject * dict
         }
         else
         {
-            throw std::invalid_argument(std::string("Unexpected object '") + Py_TYPE(dict)->tp_name) + "' found, expected dict\n");
+            throw std::invalid_argument(std::string("Unexpected object '") + Py_TYPE(dict)->tp_name + "' found, expected dict\n");
         }
     }
     return dc;

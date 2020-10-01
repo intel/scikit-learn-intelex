@@ -84,7 +84,7 @@
             _M(unsigned short); \
             break; \
         default: \
-            std::cerr << "Unsupported NPY type " << (_T) << " ignored\n."; \
+            throw std::invalid_argument(std::string("Unsupported NPY type ") + std::to_string(_T) + " ignored\n."); \
             _E;\
     };
 
@@ -95,7 +95,7 @@ template<> struct npy_type<int>    { static constexpr char *value = "i4"; };
 
 
 // For wrapping a non-contiguous, homogen numpy array
-// Avoids copying by using numpy iterators when accesing blocks of data
+// Avoids copying by using numpy iterators when accessing blocks of data
 class NpyNonContigHandler
 {
 public:
@@ -116,7 +116,7 @@ public:
         // setNumberOfColumns not needed, done by providing size to ddict
 
         // iterate through all elements and init ddict feature accordingly
-        for (Py_ssize_t i=0; i<N; i++) {
+        for (Py_ssize_t i=0; i<N; ++i) {
 #define SETFEATURE_(_T) _ddict->setFeature<_T>(i)
             SET_NPY_FEATURE(descr->type, SETFEATURE_, throw std::invalid_argument("Found unsupported data type"));
 #undef SETFEATURE_
@@ -130,7 +130,7 @@ public:
     //
     // 1. Retrieve requested slide from numpy array by using python's C-API
     // 2. Create numpy array iterator setup for casting to requested type
-    // 3. Iterate through numpy array and copy to/from block using memcpy
+    // 3. Iterate through numpy array and copy to/from block using std::copy
     template<typename T, bool WBack>
     static void do_cpy(PyArrayObject * ary, daal::data_management::NumericTableDictionaryPtr & ddict,
                        daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t ncols, size_t startrow, size_t nrows)
@@ -215,9 +215,9 @@ public:
         if(strideptr[0] == sizeof(T)) {
             do {
                 npy_intp size = *innersizeptr;
-                memcpy(WBack ? *dataptr        : (char*)blockPtr,
-                       WBack ? (char*)blockPtr : *dataptr,
-                       sizeof(T) * size);
+                std::copy(WBack ? *dataptr                    : static_cast<char*>(blockPtr),
+                          WBack ? *dataptr + sizeof(T) * size : static_cast<char*>(blockPtr) + sizeof(T) * size,
+                          WBack ? static_cast<char*>(blockPtr) : *dataptr);
                 blockPtr += size;
             } while(iternext(iter));
         } else {
@@ -227,9 +227,9 @@ public:
                 char *src = *dataptr;
                 npy_intp size = *innersizeptr;
                 for(i = 0; i < size; ++i, src += innerstride, blockPtr += 1) {
-                    memcpy(WBack ? src             : (char*)blockPtr,
-                           WBack ? (char*)blockPtr : src,
-                           sizeof(T));
+                    std::copy(WBack ? src             : static_cast<char*>(blockPtr),
+                              WBack ? src + sizeof(T) : static_cast<char*>(blockPtr) + sizeof(T),
+                              WBack ? static_cast<char*>(blockPtr) : src);
                 }
             } while(iternext(iter));
         }
@@ -267,7 +267,7 @@ public:
 
         // iterate through all elements in tuple
         // get their type and init ddict feature accordingly
-        for (Py_ssize_t i=0; i<N; i++) {
+        for (Py_ssize_t i=0; i<N; ++i) {
             PyObject * name = PySequence_Fast_GET_ITEM(fnames, i);  // tuple elements are identified by name
             PyObject * ftr = PyObject_GetItem(descr->fields, name); // desr->fields is a dict
             if(!PyTuple_Check(ftr)) {
