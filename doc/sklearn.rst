@@ -116,19 +116,20 @@ implement a subset of scikit-learn algorithms using Intel® DAAL.
 Currently, these include:
 
 1. ``daal4py.sklearn.neighbors.KNeighborsClassifier``
-2. ``daal4py.sklearn.ensemble.RandomForestClassifier``
-3. ``daal4py.sklearn.ensemble.RandomForestRegressor``
-4. ``daal4py.sklearn.ensemble.AdaBoostClassifier``
-5. ``daal4py.sklearn.cluster.KMeans``
-6. ``daal4py.sklearn.cluster.DBSCAN``
-7. ``daal4py.sklearn.decomposition.PCA``
-8. ``daal4py.sklearn.linear_model.Ridge``
-9. ``daal4py.sklearn.svm.SVC``
-10. ``daal4py.sklearn.linear_model.logistic_regression_path``
-11. ``daal4py.sklearn.linear_model.LogisticRegression``
-12. ``daal4py.sklearn.linear_model.ElasticNet``
-13. ``daal4py.sklearn.linear_model.Lasso``
-14. ``daal4py.sklearn.model_selection._daal_train_test_split``
+2. ``daal4py.sklearn.neighbors.KNeighborsMixin``
+3. ``daal4py.sklearn.ensemble.RandomForestClassifier``
+4. ``daal4py.sklearn.ensemble.RandomForestRegressor``
+5. ``daal4py.sklearn.ensemble.AdaBoostClassifier``
+6. ``daal4py.sklearn.cluster.KMeans``
+7. ``daal4py.sklearn.cluster.DBSCAN``
+8. ``daal4py.sklearn.decomposition.PCA``
+9. ``daal4py.sklearn.linear_model.Ridge``
+10. ``daal4py.sklearn.svm.SVC``
+11. ``daal4py.sklearn.linear_model.logistic_regression_path``
+12. ``daal4py.sklearn.linear_model.LogisticRegression``
+13. ``daal4py.sklearn.linear_model.ElasticNet``
+14. ``daal4py.sklearn.linear_model.Lasso``
+15. ``daal4py.sklearn.model_selection._daal_train_test_split``
 
 These classes are always available, whether the scikit-learn itself has been
 patched, or not. For example::
