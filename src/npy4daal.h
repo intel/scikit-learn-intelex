@@ -215,9 +215,9 @@ public:
         if(strideptr[0] == sizeof(T)) {
             do {
                 npy_intp size = *innersizeptr;
-                std::copy(WBack ? *dataptr                    : static_cast<char*>(blockPtr),
-                          WBack ? *dataptr + sizeof(T) * size : static_cast<char*>(blockPtr) + sizeof(T) * size,
-                          WBack ? static_cast<char*>(blockPtr) : *dataptr);
+                memcpy(WBack ? *dataptr        : (char*)blockPtr,
+                       WBack ? (char*)blockPtr : *dataptr,
+                       sizeof(T) * size);
                 blockPtr += size;
             } while(iternext(iter));
         } else {
@@ -227,9 +227,9 @@ public:
                 char *src = *dataptr;
                 npy_intp size = *innersizeptr;
                 for(i = 0; i < size; ++i, src += innerstride, blockPtr += 1) {
-                    std::copy(WBack ? src             : static_cast<char*>(blockPtr),
-                              WBack ? src + sizeof(T) : static_cast<char*>(blockPtr) + sizeof(T),
-                              WBack ? static_cast<char*>(blockPtr) : src);
+                    memcpy(WBack ? src             : (char*)blockPtr,
+                           WBack ? (char*)blockPtr : src,
+                           sizeof(T));
                 }
             } while(iternext(iter));
         }
