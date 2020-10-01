@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'daal4py'
-copyright = '2019, Intel'
+copyright = '2020, Intel'
 author = 'Intel'
 
 # The short X.Y version

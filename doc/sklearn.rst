@@ -116,7 +116,7 @@ implement a subset of scikit-learn algorithms using Intel® DAAL.
 Currently, these include:
 
 1. ``daal4py.sklearn.neighbors.KNeighborsClassifier``
-2. ``daal4py.sklearn.neighbors.KNeighborsMixin``
+2. ``daal4py.sklearn.tree.DecisionTreeClassifier``
 3. ``daal4py.sklearn.ensemble.RandomForestClassifier``
 4. ``daal4py.sklearn.ensemble.RandomForestRegressor``
 5. ``daal4py.sklearn.ensemble.AdaBoostClassifier``
