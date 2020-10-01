@@ -57,6 +57,13 @@ algorithms:
 5. `sklearn.cluster.KMeans <https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html>`__ (algo='full')
 6. `sklearn.metric.pairwise_distance <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise_distances.html>`__, with metric='cosine' or metric='correlation'
 7. `sklearn.svm.SVC <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html>`__
+8. `sklearn.linear_model.ElasticNet <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html>`__
+9. `sklearn.linear_model.Lasso <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html>`__
+10. `sklearn.neighbors.KNeighborsClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html>`__
+11. `sklearn.cluster.DBSCAN <https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html>`__
+12. `sklearn.ensemble.RandomForestClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html>`__
+13. `sklearn.ensemble.RandomForestRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html>`__
+14. `sklearn.model_selection.train_test_split <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html>`__
 
 Monkey-patched scikit-learn clases and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
@@ -111,12 +118,17 @@ Currently, these include:
 1. ``daal4py.sklearn.neighbors.KNeighborsClassifier``
 2. ``daal4py.sklearn.ensemble.RandomForestClassifier``
 3. ``daal4py.sklearn.ensemble.RandomForestRegressor``
-4. ``daal4py.sklearn.cluster.KMeans``
-5. ``daal4py.sklearn.decomposition.PCA``
-6. ``daal4py.sklearn.linear_model.Ridge``
-7. ``daal4py.sklearn.svm.SVC``
-8. ``daal4py.sklearn.linear_model.logistic_regression_path``
-9. ``daal4py.sklearn.linear_model.LogisticRegression``
+4. ``daal4py.sklearn.ensemble.AdaBoostClassifier``
+5. ``daal4py.sklearn.cluster.KMeans``
+6. ``daal4py.sklearn.cluster.DBSCAN``
+7. ``daal4py.sklearn.decomposition.PCA``
+8. ``daal4py.sklearn.linear_model.Ridge``
+9. ``daal4py.sklearn.svm.SVC``
+10. ``daal4py.sklearn.linear_model.logistic_regression_path``
+11. ``daal4py.sklearn.linear_model.LogisticRegression``
+12. ``daal4py.sklearn.linear_model.ElasticNet``
+13. ``daal4py.sklearn.linear_model.Lasso``
+14. ``daal4py.sklearn.model_selection._daal_train_test_split``
 
 These classes are always available, whether the scikit-learn itself has been
 patched, or not. For example::
