@@ -156,10 +156,6 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         PyObject * py_data       = _make_npy_from_data<T, NPTYPE>(data_copy, n);
         n                        = csr_ptr->getNumberOfColumns();
         size_t * col_indices_copy = (size_t *)malloc(n * sizeof(size_t));
-        if (!col_indices_copy)
-        {
-            return NULL;
-        }
         for (size_t i = 0; i < n; ++i)
         {
             col_indices_copy[i] = col_indices_ptr[i] - 1;
@@ -167,10 +163,6 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         PyObject * py_col        = _make_npy_from_data<size_t, NPTYPE>(col_indices_copy, n);
         n                        = csr_ptr->getNumberOfRows();
         size_t * row_offsets_copy = (size_t *)malloc(n * sizeof(size_t));
-        if (!row_offsets_copy)
-        {
-            return NULL;
-        }
         for (size_t i = 0; i < n; ++i)
         {
             row_offsets_copy[i] = row_offsets_ptr[i] - 1;
@@ -832,7 +824,7 @@ extern "C"
 
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
 {
-    bool result = false;
+    bool result;
     auto tab = get_table(t);
     switch (dtype)
     {
@@ -855,7 +847,7 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
 
 void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state)
 {
-#if __INTEL_DAAL_MAJOR__ == 2020 && INTEL_DAAL_VERSION >= 20200003 || __INTEL_DAAL_MAJOR__ >= 2021
+#if __INTEL_DAAL__ == 2020 && INTEL_DAAL_VERSION >= 20200003 || __INTEL_DAAL__ >= 2021
     auto idxTable         = get_table(idx);
     auto randomStateTable = get_table(random_state);
     daal::data_management::internal::generateShuffledIndices<int>(idxTable, randomStateTable);
