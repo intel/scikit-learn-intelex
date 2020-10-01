@@ -220,7 +220,7 @@ void clustering()
         NumericTablePtr dataTable = services::staticPointerCast<NumericTable, SerializationIface>((*curHaloData)[destId]);
         if (dataTable->getNumberOfRows() > 0)
         {
-            curHaloBlocks->push_back(HomogenNumericTable<int>::create(1, 1, NumericTableIface::doAllocate, (int)rankId));
+            curHaloBlocks->push_back(HomogenNumericTable<int>::create(1, 1, NumericTableIface::doAllocate, static_cast<int>(rankId)));
         }
         else
         {

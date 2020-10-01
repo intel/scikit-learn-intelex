@@ -97,13 +97,13 @@ inline bool use_default(const int & attr)
 
 inline bool use_default(const size_t & attr)
 {
-    return (long)attr == (long)-1;
+    return static_cast<long>(attr) == static_cast<long>(-1);
 }
 
 #ifndef _WIN32
 inline bool use_default(const DAAL_UINT64 & attr)
 {
-    return (long)attr == (long)-1;
+    return static_cast<long>(attr) == static_cast<long>(-1);
 }
 #endif
 

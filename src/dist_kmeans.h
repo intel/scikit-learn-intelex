@@ -74,7 +74,7 @@ public:
                 daal::data_management::NumericTablePtr nittab(
                     new daal::data_management::HomogenNumericTable<int>(1,
                                                                         1,
-                                                                        daal::data_management::NumericTable::doAllocate, (int)iter));
+                                                                        daal::data_management::NumericTable::doAllocate, static_cast<int>(iter)));
                 fres->set(daal::algorithms::kmeans::nIterations, nittab);
             }
             // root gets here if done, other ranks always
