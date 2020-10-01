@@ -102,14 +102,13 @@ req_version['logitboost_batch.py'] = (2020,'P',0)
 req_version['saga_batch.py'] = (2019,'P',3)
 req_version['stump_classification_batch.py'] = (2020,'P',0)
 req_version['stump_regression_batch.py'] = (2020,'P',0)
+req_version['linear_regression_batch.py'] = (2021,'B',110)
 req_version['sycl/bf_knn_classification_batch.py'] = (2021,'B',105)
 req_version['sycl/dbscan_batch.py'] = (2021,'B',110) # hangs in beta08, need to be fixed
 req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,'B',105)
 req_version['sycl/linear_regression_batch.py'] = (2021,'B',110) # hangs in beta08, need to be fixed
 req_version['sycl/kmeans_batch.py'] = (2021,'B',110) # not equal results for host and gpu runs
 req_version['sycl/svm_batch.py'] = (2021,'B',107)
-req_version['distributions_bernoulli_batch.py'] = ((2020,'P',0), (2021,'B',110))
-req_version['naive_bayes_spmd.py'] = ((2020,'P',0), (2021,'B',110))
 
 req_device = defaultdict(lambda:[])
 req_device['sycl/bf_knn_classification_batch.py'] = ["gpu"]
