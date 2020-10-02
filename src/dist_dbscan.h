@@ -18,6 +18,7 @@
 #define _DIST_DBSCAN_INCLUDED_
 
 #include "dist_custom.h"
+#include "daal4py_defines.h"
 #include <mpi.h>
 
 using namespace std;
@@ -182,6 +183,7 @@ void geometricPartitioning()
         sendCollectionAllToAll(beginId, endId, rankId, step4ResultPartitionedDataTag, curPartitionedData, partitionedData);
         sendCollectionAllToAll(beginId, endId, rankId, step4ResultPartitionedPartialOrdersTag, curPartitionedPartialOrders, partitionedPartialOrders);
 
+        DAAL4PY_OVERFLOW_CHECK_BY_ADDING(int, beginId, leftPartitions)
         if (rankId < beginId + leftPartitions)
         {
             endId = beginId + leftPartitions;

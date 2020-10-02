@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include "mpi_transceiver.h"
+#include "daal4py_defines.h"
 #include <mpi.h>
 #include <Python.h>
 
@@ -72,7 +73,9 @@ void * mpi_transceiver::gather(const void * ptr, size_t N, size_t root, const si
             int tot_sz = sizes[0];
             offsets[0] = 0;
             for(int i = 1; i < m_nMembers; ++i) {
+                DAAL4PY_OVERFLOW_CHECK_BY_ADDING(int, offsets[i-1], sizes[i-1]);
                 offsets[i] = offsets[i-1] + sizes[i-1];
+                DAAL4PY_OVERFLOW_CHECK_BY_ADDING(int, tot_sz, sizes[i]);
                 tot_sz += sizes[i];
             }
             buff = new char[tot_sz];

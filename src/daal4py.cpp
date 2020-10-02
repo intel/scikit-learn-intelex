@@ -312,7 +312,7 @@ static daal::data_management::NumericTablePtr _make_hnt(PyObject * nda)
     if (array_numdims(array) == 2)
     {
         // we provide the SharedPtr with a deleter which decrements the pyref
-        ptr = daal::data_management::HomogenNumericTable<T>::create(daal::services::SharedPtr<T>((T *)array_data(array), NumpyDeleter(array)), (size_t)array_size(array, 1), (size_t)array_size(array, 0));
+        ptr = daal::data_management::HomogenNumericTable<T>::create(daal::services::SharedPtr<T>(staic_cast<T *>(array_data(array)), NumpyDeleter(array)), staic_cast<size_t>(array_size(array, 1)), staic_cast<size_t>(array_size(array, 0)));
         // we need it increment the ref-count if we use the input array in-place
         // if we copied/converted it we already own our own reference
         if (reinterpret_cast<PyObject *>(array) == nda) Py_INCREF(array);
