@@ -65,7 +65,7 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
         struct = tree["tree_structure"]
 
         # root is leaf
-        if "leaf_index" in struct:
+        if "leaf_value" in struct:
             mb.add_leaf(tree_id=tree_id, response=struct["leaf_value"])
             continue
 
