@@ -315,7 +315,7 @@ public:
             // feature for column
             daal::data_management::NumericTableFeature &f = (*ddict)[j + startcol];
             // iterate through column, use casting functions to upcast, dataptr will point to current element
-            void ** dataptr = static_cast<void **>(NpyIter_GetDataPtrArray(iter));
+            void ** dataptr = reinterpret_cast<void **>(NpyIter_GetDataPtrArray(iter));
 
             PyGILState_Release(__state);
 
@@ -499,8 +499,8 @@ public:
         // ..then create the type descriptor
         PyObject * npy = PyImport_ImportModule("numpy");
         PyObject * globalDictionary = PyModule_GetDict(npy);
-        PyArray_Descr* nd = reinterpret_cast<PyArray_Descr*>(PyRun_String((PyString_AsString(PyObject_Str(PyString_FromString(nds))), Py_eval_input, globalDictionary,
-                                                         NULL)));
+        PyArray_Descr* nd = reinterpret_cast<PyArray_Descr*>(PyRun_String(PyString_AsString(PyObject_Str(PyString_FromString(nds))), Py_eval_input, globalDictionary,
+                                                         NULL));
         delete [] nds;
         if(nd == NULL) {
             PyGILState_Release(__state);
@@ -527,7 +527,7 @@ public:
             throw std::invalid_argument("Creating numpy array failed when deserializing.");
         }
         // ...then copy data
-        archive->set(reinterpret_cast<char*>(PyArray_DATA(_ary), N));
+        archive->set(reinterpret_cast<char*>(PyArray_DATA(_ary)), N);
 
         PyGILState_Release(__state);
         return daal::services::Status();
