@@ -534,18 +534,26 @@ def parse_header(header, ignores):
 
 def parse_version(header):
     """Parse DAAL version strings"""
-    v = (None, None, None)
+    v = (None, None, None, None)
     for l in header:
         if '#define __INTEL_DAAL_' in l:
             m = re.match(r'#define __INTEL_DAAL__ (\d+)', l)
             if m:
-                v = (m.group(1), v[1], v[2])
+                v = (m.group(1), v[1], v[2], v[3])
             m = re.match(r'#define __INTEL_DAAL_MINOR__ (\d+)', l)
             if m:
-                v = (v[0], m.group(1), v[2])
+                v = (v[0], m.group(1), v[2], v[3])
             m = re.match(r'#define __INTEL_DAAL_UPDATE__ (\d+)', l)
             if m:
-                v = (v[0], v[1], m.group(1))
+                v = (v[0], v[1], m.group(1), v[3])
+            m = re.match(r'#define __INTEL_DAAL_STATUS__ (\w+)', l)
+            if m:
+                if m.group(1) != 'P':
+                    v = (v[0], v[1], v[2], m.group(1))
+                else:
+                    v = (v[0], v[1], v[2], '')
+            else:
+                v = (v[0], v[1], v[2], '')
         if None not in v:
             return v
     return v

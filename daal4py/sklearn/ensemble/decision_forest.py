@@ -259,17 +259,11 @@ class RandomForestClassifier(skl_RandomForestClassifier):
     def _daal_predict(self, X):
         X = self._validate_X_predict(X)
 
-        if daal_version < (2020,1):
-            dfc_algorithm = daal4py.decision_forest_classification_prediction(
-                nClasses = int(self.n_classes_),
-                fptype = 'float'
-                )
-        else:
-            dfc_algorithm = daal4py.decision_forest_classification_prediction(
-                nClasses = int(self.n_classes_),
-                fptype = 'float',
-                resultsToEvaluate="computeClassLabels"
-                )
+        dfc_algorithm = daal4py.decision_forest_classification_prediction(
+            nClasses = int(self.n_classes_),
+            fptype = 'float',
+            resultsToEvaluate="computeClassLabels"
+            )
         dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
 
         pred = dfc_predictionResult.prediction
@@ -293,10 +287,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
 
 
     def predict_proba(self, X):
-        if daal_version < (2020,1):
-            return super(RandomForestClassifier, self).predict_proba(X)
-        else:
-            return self._daal_predict_proba(X)
+        return self._daal_predict_proba(X)
 
 
     def fit(self, X, y):

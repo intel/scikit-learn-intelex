@@ -21,8 +21,10 @@ import unittest
 from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
 
-from daal4py import __daal_run_version__
-daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
+from daal4py import __daal_link_version__ as dv, __has_dist__
+# First item is major version - 2021, second is minor+patch - 0110, third item is status - B
+daal_version = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
+print('DAAL version:', daal_version)
 
 from daal4py.sklearn.neighbors import KNeighborsClassifier
 from daal4py.sklearn.ensemble.decision_forest import RandomForestClassifier
@@ -31,21 +33,16 @@ from daal4py.sklearn.ensemble import GBTDAALClassifier
 from daal4py.sklearn.ensemble import GBTDAALRegressor
 from daal4py.sklearn.ensemble import AdaBoostClassifier
 
-from daal4py import __daal_link_version__ as dv
-daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
-
-
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
         if rule > target:
             return False
     else:
-        for rule_item in range(len(rule)):
-            if rule[rule_item] > target:
+        for rule_item in rule:
+            if rule_item > target:
                 return False
-            else:
-                if rule[rule_item][0]==target[0]:
-                    break
+            if rule_item[0]==target[0]:
+                break
     return True
 
 def _replace_and_save(md, fns, replacing_fn):
@@ -74,10 +71,11 @@ def _restore_from_saved(md, saved_dict):
 
 
 class Test(unittest.TestCase):
+    @unittest.skipUnless(check_version(((2019,'P',0),(2021,'P', 200)), daal_version), "not supported in this library version")
     def test_KNeighborsClassifier(self):
         check_estimator(KNeighborsClassifier(algorithm='kd_tree'))
 
-    @unittest.skipUnless(check_version(((2019,0),(2021, 107)), daal_version), "not supported in this library version")
+    @unittest.skipUnless(check_version(((2019,'P',0),(2021,'B', 107)), daal_version), "not supported in this library version")
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:
@@ -116,7 +114,7 @@ class Test(unittest.TestCase):
         check_estimator(GBTDAALRegressor)
         _restore_from_saved(md, saved)
 
-    @unittest.skipIf(daal_run_version < (2020, 0), "not supported in this library version")
+    @unittest.skipUnless(check_version(((2020,'P',0)), daal_version), "not supported in this library version")
     def test_AdaBoostClassifier(self):
         check_estimator(AdaBoostClassifier)
 

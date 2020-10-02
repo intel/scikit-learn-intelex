@@ -30,19 +30,20 @@ import pandas as pd
 from scipy.sparse import csr_matrix
 
 from daal4py import __daal_link_version__ as dv
-daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+# First item is major version - 2021, second is minor+patch - 0110, third item is status - B
+daal_version = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
+print('DAAL version:', daal_version)
 
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
         if rule > target:
             return False
     else:
-        for rule_item in range(len(rule)):
-            if rule[rule_item] > target:
+        for rule_item in rule:
+            if rule_item > target:
                 return False
-            else:
-                if rule[rule_item][0]==target[0]:
-                    break
+            if rule_item[0]==target[0]:
+                break
     return True
 
 def check_libraries(rule):
@@ -74,8 +75,8 @@ csr_read_csv = lambda f, c=None, s=0, n=None, t=np.float64: csr_matrix(pd_read_c
 
 def add_test(cls, e, f=None, attr=None, ver=(0,0), req_libs=[]):
     import importlib
-    @unittest.skipUnless(check_version(ver, daal_version), "not supported in this library version")
-    @unittest.skipUnless(check_libraries(req_libs), "cannot import required libraries")
+    @unittest.skipUnless(check_version(ver, daal_version), str(ver) + " not supported in this library version " + str(daal_version))
+    @unittest.skipUnless(check_libraries(req_libs), "cannot import required libraries " + str(req_libs))
     def testit(self):
         ex = importlib.import_module(e)
         result = self.call(ex)
@@ -127,11 +128,11 @@ class Base():
 
 
 gen_examples = [
-    ('adaboost_batch', None, None, (2020, 0)),
+    ('adaboost_batch', None, None, (2020,'P', 0)),
     ('adagrad_mse_batch', 'adagrad_mse_batch.csv', 'minimum'),
     ('association_rules_batch', 'association_rules_batch.csv', 'confidence'),
     ('bacon_outlier_batch', 'multivariate_outlier_batch.csv', lambda r: r[1].weights),
-    ('brownboost_batch', None, None, (2020, 0)),
+    ('brownboost_batch', None, None, (2020,'P', 0)),
     ('correlation_distance_batch', 'correlation_distance_batch.csv', lambda r: [[np.amin(r.correlationDistance)],
                                                                                 [np.amax(r.correlationDistance)],
                                                                                 [np.mean(r.correlationDistance)],
@@ -144,7 +145,7 @@ gen_examples = [
     ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
     ('covariance_batch', 'covariance.csv', 'covariance'),
     ('covariance_streaming', 'covariance.csv', 'covariance'),
-    ('decision_forest_classification_batch', None, lambda r: r[1].prediction, (2019, 1)),
+    ('decision_forest_classification_batch', None, lambda r: r[1].prediction, (2019,'P', 1)),
     ('decision_forest_regression_batch', 'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2019, 1)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv', lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv', lambda r: r[1].prediction),
@@ -152,8 +153,8 @@ gen_examples = [
     ('distributions_normal_batch',),
     ('distributions_uniform_batch',),
     ('em_gmm_batch', 'em_gmm.csv', lambda r: r.covariances[0]),
-    ('gbt_cls_model_create_from_lightgbm_batch', None, None, ((2020, 2), (2021, 109)), ['lightgbm']),
-    ('gbt_cls_model_create_from_xgboost_batch', None, None, ((2020, 2), (2021, 109)), ['xgboost']),
+    ('gbt_cls_model_create_from_lightgbm_batch', None, None, ((2020,'P', 2), (2021, 'B', 109)), ['lightgbm']),
+    ('gbt_cls_model_create_from_xgboost_batch', None, None, ((2020,'P', 2), (2021, 'B', 109)), ['xgboost']),
     ('gradient_boosted_classification_batch',),
     ('gradient_boosted_regression_batch',),
     ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
@@ -165,7 +166,7 @@ gen_examples = [
     ('linear_regression_streaming', 'linear_regression_batch.csv', lambda r: r[1].prediction),
     ('log_reg_binary_dense_batch', 'log_reg_binary_dense_batch.csv', lambda r: r[1].prediction),
     ('log_reg_dense_batch',),
-    ('logitboost_batch', None, None, (2020, 0)),
+    ('logitboost_batch', None, None, (2020,'P', 0)),
     ('low_order_moms_dense_batch', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
                                                                                           r.maximum,
                                                                                           r.sum,
@@ -197,17 +198,17 @@ gen_examples = [
     ('quantiles_batch', 'quantiles.csv', 'quantiles'),
     ('ridge_regression_batch', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
     ('ridge_regression_streaming', 'ridge_regression_batch.csv', lambda r: r[0].prediction),
-    ('saga_batch', None, None, (2019, 3)),
+    ('saga_batch', None, None, (2019,'P', 3)),
     ('sgd_logistic_loss_batch', 'sgd_logistic_loss_batch.csv', 'minimum'),
     ('sgd_mse_batch', 'sgd_mse_batch.csv', 'minimum'),
     ('sorting_batch',),
-    ('stump_classification_batch', None, None, (2020, 0)),
-    ('stump_regression_batch', None, None, (2020, 0)),
+    ('stump_classification_batch', None, None, (2020,'P', 0)),
+    ('stump_regression_batch', None, None, (2020,'P', 0)),
     ('svm_multiclass_batch', 'svm_multiclass_batch.csv', lambda r: r[0].prediction),
     ('univariate_outlier_batch', 'univariate_outlier_batch.csv', lambda r: r[1].weights),
-    ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2019, 5)),
-    ('lasso_regression_batch', None, None, (2019, 5)),
-    ('elastic_net_batch', None, None, ((2020,1),(2021, 105))),
+    ('dbscan_batch', 'dbscan_batch.csv', 'assignments', (2019,'P', 5)),
+    ('lasso_regression_batch', None, None, (2019,'P', 5)),
+    ('elastic_net_batch', None, None, ((2020,'P',1),(2021, 'B', 105))),
 ]
 
 for example in gen_examples:

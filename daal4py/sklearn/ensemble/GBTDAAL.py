@@ -192,11 +192,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         fptype = getFPType(X)
 
         # Prediction
-        if daal_version < (2020,1):
-            predict_algo = d4p.gbt_classification_prediction(fptype=fptype,
-                                                             nClasses=self.n_classes_)
-        else:
-            predict_algo = d4p.gbt_classification_prediction(fptype=fptype,
+        predict_algo = d4p.gbt_classification_prediction(fptype=fptype,
                                                              nClasses=self.n_classes_,
                                                              resultsToEvaluate=resultsToEvaluate)
         predict_result = predict_algo.compute(X, self.daal_model_)
@@ -213,31 +209,18 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         return self._predict(X, "computeClassLabels")
 
     def predict_proba(self, X):
-        if daal_version < (2020,1):
-            raise NotImplementedError("Not implemented in this version."
-                                      "The computation of classes probabilities is supported in version 2020.1 and above.")
-        else:
-            return self._predict(X, "computeClassProbabilities")
+        return self._predict(X, "computeClassProbabilities")
 
     def predict_log_proba(self, X):
-        if daal_version < (2020,1):
-            raise NotImplementedError("Not implemented in this version."
-                                      "The computation of classes probabilities is supported in version 2020.1 and above.")
+        proba = self.predict_proba(X)
+
+        if self.n_outputs_ == 1:
+            return np.log(proba)
         else:
-            proba = self.predict_proba(X)
+            for k in range(self.n_outputs_):
+                proba[k] = np.log(proba[k])
 
-            if self.n_outputs_ == 1:
-                return np.log(proba)
-            else:
-                for k in range(self.n_outputs_):
-                    proba[k] = np.log(proba[k])
-
-                return proba
-
-
-if daal_version < (2020,1):
-    del GBTDAALClassifier.predict_proba
-    del GBTDAALClassifier.predict_log_proba
+            return proba
 
 
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):

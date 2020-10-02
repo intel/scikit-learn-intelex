@@ -101,7 +101,7 @@ header_path = os.path.join(daal_root, 'include', 'services', 'library_version_in
 
 with open(header_path) as header:
     v = parse_version(header)
-    dal_build_version = (int(v[0]), int(v[2]))
+    dal_build_version = (int(v[0]), int(v[1]), int(v[2]), str(v[3]))
 
 if dpcpp:
     DPCPP_CFLAGS = ['-D_DPCPP_']
@@ -110,9 +110,6 @@ if dpcpp:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
     elif IS_WIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
-    if dal_build_version == (2021,7):
-        DPCPP_LIBS.remove('onedal_sycl')
-        DPCPP_LIBS.append('daal_sycl')
 
     if dpctl:
         # if custom dpctl library directory is specified
@@ -126,6 +123,7 @@ if dpcpp:
         DPCTL_INCDIRS = []
         DPCTL_LIBDIRS = []
         DPCTL_LIBS = []
+
 else:
     DPCPP_CFLAGS = []
     DPCPP_LIBS = []

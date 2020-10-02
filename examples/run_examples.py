@@ -21,7 +21,8 @@ import subprocess
 import sys
 
 from daal4py import __daal_link_version__ as dv, __has_dist__
-daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+# First item is major version - 2021, second is minor+patch - 0110, third item is status - B
+daal_version = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
 print('DAAL version:', daal_version)
 
 from os.path import join as jp
@@ -64,12 +65,11 @@ def check_version(rule, target):
         if rule > target:
             return False
     else:
-        for rule_item in range(len(rule)):
-            if rule[rule_item] > target:
+        for rule_item in rule:
+            if rule_item > target:
                 return False
-            else:
-                if rule[rule_item][0]==target[0]:
-                    break
+            if rule_item[0]==target[0]:
+                break
     return True
 
 def check_device(rule, target):
@@ -87,27 +87,27 @@ def check_library(rule):
     return True
 
 
-req_version = defaultdict(lambda:(2019,0))
-req_version['adaboost_batch.py'] = (2020,0)
-req_version['brownboost_batch.py'] = (2020,0)
-req_version['dbscan_batch.py'] = (2019,5)
-req_version['decision_forest_classification_batch.py'] = (2019,1)
-req_version['decision_forest_classification_traverse_batch.py'] = (2019,1)
-req_version['decision_forest_regression_batch.py'] = (2019,1)
-req_version['elastic_net_batch.py'] = ((2020,1),(2021,105))
-req_version['gbt_cls_model_create_from_lightgbm_batch.py'] = ((2020, 2), (2021, 109))
-req_version['gbt_cls_model_create_from_xgboost_batch.py'] = ((2020, 2), (2021, 109))
-req_version['lasso_regression_batch.py'] = (2019,5)
-req_version['logitboost_batch.py'] = (2020,0)
-req_version['saga_batch.py'] = (2019,3)
-req_version['stump_classification_batch.py'] = (2020,0)
-req_version['stump_regression_batch.py'] = (2020,0)
-req_version['sycl/bf_knn_classification_batch.py'] = (2021,105)
-req_version['sycl/dbscan_batch.py'] = (2021,110) # hangs in beta08, need to be fixed
-req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,105)
-req_version['sycl/linear_regression_batch.py'] = (2021,110) # hangs in beta08, need to be fixed
-req_version['sycl/kmeans_batch.py'] = (2021, 110) # not equal results for host and gpu runs
-req_version['sycl/svm_batch.py'] = (2021,107)
+req_version = defaultdict(lambda:(2019,'P',0))
+req_version['adaboost_batch.py'] = (2020,'P',0)
+req_version['brownboost_batch.py'] = (2020,'P',0)
+req_version['dbscan_batch.py'] = (2019,'P',5)
+req_version['decision_forest_classification_batch.py'] = (2019,'P',1)
+req_version['decision_forest_classification_traverse_batch.py'] = (2019,'P',1)
+req_version['decision_forest_regression_batch.py'] = (2019,'P',1)
+req_version['elastic_net_batch.py'] = ((2020,'P',1),(2021,'B',105))
+req_version['gbt_cls_model_create_from_lightgbm_batch.py'] = ((2020,'P', 2), (2021,'B', 109))
+req_version['gbt_cls_model_create_from_xgboost_batch.py'] = ((2020,'P', 2), (2021,'B', 109))
+req_version['lasso_regression_batch.py'] = (2019,'P',5)
+req_version['logitboost_batch.py'] = (2020,'P',0)
+req_version['saga_batch.py'] = (2019,'P',3)
+req_version['stump_classification_batch.py'] = (2020,'P',0)
+req_version['stump_regression_batch.py'] = (2020,'P',0)
+req_version['sycl/bf_knn_classification_batch.py'] = (2021,'B',105)
+req_version['sycl/dbscan_batch.py'] = (2021,'P',110) # hangs in beta08, need to be fixed
+req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,'B',105)
+req_version['sycl/linear_regression_batch.py'] = (2021,'P',110) # hangs in beta08, need to be fixed
+req_version['sycl/kmeans_batch.py'] = (2021,'B',110) # not equal results for host and gpu runs
+req_version['sycl/svm_batch.py'] = (2021,'B',107)
 
 req_device = defaultdict(lambda:[])
 req_device['sycl/bf_knn_classification_batch.py'] = ["gpu"]
