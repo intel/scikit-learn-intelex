@@ -17,21 +17,21 @@
 #ifndef _DAAL_DEFINES_H_
 #define _DAAL_DEFINES_H_
 
-#define DAAL_OVERFLOW_CHECK_BY_MULTIPLICATION(type, op1, op2)                                     \
-    {                                                                                             \
-        if (!(0 == (op1)) && !(0 == (op2)))                                                       \
-        {                                                                                         \
-            type r = (op1) * (op2);                                                               \
-            r /= (op1);                                                                           \
-            if (!(r == (op2))) return services::Status(services::ErrorBufferSizeIntegerOverflow); \
-        }                                                                                         \
+#define DAAL4PY_OVERFLOW_CHECK_BY_MULTIPLICATION(type, op1, op2)                           \
+    {                                                                                      \
+        if (!(0 == (op1)) && !(0 == (op2)))                                                \
+        {                                                                                  \
+            type r = (op1) * (op2);                                                        \
+            r /= (op1);                                                                    \
+            if (!(r == (op2))) throw std::runtime_error("Buffer size integer overflow");   \
+        }                                                                                  \
     }
 
-#define DAAL_OVERFLOW_CHECK_BY_ADDING(type, op1, op2)                                         \
-    {                                                                                         \
-        type r = (op1) + (op2);                                                               \
-        r -= (op1);                                                                           \
-        if (!(r == (op2))) return services::Status(services::ErrorBufferSizeIntegerOverflow); \
+#define DAAL4PY_OVERFLOW_CHECK_BY_ADDING(type, op1, op2)                               \
+    {                                                                                  \
+        type r = (op1) + (op2);                                                        \
+        r -= (op1);                                                                    \
+        if (!(r == (op2))) throw std::runtime_error("Buffer size integer overflow");   \
     }
 
 #endif
