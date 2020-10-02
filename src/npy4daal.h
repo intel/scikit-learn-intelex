@@ -480,7 +480,7 @@ public:
             archive->set(PyArray_DIMS(ary)[i]);
             N *= PyArray_DIMS(ary)[i];
         }
-        archive->set((static_cast<char*>(PyArray_DATA(ary)), N);
+        archive->set((static_cast<char*>(PyArray_DATA(ary)), N));
 
         PyGILState_Release(__state);
         return daal::services::Status();
@@ -500,7 +500,7 @@ public:
         PyObject * npy = PyImport_ImportModule("numpy");
         PyObject * globalDictionary = PyModule_GetDict(npy);
         PyArray_Descr* nd = reinterpret_cast<PyArray_Descr*>(PyRun_String((PyString_AsString(PyObject_Str(PyString_FromString(nds))), Py_eval_input, globalDictionary,
-                                                         NULL));
+                                                         NULL)));
         delete [] nds;
         if(nd == NULL) {
             PyGILState_Release(__state);
@@ -527,7 +527,7 @@ public:
             throw std::invalid_argument("Creating numpy array failed when deserializing.");
         }
         // ...then copy data
-        archive->set(static_cast<char*>(PyArray_DATA(_ary), N));
+        archive->set(reinterpret_cast<char*>(PyArray_DATA(_ary), N));
 
         PyGILState_Release(__state);
         return daal::services::Status();
