@@ -97,8 +97,8 @@ class namespace(object):
         self.children = set()
 
 ###############################################################################
-def ignored(ns, a=None):
-    return ns in ignore and ((a != None and a in ignore[ns]) or (a == None and not ignore[ns]))
+def ignored(ns, a = None):
+    return ns in ignore and ((a is not None and a in ignore[ns]) or (a is None and not ignore[ns]))
 
 
 ###############################################################################
@@ -235,7 +235,7 @@ class cython_interface(object):
             if ns in self.namespace_dict and '::' not in cls:
                 # the class might be in one of the parent ns
                 ns = self.get_ns(ns, cls)
-                if ns == None:
+                if ns is None:
                     return None
             else:
                 return None
@@ -252,10 +252,10 @@ class cython_interface(object):
             sanep = parent.split()[-1].replace('daal::', '')
             parentclass = splitns(sanep)[1]
             pns = self.get_ns(ns, sanep)
-            if pns != None and 'interface' not in parent and ns == pns and self.namespace_dict[ns].classes[cls].iface != self.namespace_dict[pns].classes[parentclass].iface:
+            if pns is not None and 'interface' not in parent and ns == pns and self.namespace_dict[ns].classes[cls].iface != self.namespace_dict[pns].classes[parentclass].iface:
                     sanep = '{}::{}'.format(self.namespace_dict[ns].classes[cls].iface, sanep)
                     pns = self.get_ns(ns, sanep)
-            if pns != None:
+            if pns is not None:
                 pms = self.get_all_attrs(pns, parentclass, attr, ons)
                 for x in pms:
                     # ignore duplicates from parents
