@@ -31,6 +31,25 @@ jobs:
       conda build --override-channels -c conda-forge -c intel conda-recipe
     displayName: conda build
 
+- job: MacOS
+  pool:
+    vmImage: 'macOS-10.15'
+  steps:
+  - script: |
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
+      bash miniconda.sh -b -p $HOME/miniconda
+      export PATH="$HOME/miniconda/bin:$PATH"
+      hash -r
+      conda config --set always_yes yes --set changeps1 no
+      conda update -q conda
+    displayName: 'Conda install'
+  - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
+    displayName: Create Anaconda environment
+  - script: |
+      conda activate CB
+      conda build --override-channels -c conda-forge -c intel conda-recipe
+    displayName: conda build
+
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
