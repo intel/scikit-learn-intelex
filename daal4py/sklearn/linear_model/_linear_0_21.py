@@ -219,4 +219,3 @@ class LinearRegression(LinearRegression_original):
 
     def predict(self, X):
         return _predict_copy(self, X)
-

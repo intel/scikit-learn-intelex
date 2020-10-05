@@ -19,7 +19,6 @@ import sys
 import warnings
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
-import warnings
 
 import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module

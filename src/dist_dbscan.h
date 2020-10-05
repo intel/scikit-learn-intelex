@@ -565,7 +565,6 @@ void recvTable(NumericTablePtr & table, int sender, int tag)
         table = NumericTable::cast(deserializeDAALObject(&buff[0], size));
     }
 }
-
 };
 
 // DAAL Distributed algos do not return a proper result (like batch), we need to create one

@@ -23,7 +23,9 @@
 #   - Cython code to generate python API
 ###############################################################################
 
-import glob, os, re
+import glob
+import os
+import re
 from pprint import pformat, pprint
 from os.path import join as jp
 from collections import defaultdict, OrderedDict

@@ -253,7 +253,6 @@ bool toSKLearnTreeObjectVisitor<M>::onLeafNode(const typename TNVT<M>::leaf_desc
 template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const daal::algorithms::tree_utils::NodeDescriptor &desc)
 {
-
     if(desc.level) {
         ssize_t parent = parents[desc.level - 1];
         if(node_ar[parent].left_child > 0) {
