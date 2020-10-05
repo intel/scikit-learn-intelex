@@ -17,9 +17,11 @@
 #define NO_IMPORT_ARRAY
 #include <cstdint>
 #include <cstring>
+#include <climits>
 #include <Python.h>
 #include "daal4py.h"
 #include "npy4daal.h"
+#include "daal4py_defines.h"
 
 // ************************************************************************************
 // ************************************************************************************
@@ -67,14 +69,22 @@ private:
 void daalsp_free_cap(PyObject * cap)
 {
     VSP * sp = static_cast<VSP *>(PyCapsule_GetPointer(cap, NULL));
-    if (sp) delete sp;
+    if (sp)
+    {
+        delete sp;
+        sp = NULL;
+    }
 }
 
 // define our own free functions for wrapping python objects holding our raw pointers
 void rawp_free_cap(PyObject * cap)
 {
     void * rp = PyCapsule_GetPointer(cap, NULL);
-    if (rp) delete[] rp;
+    if (rp)
+    {
+        delete[] rp;
+        rp = NULL;
+    }
 }
 
 void set_rawp_base(PyArrayObject * ary, void * ptr)
@@ -89,6 +99,8 @@ void set_rawp_base(PyArrayObject * ary, void * ptr)
 template <typename T, int NPTYPE>
 static PyObject * _sp_to_nda(daal::services::SharedPtr<T> & sp, size_t nr, size_t nc)
 {
+    DAAL4PY_CHECK(nc <= INT_MAX, "Bad cast size_t to int");
+    DAAL4PY_CHECK(nr <= INT_MAX, "Bad cast size_t to int");
     npy_intp dims[2] = { static_cast<npy_intp>(nr), static_cast<npy_intp>(nc) };
     PyObject * obj   = PyArray_SimpleNewFromData(2, dims, NPTYPE, static_cast<void *>(sp.get()));
     if (!obj) throw std::invalid_argument("conversion to numpy array failed");
@@ -134,6 +146,7 @@ static PyObject * _make_nda_from_homogen(daal::data_management::NumericTablePtr 
 template <typename T, int NPTYPE>
 static PyObject * _make_npy_from_data(T * data, size_t n)
 {
+    DAAL4PY_CHECK(n <= INT_MAX, "Bad cast size_t to int");
     npy_intp dims[1] = { static_cast<npy_intp>(n) };
     PyObject * obj   = PyArray_SimpleNewFromData(1, dims, NPTYPE, static_cast<void *>(data));
     if (!obj) throw std::invalid_argument("conversion to numpy array failed");
@@ -152,12 +165,12 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         csr_ptr->getArrays<T>(&data_ptr, &col_indices_ptr, &row_offsets_ptr);
         size_t n      = csr_ptr->getDataSize();
         T * data_copy = static_cast<T *>(daal::services::daal_malloc(n * sizeof(T)));
-        if (!data_copy) throw std::bad_alloc();
+        DAAL4PY_CHECK_MALLOC(data_copy);
         std::copy(data_ptr, data_ptr + n, data_copy);
         PyObject * py_data       = _make_npy_from_data<T, NPTYPE>(data_copy, n);
         n                        = csr_ptr->getNumberOfColumns();
         size_t * col_indices_copy = static_cast<size_t *>(daal::services::daal_malloc(n * sizeof(size_t)));
-        if (!col_indices_copy) throw std::bad_alloc();
+        DAAL4PY_CHECK_MALLOC(col_indices_copy);
         for (size_t i = 0; i < n; ++i)
         {
             col_indices_copy[i] = col_indices_ptr[i] - 1;
@@ -165,7 +178,7 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         PyObject * py_col        = _make_npy_from_data<size_t, NPTYPE>(col_indices_copy, n);
         n                        = csr_ptr->getNumberOfRows();
         size_t * row_offsets_copy = static_cast<size_t *>(daal::services::daal_malloc(n * sizeof(size_t)));
-        if (!row_offsets_copy) throw std::bad_alloc();
+        DAAL4PY_CHECK_MALLOC(row_offsets_copy);
         for (size_t i = 0; i < n; ++i)
         {
             row_offsets_copy[i] = row_offsets_ptr[i] - 1;
@@ -404,6 +417,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 auto nt = reinterpret_cast<daal::data_management::NumericTablePtr *>(_ptr);
                 ntptr   = *nt;
                 delete nt; // we delete the shared pointer-pointer
+                nt = NULL;
             }
 
             return ntptr;
@@ -592,10 +606,12 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     size_t * c_indcs           = static_cast<size_t *>(array_data(np_indcs));
                     size_t n                   = array_size(np_indcs, 0);
                     size_t * c_indcs_one_based = static_cast<size_t *>(daal::services::daal_malloc(n * sizeof(size_t)));
+                    DAAL4PY_CHECK_MALLOC(c_indcs_one_based);
                     for (size_t i = 0; i < n; ++i) c_indcs_one_based[i] = c_indcs[i] + 1;
                     size_t * c_roffs           = static_cast<size_t *>(array_data(np_roffs));
                     n                          = array_size(np_roffs, 0);
                     size_t * c_roffs_one_based = static_cast<size_t *>(daal::services::daal_malloc((n + 1) * sizeof(size_t)));
+                    DAAL4PY_CHECK_MALLOC(c_roffs_one_based);
                     for (size_t i = 0; i < n; ++i) c_roffs_one_based[i] = c_roffs[i] + 1;
                     size_t c_nc = static_cast<size_t>(PyInt_AsSsize_t(nc));
                     if (PyErr_Occurred())

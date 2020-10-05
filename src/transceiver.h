@@ -348,6 +348,7 @@ T transceiver::recv(size_t sender, size_t tag)
             daal::data_management::OutputDataArchive out_arch(buf, sz);
             res = daal::services::staticPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
             delete [] buf;
+            buf = NULL;
         }
         return res;
 }
@@ -388,9 +389,11 @@ std::vector<daal::services::SharedPtr<T> > transceiver::gather(const daal::servi
             }
         }
         delete [] buff;
+        buff = NULL;
     }
     
     delete [] sizes;
+    sizes = NULL;
     
     return all;
 }

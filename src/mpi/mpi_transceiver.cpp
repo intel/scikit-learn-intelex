@@ -18,6 +18,7 @@
 #include "daal4py_defines.h"
 #include <mpi.h>
 #include <Python.h>
+#include <climits>
 
 void mpi_transceiver::init()
 {
@@ -70,6 +71,7 @@ void * mpi_transceiver::gather(const void * ptr, size_t N, size_t root, const si
         // -> gatherv
         if(m_me == root) {
             int * offsets = new int[m_nMembers];
+            DAAL4PY_CHECK(sizes[0] <= INT_MAX, "Bad cast size_t to int");
             int tot_sz = sizes[0];
             offsets[0] = 0;
             for(int i = 1; i < m_nMembers; ++i) {
@@ -80,12 +82,19 @@ void * mpi_transceiver::gather(const void * ptr, size_t N, size_t root, const si
             }
             buff = new char[tot_sz];
             int * szs = new int[m_nMembers];
-            for(size_t i=0; i<m_nMembers; ++i) szs[i] = static_cast<int>(sizes[i]);
+            for(size_t i=0; i<m_nMembers; ++i)
+            {
+                DAAL4PY_CHECK(sizes[i] <= INT_MAX, "Bad cast size_t to int");
+                szs[i] = static_cast<int>(sizes[i]);
+            }
             MPI_Gatherv(ptr, N, MPI_CHAR,
                         buff, szs, offsets, MPI_CHAR,
                         root, MPI_COMM_WORLD);
             delete [] szs;
+            szs = NULL;
             delete [] offsets;
+            offsets = NULL;
+
         } else {
             MPI_Gatherv(ptr, N, MPI_CHAR,
                         NULL, NULL, NULL, MPI_CHAR,

@@ -216,9 +216,10 @@ public:
         if(strideptr[0] == sizeof(T)) {
             do {
                 npy_intp size = *innersizeptr;
-                memcpy(WBack ? *dataptr        : (char*)blockPtr,
-                       WBack ? (char*)blockPtr : *dataptr,
-                       sizeof(T) * size);
+                std::copy(WBack ? *dataptr : reinterpret_cast<char*>(blockPtr),
+                          WBack ? *dataptr + sizeof(T) * size : reinterpret_cast<char*>(blockPtr) + sizeof(T) * size,
+                          WBack ? reinterpret_cast<char*>(blockPtr) : *dataptr);
+
                 blockPtr += size;
             } while(iternext(iter));
         } else {
@@ -228,9 +229,9 @@ public:
                 char *src = *dataptr;
                 npy_intp size = *innersizeptr;
                 for(i = 0; i < size; ++i, src += innerstride, blockPtr += 1) {
-                    memcpy(WBack ? src             : (char*)blockPtr,
-                           WBack ? (char*)blockPtr : src,
-                           sizeof(T));
+                    std::copy(WBack ? src : reinterpret_cast<char*>(blockPtr),
+                            WBack ? src + sizeof(T) : reinterpret_cast<char*>(blockPtr) + sizeof(T),
+                            WBack ? reinterpret_cast<char*>(blockPtr) : src);
                 }
             } while(iternext(iter));
         }
@@ -502,6 +503,7 @@ public:
         PyArray_Descr* nd = reinterpret_cast<PyArray_Descr*>(PyRun_String(PyString_AsString(PyObject_Str(PyString_FromString(nds))), Py_eval_input, globalDictionary,
                                                          NULL));
         delete [] nds;
+        nds = NULL;
         if(nd == NULL) {
             PyGILState_Release(__state);
             throw std::invalid_argument("Creating array descriptor failed when deserializing.");

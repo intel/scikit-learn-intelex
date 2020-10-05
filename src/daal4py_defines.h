@@ -34,4 +34,10 @@
         if (!(r == (op2))) throw std::runtime_error("Buffer size integer overflow");   \
     }
 
+#define DAAL4PY_CHECK(cond, error) \
+    if (!(cond)) throw std::runtime_error(error);
+
+#define DAAL4PY_CHECK_MALLOC(cond) \
+    if (!(cond)) throw std::bad_alloc();
+
 #endif
