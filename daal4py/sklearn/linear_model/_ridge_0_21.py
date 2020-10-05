@@ -163,4 +163,3 @@ class Ridge(Ridge_original, _BaseRidge):
 
     def predict(self, X):
         return _predict_copy(self, X)
-

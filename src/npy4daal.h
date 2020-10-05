@@ -531,7 +531,6 @@ public:
     }
 
 private:
-
     template<typename T>
     daal::services::Status getTBlock(size_t idx, size_t numrows, int rwFlag, daal::data_management::BlockDescriptor<T>& block, size_t firstcol=0, size_t numcols=0xffffffff)
     {

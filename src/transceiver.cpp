@@ -33,7 +33,6 @@ static std::mutex s_mtx;
 #define CHECK() if(PyErr_Occurred()) { PyErr_Print(); PyGILState_Release(gilstate); throw std::runtime_error("Python Error"); }
 transceiver * get_transceiver()
 {
-
     if(!s_trsc) {
         std::lock_guard<std::mutex> lock(s_mtx);
         if(!s_trsc) {
