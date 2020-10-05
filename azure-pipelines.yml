@@ -43,7 +43,7 @@ jobs:
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
     displayName: 'Conda install'
-  - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
+  - script: sudo conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
       conda activate CB
