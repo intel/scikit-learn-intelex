@@ -5,6 +5,5 @@ algorithm.
 
 
 from ._classification import KNeighborsClassifier
-from ._unsupervised import NearestNeighbors
 
-__all__ = ['KNeighborsClassifier', 'NearestNeighbors']
+__all__ = ['KNeighborsClassifier']
