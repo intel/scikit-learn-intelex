@@ -216,10 +216,10 @@ public:
         if(strideptr[0] == sizeof(T)) {
             do {
                 npy_intp size = *innersizeptr;
-                std::copy(WBack ? *dataptr : reinterpret_cast<char*>(blockPtr),
-                          WBack ? *dataptr + sizeof(T) * size : reinterpret_cast<char*>(blockPtr) + sizeof(T) * size,
-                          WBack ? reinterpret_cast<char*>(blockPtr) : *dataptr);
-
+                daal::services::internal::daal_memcpy_s(WBack ? *dataptr : reinterpret_cast<char*>(blockPtr),
+                                                        sizeof(T) * size,
+                                                        WBack ? reinterpret_cast<char*>(blockPtr) : *dataptr,
+                                                        sizeof(T) * size);
                 blockPtr += size;
             } while(iternext(iter));
         } else {
@@ -229,9 +229,10 @@ public:
                 char *src = *dataptr;
                 npy_intp size = *innersizeptr;
                 for(i = 0; i < size; ++i, src += innerstride, blockPtr += 1) {
-                    std::copy(WBack ? src : reinterpret_cast<char*>(blockPtr),
-                            WBack ? src + sizeof(T) : reinterpret_cast<char*>(blockPtr) + sizeof(T),
-                            WBack ? reinterpret_cast<char*>(blockPtr) : src);
+                    daal::services::internal::daal_memcpy_s(WBack ? src : reinterpret_cast<char*>(blockPtr),
+                                                            sizeof(T),
+                                                            WBack ? reinterpret_cast<char*>(blockPtr) : src,
+                                                            sizeof(T));
                 }
             } while(iternext(iter));
         }

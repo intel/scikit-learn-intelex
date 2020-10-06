@@ -166,7 +166,11 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         size_t n      = csr_ptr->getDataSize();
         T * data_copy = static_cast<T *>(daal::services::daal_malloc(n * sizeof(T)));
         DAAL4PY_CHECK_MALLOC(data_copy);
-        std::copy(data_ptr, data_ptr + n, data_copy);
+        //std::copy(data_ptr, data_ptr + n, data_copy);
+        daal::services::internal::daal_memcpy_s(data_ptr,
+                                                sizeof(T) * n,
+                                                data_copy,
+                                                sizeof(T) * n);
         PyObject * py_data       = _make_npy_from_data<T, NPTYPE>(data_copy, n);
         n                        = csr_ptr->getNumberOfColumns();
         size_t * col_indices_copy = static_cast<size_t *>(daal::services::daal_malloc(n * sizeof(size_t)));

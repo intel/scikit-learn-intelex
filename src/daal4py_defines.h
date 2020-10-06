@@ -14,8 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#ifndef _DAAL_DEFINES_H_
-#define _DAAL_DEFINES_H_
+#ifndef _DAAL4PY_DEFINES_H_
+#define _DAAL4PY_DEFINES_H_
 
 #define DAAL4PY_OVERFLOW_CHECK_BY_MULTIPLICATION(type, op1, op2)                           \
     {                                                                                      \
