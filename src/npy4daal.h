@@ -131,7 +131,7 @@ public:
     //
     // 1. Retrieve requested slide from numpy array by using python's C-API
     // 2. Create numpy array iterator setup for casting to requested type
-    // 3. Iterate through numpy array and copy to/from block using std::copy
+    // 3. Iterate through numpy array and copy to/from block using daal_memcpy_s
     template<typename T, bool WBack>
     static void do_cpy(PyArrayObject * ary, daal::data_management::NumericTableDictionaryPtr & ddict,
                        daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t ncols, size_t startrow, size_t nrows)
