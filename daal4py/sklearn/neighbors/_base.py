@@ -265,7 +265,7 @@ class NeighborsBase(BaseNeighborsBase):
 
         weights = getattr(self, 'weights', 'uniform')
 
-        if daal_check_version((2020, 3)) and not X_incorrect_type \
+        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not X_incorrect_type \
         and weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and single_output and fptype is not None and not sp.issparse(X):
@@ -287,7 +287,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version((2020, 3)) and hasattr(self, 'daal_model_') \
+        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and hasattr(self, 'daal_model_') \
         and self._fit_method in ['brute', 'kd_tree', 'auto'] \
         and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
         and fptype is not None and not sp.issparse(X):
