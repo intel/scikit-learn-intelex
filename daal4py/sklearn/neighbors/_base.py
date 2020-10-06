@@ -62,15 +62,15 @@ def prediction_algorithm(method, fptype, params):
     return predict_alg(**params)
 
 
-def parse_auto_method(clf, method, n_samples, n_features):
+def parse_auto_method(estimator, method, n_samples, n_features):
     result_method = method
 
     if (method == 'auto'):
-        if clf.metric == 'precomputed' or n_features > 11 or \
-           (clf.n_neighbors is not None and clf.n_neighbors >= clf.n_neighbors // 2):
+        if estimator.metric == 'precomputed' or n_features > 11 or \
+           (estimator.n_neighbors is not None and estimator.n_neighbors >= estimator.n_samples_fit_ // 2):
             result_method = 'brute'
         else:
-            if clf.effective_metric_ in KDTree.valid_metrics:
+            if estimator.effective_metric_ in KDTree.valid_metrics:
                 result_method = 'kd_tree'
             else:
                 result_method = 'brute'
@@ -84,19 +84,24 @@ def daal4py_fit(estimator, X, fptype):
     estimator._fit_X = X
     estimator._fit_method = estimator.algorithm
     estimator.effective_metric_ = 'euclidean'
+    weights = getattr(estimator, 'weights', 'uniform')
 
     params = {
         'method': 'defaultDense',
         'k': estimator.n_neighbors,
-        'nClasses': len(estimator.classes_),
-        'voteWeights': 'voteUniform' if estimator.weights == 'uniform' else 'voteDistance',
-        'resultsToEvaluate': 'computeClassLabels',
-        'resultsToCompute': ''
+        'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
+        'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
+        'resultsToEvaluate': 'none' if estimator._y is None else 'computeClassLabels'
     }
+    if hasattr(estimator, 'classes_'):
+        params['nClasses'] = len(estimator.classes_)
+
+    labels = None if estimator._y is None else estimator._y.reshape(-1, 1)
 
     method = parse_auto_method(estimator, estimator.algorithm, estimator.n_samples_fit_, estimator.n_features_in_)
+    estimator._fit_method = method
     train_alg = training_algorithm(method, fptype, params)
-    estimator.daal_model_ = train_alg.compute(X, estimator._y.reshape(-1, 1)).model
+    estimator.daal_model_ = train_alg.compute(X, labels).model
 
 
 def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True):
@@ -146,24 +151,35 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
     except ValueError:
         fptype = None
 
+    weights = getattr(estimator, 'weights', 'uniform')
+
     params = {
         'method': 'defaultDense',
         'k': n_neighbors,
-        'resultsToCompute': 'computeIndicesOfNeighbors',
-        'resultsToEvaluate': 'none'
+        'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
+        'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
+        'resultsToEvaluate': 'none' if estimator._y is None else 'computeClassLabels'
     }
-    if return_distance:
-        params['resultsToCompute'] += '|computeDistances'
+    if hasattr(estimator, 'classes_'):
+        params['nClasses'] = len(estimator.classes_)
 
     method = parse_auto_method(estimator, estimator._fit_method, estimator.n_samples_fit_, n_features)
 
     predict_alg = prediction_algorithm(method, fptype, params)
     prediction_result = predict_alg.compute(X, estimator.daal_model_)
 
+    distances = prediction_result.distances
+    indices = prediction_result.indices
+    for i in range(distances.shape[0]):
+        seq = distances[i].argsort()
+        indices[i] = indices[i][seq]
+        distances[i] = distances[i][seq]
+
     if return_distance:
-        results = prediction_result.distances.astype(fptype), prediction_result.indices.astype(int)
+        return_fptype = 'double' if method == 'kd_tree' else fptype
+        results = distances.astype(return_fptype), indices.astype(int)
     else:
-        results = prediction_result.indices.astype(int)
+        results = indices.astype(int)
 
     if chunked_results is not None:
         if return_distance:
@@ -206,43 +222,51 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
 class NeighborsBase(BaseNeighborsBase):
     def _fit(self, X, y=None):
         X_incorrect_type = isinstance(X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
+        single_output = True
 
-        if not X_incorrect_type:
-            X, y = self._validate_data(X, y, accept_sparse="csr", multi_output=True)
-            single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
+        if self._get_tags()["requires_y"]:
+            if not X_incorrect_type:
+                X, y = self._validate_data(X, y, accept_sparse="csr", multi_output=True)
+                single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
 
-        if is_classifier(self):
-            if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
-                self.outputs_2d_ = False
-                y = y.reshape((-1, 1))
+            if is_classifier(self):
+                if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
+                    self.outputs_2d_ = False
+                    y = y.reshape((-1, 1))
+                else:
+                    self.outputs_2d_ = True
+
+                check_classification_targets(y)
+                self.classes_ = []
+                self._y = np.empty(y.shape, dtype=int)
+                for k in range(self._y.shape[1]):
+                    classes, self._y[:, k] = np.unique(
+                        y[:, k], return_inverse=True)
+                    self.classes_.append(classes)
+
+                if not self.outputs_2d_:
+                    self.classes_ = self.classes_[0]
+                    self._y = self._y.ravel()
+
+                n_classes = len(self.classes_)
+                if n_classes < 2:
+                    raise ValueError("Training data only contain information about one class.")
             else:
-                self.outputs_2d_ = True
-
-            check_classification_targets(y)
-            self.classes_ = []
-            self._y = np.empty(y.shape, dtype=int)
-            for k in range(self._y.shape[1]):
-                classes, self._y[:, k] = np.unique(
-                    y[:, k], return_inverse=True)
-                self.classes_.append(classes)
-
-            if not self.outputs_2d_:
-                self.classes_ = self.classes_[0]
-                self._y = self._y.ravel()
-
-            n_classes = len(self.classes_)
-            if n_classes < 2:
-                raise ValueError("Training data only contain information about one class.")
+                self._y = y
         else:
-            self._y = y
+            if not X_incorrect_type:
+                X = self._validate_data(X, accept_sparse='csr')
+            self._y = None
 
         try:
             fptype = getFPType(X)
         except ValueError:
             fptype = None
 
+        weights = getattr(self, 'weights', 'uniform')
+
         if daal_check_version((2020, 3)) and not X_incorrect_type \
-        and self.weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
+        and weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and single_output and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.NeighborsBase._fit: " + method_uses_daal)
@@ -250,7 +274,7 @@ class NeighborsBase(BaseNeighborsBase):
             result = self
         else:
             logging.info("sklearn.neighbors.NeighborsBase._fit: " + method_uses_sklearn)
-            result = super(NeighborsBase, self)._fit(X)
+            result = super(NeighborsBase, self)._fit(X, y)
 
         return result
 

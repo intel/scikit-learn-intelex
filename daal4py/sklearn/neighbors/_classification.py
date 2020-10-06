@@ -24,7 +24,7 @@ from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.neighbors._base import _check_weights
 
 
-class KNeighborsClassifier(NeighborsBase, KNeighborsMixin, BaseClassifierMixin):
+class KNeighborsClassifier(KNeighborsMixin, BaseClassifierMixin, NeighborsBase):
     @_deprecate_positional_args
     def __init__(self, n_neighbors=5, *,
                  weights='uniform', algorithm='auto', leaf_size=30,
@@ -39,7 +39,7 @@ class KNeighborsClassifier(NeighborsBase, KNeighborsMixin, BaseClassifierMixin):
         self.weights = _check_weights(weights)
 
     def fit(self, X, y):
-        return NeighborsBase._fit(self, X, y)
+        return BaseKNeighborsClassifier.fit(self, X, y)
 
     def predict(self, X):
         return BaseKNeighborsClassifier.predict(self, X)
