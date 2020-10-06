@@ -15,15 +15,16 @@
 # limitations under the License.
 # ******************************************************************************/
 
-# daal4py KNN classification scikit-learn-compatible classes
+# daal4py KNN scikit-learn-compatible classes
 
 from ._base import NeighborsBase, KNeighborsMixin
-from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
+from ._base import RadiusNeighborsMixin
+# from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
 from sklearn.neighbors._unsupervised import NearestNeighbors as BaseNearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args
 
 
-class NearestNeighbors(KNeighborsMixin, BaseRadiusNeighborsMixin, NeighborsBase):
+class NearestNeighbors(KNeighborsMixin, RadiusNeighborsMixin, NeighborsBase):
     @_deprecate_positional_args
     def __init__(self, *, n_neighbors=5, radius=1.0,
                  algorithm='auto', leaf_size=30, metric='minkowski',

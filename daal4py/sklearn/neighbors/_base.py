@@ -24,6 +24,7 @@ from scipy import sparse as sp
 from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_uses_daal
 from sklearn.utils.validation import check_array, check_is_fitted
 from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
+from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
 from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
 from joblib import effective_n_jobs
 from sklearn.neighbors._base import _check_precomputed
@@ -84,6 +85,7 @@ def daal4py_fit(estimator, X, fptype):
     estimator._fit_X = X
     estimator._fit_method = estimator.algorithm
     estimator.effective_metric_ = 'euclidean'
+    estimator._tree = None
     weights = getattr(estimator, 'weights', 'uniform')
 
     params = {
@@ -295,8 +297,18 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             result = daal4py_kneighbors(self, X, n_neighbors, return_distance)
         else:
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_sklearn)
+            if getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
+                raise ValueError('oneDAL does not build sklearn.neighbors._kd_tree.KDTree')
             if hasattr(self, 'daal_model_'):
                 BaseNeighborsBase._fit(self, self._fit_X, self._y)
             result = super(KNeighborsMixin, self).kneighbors(X, n_neighbors, return_distance)
 
         return result
+
+
+class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
+    def radius_neighbors(self, X=None, radius=None, return_distance=True,
+                         sort_results=False):
+        if getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
+            raise ValueError('oneDAL does not build sklearn.neighbors._kd_tree.KDTree')
+        return BaseRadiusNeighborsMixin.radius_neighbors(self, X, radius, return_distance, sort_results)
