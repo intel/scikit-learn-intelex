@@ -9,12 +9,12 @@ matrix:
             - PYVER=""
         - name: "OsX-Py3"
           os: osx
-          osx_image: xcode12
+          osx_image: xcode8
           env:
             - MATRIX_EVAL="brew install gcc@7; xcode-select --install; CC=gcc-7 ; CXX=g++-7"
             #- MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
-            - MACOSX_DEPLOYMENT_TARGET=10.15
+            - MACOSX_DEPLOYMENT_TARGET=10.9
             - PYVER=""
 
 before_install:
