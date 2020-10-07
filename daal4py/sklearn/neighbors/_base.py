@@ -22,7 +22,7 @@ import numbers
 import daal4py as d4p
 from scipy import sparse as sp
 from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_uses_daal
-from sklearn.utils.validation import check_array, check_is_fitted
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
 from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
 from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
@@ -38,6 +38,7 @@ from distutils.version import LooseVersion
 
 
 SKLEARN_24 = LooseVersion(sklearn_version) >= LooseVersion("0.24")
+SKLEARN_23 = LooseVersion(sklearn_version) >= LooseVersion("0.23")
 
 
 def training_algorithm(method, fptype, params):
@@ -226,14 +227,43 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
         return neigh_ind
 
 
+def validate_data(estimator, X, y=None, reset=True,
+                       validate_separately=False, **check_params):
+    if y is None:
+        if estimator._get_tags()['requires_y']:
+            raise ValueError(
+                f"This {estimator.__class__.__name__} estimator "
+                f"requires y to be passed, but the target y is None."
+            )
+        X = check_array(X, **check_params)
+        out = X
+    else:
+        if validate_separately:
+            # We need this because some estimators validate X and y
+            # separately, and in general, separately calling check_array()
+            # on X and y isn't equivalent to just calling check_X_y()
+            # :(
+            check_X_params, check_y_params = validate_separately
+            X = check_array(X, **check_X_params)
+            y = check_array(y, **check_y_params)
+        else:
+            X, y = check_X_y(X, y, **check_params)
+        out = X, y
+
+    if SKLEARN_23 and check_params.get('ensure_2d', True):
+        estimator._check_n_features(X, reset=reset)
+
+    return out
+
+
 class NeighborsBase(BaseNeighborsBase):
     def _fit(self, X, y=None):
         X_incorrect_type = isinstance(X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
         single_output = True
 
-        if self._get_tags()["requires_y"] or not SKLEARN_24:
+        if not SKLEARN_24 or self._get_tags()["requires_y"]:
             if not X_incorrect_type:
-                X, y = self._validate_data(X, y, accept_sparse="csr", multi_output=True)
+                X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True)
                 single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
 
             if is_classifier(self):
@@ -262,7 +292,7 @@ class NeighborsBase(BaseNeighborsBase):
                 self._y = y
         else:
             if not X_incorrect_type:
-                X = self._validate_data(X, accept_sparse='csr')
+                X = validate_data(self, X, accept_sparse='csr')
             self._y = None
 
         try:
