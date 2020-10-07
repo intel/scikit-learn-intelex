@@ -341,13 +341,14 @@ T transceiver::recv(size_t sender, size_t tag)
         assert(br == sizeof(sz));
         T res;
         if(sz > 0) {
-            daal::byte * buf = new daal::byte[sz];
+            daal::byte * buf = static_cast<daal::byte *>(daal::services::daal_malloc(sz * sizeof(daal::byte)));
+            DAAL4PY_CHECK_MALLOC(szs);
             br = m_transceiver->recv(buf, sz, sender, tag);
             assert(br == sz);
             // It'd be nice to avoid the additional copy, need a special DatArchive (see older CnC versions of daal4py)
             daal::data_management::OutputDataArchive out_arch(buf, sz);
             res = daal::services::staticPointerCast<typename T::ElementType>(out_arch.getAsSharedPtr());
-            delete [] buf;
+            daal::services::daal_free(buf);
             buf = NULL;
         }
         return res;
@@ -388,11 +389,11 @@ std::vector<daal::services::SharedPtr<T> > transceiver::gather(const daal::servi
                 all[i] = daal::services::SharedPtr<T>();
             }
         }
-        delete [] buff;
+        daal::services::daal_free(buff);
         buff = NULL;
     }
     
-    delete [] sizes;
+    daal::services::daal_free(sizes);
     sizes = NULL;
     
     return all;
@@ -419,7 +420,7 @@ void transceiver::bcast(daal::services::SharedPtr<T> & obj, size_t root)
         int size = 0;
         m_transceiver->bcast(&size, sizeof(size), root);
         if(size > 0) {
-            char * buff = new char[size];
+            char * buff = static_cast<char *>(daal::services::daal_malloc(size));
             m_transceiver->bcast(buff, size, root);
             daal::data_management::OutputDataArchive out_arch(reinterpret_cast<daal::byte*>(buff), size);
             obj = daal::services::staticPointerCast<T>(out_arch.getAsSharedPtr());

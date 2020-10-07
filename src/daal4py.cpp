@@ -71,7 +71,7 @@ void daalsp_free_cap(PyObject * cap)
     VSP * sp = static_cast<VSP *>(PyCapsule_GetPointer(cap, NULL));
     if (sp)
     {
-        delete sp;
+        daal::services::daal_free(sp);
         sp = NULL;
     }
 }
@@ -82,7 +82,7 @@ void rawp_free_cap(PyObject * cap)
     void * rp = PyCapsule_GetPointer(cap, NULL);
     if (rp)
     {
-        delete[] rp;
+        daal::services::daal_free(rp);
         rp = NULL;
     }
 }
@@ -99,8 +99,8 @@ void set_rawp_base(PyArrayObject * ary, void * ptr)
 template <typename T, int NPTYPE>
 static PyObject * _sp_to_nda(daal::services::SharedPtr<T> & sp, size_t nr, size_t nc)
 {
-    DAAL4PY_CHECK(nc <= INT_MAX, "Bad cast size_t to int");
-    DAAL4PY_CHECK(nr <= INT_MAX, "Bad cast size_t to int");
+    DAAL4PY_CHECK_BAD_CAST(nc <= std::numeric_limits<int>::max());
+    DAAL4PY_CHECK_BAD_CAST(nr <= std::numeric_limits<int>::max());
     npy_intp dims[2] = { static_cast<npy_intp>(nr), static_cast<npy_intp>(nc) };
     PyObject * obj   = PyArray_SimpleNewFromData(2, dims, NPTYPE, static_cast<void *>(sp.get()));
     if (!obj) throw std::invalid_argument("conversion to numpy array failed");
@@ -146,7 +146,7 @@ static PyObject * _make_nda_from_homogen(daal::data_management::NumericTablePtr 
 template <typename T, int NPTYPE>
 static PyObject * _make_npy_from_data(T * data, size_t n)
 {
-    DAAL4PY_CHECK(n <= INT_MAX, "Bad cast size_t to int");
+    DAAL4PY_CHECK_BAD_CAST(n <= std::numeric_limits<int>::max());
     npy_intp dims[1] = { static_cast<npy_intp>(n) };
     PyObject * obj   = PyArray_SimpleNewFromData(1, dims, NPTYPE, static_cast<void *>(data));
     if (!obj) throw std::invalid_argument("conversion to numpy array failed");
@@ -419,7 +419,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 Py_DECREF(_obj);
                 auto nt = reinterpret_cast<daal::data_management::NumericTablePtr *>(_ptr);
                 ntptr   = *nt;
-                delete nt; // we delete the shared pointer-pointer
+                daal::services::daal_free(nt); // we delete the shared pointer-pointer
                 nt = NULL;
             }
 
@@ -742,10 +742,10 @@ extern "C" void to_c_array(const daal::data_management::NumericTablePtr * ptr, v
         case 0: *data = get_nt_data_ptr<double>(ptr); break;
         case 1: *data = get_nt_data_ptr<float>(ptr); break;
         case 2: *data = get_nt_data_ptr<int>(ptr); break;
-        default: std::invalid_argument("Invalid data type specified.");
+        default: throw std::invalid_argument("Invalid data type specified.");
         }
         if (*data) return;
-        std::invalid_argument("Data type and table type are incompatible.");
+        throw std::invalid_argument("Data type and table type are incompatible.");
     }
     // ptr==NULL: no input data
     dims[0] = dims[1] = 0;

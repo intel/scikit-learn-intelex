@@ -298,7 +298,7 @@ extern void rawp_free_cap(PyObject *);
 template< typename T >
 void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
 {
-    void * tmp_sp = (void*) new TVSP<T>(sp);
+    void * tmp_sp = static_cast<void*>(new TVSP<T>(sp));
     PyObject* cap = PyCapsule_New(tmp_sp, NULL, daalsp_free_cap);
     PyArray_SetBaseObject(ary, cap);
 }

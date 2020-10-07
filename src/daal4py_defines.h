@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2014-2020 Intel Corporation
+* Copyright 2020 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -36,6 +36,9 @@
 
 #define DAAL4PY_CHECK(cond, error) \
     if (!(cond)) throw std::runtime_error(error);
+
+#define DAAL4PY_CHECK_BAD_CAST(cond) \
+    if (!(cond)) throw std::runtime_error("Bad casting");
 
 #define DAAL4PY_CHECK_MALLOC(cond) \
     if (!(cond)) throw std::bad_alloc();

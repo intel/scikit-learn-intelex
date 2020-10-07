@@ -312,7 +312,6 @@ public:
             NpyIter_GotoIterIndex(iter, startrow);
             size_t n = 0;
             // ptr to column in block
-            DAAL4PY_OVERFLOW_CHECK_BY_ADDING(size_t, j, startcol)
             T * blockPtr = block.getBlockPtr() + j + startcol;
             // feature for column
             daal::data_management::NumericTableFeature &f = (*ddict)[j + startcol];
@@ -496,14 +495,15 @@ public:
         size_t len;
         archive->set(len);
 
-        char * nds = new char[len];
+        char * nds = static_cast<char *>(daal::services::daal_malloc(len));
+        DAAL4PY_CHECK_MALLOC(nds);
         archive->set(nds, len);
         // ..then create the type descriptor
         PyObject * npy = PyImport_ImportModule("numpy");
         PyObject * globalDictionary = PyModule_GetDict(npy);
         PyArray_Descr* nd = reinterpret_cast<PyArray_Descr*>(PyRun_String(PyString_AsString(PyObject_Str(PyString_FromString(nds))), Py_eval_input, globalDictionary,
                                                          NULL));
-        delete [] nds;
+        daal::services::daal_free(nds);
         nds = NULL;
         if(nd == NULL) {
             PyGILState_Release(__state);

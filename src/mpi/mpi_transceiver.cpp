@@ -18,7 +18,7 @@
 #include "daal4py_defines.h"
 #include <mpi.h>
 #include <Python.h>
-#include <climits>
+#include <limits>
 
 void mpi_transceiver::init()
 {
@@ -70,8 +70,9 @@ void * mpi_transceiver::gather(const void * ptr, size_t N, size_t root, const si
     if(varying) {
         // -> gatherv
         if(m_me == root) {
-            int * offsets = new int[m_nMembers];
-            DAAL4PY_CHECK(sizes[0] <= INT_MAX, "Bad cast size_t to int");
+            int * offsets = static_cast<int *>(daal::services::daal_malloc(m_nMembers * sizeof(int)));
+            DAAL4PY_CHECK_MALLOC(offsets);
+            DAAL4PY_CHECK_BAD_CAST(sizes[0] <= std::numeric_limits<int>::max());
             int tot_sz = sizes[0];
             offsets[0] = 0;
             for(int i = 1; i < m_nMembers; ++i) {
@@ -80,19 +81,20 @@ void * mpi_transceiver::gather(const void * ptr, size_t N, size_t root, const si
                 DAAL4PY_OVERFLOW_CHECK_BY_ADDING(int, tot_sz, sizes[i]);
                 tot_sz += sizes[i];
             }
-            buff = new char[tot_sz];
-            int * szs = new int[m_nMembers];
+            buff = static_cast<char *>(daal::services::daal_malloc(tot_sz));
+            DAAL4PY_CHECK_MALLOC(buff);
+            int * szs = static_cast<int *>(daal::services::daal_malloc(m_nMembers * sizeof(int)));
+            DAAL4PY_CHECK_MALLOC(szs);
             for(size_t i=0; i<m_nMembers; ++i)
             {
-                DAAL4PY_CHECK(sizes[i] <= INT_MAX, "Bad cast size_t to int");
                 szs[i] = static_cast<int>(sizes[i]);
             }
             MPI_Gatherv(ptr, N, MPI_CHAR,
                         buff, szs, offsets, MPI_CHAR,
                         root, MPI_COMM_WORLD);
-            delete [] szs;
+            daal::services::daal_free(szs);
             szs = NULL;
-            delete [] offsets;
+            daal::services::daal_free(offsets);
             offsets = NULL;
 
         } else {
@@ -101,7 +103,11 @@ void * mpi_transceiver::gather(const void * ptr, size_t N, size_t root, const si
                         root, MPI_COMM_WORLD);
         }
     } else {
-        if(m_me == root) buff = new char[m_nMembers*N];
+        if(m_me == root)
+        {
+            buff = static_cast<char *>(daal::services::daal_malloc(m_nMembers*N));
+            DAAL4PY_CHECK_MALLOC(buff);
+        }
         // -> gather with same size on all procs
         MPI_Gather(ptr, N, MPI_CHAR, buff, N, MPI_CHAR, root, MPI_COMM_WORLD);
     }
