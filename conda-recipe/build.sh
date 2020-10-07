@@ -19,7 +19,7 @@ fi
 
 if [ `uname` == Darwin ]; then
     # dead_strip_dylibs does not work with DAAL, which is underlinked by design
-    export MACOSX_DEPLOYMENT_TARGET="10.10"
+    # export MACOSX_DEPLOYMENT_TARGET="10.10"
     export LDFLAGS="${LDFLAGS//-Wl,-dead_strip_dylibs}"
     export LDFLAGS_LD="${LDFLAGS_LD//-dead_strip_dylibs}"
     # some dead_strip_dylibs come from Python's sysconfig. Setting LDSHARED overrides that
