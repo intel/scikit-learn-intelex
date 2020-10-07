@@ -28,7 +28,7 @@ jobs:
       export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda build --override-channels -c conda-forge -c intel conda-recipe
+      conda build --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 conda-recipe
     displayName: conda build
 
 - job: Windows
@@ -44,5 +44,5 @@ jobs:
 
   - script: |
       call activate CB
-      conda build --override-channels -c conda-forge -c intel --output-folder=. conda-recipe
+      conda build --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 --output-folder=. conda-recipe
     displayName: conda build
