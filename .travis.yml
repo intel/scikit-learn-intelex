@@ -11,11 +11,14 @@ matrix:
           os: osx
           osx_image: xcode12
           env:
-            - MATRIX_EVAL="brew cask uninstall oclint && brew install gcc@8; xcode-select --install; CC=gcc-7 ; CXX=g++-7 "
+            - MATRIX_EVAL="brew install gcc@7; xcode-select --install; CC=gcc-7 ; CXX=g++-7 "
             #- MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
             - MACOSX_DEPLOYMENT_TARGET="10.14"
             - PYVER=""
+
+before_install:
+  - eval "${MATRIX_EVAL}"
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
