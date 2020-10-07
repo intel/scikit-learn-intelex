@@ -20,7 +20,7 @@ jobs:
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             mkdir -p /tmp/out
-            conda build --python=37 --override-channels -c conda-forge -c intel -c defaults --output-folder /tmp/out --no-test conda-recipe
+            conda build --python=37 --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
@@ -63,7 +63,7 @@ jobs:
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             mkdir -p /tmp/out
-            conda build --python=37 --override-channels -c conda-forge -c intel --output-folder /tmp/out --no-test conda-recipe
+            conda build --python=37 --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
