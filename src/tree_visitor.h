@@ -207,8 +207,8 @@ toSKLearnTreeObjectVisitor<M>::toSKLearnTreeObjectVisitor(size_t _depth, size_t 
     max_depth = _depth;
     leaf_count = _n_leafs;
     class_count = _max_n_classes;
-    node_ar = static_cast<skl_tree_node *>(daal::services::daal_malloc(node_count * sizeof(skl_tree_node)));
-    value_ar = static_cast<double *>(daal::services::daal_malloc(node_count*class_count * sizeof(double))); // DAAL only supports scalar responses for now
+    node_ar = new skl_tree_node[node_count];
+    value_ar = new double[node_count*1*class_count](); // DAAL only supports scalar responses for now
 }
 
 

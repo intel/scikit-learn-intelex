@@ -17,7 +17,7 @@
 #define NO_IMPORT_ARRAY
 #include <cstdint>
 #include <cstring>
-#include <climits>
+#include <limits>
 #include <Python.h>
 #include "daal4py.h"
 #include "npy4daal.h"
@@ -71,7 +71,7 @@ void daalsp_free_cap(PyObject * cap)
     VSP * sp = static_cast<VSP *>(PyCapsule_GetPointer(cap, NULL));
     if (sp)
     {
-        daal::services::daal_free(sp);
+        delete sp;
         sp = NULL;
     }
 }
@@ -82,7 +82,7 @@ void rawp_free_cap(PyObject * cap)
     void * rp = PyCapsule_GetPointer(cap, NULL);
     if (rp)
     {
-        daal::services::daal_free(rp);
+        delete[] rp;
         rp = NULL;
     }
 }
@@ -419,7 +419,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 Py_DECREF(_obj);
                 auto nt = reinterpret_cast<daal::data_management::NumericTablePtr *>(_ptr);
                 ntptr   = *nt;
-                daal::services::daal_free(nt); // we delete the shared pointer-pointer
+                delete nt; // we delete the shared pointer-pointer
                 nt = NULL;
             }
 
