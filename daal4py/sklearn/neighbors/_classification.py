@@ -22,24 +22,57 @@ from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.neighbors._base import _check_weights
+from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
 
 
-class KNeighborsClassifier(KNeighborsMixin, BaseClassifierMixin, NeighborsBase):
+if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+    class KNeighborsClassifier_(KNeighborsMixin, BaseClassifierMixin, NeighborsBase):
+        @_deprecate_positional_args
+        def __init__(self, n_neighbors=5, *,
+                    weights='uniform', algorithm='auto', leaf_size=30,
+                    p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                    **kwargs):
+            super().__init__(
+                n_neighbors=n_neighbors,
+                algorithm=algorithm,
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params,
+                n_jobs=n_jobs, **kwargs)
+            self.weights = _check_weights(weights)
+else:
+    from sklearn.neighbors._base import SupervisedIntegerMixin as BaseSupervisedIntegerMixin
+    class KNeighborsClassifier_(NeighborsBase, KNeighborsMixin, BaseSupervisedIntegerMixin, BaseClassifierMixin):
+        @_deprecate_positional_args
+        def __init__(self, n_neighbors=5, *,
+                    weights='uniform', algorithm='auto', leaf_size=30,
+                    p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                    **kwargs):
+            super().__init__(
+                n_neighbors=n_neighbors,
+                algorithm=algorithm,
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params,
+                n_jobs=n_jobs, **kwargs)
+            self.weights = _check_weights(weights)
+
+
+class KNeighborsClassifier(KNeighborsClassifier_):
     @_deprecate_positional_args
     def __init__(self, n_neighbors=5, *,
-                 weights='uniform', algorithm='auto', leaf_size=30,
-                 p=2, metric='minkowski', metric_params=None, n_jobs=None,
-                 **kwargs):
+                weights='uniform', algorithm='auto', leaf_size=30,
+                p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                **kwargs):
         super().__init__(
             n_neighbors=n_neighbors,
+            weights=weights,
             algorithm=algorithm,
             leaf_size=leaf_size, metric=metric, p=p,
             metric_params=metric_params,
             n_jobs=n_jobs, **kwargs)
-        self.weights = _check_weights(weights)
 
     def fit(self, X, y):
-        return BaseKNeighborsClassifier.fit(self, X, y)
+        return NeighborsBase._fit(self, X, y)
 
     def predict(self, X):
         return BaseKNeighborsClassifier.predict(self, X)

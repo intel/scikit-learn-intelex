@@ -33,6 +33,11 @@ from sklearn.neighbors._kd_tree import KDTree
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.base import is_classifier
 import logging
+from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
+
+
+SKLEARN_24 = LooseVersion(sklearn_version) >= LooseVersion("0.24")
 
 
 def training_algorithm(method, fptype, params):
@@ -226,7 +231,7 @@ class NeighborsBase(BaseNeighborsBase):
         X_incorrect_type = isinstance(X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
         single_output = True
 
-        if self._get_tags()["requires_y"]:
+        if self._get_tags()["requires_y"] or not SKLEARN_24:
             if not X_incorrect_type:
                 X, y = self._validate_data(X, y, accept_sparse="csr", multi_output=True)
                 single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
@@ -276,7 +281,10 @@ class NeighborsBase(BaseNeighborsBase):
             result = self
         else:
             logging.info("sklearn.neighbors.NeighborsBase._fit: " + method_uses_sklearn)
-            result = super(NeighborsBase, self)._fit(X, y)
+            if SKLEARN_24:
+                result = super(NeighborsBase, self)._fit(X, y)
+            else:
+                result = super(NeighborsBase, self)._fit(X)
 
         return result
 
@@ -300,7 +308,10 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             if getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
                 raise ValueError('oneDAL does not build sklearn.neighbors._kd_tree.KDTree')
             if hasattr(self, 'daal_model_'):
-                BaseNeighborsBase._fit(self, self._fit_X, self._y)
+                if SKLEARN_24:
+                    BaseNeighborsBase._fit(self, self._fit_X, self._y)
+                else:
+                    BaseNeighborsBase._fit(self, self._fit_X)
             result = super(KNeighborsMixin, self).kneighbors(X, n_neighbors, return_distance)
 
         return result
