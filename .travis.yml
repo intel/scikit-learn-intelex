@@ -23,7 +23,7 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda install -c conda-forge conda-forge::conda-build
+  - conda install -q conda-build
   # Useful for debugging any issues with conda
   - conda info -a
   - gcc --version
