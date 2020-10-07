@@ -29,4 +29,4 @@ install:
   - gcc --version
 
 script:
-  - conda build -c intel -c conda-forge --numpy=1.16 $PYVER --output-folder ./ conda-recipe
+  - conda build -c intel -c conda-forge --numpy=1.17 $PYVER --output-folder ./ conda-recipe
