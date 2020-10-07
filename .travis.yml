@@ -24,8 +24,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda config --add channels conda-forge
   - conda update -q conda
-  - conda install conda-build=2 anaconda-client
-  - conda update -q conda-build
+  - conda install -c anaconda conda-build
   
   #- conda update -q conda
   #- conda install conda-build
