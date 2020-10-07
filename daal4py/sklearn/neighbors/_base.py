@@ -23,13 +23,7 @@ import daal4py as d4p
 from scipy import sparse as sp
 from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_uses_daal
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
-from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
-from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
-from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
 from joblib import effective_n_jobs
-from sklearn.neighbors._base import _check_precomputed
-from sklearn.neighbors._ball_tree import BallTree
-from sklearn.neighbors._kd_tree import KDTree
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.base import is_classifier
 import logging
@@ -39,6 +33,21 @@ from distutils.version import LooseVersion
 
 SKLEARN_24 = LooseVersion(sklearn_version) >= LooseVersion("0.24")
 SKLEARN_23 = LooseVersion(sklearn_version) >= LooseVersion("0.23")
+SKLEARN_22 = LooseVersion(sklearn_version) >= LooseVersion("0.22")
+
+
+if SKLEARN_22:
+    from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
+    from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
+    from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
+    from sklearn.neighbors._ball_tree import BallTree
+    from sklearn.neighbors._kd_tree import KDTree
+else:
+    from sklearn.neighbors.base import KNeighborsMixin as BaseKNeighborsMixin
+    from sklearn.neighbors.base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
+    from sklearn.neighbors.base import NeighborsBase as BaseNeighborsBase
+    from sklearn.neighbors.ball_tree import BallTree
+    from sklearn.neighbors.kd_tree import KDTree
 
 
 def training_algorithm(method, fptype, params):
@@ -118,7 +127,10 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
     if n_features and shape and len(shape) > 1 and shape[1] != n_features:
         raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
 
-    check_is_fitted(estimator)
+    if SKLEARN_22:
+        check_is_fitted(estimator)
+    else:
+        check_is_fitted(estimator, [])
 
     if n_neighbors is None:
         n_neighbors = estimator.n_neighbors

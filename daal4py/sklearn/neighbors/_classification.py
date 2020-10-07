@@ -19,14 +19,26 @@
 
 from ._base import NeighborsBase, KNeighborsMixin
 from sklearn.base import ClassifierMixin as BaseClassifierMixin
-from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
-from sklearn.utils.validation import _deprecate_positional_args
-from sklearn.neighbors._base import _check_weights
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+SKLEARN_24 = LooseVersion(sklearn_version) >= LooseVersion("0.24")
+SKLEARN_22 = LooseVersion(sklearn_version) >= LooseVersion("0.22")
+
+
+if SKLEARN_22:
+    from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
+    from sklearn.neighbors._base import _check_weights
+    from sklearn.utils.validation import _deprecate_positional_args
+else:
+    from sklearn.neighbors.classification import KNeighborsClassifier as BaseKNeighborsClassifier
+    from sklearn.neighbors.base import _check_weights
+    def _deprecate_positional_args(f):
+        return f
+
+
+if SKLEARN_24:
     class KNeighborsClassifier_(KNeighborsMixin, BaseClassifierMixin, NeighborsBase):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
@@ -40,8 +52,23 @@ if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
                 metric_params=metric_params,
                 n_jobs=n_jobs, **kwargs)
             self.weights = _check_weights(weights)
-else:
+elif SKLEARN_22:
     from sklearn.neighbors._base import SupervisedIntegerMixin as BaseSupervisedIntegerMixin
+    class KNeighborsClassifier_(NeighborsBase, KNeighborsMixin, BaseSupervisedIntegerMixin, BaseClassifierMixin):
+        @_deprecate_positional_args
+        def __init__(self, n_neighbors=5, *,
+                    weights='uniform', algorithm='auto', leaf_size=30,
+                    p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                    **kwargs):
+            super().__init__(
+                n_neighbors=n_neighbors,
+                algorithm=algorithm,
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params,
+                n_jobs=n_jobs, **kwargs)
+            self.weights = _check_weights(weights)
+else:
+    from sklearn.neighbors.base import SupervisedIntegerMixin as BaseSupervisedIntegerMixin
     class KNeighborsClassifier_(NeighborsBase, KNeighborsMixin, BaseSupervisedIntegerMixin, BaseClassifierMixin):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
