@@ -11,7 +11,7 @@ matrix:
           os: osx
           osx_image: xcode12
           env:
-            - MATRIX_EVAL="brew install gcc@7; xcode-select --install; CC=gcc-7 ; CXX=g++-7 "
+            - MATRIX_EVAL="brew install gcc@7; xcode-select --install; CC=gcc-7 ; CXX=g++-7"
             #- MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
             - MACOSX_DEPLOYMENT_TARGET="10.14"
@@ -28,12 +28,13 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda config --add channels conda-forge
   - conda update -q conda
-  
-  - conda install conda-build
-  #- conda install -c conda-forge conda-forge::conda-build
+  - conda install -q conda-build
+  - export CC=gcc-7
+  - export CXX=g++-7
   # Useful for debugging any issues with conda
   - conda info -a
-  - gcc --version
-
+  - gcc -v
+  - g++ -v
+  
 script:
   - conda build -c intel -c conda-forge --numpy=1.17 $PYVER --output-folder ./ conda-recipe
