@@ -17,8 +17,7 @@ matrix:
             - PYVER=""
 
 install:
-  - xcode-select -p
-  - sudo xcode-select --switch /Library/Developer/CommandLineTools/
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then xcode-select --install; fi
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
@@ -26,10 +25,8 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda config --add channels conda-forge
   - conda update -q conda
-  - conda install -c anaconda conda-build
   
-  #- conda update -q conda
-  #- conda install conda-build
+  - conda install conda-build
   #- conda install -c conda-forge conda-forge::conda-build
   # Useful for debugging any issues with conda
   - conda info -a
