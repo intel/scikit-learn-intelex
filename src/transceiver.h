@@ -42,6 +42,7 @@
 #include <memory>
 #include <iostream>
 #include <cassert>
+#include "daal4py_defines.h"
 
 // Abstract class with minimal functionality needed for communicating between processes.
 class transceiver_base_iface
@@ -342,7 +343,7 @@ T transceiver::recv(size_t sender, size_t tag)
         T res;
         if(sz > 0) {
             daal::byte * buf = static_cast<daal::byte *>(daal::services::daal_malloc(sz * sizeof(daal::byte)));
-            DAAL4PY_CHECK_MALLOC(szs);
+            DAAL4PY_CHECK_MALLOC(buf);
             br = m_transceiver->recv(buf, sz, sender, tag);
             assert(br == sz);
             // It'd be nice to avoid the additional copy, need a special DatArchive (see older CnC versions of daal4py)
