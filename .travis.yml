@@ -17,7 +17,8 @@ matrix:
             - PYVER=""
 
 install:
-  - xcode-select --install
+  - xcode-select -p
+  - sudo xcode-select --switch /Library/Developer/CommandLineTools/
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
