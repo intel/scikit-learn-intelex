@@ -756,7 +756,7 @@ class cython_interface(object):
                     p = '::'.join([pns.replace('algorithms::', ''), splitns(i)[1]])
                     if p in ifaces:
                         ifcs.append(cpp2hl(p))
-            jparams['iface'] = ifcs if len(ifcs) else [None]
+            jparams['iface'] = ifcs if ifcs else [None]
         else:
             jparams = {}
 
