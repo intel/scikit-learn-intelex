@@ -17,7 +17,7 @@
 
 # daal4py KNN classification scikit-learn-compatible classes
 
-from ._base import NeighborsBase, KNeighborsMixin
+from ._base import NeighborsBase, KNeighborsMixin, daal4py_classifier_predict
 from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
@@ -102,7 +102,7 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         return NeighborsBase._fit(self, X, y)
 
     def predict(self, X):
-        return BaseKNeighborsClassifier.predict(self, X)
+        return daal4py_classifier_predict(self, X, BaseKNeighborsClassifier.predict)
 
     def predict_proba(self, X):
         return BaseKNeighborsClassifier.predict_proba(self, X)

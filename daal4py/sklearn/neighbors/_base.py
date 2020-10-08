@@ -95,8 +95,6 @@ def parse_auto_method(estimator, method, n_samples, n_features):
 
 
 def daal4py_fit(estimator, X, fptype):
-    estimator.n_samples_fit_ = X.shape[0]
-    estimator.n_features_in_ = X.shape[1]
     estimator._fit_X = X
     estimator._fit_method = estimator.algorithm
     estimator.effective_metric_ = 'euclidean'
@@ -307,6 +305,10 @@ class NeighborsBase(BaseNeighborsBase):
                 X = validate_data(self, X, accept_sparse='csr')
             self._y = None
 
+        if not X_incorrect_type:
+            self.n_samples_fit_ = X.shape[0]
+            self.n_features_in_ = X.shape[1]
+
         try:
             fptype = getFPType(X)
         except ValueError:
@@ -365,3 +367,47 @@ class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
         if getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
             raise ValueError('oneDAL does not build sklearn.neighbors._kd_tree.KDTree')
         return BaseRadiusNeighborsMixin.radius_neighbors(self, X, radius, return_distance, sort_results)
+
+
+def daal4py_classifier_predict(estimator, X, base_predict):
+    from sklearn.preprocessing import LabelEncoder
+
+    X = check_array(X, accept_sparse='csr')
+
+    n_features = getattr(estimator, 'n_features_in_', None)
+    shape = getattr(X, 'shape', None)
+    if n_features and shape and len(shape) > 1 and shape[1] != n_features:
+        raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
+
+    try:
+        fptype = getFPType(X)
+    except ValueError:
+        fptype = None
+
+    if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and hasattr(estimator, 'daal_model_') \
+    and estimator.weights in ['uniform', 'distance'] and estimator.algorithm in ['brute', 'kd_tree', 'auto'] \
+    and (estimator.metric == 'minkowski' and estimator.p == 2 or estimator.metric == 'euclidean') \
+    and fptype is not None and not sp.issparse(X):
+        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_daal)
+
+        params = {
+            'method': 'defaultDense',
+            'k': estimator.n_neighbors,
+            'nClasses': len(estimator.classes_),
+            'voteWeights': 'voteUniform' if estimator.weights == 'uniform' else 'voteDistance',
+            'resultsToEvaluate': 'computeClassLabels',
+            'resultsToCompute': ''
+        }
+
+        method = parse_auto_method(estimator, estimator.algorithm, estimator.n_samples_fit_, n_features)
+        predict_alg = prediction_algorithm(method, fptype, params)
+        prediction_result = predict_alg.compute(X, estimator.daal_model_)
+
+        le = LabelEncoder()
+        le.classes_ = estimator.classes_
+        result = le.inverse_transform(prediction_result.prediction.ravel().astype(estimator._y.dtype)).astype(estimator.classes_[0].dtype)
+    else:
+        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
+        result = base_predict(estimator, X)
+
+    return result
