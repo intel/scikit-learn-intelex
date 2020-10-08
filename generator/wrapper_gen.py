@@ -1297,7 +1297,7 @@ class wrapper_gen(object):
         t = jenv.from_string(algo_iface_template)
         cpp_begin += t.render(**jparams) + '\n'
 
-        if len(jparams):
+        if jparams:
             if 'dist' in cfg:
                 # a wrapper for distributed mode
                 jparams.update(cfg['dist'])
