@@ -35,20 +35,26 @@ jobs:
   pool:
     vmImage: 'macOS-10.15'
   steps:
-  - script: |
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
-      bash miniconda.sh -b -p $HOME/miniconda
-      export PATH="$HOME/miniconda/bin:$PATH"
-      hash -r
-      conda config --set always_yes yes --set changeps1 no
-      conda update -q conda
+    - bash: echo "##vso[task.prependpath]$CONDA/bin"
+      displayName: Add conda to PATH
+    - bash: sudo chown -R $USER $CONDA
+
+  # - script: |
+  #     wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
+  #     bash miniconda.sh -b -p $HOME/miniconda
+  #     export PATH="$HOME/miniconda/bin:$PATH"
+  #     hash -r
+  #     conda config --set always_yes yes --set changeps1 no
+  #     conda update -q conda
     displayName: 'Conda install'
   - script: |
-      conda create -q -y -n CB python=3.7 conda-build conda-verify
+      sudo conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
+      conda env list
       export MACOSX_DEPLOYMENT_TARGET=10.15
       source activate CB
+      python --version
       conda build --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 conda-recipe
     displayName: conda build
 
