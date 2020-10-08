@@ -36,13 +36,22 @@ jobs:
     vmImage: 'macOS-10.15'
   steps:
   - script: |
+      sudo brew install gcc@7
+      sudo xcode-select --install
+      export CC=gcc-7
+      export CXX=g++-7
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
     displayName: 'Conda install'
   - script: |
       conda create -q -y -n CB python=3.7 conda-build conda-verify
+    displayName: Install GCC compiler
+
+  - script: |
+      conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
+      echo gcc -v
       conda env list
       export MACOSX_DEPLOYMENT_TARGET=10.15
       source activate CB
