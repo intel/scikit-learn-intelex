@@ -36,10 +36,12 @@ jobs:
     vmImage: 'macOS-10.15'
   steps:
   - script: |
+      sudo brew update
+      sudo brew upgrade
+      sudo brew info gcc
       sudo brew install gcc@7
-      sudo xcode-select --install
-      export CC=gcc-7
-      export CXX=g++-7
+      sudo brew cleanup
+      gcc --version
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
     displayName: 'Conda install'
