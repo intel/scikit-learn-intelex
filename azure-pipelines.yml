@@ -48,6 +48,7 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       export MACOSX_DEPLOYMENT_TARGET=10.15
+      . /usr/share/miniconda/etc/profile.d/conda.sh
       source activate CB
       conda build --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 conda-recipe
     displayName: conda build
