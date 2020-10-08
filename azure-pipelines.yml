@@ -35,17 +35,9 @@ jobs:
   pool:
     vmImage: 'macOS-10.15'
   steps:
-    - bash: echo "##vso[task.prependpath]$CONDA/bin"
-      displayName: Add conda to PATH
-    - bash: sudo chown -R $USER $CONDA
-
-  # - script: |
-  #     wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
-  #     bash miniconda.sh -b -p $HOME/miniconda
-  #     export PATH="$HOME/miniconda/bin:$PATH"
-  #     hash -r
-  #     conda config --set always_yes yes --set changeps1 no
-  #     conda update -q conda
+  - script: |
+      echo "##vso[task.prependpath]$CONDA/bin"
+      sudo chown -R $USER $CONDA
     displayName: 'Conda install'
   - script: |
       sudo conda create -q -y -n CB python=3.7 conda-build conda-verify
