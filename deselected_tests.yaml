@@ -134,8 +134,11 @@ deselected_tests:
   # Failed in KD-tree. Will fix to next release DAAL.
   - ensemble/tests/test_bagging.py::test_classification
 
-  # We raise an exception when n_classes < 2, skikit-learn doesn't
+  # We raise an exception when n_classes < 2, scikit-learn doesn't
   - neighbors/tests/test_neighbors.py::test_neighbors_badargs
 
   # very long execution and intermittent hang up. daal4py patching does not apply to these tests.
   - ensemble/_hist_gradient_boosting/tests/test_gradient_boosting.py
+
+  # daal4py is throwing the exception from the library. Will be fixed.
+  - tests/test_common.py::test_strict_mode_parametrize_with_checks
