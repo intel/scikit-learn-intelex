@@ -10,6 +10,8 @@ matrix:
         - name: "OsX-Py3"
           os: osx
           osx_image: xcode8
+          compiler:
+            - gcc
           env:
             - MATRIX_EVAL="brew install gcc@7; xcode-select --install; CC=gcc-7 ; CXX=g++-7"
             #- MATRIX_EVAL="brew install gcc && CC=gcc-7 && CXX=g++-7"
