@@ -141,4 +141,4 @@ deselected_tests:
   - ensemble/_hist_gradient_boosting/tests/test_gradient_boosting.py
 
   # daal4py is throwing the exception from the library. Will be fixed.
-  - tests/test_common.py::test_strict_mode_parametrize_with_checks
+  - tests/test_common.py::test_check_n_features_in_after_fitting
