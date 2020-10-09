@@ -36,8 +36,7 @@ def filter_by_version(entry, sk_ver):
     conds = cond.split(',')
     if all([evaluate_cond(cond, sk_ver) for cond in conds]):
         return test_name
-    else:
-        return None
+    return None
 
 
 if __name__ == '__main__':
