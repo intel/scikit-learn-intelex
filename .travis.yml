@@ -7,7 +7,7 @@ matrix:
           env:
             - MINICONDA=Miniconda3-latest-Linux-x86_64.sh
             - PYVER=""
-            
+
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda

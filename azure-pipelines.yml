@@ -53,11 +53,16 @@ jobs:
       conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
-      echo gcc -v
+      gcc -v
+      clang -v
       conda env list
       export MACOSX_DEPLOYMENT_TARGET=10.15
+      export CPATH=/Library/Developer/CommandLineTools/usr/include/c++/v1
+      export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
       source activate CB
       python --version
+      sudo find /Library -name stdio.h 
+      sudo xcode-select --install
       conda build --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 conda-recipe
     displayName: conda build
 
