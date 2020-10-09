@@ -332,10 +332,9 @@ def predict(self, X, sample_weight=None):
     if daal_ready:
         logging.info("sklearn.cluster.KMeans.predict: " + method_uses_daal)
         return _daal4py_k_means_predict(X, self.n_clusters, self.cluster_centers_)[0]
-    else:
-        logging.info("sklearn.cluster.KMeans.predict: " + method_uses_sklearn)
-        x_squared_norms = row_norms(X, squared=True)
-        return _labels_inertia(X, sample_weight, x_squared_norms,
+    logging.info("sklearn.cluster.KMeans.predict: " + method_uses_sklearn)
+    x_squared_norms = row_norms(X, squared=True)
+    return _labels_inertia(X, sample_weight, x_squared_norms,
                                self.cluster_centers_)[0]
 
 
