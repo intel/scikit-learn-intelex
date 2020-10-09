@@ -1327,7 +1327,6 @@ class wrapper_gen(object):
 
         if no_dist:
             return ('', pyx_footer, '')
-        else:
-            t = jenv.from_string(cpp_footer_template)
-            cpp_footer = t.render(algos=algos, dist_custom_algos=dist_custom_algos)
-            return ('', pyx_footer, cpp_footer)
+        t = jenv.from_string(cpp_footer_template)
+        cpp_footer = t.render(algos=algos, dist_custom_algos=dist_custom_algos)
+        return ('', pyx_footer, cpp_footer)
