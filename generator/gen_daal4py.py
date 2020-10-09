@@ -77,8 +77,7 @@ def splitns(x):
     tmp_ = x.rsplit('::', 1)
     if len(tmp_) == 1:
         return ('', x)
-    else:
-        return tmp_
+    return tmp_
 
 def get_parent(ns):
     tmp = ns.rsplit('::', 1)
@@ -324,8 +323,7 @@ class cython_interface(object):
             tt = tns + '::' + tname
             if tt == t:
                 return ('std::string &', 'enum', tns) if tname in self.namespace_dict[tns].enums else (tname, 'class', tns)
-            else:
-                return self.to_hltype(ns, tt)
+            return self.to_hltype(ns, tt)
         else:
             usings = ['algorithms::optimization_solver']
             if not any(t.startswith(x) for x in usings):
