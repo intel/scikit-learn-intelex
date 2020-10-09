@@ -49,7 +49,7 @@ def cpp2hl(cls):
 def cleanup_ns(fname, ns):
     """return a sanitized namespace name"""
     # strip of namespace 'interface1'
-    while len(ns) and ns[-1].startswith('interface'):
+    while len(ns) != 0 and ns[-1].startswith('interface'):
         del ns[-1]
     # cleanup duplicates
     while len(ns) >= 2 and ns[-1] == ns[len(ns)-2]:
@@ -756,7 +756,7 @@ class cython_interface(object):
                     p = '::'.join([pns.replace('algorithms::', ''), splitns(i)[1]])
                     if p in ifaces:
                         ifcs.append(cpp2hl(p))
-            jparams['iface'] = ifcs if len(ifcs) else [None]
+            jparams['iface'] = ifcs if ifcs else [None]
         else:
             jparams = {}
 
