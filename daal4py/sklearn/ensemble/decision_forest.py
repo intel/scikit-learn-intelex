@@ -63,8 +63,7 @@ def _to_absolute_max_features(max_features, n_features, is_classification=False)
     else: # float
         if max_features > 0.0:
             return max(1, int(max_features * n_features))
-        else:
-            return 0
+        return 0
 
 
 class RandomForestClassifier(skl_RandomForestClassifier):
@@ -305,8 +304,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
     def _more_tags(self):
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             return {'multioutput': False}
-        else:
-            return dict()
+        return dict()
 
 
 
@@ -507,5 +505,4 @@ class RandomForestRegressor(skl_RandomForestRegressor):
     def _more_tags(self):
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             return {'multioutput': False}
-        else:
-            return dict()
+        return dict()
