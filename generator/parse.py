@@ -261,13 +261,12 @@ class enum_parser(object):
             if me:
                 ctxt.enum = False
                 return True
-            else:
-                me = re.match(r'^\s*(\w+)(?:\s*=\s*((\(int\))?\w(\w|:|\s|\+)*))?(\s*,)?\s*((/\*|//).*)?$', l)
-                if me and not me.group(1).startswith('last'):
-                    # save the destination for documentation
-                    ctxt.doc_lambda = lambda: ctxt.gdict['enums'][ctxt.enum][me.group(1)]
-                    ctxt.gdict['enums'][ctxt.enum][me.group(1)] = [me.group(2) if me.group(2) else '', ctxt.doc]
-                    return True
+            me = re.match(r'^\s*(\w+)(?:\s*=\s*((\(int\))?\w(\w|:|\s|\+)*))?(\s*,)?\s*((/\*|//).*)?$', l)
+            if me and not me.group(1).startswith('last'):
+                # save the destination for documentation
+                ctxt.doc_lambda = lambda: ctxt.gdict['enums'][ctxt.enum][me.group(1)]
+                ctxt.gdict['enums'][ctxt.enum][me.group(1)] = [me.group(2) if me.group(2) else '', ctxt.doc]
+                return True
         return False
 
 
@@ -332,9 +331,8 @@ class setget_parser(object):
                         assert len(ctxt.template) == 1 and ctxt.template[0][1] == 'fptypes'
                         ctxt.gdict['classes'][ctxt.curr_class].gets[name] = ('double', '<double>')
                         return False
-                    else:
-                        ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(1)
-                        return True
+                    ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(1)
+                    return True
             # some get-methods accept an argument!
             # We support only a single argument for now, and only simple types like int, size_t etc, no refs, no pointers
             mgs = re.match(r'\s*(?:virtual\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*((?:\w|_)+)\s+((?:\w|_)+)\s*\)', l)
@@ -465,8 +463,7 @@ class class_template_parser(object):
                     ctxt.gdict['classes'][ctxt.curr_class].templates.append([ctxt.curr_class + '::' + m.group(5), ctxt.template])
                     ctxt.template = False
                     return True
-                else:
-                    pass
+                pass
                 #error_template_string += fname + ':\n\tignoring ' + m.group(5)
             elif ctxt.access and not mt and not m and not any(s in l for s in ctxt.ignores):
                 # not a class but a non-mapped template
