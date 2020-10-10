@@ -177,28 +177,28 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
     elif callable(metric):
         func = partial(_pairwise_callable, metric=metric,
                        force_all_finite=force_all_finite, **kwds)
+    else:
+        if issparse(X) or issparse(Y):
+            raise TypeError("scipy distance metrics do not"
+                            " support sparse matrices.")
 
-    if issparse(X) or issparse(Y):
-        raise TypeError("scipy distance metrics do not"
-                        " support sparse matrices.")
+        dtype = bool if metric in PAIRWISE_BOOLEAN_FUNCTIONS else None
 
-    dtype = bool if metric in PAIRWISE_BOOLEAN_FUNCTIONS else None
+        if (dtype == bool
+            and (X.dtype != bool or (Y is not None and Y.dtype != bool))):
+            msg = "Data was converted to boolean for metric %s" % metric
+            warnings.warn(msg, DataConversionWarning)
 
-    if (dtype == bool
-        and (X.dtype != bool or (Y is not None and Y.dtype != bool))):
-        msg = "Data was converted to boolean for metric %s" % metric
-        warnings.warn(msg, DataConversionWarning)
+        X, Y = check_pairwise_arrays(X, Y, dtype=dtype, 
+                                     force_all_finite=force_all_finite)
 
-    X, Y = check_pairwise_arrays(X, Y, dtype=dtype, 
-                                 force_all_finite=force_all_finite)
+        # precompute data-derived metric params
+        params = _precompute_metric_params(X, Y, metric=metric, **kwds)
+        kwds.update(**params)
 
-    # precompute data-derived metric params
-    params = _precompute_metric_params(X, Y, metric=metric, **kwds)
-    kwds.update(**params)
-
-    if effective_n_jobs(n_jobs) == 1 and X is Y:
-        return distance.squareform(distance.pdist(X, metric=metric,
-                                                  **kwds))
-    func = partial(distance.cdist, metric=metric, **kwds)
+        if effective_n_jobs(n_jobs) == 1 and X is Y:
+            return distance.squareform(distance.pdist(X, metric=metric,
+                                                      **kwds))
+        func = partial(distance.cdist, metric=metric, **kwds)
 
     return _parallel_pairwise(X, Y, func, n_jobs, **kwds)
