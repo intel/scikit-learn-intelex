@@ -34,8 +34,8 @@ jobs:
 - job: MacOS
   pool:
     vmImage: 'macOS-10.15'
-    cCompiler: clang
-    cxxCompiler: clang++
+    cCompiler: gcc
+    cxxCompiler: g++
   steps:
   - script: |
       sudo brew update
