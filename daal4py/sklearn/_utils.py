@@ -38,8 +38,7 @@ def parse_dtype(dt):
         return "double"
     elif dt == np.single:
         return "float"
-    else:
-        raise ValueError("Input array has unexpected dtype = {}".format(dt))
+    raise ValueError("Input array has unexpected dtype = {}".format(dt))
 
 def getFPType(X):
     try:
