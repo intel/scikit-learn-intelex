@@ -196,10 +196,9 @@ def predict(self, X):
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
         logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_sklearn)
         return self._decision_function(X)
-    else:
-        logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_daal)
-        X = _daal_check_array(X)
-        return _daal4py_predict(self, X)
+    logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_daal)
+    X = _daal_check_array(X)
+    return _daal4py_predict(self, X)
 
 
 _fit_copy = fit
