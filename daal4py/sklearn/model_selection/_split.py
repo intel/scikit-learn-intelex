@@ -31,8 +31,7 @@ def get_dtypes(data):
         return list(data.dtypes)
     elif hasattr(data, 'values'):
         return [data.values.dtype]
-    else:
-        return None
+    return None
 
 
 def _daal_train_test_split(*arrays, **options):
