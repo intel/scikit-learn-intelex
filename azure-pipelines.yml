@@ -38,11 +38,11 @@ jobs:
     cxxCompiler: g++
   steps:
   - script: |
-      sudo brew update
-      sudo brew upgrade
-      sudo brew info gcc
-      sudo brew install gcc@7
-      sudo brew cleanup
+      brew update
+      brew upgrade
+      brew info gcc
+      brew install gcc@7
+      brew cleanup
       gcc --version
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
