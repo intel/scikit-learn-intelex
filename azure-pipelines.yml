@@ -77,6 +77,10 @@ jobs:
       export CPATH=/Library/Developer/CommandLineTools/usr/include/c++/v1
       export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
       source activate CB
+      
+      export CC=gcc
+      echo "!!! gcc --version"
+      gcc --version
       python --version
       sudo find /Library -name stdio.h 
       sudo xcode-select --install
