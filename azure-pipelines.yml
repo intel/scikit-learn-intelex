@@ -44,9 +44,9 @@ jobs:
       brew install gcc@10
       echo "!!! gcc --version"
       gcc --version
-      brew cleanup
       echo "!!! gcc-10 --version"
       gcc-10 --version
+      alias gcc=gcc-10
       export gcc=gcc-10
       export CC=gcc-10
       echo "which gcc"
