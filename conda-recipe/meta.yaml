@@ -31,8 +31,8 @@ requirements:
         - impi-devel # [not osx]
         - clang-tools
     build:
-        - {{ compiler('cxx') }}
-        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}  # [not osx]
+        - {{ compiler('c') }}    # [not osx]
     run:
         - python
         - daal >=2020.2
