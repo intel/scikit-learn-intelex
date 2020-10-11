@@ -45,8 +45,10 @@ jobs:
       echo "!!! gcc --version"
       gcc --version
       echo "!!! gcc-10 --version"
+      
       gcc-10 --version
-      ln -s gcc-10 gcc
+      export PATH=/usr/local/Cellar/gcc/10.2.0/bin:$PATH
+      alias gcc='gcc-10'
       echo "which gcc"
       which gcc
       echo "!!! gcc --version"
