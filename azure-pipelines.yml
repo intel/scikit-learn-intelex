@@ -62,6 +62,7 @@ jobs:
       conda create -q -y -n CB -c conda-forge python=3.7 conda-forge::conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
+      export PATH=/usr/local/Cellar/gcc/10.2.0/bin:$PATH
       cd /usr/local/Cellar/gcc/10.2.0/bin
       ln -s gcc-10 gcc
       echo "which gcc"
