@@ -59,31 +59,17 @@ jobs:
       sudo chown -R $USER $CONDA
     displayName: 'Install gcc'
   - script: |
-      conda create -q -y -n CB -c conda-forge python=3.7 conda-forge::conda-build conda-verify
+      conda create -q -y -n CB -c conda-forge python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
       export PATH=/usr/local/Cellar/gcc/10.2.0/bin:$PATH
-      cd /usr/local/Cellar/gcc/10.2.0/bin
-      ln -s gcc-10 gcc
-      echo "which gcc"
-      which gcc
-      echo "!!! gcc --version"
-      gcc --version
-      cd -
-      export CC=gcc
-      gcc -v
       conda env list
       export MACOSX_DEPLOYMENT_TARGET=10.15
       export CPATH=/Library/Developer/CommandLineTools/usr/include/c++/v1
       export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
       source activate CB
-      
-      export CC=gcc
-      echo "!!! gcc --version"
-      gcc --version
       python --version
       sudo find /Library -name stdio.h 
-      sudo xcode-select --install
       conda build --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 conda-recipe
     displayName: conda build
 
