@@ -41,13 +41,16 @@ jobs:
       echo "!!! brew info gcc"
       brew info gcc
       echo "!!! brew install gcc@7"
-      brew install gcc@7
+      brew install gcc@10
       echo "!!! gcc --version"
       gcc --version
       brew cleanup
-      echo "!!! gcc-7 --version"
-      gcc-7 --version
-      export gcc=gcc-7
+      echo "!!! gcc-10 --version"
+      gcc-10 --version
+      export gcc=gcc-10
+      export CC=gcc-10
+      echo "which gcc"
+      which gcc
       echo "!!! gcc --version"
       gcc --version   
       echo "##vso[task.prependpath]$CONDA/bin"
