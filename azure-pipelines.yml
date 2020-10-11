@@ -40,12 +40,16 @@ jobs:
   - script: |
       echo "!!! brew info gcc"
       brew info gcc
-      echo "!!! brew install gcc"
-      brew install gcc
+      echo "!!! brew install gcc@7"
+      brew install gcc@7
       echo "!!! gcc --version"
       gcc --version
       brew cleanup
-      gcc-10 --version
+      echo "!!! gcc-7 --version"
+      gcc-7 --version
+      export gcc=gcc-7
+      echo "!!! gcc --version"
+      gcc --version   
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
     displayName: 'Install gcc'
