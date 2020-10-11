@@ -29,7 +29,7 @@ requirements:
         - jinja2
         - mpich # [osx]
         - impi-devel # [not osx]
-        - clang-tools
+        - clang-tools # [not osx]
     build:
         - {{ compiler('cxx') }}
         - {{ compiler('c') }}
