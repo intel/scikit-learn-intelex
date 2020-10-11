@@ -38,15 +38,15 @@ jobs:
     cxxCompiler: g++
   steps:
   - script: |
-      brew update
-      brew upgrade
+      echo "!!! brew info gcc"
       brew info gcc
-      brew install gcc@7
-      brew cleanup
+      echo "!!! brew install gcc"
+      brew install gcc
+      echo "!!! gcc --version"
       gcc --version
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
-    displayName: 'Conda install'
+    displayName: 'Install gcc'
   - script: |
       conda create -q -y -n CB -c conda-forge python=3.7 conda-forge::conda-build conda-verify
     displayName: Create Anaconda environment
