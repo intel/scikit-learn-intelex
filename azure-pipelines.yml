@@ -50,7 +50,7 @@ jobs:
       export PATH=/usr/local/Cellar/gcc/10.2.0/bin:$PATH
       cd /usr/local/Cellar/gcc/10.2.0/bin
       sudo rm /usr/bin/gcc
-      ln -s 10.2.0 gcc
+      ln -s gcc-10 gcc
       echo "which gcc"
       which gcc
       echo "!!! gcc --version"
