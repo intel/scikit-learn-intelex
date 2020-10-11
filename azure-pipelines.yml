@@ -46,9 +46,7 @@ jobs:
       gcc --version
       echo "!!! gcc-10 --version"
       gcc-10 --version
-      alias gcc=gcc-10
-      export gcc=gcc-10
-      export CC=gcc-10
+      ln -s gcc-10 gcc
       echo "which gcc"
       which gcc
       echo "!!! gcc --version"
