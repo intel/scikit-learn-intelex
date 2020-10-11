@@ -44,6 +44,8 @@ jobs:
       brew install gcc
       echo "!!! gcc --version"
       gcc --version
+      brew cleanup
+      gcc-10 --version
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
     displayName: 'Install gcc'
