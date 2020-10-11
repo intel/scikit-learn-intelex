@@ -49,7 +49,6 @@ jobs:
       gcc-10 --version
       export PATH=/usr/local/Cellar/gcc/10.2.0/bin:$PATH
       cd /usr/local/Cellar/gcc/10.2.0/bin
-      sudo rm /usr/bin/gcc
       ln -s gcc-10 gcc
       echo "which gcc"
       which gcc
@@ -63,8 +62,15 @@ jobs:
       conda create -q -y -n CB -c conda-forge python=3.7 conda-forge::conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
+      cd /usr/local/Cellar/gcc/10.2.0/bin
+      ln -s gcc-10 gcc
+      echo "which gcc"
+      which gcc
+      echo "!!! gcc --version"
+      gcc --version
+      cd -
+      export CC=gcc
       gcc -v
-      clang -v
       conda env list
       export MACOSX_DEPLOYMENT_TARGET=10.15
       export CPATH=/Library/Developer/CommandLineTools/usr/include/c++/v1
