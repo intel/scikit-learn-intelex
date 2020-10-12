@@ -23,6 +23,7 @@
 
 typedef daal::algorithms::gbt::classification::ModelBuilder c_gbt_classification_model_builder;
 typedef daal::algorithms::gbt::regression::ModelBuilder c_gbt_regression_model_builder;
+typedef daal::algorithms::logistic_regression::interface1::ModelBuilder<DAAL_ALGORITHM_FP_TYPE> c_logistic_regression_model_builder;
 
 typedef c_gbt_classification_model_builder::NodeId c_gbt_clf_node_id;
 typedef c_gbt_classification_model_builder::TreeId c_gbt_clf_tree_id;
@@ -40,6 +41,13 @@ static daal::algorithms::gbt::classification::ModelPtr * get_gbt_classification_
 static daal::algorithms::gbt::regression::ModelPtr * get_gbt_regression_model_builder_model(daal::algorithms::gbt::regression::ModelBuilder * obj_)
 {
     return RAW<daal::algorithms::gbt::regression::ModelPtr>()(obj_->getModel());
+}
+
+template <typename modelFPType = DAAL_ALGORITHM_FP_TYPE>
+static daal::algorithms::logistic_regression::interface1::ModelPtr * get_logistic_regression_model_builder_model(
+    daal::algorithms::logistic_regression::interface1::ModelBuilder<modelFPType> * obj_)
+{
+    return RAW<daal::algorithms::logistic_regression::interface1::ModelPtr>()(obj_->getModel());
 }
 
 #endif // _MODELBUILDER_INCLUDED_
