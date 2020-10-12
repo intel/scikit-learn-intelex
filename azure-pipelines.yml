@@ -32,11 +32,11 @@ jobs:
     displayName: conda build
 
 - job: MacOS
+  cCompiler: gcc
+  cxxCompiler: g++
+  timeoutInMinutes: 120
   pool:
     vmImage: 'macOS-10.15'
-    cCompiler: gcc
-    cxxCompiler: g++
-    timeoutInMinutes: 120
   steps:
   - script: |
       echo "!!! brew info gcc"
@@ -46,7 +46,6 @@ jobs:
       echo "!!! gcc --version"
       gcc --version
       echo "!!! gcc-10 --version"
-      
       gcc-10 --version
       export PATH=/usr/local/Cellar/gcc/10.2.0/bin:$PATH
       cd /usr/local/Cellar/gcc/10.2.0/bin
