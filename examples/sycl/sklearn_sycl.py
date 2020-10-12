@@ -43,7 +43,7 @@ except:
 gpu_available = False
 if dpctl_available:
     try:
-        with device_context(device_type.gpu, 0):
+        with device_context('opencl:gpu:0'):
             gpu_available = True
     except:
         gpu_available = False
@@ -133,7 +133,7 @@ def dbscan():
 
 def get_context(device):
     if dpctl_available:
-        return device_context(device, 0)
+        return device_context(device)
     if sycl_extention_available:
         return sycl_context(device)
     else:
@@ -151,10 +151,9 @@ if __name__ == "__main__":
     devices = []
 
     if dpctl_available:
-        devices.append(device_type.host)
-        devices.append(device_type.cpu)
+        devices.append('opencl:cpu:0')
         if gpu_available:
-            devices.append(device_type.gpu)
+            devices.append('opencl:gpu:0')
 
     elif sycl_extention_available:
         devices.append('host')

@@ -82,7 +82,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     try:
         from dpctl import device_context, device_type
-        gpu_context = lambda: device_context(device_type.gpu, 0)
+        gpu_context = lambda: device_context('opencl:gpu:0')
     except:
         from daal4py.oneapi import sycl_context
         gpu_context = lambda: sycl_context('gpu')
