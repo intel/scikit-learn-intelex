@@ -32,8 +32,6 @@ jobs:
     displayName: conda build
 
 - job: MacOS
-  cCompiler: gcc
-  cxxCompiler: g++
   timeoutInMinutes: 120
   pool:
     vmImage: 'macOS-10.15'
