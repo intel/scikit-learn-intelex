@@ -43,6 +43,33 @@ cdef extern from "modelbuilder.h":
     cdef gbt_classification_ModelPtr * get_gbt_classification_model_builder_model(c_gbt_classification_model_builder *)
     cdef gbt_regression_ModelPtr * get_gbt_regression_model_builder_model(c_gbt_regression_model_builder *)
 
+    cdef cppclass c_logistic_regression_model_builder:
+        c_logistic_regression_model_builder(size_t nFeatures, size_t nClasses) except +
+        void setBeta(double * first, double * last)
+
+    cdef logistic_regression_ModelPtr * get_logistic_regression_model_builder_model(c_logistic_regression_model_builder *)
+
+cdef class logistic_regression_model_builder:
+
+    cdef c_logistic_regression_model_builder * c_ptr
+
+    def __cinit__(self, size_t nFeatures, size_t nClasses):
+        self.c_ptr = new c_logistic_regression_model_builder(nFeatures, nClasses)
+
+    def __dealloc__(self):
+        del self.c_ptr
+
+    cdef setBeta(self, double* first, double* last):
+        return self.c_ptr.setBeta(first, last)
+
+    def model(self):
+        '''
+        Get built model
+        '''
+        cdef logistic_regression_model res = logistic_regression_model.__new__(logistic_regression_model)
+        res.c_ptr = get_logistic_regression_model_builder_model(self.c_ptr)
+        return res
+
 
 cdef class gbt_classification_model_builder:
     '''
