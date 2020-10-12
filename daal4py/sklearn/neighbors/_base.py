@@ -116,7 +116,7 @@ def daal4py_fit(estimator, X, fptype):
     method = parse_auto_method(estimator, estimator.algorithm, estimator.n_samples_fit_, estimator.n_features_in_)
     estimator._fit_method = method
     train_alg = training_algorithm(method, fptype, params)
-    estimator.daal_model_ = train_alg.compute(X, labels).model
+    estimator._daal_model = train_alg.compute(X, labels).model
 
 
 def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True):
@@ -184,14 +184,16 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
     method = parse_auto_method(estimator, estimator._fit_method, estimator.n_samples_fit_, n_features)
 
     predict_alg = prediction_algorithm(method, fptype, params)
-    prediction_result = predict_alg.compute(X, estimator.daal_model_)
+    prediction_result = predict_alg.compute(X, estimator._daal_model)
 
     distances = prediction_result.distances
     indices = prediction_result.indices
-    for i in range(distances.shape[0]):
-        seq = distances[i].argsort()
-        indices[i] = indices[i][seq]
-        distances[i] = distances[i][seq]
+
+    if method == 'kd_tree':
+        for i in range(distances.shape[0]):
+            seq = distances[i].argsort()
+            indices[i] = indices[i][seq]
+            distances[i] = distances[i][seq]
 
     if return_distance:
         return_fptype = 'double' if method == 'kd_tree' else fptype
@@ -267,9 +269,17 @@ def validate_data(estimator, X, y=None, reset=True,
 
 
 class NeighborsBase(BaseNeighborsBase):
+    def __init__(self, n_neighbors=None, radius=None,
+                 algorithm='auto', leaf_size=30, metric='minkowski',
+                 p=2, metric_params=None, n_jobs=None):
+        super().__init__(n_neighbors=n_neighbors, radius=radius,
+            algorithm=algorithm, leaf_size=leaf_size, metric=metric,
+            p=p, metric_params=metric_params, n_jobs=n_jobs)
+
     def _fit(self, X, y=None):
         X_incorrect_type = isinstance(X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
         single_output = True
+        self._daal_model = None
 
         if not SKLEARN_24 or self._get_tags()["requires_y"]:
             if not X_incorrect_type:
@@ -335,15 +345,14 @@ class NeighborsBase(BaseNeighborsBase):
 
 class KNeighborsMixin(BaseKNeighborsMixin):
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+        daal_model = getattr(self, '_daal_model', None)
         x = self._fit_X if X is None else X
         try:
             fptype = getFPType(x)
         except ValueError:
             fptype = None
 
-        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and hasattr(self, 'daal_model_') \
-        and self._fit_method in ['brute', 'kd_tree', 'auto'] \
-        and (self.effective_metric_ == 'minkowski' and self.p == 2 or self.effective_metric_ == 'euclidean') \
+        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not (daal_model is None) \
         and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_daal)
             result = daal4py_kneighbors(self, X, n_neighbors, return_distance)
@@ -351,7 +360,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_sklearn)
             if getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
                 raise ValueError('oneDAL does not build sklearn.neighbors._kd_tree.KDTree')
-            if hasattr(self, 'daal_model_'):
+            if not (daal_model is None):
                 if SKLEARN_24:
                     BaseNeighborsBase._fit(self, self._fit_X, self._y)
                 else:
@@ -370,9 +379,8 @@ class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
 
 
 def daal4py_classifier_predict(estimator, X, base_predict):
-    from sklearn.preprocessing import LabelEncoder
-
     X = check_array(X, accept_sparse='csr')
+    daal_model = getattr(estimator, '_daal_model', None)
 
     n_features = getattr(estimator, 'n_features_in_', None)
     shape = getattr(X, 'shape', None)
@@ -384,9 +392,7 @@ def daal4py_classifier_predict(estimator, X, base_predict):
     except ValueError:
         fptype = None
 
-    if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and hasattr(estimator, 'daal_model_') \
-    and estimator.weights in ['uniform', 'distance'] and estimator.algorithm in ['brute', 'kd_tree', 'auto'] \
-    and (estimator.metric == 'minkowski' and estimator.p == 2 or estimator.metric == 'euclidean') \
+    if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not (daal_model is None) \
     and fptype is not None and not sp.issparse(X):
         logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_daal)
 
@@ -401,11 +407,8 @@ def daal4py_classifier_predict(estimator, X, base_predict):
 
         method = parse_auto_method(estimator, estimator.algorithm, estimator.n_samples_fit_, n_features)
         predict_alg = prediction_algorithm(method, fptype, params)
-        prediction_result = predict_alg.compute(X, estimator.daal_model_)
-
-        le = LabelEncoder()
-        le.classes_ = estimator.classes_
-        result = le.inverse_transform(prediction_result.prediction.ravel().astype(estimator._y.dtype)).astype(estimator.classes_[0].dtype)
+        prediction_result = predict_alg.compute(X, daal_model)
+        result = estimator.classes_.take(np.asarray(prediction_result.prediction.ravel(), dtype=np.intp))
     else:
         logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
         result = base_predict(estimator, X)
