@@ -37,6 +37,8 @@ jobs:
     vmImage: 'macOS-10.15'
   steps:
   - script: |
+      echo "##vso[task.prependpath]$CONDA/bin"
+      sudo chown -R $USER $CONDA
       conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
