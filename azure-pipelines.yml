@@ -37,37 +37,11 @@ jobs:
     vmImage: 'macOS-10.15'
   steps:
   - script: |
-      echo "!!! brew info gcc"
-      brew info gcc
-      echo "!!! brew install gcc@7"
-      brew install gcc@10
-      echo "!!! gcc --version"
-      gcc --version
-      echo "!!! gcc-10 --version"
-      gcc-10 --version
-      export PATH=/usr/local/Cellar/gcc/10.2.0/bin:$PATH
-      cd /usr/local/Cellar/gcc/10.2.0/bin
-      ln -s gcc-10 gcc
-      echo "which gcc"
-      which gcc
-      echo "!!! gcc --version"
-      gcc --version
-      cd -
-      echo "##vso[task.prependpath]$CONDA/bin"
-      sudo chown -R $USER $CONDA
-    displayName: 'Install gcc'
-  - script: |
-      conda create -q -y -n CB -c conda-forge python=3.7 conda-build conda-verify
+      conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
-      export PATH=/usr/local/Cellar/gcc/10.2.0/bin:$PATH
-      conda env list
-      export MACOSX_DEPLOYMENT_TARGET=10.15
-      export CPATH=/Library/Developer/CommandLineTools/usr/include/c++/v1
-      export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
       source activate CB
-      python --version
-      sudo find /Library -name stdio.h 
+      export MACOSX_DEPLOYMENT_TARGET=10.15
       conda build --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 conda-recipe
     displayName: conda build
 
@@ -84,5 +58,5 @@ jobs:
 
   - script: |
       call activate CB
-      conda build --override-channels -c conda-forge -c intel --output-folder=. conda-recipe
+      conda build --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 --output-folder=. conda-recipe
     displayName: conda build
