@@ -29,10 +29,10 @@ from sklearn.cluster import DBSCAN
 
 from sklearn.datasets import load_iris
 
-dpctx_available = False
+dpctl_available = False
 try:
-    from dpctx import device_context, device_type
-    dpctx_available = True
+    from dpctl import device_context, device_type
+    dpctl_available = True
 except:
     try:
         from daal4py.oneapi import sycl_context
@@ -41,7 +41,7 @@ except:
         sycl_extention_available = False
 
 gpu_available = False
-if dpctx_available:
+if dpctl_available:
     try:
         with device_context(device_type.gpu, 0):
             gpu_available = True
@@ -132,7 +132,7 @@ def dbscan():
     print(clustering)
 
 def get_context(device):
-    if dpctx_available:
+    if dpctl_available:
         return device_context(device, 0)
     if sycl_extention_available:
         return sycl_context(device)
@@ -150,7 +150,7 @@ if __name__ == "__main__":
                ]
     devices = []
 
-    if dpctx_available:
+    if dpctl_available:
         devices.append(device_type.host)
         devices.append(device_type.cpu)
         if gpu_available:

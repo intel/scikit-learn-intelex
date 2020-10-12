@@ -29,7 +29,7 @@ sys.path.insert(0, '..')
 from stream import read_next
 
 try:
-    from dpctx import device_context, device_type
+    from dpctl import device_context, device_type
     with device_context(device_type.gpu, 0):
         gpu_available=True
 except:
@@ -74,7 +74,7 @@ def main(readcsv=None, method='defaultDense'):
     result_classic = algo.finalize()
 
     try:
-        from dpctx import device_context, device_type
+        from dpctl import device_context, device_type
         gpu_context = lambda: device_context(device_type.gpu, 0)
         cpu_context = lambda: device_context(device_type.cpu, 0)
     except:
