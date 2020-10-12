@@ -36,6 +36,7 @@ jobs:
     vmImage: 'macOS-10.15'
     cCompiler: gcc
     cxxCompiler: g++
+    timeoutInMinutes: 120
   steps:
   - script: |
       echo "!!! brew info gcc"
