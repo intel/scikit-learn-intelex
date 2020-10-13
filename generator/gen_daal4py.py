@@ -324,14 +324,13 @@ class cython_interface(object):
             if tt == t:
                 return ('std::string &', 'enum', tns) if tname in self.namespace_dict[tns].enums else (tname, 'class', tns)
             return self.to_hltype(ns, tt)
-        else:
-            usings = ['algorithms::optimization_solver']
-            if not any(t.startswith(x) for x in usings):
-                for nsx in usings:
-                    r = self.to_hltype(ns, nsx + '::' + t)
-                    if r:
-                        return r
-        return None if '::' in t else (t, '??', '??')
+        usings = ['algorithms::optimization_solver']
+        if not any(t.startswith(x) for x in usings):
+            for nsx in usings:
+                r = self.to_hltype(ns, nsx + '::' + t)
+                if r:
+                    return r
+    return None if '::' in t else (t, '??', '??')
 
 
 ###############################################################################
