@@ -38,13 +38,11 @@ SKLEARN_22 = LooseVersion(sklearn_version) >= LooseVersion("0.22")
 
 if SKLEARN_22:
     from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
-    from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
     from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
     from sklearn.neighbors._ball_tree import BallTree
     from sklearn.neighbors._kd_tree import KDTree
 else:
     from sklearn.neighbors.base import KNeighborsMixin as BaseKNeighborsMixin
-    from sklearn.neighbors.base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
     from sklearn.neighbors.base import NeighborsBase as BaseNeighborsBase
     from sklearn.neighbors.ball_tree import BallTree
     from sklearn.neighbors.kd_tree import KDTree
@@ -352,7 +350,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not (daal_model is None) \
+        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and daal_model is not None \
         and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_daal)
             result = daal4py_kneighbors(self, X, n_neighbors, return_distance)
@@ -368,49 +366,3 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             result = super(KNeighborsMixin, self).kneighbors(X, n_neighbors, return_distance)
 
         return result
-
-
-class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
-    def radius_neighbors(self, X=None, radius=None, return_distance=True,
-                         sort_results=False):
-        if getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
-            raise ValueError('oneDAL does not build sklearn.neighbors._kd_tree.KDTree')
-        return BaseRadiusNeighborsMixin.radius_neighbors(self, X, radius, return_distance, sort_results)
-
-
-def daal4py_classifier_predict(estimator, X, base_predict):
-    X = check_array(X, accept_sparse='csr')
-    daal_model = getattr(estimator, '_daal_model', None)
-
-    n_features = getattr(estimator, 'n_features_in_', None)
-    shape = getattr(X, 'shape', None)
-    if n_features and shape and len(shape) > 1 and shape[1] != n_features:
-        raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
-
-    try:
-        fptype = getFPType(X)
-    except ValueError:
-        fptype = None
-
-    if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not (daal_model is None) \
-    and fptype is not None and not sp.issparse(X):
-        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_daal)
-
-        params = {
-            'method': 'defaultDense',
-            'k': estimator.n_neighbors,
-            'nClasses': len(estimator.classes_),
-            'voteWeights': 'voteUniform' if estimator.weights == 'uniform' else 'voteDistance',
-            'resultsToEvaluate': 'computeClassLabels',
-            'resultsToCompute': ''
-        }
-
-        method = parse_auto_method(estimator, estimator.algorithm, estimator.n_samples_fit_, n_features)
-        predict_alg = prediction_algorithm(method, fptype, params)
-        prediction_result = predict_alg.compute(X, daal_model)
-        result = estimator.classes_.take(np.asarray(prediction_result.prediction.ravel(), dtype=np.intp))
-    else:
-        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
-        result = base_predict(estimator, X)
-
-    return result

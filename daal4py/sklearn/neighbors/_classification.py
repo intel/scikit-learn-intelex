@@ -17,10 +17,16 @@
 
 # daal4py KNN classification scikit-learn-compatible classes
 
-from ._base import NeighborsBase, KNeighborsMixin, daal4py_classifier_predict
+from ._base import NeighborsBase, KNeighborsMixin
+from ._base import parse_auto_method, prediction_algorithm
 from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
+from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_uses_daal
+from sklearn.utils.validation import check_array
+import numpy as np
+from scipy import sparse as sp
+import logging
 
 
 SKLEARN_24 = LooseVersion(sklearn_version) >= LooseVersion("0.24")
@@ -36,6 +42,44 @@ else:
     from sklearn.neighbors.base import _check_weights
     def _deprecate_positional_args(f):
         return f
+
+
+def daal4py_classifier_predict(estimator, X, base_predict):
+    X = check_array(X, accept_sparse='csr')
+    daal_model = getattr(estimator, '_daal_model', None)
+
+    n_features = getattr(estimator, 'n_features_in_', None)
+    shape = getattr(X, 'shape', None)
+    if n_features and shape and len(shape) > 1 and shape[1] != n_features:
+        raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
+
+    try:
+        fptype = getFPType(X)
+    except ValueError:
+        fptype = None
+
+    if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and daal_model is not None \
+    and fptype is not None and not sp.issparse(X):
+        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_daal)
+
+        params = {
+            'method': 'defaultDense',
+            'k': estimator.n_neighbors,
+            'nClasses': len(estimator.classes_),
+            'voteWeights': 'voteUniform' if estimator.weights == 'uniform' else 'voteDistance',
+            'resultsToEvaluate': 'computeClassLabels',
+            'resultsToCompute': ''
+        }
+
+        method = parse_auto_method(estimator, estimator.algorithm, estimator.n_samples_fit_, n_features)
+        predict_alg = prediction_algorithm(method, fptype, params)
+        prediction_result = predict_alg.compute(X, daal_model)
+        result = estimator.classes_.take(np.asarray(prediction_result.prediction.ravel(), dtype=np.intp))
+    else:
+        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
+        result = base_predict(estimator, X)
+
+    return result
 
 
 if SKLEARN_24:
