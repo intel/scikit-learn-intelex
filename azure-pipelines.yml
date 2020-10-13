@@ -44,7 +44,7 @@ jobs:
   - script: |
       source activate CB
       export MACOSX_DEPLOYMENT_TARGET=10.15
-      conda build --override-channels -c intel -c conda-forge -c defaults --numpy=1.17 conda-recipe
+      conda build --override-channels -c conda-forge -c intel --numpy=1.17 conda-recipe
     displayName: conda build
 
 - job: Windows
