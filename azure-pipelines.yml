@@ -39,12 +39,17 @@ jobs:
   - script: |
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
-      conda create -q -y -n CB python=3.7 conda-build conda-verify
+      conda create -n CB python=3.7 daal daal-include cython mpich jinja2 numpy clang-tools -c intel scikit-learn lightgbm xgboost -c conda-forge
     displayName: Create Anaconda environment
   - script: |
       source activate CB
+      export DAALROOT=$CONDA_PREFIX
+      export MPIROOT=$CONDA_PREFIX
       export MACOSX_DEPLOYMENT_TARGET=10.15
-      conda build --override-channels -c conda-forge -c intel --numpy=1.17 conda-recipe
+      export LDFLAGS="${LDFLAGS//-Wl,-dead_strip_dylibs}"
+      export LDFLAGS_LD="${LDFLAGS_LD//-dead_strip_dylibs}"
+      export LDSHARED="-bundle -undefined dynamic_lookup -flto -Wl,-export_dynamic -Wl,-pie -Wl,-headerpad_max_install_names"
+      python setup.py install
     displayName: conda build
 
 - job: Windows
