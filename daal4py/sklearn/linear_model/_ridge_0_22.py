@@ -111,17 +111,15 @@ def fit(self, X, y, sample_weight=None):
             del self.daal_model_
         logging.info("sklearn.linear_model.Ridge.fit: " + method_uses_sklearn)
         return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
-    else:
-        self.n_iter_ = None
-        logging.info("sklearn.linear_model.Ridge.fit: " + method_uses_daal)
-        res = _daal4py_fit(self, X, y)
-        if res is None:
-            logging.info("sklearn.linear_model.Ridge.fit: " + method_uses_sklearn_arter_daal)
-            if hasattr(self, 'daal_model_'):
-                del self.daal_model_
-            return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
-        else:
-            return res
+    self.n_iter_ = None
+    logging.info("sklearn.linear_model.Ridge.fit: " + method_uses_daal)
+    res = _daal4py_fit(self, X, y)
+    if res is None:
+        logging.info("sklearn.linear_model.Ridge.fit: " + method_uses_sklearn_arter_daal)
+        if hasattr(self, 'daal_model_'):
+            del self.daal_model_
+        return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
+    return res
 
 
 def predict(self, X):
@@ -148,9 +146,8 @@ def predict(self, X):
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
         logging.info("sklearn.linear_model.Ridge.predict: " + method_uses_sklearn)
         return self._decision_function(X)
-    else:
-        logging.info("sklearn.linear_model.Ridge.predict: " + method_uses_daal)
-        return _daal4py_predict(self, X)
+    logging.info("sklearn.linear_model.Ridge.predict: " + method_uses_daal)
+    return _daal4py_predict(self, X)
 
 _fit_copy = fit
 _predict_copy = predict

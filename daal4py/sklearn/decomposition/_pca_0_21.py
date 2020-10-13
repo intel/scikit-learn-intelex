@@ -349,9 +349,8 @@ class PCA(PCA_original):
         if n_samples > n_features and (X.dtype == np.float64 or X.dtype == np.float32):
             logging.info("sklearn.decomposition.PCA.fit: " + method_uses_daal)
             return self._fit_full_daal4py(X, n_components)
-        else:
-            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_sklearn)
-            return self._fit_full_vanilla(X, n_components)
+        logging.info("sklearn.decomposition.PCA.fit: " + method_uses_sklearn)
+        return self._fit_full_vanilla(X, n_components)
 
 
     def _fit(self, X):
@@ -424,21 +423,19 @@ class PCA(PCA_original):
             logging.info("sklearn.decomposition.PCA.transform: " + method_uses_daal)
             if self.n_components_ > 0:
                 return self._transform_daal4py(X, whiten=self.whiten, check_X=False)
-            else:
-                return np.empty((self.n_samples_, 0), dtype=X.dtype)
-        else:
-            U, S, V = self._fit(X)
-            U = U[:, :self.n_components_]
-            
-            logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
-            if self.whiten:
-                # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
-                U *= np.sqrt(X.shape[0] - 1)
-            else:
-                # X_new = X * V = U * S * V^T * V = U * S
-                U *= S[:self.n_components_]
+            return np.empty((self.n_samples_, 0), dtype=X.dtype)
+        U, S, V = self._fit(X)
+        U = U[:, :self.n_components_]
 
-            return U
+        logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
+        if self.whiten:
+            # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
+            U *= np.sqrt(X.shape[0] - 1)
+        else:
+            # X_new = X * V = U * S * V^T * V = U * S
+            U *= S[:self.n_components_]
+
+        return U
 
     def transform(self, X):
         """Apply dimensionality reduction to X.
@@ -474,14 +471,13 @@ class PCA(PCA_original):
             logging.info("sklearn.decomposition.PCA.transform: " + method_uses_daal)
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=False, scale_eigenvalues=False)
-        else:
-            logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
-            if self.mean_ is not None:
-                X = X - self.mean_
-            X_transformed = np.dot(X, self.components_.T)
-            if self.whiten:
-                X_transformed /= np.sqrt(self.explained_variance_)
-            return X_transformed
+        logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
+        if self.mean_ is not None:
+            X = X - self.mean_
+        X_transformed = np.dot(X, self.components_.T)
+        if self.whiten:
+            X_transformed /= np.sqrt(self.explained_variance_)
+        return X_transformed
 
 if (lambda s: (int(s[:4]), int(s[6:])))( daal4py.__daal_link_version__[:8] ) < (2019, 4):
     # with DAAL < 2019.4 PCA only optimizes fit, using DAAL's SVD

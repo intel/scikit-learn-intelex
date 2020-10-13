@@ -63,8 +63,7 @@ def _to_absolute_max_features(max_features, n_features, is_classification=False)
     else: # float
         if max_features > 0.0:
             return max(1, int(max_features * n_features))
-        else:
-            return 0
+        return 0
 
 def _get_n_samples_bootstrap(n_samples, max_samples):
     if max_samples is None:
@@ -279,10 +278,8 @@ def _fit_classifier(self, X, y, sample_weight=None):
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
         return self
-
-    else:
-        logging.info("sklearn.ensemble.RandomForestClassifier.fit: " + method_uses_sklearn)
-        return super(RandomForestClassifier, self).fit(X, y, sample_weight=sample_weight)
+    logging.info("sklearn.ensemble.RandomForestClassifier.fit: " + method_uses_sklearn)
+    return super(RandomForestClassifier, self).fit(X, y, sample_weight=sample_weight)
 
 def _daal_fit_regressor(self, X, y, sample_weight=None):
     self.n_features_ = X.shape[1]
@@ -389,9 +386,8 @@ def _fit_regressor(self, X, y, sample_weight=None):
         if not hasattr(self, "estimators_"):
             self.estimators_ = self._estimators_
         return self
-    else:
-        logging.info("sklearn.ensemble.RandomForestRegressor.fit: " + method_uses_sklearn)
-        return super(RandomForestRegressor, self).fit(X, y, sample_weight=sample_weight)
+    logging.info("sklearn.ensemble.RandomForestRegressor.fit: " + method_uses_sklearn)
+    return super(RandomForestRegressor, self).fit(X, y, sample_weight=sample_weight)
     
 
 def _daal_predict_regressor(self, X):
@@ -507,9 +503,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
             logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + method_uses_sklearn)
             return super(RandomForestClassifier, self).predict(X)
-        else:
-            logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + method_uses_daal)
-            return _daal_predict_classifier(self, X)
+        logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + method_uses_daal)
+        return _daal_predict_classifier(self, X)
 
     def predict_proba(self, X):
         """
@@ -542,9 +537,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
             logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + method_uses_sklearn)
             return super(RandomForestClassifier, self).predict_proba(X)
-        else:
-            logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + method_uses_daal)
-            return _daal_predict_proba(self, X)
+        logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + method_uses_daal)
+        return _daal_predict_proba(self, X)
 
     @property
     def _estimators_(self):
@@ -700,9 +694,8 @@ class RandomForestRegressor(RandomForestRegressor_original):
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
             logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + method_uses_sklearn)
             return super(RandomForestRegressor, self).predict(X)
-        else:
-            logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + method_uses_daal)
-            return _daal_predict_regressor(self, X)
+        logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + method_uses_daal)
+        return _daal_predict_regressor(self, X)
 
     @property
     def _estimators_(self):

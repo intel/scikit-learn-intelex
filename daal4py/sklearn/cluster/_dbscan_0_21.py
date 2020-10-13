@@ -249,6 +249,5 @@ class DBSCAN(DBSCAN_original):
             self.labels_ = assignments
             self.components_ = np.take(X, core_ind, axis=0)
             return self
-        else:
-            logging.info("sklearn.cluster.DBSCAN.fit: " + method_uses_sklearn)
-            return super().fit(X, y, sample_weight=sample_weight)
+        logging.info("sklearn.cluster.DBSCAN.fit: " + method_uses_sklearn)
+        return super().fit(X, y, sample_weight=sample_weight)

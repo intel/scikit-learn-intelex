@@ -202,8 +202,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
             le = preprocessing.LabelEncoder()
             le.classes_ = self.classes_
             return le.inverse_transform(predict_result.prediction.ravel().astype(np.int64, copy=False))
-        else:
-            return predict_result.probabilities
+        return predict_result.probabilities
 
     def predict(self, X):
         return self._predict(X, "computeClassLabels")
@@ -216,11 +215,11 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
         if self.n_outputs_ == 1:
             return np.log(proba)
-        else:
-            for k in range(self.n_outputs_):
-                proba[k] = np.log(proba[k])
 
-            return proba
+        for k in range(self.n_outputs_):
+            proba[k] = np.log(proba[k])
+
+        return proba
 
 
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):

@@ -136,8 +136,7 @@ def get_context(device):
         return device_context(device, 0)
     if sycl_extention_available:
         return sycl_context(device)
-    else:
-        return None
+    return None
 
 if __name__ == "__main__":
     examples = [

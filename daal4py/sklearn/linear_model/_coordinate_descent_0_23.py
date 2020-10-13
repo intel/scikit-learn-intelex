@@ -403,25 +403,23 @@ class ElasticNet(ElasticNet_original):
             res_new = super(ElasticNet, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
-        else:
-            self.n_iter_ = None
-            self._gap = None
-            #only for pass tests "check_estimators_fit_returns_self(readonly_memmap=True) and check_regressors_train(readonly_memmap=True)
-            if  not (X.flags.writeable):
-                X = np.copy(X)
-            if  not (y.flags.writeable):
-                y = np.copy(y)
-            logging.info("sklearn.linear_model.ElasticNet.fit: " + method_uses_daal)
-            res = _daal4py_fit_enet(self, X, y, check_input=check_input)
-            if res is None:
-                if hasattr(self, 'daal_model_'):
-                    del self.daal_model_
-                logging.info("sklearn.linear_model.ElasticNet.fit: " + method_uses_sklearn_arter_daal)
-                res_new = super(ElasticNet, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
-                self._gap = res_new.dual_gap_
-                return res_new
-            else:
-                return res
+        self.n_iter_ = None
+        self._gap = None
+        #only for pass tests "check_estimators_fit_returns_self(readonly_memmap=True) and check_regressors_train(readonly_memmap=True)
+        if  not (X.flags.writeable):
+            X = np.copy(X)
+        if  not (y.flags.writeable):
+            y = np.copy(y)
+        logging.info("sklearn.linear_model.ElasticNet.fit: " + method_uses_daal)
+        res = _daal4py_fit_enet(self, X, y, check_input=check_input)
+        if res is None:
+            if hasattr(self, 'daal_model_'):
+                del self.daal_model_
+            logging.info("sklearn.linear_model.ElasticNet.fit: " + method_uses_sklearn_arter_daal)
+            res_new = super(ElasticNet, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
+            self._gap = res_new.dual_gap_
+            return res_new
+        return res
 
 
     def predict(self, X):
@@ -447,9 +445,8 @@ class ElasticNet(ElasticNet_original):
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
             logging.info("sklearn.linear_model.ElasticNet.predict: " + method_uses_sklearn)
             return self._decision_function(X)
-        else:
-            logging.info("sklearn.linear_model.ElasticNet.predict: " + method_uses_daal)
-            return _daal4py_predict_enet(self, X)
+        logging.info("sklearn.linear_model.ElasticNet.predict: " + method_uses_daal)
+        return _daal4py_predict_enet(self, X)
 
 
     @property
@@ -575,25 +572,23 @@ class Lasso(ElasticNet):
             res_new = super(ElasticNet, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
-        else:
-            self.n_iter_ = None
-            self._gap = None
-            #only for pass tests "check_estimators_fit_returns_self(readonly_memmap=True) and check_regressors_train(readonly_memmap=True)
-            if  not (X.flags.writeable):
-                X = np.copy(X)
-            if  not (y.flags.writeable):
-                y = np.copy(y)
-            logging.info("sklearn.linear_model.Lasso.fit: " + method_uses_daal)
-            res = _daal4py_fit_lasso(self, X, y, check_input=check_input)
-            if res is None:
-                if hasattr(self, 'daal_model_'):
-                    del self.daal_model_
-                logging.info("sklearn.linear_model.Lasso.fit: " + method_uses_sklearn_arter_daal)
-                res_new = super(ElasticNet, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
-                self._gap = res_new.dual_gap_
-                return res_new
-            else:
-                return res
+        self.n_iter_ = None
+        self._gap = None
+        #only for pass tests "check_estimators_fit_returns_self(readonly_memmap=True) and check_regressors_train(readonly_memmap=True)
+        if  not (X.flags.writeable):
+            X = np.copy(X)
+        if  not (y.flags.writeable):
+            y = np.copy(y)
+        logging.info("sklearn.linear_model.Lasso.fit: " + method_uses_daal)
+        res = _daal4py_fit_lasso(self, X, y, check_input=check_input)
+        if res is None:
+            if hasattr(self, 'daal_model_'):
+                del self.daal_model_
+            logging.info("sklearn.linear_model.Lasso.fit: " + method_uses_sklearn_arter_daal)
+            res_new = super(ElasticNet, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
+            self._gap = res_new.dual_gap_
+            return res_new
+        return res
 
 
     def predict(self, X):
@@ -619,6 +614,5 @@ class Lasso(ElasticNet):
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
             logging.info("sklearn.linear_model.Lasso.predict: " + method_uses_sklearn)
             return self._decision_function(X)
-        else:
-            logging.info("sklearn.linear_model.Lasso.predict: " + method_uses_daal)
-            return _daal4py_predict_lasso(self, X)
+        logging.info("sklearn.linear_model.Lasso.predict: " + method_uses_daal)
+        return _daal4py_predict_lasso(self, X)

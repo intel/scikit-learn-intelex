@@ -177,9 +177,8 @@ def run_all(nodist=False, nostream=False):
         print('{}/{} examples passed/skipped, {} failed'.format(success,n, n - success))
         print('Error(s) occured. Logs can be found in ' + logdir)
         return 4711
-    else:
-        print('{}/{} examples passed/skipped'.format(success,n))
-        return 0
+    print('{}/{} examples passed/skipped'.format(success,n))
+    return 0
 
 if __name__ == '__main__':
     sys.exit(run_all('nodist' in sys.argv or not __has_dist__, 'nostream' in sys.argv))
