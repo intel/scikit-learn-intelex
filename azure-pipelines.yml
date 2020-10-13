@@ -39,7 +39,7 @@ jobs:
   - script: |
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
-      conda create -n CB python=3.7 daal daal-include cython mpich jinja2 numpy clang-tools -c intel scikit-learn lightgbm xgboost -c conda-forge
+      conda create -n CB python=3.7 daal daal-include cython mpich jinja2 numpy clang-tools scikit-learn lightgbm xgboost -c intel -c conda-forge
     displayName: Create Anaconda environment
   - script: |
       source activate CB
