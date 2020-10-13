@@ -424,19 +424,18 @@ class PCA(PCA_original):
             if self.n_components_ > 0:
                 return self._transform_daal4py(X, whiten=self.whiten, check_X=False)
             return np.empty((self.n_samples_, 0), dtype=X.dtype)
-        else:
-            U, S, V = self._fit(X)
-            U = U[:, :self.n_components_]
-            
-            logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
-            if self.whiten:
-                # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
-                U *= np.sqrt(X.shape[0] - 1)
-            else:
-                # X_new = X * V = U * S * V^T * V = U * S
-                U *= S[:self.n_components_]
+        U, S, V = self._fit(X)
+        U = U[:, :self.n_components_]
 
-            return U
+        logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
+        if self.whiten:
+            # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
+            U *= np.sqrt(X.shape[0] - 1)
+        else:
+            # X_new = X * V = U * S * V^T * V = U * S
+            U *= S[:self.n_components_]
+
+        return U
 
     def transform(self, X):
         """Apply dimensionality reduction to X.
