@@ -19,6 +19,10 @@
 # The model builder object is retrieved through calling model_builder.
 # We will extend this once we know how other model builders willl work in DAAL
 
+import ctypes
+import numpy as np
+from libc.stdint cimport uintptr_t
+
 cdef extern from "modelbuilder.h":
     ctypedef size_t c_gbt_clf_node_id
     ctypedef size_t c_gbt_clf_tree_id
@@ -45,12 +49,15 @@ cdef extern from "modelbuilder.h":
 
     cdef cppclass c_logistic_regression_model_builder:
         c_logistic_regression_model_builder(size_t nFeatures, size_t nClasses) except +
-        void setBeta(double * first, double * last)
+        void setBeta(double* first, double* last)
 
     cdef logistic_regression_ModelPtr * get_logistic_regression_model_builder_model(c_logistic_regression_model_builder *)
 
-cdef class logistic_regression_model_builder:
 
+cdef class logistic_regression_model_builder:
+    '''
+    Model Builder for logistic regression.
+    '''
     cdef c_logistic_regression_model_builder * c_ptr
 
     def __cinit__(self, size_t nFeatures, size_t nClasses):
@@ -59,12 +66,22 @@ cdef class logistic_regression_model_builder:
     def __dealloc__(self):
         del self.c_ptr
 
-    cdef setBeta(self, double* first, double* last):
-        return self.c_ptr.setBeta(first, last)
+    cdef setBeta(self, beta):
+        '''
+        Method to set betas to model via random access iterator, last - first value have to be equal to (_nFeatures)*_nClasses
+        in case when intercept flag is suppose to be false and (_nFeatures + 1)*_nClasses when intercept flag is true
+        :param numpy.array beta: support vectors
+        '''
+        if isinstance(beta, np.array):
+            return self.c_ptr.setBeta(<double*>(<void*>beta[0]), <double*>(<void*>beta[-1]))
+        else :
+            raise Exception('Beta must be numpy.array')
 
     def model(self):
         '''
         Get built model
+
+        :rtype: logistic_regression_model
         '''
         cdef logistic_regression_model res = logistic_regression_model.__new__(logistic_regression_model)
         res.c_ptr = get_logistic_regression_model_builder_model(self.c_ptr)
