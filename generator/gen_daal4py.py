@@ -330,7 +330,7 @@ class cython_interface(object):
                 r = self.to_hltype(ns, nsx + '::' + t)
                 if r:
                     return r
-    return None if '::' in t else (t, '??', '??')
+        return None if '::' in t else (t, '??', '??')
 
 
 ###############################################################################
