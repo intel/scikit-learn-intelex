@@ -463,7 +463,6 @@ class class_template_parser(object):
                     ctxt.gdict['classes'][ctxt.curr_class].templates.append([ctxt.curr_class + '::' + m.group(5), ctxt.template])
                     ctxt.template = False
                     return True
-                pass
                 #error_template_string += fname + ':\n\tignoring ' + m.group(5)
             elif ctxt.access and not mt and not m and not any(s in l for s in ctxt.ignores):
                 # not a class but a non-mapped template
