@@ -18,6 +18,7 @@
 #define _TREE_VISITOR_H_INCLUDED_
 
 #include "daal4py.h"
+#include "daal4py_defines.h"
 #include <daal.h>
 #include <vector>
 #include <algorithm>
@@ -253,7 +254,6 @@ bool toSKLearnTreeObjectVisitor<M>::onLeafNode(const typename TNVT<M>::leaf_desc
 template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const daal::algorithms::tree_utils::NodeDescriptor &desc)
 {
-
     if(desc.level) {
         ssize_t parent = parents[desc.level - 1];
         if(node_ar[parent].left_child > 0) {
@@ -275,6 +275,7 @@ template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::false_type)
 {
     _onLeafNode(desc);
+    DAAL4PY_OVERFLOW_CHECK_BY_MULTIPLICATION(int, node_id, class_count);
     value_ar[node_id*1*class_count] = desc.response;
 
     // wrap-up
@@ -286,6 +287,7 @@ template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::true_type)
 {
     _onLeafNode(desc);
+    DAAL4PY_OVERFLOW_CHECK_BY_ADDING(int, node_id*1*class_count, desc.label);
     value_ar[node_id*1*class_count + desc.label] += desc.nNodeSampleCount;
 
     // wrap-up

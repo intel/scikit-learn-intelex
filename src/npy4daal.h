@@ -19,6 +19,7 @@
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
+#include "daal4py_defines.h"
 
 #if PY_VERSION_HEX >= 0x03000000
 #define PyString_Check(name) PyUnicode_Check(name)
@@ -84,7 +85,7 @@
             _M(unsigned short); \
             break; \
         default: \
-            std::cerr << "Unsupported NPY type " << (_T) << " ignored\n."; \
+            throw std::invalid_argument(std::string("Unsupported NPY type ") + std::to_string(_T) + " ignored\n."); \
             _E;\
     };
 
@@ -95,7 +96,7 @@ template<> struct npy_type<int>    { static constexpr char *value = "i4"; };
 
 
 // For wrapping a non-contiguous, homogen numpy array
-// Avoids copying by using numpy iterators when accesing blocks of data
+// Avoids copying by using numpy iterators when accessing blocks of data
 class NpyNonContigHandler
 {
 public:
@@ -116,7 +117,7 @@ public:
         // setNumberOfColumns not needed, done by providing size to ddict
 
         // iterate through all elements and init ddict feature accordingly
-        for (Py_ssize_t i=0; i<N; i++) {
+        for (Py_ssize_t i=0; i<N; ++i) {
 #define SETFEATURE_(_T) _ddict->setFeature<_T>(i)
             SET_NPY_FEATURE(descr->type, SETFEATURE_, throw std::invalid_argument("Found unsupported data type"));
 #undef SETFEATURE_
@@ -130,7 +131,7 @@ public:
     //
     // 1. Retrieve requested slide from numpy array by using python's C-API
     // 2. Create numpy array iterator setup for casting to requested type
-    // 3. Iterate through numpy array and copy to/from block using memcpy
+    // 3. Iterate through numpy array and copy to/from block using daal_memcpy_s
     template<typename T, bool WBack>
     static void do_cpy(PyArrayObject * ary, daal::data_management::NumericTableDictionaryPtr & ddict,
                        daal::data_management::BlockDescriptor<T>& block, size_t startcol, size_t ncols, size_t startrow, size_t nrows)
@@ -215,9 +216,10 @@ public:
         if(strideptr[0] == sizeof(T)) {
             do {
                 npy_intp size = *innersizeptr;
-                memcpy(WBack ? *dataptr        : (char*)blockPtr,
-                       WBack ? (char*)blockPtr : *dataptr,
-                       sizeof(T) * size);
+                daal::services::internal::daal_memcpy_s(WBack ? *dataptr : reinterpret_cast<char*>(blockPtr),
+                                                        sizeof(T) * size,
+                                                        WBack ? reinterpret_cast<char*>(blockPtr) : *dataptr,
+                                                        sizeof(T) * size);
                 blockPtr += size;
             } while(iternext(iter));
         } else {
@@ -227,9 +229,10 @@ public:
                 char *src = *dataptr;
                 npy_intp size = *innersizeptr;
                 for(i = 0; i < size; ++i, src += innerstride, blockPtr += 1) {
-                    memcpy(WBack ? src             : (char*)blockPtr,
-                           WBack ? (char*)blockPtr : src,
-                           sizeof(T));
+                    daal::services::internal::daal_memcpy_s(WBack ? src : reinterpret_cast<char*>(blockPtr),
+                                                            sizeof(T),
+                                                            WBack ? reinterpret_cast<char*>(blockPtr) : src,
+                                                            sizeof(T));
                 }
             } while(iternext(iter));
         }
@@ -267,7 +270,7 @@ public:
 
         // iterate through all elements in tuple
         // get their type and init ddict feature accordingly
-        for (Py_ssize_t i=0; i<N; i++) {
+        for (Py_ssize_t i=0; i<N; ++i) {
             PyObject * name = PySequence_Fast_GET_ITEM(fnames, i);  // tuple elements are identified by name
             PyObject * ftr = PyObject_GetItem(descr->fields, name); // desr->fields is a dict
             if(!PyTuple_Check(ftr)) {
@@ -296,10 +299,10 @@ public:
         auto __state = PyGILState_Ensure();
         // tuple elements are identified by name, need the list of names
         PyObject * fnames = PySequence_Fast(PyArray_DESCR(ary)->names, NULL);
-        for( long j = 0; j < ncols ; j++ ) {
+        for( size_t j = 0; j < ncols ; ++j ) {
             PyObject * name = PySequence_Fast_GET_ITEM(fnames, j);
             // get column by name
-            PyArrayObject * col = (PyArrayObject *)PyObject_GetItem((PyObject *)ary, name); assert(col);
+            PyArrayObject * col = reinterpret_cast<PyArrayObject *>(PyObject_GetItem(reinterpret_cast<PyObject *>(ary), name)); assert(col);
             // need the descriptor to create an iterator
             PyArray_Descr * dtype = PyArray_DTYPE(col); assert(dtype);
             // get an iterator for the column
@@ -313,7 +316,7 @@ public:
             // feature for column
             daal::data_management::NumericTableFeature &f = (*ddict)[j + startcol];
             // iterate through column, use casting functions to upcast, dataptr will point to current element
-            void ** dataptr = (void **) NpyIter_GetDataPtrArray(iter);
+            void ** dataptr = reinterpret_cast<void **>(NpyIter_GetDataPtrArray(iter));
 
             PyGILState_Release(__state);
 
@@ -460,9 +463,9 @@ public:
         Py_ssize_t len = 0;
 #if PY_MAJOR_VERSION < 3
         char * ds = NULL;
-        PyString_AsStringAndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &ds, &len);
+        PyString_AsStringAndSize(PyObject_Repr(reinterpret_cast<PyObject*>(PyArray_DESCR(ary))), &ds, &len);
 #else
-        const char * ds = PyUnicode_AsUTF8AndSize(PyObject_Repr((PyObject*)PyArray_DESCR(ary)), &len);
+        const char * ds = PyUnicode_AsUTF8AndSize(PyObject_Repr(reinterpret_cast<PyObject*>(PyArray_DESCR(ary))), &len);
 #endif
         if(ds == NULL) {
             PyGILState_Release(__state);
@@ -478,7 +481,7 @@ public:
             archive->set(PyArray_DIMS(ary)[i]);
             N *= PyArray_DIMS(ary)[i];
         }
-        archive->set((char*)PyArray_DATA(ary), N);
+        archive->set((static_cast<char*>(PyArray_DATA(ary)), N));
 
         PyGILState_Release(__state);
         return daal::services::Status();
@@ -492,14 +495,16 @@ public:
         size_t len;
         archive->set(len);
 
-        char * nds = new char[len];
+        char * nds = static_cast<char *>(daal::services::daal_malloc(len));
+        DAAL4PY_CHECK_MALLOC(nds);
         archive->set(nds, len);
         // ..then create the type descriptor
         PyObject * npy = PyImport_ImportModule("numpy");
         PyObject * globalDictionary = PyModule_GetDict(npy);
-        PyArray_Descr* nd = (PyArray_Descr*)PyRun_String(PyString_AsString(PyObject_Str(PyString_FromString(nds))), Py_eval_input, globalDictionary,
-                                                         NULL);
-        delete [] nds;
+        PyArray_Descr* nd = reinterpret_cast<PyArray_Descr*>(PyRun_String(PyString_AsString(PyObject_Str(PyString_FromString(nds))), Py_eval_input, globalDictionary,
+                                                         NULL));
+        daal::services::daal_free(nds);
+        nds = NULL;
         if(nd == NULL) {
             PyGILState_Release(__state);
             throw std::invalid_argument("Creating array descriptor failed when deserializing.");
@@ -515,23 +520,23 @@ public:
         size_t N = 1;
         for(int i=0; i<ndim; ++i) {
             archive->set(dims[i]);
+            DAAL4PY_OVERFLOW_CHECK_BY_MULTIPLICATION(size_t, N, dims[i]);
             N *= dims[i];
         }
         // create the array...
-        _ary = (PyArrayObject*)PyArray_SimpleNewFromDescr(1, dims, nd);
+        _ary = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNewFromDescr(1, dims, nd));
         if(_ary == NULL) {
             PyGILState_Release(__state);
             throw std::invalid_argument("Creating numpy array failed when deserializing.");
         }
         // ...then copy data
-        archive->set((char*)PyArray_DATA(_ary), N);
+        archive->set(reinterpret_cast<char*>(PyArray_DATA(_ary)), N);
 
         PyGILState_Release(__state);
         return daal::services::Status();
     }
 
 private:
-
     template<typename T>
     daal::services::Status getTBlock(size_t idx, size_t numrows, int rwFlag, daal::data_management::BlockDescriptor<T>& block, size_t firstcol=0, size_t numcols=0xffffffff)
     {
@@ -551,7 +556,7 @@ private:
             return daal::services::Status(daal::services::ErrorMemoryAllocationFailed);
         }
 
-        if(!(rwFlag & (int)daal::data_management::readOnly)) return daal::services::Status();
+        if(!(rwFlag & static_cast<int>(daal::data_management::readOnly))) return daal::services::Status();
 
         // use our copy method in copy-out mode
         Hndlr::template do_cpy<T, false>(_ary, _ddict, block, firstcol, ncols, idx, nrows);
@@ -561,7 +566,7 @@ private:
     template<typename T>
     daal::services::Status releaseTBlock(daal::data_management::BlockDescriptor<T>& block)
     {
-        if(block.getRWFlag() & (int)daal::data_management::writeOnly) {
+        if(block.getRWFlag() & static_cast<int>(daal::data_management::writeOnly)) {
             const size_t ncols = block.getNumberOfColumns();
             const size_t nrows = block.getNumberOfRows();
 

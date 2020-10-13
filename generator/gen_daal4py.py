@@ -23,7 +23,9 @@
 #   - Cython code to generate python API
 ###############################################################################
 
-import glob, os, re
+import glob
+import os
+import re
 from pprint import pformat, pprint
 from os.path import join as jp
 from collections import defaultdict, OrderedDict
@@ -47,7 +49,7 @@ def cpp2hl(cls):
 def cleanup_ns(fname, ns):
     """return a sanitized namespace name"""
     # strip of namespace 'interface1'
-    while len(ns) and ns[-1].startswith('interface'):
+    while len(ns) != 0 and ns[-1].startswith('interface'):
         del ns[-1]
     # cleanup duplicates
     while len(ns) >= 2 and ns[-1] == ns[len(ns)-2]:
@@ -97,8 +99,8 @@ class namespace(object):
         self.children = set()
 
 ###############################################################################
-def ignored(ns, a=None):
-    return ns in ignore and ((a != None and a in ignore[ns]) or (a == None and not ignore[ns]))
+def ignored(ns, a = None):
+    return ns in ignore and ((a is not None and a in ignore[ns]) or (a is None and not ignore[ns]))
 
 
 ###############################################################################
@@ -235,7 +237,7 @@ class cython_interface(object):
             if ns in self.namespace_dict and '::' not in cls:
                 # the class might be in one of the parent ns
                 ns = self.get_ns(ns, cls)
-                if ns == None:
+                if ns is None:
                     return None
             else:
                 return None
@@ -252,10 +254,10 @@ class cython_interface(object):
             sanep = parent.split()[-1].replace('daal::', '')
             parentclass = splitns(sanep)[1]
             pns = self.get_ns(ns, sanep)
-            if pns != None and 'interface' not in parent and ns == pns and self.namespace_dict[ns].classes[cls].iface != self.namespace_dict[pns].classes[parentclass].iface:
+            if pns is not None and 'interface' not in parent and ns == pns and self.namespace_dict[ns].classes[cls].iface != self.namespace_dict[pns].classes[parentclass].iface:
                     sanep = '{}::{}'.format(self.namespace_dict[ns].classes[cls].iface, sanep)
                     pns = self.get_ns(ns, sanep)
-            if pns != None:
+            if pns is not None:
                 pms = self.get_all_attrs(pns, parentclass, attr, ons)
                 for x in pms:
                     # ignore duplicates from parents
@@ -754,7 +756,7 @@ class cython_interface(object):
                     p = '::'.join([pns.replace('algorithms::', ''), splitns(i)[1]])
                     if p in ifaces:
                         ifcs.append(cpp2hl(p))
-            jparams['iface'] = ifcs if len(ifcs) else [None]
+            jparams['iface'] = ifcs if ifcs else [None]
         else:
             jparams = {}
 

@@ -57,6 +57,7 @@ public:
     {
         daal::services::Environment::getInstance()->setDefaultExecutionContext(daal::services::CpuExecutionContext());
         delete m_ctxt;
+        m_ctxt = NULL;
     }
 private:
     daal::services::SyclExecutionContext *m_ctxt;
@@ -108,6 +109,7 @@ static void del_scl_buffer(void * ptr, int typ)
         break;
     default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
     }
+    ptr = NULL;
 }
 
 // take a sycl buffer and convert ti DAAL NT

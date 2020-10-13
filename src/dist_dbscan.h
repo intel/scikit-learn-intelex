@@ -18,6 +18,7 @@
 #define _DIST_DBSCAN_INCLUDED_
 
 #include "dist_custom.h"
+#include "daal4py_defines.h"
 #include <mpi.h>
 
 using namespace std;
@@ -220,7 +221,7 @@ void clustering()
         NumericTablePtr dataTable = services::staticPointerCast<NumericTable, SerializationIface>((*curHaloData)[destId]);
         if (dataTable->getNumberOfRows() > 0)
         {
-            curHaloBlocks->push_back(HomogenNumericTable<int>::create(1, 1, NumericTableIface::doAllocate, (int)rankId));
+            curHaloBlocks->push_back(HomogenNumericTable<int>::create(1, 1, NumericTableIface::doAllocate, static_cast<int>(rankId)));
         }
         else
         {
@@ -565,7 +566,6 @@ void recvTable(NumericTablePtr & table, int sender, int tag)
         table = NumericTable::cast(deserializeDAALObject(&buff[0], size));
     }
 }
-
 };
 
 // DAAL Distributed algos do not return a proper result (like batch), we need to create one
