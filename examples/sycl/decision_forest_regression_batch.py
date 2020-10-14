@@ -99,7 +99,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Using of the classic way (computations on CPU)
     train_result, predict_result = compute(train_data, train_labels, predict_data, "defaultDense")
     assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-    assert np.square(predict_result.prediction - predict_labels).mean() < 18
+    assert np.less(np.square(predict_result.prediction - predict_labels).mean(), 18)
 
     train_data   = to_numpy(train_data) 
     train_labels = to_numpy(train_labels)
@@ -120,7 +120,7 @@ def main(readcsv=read_csv, method='defaultDense'):
             sycl_predict_data = sycl_buffer(predict_data)
             train_result, predict_result = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, 'hist')
             assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-            assert np.square(predict_result.prediction - predict_labels).mean() < 18
+            assert np.less(np.square(predict_result.prediction - predict_labels).mean(), 18)
 
     return (train_result, predict_result, predict_labels)
 
