@@ -38,11 +38,13 @@ SKLEARN_22 = LooseVersion(sklearn_version) >= LooseVersion("0.22")
 
 if SKLEARN_22:
     from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
+    from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
     from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
     from sklearn.neighbors._ball_tree import BallTree
     from sklearn.neighbors._kd_tree import KDTree
 else:
     from sklearn.neighbors.base import KNeighborsMixin as BaseKNeighborsMixin
+    from sklearn.neighbors.base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
     from sklearn.neighbors.base import NeighborsBase as BaseNeighborsBase
     from sklearn.neighbors.ball_tree import BallTree
     from sklearn.neighbors.kd_tree import KDTree
@@ -240,13 +242,18 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
 def validate_data(estimator, X, y=None, reset=True,
                        validate_separately=False, **check_params):
     if y is None:
-        if estimator._get_tags()['requires_y']:
+        try:
+            requires_y = estimator._get_tags()["requires_y"]
+        except KeyError:
+            requires_y = False
+
+        if requires_y:
             raise ValueError(
                 f"This {estimator.__class__.__name__} estimator "
                 f"requires y to be passed, but the target y is None."
             )
         X = check_array(X, **check_params)
-        out = X
+        out = X, y
     else:
         if validate_separately:
             # We need this because some estimators validate X and y
@@ -279,7 +286,12 @@ class NeighborsBase(BaseNeighborsBase):
         single_output = True
         self._daal_model = None
 
-        if not SKLEARN_24 or self._get_tags()["requires_y"]:
+        try:
+            requires_y = self._get_tags()["requires_y"]
+        except KeyError:
+            requires_y = False
+
+        if y is not None or requires_y:
             if not X_incorrect_type:
                 X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True)
                 single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
@@ -310,7 +322,7 @@ class NeighborsBase(BaseNeighborsBase):
                 self._y = y
         else:
             if not X_incorrect_type:
-                X = validate_data(self, X, accept_sparse='csr')
+                X, _ = validate_data(self, X, accept_sparse='csr')
             self._y = None
 
         if not X_incorrect_type:
@@ -356,13 +368,31 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             result = daal4py_kneighbors(self, X, n_neighbors, return_distance)
         else:
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + method_uses_sklearn)
-            if getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
-                raise ValueError('oneDAL does not build sklearn.neighbors._kd_tree.KDTree')
-            if not (daal_model is None):
+            if daal_model is not None \
+            or getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
                 if SKLEARN_24:
                     BaseNeighborsBase._fit(self, self._fit_X, self._y)
                 else:
                     BaseNeighborsBase._fit(self, self._fit_X)
             result = super(KNeighborsMixin, self).kneighbors(X, n_neighbors, return_distance)
+
+        return result
+
+
+class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
+    def radius_neighbors(self, X=None, radius=None, return_distance=True,
+                         sort_results=False):
+        daal_model = getattr(self, '_daal_model', None)
+
+        if daal_model is not None \
+        or getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
+            if SKLEARN_24:
+                BaseNeighborsBase._fit(self, self._fit_X, self._y)
+            else:
+                BaseNeighborsBase._fit(self, self._fit_X)
+        if SKLEARN_22:
+            result = BaseRadiusNeighborsMixin.radius_neighbors(self, X, radius, return_distance, sort_results)
+        else:
+            result = BaseRadiusNeighborsMixin.radius_neighbors(self, X, radius, return_distance)
 
         return result
