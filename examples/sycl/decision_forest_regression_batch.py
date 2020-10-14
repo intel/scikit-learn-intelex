@@ -74,13 +74,13 @@ def to_numpy(data):
         if isinstance(data, DataFrame):
             return np.ascontiguousarray(data.values)
     except Exception as e:
-        pass
-    try:
-        from scipy.sparse import csr_matrix
-        if isinstance(data, csr_matrix):
-            return data.toarray()
-    except Exception as e:
-        pass
+        try:
+            from scipy.sparse import csr_matrix
+            if isinstance(data, csr_matrix):
+                return data.toarray()
+        except Exception as e:
+            return data
+
     return data
 
 def main(readcsv=read_csv, method='defaultDense'):
