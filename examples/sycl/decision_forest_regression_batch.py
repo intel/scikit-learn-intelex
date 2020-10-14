@@ -27,7 +27,7 @@ from daal4py.oneapi import sycl_buffer
 try:
     import pandas
     read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+except Exception as e:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
@@ -39,12 +39,12 @@ try:
     from dpctx import device_context, device_type
     with device_context(device_type.gpu, 0):
         gpu_available=True
-except:
+except Exception as e:
     try:
         from daal4py.oneapi import sycl_context
         with sycl_context('gpu'):
             gpu_available=True
-    except:
+    except Exception as e:
         gpu_available=False
 
 # Commone code for both CPU and GPU computations
@@ -73,13 +73,13 @@ def to_numpy(data):
         from pandas import DataFrame
         if isinstance(data, DataFrame):
             return np.ascontiguousarray(data.values)
-    except:
+    except Exception as e:
         pass
     try:
         from scipy.sparse import csr_matrix
         if isinstance(data, csr_matrix):
             return data.toarray()
-    except:
+    except Exception as e:
         pass
     return data
 
@@ -108,7 +108,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     try:
         from dpctx import device_context, device_type
         gpu_context = lambda: device_context(device_type.gpu, 0)
-    except:
+    except Exception as e:
         from daal4py.oneapi import sycl_context
         gpu_context = lambda: sycl_context('gpu')
 
