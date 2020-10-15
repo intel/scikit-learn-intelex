@@ -1186,7 +1186,7 @@ def fmt(*args, **kwargs):
     sep = kwargs['sep'] if 'sep' in kwargs else ', '
     return sep.join([y for y in [x.format(args[1], *args[2:]) for x in args[0]] if y])
 
-jenv = jinja2.Environment(trim_blocks=True)
+jenv = jinja2.Environment(trim_blocks=True, autoescape=True)
 jenv.filters['match'] = lambda a, x : [x for x in a if s in x]
 jenv.filters['d2cy'] = d2cy
 jenv.filters['flat'] = flat
