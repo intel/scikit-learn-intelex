@@ -242,7 +242,7 @@ def getpyexts():
 
 cfg_vars = get_config_vars()
 for key, value in get_config_vars().items():
-    if type(value) == str:
+    if isinstance(value, str):
         cfg_vars[key] = value.replace("-Wstrict-prototypes", "").replace('-DNDEBUG', '')
 
 
