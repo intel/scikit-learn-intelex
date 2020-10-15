@@ -208,33 +208,32 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
 
     if not query_is_train:
         return results
+    # If the query data is the same as the indexed data, we would like
+    # to ignore the first nearest neighbor of every sample, i.e
+    # the sample itself.
+    if return_distance:
+        neigh_dist, neigh_ind = results
     else:
-        # If the query data is the same as the indexed data, we would like
-        # to ignore the first nearest neighbor of every sample, i.e
-        # the sample itself.
-        if return_distance:
-            neigh_dist, neigh_ind = results
-        else:
-            neigh_ind = results
+        neigh_ind = results
 
-        n_queries, _ = X.shape
-        sample_range = np.arange(n_queries)[:, None]
-        sample_mask = neigh_ind != sample_range
+    n_queries, _ = X.shape
+    sample_range = np.arange(n_queries)[:, None]
+    sample_mask = neigh_ind != sample_range
 
-        # Corner case: When the number of duplicates are more
-        # than the number of neighbors, the first NN will not
-        # be the sample, but a duplicate.
-        # In that case mask the first duplicate.
-        dup_gr_nbrs = np.all(sample_mask, axis=1)
-        sample_mask[:, 0][dup_gr_nbrs] = False
-        neigh_ind = np.reshape(
-            neigh_ind[sample_mask], (n_queries, n_neighbors - 1))
+    # Corner case: When the number of duplicates are more
+    # than the number of neighbors, the first NN will not
+    # be the sample, but a duplicate.
+    # In that case mask the first duplicate.
+    dup_gr_nbrs = np.all(sample_mask, axis=1)
+    sample_mask[:, 0][dup_gr_nbrs] = False
+    neigh_ind = np.reshape(
+        neigh_ind[sample_mask], (n_queries, n_neighbors - 1))
 
-        if return_distance:
-            neigh_dist = np.reshape(
-                neigh_dist[sample_mask], (n_queries, n_neighbors - 1))
-            return neigh_dist, neigh_ind
-        return neigh_ind
+    if return_distance:
+        neigh_dist = np.reshape(
+            neigh_dist[sample_mask], (n_queries, n_neighbors - 1))
+        return neigh_dist, neigh_ind
+    return neigh_ind
 
 
 def validate_data(estimator, X, y=None, reset=True,
