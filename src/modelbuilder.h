@@ -20,6 +20,8 @@
 #define _MODELBUILDER_INCLUDED_
 
 #include <daal.h>
+#include <Python.h>
+#include "daal4py.h"
 
 typedef daal::algorithms::gbt::classification::ModelBuilder c_gbt_classification_model_builder;
 typedef daal::algorithms::gbt::regression::ModelBuilder c_gbt_regression_model_builder;
@@ -48,6 +50,11 @@ static daal::algorithms::logistic_regression::interface1::ModelPtr * get_logisti
     daal::algorithms::logistic_regression::interface1::ModelBuilder<modelFPType> * obj_)
 {
     return RAW<daal::algorithms::logistic_regression::interface1::ModelPtr>()(obj_->getModel());
+}
+
+static daal::data_management::NumericTablePtr getTable(const data_or_file & t)
+{
+    return get_table(t);
 }
 
 #endif // _MODELBUILDER_INCLUDED_
