@@ -138,8 +138,7 @@ def get_exe_cmd(ex, nodist, nostream):
     if not nodist and ex.endswith('spmd.py'):
         if IS_WIN:
             return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
-        else:
-            return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
+        return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
     return None
 
 def run_all(nodist=False, nostream=False):
