@@ -39,6 +39,8 @@ jobs:
   - script: |
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
+      conda config --set always_yes yes --set changeps1 no
+      conda update -q conda
       conda create -n CB python=3.7 daal daal-include cython mpich jinja2 numpy clang-tools scikit-learn lightgbm xgboost -c conda-forge -c intel
     displayName: Create Anaconda environment
   - script: |
