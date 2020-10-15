@@ -20,7 +20,8 @@
 # We will extend this once we know how other model builders willl work in DAAL
 
 import ctypes
-import numpy as np
+import numpy
+cimport numpy
 from libc.stdint cimport uintptr_t
 
 cdef extern from "modelbuilder.h":
@@ -49,9 +50,10 @@ cdef extern from "modelbuilder.h":
 
     cdef cppclass c_logistic_regression_model_builder:
         c_logistic_regression_model_builder(size_t nFeatures, size_t nClasses) except +
-        void setBeta(double* first, double* last)
+        void setBeta(data_management_NumericTablePtr ptrBeta)
 
     cdef logistic_regression_ModelPtr * get_logistic_regression_model_builder_model(c_logistic_regression_model_builder *)
+    cdef data_management_NumericTablePtr getTable(const data_or_file &t)
 
 
 cdef class logistic_regression_model_builder:
@@ -59,6 +61,7 @@ cdef class logistic_regression_model_builder:
     Model Builder for logistic regression.
     '''
     cdef c_logistic_regression_model_builder * c_ptr
+    cdef data_management_NumericTablePtr numTableBeta
 
     def __cinit__(self, size_t nFeatures, size_t nClasses):
         self.c_ptr = new c_logistic_regression_model_builder(nFeatures, nClasses)
@@ -66,17 +69,21 @@ cdef class logistic_regression_model_builder:
     def __dealloc__(self):
         del self.c_ptr
 
-    cdef setBeta(self, beta):
+    def setBeta(self, numpy.ndarray beta, numpy.ndarray intercept, bool interceptFlag):
         '''
-        Method to set betas to model via random access iterator, last - first value have to be equal to (_nFeatures)*_nClasses
-        in case when intercept flag is suppose to be false and (_nFeatures + 1)*_nClasses when intercept flag is true
-        :param numpy.array beta: support vectors
+        Concatenate beta and intercept, convert to daal4py model
+        
+        :param numpy.ndarray beta: beta from scikit-learn model
+        :param numpy.ndarray intercept: intercept from scikit-learn model
+        :param bool interceptFlag: True when scikit-learn model using intercept
         '''
-        if isinstance(beta, np.array):
-            return self.c_ptr.setBeta(<double*>(<void*>beta[0]), <double*>(<void*>beta[-1]))
-        else :
-            raise Exception('Beta must be numpy.array')
+        if interceptFlag:
+            tmp = intercept.reshape(-1, 1)
+            beta = numpy.concatenate((tmp, beta), axis=1)
+        numTableBeta = getTable(data_or_file(<PyObject*>beta))
+        return self.c_ptr.setBeta(numTableBeta)
 
+    @property
     def model(self):
         '''
         Get built model
