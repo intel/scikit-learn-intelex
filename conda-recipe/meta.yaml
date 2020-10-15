@@ -68,5 +68,6 @@ about:
     source software included in or with the software.</strong> <br/><br/>
     EULA: <a href="https://opensource.org/licenses/Apache-2.0"
     target="_blank">Apache 2.0 License</a><br/><br/>'
+    third_party_programs_file: doc/third-party-programs.txt
     dev_url: https://github.com/IntelPython/daal4py
     doc_url: https://intelpython.github.io/daal4py/
