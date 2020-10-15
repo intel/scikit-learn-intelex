@@ -64,11 +64,8 @@ def compute(train_data, train_labels, predict_data, method='defaultDense'):
     train_result = train_algo.compute(train_data, train_labels)
 
     # now predict using the model from the training above
-    if daal_version < (2020,1):
-        predict_algo = d4p.decision_forest_classification_prediction(nClasses=5)
-    else:
-        predict_algo = d4p.decision_forest_classification_prediction(nClasses=5,
-            resultsToEvaluate="computeClassLabels|computeClassProbabilities", votingMethod="unweighted")
+    predict_algo = d4p.decision_forest_classification_prediction(nClasses=5,
+        resultsToEvaluate="computeClassLabels|computeClassProbabilities", votingMethod="unweighted")
 
     predict_result = predict_algo.compute(predict_data, train_result.model)
 
@@ -106,7 +103,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Using of the classic way (computations on CPU)
     train_result, predict_result = compute(train_data, train_labels, predict_data, "defaultDense")
     assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-    assert (np.mean(np.not_equal(predict_result.prediction - predict_labels, 0)) < 0.03).any()
+    assert (np.mean(predict_result.prediction != predict_labels) < 0.03).any()
 
     train_data   = to_numpy(train_data) 
     train_labels = to_numpy(train_labels)
@@ -127,7 +124,7 @@ def main(readcsv=read_csv, method='defaultDense'):
             sycl_predict_data = sycl_buffer(predict_data)
             train_result, predict_result = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, 'hist')
             assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-            assert (np.mean(np.not_equal(predict_result.prediction - predict_labels, 0)) < 0.03).any()
+            assert (np.mean(predict_result.prediction != predict_labels) < 0.03).any()
 
     return (train_result, predict_result, predict_labels)
 
@@ -137,7 +134,6 @@ if __name__ == "__main__":
     print("\nVariable importance results:\n", train_result.variableImportance)
     print("\nOOB error:\n", train_result.outOfBagError)
     print("\nDecision forest prediction results (first 10 rows):\n", predict_result.prediction[0:10])
-    if daal_version >= (2020,1):
-        print("\nDecision forest probabilities results (first 10 rows):\n", predict_result.probabilities[0:10])
+    print("\nDecision forest probabilities results (first 10 rows):\n", predict_result.probabilities[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
     print('All looks good!')
