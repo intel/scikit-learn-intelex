@@ -392,9 +392,8 @@ class PCA(PCA_original):
                 raise ValueError("svd_solver='daal' is applicable for tall and skinny inputs only.")
             logging.info("sklearn.decomposition.PCA.fit: " + method_uses_daal)
             return self._fit_daal4py(X, n_components)
-        else:
-            raise ValueError("Unrecognized svd_solver='{0}'"
-                             "".format(self._fit_svd_solver))
+        raise ValueError("Unrecognized svd_solver='{0}'"
+                         "".format(self._fit_svd_solver))
 
 
     def fit_transform(self, X, y=None):
