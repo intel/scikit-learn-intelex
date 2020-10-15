@@ -169,7 +169,7 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
         [1] https://software.intel.com/en-us/daal-programming-guide-decision-tree-2        
         """
 
-        if not self.split_criterion in ('gini', 'infoGain'):
+        if self.split_criterion not in ('gini', 'infoGain'):
             raise ValueError('Parameter "split_criterion" must be '
                              '"gini" or "infoGain".')
 

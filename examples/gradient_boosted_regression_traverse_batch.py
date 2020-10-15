@@ -36,10 +36,8 @@ def printTree(nodes, values):
             printNodes(node["left_child"], nodes, values, level + 1)
         if node["right_child"] != -1:
             printNodes(node["right_child"], nodes, values, level + 1)
-        return
 
     printNodes(0, nodes, values, 0)
-    return
 
 
 if __name__ == "__main__":

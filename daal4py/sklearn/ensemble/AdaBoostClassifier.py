@@ -49,7 +49,7 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         self.accuracy_threshold = accuracy_threshold
 
     def fit(self, X, y):
-        if not self.split_criterion in ('gini', 'infoGain'):
+        if self.split_criterion not in ('gini', 'infoGain'):
             raise ValueError('Parameter "split_criterion" must be '
                              '"gini" or "infoGain".')
         if not ((isinstance(self.max_tree_depth, numbers.Integral))
@@ -64,7 +64,7 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
                 and (self.max_iterations > 0)):
             raise ValueError('Parameter "max_iterations" must be '
                              'non-zero positive integer value.')
-        if not (self.learning_rate > 0):
+        if self.learning_rate <= 0:
             raise ValueError('Parameter "learning_rate" must be '
                              'non-zero positive value.')
         # it is not clear why it is so but we will get error from DAAL otherwise
