@@ -12,18 +12,16 @@ build:
     number: {{buildnumber}}
     include_recipe: False
     script_env:
-     - DPCPPROOT
-     - DPCTLROOT
      - DAALROOT
-     - TBBROOT
     ignore_run_exports:
        - python
+       - mpich
 
 requirements:
     host:
         - python
         - setuptools
-        - numpy >=1.15
+        - numpy {{ numpy }}
         - daal-devel >=2020.2
         - cython
         - jinja2
@@ -31,10 +29,11 @@ requirements:
         - impi-devel # [not osx]
         - clang-tools
     build:
-        - {{ compiler('cxx') }}
-        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}  # [not osx]
+        - {{ compiler('c') }}    # [not osx]
     run:
         - python
+        - numpy >=1.15
         - daal >=2020.2
         - {{ pin_compatible('numpy') }}
 
