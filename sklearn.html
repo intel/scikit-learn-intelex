@@ -207,6 +207,13 @@ algorithms:</p>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html">sklearn.cluster.KMeans</a> (algo=’full’)</p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise_distances.html">sklearn.metric.pairwise_distance</a>, with metric=’cosine’ or metric=’correlation’</p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html">sklearn.linear_model.ElasticNet</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html">sklearn.linear_model.Lasso</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">sklearn.neighbors.KNeighborsClassifier</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html">sklearn.cluster.DBSCAN</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html">sklearn.ensemble.RandomForestRegressor</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html">sklearn.model_selection.train_test_split</a></p></li>
 </ol>
 <p>Monkey-patched scikit-learn clases and functions passes scikit-learn’s own test
 suite, with few exceptions, specified in <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/deselected_tests.yaml">deselected_tests.yaml</a>.</p>
@@ -245,14 +252,20 @@ implement a subset of scikit-learn algorithms using Intel® DAAL.</p>
 <p>Currently, these include:</p>
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.neighbors.KNeighborsClassifier</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.tree.DecisionTreeClassifier</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.ensemble.RandomForestClassifier</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.ensemble.RandomForestRegressor</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.ensemble.AdaBoostClassifier</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.cluster.KMeans</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.cluster.DBSCAN</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.decomposition.PCA</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.linear_model.Ridge</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.svm.SVC</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.linear_model.logistic_regression_path</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.linear_model.LogisticRegression</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.linear_model.ElasticNet</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.linear_model.Lasso</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.model_selection._daal_train_test_split</span></code></p></li>
 </ol>
 <p>These classes are always available, whether the scikit-learn itself has been
 patched, or not. For example:</p>
@@ -291,7 +304,7 @@ patched, or not. For example:</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Intel
+        &copy; Copyright 2020, Intel
 
     </p>
   </div>

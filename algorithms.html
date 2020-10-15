@@ -299,6 +299,10 @@
 <li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>memorySavingMode</strong> (<em>bool</em>) – [optional, default: False]  If true then use memory saving (but slower) mode</p></li>
 <li><p><strong>bootstrap</strong> (<em>bool</em>) – [optional, default: False]  If true then training set for a tree is a bootstrap of the whole training set</p></li>
+<li><p><strong>minObservationsInSplitNode</strong> (<em>size_t</em>) – [optional, default: -1]  Minimal number of observations in a split node. Default 2</p></li>
+<li><p><strong>minWeightFractionInLeafNode</strong> (<em>double</em>) – [optional, default: NaN64]  The minimum weighted fraction of the sum total of weights (of all the input observations) required to be at a leaf node, 0.0 to 0.5. Default is 0.0</p></li>
+<li><p><strong>minImpurityDecreaseInSplitNode</strong> (<em>double</em>) – [optional, default: NaN64]  A node will be split if this split induces a decrease of the impurity greater than or equal to the value, non-negative. Default is 0.0</p></li>
+<li><p><strong>maxLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum number of leaf node. Default is 0 (unlimited)</p></li>
 </ul>
 </dd>
 </dl>
@@ -896,6 +900,8 @@
 <li><p><strong>k</strong> (<em>size_t</em>) – [optional, default: -1]  Number of neighbors</p></li>
 <li><p><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]  The option to enable/disable an usage of the input dataset in kNN model</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for random choosing elements from training dataset</p></li>
+<li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+<li><p><strong>voteWeights</strong> (<em>str</em>) – [optional, default: “”]  Weight function used in prediction</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
@@ -909,7 +915,7 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>data_or_file</em>) – Training data set</p></li>
-<li><p><strong>labels</strong> (<em>data_or_file</em>) – Labels of the training data set</p></li>
+<li><p><strong>labels</strong> (<em>data_or_file</em>) – [optional, default: None]  Labels of the training data set</p></li>
 <li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Optional. Weights of the observations in the training data set</p></li>
 </ul>
 </dd>
@@ -948,6 +954,8 @@
 <li><p><strong>k</strong> (<em>size_t</em>) – [optional, default: -1]  Number of neighbors</p></li>
 <li><p><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]  The option to enable/disable an usage of the input dataset in kNN model</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for random choosing elements from training dataset</p></li>
+<li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+<li><p><strong>voteWeights</strong> (<em>str</em>) – [optional, default: “”]  Weight function used in prediction</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
@@ -965,7 +973,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p>kdtree_knn_classification_prediction_result</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2450,18 +2458,23 @@
 <li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>memorySavingMode</strong> (<em>bool</em>) – [optional, default: False]  If true then use memory saving (but slower) mode</p></li>
 <li><p><strong>bootstrap</strong> (<em>bool</em>) – [optional, default: False]  If true then training set for a tree is a bootstrap of the whole training set</p></li>
+<li><p><strong>minObservationsInSplitNode</strong> (<em>size_t</em>) – [optional, default: -1]  Minimal number of observations in a split node. Default 2</p></li>
+<li><p><strong>minWeightFractionInLeafNode</strong> (<em>double</em>) – [optional, default: NaN64]  The minimum weighted fraction of the sum total of weights (of all the input observations) required to be at a leaf node, 0.0 to 0.5. Default is 0.0</p></li>
+<li><p><strong>minImpurityDecreaseInSplitNode</strong> (<em>double</em>) – [optional, default: NaN64]  A node will be split if this split induces a decrease of the impurity greater than or equal to the value, non-negative. Default is 0.0</p></li>
+<li><p><strong>maxLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum number of leaf node. Default is 0 (unlimited)</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt id="daal4py.decision_forest_regression_training.compute">
-<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">dependentVariable</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.decision_forest_regression_training.compute" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">dependentVariable</span></em>, <em class="sig-param"><span class="n">weights</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.decision_forest_regression_training.compute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do the actual computation on provided input data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p></li>
 <li><p><strong>dependentVariable</strong> (<em>data_or_file</em>) – Values of the dependent variable for the input data</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Optional. Weights of the observations in the training data set</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -6567,7 +6580,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Intel
+        &copy; Copyright 2020, Intel
 
     </p>
   </div>
