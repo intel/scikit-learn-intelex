@@ -25,7 +25,7 @@ from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from joblib import effective_n_jobs
 from sklearn.utils.multiclass import check_classification_targets
-from sklearn.base import is_classifier
+from sklearn.base import is_classifier, is_regressor
 import logging
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
@@ -285,6 +285,7 @@ class NeighborsBase(BaseNeighborsBase):
         X_incorrect_type = isinstance(X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
         single_output = True
         self._daal_model = None
+        shape = None
 
         try:
             requires_y = self._get_tags()["requires_y"]
@@ -296,14 +297,17 @@ class NeighborsBase(BaseNeighborsBase):
                 X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True)
                 single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
 
-            if is_classifier(self):
+            shape = y.shape
+
+            if is_classifier(self) or is_regressor(self):
                 if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
                     self.outputs_2d_ = False
                     y = y.reshape((-1, 1))
                 else:
                     self.outputs_2d_ = True
 
-                check_classification_targets(y)
+                if is_classifier(self):
+                    check_classification_targets(y)
                 self.classes_ = []
                 self._y = np.empty(y.shape, dtype=int)
                 for k in range(self._y.shape[1]):
@@ -349,6 +353,9 @@ class NeighborsBase(BaseNeighborsBase):
                 result = super(NeighborsBase, self)._fit(X, y)
             else:
                 result = super(NeighborsBase, self)._fit(X)
+
+        if y is not None and is_regressor(self):
+            self._y = y if shape is None else y.reshape(shape)
 
         return result
 
