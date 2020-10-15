@@ -59,8 +59,8 @@ jobs:
       python -m unittest discover -v -s tests -p test*.py
     displayName: Testing
   - script: |
-    source activate CB
-    cd examples && python run_examples.py
+      source activate CB
+      cd examples && python run_examples.py
     displayName: Examples
 
 - job: Windows
