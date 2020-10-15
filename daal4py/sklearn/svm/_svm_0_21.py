@@ -273,7 +273,6 @@ def _daal4py_fit(self, X, y_inp, kernel):
     self.probA_ = np.empty(0)
     self.probB_ = np.empty(0)
 
-    return
 
 
 def _daal_var(X):
