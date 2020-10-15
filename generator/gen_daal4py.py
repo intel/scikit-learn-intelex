@@ -550,7 +550,7 @@ class cython_interface(object):
             for i in tmp_input_args:
                 if i.name.endswith(arg):
                     input_args.append(i)
-        for i in range(len(tmp_input_args)):
+        for i in enumerate(tmp_input_args):
             if not any(tmp_input_args[i].name.endswith(x) for x in ordered):
                 input_args.append(tmp_input_args[i])
         return input_args
