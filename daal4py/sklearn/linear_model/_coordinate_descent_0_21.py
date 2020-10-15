@@ -119,7 +119,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
         fptype = _fptype,
         method = 'defaultDense',
         selection = self.selection,
-        seed = 0 if (self.random_state == None) else self.random_state,
+        seed = 0 if (self.random_state is None) else self.random_state,
         nIterations = self.max_iter,
         positive = self.positive,
         accuracyThreshold = self.tol
@@ -255,7 +255,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
         fptype = _fptype,
         method = 'defaultDense',
         selection = self.selection,
-        seed = 0 if (self.random_state == None) else self.random_state,
+        seed = 0 if (self.random_state is None) else self.random_state,
         nIterations = self.max_iter,
         positive = self.positive,
         accuracyThreshold = self.tol
