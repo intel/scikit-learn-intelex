@@ -64,7 +64,7 @@ class GBTDAALBase(BaseEstimator):
         self.random_state = random_state
 
     def _check_params(self):
-        if not self.split_method in ('inexact', 'exact'):
+        if self.split_method not in ('inexact', 'exact'):
             raise ValueError('Parameter "split_method" must be '
                              '"inexact" or "exact".')
         if not ((isinstance(self.max_iterations, numbers.Integral))
@@ -79,10 +79,10 @@ class GBTDAALBase(BaseEstimator):
                 and (self.shrinkage < 1)):
             raise ValueError('Parameter "shrinkage" must be '
                              'more or equal to 0 and less than 1.')
-        if not (self.min_split_loss >= 0):
+        if self.min_split_loss < 0:
             raise ValueError('Parameter "min_split_loss" must be '
                              'more or equal to zero.')
-        if not (self.reg_lambda >= 0):
+        if self.reg_lambda < 0:
             raise ValueError('Parameter "reg_lambda" must be '
                              'more or equal to zero.')
         if not ((self.observations_per_tree_fraction > 0)
