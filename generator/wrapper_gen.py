@@ -1252,7 +1252,7 @@ class wrapper_gen(object):
 
     def lp(self, t):
         tmp = t.split('\n')
-        for i in enumerate(tmp):
+        for i in range(len(tmp)):
             print(i, tmp[i])
 
     ##################################################################################
