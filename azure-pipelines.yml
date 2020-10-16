@@ -82,6 +82,7 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       call activate CB
+      set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
       conda build --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder=. conda-recipe
     displayName: conda build
   - task: PublishPipelineArtifact@0
