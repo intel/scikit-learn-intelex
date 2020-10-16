@@ -52,8 +52,10 @@ cdef class logistic_regression_model_builder:
         '''
         if numpy.any(intercept):
             tmp = intercept.reshape(-1, 1)
-            beta = numpy.concatenate((tmp, beta), axis=1)
-        numTableBeta = getTable(data_or_file(<PyObject*>beta))
+            tmp = numpy.concatenate((tmp, beta), axis=1)
+        else :
+            tmp = beta
+        numTableBeta = getTable(data_or_file(<PyObject*>tmp))
         return self.c_ptr.setBeta(numTableBeta)
 
     @property

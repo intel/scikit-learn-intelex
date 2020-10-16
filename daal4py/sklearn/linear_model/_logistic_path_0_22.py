@@ -15,6 +15,7 @@
 # limitations under the License.
 #******************************************************************************/
 
+import daal4py as d4p
 import numpy as np
 import scipy.sparse as sparse
 import scipy.optimize as optimize
@@ -51,7 +52,8 @@ from sklearn.linear_model._logistic import (
     LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
 from sklearn.linear_model._base import (LinearClassifierMixin, SparseCoefMixin, BaseEstimator)
-from .._utils import (method_uses_sklearn, method_uses_daal)
+from .._utils import (daal_check_version, getFPType, 
+                      method_uses_sklearn, method_uses_daal)
 import logging
 
 use_daal = True
@@ -956,6 +958,29 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     return np.array(coefs), np.array(Cs), n_iter
 
 
+def daal4py_predict(self, X, resultsToEvaluate):
+    try:
+        fptype = getFPType(X)
+    except ValueError:
+        fptype = None
+    
+    if daal_check_version(((2021,'P', 1), (2021,'B', 110))) and fptype is not None:    
+        logging.info("sklearn.linear_model.LogisticRegression.predict: " + method_uses_daal)
+        builder = d4p.logistic_regression_model_builder(X.shape[1], len(self.classes_))
+        builder.set_beta(self.coef_, self.intercept_)        
+        predict = d4p.logistic_regression_prediction(nClasses=len(self.classes_),
+                                                    fptype=fptype,
+                                                    method = 'defaultDense',
+                                                    resultsToEvaluate = resultsToEvaluate)
+        res = predict.compute(X, builder.model).prediction
+        if res.shape[1] == 1:
+            res = np.ravel(res)
+        return res
+    else:
+        logging.info("sklearn.linear_model.LogisticRegression.predict: " + method_uses_sklearn)
+        return super(KNeighborsClassifier, self).predict(X)
+
+
 if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
     def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                               max_iter=100, tol=1e-4, verbose=0,
@@ -1001,6 +1026,20 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
             self.warm_start = warm_start
             self.n_jobs = n_jobs
             self.l1_ratio = l1_ratio
+
+
+        def predict(self, X):
+            return daal4py_predict(self, X, 'computeClassLabels')
+
+
+        def predict_log_proba(self, X):
+            return daal4py_predict(self, X, 'computeClassLogProbabilities')
+
+
+        def predict_proba(self, X):
+            return daal4py_predict(self, X, 'computeClassProbabilities')
+
+
 elif (LooseVersion(sklearn_version) >= LooseVersion("0.22")):
     def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                               max_iter=100, tol=1e-4, verbose=0,
@@ -1046,6 +1085,18 @@ elif (LooseVersion(sklearn_version) >= LooseVersion("0.22")):
             self.warm_start = warm_start
             self.n_jobs = n_jobs
             self.l1_ratio = l1_ratio
+
+        def predict(self, X):
+            return daal4py_predict(self, X, 'computeClassLabels')
+        
+
+        def predict_log_proba(self, X):
+            return daal4py_predict(self, X, 'computeClassLogProbabilities')
+
+
+        def predict_proba(self, X):
+            return daal4py_predict(self, X, 'computeClassProbabilities')
+
 elif (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
     def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                               max_iter=100, tol=1e-4, verbose=0,
@@ -1091,6 +1142,19 @@ elif (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
             self.warm_start = warm_start
             self.n_jobs = n_jobs
             self.l1_ratio = l1_ratio
+        
+
+        def predict(self, X):
+            return daal4py_predict(self, X, 'computeClassLabels')
+        
+
+        def predict_log_proba(self, X):
+            return daal4py_predict(self, X, 'computeClassLogProbabilities')
+
+
+        def predict_proba(self, X):
+            return daal4py_predict(self, X, 'computeClassProbabilities')
+
 else:
     class LogisticRegression(LogisticRegression_original, BaseEstimator,
                              LinearClassifierMixin, SparseCoefMixin):
@@ -1113,3 +1177,14 @@ else:
             self.verbose = verbose
             self.warm_start = warm_start
             self.n_jobs = n_jobs
+        
+        def predict(self, X):
+            return daal4py_predict(self, X, 'computeClassLabels')
+        
+
+        def predict_log_proba(self, X):
+            return daal4py_predict(self, X, 'computeClassLogProbabilities')
+
+
+        def predict_proba(self, X):
+            return daal4py_predict(self, X, 'computeClassProbabilities')
