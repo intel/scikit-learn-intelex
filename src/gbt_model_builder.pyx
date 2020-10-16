@@ -15,15 +15,10 @@
 #******************************************************************************/
 
 # We expose DAAL's directly through Cython
-# Currently only GBT is available.
 # The model builder object is retrieved through calling model_builder.
-# We will extend this once we know how other model builders willl work in DAAL
+# We will extend this once we know how other model builders will work in DAAL
 
-import numpy
-cimport numpy
-from daal4py.sklearn._utils import daal_check_version
-
-cdef extern from "modelbuilder.h":
+cdef extern from "gbt_model_builder.h":
     ctypedef size_t c_gbt_clf_node_id
     ctypedef size_t c_gbt_clf_tree_id
     ctypedef size_t c_gbt_reg_node_id
@@ -46,53 +41,6 @@ cdef extern from "modelbuilder.h":
 
     cdef gbt_classification_ModelPtr * get_gbt_classification_model_builder_model(c_gbt_classification_model_builder *)
     cdef gbt_regression_ModelPtr * get_gbt_regression_model_builder_model(c_gbt_regression_model_builder *)
-
-    cdef cppclass c_logistic_regression_model_builder:
-        c_logistic_regression_model_builder(size_t n_features, size_t n_classes) except +
-        void setBeta(data_management_NumericTablePtr ptrBeta)
-
-    cdef logistic_regression_ModelPtr * get_logistic_regression_model_builder_model(c_logistic_regression_model_builder *)
-    cdef data_management_NumericTablePtr getTable(const data_or_file &t)
-
-
-cdef class logistic_regression_model_builder:
-    '''
-    Model Builder for logistic regression.
-    '''
-    cdef c_logistic_regression_model_builder * c_ptr
-    cdef data_management_NumericTablePtr numTableBeta
-
-    def __cinit__(self, size_t n_features, size_t n_classes):
-        self.c_ptr = new c_logistic_regression_model_builder(n_features, n_classes)
-
-    def __dealloc__(self):
-        del self.c_ptr
-
-    def set_beta(self, beta, intercept):
-        if not daal_check_version((2021, 'P', 1)):
-            return
-        '''
-        Concatenate beta and intercept, convert to daal4py model
-        
-        :param beta: beta from scikit-learn model
-        :param intercept: intercept from scikit-learn model
-        '''
-        if numpy.any(intercept):
-            tmp = intercept.reshape(-1, 1)
-            beta = numpy.concatenate((tmp, beta), axis=1)
-        numTableBeta = getTable(data_or_file(<PyObject*>beta))
-        return self.c_ptr.setBeta(numTableBeta)
-
-    @property
-    def model(self):
-        '''
-        Get built model
-
-        :rtype: logistic_regression_model
-        '''
-        cdef logistic_regression_model res = logistic_regression_model.__new__(logistic_regression_model)
-        res.c_ptr = get_logistic_regression_model_builder_model(self.c_ptr)
-        return res
 
 
 cdef class gbt_classification_model_builder:
