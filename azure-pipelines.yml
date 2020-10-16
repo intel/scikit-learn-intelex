@@ -1,3 +1,9 @@
+variables:
+  - name: WINDOWS_BASEKIT_URL
+    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/16958/w_BaseKit_b_2021.1.9.2200.exe
+  - name: WINDOWS_DPCPP_COMPONENTS
+    value: intel.oneapi.win.dpcpp-compiler
+
 jobs:
 - job: DPCPP
   pool:
@@ -65,15 +71,15 @@ jobs:
 
 - job: Windows
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
 
   steps:
+  - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
+    displayName: oneAPI environment
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-
   - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
-
   - script: |
       call activate CB
       conda build --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder=. conda-recipe
