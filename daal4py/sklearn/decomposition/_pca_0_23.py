@@ -92,7 +92,7 @@ def _n_components_from_fraction(explained_variance_ratio, frac):
     return n_components
     
 
-def _fit_full(self, X, n_components):
+def _fit_full_prev(self, X, n_components):
     """Fit the model by computing full SVD on X"""
     n_samples, n_features = X.shape
 
@@ -142,8 +142,6 @@ def _fit_full(self, X, n_components):
     return U, S, V
 
 
-_fit_full_copy = _fit_full
-
 class PCA_prev(PCA_original):
     __doc__ = PCA_original.__doc__
 
@@ -159,7 +157,7 @@ class PCA_prev(PCA_original):
         self.random_state = random_state
 
     def _fit_full(self, X, n_components):
-        return _fit_full_copy(self, X, n_components)
+        return _fit_full_prev(self, X, n_components)
 
 
 class PCA(PCA_original):
@@ -502,4 +500,4 @@ if (lambda s: (int(s[:4]), int(s[6:])))( daal4py.__daal_link_version__[:8] ) < (
             self.random_state = random_state
 
         def _fit_full(self, X, n_components):
-            return _fit_full_copy(self, X, n_components)
+            return _fit_full_prev(self, X, n_components)

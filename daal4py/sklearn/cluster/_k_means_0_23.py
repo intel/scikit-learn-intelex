@@ -212,7 +212,7 @@ def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_
     return best_cluster_centers, best_labels, best_inertia, best_n_iter
 
 
-def fit(self, X, y=None, sample_weight=None):
+def _fit(self, X, y=None, sample_weight=None):
     """Compute k-means clustering.
 
     Parameters
@@ -302,7 +302,7 @@ def _daal4py_check_test_data(self, X):
     return X
 
 
-def predict(self, X, sample_weight=None):
+def _predict(self, X, sample_weight=None):
     """Predict the closest cluster each sample in X belongs to.
 
     In the vector quantization literature, `cluster_centers_` is called
@@ -338,8 +338,6 @@ def predict(self, X, sample_weight=None):
                                self.cluster_centers_)[0]
 
 
-_fit_copy = fit
-_predict_copy = predict
 
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
@@ -357,7 +355,7 @@ class KMeans(KMeans_original):
             copy_x=copy_x, n_jobs=n_jobs, algorithm=algorithm)
 
     def fit(self, X, y=None, sample_weight=None):
-        return _fit_copy(self, X, y=y, sample_weight=sample_weight)
+        return _fit(self, X, y=y, sample_weight=sample_weight)
 
     def predict(self, X, sample_weight=None):
-        return _predict_copy(self, X, sample_weight=sample_weight)
+        return _predict(self, X, sample_weight=sample_weight)
