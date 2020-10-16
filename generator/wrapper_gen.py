@@ -1252,8 +1252,8 @@ class wrapper_gen(object):
 
     def lp(self, t):
         tmp = t.split('\n')
-        for i in range(len(tmp)):
-            print(i, tmp[i])
+        for i in enumerate(tmp):
+            print(i[0], i[1])
 
     ##################################################################################
     def gen_wrapper(self, ns, algo):
