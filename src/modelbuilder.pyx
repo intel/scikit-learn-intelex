@@ -21,6 +21,7 @@
 
 import numpy
 cimport numpy
+from daal4py.sklearn._utils import daal_check_version
 
 cdef extern from "modelbuilder.h":
     ctypedef size_t c_gbt_clf_node_id
@@ -68,6 +69,8 @@ cdef class logistic_regression_model_builder:
         del self.c_ptr
 
     def set_beta(self, beta, intercept):
+        if not daal_check_version((2021, 'P', 1)):
+            return
         '''
         Concatenate beta and intercept, convert to daal4py model
         
