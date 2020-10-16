@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2020 Intel Corporation
+# Copyright 2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -16,79 +16,28 @@
 # limitations under the License.
 #*******************************************************************************
 
-from sklearn.metrics import * 
 import daal4py as d4p
 import numpy as np
+from daal4py.sklearn._utils import daal_check_version
 from sklearn.datasets import load_iris
 from sklearn.datasets import load_breast_cancer
 from sklearn.linear_model import LogisticRegression
 
-def iris_with_intercept():
+def main():
     X, y = load_iris(return_X_y=True)
-    flag = True
-    clf = LogisticRegression(fit_intercept=flag, max_iter=10000, random_state=0).fit(X, y)
-    beta = clf.coef_
-    #print(beta)
-    #print(clf.intercept_)
-    builder = d4p.logistic_regression_model_builder(beta.shape[1], beta.shape[0])
-    builder.setBeta(clf.coef_, clf.intercept_, flag)
+    n_classes=3
+    clf = LogisticRegression(fit_intercept=True, max_iter=1000, random_state=0).fit(X, y)
+    builder = d4p.logistic_regression_model_builder(n_classes=n_classes, n_features=X.shape[1])
+    builder.set_beta(clf.coef_, clf.intercept_)
 
-    pred = d4p.logistic_regression_prediction(nClasses=beta.shape[0])
-    #print(builder.model)
-    predict_result = pred.compute(X, builder.model)
-    #print(predict_result.prediction)
+    alg_pred = d4p.logistic_regression_prediction(nClasses=n_classes)
 
+    pred_daal = alg_pred.compute(X, builder.model).prediction.flatten()
+    pred_sklearn = clf.predict(X)
 
-def iris_without_intercept():
-    X, y = load_iris(return_X_y=True)
-    flag = False
-    clf = LogisticRegression(fit_intercept=flag, max_iter=10000, random_state=0).fit(X, y)
-    beta = clf.coef_
-    #print(beta)
-    #print(clf.intercept_)
-    builder = d4p.logistic_regression_model_builder(beta.shape[1], beta.shape[0])
-    builder.setBeta(clf.coef_, clf.intercept_, flag)
-
-    pred = d4p.logistic_regression_prediction(nClasses=beta.shape[0])
-    #print(builder.model)
-    predict_result = pred.compute(X, builder.model)
-    #print(predict_result.prediction)
-
-
-def breast_cancer_with_intercept():
-    X, y = load_breast_cancer(return_X_y=True)
-    flag = True
-    clf = LogisticRegression(fit_intercept=flag, max_iter=10000, random_state=0).fit(X, y)
-    beta = clf.coef_
-    #print(beta)
-    #print(clf.intercept_)
-    builder = d4p.logistic_regression_model_builder(beta.shape[1], beta.shape[0])
-    builder.setBeta(clf.coef_, clf.intercept_, flag)
-
-    pred = d4p.logistic_regression_prediction(nClasses=2)
-    #print(builder.model)
-    predict_result = pred.compute(X, builder.model)
-    #print(predict_result.prediction)
-
-
-def breast_cancer_without_intercept():
-    X, y = load_breast_cancer(return_X_y=True)
-    flag = False
-    clf = LogisticRegression(fit_intercept=flag, max_iter=10000, random_state=0).fit(X, y)
-    beta = clf.coef_
-    #print(beta)
-    #print(clf.intercept_)
-    builder = d4p.logistic_regression_model_builder(beta.shape[1], beta.shape[0])
-    builder.setBeta(clf.coef_, clf.intercept_, flag)
-
-    pred = d4p.logistic_regression_prediction(nClasses=2)
-    #print(builder.model)
-    predict_result = pred.compute(X, builder.model)
-    #print(predict_result.prediction)
+    assert np.allclose(pred_daal, pred_sklearn)
 
 
 if __name__ == "__main__":
-    iris_with_intercept()
-    iris_without_intercept()
-    breast_cancer_with_intercept()
-    breast_cancer_without_intercept()
+    if daal_check_version((2021, 'P', 1)):
+        main()
