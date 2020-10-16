@@ -20,8 +20,6 @@
 #define _LOG_REG_MODEL_BUILDER_INCLUDED_
 
 #include <daal.h>
-#include <Python.h>
-#include "daal4py.h"
 
 typedef daal::algorithms::logistic_regression::ModelBuilder<DAAL_ALGORITHM_FP_TYPE> c_logistic_regression_model_builder;
 
