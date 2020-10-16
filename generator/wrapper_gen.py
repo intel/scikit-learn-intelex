@@ -1024,7 +1024,7 @@ algo_wrapper_template = """
 {{tfactory(tmpl_spec[1:], prefix, params, dist, args+[a], indent+4)}}
 {% endif %}
 {{" "*(indent)}}} else {% if loop.last %} {
-{{" "*(indent+4)}} std::cerr << "Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': '" << {{tmpl_spec[0][0]}} << "'" << std::endl;
+{{" "*(indent+4)}} throw std::runtime_error(std::string("Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': ") + {{tmpl_spec[0][0]}} + "'");
 {{" "*(indent)}}}
 {% endif %}
 {% endfor %}
@@ -1036,7 +1036,7 @@ mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(4+(algo|length)
     ThreadAllow _allow_;
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', params_ds, dist=dist)}}
-    std::cerr << "Error: Could not construct {{algo}}." << std::endl;
+    throw std::runtime_error("Error: Could not construct {{algo}}.");
     return daal::services::SharedPtr<{{algo}}__iface__>();
 {% else %}
     return daal::services::SharedPtr<{{algo}}__iface__>(new {{algo}}_manager({{params_ds|fmt('{}', 'arg_cpp')}}));
