@@ -81,7 +81,7 @@ def prediction_algorithm(method, fptype, params):
 def parse_auto_method(estimator, method, n_samples, n_features):
     result_method = method
 
-    if (method == 'auto'):
+    if (method in ['auto', 'ball_tree']):
         if estimator.metric == 'precomputed' or n_features > 11 or \
            (estimator.n_neighbors is not None and estimator.n_neighbors >= estimator.n_samples_fit_ // 2):
             result_method = 'brute'
@@ -342,7 +342,7 @@ class NeighborsBase(BaseNeighborsBase):
         weights = getattr(self, 'weights', 'uniform')
 
         if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not X_incorrect_type \
-        and weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
+        and weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and single_output and fptype is not None and not sp.issparse(X) and correct_n_classes:
             logging.info("sklearn.neighbors.NeighborsBase._fit: " + method_uses_daal)
