@@ -19,10 +19,8 @@
 # The model builder object is retrieved through calling model_builder.
 # We will extend this once we know how other model builders willl work in DAAL
 
-import ctypes
 import numpy
 cimport numpy
-from libc.stdint cimport uintptr_t
 
 cdef extern from "modelbuilder.h":
     ctypedef size_t c_gbt_clf_node_id
@@ -49,7 +47,7 @@ cdef extern from "modelbuilder.h":
     cdef gbt_regression_ModelPtr * get_gbt_regression_model_builder_model(c_gbt_regression_model_builder *)
 
     cdef cppclass c_logistic_regression_model_builder:
-        c_logistic_regression_model_builder(size_t nFeatures, size_t nClasses) except +
+        c_logistic_regression_model_builder(size_t n_features, size_t n_classes) except +
         void setBeta(data_management_NumericTablePtr ptrBeta)
 
     cdef logistic_regression_ModelPtr * get_logistic_regression_model_builder_model(c_logistic_regression_model_builder *)
@@ -63,21 +61,20 @@ cdef class logistic_regression_model_builder:
     cdef c_logistic_regression_model_builder * c_ptr
     cdef data_management_NumericTablePtr numTableBeta
 
-    def __cinit__(self, size_t nFeatures, size_t nClasses):
-        self.c_ptr = new c_logistic_regression_model_builder(nFeatures, nClasses)
+    def __cinit__(self, size_t n_features, size_t n_classes):
+        self.c_ptr = new c_logistic_regression_model_builder(n_features, n_classes)
 
     def __dealloc__(self):
         del self.c_ptr
 
-    def setBeta(self, numpy.ndarray beta, numpy.ndarray intercept, bool interceptFlag):
+    def set_beta(self, beta, intercept):
         '''
         Concatenate beta and intercept, convert to daal4py model
         
-        :param numpy.ndarray beta: beta from scikit-learn model
-        :param numpy.ndarray intercept: intercept from scikit-learn model
-        :param bool interceptFlag: True when scikit-learn model using intercept
+        :param beta: beta from scikit-learn model
+        :param intercept: intercept from scikit-learn model
         '''
-        if interceptFlag:
+        if numpy.any(intercept):
             tmp = intercept.reshape(-1, 1)
             beta = numpy.concatenate((tmp, beta), axis=1)
         numTableBeta = getTable(data_or_file(<PyObject*>beta))
