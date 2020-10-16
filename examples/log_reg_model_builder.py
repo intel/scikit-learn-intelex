@@ -39,5 +39,4 @@ def main():
 
 
 if __name__ == "__main__":
-    if daal_check_version((2021, 'P', 1)):
-        main()
+    main()
