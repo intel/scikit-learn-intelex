@@ -104,7 +104,7 @@ def check_classifier_class_weight_iris(weight):
 
 @pytest.mark.parametrize('weight', CLASS_WEIGHTS_IRIS)
 def test_classifier_class_weight_iris(weight):
-    if daal_check_version((2020, 3)):
+    if daal_check_version((2021,'B', 110)):
         check_classifier_class_weight_iris(weight)
 
 SAMPLE_WEIGHTS_IRIS = [
@@ -144,7 +144,7 @@ def check_classifier_sample_weight(weight, check_ratio=0.9):
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
 def test_classifier_sample_weight_iris(weight):
-    if daal_check_version((2020, 3)):
+    if daal_check_version((2021,'B', 110)):
         check_classifier_sample_weight(weight)
 
 
@@ -172,5 +172,5 @@ def check_regressor_sample_weight(weight, check_ratio=1.1):
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
 def test_regressor_sample_weight_iris(weight):
-    if daal_check_version((2020, 3)) and weight[1] != 'Only 0':
+    if daal_check_version((2021,'B', 110)) and weight[1] != 'Only 0':
         check_regressor_sample_weight(weight)
