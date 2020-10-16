@@ -23,6 +23,7 @@ from sklearn.datasets import load_iris
 from sklearn.datasets import load_breast_cancer
 from sklearn.linear_model import LogisticRegression
 
+
 def main():
     X, y = load_iris(return_X_y=True)
     n_classes=3
@@ -34,7 +35,6 @@ def main():
 
     pred_daal = alg_pred.compute(X, builder.model).prediction.flatten()
     pred_sklearn = clf.predict(X)
-
     assert np.allclose(pred_daal, pred_sklearn)
 
 

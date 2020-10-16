@@ -16,16 +16,13 @@
 
 // Definitions/declarations, mapping cython names/types to DAAL's actual types
 
-#ifndef _MODELBUILDER_INCLUDED_
-#define _MODELBUILDER_INCLUDED_
+#ifndef _GBT_MODEL_BUILDER_INCLUDED_
+#define _GBT_MODEL_BUILDER_INCLUDED_
 
 #include <daal.h>
-#include <Python.h>
-#include "daal4py.h"
 
 typedef daal::algorithms::gbt::classification::ModelBuilder c_gbt_classification_model_builder;
 typedef daal::algorithms::gbt::regression::ModelBuilder c_gbt_regression_model_builder;
-typedef daal::algorithms::logistic_regression::ModelBuilder<DAAL_ALGORITHM_FP_TYPE> c_logistic_regression_model_builder;
 
 typedef c_gbt_classification_model_builder::NodeId c_gbt_clf_node_id;
 typedef c_gbt_classification_model_builder::TreeId c_gbt_clf_tree_id;
@@ -45,16 +42,4 @@ static daal::algorithms::gbt::regression::ModelPtr * get_gbt_regression_model_bu
     return RAW<daal::algorithms::gbt::regression::ModelPtr>()(obj_->getModel());
 }
 
-template <typename modelFPType = DAAL_ALGORITHM_FP_TYPE>
-static daal::algorithms::logistic_regression::ModelPtr * get_logistic_regression_model_builder_model(
-    daal::algorithms::logistic_regression::ModelBuilder<modelFPType> * obj_)
-{
-    return RAW<daal::algorithms::logistic_regression::ModelPtr>()(obj_->getModel());
-}
-
-static daal::data_management::NumericTablePtr getTable(const data_or_file & t)
-{
-    return get_table(t);
-}
-
-#endif // _MODELBUILDER_INCLUDED_
+#endif // _GBT_MODEL_BUILDER_INCLUDED_

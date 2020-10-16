@@ -946,18 +946,24 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     with open(jp('src', 'gettree.pyx'), 'r') as f:
         pyx_gettree = f.read()
 
-    pyx_modelbuilder = ''
+    pyx_gbt_model_builder = ''
+    pyx_log_reg_model_builder = ''
     if 'algorithms::gbt::classification' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::gbt::classification'].classes or \
        'algorithms::gbt::regression' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::gbt::regression'].classes:
-        with open(jp('src', 'modelbuilder.pyx'), 'r') as f:
-            pyx_modelbuilder = f.read()
+        with open(jp('src', 'gbt_model_builder.pyx'), 'r') as f:
+            pyx_gbt_model_builder = f.read()
+
+    with open(jp('src', 'log_reg_model_builder.pyx'), 'r') as f:
+        pyx_log_reg_model_builder = f.read()
+
     pyx_gbt_generators = ''
     with open(jp('src', 'gbt_convertors.pyx'), 'r') as f:
         pyx_gbt_generators = f.read()
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
         f.write(pyx_file)
         f.write(pyx_gettree)
-        f.write(pyx_modelbuilder)
+        f.write(pyx_gbt_model_builder)
+        f.write(pyx_log_reg_model_builder)
         f.write(pyx_gbt_generators)
