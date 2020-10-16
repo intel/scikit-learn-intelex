@@ -286,6 +286,7 @@ class NeighborsBase(BaseNeighborsBase):
         single_output = True
         self._daal_model = None
         shape = None
+        correct_n_classes = True
 
         try:
             requires_y = self._get_tags()["requires_y"]
@@ -321,7 +322,7 @@ class NeighborsBase(BaseNeighborsBase):
 
                 n_classes = len(self.classes_)
                 if n_classes < 2:
-                    raise ValueError("Training data only contain information about one class.")
+                    correct_n_classes = False
             else:
                 self._y = y
         else:
@@ -343,7 +344,7 @@ class NeighborsBase(BaseNeighborsBase):
         if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not X_incorrect_type \
         and weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
-        and single_output and fptype is not None and not sp.issparse(X):
+        and single_output and fptype is not None and not sp.issparse(X) and correct_n_classes:
             logging.info("sklearn.neighbors.NeighborsBase._fit: " + method_uses_daal)
             daal4py_fit(self, X, fptype)
             result = self
