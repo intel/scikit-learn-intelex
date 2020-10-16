@@ -980,9 +980,9 @@ def daal4py_predict(self, X, resultsToEvaluate):
         if res.shape[1] == 1:
             res = np.ravel(res)
         return res
-    else:
-        logging.info("sklearn.linear_model.LogisticRegression.predict: " + method_uses_sklearn)
-        return super(KNeighborsClassifier, self).predict(X)
+
+    logging.info("sklearn.linear_model.LogisticRegression.predict: " + method_uses_sklearn)
+    return super(KNeighborsClassifier, self).predict(X)
 
 
 if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
