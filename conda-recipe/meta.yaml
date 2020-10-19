@@ -22,7 +22,7 @@ requirements:
         - python
         - setuptools
         - numpy {{ numpy }}
-        - daal-devel >=2020.2
+        - daal-devel >=2020.2 [not win]
         - cython
         - jinja2
         - mpich # [osx]
@@ -34,7 +34,7 @@ requirements:
     run:
         - python
         - numpy >=1.15
-        - daal >=2020.2
+        - daal >=2020.2 [not win]
         - {{ pin_compatible('numpy') }}
 
 test:
