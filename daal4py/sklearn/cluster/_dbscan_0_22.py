@@ -25,7 +25,7 @@ from sklearn.utils.validation import _check_sample_weight
 from sklearn.cluster import DBSCAN as DBSCAN_original
 
 import daal4py
-from daal4py.sklearn._utils import (make2d, getFPType, method_uses_sklearn, method_uses_daal)
+from daal4py.sklearn._utils import (make2d, getFPType, getLogStr)
 import logging
 
 
@@ -238,7 +238,7 @@ class DBSCAN(DBSCAN_original):
                        (self.metric == 'minkowski' and self.p == 2)) and 
                        isinstance(X, np.ndarray) and (X.dtype.kind in ['d', 'f']))
         if _daal_ready:
-            logging.info("sklearn.cluster.DBSCAN.fit: " + method_uses_daal)
+            logging.info("sklearn.cluster.DBSCAN.fit: " + getLogStr("daal"))
             core_ind, assignments = _daal_dbscan(
                 X, self.eps,
                 self.min_samples,
@@ -247,5 +247,5 @@ class DBSCAN(DBSCAN_original):
             self.labels_ = assignments
             self.components_ = np.take(X, core_ind, axis=0)
             return self
-        logging.info("sklearn.cluster.DBSCAN.fit: " + method_uses_sklearn)
+        logging.info("sklearn.cluster.DBSCAN.fit: " + getLogStr("sklearn"))
         return super().fit(X, y, sample_weight=sample_weight)

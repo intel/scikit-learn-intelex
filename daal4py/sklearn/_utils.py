@@ -18,6 +18,11 @@
 import numpy as np
 
 from daal4py import __daal_link_version__ as dv, __has_dist__
+import daal4py
+
+print(dv)
+print(tuple(map(int, (daal4py.__daal_link_version__[0:4], daal4py.__daal_link_version__[4:8]))))
+print((int(dv[0:4]), dv[10:11], int(dv[4:8])))
 
 def daal_check_version(rule):
     # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
@@ -60,9 +65,19 @@ def make2d(X):
         X = X.reshape((X.size, 1))
     return X
 
-method_uses_daal = "uses Intel® DAAL solver"
-method_uses_sklearn = "uses original Scikit-learn solver"
-method_uses_sklearn_arter_daal = "uses original Scikit-learn solver, because the task was not solved with Intel® DAAL"
+def getLogStr(s):
+    if s == "daal":
+        message = "uses Intel® DAAL solver"
+    elif s == "sklearn":
+        message = "uses original Scikit-learn solver"
+    elif s == "sklearn_after_daal":
+        message = "uses original Scikit-learn solver, because the task was not solved with Intel® DAAL"
+    else:
+        raise ValueError(f"Invalid input - expected one of 'daal','sklearn', 'sklearn_after_daal', got {s}")
+    return message
+
+def getStringTypes():
+    return str
 
 def is_in_sycl_ctxt():
     try:

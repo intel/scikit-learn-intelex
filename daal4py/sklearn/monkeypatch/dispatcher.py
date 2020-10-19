@@ -73,43 +73,47 @@ from ..neighbors import KNeighborsRegressor as KNeighborsRegressor_daal4py
 from daal4py import __version__ as daal4py_version
 
 from daal4py.sklearn._utils import daal_check_version
-_mapping = {
-    'pca':               [[(decomposition_module, 'PCA', PCA_daal4py), None]],
-    'kmeans':            [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
-    'distances':         [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
-    'linear':            [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
-    'ridge':             [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
-    'elasticnet':        [[(linear_model_module, 'ElasticNet', ElasticNet_daal4py), None]],
-    'lasso':             [[(linear_model_module, 'Lasso', Lasso_daal4py), None]],
-    'svm':               [[(svm_module, 'SVC', SVC_daal4py), None]],
-    'logistic':          [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
-    'knn_classifier':    [[(neighbors_module, 'KNeighborsClassifier', KNeighborsClassifier_daal4py), None]],
-    'nearest_neighbors': [[(neighbors_module, 'NearestNeighbors', NearestNeighbors_daal4py), None]],
-    'knn_regressor':     [[(neighbors_module, 'KNeighborsRegressor', KNeighborsRegressor_daal4py), None]]
-}
 
-del _patched_log_reg_path_func_name
+@lru_cache(maxsize=None)
+def _getMapping():
+    mapping = {
+        'pca':           [[(decomposition_module, 'PCA', PCA_daal4py), None]],
+        'kmeans':        [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
+        'distances':     [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
+        'linear':        [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
+        'ridge':         [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
+        'elasticnet':    [[(linear_model_module, 'ElasticNet', ElasticNet_daal4py), None]],
+        'lasso':         [[(linear_model_module, 'Lasso', Lasso_daal4py), None]],
+        'svm':           [[(svm_module, 'SVC', SVC_daal4py), None]],
+        'logistic':      [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
+        'knn_classifier':    [[(neighbors_module, 'KNeighborsClassifier', KNeighborsClassifier_daal4py), None]],
+        'nearest_neighbors': [[(neighbors_module, 'NearestNeighbors', NearestNeighbors_daal4py), None]],
+        'knn_regressor':     [[(neighbors_module, 'KNeighborsRegressor', KNeighborsRegressor_daal4py), None]]
+    }
 
-try:
-    from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
-    _mapping['dbscan'] = [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]]
-except ImportError:
-    pass
+    del _patched_log_reg_path_func_name
 
-if daal_check_version(((2020,'P', 1), (2021,'B',5))):
-    _mapping['fin_check'] = [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]]
+    try:
+        from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
+        mapping['dbscan'] = [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]]
+    except ImportError:
+        pass
 
-if daal_check_version(((2020,'P', 2), (2021,'B',8))):
-    _mapping['tt_split'] = [[(model_selection, 'train_test_split', _daal_train_test_split), None]]
+    if daal_check_version(((2020,'P', 1), (2021,'B',5))):
+        mapping['fin_check'] = [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]]
 
-if daal_check_version((2020,'P', 3)):
-    _mapping['df_classifier'] = [[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]]
-    _mapping['df_regressor']  = [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]]
+    if daal_check_version(((2020,'P', 2), (2021,'B',8))):
+        mapping['tt_split'] = [[(model_selection, 'train_test_split', _daal_train_test_split), None]]
+
+    if daal_check_version((2020,'P', 3)):
+        mapping['df_classifier'] = [[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]]
+        mapping['df_regressor']  = [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]]
+    return mapping
 
 def do_patch(name):
     lname = name.lower()
-    if lname in _mapping:
-        for descriptor in _mapping[lname]:
+    if lname in _getMapping:
+        for descriptor in _getMapping[lname]:
             which, what, replacer = descriptor[0]
             if descriptor[1] is None:
                 descriptor[1] = getattr(which, what, None)
@@ -120,8 +124,8 @@ def do_patch(name):
 
 def do_unpatch(name):
     lname = name.lower()
-    if lname in _mapping:
-        for descriptor in _mapping[lname]:
+    if lname in _getMapping:
+        for descriptor in _getMapping[lname]:
             if descriptor[1] is not None:
                 which, what, replacer = descriptor[0]
                 setattr(which, what, descriptor[1])
@@ -143,20 +147,22 @@ def enable(name=None, verbose=True):
     if name is not None:
         do_patch(name)
     else:
-        for key in _mapping:
+        for key in _getMapping:
             do_patch(key)
     if verbose and sys.stderr is not None:
         sys.stderr.write("Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL) solvers for sklearn enabled: "
                          "https://intelpython.github.io/daal4py/sklearn.html\n")
+    _getMapping.cache_clear()
 
 
 def disable(name=None):
     if name is not None:
         do_unpatch(name)
     else:
-        for key in _mapping:
+        for key in _getMapping:
             do_unpatch(key)
+    _getMapping.cache_clear()
 
 
 def _patch_names():
-    return list(_mapping.keys())
+    return list(_getMapping.keys())

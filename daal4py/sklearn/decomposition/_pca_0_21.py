@@ -26,7 +26,7 @@ from sklearn.utils.extmath import stable_cumsum
 from scipy.sparse import issparse
 
 import daal4py
-from .._utils import getFPType, method_uses_sklearn, method_uses_daal
+from .._utils import getFPType, getLogStr
 import logging
 
 
@@ -345,9 +345,9 @@ class PCA(PCA_original):
         _validate_n_components(n_components, n_samples, n_features)
 
         if n_samples > n_features and (X.dtype == np.float64 or X.dtype == np.float32):
-            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_daal)
+            logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("daal"))
             return self._fit_full_daal4py(X, n_components)
-        logging.info("sklearn.decomposition.PCA.fit: " + method_uses_sklearn)
+        logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("sklearn"))
         return self._fit_full_vanilla(X, n_components)
 
 
@@ -383,12 +383,12 @@ class PCA(PCA_original):
         if self._fit_svd_solver == 'full':
             return self._fit_full(X, n_components)
         elif self._fit_svd_solver in ['arpack', 'randomized']:
-            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_sklearn)
+            logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("sklearn"))
             return self._fit_truncated(X, n_components, self._fit_svd_solver)
         elif self._fit_svd_solver == 'daal':
             if X.shape[0] < X.shape[1]:
                 raise ValueError("svd_solver='daal' is applicable for tall and skinny inputs only.")
-            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_daal)
+            logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("daal"))
             return self._fit_daal4py(X, n_components)
         raise ValueError("Unrecognized svd_solver='{0}'"
                          "".format(self._fit_svd_solver))
@@ -415,9 +415,9 @@ class PCA(PCA_original):
             # Handle n_components==None
             n_components = _process_n_components_None(
                 self.n_components, self.svd_solver, X.shape)
-            logging.info("sklearn.decomposition.PCA.fit: " + method_uses_daal)
+            logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("daal"))
             self._fit_daal4py(X, n_components)
-            logging.info("sklearn.decomposition.PCA.transform: " + method_uses_daal)
+            logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("daal"))
             if self.n_components_ > 0:
                 return self._transform_daal4py(X, whiten=self.whiten, check_X=False)
             return np.empty((self.n_samples_, 0), dtype=X.dtype)
@@ -429,8 +429,21 @@ class PCA(PCA_original):
             # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
             U *= np.sqrt(X.shape[0] - 1)
         else:
+<<<<<<< HEAD
             # X_new = X * V = U * S * V^T * V = U * S
             U *= S[:self.n_components_]
+=======
+            U, S, V = self._fit(X)
+            U = U[:, :self.n_components_]
+            
+            logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("sklearn"))
+            if self.whiten:
+                # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
+                U *= np.sqrt(X.shape[0] - 1)
+            else:
+                # X_new = X * V = U * S * V^T * V = U * S
+                U *= S[:self.n_components_]
+>>>>>>> remove global variables and change error handling in generated code
 
         return U
 
@@ -465,9 +478,10 @@ class PCA(PCA_original):
 
         X = check_array(X)
         if self.n_components_ > 0:
-            logging.info("sklearn.decomposition.PCA.transform: " + method_uses_daal)
+            logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("daal"))
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=False, scale_eigenvalues=False)
+<<<<<<< HEAD
         logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
         if self.mean_ is not None:
             X = X - self.mean_
@@ -475,6 +489,16 @@ class PCA(PCA_original):
         if self.whiten:
             X_transformed /= np.sqrt(self.explained_variance_)
         return X_transformed
+=======
+        else:
+            logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("sklearn"))
+            if self.mean_ is not None:
+                X = X - self.mean_
+            X_transformed = np.dot(X, self.components_.T)
+            if self.whiten:
+                X_transformed /= np.sqrt(self.explained_variance_)
+            return X_transformed
+>>>>>>> remove global variables and change error handling in generated code
 
 if (lambda s: (int(s[:4]), int(s[6:])))( daal4py.__daal_link_version__[:8] ) < (2019, 4):
     # with DAAL < 2019.4 PCA only optimizes fit, using DAAL's SVD

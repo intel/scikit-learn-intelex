@@ -34,8 +34,6 @@ from scipy.sparse import issparse
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
-_supported_dtypes_ = [np.single, np.double]
-
 class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     """
     Decision tree classifier powered by Intel(R) DAAL.
@@ -185,7 +183,7 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
                              'non-zero positive integer value.')
 
         
-        X = check_array(X, dtype=_supported_dtypes_)
+        X = check_array(X, dtype=[np.single, np.double])
         y = np.asarray(y)
         y = np.atleast_1d(y)
 
@@ -241,7 +239,7 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     def _validate_X_predict(self, X, check_input):
         """Validate X whenever one tries to predict, apply, predict_proba"""
         if check_input:
-            X = check_array(X, dtype=_supported_dtypes_, accept_sparse="csr")
+            X = check_array(X, dtype=[np.single, np.double], accept_sparse="csr")
             if issparse(X) and (X.indices.dtype != np.intc or
                                 X.indptr.dtype != np.intc):
                 raise ValueError("No support for np.int64 index based "

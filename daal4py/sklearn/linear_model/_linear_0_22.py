@@ -34,8 +34,7 @@ except ImportError:
     from sklearn.externals.joblib import Parallel, delayed
 
 import daal4py
-from .._utils import (make2d, getFPType, method_uses_sklearn, \
-                    method_uses_daal, method_uses_sklearn_arter_daal,
+from .._utils import (make2d, getFPType, getLogStr,
                     is_DataFrame, get_dtype)
 import logging
 
@@ -100,7 +99,7 @@ def _daal4py_predict(self, X):
     return res
 
 
-def fit(self, X, y, sample_weight=None):
+def _fit_linear(self, X, y, sample_weight=None):
     """
     Fit linear model.
 
@@ -140,13 +139,13 @@ def fit(self, X, y, sample_weight=None):
             not sp.issparse(X) and
             (dtype == np.float64 or dtype == np.float32) and
             sample_weight is None):
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_daal)
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + getLogStr("daal"))
         res = _daal4py_fit(self, X, y)
         if res is not None:
             return res
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_sklearn_arter_daal)
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + getLogStr("sklearn_after_daal"))
     else:
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + method_uses_sklearn)
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + getLogStr("sklearn"))
 
     if sample_weight is not None:
         sample_weight = np.asarray(sample_weight)
@@ -195,7 +194,7 @@ def fit(self, X, y, sample_weight=None):
     self._set_intercept(X_offset, y_offset, X_scale)
     return self
 
-def predict(self, X):
+def _predict_linear(self, X):
     """Predict using the linear model
 
     Parameters
@@ -219,15 +218,12 @@ def predict(self, X):
             not good_shape_for_daal or
             not (dtype == np.float64 or dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
-        logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_sklearn)
+        logging.info("sklearn.linar_model.LinearRegression.predict: " + getLogStr("sklearn"))
         return self._decision_function(X)
-    logging.info("sklearn.linar_model.LinearRegression.predict: " + method_uses_daal)
+    logging.info("sklearn.linar_model.LinearRegression.predict: " + getLogStr("daal"))
     X = _daal_check_array(X)
     return _daal4py_predict(self, X)
 
-
-_fit_copy = fit
-_predict_copy = predict
 
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
@@ -239,7 +235,7 @@ class LinearRegression(LinearRegression_original):
             copy_X=copy_X, n_jobs=n_jobs)
 
     def fit(self, X, y, sample_weight=None):
-        return _fit_copy(self, X, y, sample_weight=sample_weight)
+        return _fit_linear(self, X, y, sample_weight=sample_weight)
 
     def predict(self, X):
-        return _predict_copy(self, X)
+        return _predict_linear(self, X)

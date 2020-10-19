@@ -37,8 +37,7 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType, method_uses_sklearn,
-                      method_uses_daal, daal_check_version)
+from .._utils import (make2d, getFPType, getLogStr, daal_check_version)
 import logging
 
 
@@ -500,7 +499,7 @@ def fit(self, X, y, sample_weight=None):
     probability_support = not self.probability or self.probability and daal_check_version((2020,'P', 3))
 
     if kernel in ['linear', 'rbf'] and self._sparse_support and probability_support:
-        logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
+        logging.info("sklearn.svm.SVC.fit: " + getLogStr("daal"))
         sample_weight = _daal4py_check_weight(self, X, y, sample_weight)
 
         self._daal_fit = True
@@ -526,7 +525,7 @@ def fit(self, X, y, sample_weight=None):
                     X, y, sample_weight),
                     method='sigmoid').fit(X, y, sample_weight)
     else:
-        logging.info("sklearn.svm.SVC.fit: " + method_uses_sklearn)
+        logging.info("sklearn.svm.SVC.fit: " + getLogStr("sklearn"))
         self._daal_fit = False
         fit(X, y, sample_weight, solver_type, kernel, random_seed=seed)
 
@@ -618,13 +617,13 @@ def predict(self, X):
     else:
         X = self._validate_for_predict(X)
         if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
-            logging.info("sklearn.svm.SVC.predict: " + method_uses_daal)
+            logging.info("sklearn.svm.SVC.predict: " + getLogStr("daal"))
             if self.probability and self.clf_prob is not None:
                 y = self.clf_prob.predict(X)
             else:
                 y = _daal4py_predict(self, X)
         else:
-            logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
+            logging.info("sklearn.svm.SVC.predict: " + getLogStr("sklearn"))
             predict_func = self._sparse_predict if self._sparse else self._dense_predict
             y = predict_func(X)
 
@@ -671,10 +670,10 @@ def predict_proba(self):
 
     self._check_proba()
     if getattr(self, '_daal_fit', False):
-        logging.info("sklearn.svm.SVC.predict_proba: " + method_uses_daal)
+        logging.info("sklearn.svm.SVC.predict_proba: " + getLogStr("daal"))
         algo = self._daal4py_predict_proba
     else:
-        logging.info("sklearn.svm.SVC.predict_proba: " + method_uses_sklearn)
+        logging.info("sklearn.svm.SVC.predict_proba: " + getLogStr("sklearn"))
         algo = self._predict_proba
     return algo
 
@@ -707,12 +706,12 @@ def decision_function(self, X):
 
     if getattr(self, '_daal_fit', False) and (daal_check_version((2020,'P', 3)) 
                                               or len(self.classes_) == 2):
-        logging.info("sklearn.svm.SVC.decision_function: " + method_uses_daal)
+        logging.info("sklearn.svm.SVC.decision_function: " + getLogStr("daal"))
         X = self._validate_for_predict(X)
         dec = _daal4py_predict(self, X, is_decision_function=True)
     else:
         logging.info("sklearn.svm.SVC.decision_function: " +
-                     method_uses_sklearn)
+                     getLogStr("sklearn"))
         dec = self._decision_function(X)
     if self.decision_function_shape == 'ovr' and len(self.classes_) > 2:
         return _ovr_decision_function(dec < 0, -dec, len(self.classes_))
