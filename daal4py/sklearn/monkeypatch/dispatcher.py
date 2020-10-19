@@ -19,6 +19,7 @@ import sys
 import warnings
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
+from functools import lru_cache 
 
 import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
@@ -91,8 +92,6 @@ def _getMapping():
         'knn_regressor':     [[(neighbors_module, 'KNeighborsRegressor', KNeighborsRegressor_daal4py), None]]
     }
 
-    del _patched_log_reg_path_func_name
-
     try:
         from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
         mapping['dbscan'] = [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]]
@@ -112,8 +111,8 @@ def _getMapping():
 
 def do_patch(name):
     lname = name.lower()
-    if lname in _getMapping:
-        for descriptor in _getMapping[lname]:
+    if lname in _getMapping():
+        for descriptor in _getMapping()[lname]:
             which, what, replacer = descriptor[0]
             if descriptor[1] is None:
                 descriptor[1] = getattr(which, what, None)
@@ -124,8 +123,8 @@ def do_patch(name):
 
 def do_unpatch(name):
     lname = name.lower()
-    if lname in _getMapping:
-        for descriptor in _getMapping[lname]:
+    if lname in _getMapping():
+        for descriptor in _getMapping()[lname]:
             if descriptor[1] is not None:
                 which, what, replacer = descriptor[0]
                 setattr(which, what, descriptor[1])
@@ -147,7 +146,7 @@ def enable(name=None, verbose=True):
     if name is not None:
         do_patch(name)
     else:
-        for key in _getMapping:
+        for key in _getMapping():
             do_patch(key)
     if verbose and sys.stderr is not None:
         sys.stderr.write("Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL) solvers for sklearn enabled: "
@@ -159,10 +158,10 @@ def disable(name=None):
     if name is not None:
         do_unpatch(name)
     else:
-        for key in _getMapping:
+        for key in _getMapping():
             do_unpatch(key)
     _getMapping.cache_clear()
 
 
 def _patch_names():
-    return list(_getMapping.keys())
+    return list(_getMapping().keys())
