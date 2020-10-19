@@ -9,8 +9,9 @@ IF DEFINED DPCPPROOT (
     call "%DPCPPROOT%\env\vars.bat"
     set "CC=dpcpp.exe"
     set "CXX=dpcpp.exe"
+    set "=--compiler="
 )
 
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
 
-%PYTHON% setup.py install
+%PYTHON% setup.py install --compiler=dpcpp
