@@ -145,14 +145,8 @@ def _predict_ridge(self, X):
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
         logging.info("sklearn.linear_model.Ridge.predict: " + getLogStr("sklearn"))
         return self._decision_function(X)
-<<<<<<< HEAD
-    logging.info("sklearn.linear_model.Ridge.predict: " + method_uses_daal)
+    logging.info("sklearn.linear_model.Ridge.predict: " + getLogStr("daal"))
     return _daal4py_predict(self, X)
-=======
-    else:
-        logging.info("sklearn.linear_model.Ridge.predict: " + getLogStr("daal"))
-        return _daal4py_predict(self, X)
->>>>>>> remove global variables and change error handling in generated code
 
 class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__

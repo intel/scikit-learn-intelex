@@ -32,7 +32,7 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType, getLogStr, daal_check_version)
+from .._utils import (make2d, getFPType, getLogStr, daal_check_version, sklearn_check_version)
 import logging
 
 
@@ -373,16 +373,9 @@ def __compute_gamma__(gamma, kernel, X, sparse, use_var=True, deprecation=True):
 
     return _gamma
 
-no_older_than_0_20_3 = None
-no_older_than_0_22 = None
-
 def _compute_gamma(*args):
-    global no_older_than_0_20_3
-    global no_older_than_0_22
-    if no_older_than_0_20_3 is None:
-        no_older_than_0_20_3 = (LooseVersion(sklearn_version) >= LooseVersion("0.20.3"))
-    if no_older_than_0_22 is None:
-        no_older_than_0_22 = (LooseVersion(sklearn_version) < LooseVersion("0.22"))
+    no_older_than_0_20_3 = sklearn_check_version("0.20.3")
+    no_older_than_0_22 = not sklearn_check_version("0.22")
     return __compute_gamma__(*args, use_var=no_older_than_0_20_3, deprecation=no_older_than_0_22)
 
 

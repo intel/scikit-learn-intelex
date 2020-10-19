@@ -18,23 +18,16 @@
 # daal4py KNN scikit-learn-compatible classes
 
 from ._base import NeighborsBase, KNeighborsMixin, RadiusNeighborsMixin
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+from .._utils import sklearn_check_version
 
-
-SKLEARN_23 = LooseVersion(sklearn_version) >= LooseVersion("0.23")
-SKLEARN_22 = LooseVersion(sklearn_version) >= LooseVersion("0.22")
-SKLEARN_21 = LooseVersion(sklearn_version) >= LooseVersion("0.21")
-
-
-if SKLEARN_22:
+if sklearn_check_version("0.22"):
     from sklearn.utils.validation import _deprecate_positional_args
 else:
     def _deprecate_positional_args(f):
         return f
 
 
-if SKLEARN_21 and not SKLEARN_22:
+if sklearn_check_version("0.21") and not sklearn_check_version("0.22"):
     class NearestNeighbors(KNeighborsMixin, RadiusNeighborsMixin, NeighborsBase):
         def __init__(self, n_neighbors=5, radius=1.0,
                  algorithm='auto', leaf_size=30, metric='minkowski',
@@ -48,7 +41,7 @@ if SKLEARN_21 and not SKLEARN_22:
 
         def fit(self, X, y=None):
             return NeighborsBase._fit(self, X)
-elif SKLEARN_22 and not SKLEARN_23:
+elif sklearn_check_version("0.22") and not sklearn_check_version("0.23"):
     class NearestNeighbors(KNeighborsMixin, RadiusNeighborsMixin, NeighborsBase):
         def __init__(self, n_neighbors=5, radius=1.0,
                      algorithm='auto', leaf_size=30, metric='minkowski',

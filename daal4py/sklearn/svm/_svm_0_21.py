@@ -31,11 +31,11 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType, getLogStr, daal_check_version)
+from .._utils import (make2d, getFPType, getLogStr, daal_check_version, sklearn_check_version)
 import logging
 
-
-LIBSVM_IMPL = ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
+def _getLibSvmImpl():
+    return ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
 
 def _dual_coef_getter(self):
     return self._internal_dual_coef_
@@ -344,16 +344,9 @@ def __compute_gamma__(gamma, kernel, X, sparse, use_var=True, deprecation=True):
 
     return _gamma
 
-no_older_than_0_20_3 = None
-no_older_than_0_22 = None
-
 def _compute_gamma(*args):
-    global no_older_than_0_20_3
-    global no_older_than_0_22
-    if no_older_than_0_20_3 is None:
-        no_older_than_0_20_3 = (LooseVersion(sklearn_version) >= LooseVersion("0.20.3"))
-    if no_older_than_0_22 is None:
-        no_older_than_0_22 = (LooseVersion(sklearn_version) < LooseVersion("0.22"))
+    no_older_than_0_20_3 = sklearn_check_version("0.20.3")
+    no_older_than_0_22 = not sklearn_check_version("0.22")
     return __compute_gamma__(*args, use_var=no_older_than_0_20_3, deprecation=no_older_than_0_22)
 
 
@@ -402,7 +395,7 @@ def fit(self, X, y, sample_weight=None):
         sample_weight = np.asarray([]
                                    if sample_weight is None
                                    else sample_weight, dtype=np.float64)
-        solver_type = LIBSVM_IMPL.index(self._impl)
+        solver_type = _getLibSvmImpl().index(self._impl)
 
         # input validation
         if solver_type != 2 and X.shape[0] != y.shape[0]:

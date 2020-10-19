@@ -431,7 +431,7 @@ class PCA(PCA_original):
         U, S, V = self._fit(X)
         U = U[:, :self.n_components_]
 
-        logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
+        logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("sklearn"))
         if self.whiten:
             # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
             U *= np.sqrt(X.shape[0] - 1)
@@ -439,19 +439,7 @@ class PCA(PCA_original):
             # X_new = X * V = U * S * V^T * V = U * S
             U *= S[:self.n_components_]
 
-<<<<<<< HEAD
         return U
-=======
-            logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("sklearn"))
-            if self.whiten:
-                # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
-                U *= np.sqrt(X.shape[0] - 1)
-            else:
-                # X_new = X * V = U * S * V^T * V = U * S
-                U *= S[:self.n_components_]
-
-            return U
->>>>>>> remove global variables and change error handling in generated code
 
     def transform(self, X):
         """Apply dimensionality reduction to X.
@@ -487,24 +475,13 @@ class PCA(PCA_original):
             logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("daal"))
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=False, scale_eigenvalues=False)
-<<<<<<< HEAD
-        logging.info("sklearn.decomposition.PCA.transform: " + method_uses_sklearn)
+        logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("sklearn"))
         if self.mean_ is not None:
             X = X - self.mean_
         X_transformed = np.dot(X, self.components_.T)
         if self.whiten:
             X_transformed /= np.sqrt(self.explained_variance_)
         return X_transformed
-=======
-        else:
-            logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("sklearn"))
-            if self.mean_ is not None:
-                X = X - self.mean_
-            X_transformed = np.dot(X, self.components_.T)
-            if self.whiten:
-                X_transformed /= np.sqrt(self.explained_variance_)
-            return X_transformed
->>>>>>> remove global variables and change error handling in generated code
 
 if (lambda s: (int(s[:4]), int(s[6:])))( daal4py.__daal_link_version__[:8] ) < (2019, 4):
     # with DAAL < 2019.4 PCA only optimizes fit, using DAAL's SVD

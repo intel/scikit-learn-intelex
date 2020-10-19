@@ -18,11 +18,9 @@
 import numpy as np
 
 from daal4py import __daal_link_version__ as dv, __has_dist__
+from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
 import daal4py
-
-print(dv)
-print(tuple(map(int, (daal4py.__daal_link_version__[0:4], daal4py.__daal_link_version__[4:8]))))
-print((int(dv[0:4]), dv[10:11], int(dv[4:8])))
 
 def daal_check_version(rule):
     # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
@@ -38,12 +36,15 @@ def daal_check_version(rule):
                 break
     return True
 
+def sklearn_check_version(ver):
+    return bool(LooseVersion(sklearn_version) >= LooseVersion(ver))
+
 def parse_dtype(dt):
     if dt == np.double:
         return "double"
     elif dt == np.single:
         return "float"
-    raise ValueError("Input array has unexpected dtype = {}".format(dt))
+    raise ValueError(f"Input array has unexpected dtype = {dt}")
 
 def getFPType(X):
     try:
