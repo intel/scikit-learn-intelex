@@ -21,9 +21,9 @@ import subprocess
 import sys
 
 from daal4py import __daal_link_version__ as dv, __has_dist__
+from daal4py.sklearn._utils import get_daal_version
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
-daal_version = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
-print('DAAL version:', daal_version)
+print('DAAL version:', get_get_daal_version())
 
 from os.path import join as jp
 from time import gmtime, strftime
@@ -121,13 +121,13 @@ def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
         if not sycl_available:
             return None
-        if not check_version(req_version["sycl/" + os.path.basename(ex)], daal_version):
+        if not check_version(req_version["sycl/" + os.path.basename(ex)], get_daal_version()):
             return None
         if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
             return None
 
     if os.path.dirname(ex).endswith("examples"):
-        if not check_version(req_version[os.path.basename(ex)], daal_version):
+        if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
@@ -159,7 +159,8 @@ def run_all(nodist=False, nostream=False):
                         proc = subprocess.Popen(execute_string if IS_WIN else ['/bin/bash', '-c', execute_string],
                                                 stdout=subprocess.PIPE,
                                                 stderr=subprocess.STDOUT,
-                                                shell=(True if IS_WIN else False))
+                                                shell=False)
+                                                #shell=(True if IS_WIN else False))
                         out = proc.communicate()[0]
                         logfile.write(out.decode('ascii'))
                         if proc.returncode:

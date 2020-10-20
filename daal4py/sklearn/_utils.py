@@ -39,6 +39,9 @@ def daal_check_version(rule):
 def sklearn_check_version(ver):
     return bool(LooseVersion(sklearn_version) >= LooseVersion(ver))
 
+def get_daal_version():
+    return (int(dv[0:4]), dv[10:11], int(dv[4:8]))
+
 def parse_dtype(dt):
     if dt == np.double:
         return "double"
