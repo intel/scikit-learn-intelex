@@ -13,6 +13,7 @@ build:
     include_recipe: False
     script_env:
      - DAALROOT
+     - DPCPPROOT
     ignore_run_exports:
        - python
        - mpich
