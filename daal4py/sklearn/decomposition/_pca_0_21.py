@@ -26,7 +26,7 @@ from sklearn.utils.extmath import stable_cumsum
 from scipy.sparse import issparse
 
 import daal4py
-from .._utils import getFPType, getLogStr
+from .._utils import getFPType, get_patch_message
 import logging
 
 
@@ -345,9 +345,9 @@ class PCA(PCA_original):
         _validate_n_components(n_components, n_samples, n_features)
 
         if n_samples > n_features and (X.dtype == np.float64 or X.dtype == np.float32):
-            logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("daal"))
+            logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
             return self._fit_full_daal4py(X, n_components)
-        logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("sklearn"))
+        logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
         return self._fit_full_vanilla(X, n_components)
 
 
@@ -383,12 +383,12 @@ class PCA(PCA_original):
         if self._fit_svd_solver == 'full':
             return self._fit_full(X, n_components)
         elif self._fit_svd_solver in ['arpack', 'randomized']:
-            logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("sklearn"))
+            logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
             return self._fit_truncated(X, n_components, self._fit_svd_solver)
         elif self._fit_svd_solver == 'daal':
             if X.shape[0] < X.shape[1]:
                 raise ValueError("svd_solver='daal' is applicable for tall and skinny inputs only.")
-            logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("daal"))
+            logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
             return self._fit_daal4py(X, n_components)
         raise ValueError("Unrecognized svd_solver='{0}'"
                          "".format(self._fit_svd_solver))
@@ -415,16 +415,16 @@ class PCA(PCA_original):
             # Handle n_components==None
             n_components = _process_n_components_None(
                 self.n_components, self.svd_solver, X.shape)
-            logging.info("sklearn.decomposition.PCA.fit: " + getLogStr("daal"))
+            logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
             self._fit_daal4py(X, n_components)
-            logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("daal"))
+            logging.info("sklearn.decomposition.PCA.transform: " + get_patch_message("daal"))
             if self.n_components_ > 0:
                 return self._transform_daal4py(X, whiten=self.whiten, check_X=False)
             return np.empty((self.n_samples_, 0), dtype=X.dtype)
         U, S, V = self._fit(X)
         U = U[:, :self.n_components_]
 
-        logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("sklearn"))
+        logging.info("sklearn.decomposition.PCA.transform: " + get_patch_message("sklearn"))
         if self.whiten:
             # X_new = X * V / S * sqrt(n_samples) = U * sqrt(n_samples)
             U *= np.sqrt(X.shape[0] - 1)
@@ -465,10 +465,10 @@ class PCA(PCA_original):
 
         X = check_array(X)
         if self.n_components_ > 0:
-            logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("daal"))
+            logging.info("sklearn.decomposition.PCA.transform: " + get_patch_message("daal"))
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=False, scale_eigenvalues=False)
-        logging.info("sklearn.decomposition.PCA.transform: " + getLogStr("sklearn"))
+        logging.info("sklearn.decomposition.PCA.transform: " + get_patch_message("sklearn"))
         if self.mean_ is not None:
             X = X - self.mean_
         X_transformed = np.dot(X, self.components_.T)

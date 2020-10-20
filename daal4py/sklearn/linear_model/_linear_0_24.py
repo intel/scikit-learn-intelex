@@ -19,7 +19,7 @@
 
 from sklearn.linear_model import LinearRegression as LinearRegression_original
 
-from .._utils import getLogStr
+from .._utils import get_patch_message
 
 from ._linear_0_23 import (_fit_linear, _predict_linear)
 import logging
@@ -36,7 +36,7 @@ class LinearRegression(LinearRegression_original):
 
     def fit(self, X, y, sample_weight=None):
         if self.positive == True:
-            logging.info("sklearn.linar_model.LinearRegression.fit: " + getLogStr("sklearn"))
+            logging.info("sklearn.linar_model.LinearRegression.fit: " + get_patch_message("sklearn"))
             return super(LinearRegression, self).fit(X, y=y, sample_weight=sample_weight)
         return _fit_linear(self, X, y, sample_weight=sample_weight)
 

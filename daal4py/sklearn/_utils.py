@@ -66,7 +66,7 @@ def make2d(X):
         X = X.reshape((X.size, 1))
     return X
 
-def getLogStr(s):
+def get_patch_message(s):
     if s == "daal":
         message = "uses Intel® DAAL solver"
     elif s == "sklearn":
@@ -77,7 +77,7 @@ def getLogStr(s):
         raise ValueError(f"Invalid input - expected one of 'daal','sklearn', 'sklearn_after_daal', got {s}")
     return message
 
-def getStringTypes():
+def get_string_types():
     return str
 
 def is_in_sycl_ctxt():

@@ -32,7 +32,7 @@ except ImportError:
     from sklearn.externals.joblib import Parallel, delayed
 
 import daal4py
-from .._utils import (make2d, getFPType, getLogStr,
+from .._utils import (make2d, getFPType, get_patch_message,
                     is_DataFrame, get_dtype)
 import logging
 
@@ -128,13 +128,13 @@ def _fit_linear(self, X, y, sample_weight=None):
             not sp.issparse(X) and
             (dtype == np.float64 or dtype == np.float32) and
             sample_weight is None):
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + getLogStr("daal"))
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + get_patch_message("daal"))
         res = _daal4py_fit(self, X, y)
         if res is not None:
             return res
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + getLogStr("sklearn_after_daal"))
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + get_patch_message("sklearn_after_daal"))
     else:
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + getLogStr("sklearn"))
+        logging.info("sklearn.linar_model.LinearRegression.fit: " + get_patch_message("sklearn"))
 
     if sample_weight is not None and np.atleast_1d(sample_weight).ndim > 1:
         raise ValueError("Sample weights must be 1D array or scalar")
@@ -193,9 +193,9 @@ def _predict_linear(self, X):
             not good_shape_for_daal or
             not (dtype == np.float64 or dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
-        logging.info("sklearn.linar_model.LinearRegression.predict: " + getLogStr("sklearn"))
+        logging.info("sklearn.linar_model.LinearRegression.predict: " + get_patch_message("sklearn"))
         return self._decision_function(X)
-    logging.info("sklearn.linar_model.LinearRegression.predict: " + getLogStr("daal"))
+    logging.info("sklearn.linar_model.LinearRegression.predict: " + get_patch_message("daal"))
     X = _daal_check_array(X)
     return _daal4py_predict(self, X)
 

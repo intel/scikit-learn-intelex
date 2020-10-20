@@ -76,7 +76,7 @@ from daal4py import __version__ as daal4py_version
 from daal4py.sklearn._utils import daal_check_version
 
 @lru_cache(maxsize=None)
-def _getMapping():
+def _get_map_of_algorithms():
     mapping = {
         'pca':           [[(decomposition_module, 'PCA', PCA_daal4py), None]],
         'kmeans':        [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
@@ -111,8 +111,8 @@ def _getMapping():
 
 def do_patch(name):
     lname = name.lower()
-    if lname in _getMapping():
-        for descriptor in _getMapping()[lname]:
+    if lname in _get_map_of_algorithms():
+        for descriptor in _get_map_of_algorithms()[lname]:
             which, what, replacer = descriptor[0]
             if descriptor[1] is None:
                 descriptor[1] = getattr(which, what, None)
@@ -123,8 +123,8 @@ def do_patch(name):
 
 def do_unpatch(name):
     lname = name.lower()
-    if lname in _getMapping():
-        for descriptor in _getMapping()[lname]:
+    if lname in _get_map_of_algorithms():
+        for descriptor in _get_map_of_algorithms()[lname]:
             if descriptor[1] is not None:
                 which, what, replacer = descriptor[0]
                 setattr(which, what, descriptor[1])
@@ -146,22 +146,22 @@ def enable(name=None, verbose=True):
     if name is not None:
         do_patch(name)
     else:
-        for key in _getMapping():
+        for key in _get_map_of_algorithms():
             do_patch(key)
     if verbose and sys.stderr is not None:
         sys.stderr.write("Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL) solvers for sklearn enabled: "
                          "https://intelpython.github.io/daal4py/sklearn.html\n")
-    _getMapping.cache_clear()
+    _get_map_of_algorithms.cache_clear()
 
 
 def disable(name=None):
     if name is not None:
         do_unpatch(name)
     else:
-        for key in _getMapping():
+        for key in _get_map_of_algorithms():
             do_unpatch(key)
-    _getMapping.cache_clear()
+    _get_map_of_algorithms.cache_clear()
 
 
 def _patch_names():
-    return list(_getMapping().keys())
+    return list(_get_map_of_algorithms().keys())

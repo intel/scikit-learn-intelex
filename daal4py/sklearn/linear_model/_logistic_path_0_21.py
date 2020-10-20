@@ -49,7 +49,7 @@ from sklearn.linear_model.logistic import (
     LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
 from sklearn.linear_model.base import (LinearClassifierMixin, SparseCoefMixin, BaseEstimator)
-from .._utils import getLogStr
+from .._utils import get_patch_message
 import logging
 
 # Code adapted from sklearn.linear_model.logistic prior to 0.21
@@ -491,9 +491,9 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 coefs[i] = np.delete(ci, 0, axis=-1)
 
     if daal_ready:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + getLogStr("daal"))
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("daal"))
     else:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + getLogStr("sklearn"))
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("sklearn"))
 
     return coefs, np.array(Cs), n_iter
 
@@ -953,9 +953,9 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 coefs[i] = np.delete(ci, 0, axis=-1)
     
     if daal_ready:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + getLogStr("daal"))
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("daal"))
     else:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + getLogStr("sklearn"))
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("sklearn"))
 
     return np.array(coefs), np.array(Cs), n_iter
 

@@ -21,7 +21,7 @@ import numbers
 import warnings
 
 import daal4py
-from .._utils import (make2d, getFPType, getLogStr, getStringTypes)
+from .._utils import (make2d, getFPType, get_patch_message, get_string_types)
 import logging
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
@@ -42,7 +42,7 @@ from scipy import sparse as sp
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
     if max_features is None:
         return n_features
-    elif isinstance(max_features, getStringTypes()):
+    elif isinstance(max_features, get_string_types()):
         if max_features == "auto":
             return max(1, int(np.sqrt(n_features))) if is_classification else n_features
         elif max_features == 'sqrt':
@@ -263,7 +263,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
             daal_ready = False
 
     if daal_ready:
-        logging.info("sklearn.ensemble.RandomForestClassifier.fit: " + getLogStr("daal"))
+        logging.info("sklearn.ensemble.RandomForestClassifier.fit: " + get_patch_message("daal"))
         _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
 
         if not hasattr(self, "estimators_"):
@@ -273,7 +273,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
         return self
-    logging.info("sklearn.ensemble.RandomForestClassifier.fit: " + getLogStr("sklearn"))
+    logging.info("sklearn.ensemble.RandomForestClassifier.fit: " + get_patch_message("sklearn"))
     return super(RandomForestClassifier, self).fit(X, y, sample_weight=sample_weight)
 
 def _daal_fit_regressor(self, X, y, sample_weight=None):
@@ -375,13 +375,13 @@ def _fit_regressor(self, X, y, sample_weight=None):
             daal_ready = False
 
     if daal_ready:
-        logging.info("sklearn.ensemble.RandomForestRegressor.fit: " + getLogStr("daal"))
+        logging.info("sklearn.ensemble.RandomForestRegressor.fit: " + get_patch_message("daal"))
         _daal_fit_regressor(self, X, y, sample_weight=sample_weight)
 
         if not hasattr(self, "estimators_"):
             self.estimators_ = self._estimators_
         return self
-    logging.info("sklearn.ensemble.RandomForestRegressor.fit: " + getLogStr("sklearn"))
+    logging.info("sklearn.ensemble.RandomForestRegressor.fit: " + get_patch_message("sklearn"))
     return super(RandomForestRegressor, self).fit(X, y, sample_weight=sample_weight)
     
 
@@ -496,9 +496,9 @@ class RandomForestClassifier(RandomForestClassifier_original):
         if (not hasattr(self, 'daal_model_') or 
                 sp.issparse(X) or self.n_outputs_ != 1 or
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
-            logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + getLogStr("sklearn"))
+            logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + get_patch_message("sklearn"))
             return super(RandomForestClassifier, self).predict(X)
-        logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + getLogStr("daal"))
+        logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + get_patch_message("daal"))
         return _daal_predict_classifier(self, X)
 
     def predict_proba(self, X):
@@ -530,9 +530,9 @@ class RandomForestClassifier(RandomForestClassifier_original):
         if (not hasattr(self, 'daal_model_') or 
                 sp.issparse(X) or self.n_outputs_ != 1 or
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
-            logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + getLogStr("sklearn"))
+            logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("sklearn"))
             return super(RandomForestClassifier, self).predict_proba(X)
-        logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + getLogStr("daal"))
+        logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("daal"))
         return _daal_predict_proba(self, X)
 
     @property
@@ -687,9 +687,9 @@ class RandomForestRegressor(RandomForestRegressor_original):
         if (not hasattr(self, 'daal_model_') or 
                 sp.issparse(X) or self.n_outputs_ != 1 or
                 not (X.dtype == np.float64 or X.dtype == np.float32)):
-            logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + getLogStr("sklearn"))
+            logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + get_patch_message("sklearn"))
             return super(RandomForestRegressor, self).predict(X)
-        logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + getLogStr("daal"))
+        logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + get_patch_message("daal"))
         return _daal_predict_regressor(self, X)
 
     @property

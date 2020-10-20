@@ -22,7 +22,7 @@ import warnings
 
 
 import daal4py
-from .._utils import (make2d, getFPType, getStringTypes)
+from .._utils import (make2d, getFPType, get_string_types)
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
 from sklearn.tree._tree import (DTYPE, Tree)
@@ -41,7 +41,7 @@ from distutils.version import LooseVersion
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
     if max_features is None:
         return n_features
-    elif isinstance(max_features, getStringTypes()):
+    elif isinstance(max_features, get_string_types()):
         if max_features == "auto":
             return max(1, int(np.sqrt(n_features))) if is_classification else n_features
         elif max_features == 'sqrt':

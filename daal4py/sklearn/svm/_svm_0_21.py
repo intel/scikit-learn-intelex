@@ -31,10 +31,10 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType, getLogStr, daal_check_version, sklearn_check_version)
+from .._utils import (make2d, getFPType, get_patch_message, daal_check_version, sklearn_check_version)
 import logging
 
-def _getLibSvmImpl():
+def _get_libsvm_impl():
     return ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
 
 def _dual_coef_getter(self):
@@ -395,7 +395,7 @@ def fit(self, X, y, sample_weight=None):
         sample_weight = np.asarray([]
                                    if sample_weight is None
                                    else sample_weight, dtype=np.float64)
-        solver_type = _getLibSvmImpl().index(self._impl)
+        solver_type = _get_libsvm_impl().index(self._impl)
 
         # input validation
         if solver_type != 2 and X.shape[0] != y.shape[0]:
@@ -429,12 +429,12 @@ def fit(self, X, y, sample_weight=None):
         is_support_weights = sample_weight.size == 0 and self.class_weight is None
         if ( not sparse and not self.probability and not getattr(self, 'break_ties', False) and \
              kernel in ['linear', 'rbf']) and is_support_weights:
-            logging.info("sklearn.svm.SVC.fit: " + getLogStr("daal"))
+            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("daal"))
             self._daal_fit = True
             _daal4py_fit(self, X, y, kernel)
             self.fit_status_ = 0
         else:
-            logging.info("sklearn.svm.SVC.fit: " + getLogStr("sklearn"))
+            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
             self._daal_fit = False
             fit(X, y, sample_weight, solver_type, kernel, random_seed=seed)
 
@@ -521,15 +521,15 @@ def predict(self, X):
     if (_break_ties
         and self.decision_function_shape == 'ovr'
         and len(self.classes_) > 2):
-        logging.info("sklearn.svm.SVC.predict: " + getLogStr("sklearn"))
+        logging.info("sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
         y = np.argmax(self.decision_function(X), axis=1)
     else:
         X = self._validate_for_predict(X)
         if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
-            logging.info("sklearn.svm.SVC.predict: " + getLogStr("daal"))
+            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("daal"))
             y = _daal4py_predict(self, X)
         else:
-            logging.info("sklearn.svm.SVC.predict: " + getLogStr("sklearn"))
+            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
             predict_func = self._sparse_predict if self._sparse else self._dense_predict
             y = predict_func(X)
 

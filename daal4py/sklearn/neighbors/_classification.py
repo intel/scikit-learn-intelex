@@ -20,7 +20,7 @@
 from ._base import NeighborsBase, KNeighborsMixin
 from ._base import parse_auto_method, prediction_algorithm
 from sklearn.base import ClassifierMixin as BaseClassifierMixin
-from .._utils import getFPType, daal_check_version, sklearn_check_version, getLogStr
+from .._utils import getFPType, daal_check_version, sklearn_check_version, get_patch_message
 from sklearn.utils.validation import check_array
 import numpy as np
 from scipy import sparse as sp
@@ -53,7 +53,7 @@ def daal4py_classifier_predict(estimator, X, base_predict):
 
     if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and daal_model is not None \
     and fptype is not None and not sp.issparse(X):
-        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + getLogStr("daal"))
+        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + get_patch_message("daal"))
 
         params = {
             'method': 'defaultDense',
@@ -69,7 +69,7 @@ def daal4py_classifier_predict(estimator, X, base_predict):
         prediction_result = predict_alg.compute(X, daal_model)
         result = estimator.classes_.take(np.asarray(prediction_result.prediction.ravel(), dtype=np.intp))
     else:
-        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + getLogStr("sklearn"))
+        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + get_patch_message("sklearn"))
         result = base_predict(estimator, X)
 
     return result

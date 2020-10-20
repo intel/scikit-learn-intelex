@@ -23,7 +23,7 @@ from sklearn.linear_model.ridge import _BaseRidge
 from sklearn.linear_model.ridge import Ridge as Ridge_original
 
 import daal4py
-from .._utils import (make2d, getFPType, getLogStr)
+from .._utils import (make2d, getFPType, get_patch_message)
 import logging
 
 
@@ -105,9 +105,9 @@ def _fit_ridge(self, X, y, sample_weight=None):
             sample_weight is not None):
         if hasattr(self, 'daal_model_'):
             del self.daal_model_
-        logging.info("sklearn.linear_model.Ridge.fit: " + getLogStr("sklearn"))
+        logging.info("sklearn.linear_model.Ridge.fit: " + get_patch_message("sklearn"))
         return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
-    logging.info("sklearn.linear_model.Ridge.fit: " + getLogStr("daal"))
+    logging.info("sklearn.linear_model.Ridge.fit: " + get_patch_message("daal"))
     self.n_iter_ = None
     return _daal4py_fit(self, X, y)
 
@@ -133,9 +133,9 @@ def _predict_ridge(self, X):
             not good_shape_for_daal or
             not (X.dtype == np.float64 or X.dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
-        logging.info("sklearn.linear_model.Ridge.predict: " + getLogStr("sklearn"))
+        logging.info("sklearn.linear_model.Ridge.predict: " + get_patch_message("sklearn"))
         return self._decision_function(X)
-    logging.info("sklearn.linear_model.Ridge.predict: " + getLogStr("daal"))
+    logging.info("sklearn.linear_model.Ridge.predict: " + get_patch_message("daal"))
     return _daal4py_predict(self, X)
 
 class Ridge(Ridge_original, _BaseRidge):
