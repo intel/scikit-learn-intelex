@@ -6,11 +6,12 @@ set MPIROOT=%PREFIX%\Library
 IF NOT DEFINED DAALROOT (set DAALROOT=%PREFIX%) 
 
 IF DEFINED DPCPPROOT (
+    echo "Sourcing "
     call "%DPCPPROOT%\env\vars.bat"
-    set "CC=dpcpp"
-    set "CXX=dpcpp"
+    set "CC=clang-cl.exe"
+    set "CXX=dpcpp.exe"
 )
 
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
 
-%PYTHON% setup.py install build_ext -c dpcpp
+%PYTHON% setup.py install
