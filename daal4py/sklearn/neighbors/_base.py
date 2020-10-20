@@ -21,7 +21,7 @@ import numpy as np
 import numbers
 import daal4py as d4p
 from scipy import sparse as sp
-from .._utils import getFPType, daal_check_version, sklearn_check_version, getLogStr
+from .._utils import getFPType, daal_check_version, sklearn_check_version, get_patch_message
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from joblib import effective_n_jobs
 from sklearn.utils.multiclass import check_classification_targets
@@ -336,11 +336,11 @@ class NeighborsBase(BaseNeighborsBase):
         and weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and single_output and fptype is not None and not sp.issparse(X) and correct_n_classes:
-            logging.info("sklearn.neighbors.NeighborsBase._fit: " + getLogStr("daal"))
+            logging.info("sklearn.neighbors.NeighborsBase._fit: " + get_patch_message("daal"))
             daal4py_fit(self, X, fptype)
             result = self
         else:
-            logging.info("sklearn.neighbors.NeighborsBase._fit: " + getLogStr("sklearn"))
+            logging.info("sklearn.neighbors.NeighborsBase._fit: " + get_patch_message("sklearn"))
             if sklearn_check_version("0.24"):
                 result = super(NeighborsBase, self)._fit(X, y)
             else:
@@ -363,10 +363,10 @@ class KNeighborsMixin(BaseKNeighborsMixin):
 
         if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and daal_model is not None \
         and fptype is not None and not sp.issparse(X):
-            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + getLogStr("daal"))
+            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("daal"))
             result = daal4py_kneighbors(self, X, n_neighbors, return_distance)
         else:
-            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + getLogStr("sklearn"))
+            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("sklearn"))
             if daal_model is not None \
             or getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
                 if sklearn_check_version("0.24"):
