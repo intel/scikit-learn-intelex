@@ -977,15 +977,12 @@ def daal4py_predict(self, X, resultsToEvaluate):
         if X.shape[1] != n_features:
             raise ValueError("X has %d features per sample; expecting %d"
                              % (X.shape[1], n_features))
-        print('********************************')
-        print(X)
         builder = d4p.logistic_regression_model_builder(X.shape[1], len(self.classes_))
         builder.set_beta(self.coef_, self.intercept_)        
         predict = d4p.logistic_regression_prediction(nClasses=len(self.classes_),
                                                     fptype=fptype,
                                                     method = 'defaultDense',
                                                     resultsToEvaluate = resultsToEvaluate)
-        print(builder.model)
         res = predict.compute(X, builder.model)
         if resultsToEvaluate == 'computeClassLabels':
             res = res.prediction
