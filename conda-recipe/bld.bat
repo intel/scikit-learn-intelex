@@ -6,7 +6,7 @@ set MPIROOT=%PREFIX%\Library
 IF NOT DEFINED DAALROOT (set DAALROOT=%PREFIX%) 
 
 IF DEFINED DPCPPROOT (
-    echo "Sourcing "
+    echo "Sourcing DPCPPROOT"
     call "%DPCPPROOT%\env\vars.bat"
     set "CC=clang-cl.exe"
     set "CXX=dpcpp.exe"
