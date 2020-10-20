@@ -7,11 +7,10 @@ IF NOT DEFINED DAALROOT (set DAALROOT=%PREFIX%)
 
 IF DEFINED DPCPPROOT (
     call "%DPCPPROOT%\env\vars.bat"
-    set "CC=dpcpp.exe"
-    set "CXX=dpcpp.exe"
-    set "=--compiler="
+    set "CC=dpcpp"
+    set "CXX=dpcpp"
 )
 
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
 
-%PYTHON% setup.py install --compiler=dpcpp
+%PYTHON% setup.py install build_ext -c dpcpp
