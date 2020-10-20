@@ -577,7 +577,7 @@ try:
     # retrieve tuple of code argument names to check whether
     # new in 0.22 keyword 'break_ties' is in it
     __base_svc_init_arg_names__ = __base_svc_init_function_code__.co_varnames
-except:
+except AttributeError:
     pass
 
 del __base_svc_init_function__

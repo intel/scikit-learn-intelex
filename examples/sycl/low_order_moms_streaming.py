@@ -47,13 +47,13 @@ def to_numpy(data):
         from pandas import DataFrame
         if isinstance(data, DataFrame):
             return np.ascontiguousarray(data.values)
-    except:
+    except ImportError:
         pass
     try:
         from scipy.sparse import csr_matrix
         if isinstance(data, csr_matrix):
             return data.toarray()
-    except:
+    except ImportError:
         pass
     return data
 
@@ -98,7 +98,7 @@ def main(readcsv=None, method='defaultDense'):
         for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
                      'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
             assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
-    except:
+    except Exception:
         pass
     # It is possible to specify to make the computations on CPU
     with cpu_context():
