@@ -23,7 +23,7 @@ import sys
 from daal4py import __daal_link_version__ as dv, __has_dist__
 from daal4py.sklearn._utils import get_daal_version
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
-print('DAAL version:', get_get_daal_version())
+print('DAAL version:', get_daal_version())
 
 from os.path import join as jp
 from time import gmtime, strftime
@@ -160,7 +160,6 @@ def run_all(nodist=False, nostream=False):
                                                 stdout=subprocess.PIPE,
                                                 stderr=subprocess.STDOUT,
                                                 shell=False)
-                                                #shell=(True if IS_WIN else False))
                         out = proc.communicate()[0]
                         logfile.write(out.decode('ascii'))
                         if proc.returncode:
