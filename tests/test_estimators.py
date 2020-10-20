@@ -57,7 +57,7 @@ def _replace_and_save(md, fns, replacing_fn):
             fn = getattr(md, check_f)
             setattr(md, check_f, replacing_fn)
             saved[check_f] = fn
-        except Exception:
+        except RuntimeError:
             pass
     return saved
 

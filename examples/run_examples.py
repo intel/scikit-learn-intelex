@@ -51,13 +51,13 @@ if sycl_available:
     try:
         with sycl_context('gpu'):
             availabe_devices.append("gpu")
-    except Exception:
+    except RuntimeError:
         pass
 
     try:
         with sycl_context('cpu'):
             availabe_devices.append("cpu")
-    except Exception:
+    except RuntimeError:
         pass
 
 def check_version(rule, target):

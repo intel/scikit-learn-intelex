@@ -98,7 +98,7 @@ def main(readcsv=None, method='defaultDense'):
         for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
                      'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
             assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
-    except Exception:
+    except RuntimeError:
         pass
     # It is possible to specify to make the computations on CPU
     with cpu_context():
