@@ -22,4 +22,4 @@ install:
   - g++ -v
 
 script:
-  - conda build -c conda-forge -c intel --numpy=1.17 $PYVER --output-folder ./ conda-recipe
+  - conda build -c conda-forge -c intel --config-file=conda-recipe/conda_build_config.yaml $PYVER --output-folder ./ conda-recipe
