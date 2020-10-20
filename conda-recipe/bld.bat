@@ -8,6 +8,7 @@ IF NOT DEFINED DAALROOT (set DAALROOT=%PREFIX%)
 IF DEFINED DPCPPROOT (
     echo "Sourcing DPCPPROOT"
     call "%DPCPPROOT%\env\vars.bat"
+    dpcpp --version
 )
 
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric

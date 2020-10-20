@@ -115,6 +115,7 @@ if dpcpp:
         os.environ["CC"] = _project_compiler
         os.environ["CXX"] = _project_compiler
         os.environ["LD"] = _project_linker
+        print('Define compiler for Windows\n' + os.environ["CC"] + os.environ["CXX"] + os.environ["LD"] )
 
     if dpctl:
         # if custom dpctl library directory is specified
