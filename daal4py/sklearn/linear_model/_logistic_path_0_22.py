@@ -34,7 +34,7 @@ from sklearn.utils import (check_array,
                            check_consistent_length,
                            compute_class_weight,
                            check_random_state)
-from sklearn.utils.validation import _check_sample_weight
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 from sklearn.linear_model._sag import sag_solver
 from sklearn.utils.optimize import _newton_cg, _check_optimize_result
 from sklearn.exceptions import ConvergenceWarning
@@ -963,6 +963,8 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
 
 def daal4py_predict(self, X, resultsToEvaluate):
+    X = check_array(X, accept_sparse='csr')
+
     try:
         fptype = getFPType(X)
     except ValueError:
@@ -970,19 +972,34 @@ def daal4py_predict(self, X, resultsToEvaluate):
     
     if daal_check_version(((2021,'P', 1), (2021,'B', 110))) and fptype is not None:    
         logging.info("sklearn.linear_model.LogisticRegression.predict: " + method_uses_daal)
+        check_is_fitted(self)
+        n_features = self.coef_.shape[1]
+        if X.shape[1] != n_features:
+            raise ValueError("X has %d features per sample; expecting %d"
+                             % (X.shape[1], n_features))
+        print('********************************')
+        print(X)
         builder = d4p.logistic_regression_model_builder(X.shape[1], len(self.classes_))
         builder.set_beta(self.coef_, self.intercept_)        
         predict = d4p.logistic_regression_prediction(nClasses=len(self.classes_),
                                                     fptype=fptype,
                                                     method = 'defaultDense',
                                                     resultsToEvaluate = resultsToEvaluate)
-        res = predict.compute(X, builder.model).prediction
+        print(builder.model)
+        res = predict.compute(X, builder.model)
+        if resultsToEvaluate == 'computeClassLabels':
+            res = res.prediction
+            res = self.classes_.take(np.asarray(res, dtype=np.intp))
+        elif resultsToEvaluate == 'computeClassLogProbabilities':
+            res = res.logProbabilities
+        else:
+            res = res.probabilities
         if res.shape[1] == 1:
             res = np.ravel(res)
         return res
 
     logging.info("sklearn.linear_model.LogisticRegression.predict: " + method_uses_sklearn)
-    return super(KNeighborsClassifier, self).predict(X)
+    return super(LogisticRegression_original, self).predict(X)
 
 
 if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
