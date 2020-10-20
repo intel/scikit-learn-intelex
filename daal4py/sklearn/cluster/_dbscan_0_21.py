@@ -24,7 +24,7 @@ from sklearn.utils import (check_array, check_consistent_length)
 from sklearn.cluster import DBSCAN as DBSCAN_original
 
 import daal4py
-from daal4py.sklearn._utils import (make2d, getFPType, method_uses_sklearn, method_uses_daal, is_in_sycl_ctxt)
+from daal4py.sklearn._utils import (make2d, getFPType, method_uses_sklearn, method_uses_daal)
 import logging
 
 
@@ -43,12 +43,11 @@ def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     XX = make2d(X)
 
     fpt = getFPType(XX)
-    memorySavingMode = True if is_in_sycl_ctxt() else False
     alg = daal4py.dbscan(
         method='defaultDense',
         epsilon=float(eps),
         minObservations=int(min_samples),
-        memorySavingMode=memorySavingMode,
+        memorySavingMode=False,
         resultsToCompute="computeCoreIndices")
 
     daal_res = alg.compute(XX, ww)
