@@ -115,7 +115,7 @@ if dpcpp:
         os.environ["CC"] = _project_compiler
         os.environ["CXX"] = _project_compiler
         os.environ["LD"] = _project_linker
-        print('Define compiler for Windows\n' + os.environ["CC"] + os.environ["CXX"] + os.environ["LD"] )
+        print('Define compiler for Windows\n' + os.environ["CC"] + '\n' + os.environ["CXX"] + '\n' + os.environ["LD"] + '\n' )
 
     if dpctl:
         # if custom dpctl library directory is specified
@@ -202,6 +202,8 @@ def getpyexts():
                                 extra_link_args=ela,
                                 libraries=libraries_plat + MPI_LIBS,
                                 library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
+                                compiler= _project_compiler,
+                                linker= _project_linker,
                                 language='c++'),
     ])
 
@@ -220,6 +222,8 @@ def getpyexts():
                                         extra_link_args=ela,
                                         libraries=libraries_plat + DPCPP_LIBS,
                                         library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
+                                        compiler= _project_compiler,
+                                        linker= _project_linker,
                                         language='c++')))
     if dpctl:
         exts.extend(cythonize(Extension('_dpctl_interop',
@@ -231,6 +235,8 @@ def getpyexts():
                                         extra_link_args=ela,
                                         libraries=libraries_plat + DPCPP_LIBS + DPCTL_LIBS,
                                         library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS + DPCTL_LIBDIRS,
+                                        compiler= _project_compiler,
+                                        linker= _project_linker,
                                         language='c++')))
 
     if not no_dist:
@@ -242,6 +248,8 @@ def getpyexts():
                               extra_link_args=ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS],
                               libraries=libraries_plat + MPI_LIBS,
                               library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
+                              compiler= _project_compiler,
+                              linker= _project_linker,
                               language='c++'))
     return exts
 
