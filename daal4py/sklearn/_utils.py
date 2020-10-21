@@ -17,14 +17,14 @@
 
 import numpy as np
 
-from daal4py import __daal_link_version__ as dv, __has_dist__
+from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 import daal4py
 
 def daal_check_version(rule):
     # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
-    target = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
+    target = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
     if not isinstance(rule[0], type(target)):
         if rule > target:
             return False
@@ -40,7 +40,7 @@ def sklearn_check_version(ver):
     return bool(LooseVersion(sklearn_version) >= LooseVersion(ver))
 
 def get_daal_version():
-    return (int(dv[0:4]), dv[10:11], int(dv[4:8]))
+    return (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
 
 def parse_dtype(dt):
     if dt == np.double:
@@ -79,9 +79,6 @@ def get_patch_message(s):
     else:
         raise ValueError(f"Invalid input - expected one of 'daal','sklearn', 'sklearn_after_daal', got {s}")
     return message
-
-def get_string_types():
-    return str
 
 def is_in_sycl_ctxt():
     try:

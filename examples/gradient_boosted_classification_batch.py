@@ -41,8 +41,8 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a training object (5 classes)
     # previous version has different interface
-    from daal4py import __daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    from daal4py import _get__daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
     if daal_version < (2020,0):
         train_algo = d4p.gbt_classification_training(nClasses=nClasses,
                                                      maxIterations=maxIterations,
@@ -84,8 +84,8 @@ if __name__ == "__main__":
     print("\nGradient boosted trees prediction results (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
     # these results are available only in new version
-    from daal4py import __daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    from daal4py import _get__daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
     if daal_version >= (2020,0):
         print("\nGradient boosted trees prediction probabilities (first 10 rows):\n", predict_result.probabilities[0:10])
         print("\nvariableImportanceByWeight:\n", train_result.variableImportanceByWeight)

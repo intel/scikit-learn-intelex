@@ -21,9 +21,9 @@ import unittest
 from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
 
-from daal4py import __daal_link_version__ as dv, __has_dist__
+from daal4py import _get__daal_link_version__ as dv
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
-daal_version = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
+daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
 print('DAAL version:', daal_version)
 
 from daal4py.sklearn.neighbors import KNeighborsClassifier

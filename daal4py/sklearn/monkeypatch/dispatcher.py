@@ -71,7 +71,7 @@ from ..neighbors import KNeighborsClassifier as KNeighborsClassifier_daal4py
 from ..neighbors import NearestNeighbors as NearestNeighbors_daal4py
 from ..neighbors import KNeighborsRegressor as KNeighborsRegressor_daal4py
 
-from daal4py import __version__ as daal4py_version
+from daal4py import _get__version__ as daal4py_version
 
 from daal4py.sklearn._utils import daal_check_version
 
@@ -139,7 +139,7 @@ def enable(name=None, verbose=True):
         warn_msg = ("daal4py {daal4py_version} has only been tested " +
                     "with scikit-learn 0.23.2, found version: {sklearn_version}")
         warnings.warn(warn_msg.format(
-            daal4py_version=daal4py_version,
+            daal4py_version=daal4py_version(),
             sklearn_version=sklearn_version)
         )
 

@@ -21,7 +21,7 @@ import numbers
 import warnings
 
 import daal4py
-from .._utils import (make2d, getFPType, get_patch_message, get_string_types)
+from .._utils import (make2d, getFPType, get_patch_message)
 import logging
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
@@ -42,7 +42,7 @@ from scipy import sparse as sp
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
     if max_features is None:
         return n_features
-    elif isinstance(max_features, get_string_types()):
+    elif isinstance(max_features, str):
         if max_features == "auto":
             return max(1, int(np.sqrt(n_features))) if is_classification else n_features
         elif max_features == 'sqrt':

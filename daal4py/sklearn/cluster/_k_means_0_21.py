@@ -28,7 +28,7 @@ import warnings
 from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
-from .._utils import getFPType, get_patch_message, daal_check_version, get_string_types
+from .._utils import getFPType, get_patch_message, daal_check_version
 import logging
 
 def _daal_mean_var(X):
@@ -59,7 +59,7 @@ def _tolerance(X, rtol):
 def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_0, random_state):
 
     def is_string(s, target_str):
-        return isinstance(s, get_string_types()) and s == target_str
+        return isinstance(s, str) and s == target_str
 
     deterministic = False
     if is_string(cluster_centers_0, 'k-means++'):

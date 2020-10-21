@@ -32,8 +32,8 @@ except Exception as e:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
 # Get Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL) version
-from daal4py import __daal_link_version__ as dv
-daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+from daal4py import _get__daal_link_version__ as dv
+daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
 
 try:
     from dpctx import device_context, device_type
