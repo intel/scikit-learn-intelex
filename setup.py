@@ -110,12 +110,6 @@ if dpcpp:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
     elif IS_WIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
-        _project_compiler = "dpcpp"
-        _project_linker = "lld-link"
-        os.environ["CC"] = _project_compiler
-        os.environ["CXX"] = _project_compiler
-        os.environ["LD"] = _project_linker
-        print('Define compiler for Windows\n' + os.environ["CC"] + '\n' + os.environ["CXX"] + '\n' + os.environ["LD"] + '\n' )
 
     if dpctl:
         # if custom dpctl library directory is specified

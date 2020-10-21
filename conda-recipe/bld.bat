@@ -8,6 +8,8 @@ IF NOT DEFINED DAALROOT (set DAALROOT=%PREFIX%)
 IF DEFINED DPCPPROOT (
     echo "Sourcing DPCPPROOT"
     call "%DPCPPROOT%\env\vars.bat"
+    set "CC=dpcpp"
+    set "CXX=dpcpp"
     dpcpp --version
 )
 

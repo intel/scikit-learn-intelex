@@ -22,4 +22,3 @@ IF DEFINED TBBROOT (
     conda remove tbb --force -y
     call "%TBBROOTT%\env\vars.bat"
 )
-
