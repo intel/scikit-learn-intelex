@@ -931,7 +931,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     copytree(orig_path, head_path)
     for (dirpath, dirnames, filenames) in os.walk(algo_path):
         for filename in filenames:
-            c = call([shutil.which("clang-format"), "-i", jp(dirpath, filename)])
+            call([shutil.which("clang-format"), "-i", jp(dirpath, filename)])
     iface = cython_interface(algo_path)
     iface.read()
     print('Generating sources...')
