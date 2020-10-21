@@ -25,11 +25,7 @@ from sklearn.utils.validation import _check_sample_weight
 from sklearn.cluster import DBSCAN as DBSCAN_original
 
 import daal4py
-<<<<<<< HEAD
-from daal4py.sklearn._utils import (make2d, getFPType, getLogStr)
-=======
 from daal4py.sklearn._utils import (make2d, getFPType, get_patch_message)
->>>>>>> change function names
 import logging
 
 
