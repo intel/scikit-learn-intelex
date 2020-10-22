@@ -43,6 +43,7 @@ test:
         - pandas
         - scipy
         - scikit-learn
+        - threadpoolctl
         - xgboost # [not win]
         - mpich # [osx]
         - impi_rt # [not osx]
