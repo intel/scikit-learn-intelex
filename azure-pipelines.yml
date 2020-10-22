@@ -28,7 +28,7 @@ jobs:
       export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda build --override-channels -c conda-forge -c intel --numpy=1.17 conda-recipe
+      conda build --override-channels -c intel -c conda-forge  --numpy=1.17 conda-recipe
     displayName: conda build
 
 - job: MacOS
@@ -40,7 +40,7 @@ jobs:
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
-      conda create -n CB python=3.7 daal daal-include cython mpich jinja2 numpy clang-tools scikit-learn lightgbm xgboost pandas -c conda-forge -c intel
+      conda create -n CB python=3.7 daal daal-include cython mpich jinja2 numpy clang-tools scikit-learn lightgbm xgboost pandas -c intel -c conda-forge 
     displayName: Create Anaconda environment
   - script: |
       source activate CB
