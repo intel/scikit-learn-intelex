@@ -20,5 +20,5 @@ IF DEFINED DAALROOT (
 IF DEFINED TBBROOT (
     echo "Sourcing TBBROOT"
     conda remove tbb --force -y
-    call "%TBBROOTT%\env\vars.bat"
+    call "%TBBROOT%\env\vars.bat"
 )
