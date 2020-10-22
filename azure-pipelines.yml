@@ -76,10 +76,10 @@ jobs:
 
   - script: |
       call activate CB
-      conda build --override-channels -c conda-forge -c intel --numpy=1.17 --output-folder=. conda-recipe
+      conda build --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder=. conda-recipe
     displayName: conda build
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'conda build dir'
-      targetPath: 'C:\Miniconda\envs\CB\conda-bld'
+      targetPath: '.'
     condition: always()
