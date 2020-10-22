@@ -14,6 +14,7 @@ build:
     script_env:
      - DAALROOT
      - DPCPPROOT
+     - TBBROOT
     ignore_run_exports:
        - python
        - mpich
