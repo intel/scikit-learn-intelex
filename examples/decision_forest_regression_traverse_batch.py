@@ -41,8 +41,8 @@ def printTree(nodes, values):
 
 
 if __name__ == "__main__":
-    from daal4py import __daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    from daal4py import _get__daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
     if daal_version < (2019, 1):
         print("Need Intel(R) DAAL 2019.1 or later")
     else:

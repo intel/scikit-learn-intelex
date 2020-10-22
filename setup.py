@@ -133,7 +133,7 @@ DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
-        return DIST_CFLAGS + DPCPP_CFLAGS + ['-fstack-protector', '-fPIC',
+        return DIST_CFLAGS + DPCPP_CFLAGS + ['-fstack-protector-strong', '-fPIC',
                                              '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',
                                              '-fno-strict-overflow', '-fno-delete-null-pointer-checks']
     elif IS_WIN:

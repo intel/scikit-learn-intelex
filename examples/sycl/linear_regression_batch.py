@@ -61,13 +61,13 @@ def to_numpy(data):
         from pandas import DataFrame
         if isinstance(data, DataFrame):
             return np.ascontiguousarray(data.values)
-    except:
+    except ImportError:
         pass
     try:
         from scipy.sparse import csr_matrix
         if isinstance(data, csr_matrix):
             return data.toarray()
-    except:
+    except ImportError:
         pass
     return data
 

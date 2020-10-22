@@ -17,11 +17,14 @@
 
 import numpy as np
 
-from daal4py import __daal_link_version__ as dv, __has_dist__
+from daal4py import _get__daal_link_version__ as dv
+from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
+import daal4py
 
 def daal_check_version(rule):
     # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
-    target = (int(dv[0:4]), dv[10:11], int(dv[4:8]))
+    target = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
     if not isinstance(rule[0], type(target)):
         if rule > target:
             return False
@@ -33,12 +36,18 @@ def daal_check_version(rule):
                 break
     return True
 
+def sklearn_check_version(ver):
+    return bool(LooseVersion(sklearn_version) >= LooseVersion(ver))
+
+def get_daal_version():
+    return (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
+
 def parse_dtype(dt):
     if dt == np.double:
         return "double"
     elif dt == np.single:
         return "float"
-    raise ValueError("Input array has unexpected dtype = {}".format(dt))
+    raise ValueError(f"Input array has unexpected dtype = {dt}")
 
 def getFPType(X):
     try:
@@ -60,9 +69,16 @@ def make2d(X):
         X = X.reshape((X.size, 1))
     return X
 
-method_uses_daal = "uses Intel® DAAL solver"
-method_uses_sklearn = "uses original Scikit-learn solver"
-method_uses_sklearn_arter_daal = "uses original Scikit-learn solver, because the task was not solved with Intel® DAAL"
+def get_patch_message(s):
+    if s == "daal":
+        message = "uses Intel® DAAL solver"
+    elif s == "sklearn":
+        message = "uses original Scikit-learn solver"
+    elif s == "sklearn_after_daal":
+        message = "uses original Scikit-learn solver, because the task was not solved with Intel® DAAL"
+    else:
+        raise ValueError(f"Invalid input - expected one of 'daal','sklearn', 'sklearn_after_daal', got {s}")
+    return message
 
 def is_in_sycl_ctxt():
     try:

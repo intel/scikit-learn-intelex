@@ -26,6 +26,7 @@
 import glob
 import os
 import re
+import shutil
 from pprint import pformat, pprint
 from os.path import join as jp
 from collections import defaultdict, OrderedDict
@@ -930,7 +931,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     copytree(orig_path, head_path)
     for (dirpath, dirnames, filenames) in os.walk(algo_path):
         for filename in filenames:
-            call("clang-format -i " + jp(dirpath, filename), shell=True)
+            call([shutil.which("clang-format"), "-i", jp(dirpath, filename)])
     iface = cython_interface(algo_path)
     iface.read()
     print('Generating sources...')

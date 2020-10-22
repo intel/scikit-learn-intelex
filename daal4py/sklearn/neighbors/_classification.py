@@ -20,20 +20,13 @@
 from ._base import NeighborsBase, KNeighborsMixin
 from ._base import parse_auto_method, prediction_algorithm
 from sklearn.base import ClassifierMixin as BaseClassifierMixin
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
-from .._utils import getFPType, daal_check_version, method_uses_sklearn, method_uses_daal
+from .._utils import getFPType, daal_check_version, sklearn_check_version, get_patch_message
 from sklearn.utils.validation import check_array
 import numpy as np
 from scipy import sparse as sp
 import logging
 
-
-SKLEARN_24 = LooseVersion(sklearn_version) >= LooseVersion("0.24")
-SKLEARN_22 = LooseVersion(sklearn_version) >= LooseVersion("0.22")
-
-
-if SKLEARN_22:
+if sklearn_check_version("0.22"):
     from sklearn.neighbors._classification import KNeighborsClassifier as BaseKNeighborsClassifier
     from sklearn.neighbors._base import _check_weights
     from sklearn.utils.validation import _deprecate_positional_args
@@ -60,7 +53,7 @@ def daal4py_classifier_predict(estimator, X, base_predict):
 
     if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and daal_model is not None \
     and fptype is not None and not sp.issparse(X):
-        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_daal)
+        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + get_patch_message("daal"))
 
         params = {
             'method': 'defaultDense',
@@ -76,13 +69,13 @@ def daal4py_classifier_predict(estimator, X, base_predict):
         prediction_result = predict_alg.compute(X, daal_model)
         result = estimator.classes_.take(np.asarray(prediction_result.prediction.ravel(), dtype=np.intp))
     else:
-        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + method_uses_sklearn)
+        logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + get_patch_message("sklearn"))
         result = base_predict(estimator, X)
 
     return result
 
 
-if SKLEARN_24:
+if sklearn_check_version("0.24"):
     class KNeighborsClassifier_(KNeighborsMixin, BaseClassifierMixin, NeighborsBase):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
@@ -96,7 +89,7 @@ if SKLEARN_24:
                 metric_params=metric_params,
                 n_jobs=n_jobs, **kwargs)
             self.weights = _check_weights(weights)
-elif SKLEARN_22:
+elif sklearn_check_version("0.22"):
     from sklearn.neighbors._base import SupervisedIntegerMixin as BaseSupervisedIntegerMixin
     class KNeighborsClassifier_(NeighborsBase, KNeighborsMixin, BaseSupervisedIntegerMixin, BaseClassifierMixin):
         @_deprecate_positional_args

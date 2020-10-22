@@ -37,13 +37,11 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType, method_uses_sklearn,
-                      method_uses_daal, daal_check_version)
+from .._utils import (make2d, getFPType, get_patch_message, daal_check_version, sklearn_check_version)
 import logging
 
-
-LIBSVM_IMPL = ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
-
+def _get_libsvm_impl():
+    return ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
 
 def _dual_coef_getter(self):
     return self._internal_dual_coef_
@@ -390,20 +388,9 @@ def __compute_gamma__(gamma, kernel, X, use_var=True, deprecation=True):
 
     return _gamma
 
-
-no_older_than_0_20_3 = None
-no_older_than_0_22 = None
-
-
 def _compute_gamma(*args):
-    global no_older_than_0_20_3
-    global no_older_than_0_22
-    if no_older_than_0_20_3 is None:
-        no_older_than_0_20_3 = (LooseVersion(
-            sklearn_version) >= LooseVersion("0.20.3"))
-    if no_older_than_0_22 is None:
-        no_older_than_0_22 = (LooseVersion(
-            sklearn_version) < LooseVersion("0.22"))
+    no_older_than_0_20_3 = sklearn_check_version("0.20.3")
+    no_older_than_0_22 = not sklearn_check_version("0.22")
     return __compute_gamma__(*args, use_var=no_older_than_0_20_3, deprecation=no_older_than_0_22)
 
 
@@ -464,7 +451,7 @@ def fit(self, X, y, sample_weight=None):
     sample_weight = np.asarray([]
                                if sample_weight is None
                                else sample_weight, dtype=np.float64)
-    solver_type = LIBSVM_IMPL.index(self._impl)
+    solver_type = _get_libsvm_impl().index(self._impl)
 
     # input validation
     n_samples = _num_samples(X)
@@ -500,7 +487,7 @@ def fit(self, X, y, sample_weight=None):
     probability_support = not self.probability or self.probability and daal_check_version((2020,'P', 3))
 
     if kernel in ['linear', 'rbf'] and self._sparse_support and probability_support:
-        logging.info("sklearn.svm.SVC.fit: " + method_uses_daal)
+        logging.info("sklearn.svm.SVC.fit: " + get_patch_message("daal"))
         sample_weight = _daal4py_check_weight(self, X, y, sample_weight)
 
         self._daal_fit = True
@@ -526,7 +513,7 @@ def fit(self, X, y, sample_weight=None):
                     X, y, sample_weight),
                     method='sigmoid').fit(X, y, sample_weight)
     else:
-        logging.info("sklearn.svm.SVC.fit: " + method_uses_sklearn)
+        logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
         self._daal_fit = False
         fit(X, y, sample_weight, solver_type, kernel, random_seed=seed)
 
@@ -618,13 +605,13 @@ def predict(self, X):
     else:
         X = self._validate_for_predict(X)
         if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
-            logging.info("sklearn.svm.SVC.predict: " + method_uses_daal)
+            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("daal"))
             if self.probability and self.clf_prob is not None:
                 y = self.clf_prob.predict(X)
             else:
                 y = _daal4py_predict(self, X)
         else:
-            logging.info("sklearn.svm.SVC.predict: " + method_uses_sklearn)
+            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
             predict_func = self._sparse_predict if self._sparse else self._dense_predict
             y = predict_func(X)
 
@@ -671,10 +658,10 @@ def predict_proba(self):
 
     self._check_proba()
     if getattr(self, '_daal_fit', False):
-        logging.info("sklearn.svm.SVC.predict_proba: " + method_uses_daal)
+        logging.info("sklearn.svm.SVC.predict_proba: " + get_patch_message("daal"))
         algo = self._daal4py_predict_proba
     else:
-        logging.info("sklearn.svm.SVC.predict_proba: " + method_uses_sklearn)
+        logging.info("sklearn.svm.SVC.predict_proba: " + get_patch_message("sklearn"))
         algo = self._predict_proba
     return algo
 
@@ -707,12 +694,12 @@ def decision_function(self, X):
 
     if getattr(self, '_daal_fit', False) and (daal_check_version((2020,'P', 3)) 
                                               or len(self.classes_) == 2):
-        logging.info("sklearn.svm.SVC.decision_function: " + method_uses_daal)
+        logging.info("sklearn.svm.SVC.decision_function: " + get_patch_message("daal"))
         X = self._validate_for_predict(X)
         dec = _daal4py_predict(self, X, is_decision_function=True)
     else:
         logging.info("sklearn.svm.SVC.decision_function: " +
-                     method_uses_sklearn)
+                     get_patch_message("sklearn"))
         dec = self._decision_function(X)
     if self.decision_function_shape == 'ovr' and len(self.classes_) > 2:
         return _ovr_decision_function(dec < 0, -dec, len(self.classes_))
@@ -728,7 +715,7 @@ try:
     # retrieve tuple of code argument names to check whether
     # new in 0.22 keyword 'break_ties' is in it
     __base_svc_init_arg_names__ = __base_svc_init_function_code__.co_varnames
-except:
+except AttributeError:
     pass
 
 del __base_svc_init_function__

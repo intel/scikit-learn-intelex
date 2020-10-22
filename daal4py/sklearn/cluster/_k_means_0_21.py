@@ -21,18 +21,14 @@ from sklearn.utils import (check_random_state, check_array)
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import (check_is_fitted, _num_samples)
 from sklearn.cluster.k_means_ import (k_means, _labels_inertia, _k_init, _validate_center_shape)
-import sys
-if sys.version_info[0] == 2:
-    from sklearn.externals.six import string_types
-else:
-    string_types = str
+
 from sklearn.utils.extmath import row_norms
 import warnings
 
 from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
-from .._utils import getFPType, method_uses_sklearn, method_uses_daal, daal_check_version
+from .._utils import getFPType, get_patch_message, daal_check_version
 import logging
 
 def _daal_mean_var(X):
@@ -63,7 +59,7 @@ def _tolerance(X, rtol):
 def _daal4py_compute_starting_centroids(X, X_fptype, nClusters, cluster_centers_0, random_state):
 
     def is_string(s, target_str):
-        return isinstance(s, string_types) and s == target_str
+        return isinstance(s, str) and s == target_str
 
     deterministic = False
     if is_string(cluster_centers_0, 'k-means++'):
@@ -177,7 +173,7 @@ def _daal4py_k_means_fit(X, nClusters, numIterations, tol, cluster_centers_0, n_
     return best_cluster_centers, best_labels, best_inertia, best_n_iter
 
 
-def fit(self, X, y=None, sample_weight=None):
+def _fit(self, X, y=None, sample_weight=None):
     """Compute k-means clustering.
 
     Parameters
@@ -231,7 +227,7 @@ def fit(self, X, y=None, sample_weight=None):
                          np.allclose(sample_weight, np.ones_like(sample_weight)))
 
     if not daal_ready:
-        logging.info("sklearn.cluster.KMeans.fit: " + method_uses_sklearn)
+        logging.info("sklearn.cluster.KMeans.fit: " + get_patch_message("sklearn"))
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             k_means(
                 X, n_clusters=self.n_clusters, sample_weight=sample_weight, init=self.init,
@@ -241,7 +237,7 @@ def fit(self, X, y=None, sample_weight=None):
                 n_jobs=self.n_jobs, algorithm=self.algorithm,
                 return_n_iter=True)
     else:
-        logging.info("sklearn.cluster.KMeans.fit: " + method_uses_daal)
+        logging.info("sklearn.cluster.KMeans.fit: " + get_patch_message("daal"))
         X = check_array(X, dtype=[np.float64, np.float32])
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_fit(
@@ -250,7 +246,7 @@ def fit(self, X, y=None, sample_weight=None):
     return self
 
 
-def predict(self, X, sample_weight=None):
+def _predict(self, X, sample_weight=None):
     """Predict the closest cluster each sample in X belongs to.
 
     In the vector quantization literature, `cluster_centers_` is called
@@ -278,16 +274,13 @@ def predict(self, X, sample_weight=None):
     daal_ready = sample_weight is None and hasattr(X, '__array__') # or sp.isspmatrix_csr(X)
 
     if daal_ready:
-        logging.info("sklearn.cluster.KMeans.predict: " + method_uses_daal)
+        logging.info("sklearn.cluster.KMeans.predict: " + get_patch_message("daal"))
         return _daal4py_k_means_predict(X, self.n_clusters, self.cluster_centers_)[0]
-    logging.info("sklearn.cluster.KMeans.predict: " + method_uses_sklearn)
+    logging.info("sklearn.cluster.KMeans.predict: " + get_patch_message("sklearn"))
     x_squared_norms = row_norms(X, squared=True)
     return _labels_inertia(X, sample_weight, x_squared_norms,
                            self.cluster_centers_)[0]
 
-
-_fit_copy = fit
-_predict_copy = predict
 
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
@@ -304,7 +297,7 @@ class KMeans(KMeans_original):
             copy_x=copy_x, n_jobs=n_jobs, algorithm=algorithm)
 
     def fit(self, X, y=None, sample_weight=None):
-        return _fit_copy(self, X, y=y, sample_weight=sample_weight)
+        return _fit(self, X, y=y, sample_weight=sample_weight)
 
     def predict(self, X, sample_weight=None):
-        return _predict_copy(self, X, sample_weight=sample_weight)
+        return _predict(self, X, sample_weight=sample_weight)

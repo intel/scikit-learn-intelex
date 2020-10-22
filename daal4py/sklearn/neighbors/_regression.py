@@ -17,18 +17,13 @@
 
 # daal4py KNN regression scikit-learn-compatible classes
 
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
 from ._base import NeighborsBase, KNeighborsMixin
 from sklearn.base import RegressorMixin
 from sklearn.utils.deprecation import deprecated
+from .._utils import sklearn_check_version
 
 
-SKLEARN_24 = LooseVersion(sklearn_version) >= LooseVersion("0.24")
-SKLEARN_22 = LooseVersion(sklearn_version) >= LooseVersion("0.22")
-
-
-if SKLEARN_22:
+if sklearn_check_version("0.22"):
     from sklearn.neighbors._regression import KNeighborsRegressor as BaseKNeighborsRegressor
     from sklearn.neighbors._base import _check_weights
     from sklearn.utils.validation import _deprecate_positional_args
@@ -39,7 +34,7 @@ else:
         return f
 
 
-if SKLEARN_24:
+if sklearn_check_version("0.24"):
     class KNeighborsRegressor_(KNeighborsMixin, RegressorMixin, NeighborsBase):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *, weights='uniform',
@@ -53,7 +48,7 @@ if SKLEARN_24:
                   metric_params=metric_params, n_jobs=n_jobs, **kwargs)
             self.weights = _check_weights(weights)
 else:
-    if SKLEARN_22:
+    if sklearn_check_version("0.22"):
         from sklearn.neighbors._base import SupervisedFloatMixin as BaseSupervisedFloatMixin
     else:
         from sklearn.neighbors.base import SupervisedFloatMixin as BaseSupervisedFloatMixin

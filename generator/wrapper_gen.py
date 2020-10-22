@@ -46,6 +46,7 @@
 # FIXME a revision from scratch would be helpful...
 
 import jinja2
+from jinja2 import select_autoescape
 from collections import OrderedDict
 from pprint import pprint
 import re
@@ -1024,7 +1025,7 @@ algo_wrapper_template = """
 {{tfactory(tmpl_spec[1:], prefix, params, dist, args+[a], indent+4)}}
 {% endif %}
 {{" "*(indent)}}} else {% if loop.last %} {
-{{" "*(indent+4)}} std::cerr << "Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': '" << {{tmpl_spec[0][0]}} << "'" << std::endl;
+{{" "*(indent+4)}} throw std::runtime_error(std::string("Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': ") + {{tmpl_spec[0][0]}} + "'");
 {{" "*(indent)}}}
 {% endif %}
 {% endfor %}
@@ -1036,7 +1037,7 @@ mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(4+(algo|length)
     ThreadAllow _allow_;
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', params_ds, dist=dist)}}
-    std::cerr << "Error: Could not construct {{algo}}." << std::endl;
+    throw std::runtime_error("Error: Could not construct {{algo}}.");
     return daal::services::SharedPtr<{{algo}}__iface__>();
 {% else %}
     return daal::services::SharedPtr<{{algo}}__iface__>(new {{algo}}_manager({{params_ds|fmt('{}', 'arg_cpp')}}));
@@ -1120,12 +1121,13 @@ cdef extern from "daal4py_version.h":
         LibraryVersionInfo()
         int majorVersion, minorVersion, updateVersion
         char * build_rev
-__version__ = "{}".format({{version}})
-__daal_link_version__ = "{}{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_STATUS__, __INTEL_DAAL_BUILD_DATE)
-cdef _get__daal_run_version__():
+def _get__version__():
+    return "{}".format({{version}})
+def _get__daal_link_version__():
+    return "{}{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_STATUS__, __INTEL_DAAL_BUILD_DATE)
+def _get__daal_run_version__():
     cdef LibraryVersionInfo li
     return "{}{}{}_{}".format(li.majorVersion, str(li.minorVersion).zfill(2), str(li.updateVersion).zfill(2), li.build_rev)
-__daal_run_version__ = _get__daal_run_version__()
 
 '''
 
@@ -1186,7 +1188,10 @@ def fmt(*args, **kwargs):
     sep = kwargs['sep'] if 'sep' in kwargs else ', '
     return sep.join([y for y in [x.format(args[1], *args[2:]) for x in args[0]] if y])
 
-jenv = jinja2.Environment(trim_blocks=True)
+jenv = jinja2.Environment(trim_blocks=True, autoescape=select_autoescape(
+    disabled_extensions=('pyx'),
+    default_for_string=False
+))
 jenv.filters['match'] = lambda a, x : [x for x in a if s in x]
 jenv.filters['d2cy'] = d2cy
 jenv.filters['flat'] = flat
