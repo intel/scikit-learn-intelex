@@ -59,7 +59,7 @@ elif sys.platform == 'darwin':
     lib_dir = jp(daal_root, 'lib')
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
-    lib_dir = jp(daal_root, 'Library', 'lib', 'intel64_win')
+    lib_dir = jp(daal_root, 'lib', 'intel64')
 else:
     assert False, sys.platform + ' not supported'
 
