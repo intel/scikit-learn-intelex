@@ -333,8 +333,7 @@ class NeighborsBase(BaseNeighborsBase):
         weights = getattr(self, 'weights', 'uniform')
 
         def stock_fit(self, X, y):
-            logging.info("sklearn.neighbors.NeighborsBase._fit: " + method_uses_sklearn)
-            if SKLEARN_24:
+            if sklearn_check_version("0.24"):
                 result = super(NeighborsBase, self)._fit(X, y)
             else:
                 result = super(NeighborsBase, self)._fit(X)
@@ -345,12 +344,14 @@ class NeighborsBase(BaseNeighborsBase):
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and single_output and fptype is not None and not sp.issparse(X) and correct_n_classes:
             try:
+                logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("daal"))
                 daal4py_fit(self, X, fptype)
                 result = self
-                logging.info("sklearn.neighbors.NeighborsBase._fit: " + method_uses_daal)
             except RuntimeError:
+                logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("sklearn_after_daal"))
                 result = stock_fit(self, X, y)
         else:
+            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("sklearn"))
             result = stock_fit(self, X, y)
 
         if y is not None and is_regressor(self):
