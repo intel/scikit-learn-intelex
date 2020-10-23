@@ -108,10 +108,11 @@ def _get_map_of_algorithms():
     if daal_check_version((2020,'P', 3)):
         mapping['df_classifier'] = [[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]]
         mapping['df_regressor']  = [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]]
+
+    if daal_check_version((2021,'P', 1)):
+        mapping['log_reg'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
     return mapping
 
-if daal_check_version(((2021,'P', 1))):
-    _mapping['log_reg'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
 
 def do_patch(name):
     lname = name.lower()

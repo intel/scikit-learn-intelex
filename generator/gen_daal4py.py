@@ -942,7 +942,6 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
         f.write(cpp_h)
     with open(jp(outdir, 'daal4py_cpp.cpp'), 'w') as f:
         f.write(cpp_cpp)
-
     with open(jp('src', 'gettree.pyx'), 'r') as f:
         pyx_gettree = f.read()
 
@@ -953,14 +952,12 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
        'algorithms::gbt::regression' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::gbt::regression'].classes:
         with open(jp('src', 'gbt_model_builder.pyx'), 'r') as f:
-            pyx_gbt_model_builder = f.read()
-    
+            pyx_gbt_model_builder = f.read()   
     if iface.version[0] >= 2021 and iface.version[1] >= 2 and \
        'algorithms::logistic_regression' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::logistic_regression'].classes:
         with open(jp('src', 'log_reg_model_builder.pyx'), 'r') as f:
-            pyx_log_reg_model_builder = f.read()
-    
+            pyx_log_reg_model_builder = f.read() 
     pyx_gbt_generators = ''
     with open(jp('src', 'gbt_convertors.pyx'), 'r') as f:
         pyx_gbt_generators = f.read()
