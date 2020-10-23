@@ -31,6 +31,9 @@ from collections import defaultdict
 
 exdir = os.path.dirname(os.path.realpath(__file__))
 
+IS_WIN = False
+IS_MAC = False
+IS_LIN = False
 system_os="not_supported"
 if 'linux' in sys.platform:
     IS_LIN = True
