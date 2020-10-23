@@ -105,7 +105,7 @@ if daal_check_version((2020,'P', 3)):
     _mapping['df_classifier'] = [[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]]
     _mapping['df_regressor']  = [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]]
 
-if daal_check_version(((2021,'P', 1),(2021,'B', 110))):
+if daal_check_version(((2021,'P', 1))):
     _mapping['log_reg'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
 
 def do_patch(name):
