@@ -110,7 +110,7 @@ def _get_map_of_algorithms():
         mapping['df_regressor']  = [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]]
     return mapping
 
-if daal_check_version(((2021,'P', 1),(2021,'B', 110))):
+if daal_check_version(((2021,'P', 1))):
     _mapping['log_reg'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
 
 def do_patch(name):
