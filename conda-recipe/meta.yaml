@@ -57,8 +57,8 @@ test:
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py 
-        - python -m daal4py examples/sycl/sklearn_sycl.py # [not win]
-        - python examples/run_examples.py
+        - python -m daal4py examples/sycl/sklearn_sycl.py 
+        - python examples/run_examples.py # [not win]
 
 about:
     home: https://intelpython.github.io/daal4py/
