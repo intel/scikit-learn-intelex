@@ -90,5 +90,5 @@ jobs:
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'Windows conda build dir'
-      targetPath: '.'
+      targetPath: 'C:\Miniconda\envs\CB\'
     condition: always()
