@@ -285,37 +285,38 @@ class NeighborsBase(BaseNeighborsBase):
             requires_y = False
 
         if y is not None or requires_y:
-            X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True)
             if not X_incorrect_type:
+                X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True)
                 single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
 
-            shape = y.shape
+            if y is not None:
+                shape = y.shape
 
-            if is_classifier(self) or is_regressor(self):
-                if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
-                    self.outputs_2d_ = False
-                    y = y.reshape((-1, 1))
+                if is_classifier(self) or is_regressor(self):
+                    if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
+                        self.outputs_2d_ = False
+                        y = y.reshape((-1, 1))
+                    else:
+                        self.outputs_2d_ = True
+
+                    if is_classifier(self):
+                        check_classification_targets(y)
+                    self.classes_ = []
+                    self._y = np.empty(y.shape, dtype=int)
+                    for k in range(self._y.shape[1]):
+                        classes, self._y[:, k] = np.unique(
+                            y[:, k], return_inverse=True)
+                        self.classes_.append(classes)
+
+                    if not self.outputs_2d_:
+                        self.classes_ = self.classes_[0]
+                        self._y = self._y.ravel()
+
+                    n_classes = len(self.classes_)
+                    if n_classes < 2:
+                        correct_n_classes = False
                 else:
-                    self.outputs_2d_ = True
-
-                if is_classifier(self):
-                    check_classification_targets(y)
-                self.classes_ = []
-                self._y = np.empty(y.shape, dtype=int)
-                for k in range(self._y.shape[1]):
-                    classes, self._y[:, k] = np.unique(
-                        y[:, k], return_inverse=True)
-                    self.classes_.append(classes)
-
-                if not self.outputs_2d_:
-                    self.classes_ = self.classes_[0]
-                    self._y = self._y.ravel()
-
-                n_classes = len(self.classes_)
-                if n_classes < 2:
-                    correct_n_classes = False
-            else:
-                self._y = y
+                    self._y = y
         else:
             if not X_incorrect_type:
                 X, _ = validate_data(self, X, accept_sparse='csr')
