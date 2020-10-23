@@ -89,6 +89,6 @@ jobs:
     displayName: conda build
   - task: PublishPipelineArtifact@0
     inputs:
-      artifactName: 'conda build dir'
+      artifactName: 'Windows conda build dir'
       targetPath: '.'
     condition: always()
