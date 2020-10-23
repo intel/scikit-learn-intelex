@@ -31,7 +31,7 @@ import glob
 
 import numpy as np
 
-d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2021.%Y%m%d.%H%M%S')
+d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('2021.%Y%m%d.%H%M%S')
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
@@ -59,7 +59,7 @@ elif sys.platform == 'darwin':
     lib_dir = jp(daal_root, 'lib')
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
-    lib_dir = jp(daal_root, 'Library', 'lib', 'intel64_win')
+    lib_dir = jp(daal_root, 'lib', 'intel64')
 else:
     assert False, sys.platform + ' not supported'
 

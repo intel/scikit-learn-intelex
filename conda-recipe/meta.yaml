@@ -1,4 +1,4 @@
-{% set version = '0.2021.1' %}
+{% set version = '2021.1' %}
 {% set buildnumber = 0 %}
 
 package:
@@ -43,6 +43,7 @@ test:
         - pandas
         - scipy
         - scikit-learn
+        - threadpoolctl
         - xgboost # [not win]
         - mpich # [osx]
         - impi_rt # [not osx]
