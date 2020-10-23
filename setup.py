@@ -28,8 +28,53 @@ from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext
 import glob
-
 import numpy as np
+
+try:
+    from ctypes.utils import find_library
+except ImportError:
+    from ctypes.util import find_library
+
+
+def get_lib_suffix():
+    def walk_ld_library_path():
+        ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
+        if ld_library_path is None:
+            return None
+        libs = []
+        ld_library_path = ld_library_path.split(':')
+        while '' in ld_library_path:
+            ld_library_path.remove('')
+        for lib_path in ld_library_path:
+            for _, _, new_files in os.walk(lib_path):
+                libs += new_files
+        for lib in libs:
+            if 'onedal_core' in lib:
+                return 'onedal'
+            if 'daal_core' in lib:
+                return 'daal'
+        return None
+
+    ld_lib_path_suffix = walk_ld_library_path()
+    if find_library('onedal_core') is not None or ld_lib_path_suffix == 'onedal':
+        return 'onedal'
+    elif find_library('daal_core') is not None or ld_lib_path_suffix == 'daal':
+        return 'daal'
+    else:
+        raise ImportError('Unable to import oneDAL or DAAL lib')
+
+
+def get_win_major_version():
+    lib_name = find_library('onedal_core')
+    if lib_name is None:
+        return ''
+    version = lib_name.split('\\')[-1].split('.')[1]
+    try:
+        version = '.' + str(int(version))
+    except ValueError:
+        version = ''
+    return version
+
 
 d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('2021.%Y%m%d.%H%M%S')
 
@@ -172,10 +217,13 @@ def getpyexts():
     eca += get_sdl_cflags()
     ela += get_sdl_ldflags()
 
+    lib_suffix = get_lib_suffix()
+
     if IS_WIN:
-        libraries_plat = ['daal_core_dll']
+        major_version = get_win_major_version()
+        libraries_plat = [f'{lib_suffix}_core_dll{major_version}']
     else:
-        libraries_plat = ['daal_core', 'daal_thread']
+        libraries_plat = [f'{lib_suffix}_core', f'{lib_suffix}_thread']
 
     if IS_MAC:
         ela.append('-stdlib=libc++')
