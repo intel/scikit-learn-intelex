@@ -955,8 +955,13 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
         with open(jp('src', 'gbt_model_builder.pyx'), 'r') as f:
             pyx_gbt_model_builder = f.read()
 
-    with open(jp('src', 'log_reg_model_builder.pyx'), 'r') as f:
-        pyx_log_reg_model_builder = f.read()
+    if 'algorithms::logistic_regression' in iface.namespace_dict and \
+       'ModelBuilder' in iface.namespace_dict['algorithms::logistic_regression'].classes or \
+       'algorithms::logistic_regression' in iface.namespace_dict and \
+       'ModelBuilder' in iface.namespace_dict['algorithms::logistic_regression'].classes:
+        with open(jp('src', 'log_reg_model_builder.pyx'), 'r') as f:
+            pyx_log_reg_model_builder = f.read()
+    
 
     pyx_gbt_generators = ''
     with open(jp('src', 'gbt_convertors.pyx'), 'r') as f:
