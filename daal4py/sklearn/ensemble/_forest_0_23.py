@@ -524,16 +524,18 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
-
+        # Temporary solution
         X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
+        logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("sklearn"))
+        return super(RandomForestClassifier, self).predict_proba(X)
 
-        if (not hasattr(self, 'daal_model_') or 
-                sp.issparse(X) or self.n_outputs_ != 1 or
-                not (X.dtype == np.float64 or X.dtype == np.float32)):
-            logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("sklearn"))
-            return super(RandomForestClassifier, self).predict_proba(X)
-        logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("daal"))
-        return _daal_predict_proba(self, X)
+        #if (not hasattr(self, 'daal_model_') or 
+        #        sp.issparse(X) or self.n_outputs_ != 1 or
+        #        not (X.dtype == np.float64 or X.dtype == np.float32)):
+        #    logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("sklearn"))
+        #    return super(RandomForestClassifier, self).predict_proba(X)
+        #logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("daal"))
+        #return _daal_predict_proba(self, X)
 
     @property
     def _estimators_(self):
