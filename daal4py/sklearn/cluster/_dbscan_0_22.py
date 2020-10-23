@@ -25,12 +25,12 @@ from sklearn.utils.validation import _check_sample_weight
 from sklearn.cluster import DBSCAN as DBSCAN_original
 
 import daal4py
-from daal4py.sklearn._utils import (make2d, getFPType, method_uses_sklearn, method_uses_daal, is_in_sycl_ctxt)
+from daal4py.sklearn._utils import (make2d, getFPType, get_patch_message)
 import logging
 
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
-    if not eps > 0.0:
+    if eps <= 0.0:
         raise ValueError("eps must be positive.")
 
     X = check_array(X, dtype=[np.float64, np.float32])
@@ -43,12 +43,11 @@ def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     XX = make2d(X)
 
     fpt = getFPType(XX)
-    memorySavingMode = True if is_in_sycl_ctxt() else False
     alg = daal4py.dbscan(
         method='defaultDense',
         epsilon=float(eps),
         minObservations=int(min_samples),
-        memorySavingMode=memorySavingMode,
+        memorySavingMode=False,
         resultsToCompute="computeCoreIndices")
 
     daal_res = alg.compute(XX, ww)
@@ -228,7 +227,7 @@ class DBSCAN(DBSCAN_original):
         """
         X = check_array(X, accept_sparse='csr')
 
-        if not self.eps > 0.0:
+        if self.eps <= 0.0:
             raise ValueError("eps must be positive.")
 
         if sample_weight is not None:
@@ -239,7 +238,7 @@ class DBSCAN(DBSCAN_original):
                        (self.metric == 'minkowski' and self.p == 2)) and 
                        isinstance(X, np.ndarray) and (X.dtype.kind in ['d', 'f']))
         if _daal_ready:
-            logging.info("sklearn.cluster.DBSCAN.fit: " + method_uses_daal)
+            logging.info("sklearn.cluster.DBSCAN.fit: " + get_patch_message("daal"))
             core_ind, assignments = _daal_dbscan(
                 X, self.eps,
                 self.min_samples,
@@ -248,6 +247,5 @@ class DBSCAN(DBSCAN_original):
             self.labels_ = assignments
             self.components_ = np.take(X, core_ind, axis=0)
             return self
-        else:
-            logging.info("sklearn.cluster.DBSCAN.fit: " + method_uses_sklearn)
-            return super().fit(X, y, sample_weight=sample_weight)
+        logging.info("sklearn.cluster.DBSCAN.fit: " + get_patch_message("sklearn"))
+        return super().fit(X, y, sample_weight=sample_weight)

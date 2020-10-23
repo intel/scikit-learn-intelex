@@ -26,6 +26,7 @@
 import glob
 import os
 import re
+import shutil
 from pprint import pformat, pprint
 from os.path import join as jp
 from collections import defaultdict, OrderedDict
@@ -77,8 +78,7 @@ def splitns(x):
     tmp_ = x.rsplit('::', 1)
     if len(tmp_) == 1:
         return ('', x)
-    else:
-        return tmp_
+    return tmp_
 
 def get_parent(ns):
     tmp = ns.rsplit('::', 1)
@@ -324,15 +324,13 @@ class cython_interface(object):
             tt = tns + '::' + tname
             if tt == t:
                 return ('std::string &', 'enum', tns) if tname in self.namespace_dict[tns].enums else (tname, 'class', tns)
-            else:
-                return self.to_hltype(ns, tt)
-        else:
-            usings = ['algorithms::optimization_solver']
-            if not any(t.startswith(x) for x in usings):
-                for nsx in usings:
-                    r = self.to_hltype(ns, nsx + '::' + t)
-                    if r:
-                        return r
+            return self.to_hltype(ns, tt)
+        usings = ['algorithms::optimization_solver']
+        if not any(t.startswith(x) for x in usings):
+            for nsx in usings:
+                r = self.to_hltype(ns, nsx + '::' + t)
+                if r:
+                    return r
         return None if '::' in t else (t, '??', '??')
 
 
@@ -553,9 +551,9 @@ class cython_interface(object):
             for i in tmp_input_args:
                 if i.name.endswith(arg):
                     input_args.append(i)
-        for i in range(len(tmp_input_args)):
-            if not any(tmp_input_args[i].name.endswith(x) for x in ordered):
-                input_args.append(tmp_input_args[i])
+        for i in enumerate(tmp_input_args):
+            if not any(i[1].name.endswith(x) for x in ordered):
+                input_args.append(i[1])
         return input_args
 
 ###############################################################################
@@ -933,7 +931,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
     copytree(orig_path, head_path)
     for (dirpath, dirnames, filenames) in os.walk(algo_path):
         for filename in filenames:
-            call("clang-format -i " + jp(dirpath, filename), shell=True)
+            call([shutil.which("clang-format"), "-i", jp(dirpath, filename)])
     iface = cython_interface(algo_path)
     iface.read()
     print('Generating sources...')

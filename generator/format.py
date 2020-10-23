@@ -146,7 +146,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                     decl_c = 'double* {0}_p, size_t {0}_nrows, size_t {0}_ncols, ssize_t {0}_layout'.format(d4pname)
                     arg_c = 'data_or_file({0}_p, {0}_ncols, {0}_nrows, {0}_layout)'.format(d4pname)
                 # default values (see above pydefaults)
-                if dflt != None:
+                if dflt is not None:
                     pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1]
                     sphinx_default = '"{}"'.format(pd) if typ == 'std::string' else '{}'.format(pd)
                     pydefault = ' = {}'.format(sphinx_default)

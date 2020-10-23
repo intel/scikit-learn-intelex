@@ -18,12 +18,9 @@
 
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
-from daal4py import __daal_run_version__, __daal_link_version__
+from daal4py.sklearn._utils import daal_check_version
 
-daal_run_version = tuple(map(int, (__daal_run_version__[0:4], __daal_run_version__[4:8])))
-daal_link_version = tuple(map(int, (__daal_link_version__[0:4], __daal_link_version__[4:8])))
-
-if daal_run_version >= (2020, 1) and daal_link_version >= (2020, 1):
+if daal_check_version(((2020,'P', 1))):
     if (LooseVersion(sklearn_version) >= LooseVersion("0.21") and LooseVersion(sklearn_version) < LooseVersion("0.23")):
         from ._coordinate_descent_0_21 import *
     elif (LooseVersion(sklearn_version) >= LooseVersion("0.23")):

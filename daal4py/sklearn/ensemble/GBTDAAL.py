@@ -32,7 +32,6 @@ from .._utils import getFPType
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
-daal_version = tuple(map(int, (d4p.__daal_run_version__[0:4], d4p.__daal_run_version__[4:8])))
 
 class GBTDAALBase(BaseEstimator):
     def __init__(self,
@@ -64,7 +63,7 @@ class GBTDAALBase(BaseEstimator):
         self.random_state = random_state
 
     def _check_params(self):
-        if not self.split_method in ('inexact', 'exact'):
+        if self.split_method not in ('inexact', 'exact'):
             raise ValueError('Parameter "split_method" must be '
                              '"inexact" or "exact".')
         if not ((isinstance(self.max_iterations, numbers.Integral))
@@ -79,10 +78,10 @@ class GBTDAALBase(BaseEstimator):
                 and (self.shrinkage < 1)):
             raise ValueError('Parameter "shrinkage" must be '
                              'more or equal to 0 and less than 1.')
-        if not (self.min_split_loss >= 0):
+        if self.min_split_loss < 0:
             raise ValueError('Parameter "min_split_loss" must be '
                              'more or equal to zero.')
-        if not (self.reg_lambda >= 0):
+        if self.reg_lambda < 0:
             raise ValueError('Parameter "reg_lambda" must be '
                              'more or equal to zero.')
         if not ((self.observations_per_tree_fraction > 0)
@@ -202,8 +201,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
             le = preprocessing.LabelEncoder()
             le.classes_ = self.classes_
             return le.inverse_transform(predict_result.prediction.ravel().astype(np.int64, copy=False))
-        else:
-            return predict_result.probabilities
+        return predict_result.probabilities
 
     def predict(self, X):
         return self._predict(X, "computeClassLabels")
@@ -216,11 +214,11 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
         if self.n_outputs_ == 1:
             return np.log(proba)
-        else:
-            for k in range(self.n_outputs_):
-                proba[k] = np.log(proba[k])
 
-            return proba
+        for k in range(self.n_outputs_):
+            proba[k] = np.log(proba[k])
+
+        return proba
 
 
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):

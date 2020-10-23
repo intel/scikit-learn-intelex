@@ -52,8 +52,8 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # set parameters and compute predictions
     # previous version has different interface
-    from daal4py import __daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
+    from daal4py import _get__daal_link_version__ as dv
+    daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
     if daal_version < (2020,0):
         predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
                                                          resultsToCompute="computeClassesLabels|computeClassesProbabilities|computeClassesLogProbabilities")

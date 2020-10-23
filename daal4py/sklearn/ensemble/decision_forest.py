@@ -17,11 +17,6 @@
 
 import numpy as np
 
-import sys
-if sys.version_info[0] == 2:
-    from sklearn.externals.six import string_types
-else:
-    string_types = str
 import numbers
 import warnings
 
@@ -42,12 +37,11 @@ from sklearn.exceptions import DataConversionWarning, NotFittedError
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
-daal_version = tuple(map(int, (daal4py.__daal_link_version__[0:4], daal4py.__daal_link_version__[4:8])))
 
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
     if max_features is None:
         return n_features
-    elif isinstance(max_features, string_types):
+    elif isinstance(max_features, str):
         if max_features == "auto":
             return max(1, int(np.sqrt(n_features))) if is_classification else n_features
         elif max_features == 'sqrt':
@@ -63,8 +57,7 @@ def _to_absolute_max_features(max_features, n_features, is_classification=False)
     else: # float
         if max_features > 0.0:
             return max(1, int(max_features * n_features))
-        else:
-            return 0
+        return 0
 
 
 class RandomForestClassifier(skl_RandomForestClassifier):
@@ -305,8 +298,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
     def _more_tags(self):
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             return {'multioutput': False}
-        else:
-            return dict()
+        return dict()
 
 
 
@@ -507,5 +499,4 @@ class RandomForestRegressor(skl_RandomForestRegressor):
     def _more_tags(self):
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             return {'multioutput': False}
-        else:
-            return dict()
+        return dict()

@@ -43,10 +43,9 @@ def _main():
     sys.argv = [args.name] + args.args
     if '_' + args.name in globals():
         return globals()['_' + args.name](*args.args)
-    else:
-        import runpy
-        runf = runpy.run_module if args.module else runpy.run_path
-        runf(args.name, run_name='__main__')
+    import runpy
+    runf = runpy.run_module if args.module else runpy.run_path
+    runf(args.name, run_name='__main__')
 
 
 sys.exit(_main())

@@ -31,7 +31,7 @@ import glob
 
 import numpy as np
 
-d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2019.%Y%m%d.%H%M%S')
+d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('0.2021.%Y%m%d.%H%M%S')
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
@@ -133,7 +133,7 @@ DAAL_DEFAULT_TYPE = 'double'
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
-        return DIST_CFLAGS + DPCPP_CFLAGS + ['-fstack-protector', '-fPIC',
+        return DIST_CFLAGS + DPCPP_CFLAGS + ['-fstack-protector-strong', '-fPIC',
                                              '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',
                                              '-fno-strict-overflow', '-fno-delete-null-pointer-checks']
     elif IS_WIN:
@@ -242,7 +242,7 @@ def getpyexts():
 
 cfg_vars = get_config_vars()
 for key, value in get_config_vars().items():
-    if type(value) == str:
+    if isinstance(value, str):
         cfg_vars[key] = value.replace("-Wstrict-prototypes", "").replace('-DNDEBUG', '')
 
 

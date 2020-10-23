@@ -53,10 +53,9 @@ from sklearn.linear_model._logistic import (
 from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
 from sklearn.linear_model._base import (LinearClassifierMixin, SparseCoefMixin, BaseEstimator)
 from .._utils import (daal_check_version, getFPType, 
-                      method_uses_sklearn, method_uses_daal)
+                      method_uses_sklearn, method_uses_daal,
+                      get_patch_message)
 import logging
-
-use_daal = True
 
 # Code adapted from sklearn.linear_model.logistic prior to 0.21
 def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
@@ -207,6 +206,9 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     .. versionchanged:: 0.19
         The "copy" parameter was removed.
     """
+
+    use_daal = True
+
     if isinstance(Cs, numbers.Integral):
         Cs = np.logspace(-4, 4, Cs)
 
@@ -494,9 +496,9 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 coefs[i] = np.delete(ci, 0, axis=-1)
 
     if daal_ready:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + method_uses_daal)
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("daal"))
     else:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + method_uses_sklearn)
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("sklearn"))
 
     return coefs, np.array(Cs), n_iter
 
@@ -659,6 +661,9 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     .. versionchanged:: 0.19
         The "copy" parameter was removed.
     """
+
+    use_daal = True
+
     if isinstance(Cs, numbers.Integral):
         Cs = np.logspace(-4, 4, Cs)
 
@@ -951,9 +956,9 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 coefs[i] = np.delete(ci, 0, axis=-1)
 
     if daal_ready:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + method_uses_daal)
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("daal"))
     else:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + method_uses_sklearn)
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("sklearn"))
 
     return np.array(coefs), np.array(Cs), n_iter
 
