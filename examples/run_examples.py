@@ -154,7 +154,7 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
         if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
             return None
-        if not check_os(req_device["sycl/" + os.path.basename(ex)], system_os):
+        if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
             return None
 
     if os.path.dirname(ex).endswith("examples"):
