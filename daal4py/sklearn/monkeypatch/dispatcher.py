@@ -149,7 +149,7 @@ def enable(name=None, verbose=True):
         for key in _get_map_of_algorithms():
             do_patch(key)
     if verbose and sys.stderr is not None:
-        sys.stderr.write("Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL) solvers for sklearn enabled: "
+        sys.stderr.write("Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
                          "https://intelpython.github.io/daal4py/sklearn.html\n")
     _get_map_of_algorithms.cache_clear()
 

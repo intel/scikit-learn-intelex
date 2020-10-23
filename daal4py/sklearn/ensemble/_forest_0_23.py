@@ -561,7 +561,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             min_impurity_decrease=self.min_impurity_decrease,
             min_impurity_split=self.min_impurity_split,
             random_state=None)
-        # we need to set est.tree_ field with Trees constructed from Intel(R) DAAL solution
+        # we need to set est.tree_ field with Trees constructed from Intel(R) oneAPI Data Analytics Library solution
         estimators_ = []
         for i in range(self.n_estimators):
             # print("Tree #{}".format(i))
@@ -716,7 +716,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             min_impurity_split=self.min_impurity_split,
             random_state=None)
 
-        # we need to set est.tree_ field with Trees constructed from Intel(R) DAAL solution
+        # we need to set est.tree_ field with Trees constructed from Intel(R) oneAPI Data Analytics Library solution
         estimators_ = []
         for i in range(self.n_estimators):
             est_i = clone(est)

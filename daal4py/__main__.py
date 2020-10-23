@@ -24,7 +24,7 @@ def _main():
 
     parser = argparse.ArgumentParser(prog="python -m daal4py.sklearn_patches", description="""
                 Run your Python script with Intel(R) Distribution for Python* patches of scikit-learn,
-                optimizing solvers of scikit-learn with Intel(R) DAAL.
+                optimizing solvers of scikit-learn with Intel(R) oneAPI Data Analytics Library.
              """, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-m', action='store_true', dest='module',

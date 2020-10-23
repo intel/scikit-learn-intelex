@@ -330,7 +330,7 @@ gen_pyx(os.path.abspath('./build'))
 
 # daal setup
 setup(  name        = "daal4py",
-        description = "Convenient Python API to Intel(R) Data Analytics Acceleration Library (Intel(R) DAAL)",
+        description = "A convenient Python API to Intel(R) oneAPI Data Analytics Library",
         author      = "Intel",
         version     = d4p_version,
         classifiers=[
