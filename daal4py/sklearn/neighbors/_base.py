@@ -316,7 +316,7 @@ class NeighborsBase(BaseNeighborsBase):
                     correct_n_classes = False
             else:
                 self._y = y
-    else:
+        else:
             if not X_incorrect_type:
                 X, _ = validate_data(self, X, accept_sparse='csr')
             self._y = None
