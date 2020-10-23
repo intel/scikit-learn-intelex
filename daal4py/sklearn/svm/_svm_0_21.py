@@ -181,8 +181,9 @@ def _daal4py_fit(self, X, y_inp, kernel):
 
     y = make2d(y_inp)
     if num_classes == 2:
-        # Intel(R) DAAL requires binary classes to be 1 and -1. sklearn normalizes
-        # the classes to 0 and 1, so we temporarily replace the 0s with -1s.
+        # Intel(R) oneAPI Data Analytics Library requires binary classes to 
+        # be 1 and -1. sklearn normalizes the classes to 0 and 1, so we
+        # temporarily replace the 0s with -1s.
         y = y.copy()
         y[y == 0] = -1
 
@@ -491,7 +492,7 @@ def _daal4py_predict(self, X):
     res = res.ravel()
 
     if num_classes == 2:
-        # Convert from Intel(R) DAAL format back to original classes
+        # Convert from Intel(R) oneAPI Data Analytics Library format back to original classes
         np.greater(res, 0, out=res)
 
     return res

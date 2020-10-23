@@ -36,7 +36,7 @@ from distutils.version import LooseVersion
 
 class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     """
-    Decision tree classifier powered by Intel(R) DAAL.
+    Decision tree classifier powered by Intel(R) oneAPI Data Analytics Library.
 
        https://software.intel.com/en-us/daal-programming-guide-decision-tree-2
        https://software.intel.com/en-us/daal-programming-guide-batch-processing-50

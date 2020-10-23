@@ -240,7 +240,7 @@ class TestExCSRMatrix(Base, unittest.TestCase):
         if  any (ex.__name__.startswith(x) for x in ['adaboost', 'brownboost', 'stump_classification', 'gbt_cls_model_create']):
             self.skipTest("not supporting CSR")
         method = 'singlePassCSR' if any(x in ex.__name__ for x in ['low_order_moms', 'covariance']) else 'fastCSR'
-        # cannot use fastCSR ofr implicit als; bug in Intel(R) DAAL?
+        # cannot use fastCSR ofr implicit als
         if 'implicit_als' in ex.__name__:
             method = 'defaultDense'
         # kmeans have no special method for CSR
