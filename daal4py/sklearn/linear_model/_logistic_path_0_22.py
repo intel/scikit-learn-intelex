@@ -970,11 +970,7 @@ def daal4py_predict(self, X, resultsToEvaluate):
         fptype = None
     
     if daal_check_version(((2021,'P', 1))) and fptype is not None:    
-<<<<<<< HEAD
         logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("daal"))
-=======
-        logging.info("sklearn.linear_model.LogisticRegression.predict: " + method_uses_daal)
->>>>>>> c0003d6bef981bdc95224808d9dae7f3baf66eaf
         check_is_fitted(self)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
@@ -999,11 +995,7 @@ def daal4py_predict(self, X, resultsToEvaluate):
             res = np.ravel(res)
         return res
 
-<<<<<<< HEAD
     logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("sklearn"))
-=======
-    logging.info("sklearn.linear_model.LogisticRegression.predict: " + method_uses_sklearn)
->>>>>>> c0003d6bef981bdc95224808d9dae7f3baf66eaf
     return super(LogisticRegression_original, self).predict(X)
 
 
