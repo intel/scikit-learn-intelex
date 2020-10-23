@@ -106,7 +106,6 @@ def check_library(rule):
             return False
     return True
 
-
 req_version = defaultdict(lambda:(2019,'P',0))
 req_version['adaboost_batch.py'] = (2020,'P',0)
 req_version['brownboost_batch.py'] = (2020,'P',0)
