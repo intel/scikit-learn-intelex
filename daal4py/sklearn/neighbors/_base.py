@@ -285,8 +285,8 @@ class NeighborsBase(BaseNeighborsBase):
             requires_y = False
 
         if y is not None or requires_y:
+            X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True)
             if not X_incorrect_type:
-                X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True)
                 single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
 
             shape = y.shape
