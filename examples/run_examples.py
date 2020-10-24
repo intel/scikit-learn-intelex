@@ -160,6 +160,7 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
 
     if os.path.dirname(ex).endswith("examples"):
+        return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
