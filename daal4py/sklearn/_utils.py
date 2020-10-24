@@ -71,11 +71,11 @@ def make2d(X):
 
 def get_patch_message(s):
     if s == "daal":
-        message = "uses optimized solver"
+        message = "uses Intel(R) oneAPI Data Analytics Library solver"
     elif s == "sklearn":
         message = "uses original Scikit-learn solver"
     elif s == "sklearn_after_daal":
-        message = "uses original Scikit-learn solver, because the task was not solved with optimized variant"
+        message = "uses original Scikit-learn solver, because the task was not solved with Intel(R) oneAPI Data Analytics Library"
     else:
         raise ValueError(f"Invalid input - expected one of 'daal','sklearn', 'sklearn_after_daal', got {s}")
     return message
