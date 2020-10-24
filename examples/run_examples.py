@@ -55,6 +55,8 @@ if 8 * struct.calcsize('P') == 32:
 else:
     logdir = jp(exdir, '_results', 'intel64')
 
+exit(0)
+    
 availabe_devices = []
 try:
     from daal4py.oneapi import sycl_context, sycl_buffer
@@ -149,7 +151,6 @@ req_os['sycl/pca_transform_batch.py'] = ["lnx"]
 
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
-        return None
         if not sycl_available:
             return None
         if not check_version(req_version["sycl/" + os.path.basename(ex)], get_daal_version()):
@@ -160,7 +161,6 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
 
     if os.path.dirname(ex).endswith("examples"):
-        return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
@@ -176,7 +176,6 @@ def get_exe_cmd(ex, nodist, nostream):
     return None
 
 def run_all(nodist=False, nostream=False):
-    return 0
     success = 0
     n = 0
     if not os.path.exists(logdir):
