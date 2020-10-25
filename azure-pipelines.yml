@@ -87,8 +87,13 @@ jobs:
       set "TBBROOT=C:\Program Files (x86)\Intel\oneAPI\tbb\latest"
       conda build --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder=. conda-recipe
     displayName: conda build
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
+      Contents: 'daal4py*'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
   - task: PublishPipelineArtifact@0
     inputs:
-      artifactName: 'daal4py'
-      targetPath: 'C:\Miniconda\envs\CB\pkgs\daal4py*'
+      artifactName: 'daal4py win'
+      targetPath: '$(Build.ArtifactStagingDirectory)/
     condition: always()
