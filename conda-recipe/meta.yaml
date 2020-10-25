@@ -13,6 +13,8 @@ build:
     include_recipe: False
     script_env:
      - DAALROOT
+     - DPCPPROOT
+     - TBBROOT
     ignore_run_exports:
        - python
        - mpich
@@ -56,7 +58,7 @@ test:
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
         - python -m daal4py examples/sycl/sklearn_sycl.py
-        - cd examples && python run_examples.py
+        - python examples/run_examples.py
 
 about:
     home: https://intelpython.github.io/daal4py/
