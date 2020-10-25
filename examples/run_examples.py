@@ -56,19 +56,22 @@ else:
     logdir = jp(exdir, '_results', 'intel64')
     
 availabe_devices = []
-try:
-    from daal4py.oneapi import sycl_context, sycl_buffer
-    sycl_available = True
-except:
-    sycl_available = False
 
-if sycl_available:
+try:
+    from daal4py.oneapi import sycl_context
+    sycl_extention_available = True
+except:
+    sycl_extention_available = False
+
+if sycl_extention_available:
     try:
-        with sycl_context('cpu'):
-            availabe_devices.append("cpu")
-    except RuntimeError as e:
-        print(e)
-        pass
+        with sycl_context('gpu'):
+            gpu_available = True
+            availabe_devices.append("gpu")
+    except:
+        gpu_available = False
+    availabe_devices.append("host")
+    availabe_devices.append("cpu")
 
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
@@ -144,7 +147,7 @@ req_os['sycl/pca_transform_batch.py'] = ["lnx"]
 
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
-        if not sycl_available:
+        if not sycl_extention_available:
             return None
         if not check_version(req_version["sycl/" + os.path.basename(ex)], get_daal_version()):
             return None
