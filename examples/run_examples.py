@@ -66,7 +66,8 @@ if sycl_available:
     try:
         with sycl_context('cpu'):
             availabe_devices.append("cpu")
-    except RuntimeError:
+    except RuntimeError as e:
+        print(e)
         pass
 
 def check_version(rule, target):
