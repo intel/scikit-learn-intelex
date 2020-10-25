@@ -95,5 +95,5 @@ jobs:
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'daal4py win'
-      targetPath: '$(Build.ArtifactStagingDirectory)/
+      targetPath: '$(Build.ArtifactStagingDirectory)/'
     condition: always()
