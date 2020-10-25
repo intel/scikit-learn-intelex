@@ -89,6 +89,6 @@ jobs:
     displayName: conda build
   - task: PublishPipelineArtifact@0
     inputs:
-      artifactName: 'Windows conda build dir'
-      targetPath: 'C:\Miniconda\envs\CB\'
+      artifactName: 'daal4py'
+      targetPath: 'C:\Miniconda\envs\CB\pkgs\daal4py*'
     condition: always()
