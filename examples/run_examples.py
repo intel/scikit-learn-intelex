@@ -54,8 +54,6 @@ if 8 * struct.calcsize('P') == 32:
     logdir = jp(exdir, '_results', 'ia32')
 else:
     logdir = jp(exdir, '_results', 'intel64')
-
-exit(0)
     
 availabe_devices = []
 try:
@@ -76,7 +74,7 @@ if sycl_available:
             availabe_devices.append("cpu")
     except RuntimeError:
         pass
-
+exit(0)
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
         if rule > target:
