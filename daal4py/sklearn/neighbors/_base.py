@@ -332,19 +332,27 @@ class NeighborsBase(BaseNeighborsBase):
 
         weights = getattr(self, 'weights', 'uniform')
 
-        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not X_incorrect_type \
-        and weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
-        and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
-        and single_output and fptype is not None and not sp.issparse(X) and correct_n_classes:
-            logging.info("sklearn.neighbors.NeighborsBase._fit: " + get_patch_message("daal"))
-            daal4py_fit(self, X, fptype)
-            result = self
-        else:
-            logging.info("sklearn.neighbors.NeighborsBase._fit: " + get_patch_message("sklearn"))
+        def stock_fit(self, X, y):
             if sklearn_check_version("0.24"):
                 result = super(NeighborsBase, self)._fit(X, y)
             else:
                 result = super(NeighborsBase, self)._fit(X)
+            return result
+
+        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not X_incorrect_type \
+        and weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
+        and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
+        and single_output and fptype is not None and not sp.issparse(X) and correct_n_classes:
+            try:
+                logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("daal"))
+                daal4py_fit(self, X, fptype)
+                result = self
+            except RuntimeError:
+                logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("sklearn_after_daal"))
+                result = stock_fit(self, X, y)
+        else:
+            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("sklearn"))
+            result = stock_fit(self, X, y)
 
         if y is not None and is_regressor(self):
             self._y = y if shape is None else y.reshape(shape)
