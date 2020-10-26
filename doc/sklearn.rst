@@ -4,21 +4,20 @@
 Scikit-Learn API and patching
 #############################
 
-Python interface to efficient Intel® Data Analytics and Acceleration Library
-(DAAL) provided by daal4py allows one to create scikit-learn compatible
-estimators, transformers, clusterers, etc. powered by DAAL which are nearly as
-efficient as native programs.
+Python interface to efficient Intel(R) oneAPI Data Analytics Library provided by daal4py allows one
+to create scikit-learn compatible estimators, transformers, clusterers, etc. powered by DAAL which
+are nearly as efficient as native programs.
 
 .. _sklearn_patches:
 
 DAAL accelerated scikit-learn
 ------------------------------
 
-daal4py can dynamically patch scikit-learn estimators to use Intel® DAAL as the
-underlying solver, while getting the same solution faster.
+daal4py can dynamically patch scikit-learn estimators to use Intel(R) oneAPI Data Analytics Library
+as the underlying solver, while getting the same solution faster.
 
-It is possible to enable those patches without editing the code of a
-scikit-learn application by using the following commandline flag::
+It is possible to enable those patches without editing the code of a scikit-learn application by
+using the following commandline flag::
 
     python -m daal4py my_application.py
 
@@ -97,7 +96,7 @@ These print statements are only available for :ref:`scikit-learn algorithms with
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used::
 
-    INFO: sklearn.cluster.DBSCAN.fit: uses Intel® DAAL solver
+    INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver
 
 ::
 
@@ -111,7 +110,7 @@ scikit-learn API
 ----------------
 
 The ``daal4py.sklearn`` package contains scikit-learn compatible API which
-implement a subset of scikit-learn algorithms using Intel® DAAL.
+implement a subset of scikit-learn algorithms using Intel(R) oneAPI Data Analytics Library.
 
 Currently, these include:
 

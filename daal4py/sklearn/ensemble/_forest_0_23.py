@@ -524,16 +524,18 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
-
+        # Temporary solution
         X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
+        logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("sklearn"))
+        return super(RandomForestClassifier, self).predict_proba(X)
 
-        if (not hasattr(self, 'daal_model_') or 
-                sp.issparse(X) or self.n_outputs_ != 1 or
-                not (X.dtype == np.float64 or X.dtype == np.float32)):
-            logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("sklearn"))
-            return super(RandomForestClassifier, self).predict_proba(X)
-        logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("daal"))
-        return _daal_predict_proba(self, X)
+        #if (not hasattr(self, 'daal_model_') or 
+        #        sp.issparse(X) or self.n_outputs_ != 1 or
+        #        not (X.dtype == np.float64 or X.dtype == np.float32)):
+        #    logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("sklearn"))
+        #    return super(RandomForestClassifier, self).predict_proba(X)
+        #logging.info("sklearn.ensemble.RandomForestClassifier.predict_proba: " + get_patch_message("daal"))
+        #return _daal_predict_proba(self, X)
 
     @property
     def _estimators_(self):
@@ -559,7 +561,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             min_impurity_decrease=self.min_impurity_decrease,
             min_impurity_split=self.min_impurity_split,
             random_state=None)
-        # we need to set est.tree_ field with Trees constructed from Intel(R) DAAL solution
+        # we need to set est.tree_ field with Trees constructed from Intel(R) oneAPI Data Analytics Library solution
         estimators_ = []
         for i in range(self.n_estimators):
             # print("Tree #{}".format(i))
@@ -714,7 +716,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             min_impurity_split=self.min_impurity_split,
             random_state=None)
 
-        # we need to set est.tree_ field with Trees constructed from Intel(R) DAAL solution
+        # we need to set est.tree_ field with Trees constructed from Intel(R) oneAPI Data Analytics Library solution
         estimators_ = []
         for i in range(self.n_estimators):
             est_i = clone(est)
