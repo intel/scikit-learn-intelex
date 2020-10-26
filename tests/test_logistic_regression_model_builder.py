@@ -24,8 +24,8 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.linear_model import LogisticRegression
 
 
-class Test(unittest.TestCase):
-    def iris_with_intercept(self):
+class LogRegModelBuilder(unittest.TestCase):
+    def test_iris_with_intercept(self):
         X, y = load_iris(return_X_y=True)
         n_classes=3
         clf = LogisticRegression(fit_intercept=True, max_iter=1000, random_state=0).fit(X, y)
@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
-    def iris_without_intercept(self):
+    def test_iris_without_intercept(self):
         X, y = load_iris(return_X_y=True)
         n_classes=3
         clf = LogisticRegression(fit_intercept=False, max_iter=1000, random_state=0).fit(X, y)
@@ -53,7 +53,7 @@ class Test(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
-    def breast_cancer_with_intercept(self):
+    def test_breast_cancer_with_intercept(self):
         X, y = load_breast_cancer(return_X_y=True)
         n_classes=2
         clf = LogisticRegression(fit_intercept=True, max_iter=10000, random_state=0).fit(X, y)
@@ -67,7 +67,7 @@ class Test(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
-    def breast_cancer_without_intercept(self):
+    def test_breast_cancer_without_intercept(self):
         X, y = load_breast_cancer(return_X_y=True)
         n_classes=2
         clf = LogisticRegression(fit_intercept=False, max_iter=10000, random_state=0).fit(X, y)
