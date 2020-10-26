@@ -27,6 +27,8 @@ from daal4py.sklearn._utils import daal_check_version
 
 class LogRegModelBuilder(unittest.TestCase):
     def test_iris_with_intercept(self):
+        if not daal_check_version((2021,'P', 1)):
+            pass
         X, y = load_iris(return_X_y=True)
         n_classes=3
         clf = LogisticRegression(fit_intercept=True, max_iter=1000, random_state=0).fit(X, y)
@@ -41,6 +43,8 @@ class LogRegModelBuilder(unittest.TestCase):
 
 
     def test_iris_without_intercept(self):
+        if not daal_check_version((2021,'P', 1)):
+            pass
         X, y = load_iris(return_X_y=True)
         n_classes=3
         clf = LogisticRegression(fit_intercept=False, max_iter=1000, random_state=0).fit(X, y)
@@ -55,6 +59,8 @@ class LogRegModelBuilder(unittest.TestCase):
 
 
     def test_breast_cancer_with_intercept(self):
+        if not daal_check_version((2021,'P', 1)):
+            pass
         X, y = load_breast_cancer(return_X_y=True)
         n_classes=2
         clf = LogisticRegression(fit_intercept=True, max_iter=10000, random_state=0).fit(X, y)
@@ -69,6 +75,8 @@ class LogRegModelBuilder(unittest.TestCase):
 
 
     def test_breast_cancer_without_intercept(self):
+        if not daal_check_version((2021,'P', 1)):
+            pass
         X, y = load_breast_cancer(return_X_y=True)
         n_classes=2
         clf = LogisticRegression(fit_intercept=False, max_iter=10000, random_state=0).fit(X, y)
@@ -83,5 +91,4 @@ class LogRegModelBuilder(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    if daal_check_version((2021,'P', 1)):
-        unittest.main()
+    unittest.main()
