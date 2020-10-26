@@ -947,6 +947,9 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
 
     pyx_gbt_model_builder = ''
     pyx_log_reg_model_builder = ''
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    print(iface.version)
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     if 'algorithms::gbt::classification' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::gbt::classification'].classes or \
        'algorithms::gbt::regression' in iface.namespace_dict and \
