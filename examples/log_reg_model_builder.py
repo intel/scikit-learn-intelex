@@ -46,7 +46,7 @@ def main():
 
 
 if __name__ == "__main__":
-    if daal_check_version((2021,'P', 1)):
+    if daal_check_version(((2021,'P', 1))):
         (builder, predict_result_daal) = main()
         print("\nLogistic Regression coefficients:\n", builder.model)
         print("\nLogistic regression prediction results (first 10 rows):\n", predict_result_daal.prediction[0:10])

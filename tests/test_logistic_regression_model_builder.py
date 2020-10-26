@@ -24,11 +24,14 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.linear_model import LogisticRegression
 from daal4py.sklearn._utils import daal_check_version
 
+from daal4py import _get__daal_link_version__ as dv
+# First item is major version - 2021, second is minor+patch - 0110, third item is status - B
+daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
+version = ((2021, 'P', 1))
 
 class LogRegModelBuilder(unittest.TestCase):
+    @unittest.skipUnless(daal_check_version(version), str(version) + " not supported in this library version " + str(daal_version))
     def test_iris_with_intercept(self):
-        if not daal_check_version((2021,'P', 1)):
-            pass
         X, y = load_iris(return_X_y=True)
         n_classes=3
         clf = LogisticRegression(fit_intercept=True, max_iter=1000, random_state=0).fit(X, y)
@@ -42,9 +45,8 @@ class LogRegModelBuilder(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
+    @unittest.skipUnless(daal_check_version(version), str(version) + " not supported in this library version " + str(daal_version))
     def test_iris_without_intercept(self):
-        if not daal_check_version((2021,'P', 1)):
-            pass
         X, y = load_iris(return_X_y=True)
         n_classes=3
         clf = LogisticRegression(fit_intercept=False, max_iter=1000, random_state=0).fit(X, y)
@@ -58,9 +60,8 @@ class LogRegModelBuilder(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
+    @unittest.skipUnless(daal_check_version(version), str(version) + " not supported in this library version " + str(daal_version))
     def test_breast_cancer_with_intercept(self):
-        if not daal_check_version((2021,'P', 1)):
-            pass
         X, y = load_breast_cancer(return_X_y=True)
         n_classes=2
         clf = LogisticRegression(fit_intercept=True, max_iter=10000, random_state=0).fit(X, y)
@@ -74,9 +75,8 @@ class LogRegModelBuilder(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
+    @unittest.skipUnless(daal_check_version(version), str(version) + " not supported in this library version " + str(daal_version))
     def test_breast_cancer_without_intercept(self):
-        if not daal_check_version((2021,'P', 1)):
-            pass
         X, y = load_breast_cancer(return_X_y=True)
         n_classes=2
         clf = LogisticRegression(fit_intercept=False, max_iter=10000, random_state=0).fit(X, y)
