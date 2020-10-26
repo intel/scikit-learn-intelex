@@ -999,8 +999,17 @@ def daal4py_predict(self, X, resultsToEvaluate):
             res = np.ravel(res)
         return res
 
-    logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("sklearn"))
-    return super(LogisticRegression_original, self).predict(X)
+    if resultsToEvaluate == 'computeClassLabels':
+        logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("sklearn"))
+        return super(LogisticRegression_original, self).predict(X)
+    if resultsToEvaluate == 'computeClassProbabilities':
+        logging.info("sklearn.linear_model.LogisticRegression.predict_proba: " + get_patch_message("sklearn"))
+        return super(LogisticRegression_original, self).predict_proba(X)
+    if resultsToEvaluate == 'computeClassLogProbabilities':
+        logging.info("sklearn.linear_model.LogisticRegression.predict_log_proba: " + get_patch_message("sklearn"))
+        return super(LogisticRegression_original, self).predict_log_proba(X)
+    raise ValueError('resultsToEvaluate must be in [computeClassLabels, \
+                     computeClassProbabilities, computeClassLogProbabilities]')
 
 
 if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
