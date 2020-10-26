@@ -27,7 +27,7 @@ from daal4py.sklearn._utils import daal_check_version
 from daal4py import _get__daal_link_version__ as dv
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
 daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
-version = (((2021, 'P', 1)))
+version = ((2021, 'P', 110))
 
 class LogRegModelBuilder(unittest.TestCase):
     @unittest.skipUnless(daal_check_version(version), str(version) + " not supported in this library version " + str(daal_version))

@@ -961,15 +961,15 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
     return np.array(coefs), np.array(Cs), n_iter
 
+
 def daal4py_predict(self, X, resultsToEvaluate):
     X = check_array(X, accept_sparse='csr', force_all_finite=False)
-
     try:
         fptype = getFPType(X)
     except ValueError:
         fptype = None
     
-    if daal_check_version((2021,'P', 1)) and fptype is not None and not sparse.issparse(X):    
+    if daal_check_version(((2021,'P', 1))) and fptype is not None and not sparse.issparse(X):
         logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("daal"))
         check_is_fitted(self)
         n_features = self.coef_.shape[1]
@@ -978,7 +978,7 @@ def daal4py_predict(self, X, resultsToEvaluate):
                              % (X.shape[1], n_features))
         
         builder = d4p.logistic_regression_model_builder(X.shape[1], len(self.classes_))
-        builder.set_beta(self.coef_, self.intercept_)        
+        builder.set_beta(self.coef_, self.intercept_)
         predict = d4p.logistic_regression_prediction(nClasses=len(self.classes_),
                                                     fptype=fptype,
                                                     method = 'defaultDense',
@@ -986,7 +986,8 @@ def daal4py_predict(self, X, resultsToEvaluate):
         res = predict.compute(X, builder.model)
         if resultsToEvaluate == 'computeClassLabels':
             res = res.prediction
-            res = self.classes_.take(np.asarray(res, dtype=np.intp))
+            if not np.array_equal(self.classes_, np.arange(0, len(self.classes_))):
+                res = self.classes_.take(np.asarray(res, dtype=np.intp))
         elif resultsToEvaluate == 'computeClassLogProbabilities':
             res = res.logProbabilities
         else:
