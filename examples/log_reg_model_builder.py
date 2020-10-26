@@ -36,15 +36,8 @@ def main():
     builder.set_beta(clf.coef_, clf.intercept_)
 
     # set parameters and compute predictions
-    # previous version has different interface
-    from daal4py import _get__daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
-    if daal_version < (2020,0):
-        predict_alg = d4p.logistic_regression_prediction(nClasses=n_classes,
-                                                         resultsToCompute="computeClassesLabels|computeClassesProbabilities|computeClassesLogProbabilities")
-    else:
-        predict_alg = d4p.logistic_regression_prediction(nClasses=n_classes,
-                                                         resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
+    predict_alg = d4p.logistic_regression_prediction(nClasses=n_classes,
+                                                     resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
     # set parameters and compute predictions
     predict_result_daal = predict_alg.compute(X, builder.model)
     predict_result_sklearn = clf.predict(X)
@@ -53,9 +46,10 @@ def main():
 
 
 if __name__ == "__main__":
-    (builder, predict_result_daal) = main()
-    print("\nLogistic Regression coefficients:\n", builder.model)
-    print("\nLogistic regression prediction results (first 10 rows):\n", predict_result_daal.prediction[0:10])
-    print("\nLogistic regression prediction probabilities (first 10 rows):\n", predict_result_daal.probabilities[0:10])
-    print("\nLogistic regression prediction log probabilities (first 10 rows):\n", predict_result_daal.logProbabilities[0:10])
-    print('All looks good!')
+    if daal_check_version((2021,'P', 1)):
+        (builder, predict_result_daal) = main()
+        print("\nLogistic Regression coefficients:\n", builder.model)
+        print("\nLogistic regression prediction results (first 10 rows):\n", predict_result_daal.prediction[0:10])
+        print("\nLogistic regression prediction probabilities (first 10 rows):\n", predict_result_daal.probabilities[0:10])
+        print("\nLogistic regression prediction log probabilities (first 10 rows):\n", predict_result_daal.logProbabilities[0:10])
+        print('All looks good!')

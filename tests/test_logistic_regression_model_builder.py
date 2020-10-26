@@ -22,6 +22,7 @@ import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.datasets import load_breast_cancer
 from sklearn.linear_model import LogisticRegression
+from daal4py.sklearn._utils import daal_check_version
 
 
 class LogRegModelBuilder(unittest.TestCase):
@@ -82,4 +83,5 @@ class LogRegModelBuilder(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    if daal_check_version((2021,'P', 1)):
+        unittest.main()
