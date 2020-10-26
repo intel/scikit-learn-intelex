@@ -131,7 +131,7 @@ deselected_tests:
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
-  # Failed in KD-tree. Will fix to next release DAAL.
+  # The bug is fixed. Remove this test from deselected after the gold release
   - ensemble/tests/test_bagging.py::test_classification
 
   # very long execution and intermittent hang up. daal4py patching does not apply to these tests.

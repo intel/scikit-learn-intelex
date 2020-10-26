@@ -105,7 +105,8 @@ class DBSCAN(DBSCAN_original):
         to compute pointwise distances and find nearest neighbors.
         See NearestNeighbors module documentation for details.
 
-        If algorithm is set to 'daal', Intel(R) DAAL will be used.
+        If algorithm is set to 'daal', Intel(R) oneAPI Data Analytics Library
+        will be used.
 
     leaf_size : int, optional (default = 30)
         Leaf size passed to BallTree or cKDTree. This can affect the speed

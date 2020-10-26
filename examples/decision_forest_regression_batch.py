@@ -65,12 +65,9 @@ def main(readcsv=read_csv, method='defaultDense'):
 if __name__ == "__main__":
     from daal4py import _get__daal_link_version__ as dv
     daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
-    if daal_version < (2019, 1):
-        print("Need Intel(R) DAAL 2019.1 or later")
-    else:
-        (train_result, predict_result, ptdata) = main()
-        print("\nVariable importance results:\n", train_result.variableImportance)
-        print("\nOOB error:\n", train_result.outOfBagError)
-        print("\nDecision forest prediction results (first 10 rows):\n", predict_result.prediction[0:10])
-        print("\nGround truth (first 10 rows):\n", ptdata[0:10])
-        print('All looks good!')
+    (train_result, predict_result, ptdata) = main()
+    print("\nVariable importance results:\n", train_result.variableImportance)
+    print("\nOOB error:\n", train_result.outOfBagError)
+    print("\nDecision forest prediction results (first 10 rows):\n", predict_result.prediction[0:10])
+    print("\nGround truth (first 10 rows):\n", ptdata[0:10])
+    print('All looks good!')
