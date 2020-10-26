@@ -37,7 +37,7 @@ def main():
 
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(nClasses=n_classes,
-                                                     resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
+                                                     resultsToEvaluate="computeClassLabels")
     # set parameters and compute predictions
     predict_result_daal = predict_alg.compute(X, builder.model)
     predict_result_sklearn = clf.predict(X)

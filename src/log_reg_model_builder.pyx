@@ -51,11 +51,11 @@ cdef class logistic_regression_model_builder:
         :param intercept: intercept from scikit-learn model
         '''
         if numpy.any(intercept):
-            tmp = intercept.reshape(-1, 1)
-            tmp = numpy.concatenate((tmp, beta), axis=1)
+            beta_for_daal = intercept.reshape(-1, 1)
+            beta_for_daal = numpy.concatenate((beta_for_daal, beta), axis=1)
         else :
-            tmp = beta
-        numTableBeta = getTable(data_or_file(<PyObject*>tmp))
+            beta_for_daal = beta
+        numTableBeta = getTable(data_or_file(<PyObject*>beta_for_daal))
         return self.c_ptr.setBeta(numTableBeta)
 
     @property

@@ -988,10 +988,13 @@ def daal4py_predict(self, X, resultsToEvaluate):
             res = res.prediction
             if not np.array_equal(self.classes_, np.arange(0, len(self.classes_))):
                 res = self.classes_.take(np.asarray(res, dtype=np.intp))
+        elif resultsToEvaluate == 'computeClassProbabilities':
+            res = res.probabilities
         elif resultsToEvaluate == 'computeClassLogProbabilities':
             res = res.logProbabilities
         else:
-            res = res.probabilities
+            raise ValueError('resultsToEvaluate must be in [computeClassLabels, \
+                             computeClassProbabilities, computeClassLogProbabilities]')
         if res.shape[1] == 1:
             res = np.ravel(res)
         return res
