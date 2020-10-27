@@ -73,7 +73,7 @@ def check_determenistic(distance, algorithm, weight, k):
 @pytest.mark.parametrize('algorithm', ALGORITHMS)
 @pytest.mark.parametrize('weight', WEIGHTS)
 @pytest.mark.parametrize('k', KS)
-@pytest.mark.skipif(not daal_check_version(((2021,'B', 110))), reason="requires (2021, 'B', 110) daal version or upper")
+@pytest.mark.skipif(daal_check_version(((2021,'B', 110))), reason="requires (2021, 'B', 110) daal version or upper")
 def test_check_determenistic(distance, algorithm, weight, k):
     check_determenistic(distance, algorithm, weight, k)
 
@@ -118,6 +118,6 @@ def check_data_formats_diff(name):
 
 
 @pytest.mark.parametrize('name', ESTIMATORS)
-@pytest.mark.skipif(not daal_check_version(((2021,'B', 110))), reason="requires (2021, 'B', 110) daal version or upper")
+@pytest.mark.skipif(daal_check_version(((2021,'B', 110))), reason="requires (2021, 'B', 110) daal version or upper")
 def test_data_formats_diff(name):
     check_data_formats_diff(name)
