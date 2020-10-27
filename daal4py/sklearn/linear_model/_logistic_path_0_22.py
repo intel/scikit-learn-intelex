@@ -963,13 +963,13 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
 
 def daal4py_predict(self, X, resultsToEvaluate):
-    X = check_array(X, accept_sparse='csr', force_all_finite=False)
+    X = check_array(X, accept_sparse='csr')
     try:
         fptype = getFPType(X)
     except ValueError:
         fptype = None
     
-    if daal_check_version(((2021,'P', 1))) and fptype is not None and not sparse.issparse(X):
+    if daal_check_version(((2021,'P', 1))) and fptype is not None and not sparse.issparse(X) and y.shape[1] == 1:
         logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("daal"))
         check_is_fitted(self)
         n_features = self.coef_.shape[1]
@@ -986,7 +986,8 @@ def daal4py_predict(self, X, resultsToEvaluate):
         res = predict.compute(X, builder.model)
         if resultsToEvaluate == 'computeClassLabels':
             res = res.prediction
-            if not np.array_equal(self.classes_, np.arange(0, len(self.classes_))):
+            if not np.array_equal(self.classes_, np.arange(0, len(self.classes_))) or \
+            self.classes_.dtype != X.dtype:
                 res = self.classes_.take(np.asarray(res, dtype=np.intp))
         elif resultsToEvaluate == 'computeClassProbabilities':
             res = res.probabilities
@@ -1001,13 +1002,13 @@ def daal4py_predict(self, X, resultsToEvaluate):
 
     if resultsToEvaluate == 'computeClassLabels':
         logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("sklearn"))
-        return super(LogisticRegression_original, self).predict(X)
+        return LogisticRegression_original.predict(self, X)
     if resultsToEvaluate == 'computeClassProbabilities':
         logging.info("sklearn.linear_model.LogisticRegression.predict_proba: " + get_patch_message("sklearn"))
-        return super(LogisticRegression_original, self).predict_proba(X)
+        return LogisticRegression_original.predict_proba(self, X)
     if resultsToEvaluate == 'computeClassLogProbabilities':
         logging.info("sklearn.linear_model.LogisticRegression.predict_log_proba: " + get_patch_message("sklearn"))
-        return super(LogisticRegression_original, self).predict_log_proba(X)
+        return LogisticRegression_original.predict_log_proba(self, X)
     raise ValueError('resultsToEvaluate must be in [computeClassLabels, \
                      computeClassProbabilities, computeClassLogProbabilities]')
 

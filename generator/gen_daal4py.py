@@ -180,7 +180,7 @@ class cython_interface(object):
         with open(jp(self.include_root, '..', 'services', 'library_version_info.h')) as header:
             v = parse_version(header)
             self.version = (int(v[0]), int(v[1]), int(v[2]), str(v[3]))
-            print('Found DAAL version {}.{}.{}{}'.format(*self.version))
+            print('Found DAAL version {}.{}.{}.{}'.format(*self.version))
 
 
 ###############################################################################
@@ -947,16 +947,13 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
 
     pyx_gbt_model_builder = ''
     pyx_log_reg_model_builder = ''
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    print(iface.version)
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     if 'algorithms::gbt::classification' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::gbt::classification'].classes or \
        'algorithms::gbt::regression' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::gbt::regression'].classes:
         with open(jp('src', 'gbt_model_builder.pyx'), 'r') as f:
             pyx_gbt_model_builder = f.read()   
-    if iface.version[0] >= 2021 and iface.version[1] >= 1 and \
+    if iface.version[0] >= 2021 and iface.version[1] >= 1 and iface.version[3] >= "P" \
        'algorithms::logistic_regression' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::logistic_regression'].classes:
         with open(jp('src', 'log_reg_model_builder.pyx'), 'r') as f:
