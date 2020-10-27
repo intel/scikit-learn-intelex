@@ -214,12 +214,12 @@ static std::string to_std_string(PyObject * o)
     return PyUnicode_AsUTF8(o);
 }
 
-inline double get_nan64()
+inline static const double get_nan64()
 {
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-inline float get_nan32()
+inline static const float get_nan32()
 {
     return std::numeric_limits<float>::quiet_NaN();
 }
