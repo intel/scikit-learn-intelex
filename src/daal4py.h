@@ -219,7 +219,7 @@ inline double get_nan64()
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-inline double get_nan32()
+inline float get_nan32()
 {
     return std::numeric_limits<float>::quiet_NaN();
 }
