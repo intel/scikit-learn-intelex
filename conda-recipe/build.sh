@@ -10,6 +10,7 @@ fi
 if [ ! -z "${DPCPPROOT}" ]; then
     source ${DPCPPROOT}/env/vars.sh
     export CC=dpcpp
+    dpcpp --version
 fi
 
 # if DAALROOT not exists then provide PREFIX
