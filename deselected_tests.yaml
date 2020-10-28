@@ -12,19 +12,16 @@ deselected_tests:
 
   # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
   # See: https://github.com/scikit-learn/scikit-learn/issues/12738
+  - svm/tests/test_svm.py::test_svc
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
   - svm/tests/test_sparse.py::test_sparse_realdata
   - svm/tests/test_sparse.py::test_svc_iris
 
-  # Passed from DAAL2020.3. Need to delete after release.
-  - ensemble/tests/test_bagging.py::test_sparse_classification
-  - svm/tests/test_sparse.py::test_unsorted_indices
-
   # Bitwise comparison of probabilities using a print.
   - metrics/tests/test_classification.py
 
-  # Max absolute difference: 0.04 for rocauc, and 0.01 for precision_recallq
+  # Max absolute difference: 0.04 for rocauc, and 0.01 for precision_recall
   - metrics/tests/test_ranking.py::test_roc_curve_hard
   - metrics/tests/test_ranking.py::test_precision_recall_curve
 
@@ -49,7 +46,7 @@ deselected_tests:
   - linear_model/tests/test_logistic.py::test_dtype_match
 
   # _hist_gradient_boosting tests (added in 0.21.0) times out in CircleCI
-  - ensemble/_hist_gradient_boosting/tests >=0.21.0,<0.21.1
+  - ensemble/_hist_gradient_boosting/tests/test_gradient_boosting.py
 
   # https://github.com/scikit-learn/scikit-learn/pull/15857
   - ensemble/tests/test_stacking.py::test_stacking_cv_influence >=0.22
@@ -59,10 +56,6 @@ deselected_tests:
   # suggests that), coefficients are slightly different, resulting in 1 prediction
   # disagreement.
   - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight >=0.22.1
-
-  # test is unwarranted, but upstream refuses to change it
-  # https://github.com/scikit-learn/scikit-learn/pull/15856
-  - svm/tests/test_svm.py::test_svm_equivalence_sample_weight_C >=0.22
 
   #
   - tests/test_pipeline.py::test_pipeline_memory
@@ -133,9 +126,6 @@ deselected_tests:
 
   # The bug is fixed. Remove this test from deselected after the gold release
   - ensemble/tests/test_bagging.py::test_classification
-
-  # very long execution and intermittent hang up. daal4py patching does not apply to these tests.
-  - ensemble/_hist_gradient_boosting/tests/test_gradient_boosting.py
 
   # daal4py is throwing the exception from the library. Will be fixed.
   - tests/test_common.py::test_check_n_features_in_after_fitting
