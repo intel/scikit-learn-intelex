@@ -123,8 +123,8 @@ cdef class data_management_datacollection:
 
 
 cdef extern from "daal4py.h":
-    cdef const double NaN64
-    cdef const float  NaN32
+    cdef double get_nan64()
+    cdef float get_nan32()
 
     cdef cppclass data_or_file :
         data_or_file(PyObject *) except +
@@ -152,8 +152,8 @@ cdef extern from "daal4py.h":
 
     cdef T* _daal_clone[T](const T & o)
 
-NAN64 = NaN64
-NAN32 = NaN32
+NAN64 = get_nan64()
+NAN32 = get_nan64()
 
 
 cdef extern from "daal.h":

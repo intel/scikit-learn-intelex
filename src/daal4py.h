@@ -214,8 +214,15 @@ static std::string to_std_string(PyObject * o)
     return PyUnicode_AsUTF8(o);
 }
 
-const double NaN64 = std::numeric_limits<double>::quiet_NaN();
-const float NaN32 = std::numeric_limits<float>::quiet_NaN();
+inline static const double get_nan64()
+{
+    return std::numeric_limits<double>::quiet_NaN();
+}
+
+inline static const float get_nan32()
+{
+    return std::numeric_limits<float>::quiet_NaN();
+}
 
 typedef daal::data_management::DataCollectionPtr data_management_DataCollectionPtr;
 typedef daal::data_management::NumericTablePtr data_management_NumericTablePtr;
