@@ -953,10 +953,8 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
        'ModelBuilder' in iface.namespace_dict['algorithms::gbt::regression'].classes:
         with open(jp('src', 'gbt_model_builder.pyx'), 'r') as f:
             pyx_gbt_model_builder = f.read()   
-    print('***************************************')
-    print(iface.version)
     if iface.version[0] >= 2021 and iface.version[1] >= 1 and \
-        iface.version[3] != None and iface.version[3] >= '"P"' and \
+        iface.version[3] != 'None' and iface.version[3] >= '"P"' and \
        'algorithms::logistic_regression' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::logistic_regression'].classes:
         with open(jp('src', 'log_reg_model_builder.pyx'), 'r') as f:
