@@ -29,7 +29,9 @@ from daal4py import _get__daal_link_version__ as dv
 daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
 
 class LogRegModelBuilder(unittest.TestCase):
-    @unittest.skipUnless(daal_check_version(((2021, 'P', 1))), str(((2021, 'P', 1))) + " not supported in this library version " + str(daal_version))
+    @unittest.skipUnless(hasattr(d4p, 'logistic_regression_model_builder') and \
+                         daal_check_version(((2021, 'P', 1))), str(((2021, 'P', 1))) + \
+                         " not supported in this library version " + str(daal_version))
     def test_iris_with_intercept(self):
         X, y = load_iris(return_X_y=True)
         n_classes=3
@@ -44,7 +46,9 @@ class LogRegModelBuilder(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
-    @unittest.skipUnless(daal_check_version(((2021, 'P', 1))), str(((2021, 'P', 1))) + " not supported in this library version " + str(daal_version))
+    @unittest.skipUnless(hasattr(d4p, 'logistic_regression_model_builder') and \
+                         daal_check_version(((2021, 'P', 1))), str(((2021, 'P', 1))) + \
+                         " not supported in this library version " + str(daal_version))
     def test_iris_without_intercept(self):
         X, y = load_iris(return_X_y=True)
         n_classes=3
@@ -59,7 +63,9 @@ class LogRegModelBuilder(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
-    @unittest.skipUnless(daal_check_version(((2021, 'P', 1))), str(((2021, 'P', 1))) + " not supported in this library version " + str(daal_version))
+    @unittest.skipUnless(hasattr(d4p, 'logistic_regression_model_builder') and \
+                         daal_check_version(((2021, 'P', 1))), str(((2021, 'P', 1))) + \
+                         " not supported in this library version " + str(daal_version))
     def test_breast_cancer_with_intercept(self):
         X, y = load_breast_cancer(return_X_y=True)
         n_classes=2
@@ -74,7 +80,9 @@ class LogRegModelBuilder(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
-    @unittest.skipUnless(daal_check_version(((2021, 'P', 1))), str(((2021, 'P', 1))) + " not supported in this library version " + str(daal_version))
+    @unittest.skipUnless(hasattr(d4p, 'logistic_regression_model_builder') and \
+                         daal_check_version(((2021, 'P', 1))), str(((2021, 'P', 1))) + \
+                         " not supported in this library version " + str(daal_version))
     def test_breast_cancer_without_intercept(self):
         X, y = load_breast_cancer(return_X_y=True)
         n_classes=2
@@ -90,5 +98,4 @@ class LogRegModelBuilder(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    print(daal_version)
     unittest.main()

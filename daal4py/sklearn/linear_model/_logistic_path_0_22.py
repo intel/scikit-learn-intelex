@@ -969,7 +969,7 @@ def daal4py_predict(self, X, resultsToEvaluate):
     except ValueError:
         fptype = None
     
-    if daal_check_version(((2021,'P', 1))) and fptype is not None and not sparse.issparse(X) and y.shape[1] == 1:
+    if daal_check_version(((2021,'P', 1))) and fptype is not None and not sparse.issparse(X) and X.shape[1] == 1:
         logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("daal"))
         check_is_fitted(self)
         n_features = self.coef_.shape[1]
