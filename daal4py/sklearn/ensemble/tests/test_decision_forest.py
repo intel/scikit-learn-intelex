@@ -32,8 +32,8 @@ from daal4py.sklearn.ensemble \
     import RandomForestRegressor as DaalRandomForestRegressor
 
 N_TRIES = 10
-CHECK_RATIO_CLASSIFIER = 0.85
-CHECK_RATIO_REGRESSOR = 1.3
+CHECK_RATIO_CLASSIFIER = 0.8
+CHECK_RATIO_REGRESSOR = 1.4
 IRIS = load_iris()
 CLASS_WEIGHTS_IRIS = [
     {0: 0, 1: 0, 2: 0},
@@ -114,7 +114,7 @@ SAMPLE_WEIGHTS_IRIS = [
 ]
 
 
-def check_classifier_sample_weight(weight, check_ratio=0.9):
+def check_classifier_sample_weight(weight):
     for _ in range(N_TRIES):
         x_train, x_test, y_train, y_test = \
             train_test_split(IRIS.data, IRIS.target, 
@@ -141,7 +141,7 @@ def test_classifier_sample_weight_iris(weight):
     check_classifier_sample_weight(weight)
 
 
-def check_regressor_sample_weight(weight, check_ratio=1.1):
+def check_regressor_sample_weight(weight):
     for _ in range(N_TRIES):
         x_train, x_test, y_train, y_test = \
             train_test_split(IRIS.data, IRIS.target, 
