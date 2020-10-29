@@ -47,17 +47,20 @@ test:
         - scikit-learn
         - threadpoolctl
         - xgboost # [not win]
+        - pytest
         - mpich # [osx]
         - impi_rt # [not osx]
     source_files:
         - examples
         - tests
+        - daal4py
     commands:
         - python -c "import daal4py"
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
         - python -m daal4py examples/sycl/sklearn_sycl.py
+        - pytest --pyargs daal4py/sklearn/
         - python examples/run_examples.py
 
 about:
