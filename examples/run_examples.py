@@ -117,6 +117,7 @@ req_version['gbt_cls_model_create_from_lightgbm_batch.py'] = ((2020,'P', 2), (20
 req_version['gbt_cls_model_create_from_xgboost_batch.py'] = ((2020,'P', 2), (2021,'B', 109))
 req_version['lasso_regression_batch.py'] = (2019,'P',5)
 req_version['logitboost_batch.py'] = (2020,'P',0)
+req_version['log_reg_model_builder.py'] = (2021, 'P', 1)
 req_version['saga_batch.py'] = (2019,'P',3)
 req_version['stump_classification_batch.py'] = (2020,'P',0)
 req_version['stump_regression_batch.py'] = (2020,'P',0)

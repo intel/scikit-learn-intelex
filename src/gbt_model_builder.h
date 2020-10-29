@@ -16,8 +16,8 @@
 
 // Definitions/declarations, mapping cython names/types to DAAL's actual types
 
-#ifndef _MODELBUILDER_INCLUDED_
-#define _MODELBUILDER_INCLUDED_
+#ifndef _GBT_MODEL_BUILDER_INCLUDED_
+#define _GBT_MODEL_BUILDER_INCLUDED_
 
 #include <daal.h>
 
@@ -42,4 +42,4 @@ static daal::algorithms::gbt::regression::ModelPtr * get_gbt_regression_model_bu
     return RAW<daal::algorithms::gbt::regression::ModelPtr>()(obj_->getModel());
 }
 
-#endif // _MODELBUILDER_INCLUDED_
+#endif // _GBT_MODEL_BUILDER_INCLUDED_
