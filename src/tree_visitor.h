@@ -25,7 +25,6 @@
 
 #define TERMINAL_NODE -1
 #define NO_FEATURE -2
-#define DEFAULT_DOUBLE_VALUE NaN64
 
 // cython will convert this struct into an numpy structured array
 // This is the layout that sklearn expects for its tree traversal mechanics
@@ -42,8 +41,8 @@ struct skl_tree_node {
         : left_child(TERMINAL_NODE),
           right_child(TERMINAL_NODE),
           feature(NO_FEATURE),
-          threshold(DEFAULT_DOUBLE_VALUE),
-          impurity(DEFAULT_DOUBLE_VALUE),
+          threshold(get_nan64()),
+          impurity(get_nan64()),
           n_node_samples(0),
           weighted_n_node_samples(0.0)
     {}

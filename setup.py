@@ -198,9 +198,9 @@ def get_sdl_cflags():
 
 def get_sdl_ldflags():
     if IS_LIN:
-        return ['-Wl,-z,noexecstack,-z,relro,-z,now',]
+        return ['-Wl,-z,noexecstack,-z,relro,-z,now,-fstack-protector-strong,-fno-strict-overflow,-fno-delete-null-pointer-checks,-fwrapv']
     elif IS_MAC:
-        return []
+        return ['-fstack-protector-strong','-fno-strict-overflow','-fno-delete-null-pointer-checks','-fwrapv']
     elif IS_WIN:
         return ['-NXCompat', '-DynamicBase']
 
@@ -260,9 +260,6 @@ def getpyexts():
     ])
 
     eca_dpcpp = eca.copy()
-    if IS_WIN:
-        eca_dpcpp.remove('/MD')
-        eca_dpcpp += ['/MT'] # daal_sycl is static lib - requires to link standard library statically
     eca_dpcpp += ['-fsycl']
 
     if dpcpp:

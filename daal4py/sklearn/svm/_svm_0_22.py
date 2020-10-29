@@ -32,7 +32,7 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType, get_patch_message, daal_check_version, sklearn_check_version)
+from .._utils import (make2d, getFPType, get_patch_message, sklearn_check_version)
 import logging
 
 def _get_libsvm_impl():
@@ -167,11 +167,10 @@ def _daal4py_check_weight(self, X, y, sample_weight):
         ww = make2d(ww)
     return ww
 
-def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
+def _daal4py_svm(fptype, C, accuracyThreshold, tau,
         maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
-    svm_method = 'thunder' if daal_check_version(((2020,'P', 2), (2021, 'B', 108))) else 'boser'
     svm_train = daal4py.svm_training(
-        method=svm_method,
+        method='thunder',
         fptype=fptype,
         C=C,
         accuracyThreshold=accuracyThreshold,
@@ -213,7 +212,7 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel):
     X_fptype = getFPType(X)
 
     kf = _daal4py_kf(kernel, X_fptype, gamma = self._gamma)
-    algo = _daal4py_svm_compatibility(fptype=X_fptype,
+    algo = _daal4py_svm(fptype=X_fptype,
         C=float(self.C),
         accuracyThreshold=float(self.tol),
         tau=1e-12,
@@ -455,12 +454,8 @@ def fit(self, X, y, sample_weight=None):
 
         # see comment on the other call to np.iinfo in this file
         seed = rnd.randint(np.iinfo('i').max)
-
-        is_support_weights = daal_check_version((2020,'P', 2), (2021, 'B', 108)) or \
-             sample_weight.size == 0 and self.class_weight is None
-
         if ( not sparse and not self.probability and not getattr(self, 'break_ties', False) and \
-             kernel in ['linear', 'rbf']) and is_support_weights:
+             kernel in ['linear', 'rbf']):
 
             logging.info("sklearn.svm.SVC.fit: " + get_patch_message("daal"))
             self._daal_fit = True

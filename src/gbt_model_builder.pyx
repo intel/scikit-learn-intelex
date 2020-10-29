@@ -15,11 +15,10 @@
 #******************************************************************************/
 
 # We expose DAAL's directly through Cython
-# Currently only GBT is available.
 # The model builder object is retrieved through calling model_builder.
-# We will extend this once we know how other model builders willl work in DAAL
+# We will extend this once we know how other model builders will work in DAAL
 
-cdef extern from "modelbuilder.h":
+cdef extern from "gbt_model_builder.h":
     ctypedef size_t c_gbt_clf_node_id
     ctypedef size_t c_gbt_clf_tree_id
     ctypedef size_t c_gbt_reg_node_id

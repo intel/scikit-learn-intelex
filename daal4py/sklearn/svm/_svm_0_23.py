@@ -37,7 +37,7 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType, get_patch_message, daal_check_version, sklearn_check_version)
+from .._utils import (make2d, getFPType, get_patch_message, sklearn_check_version)
 import logging
 
 def _get_libsvm_impl():
@@ -184,12 +184,10 @@ def _daal4py_check_weight(self, X, y, sample_weight):
     return ww
 
 
-def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
+def _daal4py_svm(fptype, C, accuracyThreshold, tau,
                                maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
-    svm_method = 'thunder' if daal_check_version(
-        ((2020,'P', 2), (2021, 'B', 108))) else 'boser'
     svm_train = daal4py.svm_training(
-        method=svm_method,
+        method='thunder',
         fptype=fptype,
         C=C,
         accuracyThreshold=accuracyThreshold,
@@ -223,7 +221,7 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
     y = make2d(y_inp)
     X_fptype = getFPType(X)
     kf = _daal4py_kf(kernel, X_fptype, gamma=self._gamma, is_sparse=is_sparse)
-    algo = _daal4py_svm_compatibility(fptype=X_fptype,
+    algo = _daal4py_svm(fptype=X_fptype,
                                       C=float(self.C),
                                       accuracyThreshold=float(self.tol),
                                       tau=1e-12,
@@ -483,10 +481,7 @@ def fit(self, X, y, sample_weight=None):
     # see comment on the other call to np.iinfo in this file
     seed = rnd.randint(np.iinfo('i').max)
 
-    self._sparse_support = not is_sparse or is_sparse and daal_check_version((2020,'P', 3))
-    probability_support = not self.probability or self.probability and daal_check_version((2020,'P', 3))
-
-    if kernel in ['linear', 'rbf'] and self._sparse_support and probability_support:
+    if kernel in ['linear', 'rbf']:
         logging.info("sklearn.svm.SVC.fit: " + get_patch_message("daal"))
         sample_weight = _daal4py_check_weight(self, X, y, sample_weight)
 
@@ -692,8 +687,7 @@ def decision_function(self, X):
     transformation of ovo decision function.
     """
 
-    if getattr(self, '_daal_fit', False) and (daal_check_version((2020,'P', 3)) 
-                                              or len(self.classes_) == 2):
+    if getattr(self, '_daal_fit', False):
         logging.info("sklearn.svm.SVC.decision_function: " + get_patch_message("daal"))
         X = self._validate_for_predict(X)
         dec = _daal4py_predict(self, X, is_decision_function=True)
