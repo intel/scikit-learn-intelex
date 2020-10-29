@@ -50,6 +50,7 @@ ESTIMATORS = {
     'DaalRandomForestRegressor':
         DaalRandomForestRegressor(n_estimators=10, random_state=777),
 }
+
 ORDERS = ['C', 'F']
 DATA_FORMATS = [pd.DataFrame, np.array]
 
