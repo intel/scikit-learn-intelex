@@ -18,8 +18,8 @@ deselected_tests:
   - svm/tests/test_sparse.py::test_sparse_realdata
   - svm/tests/test_sparse.py::test_svc_iris
 
-  # Compare Comparison of the result of a 1-in-1 decision function for SVC algorithm between dense and sparse input. 
-  # Such a DAAL does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05 
+  # Compare Comparison of the result of a 1-in-1 decision function for SVC algorithm between dense and sparse input
+  # Such a DAAL does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05
   - ensemble/tests/test_bagging.py::test_sparse_classification
 
   # Bitwise comparison of probabilities using a print.
