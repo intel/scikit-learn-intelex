@@ -166,11 +166,10 @@ void mpi_transceiver::reduce_exscan(void * inout, transceiver_iface::type_type T
 // ************************************
 // ************************************
 
-// shared pointer, will GC transceiver when shutting down
-static std::shared_ptr<mpi_transceiver> s_smt;
-
 extern "C" PyMODINIT_FUNC PyInit_mpi_transceiver(void)
 {
+    // shared pointer, will GC transceiver when shutting down
+    static std::shared_ptr<mpi_transceiver> s_smt;
     PyObject *m;
     static struct PyModuleDef moduledef = { PyModuleDef_HEAD_INIT, "mpi_transceiver", "No docs", -1, NULL, };
     m = PyModule_Create(&moduledef);

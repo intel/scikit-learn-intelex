@@ -24,8 +24,8 @@ import re
 # default values of paramters/inputs are set by daal itself.
 # We indicate with these defaults that we want to use daal's defaults
 pydefaults = defaultdict(lambda: 'None')
-pydefaults.update({'double': 'NaN64',
-                   'float': 'NaN32',
+pydefaults.update({'double': 'get_nan64()',
+                   'float': 'get_nan32()',
                    'int': '-1',
                    'long': '-1',
                    'size_t': '-1',

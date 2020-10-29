@@ -1,19 +1,19 @@
-# daal4py - A Convenient Python API to the Intel® Data Analytics Acceleration Library (Intel® DAAL)
+# daal4py - A Convenient Python API to the Intel(R) oneAPI Data Analytics Library
 [![Build Status](https://travis-ci.com/IntelPython/daal4py.svg?branch=master)](https://travis-ci.com/IntelPython/daal4py)
 [![Build Status](https://dev.azure.com/frankschlimbach/daal4py/_apis/build/status/IntelPython.daal4py?branchName=master)](https://dev.azure.com/frankschlimbach/daal4py/_build/latest?definitionId=1&branchName=master)
 
-A simplified API to Intel® DAAL that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel® DAAL for either direct usage or integration into one's own framework.
+A simplified API to Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel(R) oneAPI Data Analytics Library for either direct usage or integration into one's own framework.
 
 - [Documentation](https://intelpython.github.io/daal4py/)
 - [Source Code](https://github.com/IntelPython/daal4py/tree/master/src)
-- [About Intel® DAAL](https://software.intel.com/en-us/intel-daal)
+- [About Intel(R) oneAPI Data Analytics Library](https://oneapi-src.github.io/oneDAL/)
 
 Running full scikit-learn test suite with daal4p's optimization patches
 
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
 
-With this daal4py API, your Python programs can use Intel® DAAL algorithms in just one line:
+With this daal4py API, your Python programs can use Intel(R) oneAPI Data Analytics Library algorithms in just one line:
 ```
 kmeans_init(data, 10, t_method="plusPlusDense")
 ```
@@ -33,7 +33,7 @@ The build-process (using setup.py) happens in 3 stages:
 The easiest way to build daal4py is using the conda-build with the provided recipe.
 
 ## Prerequisites
-* Python version 2.7 or >= 3.6
+* Python version >= 3.6
 * conda-build version >= 3
 * C++ compiler with C++11 support
 
@@ -63,7 +63,7 @@ conda install -c intel mpi_rt daal numpy
 Without conda-build you have to manually setup your environment before building daal4py.
 
 ## Prerequisites
-* Python version 2.7 or >= 3.6
+* Python version >= 3.6
 * Jinja2
 * Cython
 * Numpy
@@ -73,9 +73,13 @@ Without conda-build you have to manually setup your environment before building 
 * MPI
   * You can use the pre-built conda package intel or conda-forge channel on anaconda.org (see below)
   * Needed for distributed mode. You can disable support for distributed mode by setting NO_DIST to '1' or 'yes'
+For oneAPI support
+* A DPC++ compiler 
+* Intel(R) oneAPI Data Analytics Library version 2021.1 or later (https://github.com/01org/daal)
+  * You can use the pre-built conda package from Intel channel on anaconda.org (see below)
 
 ## Setting up a build environment
-The easiest path for getting cython, DAAL, MPI etc. is by creating a conda environment and setting environment variables:
+The easiest path for getting cython, oneDAL, MPI etc. is by creating a conda environment and setting environment variables:
 ```
 conda create -n DAAL4PY python=3.7 impi-devel daal daal-include cython jinja2 numpy clang-tools -c intel -c conda-forge
 conda activate DAAL4PY
@@ -92,14 +96,14 @@ export MPIROOT=$CONDA_PREFIX
 If building in High Sierra or higher, one may have to run into C++ build errors related to platform targets. Utilize ```export MACOSX_DEPLOYMENT_TARGET="10.9"``` if running into platform target issues.
 
 ## Building daal4py
-Requires Intel® DAAL and MPI being properly setup, e.g. DAALROOT and MPIROOT being set.
+Requires Intel(R) oneAPI Data Analytics Library and MPI being properly setup, e.g. DAALROOT and MPIROOT being set.
 ```
 cd <checkout-dir>
 python setup.py build_ext
 ```
 
 ## Installing daal4py
-Requires Intel® DAAL and MPI being properly setup, e.g. DAALROOT and MPIROOT being set.
+Requires Intel(R) oneAPI Data Analytics Library and MPI being properly setup, e.g. DAALROOT and MPIROOT being set.
 ```
 cd <checkout-dir>
 python setup.py install

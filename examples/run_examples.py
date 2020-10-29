@@ -20,6 +20,7 @@ import struct
 import subprocess
 import sys
 
+print('Starting examples validation')
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
@@ -31,7 +32,21 @@ from collections import defaultdict
 
 exdir = os.path.dirname(os.path.realpath(__file__))
 
-IS_WIN = platform.system() == 'Windows'
+IS_WIN = False
+IS_MAC = False
+IS_LIN = False
+system_os="not_supported"
+if 'linux' in sys.platform:
+    IS_LIN = True
+    system_os="lnx"
+elif sys.platform == 'darwin':
+    IS_MAC = True
+    system_os="mac"
+elif sys.platform in ['win32', 'cygwin']:
+    IS_WIN = True
+    system_os="win"
+else:
+    assert False, sys.platform + ' not supported'
 
 assert 8 * struct.calcsize('P') in [32, 64]
 
@@ -39,26 +54,24 @@ if 8 * struct.calcsize('P') == 32:
     logdir = jp(exdir, '_results', 'ia32')
 else:
     logdir = jp(exdir, '_results', 'intel64')
-
+    
 availabe_devices = []
-try:
-    from daal4py.oneapi import sycl_context, sycl_buffer
-    sycl_available = True
-except:
-    sycl_available = False
 
-if sycl_available:
+try:
+    from daal4py.oneapi import sycl_context
+    sycl_extention_available = True
+except:
+    sycl_extention_available = False
+
+if sycl_extention_available:
     try:
         with sycl_context('gpu'):
+            gpu_available = True
             availabe_devices.append("gpu")
-    except RuntimeError:
-        pass
-
-    try:
-        with sycl_context('cpu'):
-            availabe_devices.append("cpu")
-    except RuntimeError:
-        pass
+    except:
+        gpu_available = False
+    availabe_devices.append("host")
+    availabe_devices.append("cpu")
 
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
@@ -78,6 +91,12 @@ def check_device(rule, target):
             return False
     return True
 
+def check_os(rule, target):
+    for rule_item in rule:
+        if not rule_item in target:
+            return False
+    return True
+
 def check_library(rule):
     for rule_item in rule:
         try:
@@ -85,7 +104,6 @@ def check_library(rule):
         except ImportError:
             return False
     return True
-
 
 req_version = defaultdict(lambda:(2019,'P',0))
 req_version['adaboost_batch.py'] = (2020,'P',0)
@@ -118,13 +136,25 @@ req_library = defaultdict(lambda:[])
 req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
 req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
 
+req_os = defaultdict(lambda:[])
+req_os['sycl/covariance_batch.py'] = ["lnx"]
+req_os['sycl/covariance_streaming.py'] = ["lnx"]
+req_os['sycl/log_reg_binary_dense_batch.py'] = ["lnx"]
+req_os['sycl/log_reg_dense_batch.py'] = ["lnx"]
+req_os['sycl/low_order_moms_dense_batch.py'] = ["lnx"]
+req_os['sycl/low_order_moms_streaming.py'] = ["lnx"]
+req_os['sycl/pca_batch.py'] = ["lnx"]
+req_os['sycl/pca_transform_batch.py'] = ["lnx"]
+
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
-        if not sycl_available:
+        if not sycl_extention_available:
             return None
         if not check_version(req_version["sycl/" + os.path.basename(ex)], get_daal_version()):
             return None
         if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
+            return None
+        if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
             return None
 
     if os.path.dirname(ex).endswith("examples"):

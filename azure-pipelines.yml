@@ -1,5 +1,11 @@
+variables:
+  - name: WINDOWS_BASEKIT_URL
+    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17191/w_BaseKit_b_2021.1.10.2260.exe
+  - name: WINDOWS_DPCPP_COMPONENTS
+    value: intel.oneapi.win.dpcpp-compiler intel.oneapi.win.tbb.devel intel.oneapi.win.daal.devel
+
 jobs:
-- job: DPCPP
+- job: Linux_DPCPP
   pool:
     vmImage: 'ubuntu-18.04'
   steps:
@@ -24,7 +30,7 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
-      export DAALROOT=/opt/intel/oneapi/daal/latest
+      export DAALROOT=/opt/intel/oneapi/dal/latest
       export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -63,23 +69,31 @@ jobs:
       cd examples && python run_examples.py
     displayName: Examples
 
-- job: Windows
+- job: Windows_DPCPP
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
 
   steps:
+  - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
+    displayName: oneAPI environment
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-
   - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
-
   - script: |
       call activate CB
+      set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
+      set "DAALROOT=C:\Program Files (x86)\Intel\oneAPI\dal\latest"
+      set "TBBROOT=C:\Program Files (x86)\Intel\oneAPI\tbb\latest"
       conda build --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder=. conda-recipe
     displayName: conda build
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
+      Contents: 'daal4py*'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
   - task: PublishPipelineArtifact@0
     inputs:
-      artifactName: 'conda build dir'
-      targetPath: '.'
+      artifactName: 'daal4py win'
+      targetPath: '$(Build.ArtifactStagingDirectory)/'
     condition: always()
