@@ -31,7 +31,7 @@ from sklearn import __version__ as sklearn_version
 
 
 import daal4py
-from .._utils import (make2d, getFPType, get_patch_message, daal_check_version, sklearn_check_version)
+from .._utils import (make2d, getFPType, get_patch_message, sklearn_check_version)
 import logging
 
 def _get_libsvm_impl():
@@ -147,11 +147,10 @@ def _daal4py_kf(kernel, X_fptype, gamma=1.0):
 
     return kf
 
-def _daal4py_svm_compatibility(fptype, C, accuracyThreshold, tau,
+def _daal4py_svm(fptype, C, accuracyThreshold, tau,
         maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
-    svm_method = 'thunder' if daal_check_version(((2020,'P', 2), (2021, 'B', 108))) else 'boser'
     svm_train = daal4py.svm_training(
-        method=svm_method,
+        method='thunder',
         fptype=fptype,
         C=C,
         accuracyThreshold=accuracyThreshold,
@@ -190,7 +189,7 @@ def _daal4py_fit(self, X, y_inp, kernel):
     X_fptype = getFPType(X)
 
     kf = _daal4py_kf(kernel, X_fptype, gamma = self._gamma)
-    algo = _daal4py_svm_compatibility(fptype=X_fptype,
+    algo = _daal4py_svm(fptype=X_fptype,
         C=float(self.C),
         accuracyThreshold=float(self.tol),
         tau=1e-12,
