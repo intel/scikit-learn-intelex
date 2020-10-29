@@ -62,6 +62,7 @@ test:
         - python -m daal4py examples/sycl/sklearn_sycl.py
         - pytest --pyargs
         - python examples/run_examples.py
+
 about:
     home: https://intelpython.github.io/daal4py/
     license: Apache 2.0
