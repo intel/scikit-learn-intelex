@@ -15,16 +15,13 @@
 # limitations under the License.
 # ****************************************************************************
 
-from daal4py.sklearn._utils import daal_check_version
 import numpy as np
 import pytest
 import random
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import log_loss
 from sklearn.metrics import mean_squared_error
-from sklearn.metrics import roc_auc_score
 from sklearn.ensemble \
     import RandomForestClassifier as ScikitRandomForestClassifier
 from daal4py.sklearn.ensemble \
@@ -33,8 +30,6 @@ from sklearn.ensemble \
     import RandomForestRegressor as ScikitRandomForestRegressor
 from daal4py.sklearn.ensemble \
     import RandomForestRegressor as DaalRandomForestRegressor
-from sklearn.preprocessing import label_binarize
-from sklearn.multiclass import OneVsRestClassifier
 
 N_TRIES = 10
 CHECK_RATIO_CLASSIFIER = 0.85
@@ -103,7 +98,6 @@ def check_classifier_class_weight_iris(weight):
 
 
 @pytest.mark.parametrize('weight', CLASS_WEIGHTS_IRIS)
-@pytest.mark.skipif(not daal_check_version(((2021,'B', 110))), reason="requires (2021, 'B', 110) daal version or upper")
 def test_classifier_class_weight_iris(weight):
     check_classifier_class_weight_iris(weight)
 
@@ -143,7 +137,6 @@ def check_classifier_sample_weight(weight, check_ratio=0.9):
 
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
-@pytest.mark.skipif(not daal_check_version(((2021,'B', 110))), reason="requires (2021, 'B', 110) daal version or upper")
 def test_classifier_sample_weight_iris(weight):
     check_classifier_sample_weight(weight)
 
@@ -171,7 +164,6 @@ def check_regressor_sample_weight(weight, check_ratio=1.1):
 
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
-@pytest.mark.skipif(not daal_check_version(((2021,'B', 110))), reason="requires (2021, 'B', 110) daal version or upper")
 def test_regressor_sample_weight_iris(weight):
     if weight[1] != 'Only 0':
         check_regressor_sample_weight(weight)
