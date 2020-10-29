@@ -1,6 +1,6 @@
 variables:
   - name: WINDOWS_BASEKIT_URL
-    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/16958/w_BaseKit_b_2021.1.9.2200.exe
+    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17191/w_BaseKit_b_2021.1.10.2260.exe
   - name: WINDOWS_DPCPP_COMPONENTS
     value: intel.oneapi.win.dpcpp-compiler intel.oneapi.win.tbb.devel intel.oneapi.win.daal.devel
 
@@ -83,7 +83,7 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      set "DAALROOT=C:\Program Files (x86)\Intel\oneAPI\daal\latest"
+      set "DAALROOT=C:\Program Files (x86)\Intel\oneAPI\dal\latest"
       set "TBBROOT=C:\Program Files (x86)\Intel\oneAPI\tbb\latest"
       conda build --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder=. conda-recipe
     displayName: conda build

@@ -260,9 +260,6 @@ def getpyexts():
     ])
 
     eca_dpcpp = eca.copy()
-    if IS_WIN:
-        eca_dpcpp.remove('/MD')
-        eca_dpcpp += ['/MT'] # daal_sycl is static lib - requires to link standard library statically
     eca_dpcpp += ['-fsycl']
 
     if dpcpp:
