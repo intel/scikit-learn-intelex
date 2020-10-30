@@ -128,8 +128,11 @@ deselected_tests:
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
-  # The bug is fixed. Remove this test from deselected after the gold release
+  # The bugs are fixed. Remove these tests from deselected after the gold release
   - ensemble/tests/test_bagging.py::test_classification
+  - neighbors/tests/test_neighbors.py::test_kneighbors_classifier
+  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
+  - semi_supervised/tests/test_label_propagation.py::test_predict_sparse_callable_kernel
 
   # daal4py is throwing the exception from the library. Will be fixed.
   - tests/test_common.py::test_check_n_features_in_after_fitting
