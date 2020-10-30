@@ -1045,7 +1045,6 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
                      random_state=None, solver='lbfgs', max_iter=100,
                      multi_class='auto', verbose=0, warm_start=False, n_jobs=None,
                      l1_ratio=None):
-
             self.penalty = penalty
             self.dual = dual
             self.tol = tol
@@ -1059,7 +1058,7 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
             self.multi_class = multi_class
             self.verbose = verbose
             self.warm_start = warm_start
-            self.n_jobs = n_jobs
+            self.n_jobs = 1
             self.l1_ratio = l1_ratio
 
 
@@ -1118,7 +1117,7 @@ elif (LooseVersion(sklearn_version) >= LooseVersion("0.22")):
             self.multi_class = multi_class
             self.verbose = verbose
             self.warm_start = warm_start
-            self.n_jobs = n_jobs
+            self.n_jobs = 1
             self.l1_ratio = l1_ratio
 
         def predict(self, X):
@@ -1175,7 +1174,7 @@ elif (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
             self.multi_class = multi_class
             self.verbose = verbose
             self.warm_start = warm_start
-            self.n_jobs = n_jobs
+            self.n_jobs = 1
             self.l1_ratio = l1_ratio
         
 
@@ -1211,7 +1210,7 @@ else:
             self.multi_class = multi_class
             self.verbose = verbose
             self.warm_start = warm_start
-            self.n_jobs = n_jobs
+            self.n_jobs = 1
         
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
