@@ -322,7 +322,7 @@ void transceiver::send(const T& obj, size_t recpnt, size_t tag)
 {
     daal::data_management::InputDataArchive in_arch;
     int mysize(0);
-    // Serialize the DAAL object into a data archive
+    // Serialize the oneDAL object into a data archive
     if(not_empty(obj)) {
         obj->serialize(in_arch);
         mysize = in_arch.getSizeOfArchive();

@@ -109,7 +109,7 @@ static PyObject * _sp_to_nda(daal::services::SharedPtr<T> & sp, size_t nr, size_
 }
 
 // get a block of Rows from NT and then create nd-array from it
-// DAAL potentially makes a copy when creating the BlockDesriptor
+// oneDAL potentially makes a copy when creating the BlockDesriptor
 template <typename T, int NPTYPE>
 static PyObject * _make_nda_from_bd(daal::data_management::NumericTablePtr * ptr)
 {
@@ -201,7 +201,7 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
 // Disable returning of sycl buffer from algorithms
 // static int __oneAPI_imp = import__oneapi();
 #endif
-// Convert a DAAL NT to a numpy nd-array
+// Convert a oneDAL NT to a numpy nd-array
 // tries to avoid copying the data, instead we try to share the memory with DAAL
 PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
 {
@@ -368,13 +368,13 @@ static daal::data_management::NumericTablePtr _make_npynt(PyObject * nda)
     return daal::data_management::NumericTablePtr(ptr);
 }
 
-// Try to convert given object to DAAL Table without copying. Currently supports
-// * numpy contiguous, homogenous -> DAAL HomogenNumericTable
+// Try to convert given object to oneDAL Table without copying. Currently supports
+// * numpy contiguous, homogenous -> oneDAL HomogenNumericTable
 // * numpy non-contiguous, homogenous -> NpyNumericTable
 // * numpy structured, heterogenous -> NpyNumericTable
-// * list of arrays, heterogen -> DAAL SOANumericTable
-// * scipy csr_matrix -> DAAL CSRNumericTable
-//   As long as DAAL CSR is only 0-based we need to copy indices/offsets
+// * list of arrays, heterogen -> oneDAL SOANumericTable
+// * scipy csr_matrix -> oneDAL CSRNumericTable
+//   As long as oneDAL CSR is only 0-based we need to copy indices/offsets
 daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 {
     if (PyErr_Occurred())
@@ -441,7 +441,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     if (it == NULL)
                     {
                         Py_XDECREF(it);
-                        throw std::runtime_error("Creating DAAL SOA table from F-contigous NumPy array failed: iterator could not be created");
+                        throw std::runtime_error("Creating oneDAL SOA table from F-contigous NumPy array failed: iterator could not be created");
                     }
 
                     soatbl = daal::data_management::SOANumericTable::create(N, column_len);
@@ -463,7 +463,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 
                     if (soatbl->getNumberOfColumns() != N)
                     {
-                        throw std::runtime_error("Creating DAAL SOA table from F-contigous NumPy array failed.");
+                        throw std::runtime_error("Creating oneDAL SOA table from F-contigous NumPy array failed.");
                     }
                     ptr = soatbl;
                 }
@@ -471,7 +471,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     ptr = _make_npynt(obj);
             }
 
-            if (!ptr) throw std::runtime_error("Could not convert Python object to DAAL table.\n");
+            if (!ptr) throw std::runtime_error("Could not convert Python object to oneDAL table.\n");
         }
         else if (PyList_Check(obj) && PyList_Size(obj) > 0)
         { // a list of arrays for SOA?
@@ -517,7 +517,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 }
                 if (soatbl->getNumberOfColumns() != N)
                 {
-                    throw std::runtime_error("Creating DAAL SOA table from list failed.");
+                    throw std::runtime_error("Creating oneDAL SOA table from list failed.");
                 }
                 ptr = soatbl;
             } // else not a list of 1d arrays
@@ -558,7 +558,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     throw std::runtime_error("Python Error");
                 }
 
-                // As long as DAAL does not support 0-based indexing we have to copy the indices and add 1 to each
+                // As long as oneDAL does not support 0-based indexing we have to copy the indices and add 1 to each
                 PyObject * np_indcs = PyArray_FROMANY(indcs, NPY_UINT64, 0, 0, NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
                 if (PyErr_Occurred())
                 {

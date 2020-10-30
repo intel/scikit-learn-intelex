@@ -16,7 +16,7 @@
 
 ###############################################################################
 # Top level code for generating code for building daal4py
-# - Uses parse.py to read in DAAL C++ headers files.
+# - Uses parse.py to read in oneDAL C++ headers files.
 # - Extracts necessary information like enum values, namespaces, templates etc
 # - Uses wrapper_gen.py to generate code
 #   - C++ code to construct objects and call algorithms (shared and distributed memory)
@@ -180,7 +180,7 @@ class cython_interface(object):
         with open(jp(self.include_root, '..', 'services', 'library_version_info.h')) as header:
             v = parse_version(header)
             self.version = (int(v[0]), int(v[1]), int(v[2]), str(v[3]))
-            print('Found DAAL version {}.{}.{}.{}'.format(*self.version))
+            print('Found oneDAL version {}.{}.{}.{}'.format(*self.version))
 
 
 ###############################################################################
@@ -287,7 +287,7 @@ class cython_interface(object):
             'enum' means 't' is a C/C++ enumeration
             'class' means 't' is a regular C++ class
             '?' means we do not know what 't' is
-        For classes, we also add lookups in namespaces that DAAL C++ API finds through "using".
+        For classes, we also add lookups in namespaces that oneDAL C++ API finds through "using".
         """
         tns, tname = splitns(t)
         if t in ['double', 'float', 'int', 'size_t',]:
@@ -924,7 +924,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
         no_warn = {}
     orig_path = jp(daalroot, 'include')
     assert os.path.isfile(jp(orig_path, 'algorithms', 'algorithm.h')) and os.path.isfile(jp(orig_path, 'algorithms', 'model.h')),\
-           "Path/$DAALROOT '"+orig_path+"' doesn't seem host DAAL headers. Please provide correct daalroot."
+           "Path/$DAALROOT '"+orig_path+"' doesn't seem host oneDAL headers. Please provide correct daalroot."
     head_path = jp("build", "include")
     algo_path = jp(head_path, "algorithms")
     rmtree(head_path, ignore_errors=True)

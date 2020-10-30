@@ -67,7 +67,7 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         if self.learning_rate <= 0:
             raise ValueError('Parameter "learning_rate" must be '
                              'non-zero positive value.')
-        # it is not clear why it is so but we will get error from DAAL otherwise
+        # it is not clear why it is so but we will get error from oneDAL otherwise
         if not ((self.accuracy_threshold >= 0)
                 and (self.accuracy_threshold < 1)):
             raise ValueError('Parameter "accuracy_threshold" must be '

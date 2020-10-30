@@ -86,8 +86,8 @@ Daal4py's Design
 ----------------
 The design of daal4py utilizes several different technologies to deliver Intel(R) oneAPI Data
 Analytics Library performance in a flexible design to Data Scientists and Framework designers. The
-package uses Jinja templates to generate Cython-wrapped DAAL C++ headers, with Cython as a bridge
-between the generated DAAL code and the Python layer. This design allows for quicker development
+package uses Jinja templates to generate Cython-wrapped oneDAL C++ headers, with Cython as a bridge
+between the generated oneDAL code and the Python layer. This design allows for quicker development
 cycles and acts as a reference design to those looking to tailor their build of daal4py.  Cython
 also allows for good Python behavior, both for compatability to different frameworks and for
 pickling and serialization.
@@ -145,7 +145,7 @@ daal4py will work on the entire file content.
 
 Scikit-Learn API and patching
 -----------------------------
-daal4py exposes some DAAL solvers using a scikit-learn compatible API.
+daal4py exposes some oneDAL solvers using a scikit-learn compatible API.
 
 daal4py can furthermore monkey-patch the ``sklearn`` package to use the DAAL
 solvers as drop-in replacement without any code change.

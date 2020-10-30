@@ -126,7 +126,7 @@ public:
         return _ddict;
     }
 
-    // This is a generic copy function for copying between DAAL and numpy
+    // This is a generic copy function for copying between oneDAL and numpy
     // Wet template parameter WBack to true for copying back to numpy array.
     //
     // 1. Retrieve requested slide from numpy array by using python's C-API

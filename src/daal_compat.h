@@ -20,15 +20,15 @@
 #include <services/library_version_info.h>
 #include <services/daal_shared_ptr.h>
 
-// DAAL version < 2018 is what we are looking for.
-// Some DAAL versions seem broken, e.g. '2199' so we need to check that, too
+// oneDAL version < 2018 is what we are looking for.
+// Some oneDAL versions seem broken, e.g. '2199' so we need to check that, too
 #if __INTEL_DAAL__ < 2019 || __INTEL_DAAL__ > 2100
 
 namespace daal {
 namespace algorithms {
 namespace optimization_solver {
 namespace iterative_solver {
-    // BatchPtr typedef not existent in older DAAL versions
+    // BatchPtr typedef not existent in older oneDAL versions
     typedef daal::services::SharedPtr<interface1::Batch> BatchPtr;
 
 }

@@ -25,7 +25,7 @@ kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
 daal4py is easily built from source with the majority of the necessary prerequisites available on conda.  The instructions below detail how to gather the prerequisites, setting one's build environment, and finally building and installing the completed package.  daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if desired.
 
 The build-process (using setup.py) happens in 3 stages:
-1. Creating C++ and cython sources from DAAL C++ headers
+1. Creating C++ and cython sources from oneDAL C++ headers
 2. Running cython on generated source
 3. Compiling and linking
 
