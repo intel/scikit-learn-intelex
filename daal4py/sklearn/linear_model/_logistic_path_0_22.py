@@ -1045,7 +1045,6 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
                      random_state=None, solver='lbfgs', max_iter=100,
                      multi_class='auto', verbose=0, warm_start=False, n_jobs=None,
                      l1_ratio=None):
-
             self.penalty = penalty
             self.dual = dual
             self.tol = tol
