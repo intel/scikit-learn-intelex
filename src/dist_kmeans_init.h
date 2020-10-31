@@ -39,7 +39,7 @@ namespace dist_custom {
     };
 
 
-    // DAAL kmeans_init Distributed algos do not return a proper result (like batch), we need to create one
+    // oneDAL kmeans_init Distributed algos do not return a proper result (like batch), we need to create one
     template< typename fptype, daal::algorithms::kmeans::init::Method method >
     typename kmeans_init_manager<fptype, method>::iomb_type::result_type
     mk_kmi_result(const daal::data_management::NumericTablePtr & centroids)

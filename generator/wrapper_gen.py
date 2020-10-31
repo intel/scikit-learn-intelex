@@ -16,7 +16,7 @@
 
 ###############################################################################
 # The code generator.
-# We define jinja2 templates to generate code for all the DAAL algorithms and their
+# We define jinja2 templates to generate code for all the oneDAL algorithms and their
 # Result and Model objects. Most macros work on one namespace and expect expect
 # values/variables in their env. If not specificied otherwise, we assume we can
 # use the following
@@ -368,7 +368,7 @@ cdef class {{flatname}}:
         :type: {{frtype.replace('data_management_NumericTablePtr', 'Numpy array')}}
         '''
         if not is_valid_ptrptr(self.c_ptr):
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return res
@@ -378,7 +378,7 @@ cdef class {{flatname}}:
         :type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}
         '''
         if not is_valid_ptrptr(self.c_ptr):
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
 {% if 'NumericTablePtr' in rtype %}
         cdef {{rtype}} * res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         res_obj = {{'<object>make_nda(res, e2s_algorithms_'+flatname+'_'+m[1]+')' if 'dict_NumericTablePtr' in rtype else '<object>make_nda(res)'}}
@@ -399,7 +399,7 @@ cdef class {{flatname}}:
         :type: size_t
         '''
         if not is_valid_ptrptr(self.c_ptr):
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         return get_{{flatname}}_numberOfTrees(self.c_ptr)
 {% endif %}
 
@@ -423,7 +423,7 @@ cdef class {{flatname}}:
     def {{m[1]|d2cy(False)}}(self, {{m[2]|d2cy(False)}} {{m[3]}}):
         ':type: {{frtype}} (or derived)'
         if not is_valid_ptrptr(self.c_ptr):
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
 {% if 'Ptr' in m[0] %}
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr, {{m[3]}})
@@ -445,7 +445,7 @@ cdef class {{flatname}}:
 
     def __getstate__(self):
         if self.c_ptr == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         bytes = serialize_si(self.c_ptr)
         return bytes
 
@@ -485,7 +485,7 @@ hpat_spec.append({
 {% endif %}
 """
 
-# macro generating C++ class for DAAL interface classes
+# macro generating C++ class for oneDAL interface classes
 # accepts interface name and C++ type
 gen_cpp_iface_macro = """
 {% macro gen_cpp_iface(iface_name, iface_type) %}
@@ -504,7 +504,7 @@ static {{iface_type}} to_daal(c_{{iface_name}}__iface__ * t) {return t ? t->get_
 {% endmacro %}
 """
 
-# macro generating cython class for DAAL interface classes
+# macro generating cython class for oneDAL interface classes
 # accepts interface name and C++ type
 gen_cython_iface_macro = """
 {% macro gen_cython_iface(iface_name, iface_type) %}
@@ -925,7 +925,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
                  {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
                  setup=False):
         if self.c_ptr.get() == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         {{input_args|fmt('{}', 'get_obj', sep='\n')|indent(8)}}
         cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
@@ -950,7 +950,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 {% if add_get_result %}
     def __get_result__(self):
         if self.c_ptr.get() == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
@@ -962,7 +962,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
     def finalize(self):
         if self.c_ptr.get() == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
@@ -998,7 +998,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
     def finalize(self):
         if self.c_ptr.get() == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
@@ -1144,7 +1144,7 @@ cpp_footer_template = '''
 
 ##################################################################################
 # A set of jinja2 filters to convert arguments, types etc which where extracted
-# from DAAL C++ headers to cython syntax and/or C++ for our own code
+# from oneDAL C++ headers to cython syntax and/or C++ for our own code
 ##################################################################################
 def flat(t, cpp=True):
     '''Flatten C++ name, leaving only what's needed to disambiguate names.

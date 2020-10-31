@@ -177,7 +177,7 @@ struct data_or_file
     data_or_file(PyObject *);
 };
 
-// return input as DAAL numeric table.
+// return input as oneDAL numeric table.
 extern const daal::data_management::NumericTablePtr get_table(const data_or_file & t);
 
 template< typename T >
@@ -289,7 +289,7 @@ public:
     // we need a virtual destructor
     virtual ~VSP() {};
 };
-// typed virtual shared pointer, for simplicity we make it a DAAL shared pointer
+// typed virtual shared pointer, for simplicity we make it a oneDAL shared pointer
 template< typename T >
 class TVSP : public VSP, public daal::services::SharedPtr<T>
 {

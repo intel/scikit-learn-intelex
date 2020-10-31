@@ -73,7 +73,7 @@ def get_lib_suffix():
     elif find_library('daal_core') is not None or ld_lib_path_suffix == 'daal'  or lib_dir_suffix == 'daal':
         return 'daal'
     else:
-        raise ImportError('Unable to import oneDAL or DAAL lib')
+        raise ImportError('Unable to import oneDAL or oneDAL lib')
 
 
 def get_win_major_version():
