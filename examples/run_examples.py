@@ -124,14 +124,6 @@ req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
 req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
 
 req_os = defaultdict(lambda:[])
-req_os['sycl/covariance_batch.py'] = ["lnx"]
-req_os['sycl/covariance_streaming.py'] = ["lnx"]
-req_os['sycl/log_reg_binary_dense_batch.py'] = ["lnx"]
-req_os['sycl/log_reg_dense_batch.py'] = ["lnx"]
-req_os['sycl/low_order_moms_dense_batch.py'] = ["lnx"]
-req_os['sycl/low_order_moms_streaming.py'] = ["lnx"]
-req_os['sycl/pca_batch.py'] = ["lnx"]
-req_os['sycl/pca_transform_batch.py'] = ["lnx"]
 
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
