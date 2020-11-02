@@ -162,7 +162,9 @@ with open(header_path) as header:
 
 if dpcpp:
     DPCPP_CFLAGS = ['-D_DPCPP_']
-    DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl', 'intlc']
+    DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
+    if IS_LIN:
+        DPCPP_LIBS.append('intlc')
     if IS_LIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib'), jp(dpcpp_root, 'linux', 'compiler', 'lib', 'intel64_lin')]
     elif IS_WIN:
