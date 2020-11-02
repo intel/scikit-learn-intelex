@@ -162,9 +162,9 @@ with open(header_path) as header:
 
 if dpcpp:
     DPCPP_CFLAGS = ['-D_DPCPP_']
-    DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
+    DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl', 'intlc']
     if IS_LIN:
-        DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
+        DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib'), jp(dpcpp_root, 'linux', 'compiler', 'lib', 'intel64_lin')]
     elif IS_WIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
 
@@ -258,6 +258,7 @@ def getpyexts():
                                 library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
                                 language='c++'),
     ])
+    print('sdad', DPCPP_LIBS)
 
     eca_dpcpp = eca.copy()
     eca_dpcpp += ['-fsycl']
@@ -360,5 +361,4 @@ setup(  name        = "daal4py",
                     'daal4py.sklearn.utils',
                     'daal4py.sklearn.model_selection',
         ],
-        ext_modules = getpyexts(),
-)
+        ext_modules = 
