@@ -258,7 +258,6 @@ def getpyexts():
                                 library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
                                 language='c++'),
     ])
-    print('sdad', DPCPP_LIBS)
 
     eca_dpcpp = eca.copy()
     eca_dpcpp += ['-fsycl']
@@ -361,4 +360,5 @@ setup(  name        = "daal4py",
                     'daal4py.sklearn.utils',
                     'daal4py.sklearn.model_selection',
         ],
-        ext_modules = 
+        ext_modules = getpyexts(),
+)
