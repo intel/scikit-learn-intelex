@@ -126,6 +126,6 @@ cdef api object make_py_from_sycltable(void * ptr, int typ, int d1, int d2):
     cdef void * buff = c_make_py_from_sycltable(ptr, typ)
     if buff:
         res = sycl_buffer.__new__(sycl_buffer)
-        res.__inilz__(<long>buff, typ, d1, d2)
+        res.__inilz__(<long long>buff, typ, d1, d2)
         return res
     return None
