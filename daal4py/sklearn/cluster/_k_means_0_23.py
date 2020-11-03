@@ -293,9 +293,10 @@ def _daal4py_check_test_data(self, X):
     n_samples, n_features = X.shape
     expected_n_features = self.cluster_centers_.shape[1]
     if not n_features == expected_n_features:
-        raise ValueError(
-            f"Incorrect number of features. Got {n_features} features, "
-            f"expected {expected_n_features}.")
+#        raise ValueError(
+#            f"Incorrect number of features. Got {n_features} features, "
+#            f"expected {expected_n_features}.")
+        raise ValueError(daal4py_error_handling.get_kmeans_incorrect_number_of_features() % (n_features, expected_n_features))
 
     return X
 
