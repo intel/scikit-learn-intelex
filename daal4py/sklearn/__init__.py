@@ -22,5 +22,5 @@ from .monkeypatch.dispatcher import _patch_names as sklearn_patch_names
 __all__ = [
     "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
     "cluster", "decomposition", "ensemble",
-    "linear_model", "neighbors",
+    "linear_model", "manifold", "neighbors",
     "svm", "tree", "utils", "model_selection"]
