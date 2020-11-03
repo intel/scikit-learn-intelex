@@ -29,6 +29,8 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
+# Get Intel(R) oneAPI Data Analytics Library version
+from daal4py.sklearn._utils import get_daal_version
 
 def main(readcsv=read_csv, method='defaultDense'):
     nFeatures = 3
@@ -41,9 +43,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a training object (5 classes)
     # previous version has different interface
-    from daal4py import _get__daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
-    if daal_version < (2020,0):
+    if get_daal_version() < (2020,'P',0):
         train_algo = d4p.gbt_classification_training(nClasses=nClasses,
                                                      maxIterations=maxIterations,
                                                      minObservationsInLeafNode=minObservationsInLeafNode,
@@ -62,7 +62,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Now let's do some prediction
     # previous version has different interface
-    if daal_version < (2020,0):
+    if get_daal_version() < (2020,'P',0):
         predict_algo = d4p.gbt_classification_prediction(nClasses=nClasses)
     else:
         predict_algo = d4p.gbt_classification_prediction(nClasses=nClasses,
@@ -84,9 +84,7 @@ if __name__ == "__main__":
     print("\nGradient boosted trees prediction results (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
     # these results are available only in new version
-    from daal4py import _get__daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
-    if daal_version >= (2020,0):
+    if get_daal_version() >= (2020,'P',0):
         print("\nGradient boosted trees prediction probabilities (first 10 rows):\n", predict_result.probabilities[0:10])
         print("\nvariableImportanceByWeight:\n", train_result.variableImportanceByWeight)
         print("\nvariableImportanceByTotalCover:\n", train_result.variableImportanceByTotalCover)

@@ -30,8 +30,7 @@ except:
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
 # Get Intel(R) oneAPI Data Analytics Library version
-from daal4py import _get__daal_link_version__ as dv
-daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
+from daal4py.sklearn._utils import get_daal_version
 
 def main(readcsv=read_csv, method='defaultDense'):
     # input data file
@@ -55,7 +54,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
     # Now let's do some prediction
-    if daal_version < (2020,1):
+    if get_daal_version() < (2020,'P',1):
         predict_algo = d4p.decision_forest_classification_prediction(nClasses=5)
     else:
         predict_algo = d4p.decision_forest_classification_prediction(nClasses=5,
@@ -77,7 +76,7 @@ if __name__ == "__main__":
     print("\nVariable importance results:\n", train_result.variableImportance)
     print("\nOOB error:\n", train_result.outOfBagError)
     print("\nDecision forest prediction results (first 10 rows):\n", predict_result.prediction[0:10])
-    if daal_version >= (2020,1):
+    if get_daal_version() >= (2020,'P',1):
         print("\nDecision forest probabilities results (first 10 rows):\n", predict_result.probabilities[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
     print('All looks good!')
