@@ -41,8 +41,6 @@ def printTree(nodes, values):
 
 
 if __name__ == "__main__":
-    from daal4py import _get__daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
     # First get our result and model
     (train_result, _, _) = df_regression()
     # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
