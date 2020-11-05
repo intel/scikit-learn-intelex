@@ -108,12 +108,10 @@ def check_library(rule):
     return True
 
 req_version = defaultdict(lambda:(2019,'P',0))
-req_version['sycl/bf_knn_classification_batch.py'] = (2021,'B',105)
-req_version['sycl/dbscan_batch.py'] = (2021,'P',110) # hangs in beta08, need to be fixed
-req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,'B',105)
-req_version['sycl/linear_regression_batch.py'] = (2021,'P',110) # hangs in beta08, need to be fixed
+req_version['sycl/dbscan_batch.py'] = (2021,'P',100) # hangs in beta08, need to be fixed
+req_version['sycl/linear_regression_batch.py'] = (2021,'P',100) # hangs in beta08, need to be fixed
 req_version['sycl/kmeans_batch.py'] = (2021,'P',200) # not equal results for host and gpu runs
-req_version['sycl/svm_batch.py'] = (2021,'B',107)
+req_version['sycl/pca_transform_batch.py'] = (2021,'P',200)
 
 req_device = defaultdict(lambda:[])
 req_device['sycl/bf_knn_classification_batch.py'] = ["gpu"]
