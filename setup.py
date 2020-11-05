@@ -35,10 +35,30 @@ try:
 except ImportError:
     from ctypes.util import find_library
 
+IS_WIN = False
+IS_MAC = False
+IS_LIN = False
+
+if 'linux' in sys.platform:
+    IS_LIN = True
+    lib_dir = jp(daal_root, 'lib', 'intel64')
+elif sys.platform == 'darwin':
+    IS_MAC = True
+    lib_dir = jp(daal_root, 'lib')
+elif sys.platform in ['win32', 'cygwin']:
+    IS_WIN = True
+    lib_dir = jp(daal_root, 'lib', 'intel64')
+else:
+    assert False, sys.platform + ' not supported'
+
 
 def get_lib_suffix():
+    
     def walk_ld_library_path():
-        ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
+        if IS_WIN:
+            ld_library_path = os.environ.get('LIB', None)
+        else:
+            ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
         if ld_library_path is None:
             return None
         libs = []
@@ -104,21 +124,6 @@ dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
 dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
 #itac_root = os.environ['VT_ROOT']
-IS_WIN = False
-IS_MAC = False
-IS_LIN = False
-
-if 'linux' in sys.platform:
-    IS_LIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64')
-elif sys.platform == 'darwin':
-    IS_MAC = True
-    lib_dir = jp(daal_root, 'lib')
-elif sys.platform in ['win32', 'cygwin']:
-    IS_WIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64')
-else:
-    assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 DAAL_LIBDIRS = [daal_lib_dir]
