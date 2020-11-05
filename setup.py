@@ -39,6 +39,8 @@ IS_WIN = False
 IS_MAC = False
 IS_LIN = False
 
+daal_root = os.environ['DAALROOT']
+
 if 'linux' in sys.platform:
     IS_LIN = True
     lib_dir = jp(daal_root, 'lib', 'intel64')
@@ -116,7 +118,6 @@ if not no_dist and sys.version_info <= (3, 6):
     print('distributed mode not supported for python version < 3.6\n')
     no_dist = True
 no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
-daal_root = os.environ['DAALROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
