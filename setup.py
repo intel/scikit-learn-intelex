@@ -58,7 +58,7 @@ def get_lib_suffix():
     
     def walk_ld_library_path():
         if IS_WIN:
-            ld_library_path = os.environ.get('LIB', None)
+            ld_library_path = os.environ.get('LIB')
         else:
             ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
 
@@ -84,7 +84,7 @@ def get_lib_suffix():
                 return 'onedal'
             if 'daal_core' in lib:
                 return 'daal'
-        return None
+        return 'onedal'
 
     def walk_libdir():
         global lib_dir
