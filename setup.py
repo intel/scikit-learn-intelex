@@ -61,8 +61,11 @@ def get_lib_suffix():
             ld_library_path = os.environ.get('LIB', None)
         else:
             ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
+
+        print("2222HISFIGHOSEOIHG:", ld_library_path)
         if ld_library_path is None:
             return None
+
         libs = []
         if IS_WIN:
             ld_library_path = ld_library_path.split(':')
