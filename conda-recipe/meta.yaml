@@ -3,53 +3,53 @@
 
 package:
     name: daal4py
-    version: {{version}}
+    version: {{ version }}
 
 source:
     path: ..
 
 build:
-    number: {{buildnumber}}
+    number: {{ buildnumber }}
     include_recipe: False
     script_env:
-     - DAALROOT
-     - DPCPPROOT
-     - TBBROOT
+    - DPCPPROOT
+    - DAALROOT
+    - TBBROOT
     ignore_run_exports:
        - python
        - mpich
 
 requirements:
+    build:
+        - {{ compiler('cxx') }}  # [not osx]
+        - {{ compiler('c') }}  # [not osx]
     host:
         - python
         - setuptools
         - numpy {{ numpy }}
-        - daal-devel >=2020.2
+        - daal-devel >=2020.3
         - cython
         - jinja2
-        - mpich # [osx]
-        - impi-devel # [not osx]
+        - mpich  # [osx]
+        - impi-devel  # [not osx]
         - clang-tools
-    build:
-        - {{ compiler('cxx') }}  # [not osx]
-        - {{ compiler('c') }}    # [not osx]
     run:
         - python
         - numpy >=1.15
-        - daal >=2020.2
+        - daal >=2020.3
         - {{ pin_compatible('numpy') }}
 
 test:
     requires:
-        - lightgbm # [not win]
+        - lightgbm  # [not win]
         - pandas
         - scipy
         - scikit-learn
         - threadpoolctl
-        - xgboost # [not win]
+        - xgboost  # [not win]
         - pytest
-        - mpich # [osx]
-        - impi_rt # [not osx]
+        - mpich  # [osx]
+        - impi_rt  # [not osx]
     source_files:
         - examples
         - tests
@@ -59,9 +59,9 @@ test:
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
-        - python -m daal4py examples/sycl/sklearn_sycl.py
         - pytest --pyargs daal4py/sklearn/
         - python examples/run_examples.py
+        - python -m daal4py examples/sycl/sklearn_sycl.py
 
 about:
     home: https://intelpython.github.io/daal4py/
@@ -77,3 +77,10 @@ about:
     third_party_programs_file: doc/third-party-programs.txt
     dev_url: https://github.com/IntelPython/daal4py
     doc_url: https://intelpython.github.io/daal4py/
+
+extra:
+    recipe-maintainers:
+        # GitHub IDs for maintainers of the recipe.
+        - napetrov
+        - PetrovKP
+        - SmirnovEgorRu
