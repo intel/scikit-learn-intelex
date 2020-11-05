@@ -58,11 +58,10 @@ def get_lib_suffix():
     
     def walk_ld_library_path():
         if IS_WIN:
-            ld_library_path = os.environ.get('LIB')
+            ld_library_path = f"{os.environ.get('CONDA_PREFIX')}/Library/lib"
         else:
             ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
 
-        print("2222HISFIGHOSEOIHG:", ld_library_path)
         if ld_library_path is None:
             return None
 
@@ -77,8 +76,6 @@ def get_lib_suffix():
             for _, _, new_files in os.walk(lib_path):
                 libs += new_files
 
-        print("!!!!!!!HISFIGHOSEOIHG:", libs)
-        print("!!!!!!!HISFIGHOSEOIHG:", ld_library_path)
         for lib in libs:
             if 'onedal_core' in lib:
                 return 'onedal'
@@ -137,6 +134,8 @@ dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 DAAL_LIBDIRS = [daal_lib_dir]
+if IS_WIN:
+    DAAL_LIBDIRS.append(f"{os.environ.get('CONDA_PREFIX')}/Library/lib")
 
 if no_stream :
     print('\nDisabling support for streaming mode\n')
