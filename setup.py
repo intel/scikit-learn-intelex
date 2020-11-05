@@ -67,9 +67,9 @@ def get_lib_suffix():
 
         libs = []
         if IS_WIN:
-            ld_library_path = ld_library_path.split(':')
-        else:
             ld_library_path = ld_library_path.split(';')
+        else:
+            ld_library_path = ld_library_path.split(':')
         while '' in ld_library_path:
             ld_library_path.remove('')
         for lib_path in ld_library_path:
