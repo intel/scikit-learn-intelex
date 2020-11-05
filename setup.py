@@ -64,7 +64,10 @@ def get_lib_suffix():
         if ld_library_path is None:
             return None
         libs = []
-        ld_library_path = ld_library_path.split(':')
+        if IS_WIN:
+            ld_library_path = ld_library_path.split(':')
+        else:
+            ld_library_path = ld_library_path.split(';')
         while '' in ld_library_path:
             ld_library_path.remove('')
         for lib_path in ld_library_path:
