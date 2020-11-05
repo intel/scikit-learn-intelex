@@ -73,6 +73,9 @@ def get_lib_suffix():
         for lib_path in ld_library_path:
             for _, _, new_files in os.walk(lib_path):
                 libs += new_files
+
+        print("!!!!!!!HISFIGHOSEOIHG:", libs)
+        print("!!!!!!!HISFIGHOSEOIHG:", ld_library_path)
         for lib in libs:
             if 'onedal_core' in lib:
                 return 'onedal'
