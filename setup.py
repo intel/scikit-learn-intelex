@@ -260,7 +260,6 @@ def getpyexts():
     ])
 
     eca_dpcpp = eca.copy()
-    eca_dpcpp += ['-fsycl']
 
     if dpcpp:
         exts.extend(cythonize(Extension('_oneapi',
