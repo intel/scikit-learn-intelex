@@ -81,7 +81,7 @@ def get_lib_suffix():
                 return 'onedal'
             if 'daal_core' in lib:
                 return 'daal'
-        return 'onedal'
+        return None
 
     def walk_libdir():
         global lib_dir
