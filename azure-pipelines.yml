@@ -30,7 +30,7 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
-      export DAALROOT=/opt/intel/oneapi/dal/latest
+      export DALROOT=/opt/intel/oneapi/dal/latest
       export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -50,7 +50,7 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       source activate CB
-      export DAALROOT=$CONDA_PREFIX
+      export DALROOT=$CONDA_PREFIX
       export MPIROOT=$CONDA_PREFIX
       export MACOSX_DEPLOYMENT_TARGET=10.15
       export LDFLAGS="${LDFLAGS//-Wl,-dead_strip_dylibs}"
@@ -83,7 +83,7 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      set "DAALROOT=C:\Program Files (x86)\Intel\oneAPI\dal\latest"
+      set "DALROOT=C:\Program Files (x86)\Intel\oneAPI\dal\latest"
       set "TBBROOT=C:\Program Files (x86)\Intel\oneAPI\tbb\latest"
       conda build --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder=. conda-recipe
     displayName: conda build

@@ -15,8 +15,12 @@ if [ ! -z "${DPCPPROOT}" ]; then
 fi
 
 # if DAALROOT not exists then provide PREFIX
-if [ -z "${DAALROOT}" ]; then
-    export DAALROOT=${PREFIX}
+if [ "${DAALROOT}" != "" ] && [ "${DALROOT}" == "" ] ; then
+    export DALROOT="${DAALROOT}"
+fi
+
+if [ -z "${DALROOT}" ]; then
+    export DALROOT=${PREFIX}
 fi
 
 if [ "$(uname)" == "Darwin" ]; then

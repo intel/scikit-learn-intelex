@@ -40,19 +40,21 @@ IS_MAC = False
 IS_LIN = False
 
 daal_root = os.environ['DAALROOT']
+dal_root = os.environ['DALROOT']
+if not dal_root:
+    dal_root = daal_root
 
 if 'linux' in sys.platform:
     IS_LIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64')
+    lib_dir = jp(dal_root, 'lib', 'intel64')
 elif sys.platform == 'darwin':
     IS_MAC = True
-    lib_dir = jp(daal_root, 'lib')
+    lib_dir = jp(dal_root, 'lib')
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64')
+    lib_dir = jp(dal_root, 'lib', 'intel64')
 else:
     assert False, sys.platform + ' not supported'
-
 
 def get_lib_suffix():
     
@@ -133,6 +135,21 @@ dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
 dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
 #itac_root = os.environ['VT_ROOT']
+IS_WIN = False
+IS_MAC = False
+IS_LIN = False
+
+if 'linux' in sys.platform:
+    IS_LIN = True
+    lib_dir = jp(dal_root, 'lib', 'intel64')
+elif sys.platform == 'darwin':
+    IS_MAC = True
+    lib_dir = jp(dal_root, 'lib')
+elif sys.platform in ['win32', 'cygwin']:
+    IS_WIN = True
+    lib_dir = jp(dal_root, 'lib', 'intel64')
+else:
+    assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 DAAL_LIBDIRS = [daal_lib_dir]
@@ -170,7 +187,7 @@ else:
 #Level Zero workaround for oneDAL Beta06
 from generator.parse import parse_version
 
-header_path = os.path.join(daal_root, 'include', 'services', 'library_version_info.h')
+header_path = os.path.join(dal_root, 'include', 'services', 'library_version_info.h')
 
 with open(header_path) as header:
     v = parse_version(header)
@@ -225,7 +242,7 @@ def get_type_defines():
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
 
 def getpyexts():
-    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include',]
+    include_dir_plat = [os.path.abspath('./src'), dal_root + '/include',]
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
@@ -334,7 +351,7 @@ def gen_pyx(odir):
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
-    gen_daal4py(daal_root, odir, d4p_version, no_dist=no_dist, no_stream=no_stream)
+    gen_daal4py(dal_root, odir, d4p_version, no_dist=no_dist, no_stream=no_stream)
 
 
 gen_pyx(os.path.abspath('./build'))
