@@ -41,8 +41,13 @@ IS_LIN = False
 
 try:
     daal_root = os.environ['DAALROOT']
+except:
+    pass
+
 try:
     dal_root = os.environ['DALROOT']
+except:
+    pass
 if not dal_root:
     dal_root = daal_root
 
