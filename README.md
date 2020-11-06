@@ -22,7 +22,7 @@ You can even run this on a cluster by simple adding a keyword-parameter
 kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
 ```
 # Getting Started
-daal4py is easily built from source with the majority of the necessary prerequisites available on conda.  The instructions below detail how to gather the prerequisites, setting one's build environment, and finally building and installing the completed package.  daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if desired. There is Intel GPU support avaialbe as well
+daal4py is easily built from sources with the majority of the necessary prerequisites available on conda. The instructions below detail how to gather the prerequisites, set your build environment, and finally build and install the completed package. daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if needed. There is Intel GPU support available as well.
 
 The build-process (using setup.py) happens in 3 stages:
 1. Creating C++ and cython sources from oneDAL C++ headers
@@ -42,11 +42,12 @@ For oneAPI support:
   * You can use the pre-built conda package from Intel channel on anaconda.org (see below)
 
 ## Building daal4py
-For build with oneAPI support additional step requered:
-1. DPC++ compiler - DPCPPROOT variable should be defiend and pointed to DPCPP compier
-2. Intel(R) oneDAL with oneAPI support
-    a. Can be installed from Conda channel
-    b. Can be installed fron oneAPI packages repository and passed via DALROOT variable
+To build with oneAPI support, additional steps are required:
+1. Point to DPC++ compiler by defining ``DPCPPROOT`` variable.
+2. Install Intel(R) oneAPI Data Analytics Library with oneAPI support:
+
+    a. From Conda channel.
+    b. From oneAPI packages repository (pass the path to oneDAL via ``DALROOT`` variable)
 
 ```
 export DPCPPROOT=/opt/intel/oneapi/compiler/latest
@@ -122,7 +123,7 @@ export DALROOT=/opt/intel/oneapi/daal/latest
 If building in High Sierra or higher, one may have to run into C++ build errors related to platform targets. Utilize ```export MACOSX_DEPLOYMENT_TARGET="10.9"``` if running into platform target issues.
 
 ## Building daal4py
-Requires Intel(R) oneAPI Data Analytics Library and MPI being properly setup, e.g. DALROOT and MPIROOT being set.
+Requires Intel(R) oneAPI Data Analytics Library and Intel(R) MPI Library being properly set up, meaning you have to set DALROOT and MPIROOT variables.
 ```
 cd <checkout-dir>
 python setup.py build_ext
