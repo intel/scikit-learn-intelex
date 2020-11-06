@@ -58,7 +58,9 @@ def get_lib_suffix():
     
     def walk_ld_library_path():
         if IS_WIN:
-            ld_library_path = f"{os.environ.get('CONDA_PREFIX')}/Library/lib"
+            ld_library_path = os.environ.get('LIBRARY_LIB')
+            if ld_library_path is None:
+                ld_library_path = f"{os.environ.get('CONDA_PREFIX')}/Library/lib"
         else:
             ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
 
