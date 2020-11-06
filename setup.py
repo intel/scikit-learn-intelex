@@ -39,8 +39,10 @@ IS_WIN = False
 IS_MAC = False
 IS_LIN = False
 
-daal_root = os.environ['DAALROOT']
-dal_root = os.environ['DALROOT']
+try:
+    daal_root = os.environ['DAALROOT']
+try:
+    dal_root = os.environ['DALROOT']
 if not dal_root:
     dal_root = daal_root
 
