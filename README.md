@@ -36,10 +36,11 @@ The easiest way to build daal4py is using the conda-build with the provided reci
 * Python version >= 3.6
 * conda-build version >= 3
 * C++ compiler with C++11 support
+
 For oneAPI support:
 * A DPC++ compiler 
-* Intel(R) oneAPI Data Analytics Library version 2021.1 or later (https://github.com/01org/daal)
-  * You can use the pre-built conda package from Intel channel on anaconda.org (see below)
+* Intel(R) oneAPI Data Analytics Library version 2021.1 or later (https://github.com/oneapi-src/oneDAL)
+  * You can use the pre-built conda package from Intel channel on anaconda.org
 
 ## Building daal4py
 To build with oneAPI support, additional steps are required:
@@ -86,14 +87,14 @@ Without conda-build you have to manually setup your environment before building 
 * Numpy
 * A C++ compiler with C++11 support
 * Intel® Data Analytics Acceleration Library (Intel® DAAL) version 2019 or later (https://github.com/01org/daal)
-  * You can use the pre-built conda package from Intel channel on anaconda.org (see below)
+  * You can use the pre-built conda package from Intel channel on anaconda.org
 * MPI
-  * You can use the pre-built conda package intel or conda-forge channel on anaconda.org (see below)
+  * You can use the pre-built conda package intel or conda-forge channel on anaconda.org
   * Needed for distributed mode. You can disable support for distributed mode by setting NO_DIST to '1' or 'yes'
 For oneAPI support
 * A DPC++ compiler 
-* Intel(R) oneAPI Data Analytics Library version 2021.1 or later (https://github.com/01org/daal)
-  * You can use the pre-built conda package from Intel channel on anaconda.org (see below)
+* Intel(R) oneAPI Data Analytics Library version 2021.1 or later (https://oneapi-src.github.io/oneDAL/)
+  * You can use the pre-built conda package from Intel channel on anaconda.org
 
 ## Setting up a build environment
 The easiest path for getting cython, oneDAL, MPI etc. is by creating a conda environment and setting environment variables:
@@ -103,6 +104,7 @@ conda activate DAAL4PY
 export DALROOT=$CONDA_PREFIX
 export MPIROOT=$CONDA_PREFIX
 ```
+
 For build with oneAPI support additional step requered:
 1. DPC++ compiler - DPCPPROOT variable should be defiend and pointed to DPCPP compier
 2. Intel(R) oneDAL with oneAPI support
