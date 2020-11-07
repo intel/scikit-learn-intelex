@@ -75,6 +75,7 @@ jobs:
 
   steps:
   - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
+    timeoutInMinutes: 15
     displayName: oneAPI environment
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH

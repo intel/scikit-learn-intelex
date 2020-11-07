@@ -1,10 +1,11 @@
-# daal4py - A Convenient Python API to the Intel(R) oneAPI Data Analytics Library
+# daal4py - A Convenient Python API to the Intel(R) oneAPI Data Analytics Library and drop in replacement optimized patching of scikit-learn
 [![Build Status](https://travis-ci.com/IntelPython/daal4py.svg?branch=master)](https://travis-ci.com/IntelPython/daal4py)
 [![Build Status](https://dev.azure.com/frankschlimbach/daal4py/_apis/build/status/IntelPython.daal4py?branchName=master)](https://dev.azure.com/frankschlimbach/daal4py/_build/latest?definitionId=1&branchName=master)
 
 A simplified API to Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel(R) oneAPI Data Analytics Library for either direct usage or integration into one's own framework.
 
 - [Documentation](https://intelpython.github.io/daal4py/)
+- [scikit-learn API and patching](https://intelpython.github.io/daal4py/sklearn.html#sklearn)
 - [Source Code](https://github.com/IntelPython/daal4py/tree/master/src)
 - [About Intel(R) oneAPI Data Analytics Library](https://oneapi-src.github.io/oneDAL/)
 
@@ -13,13 +14,46 @@ Running full scikit-learn test suite with daal4p's optimization patches
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
 
-With this daal4py API, your Python programs can use Intel(R) oneAPI Data Analytics Library algorithms in just one line:
+Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution. 
+
+Stock Scikit-learn
 ```
-kmeans_init(data, 10, t_method="plusPlusDense")
+from sklearn.svm import SVC
+X, Y = get_dataset()
+clf = SVC().fit(X, y)
+res = clf.predict(X)
+```
+
+Intel CPU optimizations patching
+```
+import daal4py as d4p
+d4p.patch_sklearn()
+from sklearn.svm import SVC
+X, Y = get_dataset()
+clf = SVC().fit(X, y)
+res = clf.predict(X)
+```
+
+Intel CPU/GPU optimizations patching
+```
+import daal4py as d4p
+from daal4py.oneapi import sycl_context
+d4p.patch_sklearn()
+from sklearn.svm import SVC
+X, Y = get_dataset()
+with sycl_context(“gpu”):
+    clf = SVC().fit(X, y)
+    res = clf.predict(X)
+```
+daal4py API, allows you to use wider set of Intel(R) oneAPI Data Analytics Library algorithms in just one line:
+```
+import daal4py as d4p
+d4p.kmeans_init(data, 10, t_method="plusPlusDense")
 ```
 You can even run this on a cluster by simple adding a keyword-parameter
 ```
-kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
+import daal4py as d4p
+d4p.kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
 ```
 # Getting Started
 daal4py is easily built from sources with the majority of the necessary prerequisites available on conda. The instructions below detail how to gather the prerequisites, set your build environment, and finally build and install the completed package. daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if needed. There is Intel GPU support available as well.
@@ -29,20 +63,6 @@ The build-process (using setup.py) happens in 3 stages:
 2. Running cython on generated source
 3. Compiling and linking
 
-# Building daal4py using conda-build
-The easiest way to build daal4py is using the conda-build with the provided recipe.
-
-## Prerequisites
-* Python version >= 3.6
-* conda-build version >= 3
-* C++ compiler with C++11 support
-
-For oneAPI support:
-* A DPC++ compiler 
-* Intel(R) oneAPI Data Analytics Library version 2021.1 or later (https://github.com/oneapi-src/oneDAL)
-  * You can use the pre-built conda package from Intel channel on anaconda.org
-
-## Building daal4py
 To build with oneAPI support, additional steps are required:
 1. Point to DPC++ compiler by defining ``DPCPPROOT`` variable.
 
@@ -58,7 +78,21 @@ export DPCPPROOT=/opt/intel/oneapi/compiler/latest
 export DALROOT=/opt/intel/oneapi/daal/latest
 ```
 
-Then follow with library build command:
+# Building daal4py using conda-build
+The easiest way to build daal4py is using the conda-build with the provided recipe.
+
+## Prerequisites
+* Python version >= 3.6
+* conda-build version >= 3
+* C++ compiler with C++11 support
+
+For oneAPI support:
+* A DPC++ compiler 
+* Intel(R) oneAPI Data Analytics Library version 2021.1 or later (https://github.com/oneapi-src/oneDAL)
+  * You can use the pre-built conda package from Intel channel on anaconda.org
+
+## Building daal4py
+Library build command:
 ```
 cd <checkout-dir>
 conda build conda-recipe -c intel -c conda-forge
@@ -106,21 +140,6 @@ conda create -n DAAL4PY python=3.7 impi-devel daal daal-include cython jinja2 nu
 conda activate DAAL4PY
 export DALROOT=$CONDA_PREFIX
 export MPIROOT=$CONDA_PREFIX
-```
-
-To build with oneAPI support, additional steps are required:
-1. Point to DPC++ compiler by defining ``DPCPPROOT`` variable.
-
-```
-export DPCPPROOT=/opt/intel/oneapi/compiler/latest
-```
-2. Install Intel(R) oneAPI Data Analytics Library with oneAPI support:
-
-    - From Conda channel.
-    - From oneAPI packages repository (pass the path to oneDAL via ``DALROOT`` variable)
-
-```
-export DALROOT=/opt/intel/oneapi/daal/latest
 ```
 
 ## Configuring the build with environment variables
