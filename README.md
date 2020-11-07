@@ -45,13 +45,16 @@ For oneAPI support:
 ## Building daal4py
 To build with oneAPI support, additional steps are required:
 1. Point to DPC++ compiler by defining ``DPCPPROOT`` variable.
-2. Install Intel(R) oneAPI Data Analytics Library with oneAPI support:
-
-    a. From Conda channel.
-    b. From oneAPI packages repository (pass the path to oneDAL via ``DALROOT`` variable)
 
 ```
 export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+```
+2. Install Intel(R) oneAPI Data Analytics Library with oneAPI support:
+
+    - From Conda channel.
+    - From oneAPI packages repository (pass the path to oneDAL via ``DALROOT`` variable)
+
+```
 export DALROOT=/opt/intel/oneapi/daal/latest
 ```
 
@@ -105,14 +108,18 @@ export DALROOT=$CONDA_PREFIX
 export MPIROOT=$CONDA_PREFIX
 ```
 
-For build with oneAPI support additional step requered:
-1. DPC++ compiler - DPCPPROOT variable should be defiend and pointed to DPCPP compier
-2. Intel(R) oneDAL with oneAPI support
-    a. Can be installed from Conda channel
-    b. Can be installed fron oneAPI packages repository and passed via DALROOT variable
+To build with oneAPI support, additional steps are required:
+1. Point to DPC++ compiler by defining ``DPCPPROOT`` variable.
 
 ```
 export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+```
+2. Install Intel(R) oneAPI Data Analytics Library with oneAPI support:
+
+    - From Conda channel.
+    - From oneAPI packages repository (pass the path to oneDAL via ``DALROOT`` variable)
+
+```
 export DALROOT=/opt/intel/oneapi/daal/latest
 ```
 
@@ -132,7 +139,7 @@ python setup.py build_ext
 ```
 
 ## Installing daal4py
-Requires Intel(R) oneAPI Data Analytics Library and MPI being properly setup, e.g. DALROOT and MPIROOT being set.
+Requires Intel(R) oneAPI Data Analytics Library and Intel(R) MPI Library being properly set up, meaning you have to set DALROOT and MPIROOT variables.
 ```
 cd <checkout-dir>
 python setup.py install
