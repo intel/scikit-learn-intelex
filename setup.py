@@ -41,12 +41,12 @@ IS_LIN = False
 
 try:
     daal_root = os.environ['DAALROOT']
-except:
+except KeyError :
     pass
 
 try:
     dal_root = os.environ['DALROOT']
-except:
+except KeyError :
     pass
 if not dal_root:
     dal_root = daal_root
