@@ -568,7 +568,7 @@ void recvTable(NumericTablePtr & table, int sender, int tag)
 }
 };
 
-// DAAL Distributed algos do not return a proper result (like batch), we need to create one
+// oneDAL Distributed algos do not return a proper result (like batch), we need to create one
 template< typename fptype, daal::algorithms::dbscan::Method method >
 typename dbscan_manager<fptype, method>::iomb_type::result_type
 make_result(const daal::data_management::NumericTablePtr & assignments, const daal::data_management::NumericTablePtr & nClusters)

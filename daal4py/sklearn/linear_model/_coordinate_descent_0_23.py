@@ -67,7 +67,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     y = make2d(y_)
     _fptype = getFPType(X)
 
-    #only for dual_gap computation, it is not required for DAAL
+    #only for dual_gap computation, it is not required for Intel(R) oneAPI Data Analytics Library
     self._X = X
     self._y = y
 
@@ -210,7 +210,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     y = make2d(y_)
     _fptype = getFPType(X)
 
-    #only for dual_gap computation, it is not required for DAAL
+    #only for dual_gap computation, it is not required for Intel(R) oneAPI Data Analytics Library
     self._X = X
     self._y = y
 
@@ -384,7 +384,8 @@ class ElasticNet(ElasticNet_original):
             X, y = check_X_y(X, y, copy=False, accept_sparse='csc', dtype=[np.float64, np.float32], multi_output=True, y_numeric=True)
             y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
         else:
-            #only for compliance with Sklearn, this assert is not required for DAAL
+            #only for compliance with Sklearn, this assert is not required for Intel(R) oneAPI Data
+            #Analytics Library
             if (isinstance(X, np.ndarray) and X.flags['F_CONTIGUOUS'] == False):
                 raise ValueError("ndarray is not Fortran contiguous")
 
@@ -552,7 +553,8 @@ class Lasso(ElasticNet):
             X, y = check_X_y(X, y, copy=False, accept_sparse='csc', dtype=[np.float64, np.float32], multi_output=True, y_numeric=True)
             y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
         else:
-            #only for compliance with Sklearn, this assert is not required for DAAL
+            #only for compliance with Sklearn, this assert is not required for Intel(R) oneAPI Data
+            #Analytics Library
             if (isinstance(X, np.ndarray) and X.flags['F_CONTIGUOUS'] == False):
                 raise ValueError("ndarray is not Fortran contiguous")
 

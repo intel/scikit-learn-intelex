@@ -17,7 +17,7 @@
 
 from collections import defaultdict, OrderedDict, namedtuple
 
-# given a C++ namespace and a DAAL version, return if namespace/algo should be
+# given a C++ namespace and a oneDAL version, return if namespace/algo should be
 # wrapped in daal4py.
 def wrap_algo(algo, ver):
     # Ignore some algos if using older DAAL
@@ -150,7 +150,7 @@ ignore = {
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
-# Mapping iface class to fully qualified DAAL type as shared pointer
+# Mapping iface class to fully qualified oneDAL type as shared pointer
 ifaces = {
     'kernel_function::KernelIface': ('daal::algorithms::kernel_function::KernelIfacePtr', None),
     'classifier::prediction::Batch': ('daal::services::SharedPtr<daal::algorithms::classifier::prediction::Batch>', None),
@@ -220,7 +220,7 @@ result_to_compute = {
 # The distributed algorithm configuration parameters
 # Note that all have defaults and so are optional.
 # In particular note that the name of a single input argument defaults to data.
-# Use the DAAL step enums as names. You can use the same enum value by prepending '__*' to the name.
+# Use the oneDAL step enums as names. You can use the same enum value by prepending '__*' to the name.
 #  Trailing '__*' will be trunkated when using the name as a template argument.
 SSpec = namedtuple('step_spec', ['input',        # array of input types
                                  'extrainput',   # extra input arguments (added to run_* as-is)

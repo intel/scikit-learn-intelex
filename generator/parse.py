@@ -122,16 +122,16 @@ class comment_parser(object):
 
         assert not re.match(r'.*\*/(.+)', line), "Found the code after closed comment in the same line"
 
-        # delete '%', it marks non-key words in DAAL Doxygen documentation
+        # delete '%', it marks non-key words in oneDAL Doxygen documentation
         line = line.replace('%', '')
 
-        # delete keys for formulas in DAAL Doxygen documentation
+        # delete keys for formulas in oneDAL Doxygen documentation
         line = line.replace('\\f$', '')
 
-        # delete internal references in DAAL Doxygen documentation
+        # delete internal references in oneDAL Doxygen documentation
         line = re.sub(r',?\s+\\ref[^(*/)]*', '', line)
 
-        # delete DAAL C++ substrings
+        # delete oneDAL C++ substrings
         line = re.sub(r',?\s*\w+::[:\w]+', '', line)
 
         # try to find the beginning of algorithm template description
@@ -493,7 +493,7 @@ class pcontext(object):
 
 
 ###############################################################################
-# parse a DAAL header file and extract information relevant for SWIG interface files
+# parse a oneDAL header file and extract information relevant for SWIG interface files
 # Common template argument lists are formatted properly for use
 #   in interface files config dict
 # Also returns string for errors in parsing templates
@@ -529,7 +529,7 @@ def parse_header(header, ignores):
 
 
 def parse_version(header):
-    """Parse DAAL version strings"""
+    """Parse oneDAL version strings"""
     v = (None, None, None, None)
     for l in header:
         if '#define __INTEL_DAAL_' in l:

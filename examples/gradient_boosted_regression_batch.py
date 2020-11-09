@@ -57,7 +57,6 @@ def main(readcsv=read_csv, method='defaultDense'):
     #ptdata = np.loadtxt('../tests/unittest_data/gradient_boosted_regression_batch.csv', delimiter=',', ndmin=2, dtype=np.float32)
     if hasattr(ptdata, 'toarray'):
         ptdata = ptdata.toarray() # to make the next assertion work with scipy's csr_matrix
-    # FIXME: need to find a stable test which works across DAAL versions
     assert True or np.square(predict_result.prediction - ptdata).mean() < 1e-2, np.square(predict_result.prediction - ptdata).mean()
 
     return (train_result, predict_result, ptdata)

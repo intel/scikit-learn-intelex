@@ -20,9 +20,10 @@ import struct
 import subprocess
 import sys
 
-print('Starting examples validation')
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
+
+print('Starting examples validation')
 # First item is major version - 2021, second is minor+patch - 0110, third item is status - B
 print('DAAL version:', get_daal_version())
 
@@ -100,33 +101,17 @@ def check_os(rule, target):
 def check_library(rule):
     for rule_item in rule:
         try:
-            __import__(rule_item, fromlist=[''])
+            import importlib
+            importlib.import_module(rule_item, package=None)
         except ImportError:
             return False
     return True
 
 req_version = defaultdict(lambda:(2019,'P',0))
-req_version['adaboost_batch.py'] = (2020,'P',0)
-req_version['brownboost_batch.py'] = (2020,'P',0)
-req_version['dbscan_batch.py'] = (2019,'P',5)
-req_version['decision_forest_classification_batch.py'] = (2019,'P',1)
-req_version['decision_forest_classification_traverse_batch.py'] = (2019,'P',1)
-req_version['decision_forest_regression_batch.py'] = (2019,'P',1)
-req_version['elastic_net_batch.py'] = ((2020,'P',1),(2021,'B',105))
-req_version['gbt_cls_model_create_from_lightgbm_batch.py'] = ((2020,'P', 2), (2021,'B', 109))
-req_version['gbt_cls_model_create_from_xgboost_batch.py'] = ((2020,'P', 2), (2021,'B', 109))
-req_version['lasso_regression_batch.py'] = (2019,'P',5)
-req_version['logitboost_batch.py'] = (2020,'P',0)
-req_version['log_reg_model_builder.py'] = (2021, 'P', 1)
-req_version['saga_batch.py'] = (2019,'P',3)
-req_version['stump_classification_batch.py'] = (2020,'P',0)
-req_version['stump_regression_batch.py'] = (2020,'P',0)
-req_version['sycl/bf_knn_classification_batch.py'] = (2021,'B',105)
-req_version['sycl/dbscan_batch.py'] = (2021,'P',110) # hangs in beta08, need to be fixed
-req_version['sycl/gradient_boosted_regression_batch.py'] = (2021,'B',105)
-req_version['sycl/linear_regression_batch.py'] = (2021,'P',110) # hangs in beta08, need to be fixed
+req_version['sycl/dbscan_batch.py'] = (2021,'P',100) # hangs in beta08, need to be fixed
+req_version['sycl/linear_regression_batch.py'] = (2021,'P',100) # hangs in beta08, need to be fixed
 req_version['sycl/kmeans_batch.py'] = (2021,'P',200) # not equal results for host and gpu runs
-req_version['sycl/svm_batch.py'] = (2021,'B',107)
+req_version['sycl/pca_transform_batch.py'] = (2021,'P',200)
 
 req_device = defaultdict(lambda:[])
 req_device['sycl/bf_knn_classification_batch.py'] = ["gpu"]
@@ -137,14 +122,6 @@ req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
 req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
 
 req_os = defaultdict(lambda:[])
-req_os['sycl/covariance_batch.py'] = ["lnx"]
-req_os['sycl/covariance_streaming.py'] = ["lnx"]
-req_os['sycl/log_reg_binary_dense_batch.py'] = ["lnx"]
-req_os['sycl/log_reg_dense_batch.py'] = ["lnx"]
-req_os['sycl/low_order_moms_dense_batch.py'] = ["lnx"]
-req_os['sycl/low_order_moms_streaming.py'] = ["lnx"]
-req_os['sycl/pca_batch.py'] = ["lnx"]
-req_os['sycl/pca_transform_batch.py'] = ["lnx"]
 
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):

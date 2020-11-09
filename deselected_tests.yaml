@@ -19,7 +19,7 @@ deselected_tests:
   - svm/tests/test_sparse.py::test_svc_iris
 
   # Compare Comparison of the result of a 1-in-1 decision function for SVC algorithm between dense and sparse input
-  # Such a DAAL does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05
+  # Such a oneDAL does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05
   - ensemble/tests/test_bagging.py::test_sparse_classification
 
   # Bitwise comparison of probabilities using a print.
@@ -41,7 +41,7 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_relocated_clusters
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters
 
-  # DAAL does not check convergence for tol == 0.0 for ease of benchmarking
+  # oneDAL does not check convergence for tol == 0.0 for ease of benchmarking
   - cluster/tests/test_k_means.py::test_kmeans_convergence
   - cluster/tests/test_k_means.py::test_kmeans_verbose
 
@@ -76,7 +76,7 @@ deselected_tests:
   # https://github.com/oneapi-src/oneDAL/issues/495
   - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement >=0.21
 
-  # DAAL doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
+  # oneDAL doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
 
   # We have difference (Max absolute difference: 1.97215226e-31) in computing of log_proba with np.log(y_proba)
@@ -128,8 +128,11 @@ deselected_tests:
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
-  # The bug is fixed. Remove this test from deselected after the gold release
+  # The bugs are fixed. Remove these tests from deselected after the gold release
   - ensemble/tests/test_bagging.py::test_classification
+  - neighbors/tests/test_neighbors.py::test_kneighbors_classifier
+  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
+  - semi_supervised/tests/test_label_propagation.py::test_predict_sparse_callable_kernel
 
   # daal4py is throwing the exception from the library. Will be fixed.
   - tests/test_common.py::test_check_n_features_in_after_fitting

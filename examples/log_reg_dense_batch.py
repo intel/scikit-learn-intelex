@@ -29,7 +29,6 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
-
 def main(readcsv=read_csv, method='defaultDense'):
     nClasses = 5
     nFeatures = 6
@@ -51,15 +50,8 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_data = readcsv(testfile, range(nFeatures))
 
     # set parameters and compute predictions
-    # previous version has different interface
-    from daal4py import _get__daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv()[0:4], dv()[4:8])))
-    if daal_version < (2020,0):
-        predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
-                                                         resultsToCompute="computeClassesLabels|computeClassesProbabilities|computeClassesLogProbabilities")
-    else:
-        predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
-                                                         resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
+    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
+                                                     resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
     predict_result = predict_alg.compute(predict_data, train_result.model)
     # the prediction result provides prediction, probabilities and logProbabilities
     assert predict_result.probabilities.shape == (predict_data.shape[0], nClasses)

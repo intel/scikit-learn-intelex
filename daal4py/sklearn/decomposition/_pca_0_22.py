@@ -484,7 +484,7 @@ class PCA(PCA_original):
         return X_transformed
 
 if (lambda s: (int(s[:4]), int(s[6:])))( daal4py._get__daal_link_version__()[:8] ) < (2019, 4):
-    # with DAAL < 2019.4 PCA only optimizes fit, using DAAL's SVD
+    #2019.4 PCA only optimizes fit, using DAAL's SVD
     class PCA(PCA_original):
         __doc__ = PCA_original.__doc__
 

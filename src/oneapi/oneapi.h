@@ -112,7 +112,7 @@ static void del_scl_buffer(void * ptr, int typ)
     ptr = NULL;
 }
 
-// take a sycl buffer and convert ti DAAL NT
+// take a sycl buffer and convert ti oneDAL NT
 template<typename T>
 inline daal::services::SharedPtr<daal::data_management::SyclHomogenNumericTable<T> > * todaalnt(T * ptr, int * shape)
 {

@@ -92,7 +92,7 @@ from cpython.pycapsule cimport PyCapsule_New
 cdef class sycl_buffer:
     'Sycl buffer for DAAL. A generic implementation needs to do much more.'
 
-    cdef readonly long sycl_buffer
+    cdef readonly long long sycl_buffer
     cdef int typ
     cdef int shape[2]
     cdef object _ary
@@ -104,14 +104,14 @@ cdef class sycl_buffer:
             assert ary.flags['C_CONTIGUOUS'] and ary.ndim == 2
             self.__inilz__(0, np.PyArray_TYPE(ary), ary.shape[0], ary.shape[1])
 
-    cpdef __inilz__(self, long b, int t, int d1, int d2):
+    cpdef __inilz__(self, long long b, int t, int d1, int d2):
         self.typ = t
         self.shape[0] = d1
         self.shape[1] = d2
         if b:
             self.sycl_buffer = b
         else:
-            self.sycl_buffer = <long>tosycl(np.PyArray_DATA(self._ary), self.typ, self.shape)
+            self.sycl_buffer = <long long>tosycl(np.PyArray_DATA(self._ary), self.typ, self.shape)
 
     def __dealloc__(self):
         del_scl_buffer(<void*>self.sycl_buffer, self.typ)
@@ -126,6 +126,6 @@ cdef api object make_py_from_sycltable(void * ptr, int typ, int d1, int d2):
     cdef void * buff = c_make_py_from_sycltable(ptr, typ)
     if buff:
         res = sycl_buffer.__new__(sycl_buffer)
-        res.__inilz__(<long>buff, typ, d1, d2)
+        res.__inilz__(<long long>buff, typ, d1, d2)
         return res
     return None

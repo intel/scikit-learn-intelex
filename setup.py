@@ -35,19 +35,49 @@ try:
 except ImportError:
     from ctypes.util import find_library
 
+IS_WIN = False
+IS_MAC = False
+IS_LIN = False
+
+daal_root = os.environ['DAALROOT']
+
+if 'linux' in sys.platform:
+    IS_LIN = True
+    lib_dir = jp(daal_root, 'lib', 'intel64')
+elif sys.platform == 'darwin':
+    IS_MAC = True
+    lib_dir = jp(daal_root, 'lib')
+elif sys.platform in ['win32', 'cygwin']:
+    IS_WIN = True
+    lib_dir = jp(daal_root, 'lib', 'intel64')
+else:
+    assert False, sys.platform + ' not supported'
+
 
 def get_lib_suffix():
+    
     def walk_ld_library_path():
-        ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
+        if IS_WIN:
+            ld_library_path = os.environ.get('LIBRARY_LIB')
+            if ld_library_path is None:
+                ld_library_path = f"{os.environ.get('CONDA_PREFIX')}/Library/lib"
+        else:
+            ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
+
         if ld_library_path is None:
             return None
+
         libs = []
-        ld_library_path = ld_library_path.split(':')
+        if IS_WIN:
+            ld_library_path = ld_library_path.split(';')
+        else:
+            ld_library_path = ld_library_path.split(':')
         while '' in ld_library_path:
             ld_library_path.remove('')
         for lib_path in ld_library_path:
             for _, _, new_files in os.walk(lib_path):
                 libs += new_files
+
         for lib in libs:
             if 'onedal_core' in lib:
                 return 'onedal'
@@ -73,7 +103,7 @@ def get_lib_suffix():
     elif find_library('daal_core') is not None or ld_lib_path_suffix == 'daal'  or lib_dir_suffix == 'daal':
         return 'daal'
     else:
-        raise ImportError('Unable to import oneDAL or DAAL lib')
+        raise ImportError('Unable to import oneDAL or oneDAL lib')
 
 
 def get_win_major_version():
@@ -96,7 +126,6 @@ if not no_dist and sys.version_info <= (3, 6):
     print('distributed mode not supported for python version < 3.6\n')
     no_dist = True
 no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
-daal_root = os.environ['DAALROOT']
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
@@ -104,24 +133,11 @@ dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
 dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
 #itac_root = os.environ['VT_ROOT']
-IS_WIN = False
-IS_MAC = False
-IS_LIN = False
-
-if 'linux' in sys.platform:
-    IS_LIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64')
-elif sys.platform == 'darwin':
-    IS_MAC = True
-    lib_dir = jp(daal_root, 'lib')
-elif sys.platform in ['win32', 'cygwin']:
-    IS_WIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64')
-else:
-    assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 DAAL_LIBDIRS = [daal_lib_dir]
+if IS_WIN:
+    DAAL_LIBDIRS.append(f"{os.environ.get('CONDA_PREFIX')}/Library/lib")
 
 if no_stream :
     print('\nDisabling support for streaming mode\n')
@@ -260,7 +276,6 @@ def getpyexts():
     ])
 
     eca_dpcpp = eca.copy()
-    eca_dpcpp += ['-fsycl']
 
     if dpcpp:
         exts.extend(cythonize(Extension('_oneapi',
@@ -354,6 +369,7 @@ setup(  name        = "daal4py",
                     'daal4py.sklearn.decomposition',
                     'daal4py.sklearn.ensemble',
                     'daal4py.sklearn.linear_model',
+                    'daal4py.sklearn.manifold',
                     'daal4py.sklearn.neighbors',
                     'daal4py.sklearn.monkeypatch',
                     'daal4py.sklearn.svm',
