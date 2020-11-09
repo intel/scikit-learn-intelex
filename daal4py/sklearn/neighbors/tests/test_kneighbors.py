@@ -34,7 +34,7 @@ KS = [1, 3, 7, 25]
 N_TRIES = 10
 CHECK_ACCURACY_RATIO_KNN = 0.85
 CHECK_LOG_LOSS_RATIO_KNN = 1.006
-CHECK_ROC_AUC_RATIO_KNN = 1
+CHECK_ROC_AUC_RATIO_KNN = 0.987
 IRIS = load_iris()
 
 def make_dataset(n_samples=256, n_features=5, n_classes=2,
