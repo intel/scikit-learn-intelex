@@ -30,7 +30,7 @@ from sklearn.model_selection import train_test_split
 DISTANCES = ['minkowski']
 ALGORITHMS = ['brute', 'kd_tree', 'auto']
 WEIGHTS = ['uniform', 'distance']
-KS = [1, 3, 7, 25]
+KS = [1, 3, 7, 15, 31]
 N_TRIES = 10
 CHECK_ACCURACY_RATIO_KNN = 0.85
 CHECK_LOG_LOSS_RATIO_KNN = 1.006
