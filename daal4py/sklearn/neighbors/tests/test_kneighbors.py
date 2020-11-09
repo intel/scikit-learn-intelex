@@ -130,7 +130,7 @@ def check_roc_auc(distance, algorithm, weight, k):
         daal_roc_auc = roc_auc_score(y_test, daal_predict_proba, multi_class='ovr')
         ratio = daal_roc_auc / scikit_roc_auc
         assert ratio >= CHECK_ROC_AUC_RATIO_KNN,\
-            f'kNN log_loss: scikit_log_loss={scikit_log_loss},daal_log_loss={daal_log_loss}, ratio={ratio}'
+            f'kNN log_loss: scikit_roc_auc={scikit_roc_auc},daal_roc_auc={daal_roc_auc}, ratio={ratio}'
 
 
 @pytest.mark.parametrize('distance', DISTANCES)
