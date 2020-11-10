@@ -87,7 +87,7 @@ def _fit_full_prev(self, X, n_components):
     self.mean_ = np.mean(X, axis=0)
     X -= self.mean_
 
-    if X.shape[0] > X.shape[1] and (X.dtype == np.float64 or X.dtype == np.float32):
+    if X.dtype == np.float64 or X.dtype == np.float32:
         U, S, V = _daal4py_svd(X)
     else:
         U, S, V = np.linalg.svd(X, full_matrices=False)
@@ -344,7 +344,7 @@ class PCA(PCA_original):
 
         _validate_n_components(n_components, n_samples, n_features)
 
-        if n_samples > n_features and (X.dtype == np.float64 or X.dtype == np.float32):
+        if X.dtype == np.float64 or X.dtype == np.float32:
             logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
             return self._fit_full_daal4py(X, n_components)
         logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
@@ -386,8 +386,6 @@ class PCA(PCA_original):
             logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
             return self._fit_truncated(X, n_components, self._fit_svd_solver)
         elif self._fit_svd_solver == 'daal':
-            if X.shape[0] < X.shape[1]:
-                raise ValueError("svd_solver='daal' is applicable for tall and skinny inputs only.")
             logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
             return self._fit_daal4py(X, n_components)
         raise ValueError("Unrecognized svd_solver='{0}'"
@@ -410,8 +408,7 @@ class PCA(PCA_original):
         X_new : array-like, shape (n_samples, n_components)
 
         """
-        if (self.svd_solver == 'daal' and isinstance(X, np.ndarray) and
-               X.shape[0] >= X.shape[1]):
+        if self.svd_solver == 'daal' and isinstance(X, np.ndarray):
             # Handle n_components==None
             n_components = _process_n_components_None(
                 self.n_components, self.svd_solver, X.shape)
