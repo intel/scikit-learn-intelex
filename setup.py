@@ -39,15 +39,8 @@ IS_WIN = False
 IS_MAC = False
 IS_LIN = False
 
-try:
-    daal_root = os.environ['DAALROOT']
-except KeyError :
-    pass
-
-try:
-    dal_root = os.environ['DALROOT']
-except KeyError :
-    pass
+daal_root = os.environ.get('DAALROOT')
+dal_root = os.environ.get('DALROOT')
 if not dal_root:
     dal_root = daal_root
 
