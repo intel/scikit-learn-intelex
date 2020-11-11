@@ -114,7 +114,6 @@ req_version['sycl/kmeans_batch.py'] = (2021,'P',200) # not equal results for hos
 req_version['sycl/pca_transform_batch.py'] = (2021,'P',200)
 
 req_device = defaultdict(lambda:[])
-req_device['sycl/bf_knn_classification_batch.py'] = ["gpu"]
 req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
 
 req_library = defaultdict(lambda:[])
