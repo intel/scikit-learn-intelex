@@ -66,7 +66,7 @@ def compute(train_data, train_labels, predict_data, nClasses):
     train_result = train_algo.compute(train_data, train_labels)
 
     # Create an algorithm object and call compute
-    predict_algo = d4p.bf_knn_classification_prediction()
+    predict_algo = d4p.bf_knn_classification_prediction(nClasses=nClasses)
     predict_result = predict_algo.compute(predict_data, train_result.model)
     return predict_result
 
@@ -84,6 +84,9 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_labels = readcsv(predict_file, range(nFeatures, nFeatures+1))
 
     predict_result_classic = compute(train_data, train_labels, predict_data, nClasses)
+
+    # We expect less than 170 mispredicted values
+    assert np.count_nonzero(predict_labels != predict_result_classic.prediction) < 170
 
     train_data = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
@@ -105,9 +108,7 @@ def main(readcsv=read_csv, method='defaultDense'):
             sycl_predict_data = sycl_buffer(predict_data)
 
             predict_result_gpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
-
-            # We expect less than 170 mispredicted values
-            assert np.count_nonzero(predict_labels != predict_result_gpu.prediction) < 170
+            assert np.allclose(predict_result_gpu.prediction, predict_result_classic.prediction)
 
     with cpu_context():
         sycl_train_data = sycl_buffer(train_data)
@@ -115,6 +116,7 @@ def main(readcsv=read_csv, method='defaultDense'):
         sycl_predict_data = sycl_buffer(predict_data)
 
         predict_result_cpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
+        assert np.allclose(predict_result_cpu.prediction, predict_result_classic.prediction)
 
     return (predict_result_classic, predict_labels)
 
