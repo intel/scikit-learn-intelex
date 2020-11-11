@@ -201,7 +201,7 @@ with open(header_path) as header:
     dal_build_version = (int(v[0]), int(v[1]), int(v[2]), str(v[3]))
 
 if dpcpp:
-    DPCPP_CFLAGS = ['-D_DPCPP_']
+    DPCPP_CFLAGS = ['-D_DPCPP_ -fno-builtin-memset']
     DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
     if IS_LIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
