@@ -68,7 +68,7 @@ about:
     about:
         home: https://intelpython.github.io/daal4py/
         license: Apache-2.0
-        license_file: 
+        license_file:
               - LICENSE
               - doc/third-party-programs.txt
         summary: A convenient Python API to Intel (R) oneAPI Data Analytics Library
