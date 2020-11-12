@@ -168,28 +168,25 @@
             
   <div class="section" id="fast-scalable-and-easy-machine-learning-with-daal4py">
 <span id="index"></span><h1>Fast, Scalable and Easy Machine Learning With DAAL4PY<a class="headerlink" href="#fast-scalable-and-easy-machine-learning-with-daal4py" title="Permalink to this headline">¶</a></h1>
-<p>Daal4py makes your Machine Learning algorithms in Python lightning fast and easy
-to use. It provides highly configurable Machine Learning kernels, some of which
-support streaming input data and/or can be easily and efficiently scaled out to
-clusters of workstations.  Internally it uses Intel® DAAL (Intel® Data Analytics
-Acceleration Library) to deliver the best performance.</p>
+<p>Daal4py makes your Machine Learning algorithms in Python lightning fast and easy to use. It provides
+highly configurable Machine Learning kernels, some of which support streaming input data and/or can
+be easily and efficiently scaled out to clusters of workstations.  Internally it uses Intel(R)
+oneAPI Data Analytics Library to deliver the best performance.</p>
 <div class="section" id="designed-for-data-scientists-and-framework-designers">
 <h2>Designed for Data Scientists and Framework Designers<a class="headerlink" href="#designed-for-data-scientists-and-framework-designers" title="Permalink to this headline">¶</a></h2>
-<p>daal4py was created to give data scientists the easist way to utilize Intel® DAAL’s
-powerful machine learning building blocks directly in a high-productivity manner.
-A simplified API gives high-level abstractions to the user with minimal boilerplate,
-allowing for quick to write and easy to maintain code when utilizing Jupyter Notebooks.
-For scaling capabilities, daal4py also provides the ability to do distributed machine
-learning, giving a quick way to scale out. Its streaming mode provides a
-flexible mechanism for processing large amounts of data and/or non-contiguous
-input data.</p>
-<p>For framework designers, daal4py has been fashioned to be built under other
-frameworks from both an API and feature perspective.  The machine learning models split
-the training and inference classes, allowing the model to be exported and serialized
-if desired.  This design also gives the flexibility to work directly with the model and
-associated primitives, allowing one to customize the behavior of the model itself.
-The daal4py package can be built with customized algorithm loadouts, allowing for a
-smaller footprint of dependencies when necessary.</p>
+<p>daal4py was created to give data scientists the easist way to utilize Intel(R) oneAPI Data Analytics
+Library powerful machine learning building blocks directly in a high-productivity manner. A
+simplified API gives high-level abstractions to the user with minimal boilerplate, allowing for
+quick to write and easy to maintain code when utilizing Jupyter Notebooks. For scaling capabilities,
+daal4py also provides the ability to do distributed machine learning, giving a quick way to scale
+out. Its streaming mode provides a flexible mechanism for processing large amounts of data and/or
+non-contiguous input data.</p>
+<p>For framework designers, daal4py has been fashioned to be built under other frameworks from both an
+API and feature perspective.  The machine learning models split the training and inference classes,
+allowing the model to be exported and serialized if desired.  This design also gives the flexibility
+to work directly with the model and associated primitives, allowing one to customize the behavior of
+the model itself. The daal4py package can be built with customized algorithm loadouts, allowing for
+a smaller footprint of dependencies when necessary.</p>
 </div>
 <div class="section" id="api-design-and-usage">
 <h2>API Design and usage<a class="headerlink" href="#api-design-and-usage" title="Permalink to this headline">¶</a></h2>
@@ -249,24 +246,21 @@ adding initializing/finalizing the network and adding a keyword-parameter:</p>
 </div>
 <div class="section" id="daal4py-s-design">
 <h2>Daal4py’s Design<a class="headerlink" href="#daal4py-s-design" title="Permalink to this headline">¶</a></h2>
-<p>The design of daal4py utilizes several different technologies to deliver Intel®
-DAAL performance in a flexible design to Data Scientists and Framework designers.
-The package uses Jinja templates to generate Cython-wrapped DAAL C++ headers, with
-Cython as a bridge between the generated DAAL code and the Python layer.
-This design allows for quicker development cycles and acts as a reference design
-to those looking to tailor their build of daal4py.  Cython also allows for good
-Python behavior, both for compatability to different frameworks and for
+<p>The design of daal4py utilizes several different technologies to deliver Intel(R) oneAPI Data
+Analytics Library performance in a flexible design to Data Scientists and Framework designers. The
+package uses Jinja templates to generate Cython-wrapped oneDAL C++ headers, with Cython as a bridge
+between the generated oneDAL code and the Python layer. This design allows for quicker development
+cycles and acts as a reference design to those looking to tailor their build of daal4py.  Cython
+also allows for good Python behavior, both for compatability to different frameworks and for
 pickling and serialization.</p>
 </div>
 <div class="section" id="built-for-performance">
 <h2>Built for Performance<a class="headerlink" href="#built-for-performance" title="Permalink to this headline">¶</a></h2>
-<p>Besides superior (e.g. close to native C++ Intel DAAL) performance on a single
-node, the distribution mechanics of daal4py provides excellent strong and weak
-scaling. It nicely handles distributing a fixed input size on increasing
-clusters sizes
-(strong scaling: orange) which addresses possible response time requirements. It also scales with
-growing input size (weak scaling: yellow) which is needed if the data no longer fits
-into memory of a single node.</p>
+<p>Besides superior (e.g. close to native C++ Intel(R) oneAPI Data Analytics Library) performance on a
+single node, the distribution mechanics of daal4py provides excellent strong and weak scaling. It
+nicely handles distributing a fixed input size on increasing clusters sizes (strong scaling: orange)
+which addresses possible response time requirements. It also scales with growing input size (weak
+scaling: yellow) which is needed if the data no longer fits into memory of a single node.</p>
 <div class="figure align-default" id="id1">
 <img alt="_images/d4p-linreg-scale.jpg" src="_images/d4p-linreg-scale.jpg" />
 <p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed linear regression
@@ -310,7 +304,7 @@ daal4py will work on the entire file content.</p>
 </div>
 <div class="section" id="scikit-learn-api-and-patching">
 <h2>Scikit-Learn API and patching<a class="headerlink" href="#scikit-learn-api-and-patching" title="Permalink to this headline">¶</a></h2>
-<p>daal4py exposes some DAAL solvers using a scikit-learn compatible API.</p>
+<p>daal4py exposes some oneDAL solvers using a scikit-learn compatible API.</p>
 <p>daal4py can furthermore monkey-patch the <code class="docutils literal notranslate"><span class="pre">sklearn</span></code> package to use the DAAL
 solvers as drop-in replacement without any code change.</p>
 <p>Please refer to the section on <a class="reference internal" href="sklearn.html#sklearn"><span class="std std-ref">scikit-learn API and patching</span></a>

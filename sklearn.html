@@ -163,16 +163,15 @@
             
   <div class="section" id="scikit-learn-api-and-patching">
 <span id="sklearn"></span><h1>Scikit-Learn API and patching<a class="headerlink" href="#scikit-learn-api-and-patching" title="Permalink to this headline">¶</a></h1>
-<p>Python interface to efficient Intel® Data Analytics and Acceleration Library
-(DAAL) provided by daal4py allows one to create scikit-learn compatible
-estimators, transformers, clusterers, etc. powered by DAAL which are nearly as
-efficient as native programs.</p>
+<p>Python interface to efficient Intel(R) oneAPI Data Analytics Library provided by daal4py allows one
+to create scikit-learn compatible estimators, transformers, clusterers, etc. powered by oneDAL which
+are nearly as efficient as native programs.</p>
 <div class="section" id="daal-accelerated-scikit-learn">
 <span id="sklearn-patches"></span><h2>DAAL accelerated scikit-learn<a class="headerlink" href="#daal-accelerated-scikit-learn" title="Permalink to this headline">¶</a></h2>
-<p>daal4py can dynamically patch scikit-learn estimators to use Intel® DAAL as the
-underlying solver, while getting the same solution faster.</p>
-<p>It is possible to enable those patches without editing the code of a
-scikit-learn application by using the following commandline flag:</p>
+<p>daal4py can dynamically patch scikit-learn estimators to use Intel(R) oneAPI Data Analytics Library
+as the underlying solver, while getting the same solution faster.</p>
+<p>It is possible to enable those patches without editing the code of a scikit-learn application by
+using the following commandline flag:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">daal4py</span> <span class="n">my_application</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
@@ -210,10 +209,13 @@ algorithms:</p>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html">sklearn.linear_model.ElasticNet</a></p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html">sklearn.linear_model.Lasso</a></p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">sklearn.neighbors.KNeighborsClassifier</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsRegressor.html">sklearn.neighbors.KNeighborsRegressor</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html">sklearn.neighbors.NearestNeighbors</a></p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html">sklearn.cluster.DBSCAN</a></p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html">sklearn.ensemble.RandomForestRegressor</a></p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html">sklearn.model_selection.train_test_split</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html">sklearn.manifold.TSNE</a></p></li>
 </ol>
 <p>Monkey-patched scikit-learn clases and functions passes scikit-learn’s own test
 suite, with few exceptions, specified in <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/deselected_tests.yaml">deselected_tests.yaml</a>.</p>
@@ -238,7 +240,7 @@ set the environment variable.</p>
 that indicate which implementation is being called.
 These print statements are only available for <a class="reference internal" href="#sklearn-algorithms"><span class="std std-ref">scikit-learn algorithms with daal4py patches</span></a>.</p>
 <p>For example, for DBSCAN you get one of these print statements depending on which implementation is used:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>INFO: sklearn.cluster.DBSCAN.fit: uses Intel® DAAL solver
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">DBSCAN</span><span class="o">.</span><span class="n">fit</span><span class="p">:</span> <span class="n">uses</span> <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="n">oneAPI</span> <span class="n">Data</span> <span class="n">Analytics</span> <span class="n">Library</span> <span class="n">solver</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">DBSCAN</span><span class="o">.</span><span class="n">fit</span><span class="p">:</span> <span class="n">uses</span> <span class="n">original</span> <span class="n">Scikit</span><span class="o">-</span><span class="n">learn</span> <span class="n">solver</span>
@@ -248,10 +250,12 @@ These print statements are only available for <a class="reference internal" href
 <div class="section" id="scikit-learn-api">
 <span id="sklearn-api"></span><h2>scikit-learn API<a class="headerlink" href="#scikit-learn-api" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">daal4py.sklearn</span></code> package contains scikit-learn compatible API which
-implement a subset of scikit-learn algorithms using Intel® DAAL.</p>
+implement a subset of scikit-learn algorithms using Intel(R) oneAPI Data Analytics Library.</p>
 <p>Currently, these include:</p>
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.neighbors.KNeighborsClassifier</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.neighbors.KNeighborsRegressor</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.neighbors.NearestNeighbors</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.tree.DecisionTreeClassifier</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.ensemble.RandomForestClassifier</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.ensemble.RandomForestRegressor</span></code></p></li>

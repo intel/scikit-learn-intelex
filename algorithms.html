@@ -94,6 +94,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#decision-tree-classification">Decision Tree Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gradient-boosted-classification">Gradient Boosted Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#k-nearest-neighbors-knn">k-Nearest Neighbors (kNN)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#brute-force-k-nearest-neighbors-knn">Brute-force k-Nearest Neighbors (kNN)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#adaboost-classification">AdaBoost Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#brownboost-classification">BrownBoost Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#logitboost-classification">LogitBoost Classification</a></li>
@@ -175,15 +176,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#bernoulli">Bernoulli</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#normal">Normal</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#uniform">Uniform</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#math-functions">Math functions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#absolute-value-abs">Absolute Value (abs)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#hyperbolic-tangent-tanh">Hyperbolic Tangent (tanh)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#logistic">Logistic</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#rectifier-linear-unit-relu">Rectifier Linear Unit (ReLU)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#smooth-rectifier-linear-unit-relu">Smooth Rectifier Linear Unit (ReLU)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#softmax">Softmax</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#association-rules">Association Rules</a></li>
@@ -269,11 +261,11 @@
 <h1>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="classification">
 <h2>Classification<a class="headerlink" href="#classification" title="Permalink to this headline">¶</a></h2>
-<p>See also <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-classification">Intel DAAL Classification</a>.</p>
+<p>See also <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-classification">Intel(R) oneAPI Data Analytics Library Classification</a>.</p>
 <div class="section" id="decision-forest-classification">
 <h3>Decision Forest Classification<a class="headerlink" href="#decision-forest-classification" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-forest-2">Intel DAAL Classification Decision Forest</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-forest-2">Intel(R) oneAPI Data Analytics Library Classification Decision Forest</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_batch.py">Single-Process Decision Forest Classification</a></p></li>
@@ -289,20 +281,22 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Decision forest computation method</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>nTrees</strong> (<em>size_t</em>) – [optional, default: -1]  Number of trees in the forest. Default is 10</p></li>
-<li><p><strong>observationsPerTreeFraction</strong> (<em>double</em>) – [optional, default: NaN64]  Fraction of observations used for a training of one tree, 0 to 1. Default is 1 (sampling with replacement)</p></li>
+<li><p><strong>observationsPerTreeFraction</strong> (<em>double</em>) – [optional, default: get_nan64()]  Fraction of observations used for a training of one tree, 0 to 1. Default is 1 (sampling with replacement)</p></li>
 <li><p><strong>featuresPerNode</strong> (<em>size_t</em>) – [optional, default: -1]  Number of features tried as possible splits per node. If 0 then sqrt(p) for classification, p/3 for regression, where p is the total number of features.</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal tree depth. Default is 0 (unlimited)</p></li>
 <li><p><strong>minObservationsInLeafNode</strong> (<em>size_t</em>) – [optional, default: -1]  Minimal number of observations in a leaf node. Default is 1 for classification, 5 for regression.</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for the random numbers generator used by the algorithms</p></li>
-<li><p><strong>impurityThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold value used as stopping criteria: if the impurity value in the node is smaller than the threshold then the node is not split anymore.</p></li>
+<li><p><strong>impurityThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold value used as stopping criteria: if the impurity value in the node is smaller than the threshold then the node is not split anymore.</p></li>
 <li><p><strong>varImportance</strong> (<em>str</em>) – [optional, default: “”]  Variable importance computation mode</p></li>
 <li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>memorySavingMode</strong> (<em>bool</em>) – [optional, default: False]  If true then use memory saving (but slower) mode</p></li>
 <li><p><strong>bootstrap</strong> (<em>bool</em>) – [optional, default: False]  If true then training set for a tree is a bootstrap of the whole training set</p></li>
 <li><p><strong>minObservationsInSplitNode</strong> (<em>size_t</em>) – [optional, default: -1]  Minimal number of observations in a split node. Default 2</p></li>
-<li><p><strong>minWeightFractionInLeafNode</strong> (<em>double</em>) – [optional, default: NaN64]  The minimum weighted fraction of the sum total of weights (of all the input observations) required to be at a leaf node, 0.0 to 0.5. Default is 0.0</p></li>
-<li><p><strong>minImpurityDecreaseInSplitNode</strong> (<em>double</em>) – [optional, default: NaN64]  A node will be split if this split induces a decrease of the impurity greater than or equal to the value, non-negative. Default is 0.0</p></li>
+<li><p><strong>minWeightFractionInLeafNode</strong> (<em>double</em>) – [optional, default: get_nan64()]  The minimum weighted fraction of the sum total of weights (of all the input observations) required to be at a leaf node, 0.0 to 0.5. Default is 0.0</p></li>
+<li><p><strong>minImpurityDecreaseInSplitNode</strong> (<em>double</em>) – [optional, default: get_nan64()]  A node will be split if this split induces a decrease of the impurity greater than or equal to the value, non-negative. Default is 0.0</p></li>
 <li><p><strong>maxLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum number of leaf node. Default is 0 (unlimited)</p></li>
+<li><p><strong>maxBins</strong> (<em>size_t</em>) – [optional, default: -1]  Used with ‘hist’ split finding method only. Maximal number of discrete bins to bucket continuous features. Default is 256. Increasing the number results in higher computation costs</p></li>
+<li><p><strong>minBinSize</strong> (<em>size_t</em>) – [optional, default: -1]  Used with ‘hist’ split finding method only. Minimal number of observations in a bin. Default is 5</p></li>
 </ul>
 </dd>
 </dl>
@@ -398,7 +392,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -491,7 +485,7 @@
 <div class="section" id="decision-tree-classification">
 <h3>Decision Tree Classification<a class="headerlink" href="#decision-tree-classification" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-tree-2">Intel DAAL Classification Decision Tree</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-tree-2">Intel(R) oneAPI Data Analytics Library Classification Decision Tree</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_classification_batch.py">Single-Process Decision Tree Classification</a></p></li>
@@ -505,11 +499,11 @@
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – Number of classes</p></li>
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for Decision tree model-based training, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Decision tree training method</p></li>
-<li><p><strong>splitCriterion</strong> (<em>str</em>) – [optional, default: “”]  Split criterion for Decision tree classification</p></li>
 <li><p><strong>pruning</strong> (<em>str</em>) – [optional, default: “”]  Pruning method for Decision tree</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum tree depth. 0 means unlimited depth.</p></li>
 <li><p><strong>minObservationsInLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]  Minimum number of observations in the leaf node. Can be any positive number.</p></li>
 <li><p><strong>nBins</strong> (<em>size_t</em>) – [optional, default: -1]  The number of bins used to compute probabilities of the observations belonging to the class. The only supported value for current version of the library is 1.</p></li>
+<li><p><strong>splitCriterion</strong> (<em>str</em>) – [optional, default: “”]  Split criterion for Decision tree classification</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
@@ -560,11 +554,11 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for Decision tree model-based prediction</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Computation method in the batch processing mode</p></li>
-<li><p><strong>splitCriterion</strong> (<em>str</em>) – [optional, default: “”]  Split criterion for Decision tree classification</p></li>
 <li><p><strong>pruning</strong> (<em>str</em>) – [optional, default: “”]  Pruning method for Decision tree</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum tree depth. 0 means unlimited depth.</p></li>
 <li><p><strong>minObservationsInLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]  Minimum number of observations in the leaf node. Can be any positive number.</p></li>
 <li><p><strong>nBins</strong> (<em>size_t</em>) – [optional, default: -1]  The number of bins used to compute probabilities of the observations belonging to the class. The only supported value for current version of the library is 1.</p></li>
+<li><p><strong>splitCriterion</strong> (<em>str</em>) – [optional, default: “”]  Split criterion for Decision tree classification</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
@@ -582,7 +576,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -655,7 +649,7 @@
 <div class="section" id="gradient-boosted-classification">
 <h3>Gradient Boosted Classification<a class="headerlink" href="#gradient-boosted-classification" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-2">Intel DAAL Classification Gradient Boosted Tree</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-2">Intel(R) oneAPI Data Analytics Library Classification Gradient Boosted Tree</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_classification_batch.py">Single-Process Gradient Boosted Classification</a></p></li>
@@ -675,10 +669,10 @@
 <li><p><strong>splitMethod</strong> (<em>str</em>) – [optional, default: “”]  Split finding method. Default is exact</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the gradient boosted trees training algorithm. Default is 50</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal tree depth, 0 for unlimited. Default is 6</p></li>
-<li><p><strong>shrinkage</strong> (<em>double</em>) – [optional, default: NaN64]  Learning rate of the boosting procedure. Scales the contribution of each tree by a factor (0, 1]. Default is 0.3</p></li>
-<li><p><strong>minSplitLoss</strong> (<em>double</em>) – [optional, default: NaN64]  Loss regularization parameter. Min loss reduction required to make a further partition on a leaf node of the tree. Range: [0, inf). Default is 0</p></li>
-<li><p><strong>lambda</strong> (<em>double</em>) – [optional, default: NaN64]  L2 regularization parameter on weights. Range: [0, inf). Default is 1</p></li>
-<li><p><strong>observationsPerTreeFraction</strong> (<em>double</em>) – [optional, default: NaN64]  Fraction of observations used for a training of one tree, sampling without replacement. Range: (0, 1]. Default is 1 (no sampling, entire dataset is used)</p></li>
+<li><p><strong>shrinkage</strong> (<em>double</em>) – [optional, default: get_nan64()]  Learning rate of the boosting procedure. Scales the contribution of each tree by a factor (0, 1]. Default is 0.3</p></li>
+<li><p><strong>minSplitLoss</strong> (<em>double</em>) – [optional, default: get_nan64()]  Loss regularization parameter. Min loss reduction required to make a further partition on a leaf node of the tree. Range: [0, inf). Default is 0</p></li>
+<li><p><strong>lambda</strong> (<em>double</em>) – [optional, default: get_nan64()]  L2 regularization parameter on weights. Range: [0, inf). Default is 1</p></li>
+<li><p><strong>observationsPerTreeFraction</strong> (<em>double</em>) – [optional, default: get_nan64()]  Fraction of observations used for a training of one tree, sampling without replacement. Range: (0, 1]. Default is 1 (no sampling, entire dataset is used)</p></li>
 <li><p><strong>featuresPerNode</strong> (<em>size_t</em>) – [optional, default: -1]  Number of features tried as possible splits per node. Range : [0, p] where p is the total number of features. Default is 0 (use all features)</p></li>
 <li><p><strong>minObservationsInLeafNode</strong> (<em>size_t</em>) – [optional, default: -1]  Minimal number of observations in a leaf node. Default is 5.</p></li>
 <li><p><strong>memorySavingMode</strong> (<em>bool</em>) – [optional, default: False]  If true then use memory saving (but slower) mode. Default is false</p></li>
@@ -801,7 +795,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -884,7 +878,7 @@
 <div class="section" id="k-nearest-neighbors-knn">
 <h3>k-Nearest Neighbors (kNN)<a class="headerlink" href="#k-nearest-neighbors-knn" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-k-nearest-neighbors-knn-classifier">Intel DAAL k-Nearest Neighbors (kNN)</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-k-nearest-neighbors-knn-classifier">Intel(R) oneAPI Data Analytics Library k-Nearest Neighbors (kNN)</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/kdtree_knn_classification_batch.py">Single-Process kNN</a></p></li>
@@ -1043,10 +1037,168 @@
 </dd></dl>
 
 </div>
+<div class="section" id="brute-force-k-nearest-neighbors-knn">
+<h3>Brute-force k-Nearest Neighbors (kNN)<a class="headerlink" href="#brute-force-k-nearest-neighbors-knn" title="Permalink to this headline">¶</a></h3>
+<p>Detailed description of parameters and semantics are described in
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-k-nearest-neighbors-knn-classifier">Intel(R) oneAPI Data Analytics Library k-Nearest Neighbors (kNN)</a></p>
+<dl class="py class">
+<dt id="daal4py.bf_knn_classification_training">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">bf_knn_classification_training</code><a class="headerlink" href="#daal4py.bf_knn_classification_training" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for BF kNN model-based training, double or float</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] BF kNN training method</p></li>
+<li><p><strong>k</strong> (<em>size_t</em>) – [optional, default: -1]  Number of neighbors</p></li>
+<li><p><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]  The option to enable/disable an usage of the input dataset in kNN model</p></li>
+<li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+<li><p><strong>voteWeights</strong> (<em>str</em>) – [optional, default: “”]  Weight function used in prediction</p></li>
+<li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for random choosing elements from training dataset</p></li>
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="daal4py.bf_knn_classification_training.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">labels</span></em>, <em class="sig-param"><span class="n">weights</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.bf_knn_classification_training.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Training data set</p></li>
+<li><p><strong>labels</strong> (<em>data_or_file</em>) – [optional, default: None]  Labels of the training data set</p></li>
+<li><p><strong>weights</strong> (<em>data_or_file</em>) – [optional, default: None]  Optional. Weights of the observations in the training data set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#daal4py.bf_knn_classification_training_result" title="daal4py.bf_knn_classification_training_result">bf_knn_classification_training_result</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="daal4py.bf_knn_classification_training_result">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">bf_knn_classification_training_result</code><a class="headerlink" href="#daal4py.bf_knn_classification_training_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="py attribute">
+<dt id="daal4py.bf_knn_classification_training_result.model">
+<code class="sig-name descname">model</code><a class="headerlink" href="#daal4py.bf_knn_classification_training_result.model" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#daal4py.bf_knn_classification_model" title="daal4py.bf_knn_classification_model">bf_knn_classification_model</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="daal4py.bf_knn_classification_prediction">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">bf_knn_classification_prediction</code><a class="headerlink" href="#daal4py.bf_knn_classification_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for BF kNN model-based prediction</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Computation method in the batch processing mode</p></li>
+<li><p><strong>k</strong> (<em>size_t</em>) – [optional, default: -1]  Number of neighbors</p></li>
+<li><p><strong>dataUseInModel</strong> (<em>str</em>) – [optional, default: “”]  The option to enable/disable an usage of the input dataset in kNN model</p></li>
+<li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+<li><p><strong>voteWeights</strong> (<em>str</em>) – [optional, default: “”]  Weight function used in prediction</p></li>
+<li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for random choosing elements from training dataset</p></li>
+<li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
+<li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="daal4py.bf_knn_classification_prediction.compute">
+<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">model</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.bf_knn_classification_prediction.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual computation on provided input data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>data_or_file</em>) – Input data set</p></li>
+<li><p><strong>model</strong> (<em>bf_knn_classification_modelptr</em>) – Input model trained by the classification algorithm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bf_knn_classification_prediction_result</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="id12">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id12" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="py attribute">
+<dt id="id13">
+<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id13" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id14">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#id14" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id15">
+<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id15" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="daal4py.bf_knn_classification_model">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">bf_knn_classification_model</code><a class="headerlink" href="#daal4py.bf_knn_classification_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Properties:</p>
+<dl class="py attribute">
+<dt id="daal4py.bf_knn_classification_model.NFeatures">
+<code class="sig-name descname">NFeatures</code><a class="headerlink" href="#daal4py.bf_knn_classification_model.NFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="daal4py.bf_knn_classification_model.NumberOfFeatures">
+<code class="sig-name descname">NumberOfFeatures</code><a class="headerlink" href="#daal4py.bf_knn_classification_model.NumberOfFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>size_t</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="adaboost-classification">
 <h3>AdaBoost Classification<a class="headerlink" href="#adaboost-classification" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-adaboost-classifier">Intel DAAL Classification AdaBoost</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-adaboost-classifier">Intel(R) oneAPI Data Analytics Library Classification AdaBoost</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/adaboost_batch.py">Single-Process AdaBoost Classification</a></p></li>
@@ -1062,9 +1214,9 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] AdaBoost computation method</p></li>
 <li><p><strong>weakLearnerTraining</strong> (<em>classifier_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
 <li><p><strong>weakLearnerPrediction</strong> (<em>classifier_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the AdaBoost training algorithm</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the AdaBoost training algorithm</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the AdaBoost training algorithm</p></li>
-<li><p><strong>learningRate</strong> (<em>double</em>) – [optional, default: NaN64]  Multiplier for each classifier to shrink its contribution</p></li>
+<li><p><strong>learningRate</strong> (<em>double</em>) – [optional, default: get_nan64()]  Multiplier for each classifier to shrink its contribution</p></li>
 <li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
@@ -1127,9 +1279,9 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] AdaBoost computation method</p></li>
 <li><p><strong>weakLearnerTraining</strong> (<em>classifier_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
 <li><p><strong>weakLearnerPrediction</strong> (<em>classifier_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the AdaBoost training algorithm</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the AdaBoost training algorithm</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the AdaBoost training algorithm</p></li>
-<li><p><strong>learningRate</strong> (<em>double</em>) – [optional, default: NaN64]  Multiplier for each classifier to shrink its contribution</p></li>
+<li><p><strong>learningRate</strong> (<em>double</em>) – [optional, default: get_nan64()]  Multiplier for each classifier to shrink its contribution</p></li>
 <li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
@@ -1147,7 +1299,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1155,12 +1307,12 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="id12">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id12" title="Permalink to this definition">¶</a></dt>
+<dt id="id16">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id16" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="py attribute">
-<dt id="id13">
-<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id13" title="Permalink to this definition">¶</a></dt>
+<dt id="id17">
+<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id17" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1169,8 +1321,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id14">
-<code class="sig-name descname">prediction</code><a class="headerlink" href="#id14" title="Permalink to this definition">¶</a></dt>
+<dt id="id18">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#id18" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1179,8 +1331,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id15">
-<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id15" title="Permalink to this definition">¶</a></dt>
+<dt id="id19">
+<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id19" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1250,7 +1402,7 @@
 <div class="section" id="brownboost-classification">
 <h3>BrownBoost Classification<a class="headerlink" href="#brownboost-classification" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-brownboost-classifier">Intel DAAL Classification BrownBoost</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-brownboost-classifier">Intel(R) oneAPI Data Analytics Library Classification BrownBoost</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/brownboost_batch.py">Single-Process BrownBoost Classification</a></p></li>
@@ -1265,11 +1417,11 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] BrownBoost computation method</p></li>
 <li><p><strong>weakLearnerTraining</strong> (<em>classifier_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
 <li><p><strong>weakLearnerPrediction</strong> (<em>classifier_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the BrownBoost training algorithm</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the BrownBoost training algorithm</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the BrownBoost training algorithm</p></li>
-<li><p><strong>newtonRaphsonAccuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy threshold for Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
+<li><p><strong>newtonRaphsonAccuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy threshold for Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
 <li><p><strong>newtonRaphsonMaxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
-<li><p><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold needed to avoid degenerate cases in the BrownBoost training algorithm</p></li>
+<li><p><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold needed to avoid degenerate cases in the BrownBoost training algorithm</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
@@ -1321,11 +1473,11 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] BrownBoost computation method</p></li>
 <li><p><strong>weakLearnerTraining</strong> (<em>classifier_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
 <li><p><strong>weakLearnerPrediction</strong> (<em>classifier_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the BrownBoost training algorithm</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the BrownBoost training algorithm</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the BrownBoost training algorithm</p></li>
-<li><p><strong>newtonRaphsonAccuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy threshold for Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
+<li><p><strong>newtonRaphsonAccuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy threshold for Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
 <li><p><strong>newtonRaphsonMaxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of Newton-Raphson iterations in the BrownBoost training algorithm</p></li>
-<li><p><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold needed to avoid degenerate cases in the BrownBoost training algorithm</p></li>
+<li><p><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold needed to avoid degenerate cases in the BrownBoost training algorithm</p></li>
 <li><p><strong>nClasses</strong> (<em>size_t</em>) – [optional, default: -1]  Number of classes</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
@@ -1343,7 +1495,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1351,12 +1503,12 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="id16">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id16" title="Permalink to this definition">¶</a></dt>
+<dt id="id20">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id20" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="py attribute">
-<dt id="id17">
-<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id17" title="Permalink to this definition">¶</a></dt>
+<dt id="id21">
+<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id21" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1365,8 +1517,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id18">
-<code class="sig-name descname">prediction</code><a class="headerlink" href="#id18" title="Permalink to this definition">¶</a></dt>
+<dt id="id22">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#id22" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1375,8 +1527,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id19">
-<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id19" title="Permalink to this definition">¶</a></dt>
+<dt id="id23">
+<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id23" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1446,7 +1598,7 @@
 <div class="section" id="logitboost-classification">
 <h3>LogitBoost Classification<a class="headerlink" href="#logitboost-classification" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logitboost-classifier">Intel DAAL Classification LogitBoost</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logitboost-classifier">Intel(R) oneAPI Data Analytics Library Classification LogitBoost</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/logitboost_batch.py">Single-Process LogitBoost Classification</a></p></li>
@@ -1462,10 +1614,10 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “friedman”] LogitBoost computation method</p></li>
 <li><p><strong>weakLearnerTraining</strong> (<em>regression_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
 <li><p><strong>weakLearnerPrediction</strong> (<em>regression_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the LogitBoost training algorithm</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the LogitBoost training algorithm</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of terms in additive regression</p></li>
-<li><p><strong>weightsDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold to avoid degenerate cases when  calculating weights W</p></li>
-<li><p><strong>responsesDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold to avoid degenerate cases when  calculating responses Z</p></li>
+<li><p><strong>weightsDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold to avoid degenerate cases when  calculating weights W</p></li>
+<li><p><strong>responsesDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold to avoid degenerate cases when  calculating responses Z</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
@@ -1517,10 +1669,10 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] LogitBoost computation method</p></li>
 <li><p><strong>weakLearnerTraining</strong> (<em>regression_training_batch__iface__</em>) – [optional, default: None]  The algorithm for weak learner model training</p></li>
 <li><p><strong>weakLearnerPrediction</strong> (<em>regression_prediction_batch__iface__</em>) – [optional, default: None]  The algorithm for prediction based on a weak learner model</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the LogitBoost training algorithm</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the LogitBoost training algorithm</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of terms in additive regression</p></li>
-<li><p><strong>weightsDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold to avoid degenerate cases when  calculating weights W</p></li>
-<li><p><strong>responsesDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold to avoid degenerate cases when  calculating responses Z</p></li>
+<li><p><strong>weightsDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold to avoid degenerate cases when  calculating weights W</p></li>
+<li><p><strong>responsesDegenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold to avoid degenerate cases when  calculating responses Z</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
 </dd>
@@ -1537,7 +1689,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1545,12 +1697,12 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="id20">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id20" title="Permalink to this definition">¶</a></dt>
+<dt id="id24">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id24" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="py attribute">
-<dt id="id21">
-<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id21" title="Permalink to this definition">¶</a></dt>
+<dt id="id25">
+<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id25" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1559,8 +1711,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id22">
-<code class="sig-name descname">prediction</code><a class="headerlink" href="#id22" title="Permalink to this definition">¶</a></dt>
+<dt id="id26">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#id26" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1569,8 +1721,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id23">
-<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id23" title="Permalink to this definition">¶</a></dt>
+<dt id="id27">
+<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id27" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1640,7 +1792,7 @@
 <div class="section" id="stump-weak-learner-classification">
 <h3>Stump Weak Learner Classification<a class="headerlink" href="#stump-weak-learner-classification" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier">Intel DAAL Classification Weak Learner Stump</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier">Intel(R) oneAPI Data Analytics Library Classification Weak Learner Stump</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/stump_classification_batch.py">Single-Process Stump Weak Learner Classification</a></p></li>
@@ -1731,7 +1883,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1739,12 +1891,12 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="id24">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id24" title="Permalink to this definition">¶</a></dt>
+<dt id="id28">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id28" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="py attribute">
-<dt id="id25">
-<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id25" title="Permalink to this definition">¶</a></dt>
+<dt id="id29">
+<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id29" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1753,8 +1905,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id26">
-<code class="sig-name descname">prediction</code><a class="headerlink" href="#id26" title="Permalink to this definition">¶</a></dt>
+<dt id="id30">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#id30" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1763,8 +1915,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id27">
-<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id27" title="Permalink to this definition">¶</a></dt>
+<dt id="id31">
+<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id31" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1844,7 +1996,7 @@
 <div class="section" id="multinomial-naive-bayes">
 <h3>Multinomial Naive Bayes<a class="headerlink" href="#multinomial-naive-bayes" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-naive-bayes-classifier">Intel DAAL Naive Bayes</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-naive-bayes-classifier">Intel(R) oneAPI Data Analytics Library Naive Bayes</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_batch.py">Single-Process Naive Bayes</a></p></li>
@@ -1931,7 +2083,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1939,12 +2091,12 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="id28">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id28" title="Permalink to this definition">¶</a></dt>
+<dt id="id32">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id32" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="py attribute">
-<dt id="id29">
-<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id29" title="Permalink to this definition">¶</a></dt>
+<dt id="id33">
+<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id33" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1953,8 +2105,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id30">
-<code class="sig-name descname">prediction</code><a class="headerlink" href="#id30" title="Permalink to this definition">¶</a></dt>
+<dt id="id34">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#id34" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -1963,8 +2115,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id31">
-<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id31" title="Permalink to this definition">¶</a></dt>
+<dt id="id35">
+<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id35" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -2034,7 +2186,7 @@
 <div class="section" id="support-vector-machine-svm">
 <h3>Support Vector Machine (SVM)<a class="headerlink" href="#support-vector-machine-svm" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-support-vector-machine-classifier">Intel DAAL SVM</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-support-vector-machine-classifier">Intel(R) oneAPI Data Analytics Library SVM</a></p>
 <p>Note: For the labels parameter, data is formatted as -1s and 1s</p>
 <p>Examples:</p>
 <ul class="simple">
@@ -2048,9 +2200,9 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the SVM training algorithm, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “boser”] SVM training method</p></li>
-<li><p><strong>C</strong> (<em>double</em>) – [optional, default: NaN64]  Upper bound in constraints of the quadratic optimization problem</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Training accuracy</p></li>
-<li><p><strong>tau</strong> (<em>double</em>) – [optional, default: NaN64]  Tau parameter of the working set selection scheme</p></li>
+<li><p><strong>C</strong> (<em>double</em>) – [optional, default: get_nan64()]  Upper bound in constraints of the quadratic optimization problem</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Training accuracy</p></li>
+<li><p><strong>tau</strong> (<em>double</em>) – [optional, default: get_nan64()]  Tau parameter of the working set selection scheme</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations for the algorithm</p></li>
 <li><p><strong>cacheSize</strong> (<em>size_t</em>) – [optional, default: -1]  Size of cache in bytes to store values of the kernel matrix. A non-zero value enables use of a cache optimization technique</p></li>
 <li><p><strong>doShrinking</strong> (<em>bool</em>) – [optional, default: False]  Flag that enables use of the shrinking optimization technique</p></li>
@@ -2105,9 +2257,9 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”]</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</p></li>
-<li><p><strong>C</strong> (<em>double</em>) – [optional, default: NaN64]  Upper bound in constraints of the quadratic optimization problem</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Training accuracy</p></li>
-<li><p><strong>tau</strong> (<em>double</em>) – [optional, default: NaN64]  Tau parameter of the working set selection scheme</p></li>
+<li><p><strong>C</strong> (<em>double</em>) – [optional, default: get_nan64()]  Upper bound in constraints of the quadratic optimization problem</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Training accuracy</p></li>
+<li><p><strong>tau</strong> (<em>double</em>) – [optional, default: get_nan64()]  Tau parameter of the working set selection scheme</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations for the algorithm</p></li>
 <li><p><strong>cacheSize</strong> (<em>size_t</em>) – [optional, default: -1]  Size of cache in bytes to store values of the kernel matrix. A non-zero value enables use of a cache optimization technique</p></li>
 <li><p><strong>doShrinking</strong> (<em>bool</em>) – [optional, default: False]  Flag that enables use of the shrinking optimization technique</p></li>
@@ -2130,7 +2282,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2138,12 +2290,12 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="id32">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id32" title="Permalink to this definition">¶</a></dt>
+<dt id="id36">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id36" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="py attribute">
-<dt id="id33">
-<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id33" title="Permalink to this definition">¶</a></dt>
+<dt id="id37">
+<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id37" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -2152,8 +2304,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id34">
-<code class="sig-name descname">prediction</code><a class="headerlink" href="#id34" title="Permalink to this definition">¶</a></dt>
+<dt id="id38">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#id38" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -2162,8 +2314,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id35">
-<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id35" title="Permalink to this definition">¶</a></dt>
+<dt id="id39">
+<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id39" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -2243,7 +2395,7 @@
 <div class="section" id="logistic-regression">
 <h3>Logistic Regression<a class="headerlink" href="#logistic-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic-regression">Intel DAAL Logistic Regression</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic-regression">Intel(R) oneAPI Data Analytics Library Logistic Regression</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/log_reg_binary_dense_batch.py">Single-Process Binary Class Logistic Regression</a></p></li>
@@ -2259,8 +2411,8 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for logistic regression, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] logistic regression computation method</p></li>
 <li><p><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]  Whether the intercept needs to be computed</p></li>
-<li><p><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: NaN32]  L1 regularization coefficient. Default is 0 (not applied)</p></li>
-<li><p><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: NaN32]  L2 regularization coefficient. Default is 0 (not applied)</p></li>
+<li><p><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: get_nan32()]  L1 regularization coefficient. Default is 0 (not applied)</p></li>
+<li><p><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: get_nan32()]  L2 regularization coefficient. Default is 0 (not applied)</p></li>
 <li><p><strong>optimizationSolver</strong> (<em>optimization_solver_iterative_solver_batch__iface__</em>) – [optional, default: None]  Default is sgd momentum solver</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 </ul>
@@ -2327,7 +2479,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#id36" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#id40" title="daal4py.classifier_prediction_result">classifier_prediction_result</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2335,12 +2487,12 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="id36">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id36" title="Permalink to this definition">¶</a></dt>
+<dt id="id40">
+<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">classifier_prediction_result</code><a class="headerlink" href="#id40" title="Permalink to this definition">¶</a></dt>
 <dd><p>Properties:</p>
 <dl class="py attribute">
-<dt id="id37">
-<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id37" title="Permalink to this definition">¶</a></dt>
+<dt id="id41">
+<code class="sig-name descname">logProbabilities</code><a class="headerlink" href="#id41" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -2349,8 +2501,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id38">
-<code class="sig-name descname">prediction</code><a class="headerlink" href="#id38" title="Permalink to this definition">¶</a></dt>
+<dt id="id42">
+<code class="sig-name descname">prediction</code><a class="headerlink" href="#id42" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -2359,8 +2511,8 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id39">
-<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id39" title="Permalink to this definition">¶</a></dt>
+<dt id="id43">
+<code class="sig-name descname">probabilities</code><a class="headerlink" href="#id43" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Numpy array</p>
@@ -2430,11 +2582,11 @@
 </div>
 <div class="section" id="regression">
 <h2>Regression<a class="headerlink" href="#regression" title="Permalink to this headline">¶</a></h2>
-<p>See also <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-regression">Intel DAAL Regression</a>.</p>
+<p>See also <a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-regression">Intel(R) oneAPI Data Analytics Library Regression</a>.</p>
 <div class="section" id="decision-forest-regression">
 <h3>Decision Forest Regression<a class="headerlink" href="#decision-forest-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-forest-1">Intel DAAL Regression Decision Forest</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-forest-1">Intel(R) oneAPI Data Analytics Library Regression Decision Forest</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_batch.py">Single-Process Decision Forest Regression</a></p></li>
@@ -2448,20 +2600,22 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for decision forest model-based training, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] decision forest training method</p></li>
 <li><p><strong>nTrees</strong> (<em>size_t</em>) – [optional, default: -1]  Number of trees in the forest. Default is 10</p></li>
-<li><p><strong>observationsPerTreeFraction</strong> (<em>double</em>) – [optional, default: NaN64]  Fraction of observations used for a training of one tree, 0 to 1. Default is 1 (sampling with replacement)</p></li>
+<li><p><strong>observationsPerTreeFraction</strong> (<em>double</em>) – [optional, default: get_nan64()]  Fraction of observations used for a training of one tree, 0 to 1. Default is 1 (sampling with replacement)</p></li>
 <li><p><strong>featuresPerNode</strong> (<em>size_t</em>) – [optional, default: -1]  Number of features tried as possible splits per node. If 0 then sqrt(p) for classification, p/3 for regression, where p is the total number of features.</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal tree depth. Default is 0 (unlimited)</p></li>
 <li><p><strong>minObservationsInLeafNode</strong> (<em>size_t</em>) – [optional, default: -1]  Minimal number of observations in a leaf node. Default is 1 for classification, 5 for regression.</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for the random numbers generator used by the algorithms</p></li>
-<li><p><strong>impurityThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold value used as stopping criteria: if the impurity value in the node is smaller than the threshold then the node is not split anymore.</p></li>
+<li><p><strong>impurityThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold value used as stopping criteria: if the impurity value in the node is smaller than the threshold then the node is not split anymore.</p></li>
 <li><p><strong>varImportance</strong> (<em>str</em>) – [optional, default: “”]  Variable importance computation mode</p></li>
 <li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>memorySavingMode</strong> (<em>bool</em>) – [optional, default: False]  If true then use memory saving (but slower) mode</p></li>
 <li><p><strong>bootstrap</strong> (<em>bool</em>) – [optional, default: False]  If true then training set for a tree is a bootstrap of the whole training set</p></li>
 <li><p><strong>minObservationsInSplitNode</strong> (<em>size_t</em>) – [optional, default: -1]  Minimal number of observations in a split node. Default 2</p></li>
-<li><p><strong>minWeightFractionInLeafNode</strong> (<em>double</em>) – [optional, default: NaN64]  The minimum weighted fraction of the sum total of weights (of all the input observations) required to be at a leaf node, 0.0 to 0.5. Default is 0.0</p></li>
-<li><p><strong>minImpurityDecreaseInSplitNode</strong> (<em>double</em>) – [optional, default: NaN64]  A node will be split if this split induces a decrease of the impurity greater than or equal to the value, non-negative. Default is 0.0</p></li>
+<li><p><strong>minWeightFractionInLeafNode</strong> (<em>double</em>) – [optional, default: get_nan64()]  The minimum weighted fraction of the sum total of weights (of all the input observations) required to be at a leaf node, 0.0 to 0.5. Default is 0.0</p></li>
+<li><p><strong>minImpurityDecreaseInSplitNode</strong> (<em>double</em>) – [optional, default: get_nan64()]  A node will be split if this split induces a decrease of the impurity greater than or equal to the value, non-negative. Default is 0.0</p></li>
 <li><p><strong>maxLeafNodes</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum number of leaf node. Default is 0 (unlimited)</p></li>
+<li><p><strong>maxBins</strong> (<em>size_t</em>) – [optional, default: -1]  Used with ‘hist’ split finding method only. Maximal number of discrete bins to bucket continuous features. Default is 256. Increasing the number results in higher computation costs</p></li>
+<li><p><strong>minBinSize</strong> (<em>size_t</em>) – [optional, default: -1]  Used with ‘hist’ split finding method only. Minimal number of observations in a bin. Default is 5</p></li>
 </ul>
 </dd>
 </dl>
@@ -2607,7 +2761,7 @@
 <div class="section" id="decision-tree-regression">
 <h3>Decision Tree Regression<a class="headerlink" href="#decision-tree-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-tree-1">Intel DAAL Regression Decision Tree</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-decision-tree-1">Intel(R) oneAPI Data Analytics Library Regression Decision Tree</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_regression_batch.py">Single-Process Decision Tree Regression</a></p></li>
@@ -2733,7 +2887,7 @@
 <div class="section" id="gradient-boosted-regression">
 <h3>Gradient Boosted Regression<a class="headerlink" href="#gradient-boosted-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-1">Intel DAAL Regression Gradient Boosted Tree</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-1">Intel(R) oneAPI Data Analytics Library Regression Gradient Boosted Tree</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_regression_batch.py">Single-Process Boosted Regression Regression</a></p></li>
@@ -2751,10 +2905,10 @@
 <li><p><strong>splitMethod</strong> (<em>str</em>) – [optional, default: “”]  Split finding method. Default is exact</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the gradient boosted trees training algorithm. Default is 50</p></li>
 <li><p><strong>maxTreeDepth</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal tree depth, 0 for unlimited. Default is 6</p></li>
-<li><p><strong>shrinkage</strong> (<em>double</em>) – [optional, default: NaN64]  Learning rate of the boosting procedure. Scales the contribution of each tree by a factor (0, 1]. Default is 0.3</p></li>
-<li><p><strong>minSplitLoss</strong> (<em>double</em>) – [optional, default: NaN64]  Loss regularization parameter. Min loss reduction required to make a further partition on a leaf node of the tree. Range: [0, inf). Default is 0</p></li>
-<li><p><strong>lambda</strong> (<em>double</em>) – [optional, default: NaN64]  L2 regularization parameter on weights. Range: [0, inf). Default is 1</p></li>
-<li><p><strong>observationsPerTreeFraction</strong> (<em>double</em>) – [optional, default: NaN64]  Fraction of observations used for a training of one tree, sampling without replacement. Range: (0, 1]. Default is 1 (no sampling, entire dataset is used)</p></li>
+<li><p><strong>shrinkage</strong> (<em>double</em>) – [optional, default: get_nan64()]  Learning rate of the boosting procedure. Scales the contribution of each tree by a factor (0, 1]. Default is 0.3</p></li>
+<li><p><strong>minSplitLoss</strong> (<em>double</em>) – [optional, default: get_nan64()]  Loss regularization parameter. Min loss reduction required to make a further partition on a leaf node of the tree. Range: [0, inf). Default is 0</p></li>
+<li><p><strong>lambda</strong> (<em>double</em>) – [optional, default: get_nan64()]  L2 regularization parameter on weights. Range: [0, inf). Default is 1</p></li>
+<li><p><strong>observationsPerTreeFraction</strong> (<em>double</em>) – [optional, default: get_nan64()]  Fraction of observations used for a training of one tree, sampling without replacement. Range: (0, 1]. Default is 1 (no sampling, entire dataset is used)</p></li>
 <li><p><strong>featuresPerNode</strong> (<em>size_t</em>) – [optional, default: -1]  Number of features tried as possible splits per node. Range : [0, p] where p is the total number of features. Default is 0 (use all features)</p></li>
 <li><p><strong>minObservationsInLeafNode</strong> (<em>size_t</em>) – [optional, default: -1]  Minimal number of observations in a leaf node. Default is 5.</p></li>
 <li><p><strong>memorySavingMode</strong> (<em>bool</em>) – [optional, default: False]  If true then use memory saving (but slower) mode. Default is false</p></li>
@@ -2927,7 +3081,7 @@
 <div class="section" id="linear-regression">
 <h3>Linear Regression<a class="headerlink" href="#linear-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-linear-and-ridge-regressions-computation">Intel DAAL Linear and Ridge Regression</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-linear-and-ridge-regressions-computation">Intel(R) oneAPI Data Analytics Library Linear and Ridge Regression</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_batch.py">Single-Process Linear Regression</a></p></li>
@@ -3089,7 +3243,7 @@
 <div class="section" id="least-absolute-shrinkage-and-selection-operator">
 <h3>Least Absolute Shrinkage and Selection Operator<a class="headerlink" href="#least-absolute-shrinkage-and-selection-operator" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-least-absolute-shrinkage-and-selection-operator">Intel DAAL Least Absolute Shrinkage and Selection Operator</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-least-absolute-shrinkage-and-selection-operator">Intel(R) oneAPI Data Analytics Library Least Absolute Shrinkage and Selection Operator</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/lasso_regression_batch.py">Single-Process LASSO Regression</a></p></li>
@@ -3263,7 +3417,7 @@
 <div class="section" id="ridge-regression">
 <h3>Ridge Regression<a class="headerlink" href="#ridge-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-linear-and-ridge-regressions-computation">Intel DAAL Linear and Ridge Regression</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-linear-and-ridge-regressions-computation">Intel(R) oneAPI Data Analytics Library Linear and Ridge Regression</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_batch.py">Single-Process Ridge Regression</a></p></li>
@@ -3426,7 +3580,7 @@
 <div class="section" id="stump-regression">
 <h3>Stump Regression<a class="headerlink" href="#stump-regression" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-regression-stump">Intel DAAL Regression Stump</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-regression-stump">Intel(R) oneAPI Data Analytics Library Regression Stump</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/stump_regression_batch.py">Single-Process Stump Regression</a></p></li>
@@ -3597,7 +3751,7 @@
 <div class="section" id="principal-component-analysis-pca">
 <h2>Principal Component Analysis (PCA)<a class="headerlink" href="#principal-component-analysis-pca" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis">Intel DAAL PCA</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis">Intel(R) oneAPI Data Analytics Library PCA</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/pca_batch.py">Single-Process PCA</a></p></li>
@@ -3697,7 +3851,7 @@
 <div class="section" id="principal-component-analysis-pca-transform">
 <h3>Principal Component Analysis (PCA) Transform<a class="headerlink" href="#principal-component-analysis-pca-transform" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-principal-components-analysis-transform">Intel DAAL PCA Transform</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-principal-components-analysis-transform">Intel(R) oneAPI Data Analytics Library PCA Transform</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/pca_transform_batch.py">Single-Process PCA Transform</a></p></li>
@@ -3755,7 +3909,7 @@
 <div class="section" id="k-means-clustering">
 <h2>K-Means Clustering<a class="headerlink" href="#k-means-clustering" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-k-means-clustering">Intel DAAL K-Means-Clustering</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-k-means-clustering">Intel(R) oneAPI Data Analytics Library K-Means-Clustering</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_batch.py">Single-Process K-Means</a></p></li>
@@ -3764,7 +3918,7 @@
 <div class="section" id="k-means-initialization">
 <h3>K-Means Initialization<a class="headerlink" href="#k-means-initialization" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-initialization">Intel DAAL K-Means Initialization</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-initialization">Intel(R) oneAPI Data Analytics Library K-Means Initialization</a></p>
 <dl class="py class">
 <dt id="daal4py.kmeans_init">
 <em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">kmeans_init</code><a class="headerlink" href="#daal4py.kmeans_init" title="Permalink to this definition">¶</a></dt>
@@ -3775,7 +3929,7 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations of initial clusters for K-Means algorithm, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Method of computing initial clusters for the algorithm</p></li>
 <li><p><strong>nTrials</strong> (<em>size_t</em>) – [optional, default: -1]  Kmeans++ only. The number of trials to generate all clusters but the first initial cluster.</p></li>
-<li><p><strong>oversamplingFactor</strong> (<em>double</em>) – [optional, default: NaN64]  Kmeans|| only. A fraction of nClusters being chosen in each of nRounds of kmeans||.L = nClusters* oversamplingFactor points are sampled in a round.</p></li>
+<li><p><strong>oversamplingFactor</strong> (<em>double</em>) – [optional, default: get_nan64()]  Kmeans|| only. A fraction of nClusters being chosen in each of nRounds of kmeans||.L = nClusters* oversamplingFactor points are sampled in a round.</p></li>
 <li><p><strong>nRounds</strong> (<em>size_t</em>) – [optional, default: -1]  Kmeans|| only. Number of rounds for k-means||. (oversamplingFactor*nRounds) &gt; 1 is a requirement.</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine to be used for generating random numbers for the initialization</p></li>
 <li><p><strong>distributed</strong> (<em>bool</em>) – [optional, default: False] enable distributed computation (SPMD)</p></li>
@@ -3818,7 +3972,7 @@
 <div class="section" id="k-means">
 <h3>K-Means<a class="headerlink" href="#k-means" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-computation">Intel DAAL K-Means Computation</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-computation">Intel(R) oneAPI Data Analytics Library K-Means Computation</a></p>
 <dl class="py class">
 <dt id="daal4py.kmeans">
 <em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">kmeans</code><a class="headerlink" href="#daal4py.kmeans" title="Permalink to this definition">¶</a></dt>
@@ -3829,8 +3983,8 @@
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – Number of iterations</p></li>
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations of K-Means, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “lloydDense”] Computation method of the algorithm</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold for the termination of the algorithm</p></li>
-<li><p><strong>gamma</strong> (<em>double</em>) – [optional, default: NaN64]  Weight used in distance computation for categorical features</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold for the termination of the algorithm</p></li>
+<li><p><strong>gamma</strong> (<em>double</em>) – [optional, default: get_nan64()]  Weight used in distance computation for categorical features</p></li>
 <li><p><strong>distanceType</strong> (<em>str</em>) – [optional, default: “”]  Distance used in the algorithm</p></li>
 <li><p><strong>resultsToEvaluate</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
 <li><p><strong>assignFlag</strong> (<em>bool</em>) – [optional, default: False]  Do data points assignment     :param bool distributed: [optional, default: False] enable distributed computation (SPMD)</p></li>
@@ -3907,7 +4061,7 @@
 <div class="section" id="density-based-spatial-clustering-of-applications-with-noise">
 <h2>Density-Based Spatial Clustering of Applications with Noise<a class="headerlink" href="#density-based-spatial-clustering-of-applications-with-noise" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-density-based-spatial-clustering-of-applications-with-noise">Intel DAAL Density-Based Spatial Clustering of Applications with Noise</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-density-based-spatial-clustering-of-applications-with-noise">Intel(R) oneAPI Data Analytics Library Density-Based Spatial Clustering of Applications with Noise</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/dbscan_batch.py">Single-Process DBSCAN</a></p></li>
@@ -4003,7 +4157,7 @@
 <div class="section" id="multivariate-outlier-detection">
 <h3>Multivariate Outlier Detection<a class="headerlink" href="#multivariate-outlier-detection" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-multivariate-outlier-detection">Intel DAAL Multivariate Outlier Detection</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-multivariate-outlier-detection">Intel(R) oneAPI Data Analytics Library Multivariate Outlier Detection</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/multivariate_outlier_batch.py">Single-Process Multivariate Outlier Detection</a></p></li>
@@ -4060,7 +4214,7 @@
 <div class="section" id="univariate-outlier-detection">
 <h3>Univariate Outlier Detection<a class="headerlink" href="#univariate-outlier-detection" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-univariate-outlier-detection">Intel DAAL Univariate Outlier Detection</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-univariate-outlier-detection">Intel(R) oneAPI Data Analytics Library Univariate Outlier Detection</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/univariate_outlier_batch.py">Single-Process Univariate Outlier Detection</a></p></li>
@@ -4117,7 +4271,7 @@
 <div class="section" id="multivariate-bacon-outlier-detection">
 <h3>Multivariate Bacon Outlier Detection<a class="headerlink" href="#multivariate-bacon-outlier-detection" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-multivariate-bacon-outlier-detection">Intel DAAL Multivariate Bacon Outlier Detection</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-multivariate-bacon-outlier-detection">Intel(R) oneAPI Data Analytics Library Multivariate Bacon Outlier Detection</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/bacon_outlier_batch.py">Single-Process Bacon Outlier Detection</a></p></li>
@@ -4131,8 +4285,8 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the BACON outlier detection, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] BACON outlier detection computation method</p></li>
 <li><p><strong>initMethod</strong> (<em>str</em>) – [optional, default: “”]  Initialization method</p></li>
-<li><p><strong>alpha</strong> (<em>double</em>) – [optional, default: NaN64]  One-tailed probability that defines the (1 - lpha) quantile of the chi^2 distribution with p degrees of freedom. Recommended value: lpha / n, where n is the number of observations.</p></li>
-<li><p><strong>toleranceToConverge</strong> (<em>double</em>) – [optional, default: NaN64]  Stopping criterion: the algorithm is terminated if the size of the basic subset is changed by less than the threshold</p></li>
+<li><p><strong>alpha</strong> (<em>double</em>) – [optional, default: get_nan64()]  One-tailed probability that defines the (1 - lpha) quantile of the chi^2 distribution with p degrees of freedom. Recommended value: lpha / n, where n is the number of observations.</p></li>
+<li><p><strong>toleranceToConverge</strong> (<em>double</em>) – [optional, default: get_nan64()]  Stopping criterion: the algorithm is terminated if the size of the basic subset is changed by less than the threshold</p></li>
 </ul>
 </dd>
 </dl>
@@ -4177,7 +4331,7 @@
 <div class="section" id="mean-squared-error-algorithm-mse">
 <h4>Mean Squared Error Algorithm (MSE)<a class="headerlink" href="#mean-squared-error-algorithm-mse" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-mean-squared-error-algorithm">Intel DAAL MSE</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-mean-squared-error-algorithm">Intel(R) oneAPI Data Analytics Library MSE</a></p>
 <p>Examples:
 - <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/adagrad_mse_batch.py">In Adagrad</a>
 - <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_mse_batch.py">In LBFGS</a>
@@ -4252,7 +4406,7 @@
 <div class="section" id="logistic-loss">
 <h4>Logistic Loss<a class="headerlink" href="#logistic-loss" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic-loss">Intel DAAL Logistic Loss</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic-loss">Intel(R) oneAPI Data Analytics Library Logistic Loss</a></p>
 <p>Examples:
 - <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/sgd_logistic_loss_batch.py">In SGD</a></p>
 <dl class="py class">
@@ -4265,8 +4419,8 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the Logistic loss objective function, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] The Logistic loss objective function computation method</p></li>
 <li><p><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]  Whether the intercept needs to be computed. Default is true</p></li>
-<li><p><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: NaN32]  L1 regularization coefficient. Default is 0 (not applied)</p></li>
-<li><p><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: NaN32]  L2 regularization coefficient. Default is 0 (not applied)</p></li>
+<li><p><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: get_nan32()]  L1 regularization coefficient. Default is 0 (not applied)</p></li>
+<li><p><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: get_nan32()]  L2 regularization coefficient. Default is 0 (not applied)</p></li>
 <li><p><strong>batchIndices</strong> (<em>array</em>) – [optional, default: None]  Numeric table of size 1 x m where m is batch size that represent a batch of indices used to compute the function results, e.g., value of the sum of the functions. If no indices are provided, all terms will be used in the computations.</p></li>
 <li><p><strong>featureId</strong> (<em>size_t</em>) – [optional, default: -1]  The feature index to compute part of gradient/hessian/proximal projection</p></li>
 <li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
@@ -4321,7 +4475,7 @@
 <div class="section" id="cross-entropy-loss">
 <h4>Cross-entropy Loss<a class="headerlink" href="#cross-entropy-loss" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-cross-entropy-loss">Intel DAAL Cross Entropy Loss</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-cross-entropy-loss">Intel(R) oneAPI Data Analytics Library Cross Entropy Loss</a></p>
 <p>Examples:
 - <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_cr_entr_loss_batch.py">In LBFGS</a></p>
 <dl class="py class">
@@ -4335,8 +4489,8 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the Cross-entropy loss objective function, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] The Cross-entropy loss objective function computation method</p></li>
 <li><p><strong>interceptFlag</strong> (<em>bool</em>) – [optional, default: False]  Whether the intercept needs to be computed. Default is true</p></li>
-<li><p><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: NaN32]  L1 regularization coefficient. Default is 0 (not applied)</p></li>
-<li><p><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: NaN32]  L2 regularization coefficient. Default is 0 (not applied)</p></li>
+<li><p><strong>penaltyL1</strong> (<em>float</em>) – [optional, default: get_nan32()]  L1 regularization coefficient. Default is 0 (not applied)</p></li>
+<li><p><strong>penaltyL2</strong> (<em>float</em>) – [optional, default: get_nan32()]  L2 regularization coefficient. Default is 0 (not applied)</p></li>
 <li><p><strong>batchIndices</strong> (<em>array</em>) – [optional, default: None]  Numeric table of size 1 x m where m is batch size that represent a batch of indices used to compute the function results, e.g., value of the sum of the functions. If no indices are provided, all terms will be used in the computations.</p></li>
 <li><p><strong>featureId</strong> (<em>size_t</em>) – [optional, default: -1]  The feature index to compute part of gradient/hessian/proximal projection</p></li>
 <li><p><strong>resultsToCompute</strong> (<em>str</em>) – [optional, default: “”]  64 bit integer flag that indicates the results to compute</p></li>
@@ -4394,7 +4548,7 @@
 <div class="section" id="stochastic-gradient-descent-algorithm">
 <h4>Stochastic Gradient Descent Algorithm<a class="headerlink" href="#stochastic-gradient-descent-algorithm" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-stochastic-gradient-descent-algorithm">Intel DAAL SGD</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-stochastic-gradient-descent-algorithm">Intel(R) oneAPI Data Analytics Library SGD</a></p>
 <p>Examples:
 - <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/sgd_logistic_loss_batch.py">Using Logistic Loss</a>
 - <a class="reference external" href="https://github.com/IntelPython/daal4py//blob/master/examples/sgd_mse_batch.py">Using MSE</a></p>
@@ -4411,12 +4565,12 @@
 <li><p><strong>learningRateSequence</strong> (<em>array</em>) – [optional, default: None]  Numeric table that contains values of the learning rate sequence</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for random generation of 32 bit integer indices of terms in the objective function.</p></li>
 <li><p><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the algorithm</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the algorithm. The algorithm terminates when this accuracy is achieved</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the algorithm. The algorithm terminates when this accuracy is achieved</p></li>
 <li><p><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]  Indicates whether optional result is required</p></li>
 <li><p><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]  Number of batch indices to compute the stochastic gradient. If batchSize is equal to the number of terms in objective function then no random sampling is performed, and all terms are used to calculate the gradient. This parameter is ignored if batchIndices is provided.</p></li>
 <li><p><strong>conservativeSequence</strong> (<em>array</em>) – [optional, default: None]  Numeric table of values of the conservative coefficient sequence</p></li>
 <li><p><strong>innerNIterations</strong> (<em>size_t</em>) – [optional, default: -1]</p></li>
-<li><p><strong>momentum</strong> (<em>double</em>) – [optional, default: NaN64]  Momentum value</p></li>
+<li><p><strong>momentum</strong> (<em>double</em>) – [optional, default: get_nan64()]  Momentum value</p></li>
 </ul>
 </dd>
 </dl>
@@ -4466,7 +4620,7 @@
 <div class="section" id="limited-memory-broyden-fletcher-goldfarb-shanno-algorithm">
 <h4>Limited-Memory Broyden-Fletcher-Goldfarb-Shanno Algorithm<a class="headerlink" href="#limited-memory-broyden-fletcher-goldfarb-shanno-algorithm" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-limited-memory-broyden-fletcher-goldfarb-shanno-algorithm">Intel DAAL LBFGS</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-limited-memory-broyden-fletcher-goldfarb-shanno-algorithm">Intel(R) oneAPI Data Analytics Library LBFGS</a></p>
 <p>Examples:
 - <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_mse_batch.py">Using MSE</a></p>
 <dl class="py class">
@@ -4486,7 +4640,7 @@
 <li><p><strong>correctionPairBatchIndices</strong> (<em>array</em>) – [optional, default: None]</p></li>
 <li><p><strong>stepLengthSequence</strong> (<em>array</em>) – [optional, default: None]</p></li>
 <li><p><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the algorithm</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the algorithm. The algorithm terminates when this accuracy is achieved</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the algorithm. The algorithm terminates when this accuracy is achieved</p></li>
 <li><p><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]  Indicates whether optional result is required</p></li>
 <li><p><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]  Number of batch indices to compute the stochastic gradient. If batchSize is equal to the number of terms in objective function then no random sampling is performed, and all terms are used to calculate the gradient. This parameter is ignored if batchIndices is provided.</p></li>
 </ul>
@@ -4538,7 +4692,7 @@
 <div class="section" id="adaptive-subgradient-method">
 <h4>Adaptive Subgradient Method<a class="headerlink" href="#adaptive-subgradient-method" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-adaptive-subgradient-method">Intel DAAL AdaGrad</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-adaptive-subgradient-method">Intel(R) oneAPI Data Analytics Library AdaGrad</a></p>
 <p>Examples:
 - <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/adagrad_mse_batch.py">Using MSE</a></p>
 <dl class="py class">
@@ -4552,10 +4706,10 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Adaptive gradient descent computation method</p></li>
 <li><p><strong>batchIndices</strong> (<em>array</em>) – [optional, default: None]  Numeric table that represents 32 bit integer indices of terms in the objective function. If no indices are provided, the implementation will generate random indices.</p></li>
 <li><p><strong>learningRate</strong> (<em>array</em>) – [optional, default: None]  Numeric table that contains value of the learning rate</p></li>
-<li><p><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Value needed to avoid degenerate cases in square root computing.</p></li>
+<li><p><strong>degenerateCasesThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Value needed to avoid degenerate cases in square root computing.</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for random generation of 32 bit integer indices of terms in the objective function.</p></li>
 <li><p><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the algorithm</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the algorithm. The algorithm terminates when this accuracy is achieved</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the algorithm. The algorithm terminates when this accuracy is achieved</p></li>
 <li><p><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]  Indicates whether optional result is required</p></li>
 <li><p><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]  Number of batch indices to compute the stochastic gradient. If batchSize is equal to the number of terms in objective function then no random sampling is performed, and all terms are used to calculate the gradient. This parameter is ignored if batchIndices is provided.</p></li>
 </ul>
@@ -4607,7 +4761,7 @@
 <div class="section" id="stochastic-average-gradient-descent">
 <h4>Stochastic Average Gradient Descent<a class="headerlink" href="#stochastic-average-gradient-descent" title="Permalink to this headline">¶</a></h4>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-stochastic-average-gradient-descent">Intel DAAL Stochastic Average Gradient Descent SAGA</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-stochastic-average-gradient-descent">Intel(R) oneAPI Data Analytics Library Stochastic Average Gradient Descent SAGA</a></p>
 <p>Examples:
 - <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/saga_batch.py">Single Proces saga-logistc_loss</a></p>
 <dl class="py class">
@@ -4623,7 +4777,7 @@
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine for random generation of 32 bit integer indices of terms in the objective function.</p></li>
 <li><p><strong>function</strong> (<em>optimization_solver_sum_of_functions_batch__iface__</em>) – [optional, default: None]  Objective function represented as sum of functions</p></li>
 <li><p><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the algorithm</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Accuracy of the algorithm. The algorithm terminates when this accuracy is achieved</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Accuracy of the algorithm. The algorithm terminates when this accuracy is achieved</p></li>
 <li><p><strong>optionalResultRequired</strong> (<em>bool</em>) – [optional, default: False]  Indicates whether optional result is required</p></li>
 <li><p><strong>batchSize</strong> (<em>size_t</em>) – [optional, default: -1]  Number of batch indices to compute the stochastic gradient. If batchSize is equal to the number of terms in objective function then no random sampling is performed, and all terms are used to calculate the gradient. This parameter is ignored if batchIndices is provided.</p></li>
 </ul>
@@ -4692,7 +4846,7 @@
 <div class="section" id="cosine-distance-matrix">
 <h3>Cosine Distance Matrix<a class="headerlink" href="#cosine-distance-matrix" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-cosine-distance-matrix">Intel DAAL Cosine Distance</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-cosine-distance-matrix">Intel(R) oneAPI Data Analytics Library Cosine Distance</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/cosine_distance_batch.py">Single-Process Cosine Distance</a></p></li>
@@ -4744,7 +4898,7 @@
 <div class="section" id="correlation-distance-matrix">
 <h3>Correlation Distance Matrix<a class="headerlink" href="#correlation-distance-matrix" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-correlation-distance-matrix">Intel DAAL Correlation Distance</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-correlation-distance-matrix">Intel(R) oneAPI Data Analytics Library Correlation Distance</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/correlation_distance_batch.py">Single-Process Correlation Distance</a></p></li>
@@ -4797,11 +4951,11 @@
 <div class="section" id="expectation-maximization-em">
 <h2>Expectation-Maximization (EM)<a class="headerlink" href="#expectation-maximization-em" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-expectation-maximization">Intel DAAL Expectation-Maximization</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-expectation-maximization">Intel(R) oneAPI Data Analytics Library Expectation-Maximization</a></p>
 <div class="section" id="initialization-for-the-gaussian-mixture-model">
 <h3>Initialization for the Gaussian Mixture Model<a class="headerlink" href="#initialization-for-the-gaussian-mixture-model" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-initialization-1">Intel DAAL Expectation-Maximization Initialization</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-initialization-1">Intel(R) oneAPI Data Analytics Library Expectation-Maximization Initialization</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/em_gmm_batch.py">Single-Process Expectation-Maximization</a></p></li>
@@ -4817,7 +4971,7 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”]</p></li>
 <li><p><strong>nTrials</strong> (<em>size_t</em>) – [optional, default: -1]  Number of trials of short EM runs</p></li>
 <li><p><strong>nIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Number of iterations in every short EM run</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold for the termination of the algorithm</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold for the termination of the algorithm</p></li>
 <li><p><strong>covarianceStorage</strong> (<em>str</em>) – [optional, default: “”]  Type of covariance in the Gaussian mixture model.</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None]  Engine to be used for randomly generating data points to start the initialization of short EM</p></li>
 </ul>
@@ -4879,7 +5033,7 @@
 <div class="section" id="em-algorithm-for-the-gaussian-mixture-model">
 <h3>EM algorithm for the Gaussian Mixture Model<a class="headerlink" href="#em-algorithm-for-the-gaussian-mixture-model" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-computation-1">Intel DAAL Expectation-Maximization</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-computation-1">Intel(R) oneAPI Data Analytics Library Expectation-Maximization</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/em_gmm_batch.py">Single-Process Expectation-Maximization</a></p></li>
@@ -4894,8 +5048,8 @@
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the EM for GMM algorithm, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] EM for GMM computation method</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximal number of iterations of the algorithm.</p></li>
-<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold for the termination of the algorithm.</p></li>
-<li><p><strong>regularizationFactor</strong> (<em>double</em>) – [optional, default: NaN64]  Factor for covariance regularization in case of ill-conditional data</p></li>
+<li><p><strong>accuracyThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold for the termination of the algorithm.</p></li>
+<li><p><strong>regularizationFactor</strong> (<em>double</em>) – [optional, default: get_nan64()]  Factor for covariance regularization in case of ill-conditional data</p></li>
 <li><p><strong>covarianceStorage</strong> (<em>str</em>) – [optional, default: “”]  Type of covariance in the Gaussian mixture model.</p></li>
 </ul>
 </dd>
@@ -4982,11 +5136,11 @@
 <div class="section" id="qr-decomposition">
 <h2>QR Decomposition<a class="headerlink" href="#qr-decomposition" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-qr-decomposition">Intel DAAL QR Decomposition</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-qr-decomposition">Intel(R) oneAPI Data Analytics Library QR Decomposition</a></p>
 <div class="section" id="qr-decomposition-without-pivoting">
 <h3>QR Decomposition (without pivoting)<a class="headerlink" href="#qr-decomposition-without-pivoting" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-qr-decomposition-without-pivoting">Intel DAAL QR Decomposition</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-qr-decomposition-without-pivoting">Intel(R) oneAPI Data Analytics Library QR Decomposition</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/qr_batch.py">Single-Process QR</a></p></li>
@@ -5051,7 +5205,7 @@
 <div class="section" id="pivoted-qr-decomposition">
 <h3>Pivoted QR Decomposition<a class="headerlink" href="#pivoted-qr-decomposition" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-pivoted-qr-decomposition">Intel DAAL Pivoted QR Decomposition</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-pivoted-qr-decomposition">Intel(R) oneAPI Data Analytics Library Pivoted QR Decomposition</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/pivoted_qr_batch.py">Single-Process Pivoted QR</a></p></li>
@@ -5125,11 +5279,11 @@
 <div class="section" id="normalization">
 <h2>Normalization<a class="headerlink" href="#normalization" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-normalization">Intel DAAL Normalization</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-normalization">Intel(R) oneAPI Data Analytics Library Normalization</a></p>
 <div class="section" id="z-score">
 <h3>Z-Score<a class="headerlink" href="#z-score" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-z-score">Intel DAAL Z-Score</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-z-score">Intel(R) oneAPI Data Analytics Library Z-Score</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/normalization_zscore_batch.py">Single-Process Z-Score Normalization</a></p></li>
@@ -5203,7 +5357,7 @@
 <div class="section" id="min-max">
 <h3>Min-Max<a class="headerlink" href="#min-max" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-min-max">Intel DAAL Min-Max</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-min-max">Intel(R) oneAPI Data Analytics Library Min-Max</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax_batch.py">Single-Process Min-Max Normalization</a></p></li>
@@ -5216,8 +5370,8 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the min-max normalization, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Min-max normalization computation method</p></li>
-<li><p><strong>lowerBound</strong> (<em>double</em>) – [optional, default: NaN64]  The lower bound of the features value will be obtained during normalization.</p></li>
-<li><p><strong>upperBound</strong> (<em>double</em>) – [optional, default: NaN64]  The upper bound of the features value will be obtained during normalization.</p></li>
+<li><p><strong>lowerBound</strong> (<em>double</em>) – [optional, default: get_nan64()]  The lower bound of the features value will be obtained during normalization.</p></li>
+<li><p><strong>upperBound</strong> (<em>double</em>) – [optional, default: get_nan64()]  The upper bound of the features value will be obtained during normalization.</p></li>
 </ul>
 </dd>
 </dl>
@@ -5258,7 +5412,7 @@
 <div class="section" id="random-number-engines">
 <h2>Random Number Engines<a class="headerlink" href="#random-number-engines" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-engines">Intel DAAL Min-Max</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-engines">Intel(R) oneAPI Data Analytics Library Min-Max</a></p>
 <dl class="py class">
 <dt id="daal4py.engines_result">
 <em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">engines_result</code><a class="headerlink" href="#daal4py.engines_result" title="Permalink to this definition">¶</a></dt>
@@ -5278,7 +5432,7 @@
 <div class="section" id="mt19937">
 <h3>mt19937<a class="headerlink" href="#mt19937" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-mt19937">Intel DAAL mt19937</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-mt19937">Intel(R) oneAPI Data Analytics Library mt19937</a></p>
 <dl class="py class">
 <dt id="daal4py.engines_mt19937">
 <em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">engines_mt19937</code><a class="headerlink" href="#daal4py.engines_mt19937" title="Permalink to this definition">¶</a></dt>
@@ -5317,7 +5471,7 @@
 <div class="section" id="mt2203">
 <h3>mt2203<a class="headerlink" href="#mt2203" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-mt2203">Intel DAAL mt2203</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-mt2203">Intel(R) oneAPI Data Analytics Library mt2203</a></p>
 <dl class="py class">
 <dt id="daal4py.engines_mt2203">
 <em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">engines_mt2203</code><a class="headerlink" href="#daal4py.engines_mt2203" title="Permalink to this definition">¶</a></dt>
@@ -5356,7 +5510,7 @@
 <div class="section" id="mcg59">
 <h3>mcg59<a class="headerlink" href="#mcg59" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-mcg59">Intel DAAL mcg59</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-mcg59">Intel(R) oneAPI Data Analytics Library mcg59</a></p>
 <dl class="py class">
 <dt id="daal4py.engines_mcg59">
 <em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">engines_mcg59</code><a class="headerlink" href="#daal4py.engines_mcg59" title="Permalink to this definition">¶</a></dt>
@@ -5396,11 +5550,11 @@
 <div class="section" id="distributions">
 <h2>Distributions<a class="headerlink" href="#distributions" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-distributions">Intel DAAL Distributions</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-distributions">Intel(R) oneAPI Data Analytics Library Distributions</a></p>
 <div class="section" id="bernoulli">
 <h3>Bernoulli<a class="headerlink" href="#bernoulli" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-bernoulli">Intel DAAL Bernoulli Distribution</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-bernoulli">Intel(R) oneAPI Data Analytics Library Bernoulli Distribution</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli_batch.py">Single-Process Bernoulli Distribution</a></p></li>
@@ -5444,7 +5598,7 @@
 <div class="section" id="normal">
 <h3>Normal<a class="headerlink" href="#normal" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-normal">Intel DAAL Normal Distribution</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-normal">Intel(R) oneAPI Data Analytics Library Normal Distribution</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal_batch.py">Single-Process Normal Distribution</a></p></li>
@@ -5457,8 +5611,8 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations of normal distribution, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Computation method of the distribution</p></li>
-<li><p><strong>a</strong> (<em>double</em>) – [optional, default: NaN64]  Mean</p></li>
-<li><p><strong>sigma</strong> (<em>double</em>) – [optional, default: NaN64]  Standard deviation</p></li>
+<li><p><strong>a</strong> (<em>double</em>) – [optional, default: get_nan64()]  Mean</p></li>
+<li><p><strong>sigma</strong> (<em>double</em>) – [optional, default: get_nan64()]  Standard deviation</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None] Pointer to the engine</p></li>
 </ul>
 </dd>
@@ -5489,7 +5643,7 @@
 <div class="section" id="uniform">
 <h3>Uniform<a class="headerlink" href="#uniform" title="Permalink to this headline">¶</a></h3>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-uniform">Intel DAAL Uniform Distribution</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-uniform">Intel(R) oneAPI Data Analytics Library Uniform Distribution</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform_batch.py">Single-Process Uniform Distribution</a></p></li>
@@ -5502,8 +5656,8 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations of uniform distribution, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Computation method of the distribution</p></li>
-<li><p><strong>a</strong> (<em>double</em>) – [optional, default: NaN64]  Left bound a</p></li>
-<li><p><strong>b</strong> (<em>double</em>) – [optional, default: NaN64]  Right bound b</p></li>
+<li><p><strong>a</strong> (<em>double</em>) – [optional, default: get_nan64()]  Left bound a</p></li>
+<li><p><strong>b</strong> (<em>double</em>) – [optional, default: get_nan64()]  Right bound b</p></li>
 <li><p><strong>engine</strong> (<em>engines_batchbase__iface__</em>) – [optional, default: None] Pointer to the engine</p></li>
 </ul>
 </dd>
@@ -5532,325 +5686,10 @@
 
 </div>
 </div>
-<div class="section" id="math-functions">
-<h2>Math functions<a class="headerlink" href="#math-functions" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="absolute-value-abs">
-<h3>Absolute Value (abs)<a class="headerlink" href="#absolute-value-abs" title="Permalink to this headline">¶</a></h3>
-<p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-absolute-value-abs">Intel DAAL Absolute Value (abs)</a></p>
-<p>Examples:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_abs_batch.py">Single-Process abs</a></p></li>
-</ul>
-<dl class="py class">
-<dt id="daal4py.math_abs">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_abs</code><a class="headerlink" href="#daal4py.math_abs" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the absolute value function,</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] The absolute value function computation method</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="daal4py.math_abs.compute">
-<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.math_abs.compute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do the actual computation on provided input data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#daal4py.math_abs_result" title="daal4py.math_abs_result">math_abs_result</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="daal4py.math_abs_result">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_abs_result</code><a class="headerlink" href="#daal4py.math_abs_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Properties:</p>
-<dl class="py attribute">
-<dt id="daal4py.math_abs_result.value">
-<code class="sig-name descname">value</code><a class="headerlink" href="#daal4py.math_abs_result.value" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Numpy array</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="hyperbolic-tangent-tanh">
-<h3>Hyperbolic Tangent (tanh)<a class="headerlink" href="#hyperbolic-tangent-tanh" title="Permalink to this headline">¶</a></h3>
-<p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-hyperbolic-tangent">Intel DAAL Hyperbolic Tangent (tanh)</a></p>
-<p>Examples:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_tanh_batch.py">Single-Process tanh</a></p></li>
-</ul>
-<dl class="py class">
-<dt id="daal4py.math_tanh">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_tanh</code><a class="headerlink" href="#daal4py.math_tanh" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the hyperbolic tangent function,</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] The hyperbolic tangent function computation method</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="daal4py.math_tanh.compute">
-<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.math_tanh.compute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do the actual computation on provided input data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#daal4py.math_tanh_result" title="daal4py.math_tanh_result">math_tanh_result</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="daal4py.math_tanh_result">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_tanh_result</code><a class="headerlink" href="#daal4py.math_tanh_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Properties:</p>
-<dl class="py attribute">
-<dt id="daal4py.math_tanh_result.value">
-<code class="sig-name descname">value</code><a class="headerlink" href="#daal4py.math_tanh_result.value" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Numpy array</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="logistic">
-<h3>Logistic<a class="headerlink" href="#logistic" title="Permalink to this headline">¶</a></h3>
-<p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-logistic">Intel DAAL Logistic</a></p>
-<p>Examples:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_logistic_batch.py">Single-Process logistic</a></p></li>
-</ul>
-<dl class="py class">
-<dt id="daal4py.math_logistic">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_logistic</code><a class="headerlink" href="#daal4py.math_logistic" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the logistic function,</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] the logistic function computation method</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="daal4py.math_logistic.compute">
-<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.math_logistic.compute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do the actual computation on provided input data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#daal4py.math_logistic_result" title="daal4py.math_logistic_result">math_logistic_result</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="daal4py.math_logistic_result">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_logistic_result</code><a class="headerlink" href="#daal4py.math_logistic_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Properties:</p>
-<dl class="py attribute">
-<dt id="daal4py.math_logistic_result.value">
-<code class="sig-name descname">value</code><a class="headerlink" href="#daal4py.math_logistic_result.value" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Numpy array</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="rectifier-linear-unit-relu">
-<h3>Rectifier Linear Unit (ReLU)<a class="headerlink" href="#rectifier-linear-unit-relu" title="Permalink to this headline">¶</a></h3>
-<p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-rectifier-linear-unit-relu">Intel DAAL Rectifier Linear Unit (ReLU)</a></p>
-<p>Examples:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_relu_batch.py">Single-Process ReLU</a></p></li>
-</ul>
-<dl class="py class">
-<dt id="daal4py.math_relu">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_relu</code><a class="headerlink" href="#daal4py.math_relu" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the rectified linear function,</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] the rectified linear function computation method</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="daal4py.math_relu.compute">
-<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.math_relu.compute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do the actual computation on provided input data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#daal4py.math_relu_result" title="daal4py.math_relu_result">math_relu_result</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="daal4py.math_relu_result">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_relu_result</code><a class="headerlink" href="#daal4py.math_relu_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Properties:</p>
-<dl class="py attribute">
-<dt id="daal4py.math_relu_result.value">
-<code class="sig-name descname">value</code><a class="headerlink" href="#daal4py.math_relu_result.value" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Numpy array</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="smooth-rectifier-linear-unit-relu">
-<h3>Smooth Rectifier Linear Unit (ReLU)<a class="headerlink" href="#smooth-rectifier-linear-unit-relu" title="Permalink to this headline">¶</a></h3>
-<p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-smooth-rectifier-linear-unit-smoothrelu">Intel DAAL Smooth Rectifier Linear Unit (ReLU)</a></p>
-<p>Examples:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_smoothrelu_batch.py">Single-Process SmoothReLU</a></p></li>
-</ul>
-<dl class="py class">
-<dt id="daal4py.math_smoothrelu">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_smoothrelu</code><a class="headerlink" href="#daal4py.math_smoothrelu" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the SmoothReLU algorithm,</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] SmoothReLU computation method</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="daal4py.math_smoothrelu.compute">
-<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.math_smoothrelu.compute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do the actual computation on provided input data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#daal4py.math_smoothrelu_result" title="daal4py.math_smoothrelu_result">math_smoothrelu_result</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="daal4py.math_smoothrelu_result">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_smoothrelu_result</code><a class="headerlink" href="#daal4py.math_smoothrelu_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Properties:</p>
-<dl class="py attribute">
-<dt id="daal4py.math_smoothrelu_result.value">
-<code class="sig-name descname">value</code><a class="headerlink" href="#daal4py.math_smoothrelu_result.value" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Numpy array</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="softmax">
-<h3>Softmax<a class="headerlink" href="#softmax" title="Permalink to this headline">¶</a></h3>
-<p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-softmax">Intel DAAL Softmax</a></p>
-<p>Examples:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/math_softmax.py">Single-Process softmax</a></p></li>
-</ul>
-<dl class="py class">
-<dt id="daal4py.math_softmax">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_softmax</code><a class="headerlink" href="#daal4py.math_softmax" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the softmax function,</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] the softmax function computation method</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="daal4py.math_softmax.compute">
-<code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#daal4py.math_softmax.compute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do the actual computation on provided input data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>data_or_file</em>) – Input data table</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#daal4py.math_softmax_result" title="daal4py.math_softmax_result">math_softmax_result</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="daal4py.math_softmax_result">
-<em class="property">class </em><code class="sig-prename descclassname">daal4py.</code><code class="sig-name descname">math_softmax_result</code><a class="headerlink" href="#daal4py.math_softmax_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Properties:</p>
-<dl class="py attribute">
-<dt id="daal4py.math_softmax_result.value">
-<code class="sig-name descname">value</code><a class="headerlink" href="#daal4py.math_softmax_result.value" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Numpy array</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-</div>
 <div class="section" id="association-rules">
 <h2>Association Rules<a class="headerlink" href="#association-rules" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-association-rules">Intel DAAL Association Rules</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-association-rules">Intel(R) oneAPI Data Analytics Library Association Rules</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/association_rules_batch.py">Single-Process Association Rules</a></p></li>
@@ -5863,8 +5702,8 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fptype</strong> (<em>str</em>) – [optional, default: “double”] Data type to use in intermediate computations for the association rules algorithm, double or float</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “apriori”] Association rules algorithm computation method</p></li>
-<li><p><strong>minSupport</strong> (<em>double</em>) – [optional, default: NaN64]  Minimum support    0.0 &lt;= minSupport    &lt; 1.0</p></li>
-<li><p><strong>minConfidence</strong> (<em>double</em>) – [optional, default: NaN64]  Minimum confidence 0.0 &lt;= minConfidence &lt; 1.0</p></li>
+<li><p><strong>minSupport</strong> (<em>double</em>) – [optional, default: get_nan64()]  Minimum support    0.0 &lt;= minSupport    &lt; 1.0</p></li>
+<li><p><strong>minConfidence</strong> (<em>double</em>) – [optional, default: get_nan64()]  Minimum confidence 0.0 &lt;= minConfidence &lt; 1.0</p></li>
 <li><p><strong>nUniqueItems</strong> (<em>size_t</em>) – [optional, default: -1]  Number of unique items</p></li>
 <li><p><strong>nTransactions</strong> (<em>size_t</em>) – [optional, default: -1]  Number of transactions</p></li>
 <li><p><strong>discoverRules</strong> (<em>bool</em>) – [optional, default: False]  Flag. If true, association rules are built from large itemsets</p></li>
@@ -5951,7 +5790,7 @@
 <div class="section" id="cholesky-decomposition">
 <h2>Cholesky Decomposition<a class="headerlink" href="#cholesky-decomposition" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-cholesky-decomposition">Intel DAAL Cholesky Decomposition</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-cholesky-decomposition">Intel(R) oneAPI Data Analytics Library Cholesky Decomposition</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/cholesky_batch.py">Single-Process Cholesky</a></p></li>
@@ -6003,7 +5842,7 @@
 <div class="section" id="correlation-and-variance-covariance-matrices">
 <h2>Correlation and Variance-Covariance Matrices<a class="headerlink" href="#correlation-and-variance-covariance-matrices" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-correlation-and-variance-covariance-matrices">Intel DAAL Correlation and Variance-Covariance Matrices</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-correlation-and-variance-covariance-matrices">Intel(R) oneAPI Data Analytics Library Correlation and Variance-Covariance Matrices</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/covariance_batch.py">Single-Process Covariance</a></p></li>
@@ -6080,7 +5919,7 @@
 <div class="section" id="implicit-alternating-least-squares-implicit-als">
 <h2>Implicit Alternating Least Squares (implicit ALS)<a class="headerlink" href="#implicit-alternating-least-squares-implicit-als" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-implicit-alternating-least-squares">Intel DAAL K-Means-Clustering</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-implicit-alternating-least-squares">Intel(R) oneAPI Data Analytics Library K-Means-Clustering</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/implicit_als_batch.py">Single-Process implicit ALS</a></p></li>
@@ -6095,9 +5934,9 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Implicit ALS training method</p></li>
 <li><p><strong>nFactors</strong> (<em>size_t</em>) – [optional, default: -1]  Number of factors</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum number of iterations of the implicit ALS training algorithm</p></li>
-<li><p><strong>alpha</strong> (<em>double</em>) – [optional, default: NaN64]  Confidence parameter of the implicit ALS training algorithm</p></li>
-<li><p><strong>lambda</strong> (<em>double</em>) – [optional, default: NaN64]  Regularization parameter</p></li>
-<li><p><strong>preferenceThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold used to define preference values</p></li>
+<li><p><strong>alpha</strong> (<em>double</em>) – [optional, default: get_nan64()]  Confidence parameter of the implicit ALS training algorithm</p></li>
+<li><p><strong>lambda</strong> (<em>double</em>) – [optional, default: get_nan64()]  Regularization parameter</p></li>
+<li><p><strong>preferenceThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold used to define preference values</p></li>
 </ul>
 </dd>
 </dl>
@@ -6172,9 +6011,9 @@
 <li><p><strong>method</strong> (<em>str</em>) – [optional, default: “defaultDense”] Implicit ALS prediction method</p></li>
 <li><p><strong>nFactors</strong> (<em>size_t</em>) – [optional, default: -1]  Number of factors</p></li>
 <li><p><strong>maxIterations</strong> (<em>size_t</em>) – [optional, default: -1]  Maximum number of iterations of the implicit ALS training algorithm</p></li>
-<li><p><strong>alpha</strong> (<em>double</em>) – [optional, default: NaN64]  Confidence parameter of the implicit ALS training algorithm</p></li>
-<li><p><strong>lambda</strong> (<em>double</em>) – [optional, default: NaN64]  Regularization parameter</p></li>
-<li><p><strong>preferenceThreshold</strong> (<em>double</em>) – [optional, default: NaN64]  Threshold used to define preference values</p></li>
+<li><p><strong>alpha</strong> (<em>double</em>) – [optional, default: get_nan64()]  Confidence parameter of the implicit ALS training algorithm</p></li>
+<li><p><strong>lambda</strong> (<em>double</em>) – [optional, default: get_nan64()]  Regularization parameter</p></li>
+<li><p><strong>preferenceThreshold</strong> (<em>double</em>) – [optional, default: get_nan64()]  Threshold used to define preference values</p></li>
 </ul>
 </dd>
 </dl>
@@ -6214,7 +6053,7 @@
 <div class="section" id="moments-of-low-order">
 <h2>Moments of Low Order<a class="headerlink" href="#moments-of-low-order" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-moments-of-low-order">Intel DAAL Moments of Low Order</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-moments-of-low-order">Intel(R) oneAPI Data Analytics Library Moments of Low Order</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py">Single-Process Low Order Moments</a></p></li>
@@ -6361,7 +6200,7 @@
 <div class="section" id="quantiles">
 <h2>Quantiles<a class="headerlink" href="#quantiles" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-quantile">Intel DAAL Quantiles</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-quantile">Intel(R) oneAPI Data Analytics Library Quantiles</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/quantiles_batch.py">Single-Process Quantiles</a></p></li>
@@ -6414,7 +6253,7 @@
 <div class="section" id="singular-value-decomposition-svd">
 <h2>Singular Value Decomposition (SVD)<a class="headerlink" href="#singular-value-decomposition-svd" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition">Intel DAAL SVD</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition">Intel(R) oneAPI Data Analytics Library SVD</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/svd_batch.py">Single-Process SVD</a></p></li>
@@ -6492,7 +6331,7 @@
 <div class="section" id="sorting">
 <h2>Sorting<a class="headerlink" href="#sorting" title="Permalink to this headline">¶</a></h2>
 <p>Detailed description of parameters and semantics are described in
-<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-sorting">Intel DAAL sorting</a></p>
+<a class="reference external" href="https://software.intel.com/en-us/daal-programming-guide-sorting">Intel(R) oneAPI Data Analytics Library sorting</a></p>
 <p>Examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/examples/sorting_batch.py">Single-Process Sorting</a></p></li>
