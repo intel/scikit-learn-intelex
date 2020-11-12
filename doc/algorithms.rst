@@ -92,6 +92,23 @@ Examples:
 .. autoclass:: daal4py.kdtree_knn_classification_model
    :members:
 
+Brute-force k-Nearest Neighbors (kNN)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Detailed description of parameters and semantics are described in
+`Intel(R) oneAPI Data Analytics Library k-Nearest Neighbors (kNN)
+<https://software.intel.com/en-us/daal-programming-guide-k-nearest-neighbors-knn-classifier>`__
+
+.. autoclass:: daal4py.bf_knn_classification_training
+   :members: compute
+.. autoclass:: daal4py.bf_knn_classification_training_result
+   :members:
+.. autoclass:: daal4py.bf_knn_classification_prediction
+   :members: compute
+.. autoclass:: daal4py.classifier_prediction_result
+   :members:
+.. autoclass:: daal4py.bf_knn_classification_model
+   :members:
+
 AdaBoost Classification
 ^^^^^^^^^^^^^^^^^^^^^^^
 Detailed description of parameters and semantics are described in

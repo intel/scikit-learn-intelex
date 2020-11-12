@@ -80,7 +80,7 @@ introspection. This assures scikit-learn API compatibility of all
 .. _sklearn_verbose:
 
 scikit-learn verbose
-----------------
+--------------------
 
 To find out which implementation of the algorithm is currently used,
 set the environment variable.
