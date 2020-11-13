@@ -851,59 +851,24 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
     daal::data_management::internal::trainTestSplit<int>(origTable, trainTable, testTable, trainIdxTable, testIdxTable);
 }
 
-double c_roc_auc_score(PyObject* self, PyObject* args)
+double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
 {
-    PyArrayObject* actual_numpy = NULL;
-    PyArrayObject* prediction_numpy = NULL;
-
-    int n;
-    if (!PyArg_ParseTuple(args, "O!O!", &PyArray_Type, &actual_numpy, &PyArray_Type, &prediction_numpy)) {
-        return NULL;
-    }
-
-    int nd = array_numdims(actual_numpy);
-    if (nd != 1) {
+    const int col_true = y_true.table->getNumberOfColumns();
+    const int row_true = y_true.table->getNumberOfRows();
+    const int col_test = y_test.table->getNumberOfColumns();
+    const int row_test = y_test.table->getNumberOfRows();
+    if (row_true != 1 || row_test != 1 || col_true != col_test) {
         PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
         return NULL;
     }
-
-    nd = array_numdims(prediction_numpy);
-    if (nd != 1) {
-        PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
-        return NULL;
-    }
-
-    const int size = (int)PyArray_SHAPE(actual_numpy)[0];
     double score;
+    auto table_true = get_table(y_true);
+    auto table_test = get_table(y_test);
 
-    double* predictedRank = new double[size];
-    data_or_file predictionNumpyData = data_or_file((PyObject*)prediction_numpy);
-    auto predictionNumpyTable = get_table(predictionNumpyData);
-
-    switch (array_type(prediction_numpy)) {
-        case NPY_FLOAT:
-            daal::data_management::internal::calculateRankData<float>(predictedRank, predictionNumpyTable, size);
-            break;
-        case NPY_DOUBLE:
-            daal::data_management::internal::calculateRankData<double>(predictedRank, predictionNumpyTable, size);
-            break;
-        default:
-            PyErr_SetString(PyExc_TypeError, "Unknown source data type");
-            return NULL;
-    }
-
-    switch (PyArray_TYPE(actual_numpy)) {
-        case NPY_FLOAT:
-            score = daal::data_management::internal::rocAucScore<float>(predictedRank, predictionNumpyTable, size);
-            break;
-        case NPY_DOUBLE:
-            score = daal::data_management::internal::rocAucScore<double>(predictedRank, predictionNumpyTable, size);
-            break;
-        default:
-            PyErr_SetString(PyExc_TypeError, "Unknown source data type");
-            return NULL;
-    }
-
+    double* predictedRank = new double[col_true];
+    daal::data_management::internal::calculateRankData<float>(predictedRank, table_test, col_true);
+    score = daal::data_management::internal::rocAucScore<float>(predictedRank, table_true, col_true);
+    printf("from c_roc_auc_score 4 %.10f", score);
     //return Py_BuildValue("d", score);
     return score;
 }
