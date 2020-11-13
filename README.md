@@ -1,8 +1,10 @@
-# daal4py - A Convenient Python API to the Intel(R) oneAPI Data Analytics Library and drop in replacement optimized patching of scikit-learn
+# daal4py - A Convenient Python API to the Intel(R) oneAPI Data Analytics Library
 [![Build Status](https://travis-ci.com/IntelPython/daal4py.svg?branch=master)](https://travis-ci.com/IntelPython/daal4py)
 [![Build Status](https://dev.azure.com/frankschlimbach/daal4py/_apis/build/status/IntelPython.daal4py?branchName=master)](https://dev.azure.com/frankschlimbach/daal4py/_build/latest?definitionId=1&branchName=master)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/daal4py.svg)](https://anaconda.org/conda-forge/daal4py)
+[![Conda Version](https://anaconda.org/intel/daal4py/badges/version.svg)](https://anaconda.org/intel/daal4py)
 
-A simplified API to Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel(R) oneAPI Data Analytics Library for either direct usage or integration into one's own framework.
+A simplified API to Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel(R) oneAPI Data Analytics Library for either direct usage or integration into one's own framework and extending this beyond by providing drop-in paching for scikit-learn.
 
 - [Documentation](https://intelpython.github.io/daal4py/)
 - [scikit-learn API and patching](https://intelpython.github.io/daal4py/sklearn.html#sklearn)
@@ -14,6 +16,7 @@ Running full scikit-learn test suite with daal4p's optimization patches
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
 
+# Getting Started
 Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution. 
 
 Stock Scikit-learn
@@ -61,14 +64,15 @@ You can even run this on a cluster by simple adding a keyword-parameter
 import daal4py as d4p
 d4p.kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
 ```
-# Getting Started
-daal4py is easily built from sources with the majority of the necessary prerequisites available on conda. The instructions below detail how to gather the prerequisites, set your build environment, and finally build and install the completed package. daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if needed. There is Intel GPU support available as well.
 
 # Installation
 daal4py can be installed from conda:
 ```bash
 conda install daal4py -c intel
 ```
+
+# Building from sources
+daal4py is easily built from sources with the majority of the necessary prerequisites available on conda. The instructions below detail how to gather the prerequisites, set your build environment, and finally build and install the completed package. daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if needed. 
 
 The build-process (using setup.py) happens in 3 stages:
 1. Creating C++ and cython sources from oneDAL C++ headers
