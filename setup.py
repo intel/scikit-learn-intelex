@@ -39,15 +39,8 @@ IS_WIN = False
 IS_MAC = False
 IS_LIN = False
 
-try:
-    daal_root = os.environ['DAALROOT']
-except KeyError :
-    pass
-
-try:
-    dal_root = os.environ['DALROOT']
-except KeyError :
-    pass
+daal_root = os.environ.get('DAALROOT')
+dal_root = os.environ.get('DALROOT')
 if not dal_root:
     dal_root = daal_root
 
@@ -201,7 +194,7 @@ with open(header_path) as header:
     dal_build_version = (int(v[0]), int(v[1]), int(v[2]), str(v[3]))
 
 if dpcpp:
-    DPCPP_CFLAGS = ['-D_DPCPP_']
+    DPCPP_CFLAGS = ['-D_DPCPP_ -fno-builtin-memset']
     DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
     if IS_LIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]

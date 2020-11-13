@@ -43,7 +43,7 @@ except:
     except:
         gpu_available=False
 
-# Commone code for both CPU and GPU computations
+# Common code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data, method='defaultDense'):
     # Configure a SVM object to use linear kernel
     kernel_function = d4p.kernel_function_linear(method='defaultDense', k=1.0, b=0.0)
@@ -95,9 +95,11 @@ def main(readcsv=read_csv):
     try:
         from dpctx import device_context, device_type
         gpu_context = lambda: device_context(device_type.gpu, 0)
+        cpu_context = lambda: device_context(device_type.cpu, 0)
     except:
         from daal4py.oneapi import sycl_context
         gpu_context = lambda: sycl_context('gpu')
+        cpu_context = lambda: sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
@@ -108,6 +110,13 @@ def main(readcsv=read_csv):
 
             predict_result_gpu, decision_function_gpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, 'thunder')
             assert np.allclose(predict_result_gpu, predict_result_classic)
+
+    with cpu_context():
+        sycl_train_data = sycl_buffer(train_data)
+        sycl_predict_data = sycl_buffer(predict_data)
+
+        predict_result_cpu, decision_function_cpu = compute(sycl_train_data, train_labels, sycl_predict_data, 'thunder')
+        assert np.allclose(predict_result_cpu, predict_result_classic)
 
     return predict_labels, predict_result_classic, decision_function_classic
 
