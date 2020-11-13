@@ -52,7 +52,7 @@ from sklearn.linear_model._logistic import (
     LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
 from sklearn.linear_model._base import (LinearClassifierMixin, SparseCoefMixin, BaseEstimator)
-from .._utils import (daal_check_version, getFPType, 
+from .._utils import (daal_check_version, getFPType,
                       get_patch_message)
 import logging
 
@@ -249,7 +249,8 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     le = LabelEncoder()
     if isinstance(class_weight, dict) or multi_class == 'multinomial':
         class_weight_ = compute_class_weight(class_weight, classes, y)
-        sample_weight *= class_weight_[le.fit_transform(y)]
+        if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+            sample_weight *= class_weight_[le.fit_transform(y)]
 
     # For doing a ovr, we need to mask the labels first. for the
     # multinomial case this is not necessary.
@@ -263,7 +264,8 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         if class_weight == "balanced":
             class_weight_ = compute_class_weight(class_weight, mask_classes,
                                                  y_bin)
-            sample_weight *= class_weight_[le.fit_transform(y_bin)]
+            if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+                sample_weight *= class_weight_[le.fit_transform(y_bin)]
 
         daal_ready = daal_ready and (default_weights or np.allclose(sample_weight, np.ones_like(sample_weight)))
         if daal_ready:
@@ -703,7 +705,8 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     le = LabelEncoder()
     if isinstance(class_weight, dict) or multi_class == 'multinomial':
         class_weight_ = compute_class_weight(class_weight, classes=classes, y=y)
-        sample_weight *= class_weight_[le.fit_transform(y)]
+        if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+            sample_weight *= class_weight_[le.fit_transform(y)]
 
     # For doing a ovr, we need to mask the labels first. for the
     # multinomial case this is not necessary.
@@ -718,7 +721,8 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         if class_weight == "balanced":
             class_weight_ = compute_class_weight(class_weight, classes=mask_classes,
                                                  y=y_bin)
-            sample_weight *= class_weight_[le.fit_transform(y_bin)]
+            if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+                sample_weight *= class_weight_[le.fit_transform(y_bin)]
 
         daal_ready = daal_ready and (default_weights or np.allclose(sample_weight, np.ones_like(sample_weight)))
         if daal_ready:
@@ -972,14 +976,14 @@ def daal4py_predict(self, X, resultsToEvaluate):
 
     multinomial = (self.multi_class in ["multinomial", "warn"] or
                    self.classes_.size == 2 or resultsToEvaluate == 'computeClassLabels')
-    
+
     if daal_check_version(((2021,'P', 1))) and fptype is not None and not sparse.issparse(X) and multinomial:
         logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("daal"))
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError("X has %d features per sample; expecting %d"
                              % (X.shape[1], n_features))
-        
+
         builder = d4p.logistic_regression_model_builder(X.shape[1], len(self.classes_))
         builder.set_beta(self.coef_, self.intercept_)
         predict = d4p.logistic_regression_prediction(nClasses=len(self.classes_),
@@ -1122,7 +1126,7 @@ elif (LooseVersion(sklearn_version) >= LooseVersion("0.22")):
 
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
-        
+
 
         def predict_log_proba(self, X):
             return daal4py_predict(self, X, 'computeClassLogProbabilities')
@@ -1176,11 +1180,11 @@ elif (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
             self.warm_start = warm_start
             self.n_jobs = 1
             self.l1_ratio = l1_ratio
-        
+
 
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
-        
+
 
         def predict_log_proba(self, X):
             return daal4py_predict(self, X, 'computeClassLogProbabilities')
@@ -1211,10 +1215,10 @@ else:
             self.verbose = verbose
             self.warm_start = warm_start
             self.n_jobs = 1
-        
+
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
-        
+
 
         def predict_log_proba(self, X):
             return daal4py_predict(self, X, 'computeClassLogProbabilities')

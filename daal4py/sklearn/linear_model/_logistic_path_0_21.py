@@ -245,7 +245,8 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     le = LabelEncoder()
     if isinstance(class_weight, dict) or multi_class == 'multinomial':
         class_weight_ = compute_class_weight(class_weight, classes, y)
-        sample_weight *= class_weight_[le.fit_transform(y)]
+        if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+            sample_weight *= class_weight_[le.fit_transform(y)]
 
     # For doing a ovr, we need to mask the labels first. for the
     # multinomial case this is not necessary.
@@ -259,7 +260,8 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         if class_weight == "balanced":
             class_weight_ = compute_class_weight(class_weight, mask_classes,
                                                  y_bin)
-            sample_weight *= class_weight_[le.fit_transform(y_bin)]
+            if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+                sample_weight *= class_weight_[le.fit_transform(y_bin)]
 
         daal_ready = daal_ready and (default_weights or np.allclose(sample_weight, np.ones_like(sample_weight)))
         if daal_ready:
@@ -700,7 +702,8 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     le = LabelEncoder()
     if isinstance(class_weight, dict) or multi_class == 'multinomial':
         class_weight_ = compute_class_weight(class_weight, classes, y)
-        sample_weight *= class_weight_[le.fit_transform(y)]
+        if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+            sample_weight *= class_weight_[le.fit_transform(y)]
 
     # For doing a ovr, we need to mask the labels first. for the
     # multinomial case this is not necessary.
@@ -715,7 +718,8 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         if class_weight == "balanced":
             class_weight_ = compute_class_weight(class_weight, mask_classes,
                                                  y_bin)
-            sample_weight *= class_weight_[le.fit_transform(y_bin)]
+            if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+                sample_weight *= class_weight_[le.fit_transform(y_bin)]
 
         daal_ready = daal_ready and (default_weights or np.allclose(sample_weight, np.ones_like(sample_weight)))
         if daal_ready:
@@ -951,7 +955,7 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         else:
             for i, ci in enumerate(coefs):
                 coefs[i] = np.delete(ci, 0, axis=-1)
-    
+
     if daal_ready:
         logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("daal"))
     else:
