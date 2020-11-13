@@ -5,6 +5,7 @@ from sklearn.model_selection._split import _validate_shuffle_split
 import daal4py as d4p
 import numpy as np
 from daal4py.sklearn._utils import daal_check_version
+import platform
 
 try:
     from sklearn.utils import _safe_indexing as safe_indexing
@@ -80,7 +81,9 @@ def _daal_train_test_split(*arrays, **options):
                 random_state = mkl_random.RandomState(random_state, rng)
                 indexes = random_state.permutation(n_train + n_test)
                 test, train = indexes[:n_test], indexes[n_test:]
-            elif rng == 'OPTIMIZED_MT19937' and daal_check_version(((2020,'P', 3), (2021,'B',9))) and (isinstance(random_state, int) or random_state is None):
+            elif rng == 'OPTIMIZED_MT19937' and daal_check_version(((2020,'P', 3), (2021,'B',9))) \
+            and (isinstance(random_state, int) or random_state is None) \
+            and platform.system() != 'Windows':
                 indexes = np.empty(shape=(n_train + n_test,), dtype=np.int64 if n_train + n_test > 2 ** 31 - 1 else np.int32)
                 random_state = np.random.RandomState(random_state)
                 random_state = random_state.get_state()[1]
