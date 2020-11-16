@@ -848,7 +848,7 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
     daal::data_management::internal::trainTestSplit<int>(origTable, trainTable, testTable, trainIdxTable, testIdxTable);
 }
 
-double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
+double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test, char dtype)
 {
 #if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210200
     const size_t col_true = y_true.table->getNumberOfColumns();
