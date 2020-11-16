@@ -35,6 +35,7 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       conda install -y -c conda-forge mpich jinja2 clang-tools cython pandas pytest
+      export MPIROOT=$CONDA_PREFIX
       python setup.py install
 #      conda build --override-channels -c intel -c conda-forge  --numpy=1.17 conda-recipe
     displayName: conda build
