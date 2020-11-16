@@ -15,6 +15,7 @@
 # limitations under the License.
 #******************************************************************************/
 
+print("before imports")
 # System imports
 import os
 import subprocess
@@ -35,19 +36,13 @@ try:
 except ImportError:
     from ctypes.util import find_library
 
+print("after imports")
 IS_WIN = False
 IS_MAC = False
 IS_LIN = False
 
-try:
-    daal_root = os.environ['DAALROOT']
-except KeyError :
-    pass
-
-try:
-    dal_root = os.environ['DALROOT']
-except KeyError :
-    pass
+daal_root = os.environ.get('DAALROOT')
+dal_root = os.environ.get('DALROOT')
 if not dal_root:
     dal_root = daal_root
 
@@ -63,6 +58,7 @@ elif sys.platform in ['win32', 'cygwin']:
 else:
     assert False, sys.platform + ' not supported'
 
+print("before define get_lib_suffix")
 def get_lib_suffix():
     
     def walk_ld_library_path():
@@ -126,7 +122,7 @@ def get_win_major_version():
         version = ''
     return version
 
-
+print("before define d4p_version")
 d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('2021.%Y%m%d.%H%M%S')
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
@@ -199,7 +195,7 @@ header_path = os.path.join(dal_root, 'include', 'services', 'library_version_inf
 with open(header_path) as header:
     v = parse_version(header)
     dal_build_version = (int(v[0]), int(v[1]), int(v[2]), str(v[3]))
-
+print("before 'if dpcpp: <...>'")
 if dpcpp:
     DPCPP_CFLAGS = ['-D_DPCPP_ -fno-builtin-memset']
     DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
@@ -363,7 +359,7 @@ def gen_pyx(odir):
 
 gen_pyx(os.path.abspath('./build'))
 
-
+print("before setuptools.setup")
 # daal setup
 setup(  name        = "daal4py",
         description = "A convenient Python API to Intel(R) oneAPI Data Analytics Library",
