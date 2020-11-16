@@ -22,7 +22,7 @@ from sklearn.utils import (check_random_state, check_array)
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import (check_is_fitted, _num_samples, _deprecate_positional_args)
 
-from sklearn.cluster._kmeans import (k_means, _labels_inertia, _k_init)
+from sklearn.cluster._kmeans import (k_means, _labels_inertia)
 from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
 
 from sklearn.exceptions import ConvergenceWarning
