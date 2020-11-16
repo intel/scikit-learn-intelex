@@ -33,6 +33,7 @@ requirements:
         - jinja2
         - mpich  # [osx]
         - impi-devel  # [not osx]
+        - impi_rt # [not osx]
         - clang-tools
     run:
         - python
