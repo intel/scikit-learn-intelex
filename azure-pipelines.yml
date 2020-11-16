@@ -34,7 +34,9 @@ jobs:
       export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda build --override-channels -c intel -c conda-forge  --numpy=1.17 conda-recipe
+      conda install -y -c conda-forge mpich jinja2 clang-tools cython pandas pytest
+      python setup.py install
+#      conda build --override-channels -c intel -c conda-forge  --numpy=1.17 conda-recipe
     displayName: conda build
 
 - job: MacOS
