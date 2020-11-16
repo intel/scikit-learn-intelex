@@ -881,7 +881,6 @@ double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test, char dtype)
             double* predictedRank = new double[col_true];
             daal::data_management::internal::calculateRankData<double>(predictedRank, table_test, col_true);
             score = daal::data_management::internal::rocAucScore<double>(predictedRank, table_true, col_true);
-            printf("from c_roc_auc_score 4 %.10f", score);
             return score;
         }
         default:
