@@ -36,6 +36,10 @@ jobs:
       conda activate CB
       conda install -y -c conda-forge mpich jinja2 clang-tools cython pandas pytest
       export MPIROOT=$CONDA_PREFIX
+      source ${DPCPPROOT}/env/vars.sh
+      export CC=dpcpp
+      export CXX=dpcpp
+      dpcpp --version
       python setup.py install
 #      conda build --override-channels -c intel -c conda-forge  --numpy=1.17 conda-recipe
     displayName: conda build
