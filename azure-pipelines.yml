@@ -29,11 +29,13 @@ jobs:
   - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
+      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       export DALROOT=/opt/intel/oneapi/dal/latest
       export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda build --override-channels --debug -c intel -c conda-forge  --numpy=1.17 conda-recipe
+      mkdir package_daal4py
+      conda build --override-channels --croot $(Pipeline.Workspace)/package_daal4py --debug -c intel -c conda-forge  --numpy=1.17 conda-recipe
     displayName: conda build
 
 - job: MacOS
