@@ -33,4 +33,4 @@ fi
 
 export DAAL4PY_VERSION=$PKG_VERSION
 export MPIROOT=${PREFIX}
-python setup.py install $ARGS
+${PYTHON} setup.py install $ARGS
