@@ -119,6 +119,7 @@ def get_win_major_version():
         version = ''
     return version
 
+
 d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('2021.%Y%m%d.%H%M%S')
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
@@ -191,6 +192,7 @@ header_path = os.path.join(dal_root, 'include', 'services', 'library_version_inf
 with open(header_path) as header:
     v = parse_version(header)
     dal_build_version = (int(v[0]), int(v[1]), int(v[2]), str(v[3]))
+
 if dpcpp:
     DPCPP_CFLAGS = ['-D_DPCPP_ -fno-builtin-memset']
     DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
@@ -353,6 +355,7 @@ def gen_pyx(odir):
 
 
 gen_pyx(os.path.abspath('./build'))
+
 
 # daal setup
 setup(  name        = "daal4py",
