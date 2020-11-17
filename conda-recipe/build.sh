@@ -33,5 +33,5 @@ fi
 
 export DAAL4PY_VERSION=$PKG_VERSION
 export MPIROOT=${PREFIX}
-conda clean -y -a
+rm -rf ~/.local/lib/python*
 ${PYTHON} setup.py install $ARGS
