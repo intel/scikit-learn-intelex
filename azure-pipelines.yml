@@ -35,7 +35,7 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       mkdir package_daal4py
-      conda build --override-channels --croot $(Pipeline.Workspace)/package_daal4py --debug -c intel -c conda-forge  --numpy=1.17 conda-recipe
+      conda build --override-channels --prefix-length 50 --croot $(Pipeline.Workspace)/package_daal4py --debug -c intel -c conda-forge  --numpy=1.17 conda-recipe
     displayName: conda build
 
 - job: MacOS
