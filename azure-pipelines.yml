@@ -20,15 +20,13 @@ jobs:
           intel-oneapi-common-vars          \
           intel-oneapi-common-licensing     \
           intel-oneapi-dal-devel            \
-          intel-oneapi-dpcpp-compiler   \
+          intel-oneapi-dpcpp-cpp-compiler   \
           intel-oneapi-dev-utilities        \
-          intel-oneapi-libdpstd-devel       \
-          gcc-multilib                      \
-          g++-multilib
+          intel-oneapi-libdpstd-devel
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
-  - script: conda create -q -y -n CB python=3.7 conda-build conda-verify pkginfo=1.6.0
+  - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
@@ -36,14 +34,14 @@ jobs:
       export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda install -y -c conda-forge mpich jinja2 clang-tools cython pandas pytest
-      export MPIROOT=$CONDA_PREFIX
-      source ${DPCPPROOT}/env/vars.sh
-      export CC=dpcpp
-      export CXX=dpcpp
-      dpcpp --version
-      python setup.py install
-#      conda build --override-channels -c intel -c conda-forge  --numpy=1.17 conda-recipe
+#      conda install -y -c conda-forge mpich jinja2 clang-tools cython pandas pytest
+#      export MPIROOT=$CONDA_PREFIX
+#      source ${DPCPPROOT}/env/vars.sh
+#      export CC=dpcpp
+#      export CXX=dpcpp
+#      dpcpp --version
+#      python setup.py install
+      conda build --override-channels --debug -c intel -c conda-forge  --numpy=1.17 conda-recipe
     displayName: conda build
 
 - job: MacOS
