@@ -94,6 +94,8 @@ def _get_map_of_algorithms():
         'fin_check':                [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]],
         'tsne':                     [[(manifold_module, 'TSNE', TSNE_daal4py), None]],
     }
+    if daal_check_version((2021,'P', 1)):
+        mapping['log_reg'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
     return mapping
 
 
