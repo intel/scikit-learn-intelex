@@ -36,11 +36,10 @@ requirements:
         - clang-tools
     run:
         - python
-        - numpy >=1.15
         - daal >=2020.3
         - {{ pin_compatible('numpy') }}
     ignore_run_exports:
-        - impi_rt
+        - numpy >=1.15
 
 test:
     requires:
