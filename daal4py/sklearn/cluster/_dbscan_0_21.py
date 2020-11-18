@@ -45,6 +45,7 @@ def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     fpt = getFPType(XX)
     alg = daal4py.dbscan(
         method='defaultDense',
+        fptype = fpt,
         epsilon=float(eps),
         minObservations=int(min_samples),
         memorySavingMode=False,
