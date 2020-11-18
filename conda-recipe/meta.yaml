@@ -24,6 +24,7 @@ requirements:
     build:
         - {{ compiler('cxx') }}  # [not osx]
         - {{ compiler('c') }}  # [not osx]
+        - impi_rt
     host:
         - python
         - setuptools
@@ -34,6 +35,7 @@ requirements:
         - mpich  # [osx]
         - impi-devel  # [not osx]
         - clang-tools
+        - impi_rt
     run:
         - python
         - numpy >=1.15
