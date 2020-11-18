@@ -1,7 +1,7 @@
 version: 2.0
 
 jobs:
-  build_pypi:
+  build_master:
     docker:
       - image: circleci/python:3.7.5
 
@@ -30,7 +30,7 @@ jobs:
             conda activate bld
             # work around bug in scikit-learn
             conda install -y -c conda-forge --override-channels cython
-            conda install -q /tmp/out/*/daal4py-*.tar.bz2
+            conda install /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
             source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
@@ -38,7 +38,7 @@ jobs:
           path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
 
 
-  build_master:
+  build_pypi:
     docker:
       - image: circleci/python:3.7.5
 
@@ -72,8 +72,8 @@ jobs:
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             conda install -y --override-channels -c intel cython
-            conda install -q /tmp/out/*/daal4py-*.tar.bz2
-            conda install -c conda-forge threadpoolctl
+            conda install -y -c conda-forge threadpoolctl
+            conda install -y /tmp/out/*/daal4py-*.tar.bz2
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
             conda list
