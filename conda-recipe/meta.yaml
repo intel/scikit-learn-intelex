@@ -38,8 +38,9 @@ requirements:
         - python
         - numpy >=1.15
         - daal >=2020.3
-        - impi_rt
         - {{ pin_compatible('numpy') }}
+    ignore_run_exports:
+        - impi_rt
 
 test:
     requires:
