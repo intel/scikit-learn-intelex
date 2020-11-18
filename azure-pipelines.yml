@@ -7,7 +7,7 @@ variables:
 jobs:
 - job: Linux_DPCPP
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
   steps:
   - script: |
       wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
@@ -26,7 +26,9 @@ jobs:
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
-  - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
+  - script: |
+      conda update -y -q conda
+      conda create -q -y -n CB python=3.7 conda-build conda-verify
     displayName: Create Anaconda environment
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
@@ -34,7 +36,7 @@ jobs:
       export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda build --override-channels -c intel -c conda-forge  --numpy=1.17 conda-recipe
+      conda build --override-channels -c intel -c conda-forge --numpy=1.17 conda-recipe
     displayName: conda build
 
 - job: MacOS
