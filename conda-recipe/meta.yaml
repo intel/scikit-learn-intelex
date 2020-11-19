@@ -37,7 +37,6 @@ requirements:
     run:
         - python
         - daal >=2020.3
-        - {{ pin_compatible('numpy') }}
     ignore_run_exports:
         - numpy >=1.15
 
