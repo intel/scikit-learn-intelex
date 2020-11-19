@@ -27,6 +27,7 @@ requirements:
     host:
         - python
         - setuptools
+        - numpy {{ numpy }}
         - daal-devel >=2020.3
         - cython
         - jinja2
