@@ -38,7 +38,7 @@ requirements:
         - python
         - daal >=2020.3
     ignore_run_exports:
-        - numpy >=1.15
+        - numpy
 
 test:
     requires:
