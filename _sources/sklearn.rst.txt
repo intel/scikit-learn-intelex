@@ -4,21 +4,20 @@
 Scikit-Learn API and patching
 #############################
 
-Python interface to efficient Intel® Data Analytics and Acceleration Library
-(DAAL) provided by daal4py allows one to create scikit-learn compatible
-estimators, transformers, clusterers, etc. powered by DAAL which are nearly as
-efficient as native programs.
+Python interface to efficient Intel(R) oneAPI Data Analytics Library provided by daal4py allows one
+to create scikit-learn compatible estimators, transformers, clusterers, etc. powered by oneDAL which
+are nearly as efficient as native programs.
 
 .. _sklearn_patches:
 
 DAAL accelerated scikit-learn
 ------------------------------
 
-daal4py can dynamically patch scikit-learn estimators to use Intel® DAAL as the
-underlying solver, while getting the same solution faster.
+daal4py can dynamically patch scikit-learn estimators to use Intel(R) oneAPI Data Analytics Library
+as the underlying solver, while getting the same solution faster.
 
-It is possible to enable those patches without editing the code of a
-scikit-learn application by using the following commandline flag::
+It is possible to enable those patches without editing the code of a scikit-learn application by
+using the following commandline flag::
 
     python -m daal4py my_application.py
 
@@ -60,10 +59,13 @@ algorithms:
 8. `sklearn.linear_model.ElasticNet <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html>`__
 9. `sklearn.linear_model.Lasso <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html>`__
 10. `sklearn.neighbors.KNeighborsClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html>`__
-11. `sklearn.cluster.DBSCAN <https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html>`__
-12. `sklearn.ensemble.RandomForestClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html>`__
-13. `sklearn.ensemble.RandomForestRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html>`__
-14. `sklearn.model_selection.train_test_split <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html>`__
+11. `sklearn.neighbors.KNeighborsRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsRegressor.html>`__
+12. `sklearn.neighbors.NearestNeighbors <https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html>`__
+13. `sklearn.cluster.DBSCAN <https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html>`__
+14. `sklearn.ensemble.RandomForestClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html>`__
+15. `sklearn.ensemble.RandomForestRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html>`__
+16. `sklearn.model_selection.train_test_split <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html>`__
+17. `sklearn.manifold.TSNE <https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html>`__
 
 Monkey-patched scikit-learn clases and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
@@ -78,7 +80,7 @@ introspection. This assures scikit-learn API compatibility of all
 .. _sklearn_verbose:
 
 scikit-learn verbose
-----------------
+--------------------
 
 To find out which implementation of the algorithm is currently used,
 set the environment variable.
@@ -97,7 +99,7 @@ These print statements are only available for :ref:`scikit-learn algorithms with
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used::
 
-    INFO: sklearn.cluster.DBSCAN.fit: uses Intel® DAAL solver
+    INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver
 
 ::
 
@@ -111,25 +113,27 @@ scikit-learn API
 ----------------
 
 The ``daal4py.sklearn`` package contains scikit-learn compatible API which
-implement a subset of scikit-learn algorithms using Intel® DAAL.
+implement a subset of scikit-learn algorithms using Intel(R) oneAPI Data Analytics Library.
 
 Currently, these include:
 
 1. ``daal4py.sklearn.neighbors.KNeighborsClassifier``
-2. ``daal4py.sklearn.tree.DecisionTreeClassifier``
-3. ``daal4py.sklearn.ensemble.RandomForestClassifier``
-4. ``daal4py.sklearn.ensemble.RandomForestRegressor``
-5. ``daal4py.sklearn.ensemble.AdaBoostClassifier``
-6. ``daal4py.sklearn.cluster.KMeans``
-7. ``daal4py.sklearn.cluster.DBSCAN``
-8. ``daal4py.sklearn.decomposition.PCA``
-9. ``daal4py.sklearn.linear_model.Ridge``
-10. ``daal4py.sklearn.svm.SVC``
-11. ``daal4py.sklearn.linear_model.logistic_regression_path``
-12. ``daal4py.sklearn.linear_model.LogisticRegression``
-13. ``daal4py.sklearn.linear_model.ElasticNet``
-14. ``daal4py.sklearn.linear_model.Lasso``
-15. ``daal4py.sklearn.model_selection._daal_train_test_split``
+2. ``daal4py.sklearn.neighbors.KNeighborsRegressor``
+3. ``daal4py.sklearn.neighbors.NearestNeighbors``
+4. ``daal4py.sklearn.tree.DecisionTreeClassifier``
+5. ``daal4py.sklearn.ensemble.RandomForestClassifier``
+6. ``daal4py.sklearn.ensemble.RandomForestRegressor``
+7. ``daal4py.sklearn.ensemble.AdaBoostClassifier``
+8. ``daal4py.sklearn.cluster.KMeans``
+9. ``daal4py.sklearn.cluster.DBSCAN``
+10. ``daal4py.sklearn.decomposition.PCA``
+11. ``daal4py.sklearn.linear_model.Ridge``
+12. ``daal4py.sklearn.svm.SVC``
+13. ``daal4py.sklearn.linear_model.logistic_regression_path``
+14. ``daal4py.sklearn.linear_model.LogisticRegression``
+15. ``daal4py.sklearn.linear_model.ElasticNet``
+16. ``daal4py.sklearn.linear_model.Lasso``
+17. ``daal4py.sklearn.model_selection._daal_train_test_split``
 
 These classes are always available, whether the scikit-learn itself has been
 patched, or not. For example::
