@@ -26,6 +26,7 @@ def roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
                              "instead".format(max_fpr))
         if multi_class == 'raise':
             raise ValueError("multi_class must be in ('ovo', 'ovr')")
+        logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
         return _multiclass_roc_auc_score(y_true, y_score, labels,
                                          multi_class, average, sample_weight)
     elif y_type == "binary":
@@ -35,7 +36,7 @@ def roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
             raise ValueError("Only one class present in y_true. ROC AUC score "
                          "is not defined in that case.")
         if max_fpr is None and sample_weight is None:
-            logging.info("sklearn.metrics.roc_auc_score.binary: " + get_patch_message("daal"))
+            logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
             if y_score.dtype == np.float64:
                 return d4p.daal_roc_auc_score(y_true.reshape(1, -1), y_score.reshape(1, -1), 1)
             else:
@@ -46,8 +47,8 @@ def roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
                                      y_true, y_score, average,
                                      sample_weight=sample_weight)
     else:  # multilabel-indicator
+        logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
         return _average_binary_score(partial(_binary_roc_auc_score,
                                              max_fpr=max_fpr),
                                      y_true, y_score, average,
                                      sample_weight=sample_weight)
-    #return d4p.daal_roc_auc_score(y_true.reshape(1, -1), y_score.reshape(1, -1), 1)
