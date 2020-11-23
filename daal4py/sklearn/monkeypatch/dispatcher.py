@@ -25,6 +25,7 @@ from ..utils.validation import _daal_assert_all_finite
 from ..svm.svm import SVC as SVC_daal4py
 from ..ensemble.forest import RandomForestClassifier as RandomForestClassifier_daal4py
 from ..ensemble.forest import RandomForestRegressor as RandomForestRegressor_daal4py
+from ..metrics._ranking import roc_auc_score as roc_auc_score_daal4py
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
 from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
@@ -34,6 +35,7 @@ from ..linear_model.ridge import Ridge as Ridge_daal4py
 from ..decomposition.pca import PCA as PCA_daal4py
 from ..manifold import TSNE as TSNE_daal4py
 from sklearn import model_selection
+from sklearn import metrics
 from sklearn.utils import validation
 from sklearn.metrics import pairwise
 import sklearn.neighbors as neighbors_module
@@ -90,7 +92,7 @@ def _get_map_of_algorithms():
         'knn_regressor':            [[(neighbors_module, 'KNeighborsRegressor', KNeighborsRegressor_daal4py), None]],
         'random_forest_classifier': [[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]],
         'random_forest_regressor':  [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]],
-        'roc_auc_score':            [[(metrics, 'roc_auc_score', roc_auc_score), None]],
+        'roc_auc_score':            [[(metrics, 'roc_auc_score', roc_auc_score_daal4py), None]],
         'train_test_split':         [[(model_selection, 'train_test_split', _daal_train_test_split), None]],
         'fin_check':                [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]],
         'tsne':                     [[(manifold_module, 'TSNE', TSNE_daal4py), None]],
