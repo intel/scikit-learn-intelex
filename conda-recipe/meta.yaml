@@ -50,6 +50,7 @@ test:
         - xgboost  # [not win]
         - pytest
         - mpich  # [osx]
+        - impi_rt  # [not osx]
     source_files:
         - examples
         - tests
