@@ -66,6 +66,7 @@ algorithms:
 15. `sklearn.ensemble.RandomForestRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html>`__
 16. `sklearn.model_selection.train_test_split <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html>`__
 17. `sklearn.manifold.TSNE <https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html>`__
+18. `sklearn.metrics.roc_auc_score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html>`__
 
 Monkey-patched scikit-learn clases and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
@@ -134,6 +135,7 @@ Currently, these include:
 15. ``daal4py.sklearn.linear_model.ElasticNet``
 16. ``daal4py.sklearn.linear_model.Lasso``
 17. ``daal4py.sklearn.model_selection._daal_train_test_split``
+18. ``daal4py.sklearn.metrics._daal_roc_auc_score``
 
 These classes are always available, whether the scikit-learn itself has been
 patched, or not. For example::

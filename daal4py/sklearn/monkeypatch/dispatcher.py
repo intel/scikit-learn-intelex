@@ -25,7 +25,7 @@ from ..utils.validation import _daal_assert_all_finite
 from ..svm.svm import SVC as SVC_daal4py
 from ..ensemble.forest import RandomForestClassifier as RandomForestClassifier_daal4py
 from ..ensemble.forest import RandomForestRegressor as RandomForestRegressor_daal4py
-from daal4py.sklearn.metrics._ranking import _daal_roc_auc_score
+from ..metrics import _daal_roc_auc_score
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
 from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
