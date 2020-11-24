@@ -202,8 +202,6 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         The "copy" parameter was removed.
     """
 
-    use_daal = True
-
     if isinstance(Cs, numbers.Integral):
         Cs = np.logspace(-4, 4, Cs)
 
@@ -227,25 +225,29 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         # np.unique(y) gives labels in sorted order.
         pos_class = classes[1]
 
+    daal_ready = solver in ['lbfgs', 'newton-cg'] and not sparse.issparse(X)
+    daal_ready = daal_ready and sample_weight is None and class_weight is None
+
     # If sample weights exist, convert them to array (support for lists)
     # and check length
     # Otherwise set them to 1 for all examples
-    if sample_weight is not None:
-        sample_weight = np.array(sample_weight, dtype=X.dtype, order='C')
-        check_consistent_length(y, sample_weight)
-        default_weights = False
-    else:
-        default_weights = (class_weight is None)
-        sample_weight = np.ones(X.shape[0], dtype=X.dtype)
+    if not daal_ready:
+        if sample_weight is not None:
+            sample_weight = np.array(sample_weight, dtype=X.dtype, order='C')
+            check_consistent_length(y, sample_weight)
+            default_weights = False
+        else:
+            default_weights = (class_weight is None)
+            sample_weight = np.ones(X.shape[0], dtype=X.dtype)
 
-    daal_ready = use_daal and solver in ['lbfgs', 'newton-cg'] and not sparse.issparse(X)
     # If class_weights is a dict (provided by the user), the weights
     # are assigned to the original labels. If it is "balanced", then
     # the class_weights are assigned after masking the labels with a OvR.
     le = LabelEncoder()
-    if isinstance(class_weight, dict) or multi_class == 'multinomial':
+    if (isinstance(class_weight, dict) or multi_class == 'multinomial') and not daal_ready:
         class_weight_ = compute_class_weight(class_weight, classes, y)
-        sample_weight *= class_weight_[le.fit_transform(y)]
+        if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+            sample_weight *= class_weight_[le.fit_transform(y)]
 
     # For doing a ovr, we need to mask the labels first. for the
     # multinomial case this is not necessary.
@@ -256,12 +258,12 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         y_bin[~mask] = -1.
         # for compute_class_weight
 
-        if class_weight == "balanced":
+        if class_weight == "balanced" and not daal_ready:
             class_weight_ = compute_class_weight(class_weight, mask_classes,
                                                  y_bin)
-            sample_weight *= class_weight_[le.fit_transform(y_bin)]
+            if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+                sample_weight *= class_weight_[le.fit_transform(y_bin)]
 
-        daal_ready = daal_ready and (default_weights or np.allclose(sample_weight, np.ones_like(sample_weight)))
         if daal_ready:
             w0 = np.zeros(n_features + 1, dtype=X.dtype)
             y_bin[~mask] = 0.
@@ -269,8 +271,6 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
             w0 = np.zeros(n_features + int(fit_intercept), dtype=X.dtype)
 
     else:
-        daal_ready = daal_ready and (default_weights or np.allclose(sample_weight, np.ones_like(sample_weight)))
-
         if solver not in ['sag', 'saga']:
             if daal_ready:
                 Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
@@ -656,9 +656,6 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     .. versionchanged:: 0.19
         The "copy" parameter was removed.
     """
-
-    use_daal = True
-
     if isinstance(Cs, numbers.Integral):
         Cs = np.logspace(-4, 4, Cs)
 
@@ -682,25 +679,29 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         # np.unique(y) gives labels in sorted order.
         pos_class = classes[1]
 
+    daal_ready = solver in ['lbfgs', 'newton-cg'] and not sparse.issparse(X)
+    daal_ready = daal_ready and sample_weight is None and class_weight is None
+
     # If sample weights exist, convert them to array (support for lists)
     # and check length
     # Otherwise set them to 1 for all examples
-    if sample_weight is not None:
-        sample_weight = np.array(sample_weight, dtype=X.dtype, order='C')
-        check_consistent_length(y, sample_weight)
-        default_weights = False
-    else:
-        sample_weight = np.ones(X.shape[0], dtype=X.dtype)
-        default_weights = (class_weight is None)
+    if not daal_ready:
+        if sample_weight is not None:
+            sample_weight = np.array(sample_weight, dtype=X.dtype, order='C')
+            check_consistent_length(y, sample_weight)
+            default_weights = False
+        else:
+            sample_weight = np.ones(X.shape[0], dtype=X.dtype)
+            default_weights = (class_weight is None)
 
-    daal_ready = use_daal and solver in ['lbfgs', 'newton-cg'] and not sparse.issparse(X)
     # If class_weights is a dict (provided by the user), the weights
     # are assigned to the original labels. If it is "balanced", then
     # the class_weights are assigned after masking the labels with a OvR.
     le = LabelEncoder()
-    if isinstance(class_weight, dict) or multi_class == 'multinomial':
+    if (isinstance(class_weight, dict) or multi_class == 'multinomial') and not daal_ready:
         class_weight_ = compute_class_weight(class_weight, classes, y)
-        sample_weight *= class_weight_[le.fit_transform(y)]
+        if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+            sample_weight *= class_weight_[le.fit_transform(y)]
 
     # For doing a ovr, we need to mask the labels first. for the
     # multinomial case this is not necessary.
@@ -712,12 +713,12 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         y_bin[~mask] = -1.
         # for compute_class_weight
 
-        if class_weight == "balanced":
+        if class_weight == "balanced" and not daal_ready:
             class_weight_ = compute_class_weight(class_weight, mask_classes,
                                                  y_bin)
-            sample_weight *= class_weight_[le.fit_transform(y_bin)]
+            if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+                sample_weight *= class_weight_[le.fit_transform(y_bin)]
 
-        daal_ready = daal_ready and (default_weights or np.allclose(sample_weight, np.ones_like(sample_weight)))
         if daal_ready:
             w0 = np.zeros(n_features + 1, dtype=X.dtype)
             y_bin[~mask] = 0.
@@ -725,8 +726,6 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
             w0 = np.zeros(n_features + int(fit_intercept), dtype=X.dtype)
 
     else:
-        daal_ready = daal_ready and (default_weights or np.allclose(sample_weight, np.ones_like(sample_weight)))
-
         if solver not in ['sag', 'saga']:
             if daal_ready:
                 Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
@@ -951,7 +950,7 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         else:
             for i, ci in enumerate(coefs):
                 coefs[i] = np.delete(ci, 0, axis=-1)
-    
+
     if daal_ready:
         logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("daal"))
     else:

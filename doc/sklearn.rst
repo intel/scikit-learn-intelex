@@ -59,10 +59,13 @@ algorithms:
 8. `sklearn.linear_model.ElasticNet <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html>`__
 9. `sklearn.linear_model.Lasso <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html>`__
 10. `sklearn.neighbors.KNeighborsClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html>`__
-11. `sklearn.cluster.DBSCAN <https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html>`__
-12. `sklearn.ensemble.RandomForestClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html>`__
-13. `sklearn.ensemble.RandomForestRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html>`__
-14. `sklearn.model_selection.train_test_split <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html>`__
+11. `sklearn.neighbors.KNeighborsRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsRegressor.html>`__
+12. `sklearn.neighbors.NearestNeighbors <https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html>`__
+13. `sklearn.cluster.DBSCAN <https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html>`__
+14. `sklearn.ensemble.RandomForestClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html>`__
+15. `sklearn.ensemble.RandomForestRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html>`__
+16. `sklearn.model_selection.train_test_split <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html>`__
+17. `sklearn.manifold.TSNE <https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html>`__
 
 Monkey-patched scikit-learn clases and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
@@ -77,7 +80,7 @@ introspection. This assures scikit-learn API compatibility of all
 .. _sklearn_verbose:
 
 scikit-learn verbose
-----------------
+--------------------
 
 To find out which implementation of the algorithm is currently used,
 set the environment variable.
@@ -115,20 +118,22 @@ implement a subset of scikit-learn algorithms using Intel(R) oneAPI Data Analyti
 Currently, these include:
 
 1. ``daal4py.sklearn.neighbors.KNeighborsClassifier``
-2. ``daal4py.sklearn.tree.DecisionTreeClassifier``
-3. ``daal4py.sklearn.ensemble.RandomForestClassifier``
-4. ``daal4py.sklearn.ensemble.RandomForestRegressor``
-5. ``daal4py.sklearn.ensemble.AdaBoostClassifier``
-6. ``daal4py.sklearn.cluster.KMeans``
-7. ``daal4py.sklearn.cluster.DBSCAN``
-8. ``daal4py.sklearn.decomposition.PCA``
-9. ``daal4py.sklearn.linear_model.Ridge``
-10. ``daal4py.sklearn.svm.SVC``
-11. ``daal4py.sklearn.linear_model.logistic_regression_path``
-12. ``daal4py.sklearn.linear_model.LogisticRegression``
-13. ``daal4py.sklearn.linear_model.ElasticNet``
-14. ``daal4py.sklearn.linear_model.Lasso``
-15. ``daal4py.sklearn.model_selection._daal_train_test_split``
+2. ``daal4py.sklearn.neighbors.KNeighborsRegressor``
+3. ``daal4py.sklearn.neighbors.NearestNeighbors``
+4. ``daal4py.sklearn.tree.DecisionTreeClassifier``
+5. ``daal4py.sklearn.ensemble.RandomForestClassifier``
+6. ``daal4py.sklearn.ensemble.RandomForestRegressor``
+7. ``daal4py.sklearn.ensemble.AdaBoostClassifier``
+8. ``daal4py.sklearn.cluster.KMeans``
+9. ``daal4py.sklearn.cluster.DBSCAN``
+10. ``daal4py.sklearn.decomposition.PCA``
+11. ``daal4py.sklearn.linear_model.Ridge``
+12. ``daal4py.sklearn.svm.SVC``
+13. ``daal4py.sklearn.linear_model.logistic_regression_path``
+14. ``daal4py.sklearn.linear_model.LogisticRegression``
+15. ``daal4py.sklearn.linear_model.ElasticNet``
+16. ``daal4py.sklearn.linear_model.Lasso``
+17. ``daal4py.sklearn.model_selection._daal_train_test_split``
 
 These classes are always available, whether the scikit-learn itself has been
 patched, or not. For example::
