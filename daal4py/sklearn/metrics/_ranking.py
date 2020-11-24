@@ -1,10 +1,10 @@
 import daal4py as d4p
 import numpy as np
-from sklearn.utils import column_or_1d, check_array
+from sklearn.utils import check_array
 from sklearn.utils.multiclass import type_of_target
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics._ranking import _multiclass_roc_auc_score, _binary_roc_auc_score
-from sklearn.metrics._base import _average_binary_score, _average_multiclass_ovo_score
+from sklearn.metrics._base import _average_binary_score
 from .._utils import get_patch_message
 import logging
 from functools import partial
@@ -37,10 +37,7 @@ def roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
                          "is not defined in that case.")
         if max_fpr is None and sample_weight is None:
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
-            if y_score.dtype == np.float64:
-                return d4p.daal_roc_auc_score(y_true.reshape(1, -1), y_score.reshape(1, -1), 1)
-            else:
-                return d4p.daal_roc_auc_score(y_true.reshape(1, -1), y_score.reshape(1, -1), 0)
+            return d4p.daal_roc_auc_score(y_true.reshape(1, -1), y_score.reshape(1, -1))
         logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
         return _average_binary_score(partial(_binary_roc_auc_score,
                                              max_fpr=max_fpr),

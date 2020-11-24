@@ -331,7 +331,7 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
 }
 
 extern "C" {
-double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test, char dtype);
+double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test);
 }
 
 extern "C" {

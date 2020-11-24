@@ -851,12 +851,12 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
     daal::data_management::internal::trainTestSplit<int>(origTable, trainTable, testTable, trainIdxTable, testIdxTable);
 }
 
-double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test, char dtype)
+double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
 {
-    const int col_true = y_true.table->getNumberOfColumns();
-    const int row_true = y_true.table->getNumberOfRows();
-    const int col_test = y_test.table->getNumberOfColumns();
-    const int row_test = y_test.table->getNumberOfRows();
+    const size_t col_true = y_true.table->getNumberOfColumns();
+    const size_t row_true = y_true.table->getNumberOfRows();
+    const size_t col_test = y_test.table->getNumberOfColumns();
+    const size_t row_test = y_test.table->getNumberOfRows();
     if (row_true != 1 || row_test != 1 || col_true != col_test) {
         PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
         return NULL;
@@ -864,31 +864,30 @@ double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test, char dtype)
 
     auto table_true = get_table(y_true);
     auto table_test = get_table(y_test);
-
-    switch (dtype)
+    auto type = (*table_test->getDictionary())[0].indexType;
+    if (type == daal::data_management::data_feature_utils::DAAL_FLOAT64 ||
+        type == daal::data_management::data_feature_utils::DAAL_INT64_S ||
+        type == daal::data_management::data_feature_utils::DAAL_INT64_U)
     {
-        case 0:
-        {
-            float score;
-            float* predictedRank = new float[col_true];
-            daal::data_management::internal::calculateRankData<float>(predictedRank, table_test, col_true);
-            score = daal::data_management::internal::rocAucScore<float>(predictedRank, table_true, col_true);
-            return score;
-        }
-        case 1:
-        {
-            double score;
-            double* predictedRank = new double[col_true];
-            daal::data_management::internal::calculateRankData<double>(predictedRank, table_test, col_true);
-            score = daal::data_management::internal::rocAucScore<double>(predictedRank, table_true, col_true);
-            return score;
-        }
-        default:
-        {
-            PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
-            return NULL;
-        }
+        double score;
+        double* predictedRank = new double[col_true];
+        daal::data_management::internal::calculateRankData<double>(predictedRank, table_test, col_true);
+        score = daal::data_management::internal::rocAucScore<double>(predictedRank, table_true, col_true);
+        delete[] predictedRank;
+        return score;
+    } else if (type == daal::data_management::data_feature_utils::DAAL_FLOAT32 ||
+               type == daal::data_management::data_feature_utils::DAAL_INT32_S ||
+               type == daal::data_management::data_feature_utils::DAAL_INT32_U)
+    {
+        float score;
+        float* predictedRank = new float[col_true];
+        daal::data_management::internal::calculateRankData<float>(predictedRank, table_test, col_true);
+        score = daal::data_management::internal::rocAucScore<float>(predictedRank, table_true, col_true);
+        delete[] predictedRank;
+        return score;
     }
+    PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
+    return NULL;
 }
 
 void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state)
