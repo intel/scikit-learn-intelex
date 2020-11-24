@@ -851,14 +851,13 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
     daal::data_management::internal::trainTestSplit<int>(origTable, trainTable, testTable, trainIdxTable, testIdxTable);
 }
 
-double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test, char dtype)
+double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
 {
 #if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210200
     const size_t col_true = y_true.table->getNumberOfColumns();
     const size_t row_true = y_true.table->getNumberOfRows();
     const size_t col_test = y_test.table->getNumberOfColumns();
     const size_t row_test = y_test.table->getNumberOfRows();
-
     if (row_true != 1 || row_test != 1 || col_true != col_test) {
         PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
         return NULL;

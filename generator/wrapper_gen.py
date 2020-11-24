@@ -239,11 +239,11 @@ def daal_train_test_split(orig, train, test, train_idx, test_idx):
 
 
 cdef extern from "daal4py.h":
-    cdef double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test, char dtype) except +
+    cdef double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test) except +
 
 
-def daal_roc_auc_score(y_true, y_test, dtype=0):
-    return c_roc_auc_score(data_or_file(<PyObject*>y_true), data_or_file(<PyObject*>y_test), dtype)
+def daal_roc_auc_score(y_true, y_test):
+    return c_roc_auc_score(data_or_file(<PyObject*>y_true), data_or_file(<PyObject*>y_test))
 
 cdef extern from "daal4py.h":
     cdef void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state) except +
