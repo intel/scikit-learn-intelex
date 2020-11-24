@@ -1,3 +1,20 @@
+#
+#*****************************************************************************
+# Copyright 2020 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#*****************************************************************************
+
 import daal4py as d4p
 import numpy as np
 from sklearn.utils import check_array
@@ -9,7 +26,7 @@ from .._utils import get_patch_message
 import logging
 from functools import partial
 
-def roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
+def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
                   max_fpr=None, multi_class="raise", labels=None):
     y_type = type_of_target(y_true)
     y_true = check_array(y_true, ensure_2d=False, dtype=None)
