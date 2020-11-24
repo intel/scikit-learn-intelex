@@ -36,6 +36,7 @@ from ..decomposition.pca import PCA as PCA_daal4py
 from ..manifold import TSNE as TSNE_daal4py
 from ..linear_model.logistic_path import LogisticRegression as LogisticRegression_daal4py
 from sklearn import model_selection
+from sklearn import metrics
 from sklearn.utils import validation
 from sklearn.metrics import pairwise
 import sklearn.neighbors as neighbors_module
@@ -51,7 +52,6 @@ from functools import lru_cache
 import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
-import sklearn.metrics as metrics_module
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     import sklearn.linear_model._logistic as logistic_module
@@ -93,7 +93,7 @@ def _get_map_of_algorithms():
         'knn_regressor':            [[(neighbors_module, 'KNeighborsRegressor', KNeighborsRegressor_daal4py), None]],
         'random_forest_classifier': [[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]],
         'random_forest_regressor':  [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]],
-        'roc_auc_score':            [[(metrics_module, 'roc_auc_score', roc_auc_score_daal4py), None]],
+        'roc_auc_score':            [[(metrics, 'roc_auc_score', _daal_roc_auc_score), None]],
         'train_test_split':         [[(model_selection, 'train_test_split', _daal_train_test_split), None]],
         'fin_check':                [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]],
         'tsne':                     [[(manifold_module, 'TSNE', TSNE_daal4py), None]],
