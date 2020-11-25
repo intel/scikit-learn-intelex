@@ -51,8 +51,7 @@ def daal4py_classifier_predict(estimator, X, base_predict):
     except ValueError:
         fptype = None
 
-    if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and daal_model is not None \
-    and fptype is not None and not sp.issparse(X):
+    if daal_model is not None and fptype is not None and not sp.issparse(X):
         logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + get_patch_message("daal"))
 
         params = {
