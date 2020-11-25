@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py KNN example for shared memory systems
+# daal4py KD-Tree KNN example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
