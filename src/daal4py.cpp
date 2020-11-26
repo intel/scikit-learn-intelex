@@ -858,6 +858,7 @@ double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
     const size_t row_true = y_true.table->getNumberOfRows();
     const size_t col_test = y_test.table->getNumberOfColumns();
     const size_t row_test = y_test.table->getNumberOfRows();
+
     if (row_true != 1 || row_test != 1 || col_true != col_test) {
         PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
         return NULL;
