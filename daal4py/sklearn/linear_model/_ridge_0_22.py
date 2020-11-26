@@ -139,8 +139,8 @@ def _predict_ridge(self, X):
     X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
     good_shape_for_daal = True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
 
-    if (not self.solver == 'auto' or
-            not hasattr(self, 'daal_model_') or
+    if (not hasattr(self, 'daal_model_') or
+            not self.fit_solver_good_for_daal_ or
             sp.issparse(X) or
             not good_shape_for_daal or
             not (X.dtype == np.float64 or X.dtype == np.float32) or
