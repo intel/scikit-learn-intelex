@@ -869,22 +869,12 @@ double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
         type == daal::data_management::data_feature_utils::DAAL_INT64_S ||
         type == daal::data_management::data_feature_utils::DAAL_INT64_U)
     {
-        double score;
-        double* predictedRank = new double[col_true];
-        daal::data_management::internal::calculateRankData<double>(predictedRank, table_test, col_true);
-        score = daal::data_management::internal::rocAucScore<double>(predictedRank, table_true, col_true);
-        delete[] predictedRank;
-        return score;
+        return daal::data_management::internal::rocAucScore<double>(table_true, table_test, col_true);
     } else if (type == daal::data_management::data_feature_utils::DAAL_FLOAT32 ||
                type == daal::data_management::data_feature_utils::DAAL_INT32_S ||
                type == daal::data_management::data_feature_utils::DAAL_INT32_U)
     {
-        float score;
-        float* predictedRank = new float[col_true];
-        daal::data_management::internal::calculateRankData<float>(predictedRank, table_test, col_true);
-        score = daal::data_management::internal::rocAucScore<float>(predictedRank, table_true, col_true);
-        delete[] predictedRank;
-        return score;
+        return daal::data_management::internal::rocAucScore<float>(table_true, table_test, col_true);
     }
     PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
     return NULL;

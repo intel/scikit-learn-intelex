@@ -93,13 +93,14 @@ def _get_map_of_algorithms():
         'knn_regressor':            [[(neighbors_module, 'KNeighborsRegressor', KNeighborsRegressor_daal4py), None]],
         'random_forest_classifier': [[(ensemble_module, 'RandomForestClassifier', RandomForestClassifier_daal4py), None]],
         'random_forest_regressor':  [[(ensemble_module, 'RandomForestRegressor', RandomForestRegressor_daal4py), None]],
-        'roc_auc_score':            [[(metrics, 'roc_auc_score', _daal_roc_auc_score), None]],
         'train_test_split':         [[(model_selection, 'train_test_split', _daal_train_test_split), None]],
         'fin_check':                [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]],
         'tsne':                     [[(manifold_module, 'TSNE', TSNE_daal4py), None]],
     }
     if daal_check_version((2021,'P', 1)):
         mapping['log_reg'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
+    if daal_check_version((2021,'P', 2)):
+        mapping['roc_auc_score'] = [[(metrics, 'roc_auc_score', _daal_roc_auc_score), None]]
     return mapping
 
 
