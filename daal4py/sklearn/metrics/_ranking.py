@@ -49,10 +49,7 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
     elif y_type == "binary":
         labels = np.unique(y_true)
         y_true = label_binarize(y_true, classes=labels)[:, 0]
-        if len(labels) != 2:
-            raise ValueError("Only one class present in y_true. ROC AUC score "
-                         "is not defined in that case.")
-        if max_fpr is None and sample_weight is None:
+        if max_fpr is None and sample_weight is None and len(labels) == 2:
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
             return d4p.daal_roc_auc_score(y_true.reshape(1, -1), y_score.reshape(1, -1))
         logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
