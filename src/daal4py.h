@@ -51,7 +51,10 @@ using daal::services::LibraryVersionInfo;
 
 #include "data_management/data/internal/finiteness_checker.h"
 #include "data_management/data/internal/train_test_split.h"
-#include "data_management/data/internal/roc_auc_score.h"
+
+#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20201124
+    #include "data_management/data/internal/roc_auc_score.h"
+#endif
 
 #if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210200
     #include "data_management/data/internal/roc_auc_score.h"
