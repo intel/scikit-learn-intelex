@@ -57,9 +57,9 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
                                              max_fpr=max_fpr),
                                      y_true, y_score, average,
                                      sample_weight=sample_weight)
-    else:  # multilabel-indicator
-        logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
-        return _average_binary_score(partial(_binary_roc_auc_score,
-                                             max_fpr=max_fpr),
-                                     y_true, y_score, average,
-                                     sample_weight=sample_weight)
+
+    logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
+    return _average_binary_score(partial(_binary_roc_auc_score,
+                                            max_fpr=max_fpr),
+                                 y_true, y_score, average,
+                                 sample_weight=sample_weight)
