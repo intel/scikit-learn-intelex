@@ -56,10 +56,6 @@ using daal::services::LibraryVersionInfo;
     #include "data_management/data/internal/roc_auc_score.h"
 #endif
 
-#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210200
-    #include "data_management/data/internal/roc_auc_score.h"
-#endif
-
 
 extern "C" {
 void c_daalinit(int nthreads=-1);
