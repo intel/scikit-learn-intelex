@@ -50,7 +50,7 @@ from sklearn.svm import SVC
 from sklearn.datasets import load_digits
 digits = load_digits()
 X, y = digits.data, digits.target
-with sycl_context(“gpu”):
+with sycl_context("gpu"):
     clf = SVC().fit(X, y)
     res = clf.predict(X)
 ```
