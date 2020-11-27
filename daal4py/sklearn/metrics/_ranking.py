@@ -88,7 +88,7 @@ def _daal_type_of_target(y):
         _daal_assert_all_finite(y)
         return 'continuous' + suffix
 
-    unique = pd.unique(y.ravel()) if pandas_is_imported else np.unique(y)
+    unique = np.sort(pd.unique(y.ravel())) if pandas_is_imported else np.unique(y)
 
     if (len(unique) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
         result = 'multiclass' + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
@@ -121,11 +121,8 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
         labels = y_type[1]
         if max_fpr is None and sample_weight is None and len(labels) == 2:
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
-            if labels[0] > labels[1]:
-                labels[0], labels[1] = labels[1], labels[0]
             if not np.array_equal(labels, [0, 1]):
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
-
             result = d4p.daal_roc_auc_score(y_true.reshape(1, -1), y_score.reshape(1, -1))
         else:
             y_true = label_binarize(y_true, classes=labels)[:, 0]
