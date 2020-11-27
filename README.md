@@ -31,8 +31,9 @@ res = clf.predict(X)
 
 Intel CPU optimizations patching
 ```py
-import daal4py as d4p
-d4p.patch_sklearn()
+from daal4py.sklearn import patch_sklearn
+patch_sklearn()
+
 from sklearn.svm import SVC
 from sklearn.datasets import load_digits
 digits = load_digits()
@@ -43,7 +44,9 @@ res = clf.predict(X)
 
 Intel CPU/GPU optimizations patching
 ```py
-import daal4py as d4p
+from daal4py.sklearn import patch_sklearn
+patch_sklearn()
+
 from daal4py.oneapi import sycl_context
 d4p.patch_sklearn()
 from sklearn.svm import SVC
