@@ -70,7 +70,7 @@ def _daal_type_of_target(y):
         pass
 
     # Invalid inputs
-    if y.ndim > 2 or (y.dtype == object and len(y) and
+    if y.ndim > 2 or (y.dtype == object and len(y) != 0 and
                       not isinstance(y.flat[0], str)):
         return 'unknown'  # [[[1, 2]]] or [obj_1] and not ["label_1"]
 
@@ -91,9 +91,11 @@ def _daal_type_of_target(y):
     unique = pd.unique(y) if pandas_is_imported else np.unique(y)
 
     if (len(unique) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
-        return 'multiclass' + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
+        result = 'multiclass' + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
     else:
-        return ('binary', unique)  # [1, 2] or [["a"], ["b"]]
+        result = ('binary', unique)  # [1, 2] or [["a"], ["b"]]
+    return result
+
 
 def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
                   max_fpr=None, multi_class="raise", labels=None):
