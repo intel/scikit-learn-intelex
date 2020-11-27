@@ -25,6 +25,7 @@ from ..utils.validation import _daal_assert_all_finite
 from ..svm.svm import SVC as SVC_daal4py
 from ..ensemble.forest import RandomForestClassifier as RandomForestClassifier_daal4py
 from ..ensemble.forest import RandomForestRegressor as RandomForestRegressor_daal4py
+from ..metrics import _daal_roc_auc_score
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
 from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
@@ -35,6 +36,7 @@ from ..decomposition.pca import PCA as PCA_daal4py
 from ..manifold import TSNE as TSNE_daal4py
 from ..linear_model.logistic_path import LogisticRegression as LogisticRegression_daal4py
 from sklearn import model_selection
+from sklearn import metrics
 from sklearn.utils import validation
 from sklearn.metrics import pairwise
 import sklearn.neighbors as neighbors_module
@@ -97,6 +99,8 @@ def _get_map_of_algorithms():
     }
     if daal_check_version((2021,'P', 1)):
         mapping['log_reg'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
+    if daal_check_version((2021,'P', 2)):
+        mapping['roc_auc_score'] = [[(metrics, 'roc_auc_score', _daal_roc_auc_score), None]]
     return mapping
 
 
