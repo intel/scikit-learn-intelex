@@ -44,8 +44,8 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
         if multi_class == 'raise':
             raise ValueError("multi_class must be in ('ovo', 'ovr')")
         logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
-        return _multiclass_roc_auc_score(y_true, y_score, labels,
-                                         multi_class, average, sample_weight)
+        result = _multiclass_roc_auc_score(y_true, y_score, labels,
+                                           multi_class, average, sample_weight)
     elif y_type == "binary":
         labels = np.unique(y_true)
         y_true = label_binarize(y_true, classes=labels)[:, 0]
@@ -53,13 +53,14 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
             return d4p.daal_roc_auc_score(y_true.reshape(1, -1), y_score.reshape(1, -1))
         logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
-        return _average_binary_score(partial(_binary_roc_auc_score,
+        result = _average_binary_score(partial(_binary_roc_auc_score,
                                              max_fpr=max_fpr),
-                                     y_true, y_score, average,
-                                     sample_weight=sample_weight)
-
-    logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
-    return _average_binary_score(partial(_binary_roc_auc_score,
-                                            max_fpr=max_fpr),
-                                 y_true, y_score, average,
-                                 sample_weight=sample_weight)
+                                       y_true, y_score, average,
+                                       sample_weight=sample_weight)
+    else:
+        logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
+        result = _average_binary_score(partial(_binary_roc_auc_score,
+                                               max_fpr=max_fpr),
+                                       y_true, y_score, average,
+                                       sample_weight=sample_weight)
+    return result
