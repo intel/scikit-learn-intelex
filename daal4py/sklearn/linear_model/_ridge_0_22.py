@@ -101,7 +101,7 @@ def _fit_ridge(self, X, y, sample_weight=None):
             multi_output=True, y_numeric=True)
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = True if X.shape[0] >= X.shape[1] else False
-    self.fit_solver_good_for_daal_ = True if self.solver != "sparse_cg" else False
+    self.fit_solver_good_for_daal_ = True if self.solver in ["cholesky","auto"] else False
 
     if (not self.fit_solver_good_for_daal_ or
             sp.issparse(X) or
