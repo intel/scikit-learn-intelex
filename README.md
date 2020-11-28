@@ -87,13 +87,13 @@ Scenarios that are already available in 2020.3 release:
 ||**RandomForestClassifier**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'gini'. | Multi-output and sparse data is not supported. |
 ||**KNeighborsClassifier**|Supported `metric` = 'euclidean' and `minkowski` with `p` = 2. Other parameters are fully supported. | Multi-output and sparse data is not supported. |
 ||**LogisticRegression / LogisticRegressionCV**|Supported `solver` = 'lbfgs' and 'newton-cg', `penalty` = 'l2' and 'none', `class_weight` = None. Other parameters are fully supported. | Only dense data is supported. |
-|Regression|**RandomForestRegressor**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'mse'. | Sparse data is not supported. |
+|Regression|**RandomForestRegressor**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'mse'. | Multi-output and sparse data is not supported. |
 ||**LinearRegression**|All parameters except `normalize` != False. | Only dense data is supported, `#observations` should be >= `#features`. |
 ||**Ridge**|All parameters except `normalize` != False and `solver` != 'auto'. | Only dense data is supported, `#observations` should be >= `#features`. |
 ||**ElasticNet**|All parameters are supported| Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
 ||**Lasso**|All parameters are supported| Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
 |Clustering|**KMeans**|All parameters except `precompute_distances`. | No limitations. |
-||**DBSCAN**|Supported `metric` = 'euclidean' and 'minkowski' with p='2', `algorithm`='brute. Other parameters are fully supported | Dense data only |
+||**DBSCAN**|Supported `metric` = 'euclidean' and 'minkowski' with p='2', `algorithm`='brute. Other parameters are fully supported. | Only dense data is supported. |
 |Dimensionality reduction|**PCA**|All parameters except `svd_solver` != 'full'. | No limitations. |
 |Other|**train_test_split**|All parameters are supported. | Only dense data is supported.|
 ||**assert_all_finite**|All parameters are supported. | Only dense data is supported. |
