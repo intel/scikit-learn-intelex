@@ -9,6 +9,7 @@ A simplified API to Intel(R) oneAPI Data Analytics Library that allows for fast 
 - [Documentation](https://intelpython.github.io/daal4py/)
 - [scikit-learn API and patching](https://intelpython.github.io/daal4py/sklearn.html#sklearn)
 - [Source Code](https://github.com/IntelPython/daal4py/tree/master/src)
+- [Building from Sources](INSTALL.md)
 - [About Intel(R) oneAPI Data Analytics Library](https://oneapi-src.github.io/oneDAL/)
 
 Running full scikit-learn test suite with daal4p's optimization patches
@@ -110,7 +111,7 @@ Scenarios that are only available in the `master` branch (not released yet):
 
 ## scikit-learn verbose
 
-To find out which implementation of the algorithm is currently used (daal4py or stock Scikit-learn), set the environment variable. [Read more in the documentation](https://intelpython.github.io/daal4py/sklearn.html#scikit-learn-verbose).
+To find out which implementation of the algorithm is currently used (daal4py or stock Scikit-learn), set the environment variable:
 
 On Linux and Mac OS: `export IDP_SKLEARN_VERBOSE=INFO`
 
@@ -123,6 +124,7 @@ INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library so
 ```
 INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver
 ```
+[Read more in the documentation](https://intelpython.github.io/daal4py/sklearn.html#scikit-learn-verbose).
 
 # Building from Source
 See [Building from Sources](INSTALL.md) for details.
