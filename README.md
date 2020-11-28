@@ -16,18 +16,27 @@ Running full scikit-learn test suite with daal4p's optimization patches
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
 
-# Getting Started
+# Installation
+daal4py can be installed from conda-forge (recommended):
+```bash
+conda install daal4py -c conda-forge
+```
+or from Intel channel:
+```bash
+conda install daal4py -c intel
+```
+
+# Performance benefits
+
 Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution. 
 
-Stock Scikit-learn
-```py
-from sklearn.svm import SVC
-from sklearn.datasets import load_digits
-digits = load_digits()
-X, y = digits.data, digits.target
-clf = SVC().fit(X, y)
-res = clf.predict(X)
-```
+| *Speedups of oneDAL powered Scikit-learn over the original Scikit-learn, 28 cores, 1 thread/core* |
+|:--:|
+| ![](https://github.com/oneapi-src/oneDAL/docs/readme-charts/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
+| *technical details: FPType: float32; HW: Intel(R) Xeon(R) Platinum 8276L CPU @ 2.20GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.22.2, Intel® DAAL (2019.5), Intel® Distribution Of Python (IDP) 3.7.4; Details available in the article https://medium.com/intel-analytics-software/accelerate-your-scikit-learn-applications-a06cacf44912* |
+
+# Getting Started
+Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution. 
 
 Intel CPU optimizations patching
 ```py
@@ -45,10 +54,9 @@ res = clf.predict(X)
 Intel CPU/GPU optimizations patching
 ```py
 from daal4py.sklearn import patch_sklearn
+from daal4py.oneapi import sycl_context
 patch_sklearn()
 
-from daal4py.oneapi import sycl_context
-d4p.patch_sklearn()
 from sklearn.svm import SVC
 from sklearn.datasets import load_digits
 digits = load_digits()
@@ -60,19 +68,50 @@ with sycl_context("gpu"):
 daal4py API, allows you to use wider set of Intel(R) oneAPI Data Analytics Library algorithms in just one line:
 ```py
 import daal4py as d4p
-d4p.kmeans_init(data, 10, t_method="plusPlusDense")
+init = d4p.kmeans_init(data, 10, t_method="plusPlusDense")
+result = init.compute(X)
 ```
-You can even run this on a cluster by simple adding a keyword-parameter
+You can even run this on a cluster by simple code changes:
 ```py
 import daal4py as d4p
+d4p.daalinit()
 d4p.kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
+result = init.compute(X, , daal4py.my_procid())
+d4p.daalfini()
 ```
 
-# Installation
-daal4py can be installed from conda:
-```bash
-conda install daal4py -c intel
-```
+# Scikit-learn patching
+
+daal4py patching will affect performance for specific Scikit-learn functionality listed below. In some cases daal4py can fallback into stock Scikit-learn, if there are some unsupported parameters (these limitation described below). If the patching doesn't cover your scenarios - please, submit an issue on GitHub.
+
+Already available in 2020.3 release:
+|Task|Functionality|Parameters support|Data support|
+|:---|:------------|:-----------------|:-----------|
+|Classification|**SVC**|All parameters except `kernel` = 'poly' and 'sigmoid'|No limitations|
+||**RandomForestClassifier**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'gini' | Multi-output and sparse data aren't supported |
+||**KNeighborsClassifier**|Supported `metric` = 'euclidean' and `minkowski` with `p` = 2. Other parameters are fully supported | Multi-output and sparse data aren't supported |
+||**LogisticRegression / LogisticRegressionCV**|Supported `solver` = 'lbfgs' and 'newton-cg', `penalty` = 'l2' and 'none', `class_weight` = None. Other parameters are fully supported | Dense data |
+|Regression|**RandomForestRegressor**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'mse' | Sparse data is't supported |
+||**LinearRegression**|All parameters except `normalize` != False. | Dense data, # observations should be >= # features |
+||**Ridge**|All parameters except `normalize` != False and `solver` != 'auto' | Dense data, # observations should be >= # features |
+||**ElasticNet**|All parameters are supported| Multi-output and sparse data aren't suppported. # observations should be >= # features |
+||**Lasso**|All parameters are supported| Multi-output and sparse data aren't suppported. # observations should be >= # features |
+|Clustering|**KMeans**|All parameters except `precompute_distances` | No limitations |
+||**DBSCAN**|Supported `metric` = 'euclidean' and 'minkowski' with p='2', 'algorithm'='brute. Other parameters are fully supported | Dense data only |
+|Dimensionality reduction|**PCA**|All parameters except `svd_solver` != 'full' | No limitations |
+|Other|**train_test_split**|All parameters are supported| Dense data only |
+||**assert_all_finite**|All parameters are supported| Dense data only |
+||**pairwise_distance**|With `metric`='cosine' and 'correlation'| Dense data only |
+
+Not released yet, but available in master (will be included in future releases):
+
+|Task|Functionality|Parameters support|Data support|
+|:---|:------------|:-----------------|:-----------|
+|Regression|**KNeighborsRegressor**|Supported `metric` = 'euclidean' and 'minkowski' with `p` = 2. Other parameters are fullysupported | Sparse data is't supported |
+|Unsupervised|**NearestNeighbors**|Supported `metric` = 'euclidean' and 'minkowski' with `p` = 2. Other parameters are fully supported | Sparse data is't supported |
+|Dimensionality reduction|**TSNE**|Supported `metric` = 'euclidean' and 'minkowski' with `p` = 2. Other parameters are fully supported | Sparse data is't supported |
+|Other|**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` aren't supported| No limitations |
+
 
 # Building from sources
 daal4py is easily built from sources with the majority of the necessary prerequisites available on conda. The instructions below detail how to gather the prerequisites, set your build environment, and finally build and install the completed package. daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if needed. 
