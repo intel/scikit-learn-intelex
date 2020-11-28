@@ -84,8 +84,8 @@ Scenarios that are already available in 2020.3 release:
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
 |Classification|**SVC**|All parameters except `kernel` = 'poly' and 'sigmoid'. | No limitations.|
-||**RandomForestClassifier**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'gini' | Multi-output and sparse data aren't supported |
-||**KNeighborsClassifier**|Supported `metric` = 'euclidean' and `minkowski` with `p` = 2. Other parameters are fully supported | Multi-output and sparse data aren't supported |
+||**RandomForestClassifier**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'gini'. | Multi-output and sparse data is not supported. |
+||**KNeighborsClassifier**|Supported `metric` = 'euclidean' and `minkowski` with `p` = 2. Other parameters are fully supported. | Multi-output and sparse data is not supported. |
 ||**LogisticRegression / LogisticRegressionCV**|Supported `solver` = 'lbfgs' and 'newton-cg', `penalty` = 'l2' and 'none', `class_weight` = None. Other parameters are fully supported. | Only dense data is supported. |
 |Regression|**RandomForestRegressor**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'mse'. | Sparse data is not supported. |
 ||**LinearRegression**|All parameters except `normalize` != False. | Only dense data is supported, `#observations` should be >= `#features`. |
