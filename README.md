@@ -26,15 +26,6 @@ or from Intel channel:
 conda install daal4py -c intel
 ```
 
-# Performance benefits
-
-Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution. 
-
-| *Speedups of oneDAL powered Scikit-learn over the original Scikit-learn, 28 cores, 1 thread/core* |
-|:--:|
-| ![](doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
-| *technical details: FPType: float32; HW: Intel(R) Xeon(R) Platinum 8276L CPU @ 2.20GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.22.2, Intel® DAAL (2019.5), Intel® Distribution Of Python (IDP) 3.7.4; Details available in the article https://medium.com/intel-analytics-software/accelerate-your-scikit-learn-applications-a06cacf44912* |
-
 # Getting Started
 Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution. 
 
@@ -81,6 +72,11 @@ d4p.daalfini()
 ```
 
 # Scikit-learn patching
+
+| *Speedups of daal4py powered Scikit-learn over the original Scikit-learn, 28 cores, 1 thread/core* |
+|:--:|
+| ![](doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
+| *technical details: FPType: float32; HW: Intel(R) Xeon(R) Platinum 8276L CPU @ 2.20GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.22.2, Intel® DAAL (2019.5), Intel® Distribution Of Python (IDP) 3.7.4; Details available in the article https://medium.com/intel-analytics-software/accelerate-your-scikit-learn-applications-a06cacf44912* |
 
 daal4py patching will affect performance for specific Scikit-learn functionality listed below. In some cases daal4py can fallback into stock Scikit-learn, if there are some unsupported parameters (these limitation described below). If the patching doesn't cover your scenarios - please, submit an issue on GitHub.
 
