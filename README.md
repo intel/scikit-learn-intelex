@@ -74,10 +74,10 @@ d4p.daalfini()
 
 # Scikit-learn patching
 
-| *Speedups of daal4py-powered Scikit-learn over the original Scikit-learn, 28 cores, 1 thread/core* |
+| *Speedups of daal4py-powered Scikit-learn over the original Scikit-learn* |
 |:--:|
 | ![](doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
-| *technical details: FPType: float32; HW: Intel(R) Xeon(R) Platinum 8276L CPU @ 2.20GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.22.2, Intel® DAAL (2019.5), Intel® Distribution Of Python (IDP) 3.7.4; Details available in [the related article on Medium](https://medium.com/intel-analytics-software/accelerate-your-scikit-learn-applications-a06cacf44912)* |
+| *Technical details: FPType: float32; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10)* |
 
 daal4py patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, daal4py fallbacks into stock Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/IntelPython/daal4py/issues).
 
@@ -87,12 +87,12 @@ Scenarios that are already available in 2020.3 release:
 |Classification|**SVC**|All parameters except `kernel` = 'poly' and 'sigmoid'. | No limitations.|
 ||**RandomForestClassifier**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'gini'. | Multi-output and sparse data is not supported. |
 ||**KNeighborsClassifier**|Supported `metric` = 'euclidean' and `minkowski` with `p` = 2. Other parameters are fully supported. | Multi-output and sparse data is not supported. |
-||**LogisticRegression / LogisticRegressionCV**|Supported `solver` = 'lbfgs' and 'newton-cg', `penalty` = 'l2' and 'none', `class_weight` = None. Other parameters are fully supported. | Only dense data is supported. |
+||**LogisticRegression / LogisticRegressionCV**|Supported `solver` = 'lbfgs' and 'newton-cg', `penalty` = 'l2' and 'none', `class_weight` = None, `sample_weight` = None. Other parameters are fully supported. | Only dense data is supported. |
 |Regression|**RandomForestRegressor**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'mse'. | Multi-output and sparse data is not supported. |
-||**LinearRegression**|All parameters except `normalize` != False. | Only dense data is supported, `#observations` should be >= `#features`. |
-||**Ridge**|All parameters except `normalize` != False and `solver` != 'auto'. | Only dense data is supported, `#observations` should be >= `#features`. |
-||**ElasticNet**|All parameters are supported| Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
-||**Lasso**|All parameters are supported| Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
+||**LinearRegression**|All parameters except `normalize` != False and `sample_weight` != None. | Only dense data is supported, `#observations` should be >= `#features`. |
+||**Ridge**|All parameters except `normalize` != False, `solver` != 'auto' and `sample_weight` != None. | Only dense data is supported, `#observations` should be >= `#features`. |
+||**ElasticNet**|All parameters are supported except `sample_weight` | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
+||**Lasso**|All parameters are supported except `sample_weight`| Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
 |Clustering|**KMeans**|All parameters except `precompute_distances`. | No limitations. |
 ||**DBSCAN**|Supported `metric` = 'euclidean' and 'minkowski' with p='2', `algorithm`='brute. Other parameters are fully supported. | Only dense data is supported. |
 |Dimensionality reduction|**PCA**|All parameters except `svd_solver` != 'full'. | No limitations. |
@@ -112,18 +112,13 @@ Scenarios that are only available in the `master` branch (not released yet):
 ## scikit-learn verbose
 
 To find out which implementation of the algorithm is currently used (daal4py or stock Scikit-learn), set the environment variable:
-
-On Linux and Mac OS: `export IDP_SKLEARN_VERBOSE=INFO`
-
-On Windows: `set IDP_SKLEARN_VERBOSE=INFO`
+- On Linux and Mac OS: `export IDP_SKLEARN_VERBOSE=INFO`
+- On Windows: `set IDP_SKLEARN_VERBOSE=INFO`
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used:
-```
-INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver
-```
-```
-INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver
-```
+- `INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver`
+- `INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver`
+
 [Read more in the documentation](https://intelpython.github.io/daal4py/sklearn.html#scikit-learn-verbose).
 
 # Building from Source
