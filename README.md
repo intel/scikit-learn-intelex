@@ -67,7 +67,7 @@ You can even run this on a cluster by simple code changes:
 import daal4py as d4p
 d4p.daalinit()
 d4p.kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
-result = init.compute(X, , daal4py.my_procid())
+result = init.compute(X, daal4py.my_procid())
 d4p.daalfini()
 ```
 
