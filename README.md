@@ -108,6 +108,21 @@ Scenarios that are only available in the `master` branch (not released yet):
 |Dimensionality reduction|**TSNE**|Supported `metric` = 'euclidean' and 'minkowski' with `p` = 2. Other parameters are fully supported. | Sparse data is not supported. |
 |Other|**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
 
+## scikit-learn verbose
+
+To find out which implementation of the algorithm is currently used (daal4py or stock Scikit-learn), set the environment variable. [Read more in the documentation](https://intelpython.github.io/daal4py/sklearn.html#scikit-learn-verbose).
+
+On Linux and Mac OS: `export IDP_SKLEARN_VERBOSE=INFO`
+
+On Windows: `set IDP_SKLEARN_VERBOSE=INFO`
+
+For example, for DBSCAN you get one of these print statements depending on which implementation is used:
+```
+INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver
+```
+```
+INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver
+```
 
 # Building from sources
 daal4py is easily built from sources with the majority of the necessary prerequisites available on conda. The instructions below detail how to gather the prerequisites, set your build environment, and finally build and install the completed package. daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if needed. 
