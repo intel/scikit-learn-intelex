@@ -1,5 +1,5 @@
 #
-# *******************************************************************************
+#*******************************************************************************
 # Copyright 2014-2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ******************************************************************************/
+#******************************************************************************/
 
 from __future__ import print_function
 
@@ -34,8 +34,6 @@ from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit
 
 from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
-
-from distutils.version import LooseVersion
 
 import daal4py
 from .._utils import (
@@ -447,7 +445,6 @@ def fit(self, X, y, sample_weight=None):
         X, y = self._validate_data(X, y, dtype=np.float64,
                                    order='C', accept_sparse='csr',
                                    accept_large_sparse=False)
-
     y = self._validate_targets(y)
 
     sample_weight = np.asarray([]
@@ -504,14 +501,16 @@ def fit(self, X, y, sample_weight=None):
                     n_splits=n_splits, shuffle=True, random_state=self.random_state)
                 if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
                     self.clf_prob = CalibratedClassifierCV(clf_base, ensemble=False,
-                                                           cv=cv, method='sigmoid', n_jobs=n_splits)
+                                                           cv=cv, method='sigmoid', 
+                                                           n_jobs=n_splits)
                 else:
                     self.clf_prob = CalibratedClassifierCV(clf_base,
                                                            cv=cv, method='sigmoid')
                 self.clf_prob.fit(X, y, sample_weight)
             except ValueError:
-                self.clf_prob = CalibratedClassifierCV(
-                    clf_base.fit(X, y, sample_weight), cv="prefit", method='sigmoid').fit(X, y, sample_weight)
+                clf_base = clf_base.fit(X, y, sample_weight)
+                self.clf_prob = CalibratedClassifierCV(clf_base, cv="prefit", method='sigmoid')
+                self.clf_prob.fit(X, y, sample_weight)
     else:
         logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
         self._daal_fit = False
