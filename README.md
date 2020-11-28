@@ -32,7 +32,7 @@ Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Sam
 
 | *Speedups of oneDAL powered Scikit-learn over the original Scikit-learn, 28 cores, 1 thread/core* |
 |:--:|
-| ![](https://github.com/oneapi-src/oneDAL/docs/readme-charts/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
+| ![](doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
 | *technical details: FPType: float32; HW: Intel(R) Xeon(R) Platinum 8276L CPU @ 2.20GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.22.2, Intel® DAAL (2019.5), Intel® Distribution Of Python (IDP) 3.7.4; Details available in the article https://medium.com/intel-analytics-software/accelerate-your-scikit-learn-applications-a06cacf44912* |
 
 # Getting Started
