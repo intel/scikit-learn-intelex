@@ -48,7 +48,6 @@ from daal4py.sklearn import patch_sklearn
 patch_sklearn()
 
 from daal4py.oneapi import sycl_context
-d4p.patch_sklearn()
 from sklearn.svm import SVC
 from sklearn.datasets import load_digits
 digits = load_digits()
