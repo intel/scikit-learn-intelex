@@ -77,7 +77,7 @@ d4p.daalfini()
 | *Speedups of daal4py-powered Scikit-learn over the original Scikit-learn* |
 |:--:|
 | ![](doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
-| *Technical details: FPType: float32; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10)* |
+| *Technical details: float type: float32; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10)* |
 
 daal4py patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, daal4py fallbacks into stock Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/IntelPython/daal4py/issues).
 
@@ -93,7 +93,7 @@ Scenarios that are already available in 2020.3 release:
 ||**Ridge**|All parameters except `normalize` != False, `solver` != 'auto' and `sample_weight` != None. | Only dense data is supported, `#observations` should be >= `#features`. |
 ||**ElasticNet**|All parameters are supported except `sample_weight` | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
 ||**Lasso**|All parameters are supported except `sample_weight`| Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
-|Clustering|**KMeans**|All parameters except `precompute_distances`. | No limitations. |
+|Clustering|**KMeans**|All parameters except `precompute_distances` and `sample_weight` != None. | No limitations. |
 ||**DBSCAN**|Supported `metric` = 'euclidean' and 'minkowski' with p='2', `algorithm`='brute. Other parameters are fully supported. | Only dense data is supported. |
 |Dimensionality reduction|**PCA**|All parameters except `svd_solver` != 'full'. | No limitations. |
 |Other|**train_test_split**|All parameters are supported. | Only dense data is supported.|
