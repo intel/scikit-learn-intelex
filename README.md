@@ -26,6 +26,7 @@ or from Intel channel:
 ```bash
 conda install daal4py -c intel
 ```
+You can [build daal4py from sources](INSTALL.md) as well.
 
 # Getting Started
 Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution. 
@@ -86,15 +87,15 @@ Scenarios that are already available in 2020.3 release:
 |:---|:------------|:-----------------|:-----------|
 |Classification|**SVC**|All parameters except `kernel` = 'poly' and 'sigmoid'. | No limitations.|
 ||**RandomForestClassifier**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'gini'. | Multi-output and sparse data is not supported. |
-||**KNeighborsClassifier**|Supported `metric` = 'euclidean' and `minkowski` with `p` = 2. Other parameters are fully supported. | Multi-output and sparse data is not supported. |
-||**LogisticRegression / LogisticRegressionCV**|Supported `solver` = 'lbfgs' and 'newton-cg', `penalty` = 'l2' and 'none', `class_weight` = None, `sample_weight` = None. Other parameters are fully supported. | Only dense data is supported. |
+||**KNeighborsClassifier**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` = 2. | Multi-output and sparse data is not supported. |
+||**LogisticRegression / LogisticRegressionCV**|All parameters except `solver` != 'lbfgs' or 'newton-cg', `penalty` != 'l2' or 'none', `class_weight` != None, `sample_weight` != None. | Only dense data is supported. |
 |Regression|**RandomForestRegressor**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'mse'. | Multi-output and sparse data is not supported. |
 ||**LinearRegression**|All parameters except `normalize` != False and `sample_weight` != None. | Only dense data is supported, `#observations` should be >= `#features`. |
 ||**Ridge**|All parameters except `normalize` != False, `solver` != 'auto' and `sample_weight` != None. | Only dense data is supported, `#observations` should be >= `#features`. |
-||**ElasticNet**|All parameters are supported except `sample_weight` | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
-||**Lasso**|All parameters are supported except `sample_weight`| Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
+||**ElasticNet**|All parameters except `sample_weight` != None. | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
+||**Lasso**|All parameters except `sample_weight` != None. | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
 |Clustering|**KMeans**|All parameters except `precompute_distances` and `sample_weight` != None. | No limitations. |
-||**DBSCAN**|Supported `metric` = 'euclidean' and 'minkowski' with p='2', `algorithm`='brute. Other parameters are fully supported. | Only dense data is supported. |
+||**DBSCAN**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` = 2. | Only dense data is supported. |
 |Dimensionality reduction|**PCA**|All parameters except `svd_solver` != 'full'. | No limitations. |
 |Other|**train_test_split**|All parameters are supported. | Only dense data is supported.|
 ||**assert_all_finite**|All parameters are supported. | Only dense data is supported. |
@@ -104,9 +105,9 @@ Scenarios that are only available in the `master` branch (not released yet):
 
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
-|Regression|**KNeighborsRegressor**|Supported `metric` = 'euclidean' and 'minkowski' with `p` = 2. Other parameters are fully supported. | Sparse data is not supported. |
-|Unsupervised|**NearestNeighbors**|Supported `metric` = 'euclidean' and 'minkowski' with `p` = 2. Other parameters are fully supported. | Sparse data is not supported. |
-|Dimensionality reduction|**TSNE**|Supported `metric` = 'euclidean' and 'minkowski' with `p` = 2. Other parameters are fully supported. | Sparse data is not supported. |
+|Regression|**KNeighborsRegressor**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` = 2. | Sparse data is not supported. |
+|Unsupervised|**NearestNeighbors**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` = 2. | Sparse data is not supported. |
+|Dimensionality reduction|**TSNE**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` = 2. | Sparse data is not supported. |
 |Other|**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
 
 ## scikit-learn verbose
