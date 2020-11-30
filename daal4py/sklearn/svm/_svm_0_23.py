@@ -35,13 +35,15 @@ from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit
 from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
 
-
 import daal4py
-from .._utils import (make2d, getFPType, get_patch_message, sklearn_check_version)
+from .._utils import (
+    make2d, getFPType, get_patch_message, sklearn_check_version)
 import logging
+
 
 def _get_libsvm_impl():
     return ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
+
 
 def _dual_coef_getter(self):
     return self._internal_dual_coef_
@@ -185,7 +187,7 @@ def _daal4py_check_weight(self, X, y, sample_weight):
 
 
 def _daal4py_svm(fptype, C, accuracyThreshold, tau,
-                               maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
+                 maxIterations, cacheSize, doShrinking, kernel, nClasses=2):
     svm_train = daal4py.svm_training(
         method='thunder',
         fptype=fptype,
@@ -222,16 +224,16 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
     X_fptype = getFPType(X)
     kf = _daal4py_kf(kernel, X_fptype, gamma=self._gamma, is_sparse=is_sparse)
     algo = _daal4py_svm(fptype=X_fptype,
-                                      C=float(self.C),
-                                      accuracyThreshold=float(self.tol),
-                                      tau=1e-12,
-                                      maxIterations=int(
-                                          self.max_iter if self.max_iter > 0 else 2**30),
-                                      cacheSize=int(
-                                          self.cache_size * 1024 * 1024),
-                                      doShrinking=bool(self.shrinking),
-                                      kernel=kf,
-                                      nClasses=num_classes)
+                        C=float(self.C),
+                        accuracyThreshold=float(self.tol),
+                        tau=1e-12,
+                        maxIterations=int(
+                            self.max_iter if self.max_iter > 0 else 2**30),
+                        cacheSize=int(
+                            self.cache_size * 1024 * 1024),
+                        doShrinking=bool(self.shrinking),
+                        kernel=kf,
+                        nClasses=num_classes)
 
     res = algo.compute(data=X, labels=y, weights=sample_weight)
 
@@ -315,7 +317,6 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel, is_sparse=False):
     self._probB = np.empty(0)
 
 
-
 def _daal_var(X):
     """DAAL-based threaded computation of X.std()"""
     fpt = getFPType(X)
@@ -386,6 +387,7 @@ def __compute_gamma__(gamma, kernel, X, use_var=True, deprecation=True):
 
     return _gamma
 
+
 def _compute_gamma(*args):
     no_older_than_0_20_3 = sklearn_check_version("0.20.3")
     no_older_than_0_22 = not sklearn_check_version("0.22")
@@ -443,7 +445,6 @@ def fit(self, X, y, sample_weight=None):
         X, y = self._validate_data(X, y, dtype=np.float64,
                                    order='C', accept_sparse='csr',
                                    accept_large_sparse=False)
-
     y = self._validate_targets(y)
 
     sample_weight = np.asarray([]
@@ -493,20 +494,23 @@ def fit(self, X, y, sample_weight=None):
             params = self.get_params()
             params["probability"] = False
             params["decision_function_shape"] = 'ovr'
+            clf_base = SVC(**params)
             try:
+                n_splits = 5
                 cv = StratifiedKFold(
-                    n_splits=5, random_state=self.random_state, shuffle=True)
-                self.clf_prob = CalibratedClassifierCV(SVC(**params),
-                                                       cv=cv.split(
-                    X, y, sample_weight),
-                    method='sigmoid').fit(X, y, sample_weight)
+                    n_splits=n_splits, shuffle=True, random_state=self.random_state)
+                if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+                    self.clf_prob = CalibratedClassifierCV(clf_base, ensemble=False,
+                                                           cv=cv, method='sigmoid', 
+                                                           n_jobs=n_splits)
+                else:
+                    self.clf_prob = CalibratedClassifierCV(clf_base,
+                                                           cv=cv, method='sigmoid')
+                self.clf_prob.fit(X, y, sample_weight)
             except ValueError:
-                cv = StratifiedKFold(
-                    n_splits=3, random_state=self.random_state, shuffle=True)
-                self.clf_prob = CalibratedClassifierCV(SVC(**params),
-                                                       cv=cv.split(
-                    X, y, sample_weight),
-                    method='sigmoid').fit(X, y, sample_weight)
+                clf_base = clf_base.fit(X, y, sample_weight)
+                self.clf_prob = CalibratedClassifierCV(clf_base, cv="prefit", method='sigmoid')
+                self.clf_prob.fit(X, y, sample_weight)
     else:
         logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
         self._daal_fit = False
@@ -600,13 +604,15 @@ def predict(self, X):
     else:
         X = self._validate_for_predict(X)
         if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
-            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("daal"))
+            logging.info("sklearn.svm.SVC.predict: " +
+                         get_patch_message("daal"))
             if self.probability and self.clf_prob is not None:
                 y = self.clf_prob.predict(X)
             else:
                 y = _daal4py_predict(self, X)
         else:
-            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
+            logging.info("sklearn.svm.SVC.predict: " +
+                         get_patch_message("sklearn"))
             predict_func = self._sparse_predict if self._sparse else self._dense_predict
             y = predict_func(X)
 
@@ -653,12 +659,15 @@ def predict_proba(self):
 
     self._check_proba()
     if getattr(self, '_daal_fit', False):
-        logging.info("sklearn.svm.SVC.predict_proba: " + get_patch_message("daal"))
+        logging.info("sklearn.svm.SVC.predict_proba: " +
+                     get_patch_message("daal"))
         algo = self._daal4py_predict_proba
     else:
-        logging.info("sklearn.svm.SVC.predict_proba: " + get_patch_message("sklearn"))
+        logging.info("sklearn.svm.SVC.predict_proba: " +
+                     get_patch_message("sklearn"))
         algo = self._predict_proba
     return algo
+
 
 def decision_function(self, X):
     """Evaluates the decision function for the samples in X.
@@ -688,7 +697,8 @@ def decision_function(self, X):
     """
 
     if getattr(self, '_daal_fit', False):
-        logging.info("sklearn.svm.SVC.decision_function: " + get_patch_message("daal"))
+        logging.info("sklearn.svm.SVC.decision_function: " +
+                     get_patch_message("daal"))
         X = self._validate_for_predict(X)
         dec = _daal4py_predict(self, X, is_decision_function=True)
     else:
@@ -732,6 +742,7 @@ class SVC(svm_base.BaseSVC):
             class_weight=class_weight, verbose=verbose, max_iter=max_iter,
             decision_function_shape=decision_function_shape, break_ties=break_ties,
             random_state=random_state)
+
 
 SVC.fit = fit
 SVC.predict = predict
