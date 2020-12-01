@@ -356,10 +356,7 @@ def gen_pyx(odir):
 
 gen_pyx(os.path.abspath('./build'))
 
-with open(os.path.abspath('./README.md')) as f:
-    LONG_DESCRIPTION = f.read()
-
-PROJECT_URLS = {
+project_urls = {
     'Bug Tracker': 'https://github.com/IntelPython/daal4py/issues',
     'Documentation': 'https://intelpython.github.io/daal4py/',
     'Source Code': 'https://github.com/IntelPython/daal4py'
@@ -368,10 +365,9 @@ PROJECT_URLS = {
 # daal setup
 setup(  name             = "daal4py",
         description      = "A convenient Python API to Intel(R) oneAPI Data Analytics Library",
-        long_description = LONG_DESCRIPTION,
         author           = "Intel",
         version          = d4p_version,
-        url              = PROJECT_URLS,
+        url              = project_urls,
         classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Environment :: Console',
