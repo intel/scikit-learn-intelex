@@ -3,6 +3,7 @@
 matrix:
     include:
         - name: "Linux-Py3"
+          python: 3.7
           os: linux
           env:
             - MINICONDA=Miniconda3-latest-Linux-x86_64.sh
