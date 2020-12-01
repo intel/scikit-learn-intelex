@@ -32,7 +32,7 @@ from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
 from ..linear_model.coordinate_descent import ElasticNet as ElasticNet_daal4py
 from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
 from ..linear_model.ridge import Ridge as Ridge_daal4py
-from ..decomposition.pca import PCA as PCA_daal4py
+from ..decomposition._pca import PCA as PCA_daal4py
 from ..manifold import TSNE as TSNE_daal4py
 from ..linear_model.logistic_path import LogisticRegression as LogisticRegression_daal4py
 from sklearn import model_selection
