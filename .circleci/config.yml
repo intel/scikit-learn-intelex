@@ -78,7 +78,7 @@ jobs:
             echo "conda list before removing daal4py"
             conda list
             echo "conda remove -y daal4py --force"
-            conda remove -y daal4py --force
+            # conda remove -y daal4py --force
             echo "conda list after removing daal4py"
             conda list
             echo "conda install -y /tmp/out/*/daal4py-*.tar.bz2"
