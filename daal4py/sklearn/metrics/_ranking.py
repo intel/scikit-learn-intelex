@@ -91,7 +91,7 @@ def _daal_type_of_target(y):
     unique = np.sort(pd.unique(y.ravel())) if pandas_is_imported else np.unique(y)
 
     if (len(unique) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
-        result = 'multiclass' + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
+        result = ('multiclass' + suffix, None)  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
     else:
         result = ('binary', unique)  # [1, 2] or [["a"], ["b"]]
     return result
@@ -103,7 +103,7 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
     y_true = check_array(y_true, ensure_2d=False, dtype=None)
     y_score = check_array(y_score, ensure_2d=False)
 
-    if y_type == "multiclass" or (y_type[0] == "binary" and
+    if y_type[0] == "multiclass" or (y_type[0] == "binary" and
                                   y_score.ndim == 2 and
                                   y_score.shape[1] > 2):
         # do not support partial ROC computation for multiclass
