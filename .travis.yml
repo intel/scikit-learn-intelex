@@ -8,7 +8,7 @@ matrix:
             - MINICONDA=Miniconda3-latest-Linux-x86_64.sh
         - name: "OsX-Py3"
           os: osx
-          osx_image: xcode8
+          osx_image: xcode12
           compiler:
             - gcc
           env:
@@ -16,9 +16,6 @@ matrix:
             - MACOSX_DEPLOYMENT_TARGET=10.9
 
 install:
-  - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
@@ -30,6 +27,4 @@ install:
   - g++ -v
 
 script:
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - source activate CB
   - conda build -c intel -c conda-forge --numpy=1.17 --output-folder ./ conda-recipe
