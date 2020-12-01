@@ -1,7 +1,7 @@
 version: 2.0
 
 jobs:
-  build_pypi:
+  build_master:
     docker:
       - image: circleci/python:3.7.5
 
@@ -38,7 +38,7 @@ jobs:
           path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
 
 
-  build_master:
+  build_pypi:
     docker:
       - image: circleci/python:3.7.5
 
@@ -75,8 +75,15 @@ jobs:
             conda install -y -c conda-forge threadpoolctl
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
-            conda remove daal4py --force
+            echo "conda list before removing daal4py"
+            conda list
+            echo "conda remove -y daal4py --force"
+            conda remove -y daal4py --force
+            echo "conda list after removing daal4py"
+            conda list
+            echo "conda install -y /tmp/out/*/daal4py-*.tar.bz2"
             conda install -y /tmp/out/*/daal4py-*.tar.bz2
+            echo "conda list final"
             conda list
             source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
       - store_artifacts:
