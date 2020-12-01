@@ -12,12 +12,8 @@ matrix:
           compiler:
             - gcc
           env:
-            - MATRIX_EVAL="brew install gcc@7; CC=gcc-7 ; CXX=g++-7"
             - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
             - MACOSX_DEPLOYMENT_TARGET=10.9
-
-before_install:
-  - eval "${MATRIX_EVAL}"
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
@@ -27,12 +23,12 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda create -q -y -n CB python=3.7 conda-build
-  - conda activate CB
+  - source activate CB
   # Useful for debugging any issues with conda
   - conda info -a
   - gcc -v
   - g++ -v
 
 script:
-  - conda activate CB
+  - source activate CB
   - conda build -c intel -c conda-forge --numpy=1.17 --output-folder ./ conda-recipe
