@@ -22,7 +22,7 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda create -q -y -n CB python=3.7 conda-build
+  - conda create -q -n CB python=3.7 conda-build
   - source activate CB
   # Useful for debugging any issues with conda
   - conda info -a
@@ -30,5 +30,6 @@ install:
   - g++ -v
 
 script:
+  - export PATH="$HOME/miniconda/bin:$PATH"
   - source activate CB
   - conda build -c intel -c conda-forge --numpy=1.17 --output-folder ./ conda-recipe
