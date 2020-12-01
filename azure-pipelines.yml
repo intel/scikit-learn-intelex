@@ -18,7 +18,7 @@ jobs:
       conda activate CB
       conda build --override-channels -c intel -c conda-forge --numpy=1.17 conda-recipe
     displayName: conda build
-  
+
 - job: Linux_DPCPP
   pool:
     vmImage: 'ubuntu-20.04'
