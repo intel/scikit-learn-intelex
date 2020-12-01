@@ -4,14 +4,6 @@ matrix:
           os: linux
           env:
             - MINICONDA=Miniconda3-latest-Linux-x86_64.sh
-        - name: "OsX-Py3"
-          os: osx
-          osx_image: xcode12
-          compiler:
-            - gcc
-          env:
-            - MINICONDA=Miniconda3-latest-MacOSX-x86_64.sh
-            - MACOSX_DEPLOYMENT_TARGET=10.9
 
 install:
   - wget https://repo.continuum.io/miniconda/$MINICONDA -O miniconda.sh;
