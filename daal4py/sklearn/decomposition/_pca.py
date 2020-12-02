@@ -90,7 +90,7 @@ class PCA(PCA_original):
             fptype=fpType, doScale=False)
         pca_alg = daal4py.pca(
             fptype=fpType,
-            method='svdDense', # svdDense, correlationDense
+            method='svdDense',
             normalization=centering_algo,
             resultsToCompute='mean|variance|eigenvalue',
             isDeterministic=True,
@@ -134,44 +134,42 @@ class PCA(PCA_original):
 
 
     def _fit_full(self, X, n_components):
-        if X.dtype == np.float64 or X.dtype == np.float32:
-            logging.info("sklearn.decomposition.PCA._fit_full: " + get_patch_message("daal"))
+        X = check_array(X, dtype=[np.float64, np.float32])
 
-            n_samples, n_features = X.shape
-            self._validate_n_components(n_components, n_samples, n_features)
+        logging.info("sklearn.decomposition.PCA._fit_full: " + get_patch_message("daal"))
 
-            self._fit_full_daal4py(X, min(X.shape))
+        n_samples, n_features = X.shape
+        self._validate_n_components(n_components, n_samples, n_features)
 
-            U = self._transform_daal4py(X, whiten=True, check_X=False, scale_eigenvalues=True)
-            V = self.components_
-            S = self.singular_values_
+        self._fit_full_daal4py(X, min(X.shape))
 
-            if n_components == 'mle':
-                if sklearn_check_version('0.23'):
-                    n_components = _infer_dimension(self.explained_variance_, n_samples)
-                else:
-                    n_components = _infer_dimension_(self.explained_variance_, n_samples, n_features)
-            elif 0 < n_components < 1.0:
-                ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
-                n_components = np.searchsorted(ratio_cumsum, n_components,
-                                               side='right') + 1
+        U = self._transform_daal4py(X, whiten=True, check_X=False, scale_eigenvalues=True)
+        V = self.components_
+        S = self.singular_values_
 
-            if n_components < min(n_features, n_samples):
-                self.noise_variance_ = self.explained_variance_[n_components:].mean()
+        if n_components == 'mle':
+            if sklearn_check_version('0.23'):
+                n_components = _infer_dimension(self.explained_variance_, n_samples)
             else:
-                self.noise_variance_ = 0.
+                n_components = _infer_dimension_(self.explained_variance_, n_samples, n_features)
+        elif 0 < n_components < 1.0:
+            ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
+            n_components = np.searchsorted(ratio_cumsum, n_components,
+                                           side='right') + 1
 
-            self.n_samples_, self.n_features_ = n_samples, n_features
-            self.components_ = self.components_[:n_components]
-            self.n_components_ = n_components
-            self.explained_variance_ = self.explained_variance_[:n_components]
-            self.explained_variance_ratio_ = self.explained_variance_ratio_[:n_components]
-            self.singular_values_ = self.singular_values_[:n_components]
-
-            return U, S, V
+        if n_components < min(n_features, n_samples):
+            self.noise_variance_ = self.explained_variance_[n_components:].mean()
         else:
-            logging.info("sklearn.decomposition.PCA._fit_full: " + get_patch_message("sklearn"))
-            return PCA_original._fit_full(self, X, n_components)
+            self.noise_variance_ = 0.
+
+        self.n_samples_, self.n_features_ = n_samples, n_features
+        self.components_ = self.components_[:n_components]
+        self.n_components_ = n_components
+        self.explained_variance_ = self.explained_variance_[:n_components]
+        self.explained_variance_ratio_ = self.explained_variance_ratio_[:n_components]
+        self.singular_values_ = self.singular_values_[:n_components]
+
+        return U, S, V
 
 
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
@@ -209,12 +207,7 @@ class PCA(PCA_original):
 
 
     def transform(self, X):
-        try:
-            fptype = getFPType(X)
-        except ValueError:
-            fptype = None
-
-        if self.n_components_ > 0 and fptype is not None:
+        if self.n_components_ > 0:
             logging.info("sklearn.decomposition.PCA.transform: " + get_patch_message("daal"))
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=True, scale_eigenvalues=False)
@@ -226,12 +219,7 @@ class PCA(PCA_original):
     def fit_transform(self, X, y=None):
         fit_result = self._fit(X)
 
-        try:
-            fptype = getFPType(X)
-        except ValueError:
-            fptype = None
-
-        if self._fit_svd_solver == 'full' and fptype is not None:
+        if self._fit_svd_solver == 'full':
             if self.n_components_ > 0:
                 return self._transform_daal4py(X, whiten=self.whiten, check_X=False, scale_eigenvalues=False)
             return np.empty((self.n_samples_, 0), dtype=X.dtype)
