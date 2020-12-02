@@ -25,6 +25,7 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import stable_cumsum
 
 from math import sqrt
+from scipy.sparse import issparse
 
 import daal4py
 from .._utils import getFPType, get_patch_message, sklearn_check_version
@@ -55,7 +56,6 @@ class PCA(PCA_original):
         self.iterated_power = iterated_power
         self.random_state = random_state
 
-
     def _validate_n_components(self, n_components, n_samples, n_features):
         if n_components == 'mle':
             if n_samples < n_features:
@@ -72,7 +72,6 @@ class PCA(PCA_original):
                                  "when greater than or equal to 1, "
                                  "was of type=%r"
                                  % (n_components, type(n_components)))
-
 
     def _fit_full_daal4py(self, X, n_components):
         n_samples, n_features = X.shape
@@ -132,11 +131,8 @@ class PCA(PCA_original):
         self.explained_variance_ratio_ = explained_variance_ratio_[:n_components]
         self.singular_values_ = np.sqrt((n_samples - 1) * self.explained_variance_)
 
-
     def _fit_full(self, X, n_components):
         X = check_array(X, dtype=[np.float64, np.float32])
-
-        logging.info("sklearn.decomposition.PCA._fit_full: " + get_patch_message("daal"))
 
         n_samples, n_features = X.shape
         self._validate_n_components(n_components, n_samples, n_features)
@@ -171,6 +167,40 @@ class PCA(PCA_original):
 
         return U, S, V
 
+    def _fit(self, X):
+        if issparse(X):
+            raise TypeError('PCA does not support sparse input. See '
+                            'TruncatedSVD for a possible alternative.')
+
+        X = self._validate_data(X, dtype=[np.float64, np.float32],
+                                ensure_2d=True, copy=self.copy)
+
+        if self.n_components is None:
+            if self.svd_solver != 'arpack':
+                n_components = min(X.shape)
+            else:
+                n_components = min(X.shape) - 1
+        else:
+            n_components = self.n_components
+
+        self._fit_svd_solver = self.svd_solver
+        if self._fit_svd_solver == 'auto':
+            if max(X.shape) <= 500 or n_components == 'mle':
+                self._fit_svd_solver = 'full'
+            elif n_components >= 1 and n_components < .8 * min(X.shape):
+                self._fit_svd_solver = 'randomized'
+            else:
+                self._fit_svd_solver = 'full'
+
+        if self._fit_svd_solver == 'full':
+            logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
+            return self._fit_full(X, n_components)
+        elif self._fit_svd_solver in ['arpack', 'randomized']:
+            logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
+            return self._fit_truncated(X, n_components, self._fit_svd_solver)
+        else:
+            raise ValueError("Unrecognized svd_solver='{0}'"
+                             "".format(self._fit_svd_solver))
 
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
         if sklearn_check_version('0.22'):
@@ -205,7 +235,6 @@ class PCA(PCA_original):
 
         return tr_res.transformedData
 
-
     def transform(self, X):
         if self.n_components_ > 0:
             logging.info("sklearn.decomposition.PCA.transform: " + get_patch_message("daal"))
@@ -214,7 +243,6 @@ class PCA(PCA_original):
         else:
             logging.info("sklearn.decomposition.PCA.transform: " + get_patch_message("sklearn"))
             return PCA_original.transform(self, X)
-
 
     def fit_transform(self, X, y=None):
         fit_result = self._fit(X)
