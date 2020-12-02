@@ -5,6 +5,20 @@ variables:
     value: intel.oneapi.win.dpcpp-compiler intel.oneapi.win.tbb.devel intel.oneapi.win.daal.devel
 
 jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - script: |
+      conda update -y -q conda
+      conda create -q -y -n CB python=3.7 conda-build conda-verify
+    displayName: Create Anaconda environment
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      conda build --override-channels -c intel -c conda-forge --numpy=1.17 conda-recipe
+    displayName: conda build
+
 - job: Linux_DPCPP
   pool:
     vmImage: 'ubuntu-20.04'
