@@ -963,7 +963,7 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
 def daal4py_predict(self, X, resultsToEvaluate):
     check_is_fitted(self)
-    X = check_array(X, accept_sparse='csr')
+    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     try:
         fptype = getFPType(X)
     except ValueError:

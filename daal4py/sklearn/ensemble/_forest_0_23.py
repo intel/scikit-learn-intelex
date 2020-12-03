@@ -240,7 +240,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         and not sp.issparse(X))
 
     if daal_ready:
-        _supported_dtypes_ = [np.single, np.double]
+        _supported_dtypes_ = [np.float32, np.float64]
         X = check_array(X, dtype=_supported_dtypes_)
         y = np.asarray(y)
         y = np.atleast_1d(y)
@@ -491,13 +491,11 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The predicted classes.
         """
 
-        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
+        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'], dtype=[np.float64, np.float32])
 
         if (not hasattr(self, 'daal_model_') or 
                 sp.issparse(X) or self.n_outputs_ != 1 or
-                not (X.dtype == np.float64 or X.dtype == np.float32 or X.dtype == np.float16 or
-                     X.dtype == np.int64 or X.dtype == np.int32 or X.dtype == np.int16 or X.dtype == np.int8 or
-                     X.dtype == np.uint64 or X.dtype == np.uint32 or X.dtype == np.uint16 or X.dtype == np.uint8)):
+                not (X.dtype == np.float64 or X.dtype == np.float32)):
             logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + get_patch_message("sklearn"))
             return super(RandomForestClassifier, self).predict(X)
         logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + get_patch_message("daal"))
@@ -686,7 +684,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
+        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'], dtype=[np.float64, np.float32])
 
         if (not hasattr(self, 'daal_model_') or 
                 sp.issparse(X) or self.n_outputs_ != 1 or

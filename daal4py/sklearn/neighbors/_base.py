@@ -131,7 +131,7 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
 
     if X is not None:
         query_is_train = False
-        X = check_array(X, accept_sparse='csr')
+        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     else:
         query_is_train = True
         X = estimator._fit_X
@@ -278,7 +278,7 @@ class NeighborsBase(BaseNeighborsBase):
 
         if y is not None or requires_y:
             if not X_incorrect_type or y is None:
-                X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True)
+                X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True, dtype=[np.float64, np.float32])
                 single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
 
             shape = y.shape
@@ -310,7 +310,7 @@ class NeighborsBase(BaseNeighborsBase):
                 self._y = y
         else:
             if not X_incorrect_type:
-                X, _ = validate_data(self, X, accept_sparse='csr')
+                X, _ = validate_data(self, X, accept_sparse='csr', dtype=[np.float64, np.float32])
             self._y = None
 
         if not X_incorrect_type:
