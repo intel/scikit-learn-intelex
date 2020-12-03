@@ -495,7 +495,9 @@ class RandomForestClassifier(RandomForestClassifier_original):
 
         if (not hasattr(self, 'daal_model_') or 
                 sp.issparse(X) or self.n_outputs_ != 1 or
-                not (X.dtype == np.float64 or X.dtype == np.float32)):
+                not (X.dtype == np.float64 or X.dtype == np.float32 or X.dtype == np.float16 or
+                     X.dtype == np.int64 or X.dtype == np.int32 or X.dtype == np.int16 or X.dtype == np.int8 or
+                     X.dtype == np.uint64 or X.dtype == np.uint32 or X.dtype == np.uint16 or X.dtype == np.uint8)):
             logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + get_patch_message("sklearn"))
             return super(RandomForestClassifier, self).predict(X)
         logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + get_patch_message("daal"))
