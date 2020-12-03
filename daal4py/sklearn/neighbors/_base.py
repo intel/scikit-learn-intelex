@@ -310,7 +310,7 @@ class NeighborsBase(BaseNeighborsBase):
                 self._y = y
         else:
             if not X_incorrect_type:
-                X, _ = validate_data(self, X, accept_sparse='csr', dtype=[np.float64, np.float32])
+                X, _ = validate_data(self, X, accept_sparse='csr')
             self._y = None
 
         if not X_incorrect_type:
