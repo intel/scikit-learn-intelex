@@ -227,7 +227,7 @@ class DBSCAN(DBSCAN_original):
         self
 
         """
-        X = check_array(X, accept_sparse='csr')
+        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
 
         if self.eps <= 0.0:
             raise ValueError("eps must be positive.")

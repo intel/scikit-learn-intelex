@@ -26,6 +26,7 @@ from ..utils.base import _daal_validate_data
 
 from sklearn.utils.fixes import sparse_lsqr
 from sklearn.utils.validation import _check_sample_weight
+from sklearn.utils import check_array
 
 from sklearn.linear_model import LinearRegression as LinearRegression_original
 
@@ -125,7 +126,7 @@ def _fit_linear(self, X, y, sample_weight=None):
 
     n_jobs_ = self.n_jobs
     X, y = _daal_validate_data(self, X, y, accept_sparse=['csr', 'csc', 'coo'],
-                               y_numeric=True, multi_output=True)
+                               y_numeric=True, multi_output=True, dtype=[np.float64, np.float32])
 
     dtype = get_dtype(X)
 
@@ -209,6 +210,7 @@ def _predict_linear(self, X):
         Returns predicted values.
     """
     is_df = is_DataFrame(X)
+    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     X = np.asarray(X) if not sp.issparse(X) and not is_df else X
     good_shape_for_daal = True if X.ndim <= 1 else True if X.shape[0] > X.shape[1] else False
     dtype = get_dtype(X)

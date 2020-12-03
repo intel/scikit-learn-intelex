@@ -134,7 +134,7 @@ def _predict_ridge(self, X):
     C : array, shape = (n_samples,)
         Returns predicted values.
     """
-    X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
+    X = check_array(X, accept_sparse=['csr', 'csc', 'coo'], dtype=[np.float64, np.float32])
     good_shape_for_daal = True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
 
     if (not self.solver == 'auto' or
