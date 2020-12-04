@@ -310,7 +310,7 @@ class NeighborsBase(BaseNeighborsBase):
                 self._y = y
         else:
             if not X_incorrect_type:
-                X, _ = validate_data(self, X, accept_sparse='csr')
+                X, _ = validate_data(self, X, accept_sparse='csr', dtype=[np.float64, np.float32])
             self._y = None
 
         if not X_incorrect_type:
@@ -330,6 +330,19 @@ class NeighborsBase(BaseNeighborsBase):
             else:
                 result = super(NeighborsBase, self)._fit(X)
             return result
+
+        if self.n_neighbors is not None:
+            if self.n_neighbors <= 0:
+                raise ValueError(
+                    "Expected n_neighbors > 0. Got %d" %
+                    self.n_neighbors
+                )
+            else:
+                if not isinstance(self.n_neighbors, numbers.Integral):
+                    raise TypeError(
+                        "n_neighbors does not take %s value, "
+                        "enter integer value" %
+                        type(self.n_neighbors))
 
         if not X_incorrect_type and weights in ['uniform', 'distance'] \
         and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
