@@ -337,12 +337,11 @@ class NeighborsBase(BaseNeighborsBase):
                     "Expected n_neighbors > 0. Got %d" %
                     self.n_neighbors
                 )
-            else:
-                if not isinstance(self.n_neighbors, numbers.Integral):
-                    raise TypeError(
-                        "n_neighbors does not take %s value, "
-                        "enter integer value" %
-                        type(self.n_neighbors))
+            if not isinstance(self.n_neighbors, numbers.Integral):
+                raise TypeError(
+                    "n_neighbors does not take %s value, "
+                    "enter integer value" %
+                    type(self.n_neighbors))
 
         if not X_incorrect_type and weights in ['uniform', 'distance'] \
         and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
