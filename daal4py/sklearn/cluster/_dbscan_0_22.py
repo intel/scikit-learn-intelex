@@ -238,7 +238,7 @@ class DBSCAN(DBSCAN_original):
         _daal_ready = ((self.algorithm in ['auto', 'brute']) and
                        (self.metric == 'euclidean' or
                        (self.metric == 'minkowski' and self.p == 2)) and 
-                       (X.dtype.kind in ['d', 'f']))
+                       isinstance(X, np.ndarray))
         if _daal_ready:
             logging.info("sklearn.cluster.DBSCAN.fit: " + get_patch_message("daal"))
             core_ind, assignments = _daal_dbscan(
