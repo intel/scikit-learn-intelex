@@ -963,7 +963,7 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
 def daal4py_predict(self, X, resultsToEvaluate):
     check_is_fitted(self)
-    X = check_array(X, accept_sparse='csr')
+    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     try:
         fptype = getFPType(X)
     except ValueError:
@@ -972,7 +972,8 @@ def daal4py_predict(self, X, resultsToEvaluate):
     multinomial = (self.multi_class in ["multinomial", "warn"] or
                    self.classes_.size == 2 or resultsToEvaluate == 'computeClassLabels')
 
-    if daal_check_version(((2021,'P', 1))) and fptype is not None and not sparse.issparse(X) and multinomial:
+    if daal_check_version(((2021,'P', 1))) and fptype is not None and not sparse.issparse(X) \
+       and multinomial and not sparse.issparse(self.coef_):
         logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("daal"))
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
