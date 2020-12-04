@@ -494,8 +494,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
         X = check_array(X, accept_sparse=['csr', 'csc', 'coo'], dtype=[np.float64, np.float32])
 
         if (not hasattr(self, 'daal_model_') or 
-                sp.issparse(X) or self.n_outputs_ != 1 or
-                not (X.dtype == np.float64 or X.dtype == np.float32)):
+                sp.issparse(X) or self.n_outputs_ != 1:
             logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + get_patch_message("sklearn"))
             return super(RandomForestClassifier, self).predict(X)
         logging.info("sklearn.ensemble.RandomForestClassifier.predict: " + get_patch_message("daal"))
@@ -687,8 +686,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
         X = check_array(X, accept_sparse=['csr', 'csc', 'coo'], dtype=[np.float64, np.float32])
 
         if (not hasattr(self, 'daal_model_') or 
-                sp.issparse(X) or self.n_outputs_ != 1 or
-                not (X.dtype == np.float64 or X.dtype == np.float32)):
+                sp.issparse(X) or self.n_outputs_ != 1:
             logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + get_patch_message("sklearn"))
             return super(RandomForestRegressor, self).predict(X)
         logging.info("sklearn.ensemble.RandomForestRegressor.predict: " + get_patch_message("daal"))

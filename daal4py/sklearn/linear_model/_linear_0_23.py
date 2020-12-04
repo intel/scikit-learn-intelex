@@ -139,7 +139,6 @@ def _fit_linear(self, X, y, sample_weight=None):
 
     if (self.fit_shape_good_for_daal_ and
             not sp.issparse(X) and
-            (dtype == np.float64 or dtype == np.float32) and
             sample_weight is None):
         logging.info("sklearn.linar_model.LinearRegression.fit: " + get_patch_message("daal"))
         res = _daal4py_fit(self, X, y)
@@ -219,7 +218,6 @@ def _predict_linear(self, X):
             not hasattr(self, 'daal_model_') or
             not self.fit_shape_good_for_daal_ or
             not good_shape_for_daal or
-            not (dtype == np.float64 or dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
         logging.info("sklearn.linar_model.LinearRegression.predict: " + get_patch_message("sklearn"))
         return self._decision_function(X)

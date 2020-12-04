@@ -441,8 +441,7 @@ class ElasticNet(ElasticNet_original):
 
         if (not hasattr(self, 'daal_model_') or
                 sp.issparse(X) or
-                not good_shape_for_daal or
-                not (X.dtype == np.float64 or X.dtype == np.float32)):
+                not good_shape_for_daal):
             logging.info("sklearn.linear_model.ElasticNet.predict: " + get_patch_message("sklearn"))
             return self._decision_function(X)
         logging.info("sklearn.linear_model.ElasticNet.predict: " + get_patch_message("daal"))
@@ -611,8 +610,7 @@ class Lasso(ElasticNet):
 
         if (not hasattr(self, 'daal_model_') or
                 sp.issparse(X) or
-                not good_shape_for_daal or
-                not (X.dtype == np.float64 or X.dtype == np.float32)):
+                not good_shape_for_daal):
             logging.info("sklearn.linear_model.Lasso.predict: " + get_patch_message("sklearn"))
             return self._decision_function(X)
         logging.info("sklearn.linear_model.Lasso.predict: " + get_patch_message("daal"))

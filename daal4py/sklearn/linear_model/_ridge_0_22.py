@@ -141,7 +141,6 @@ def _predict_ridge(self, X):
             not hasattr(self, 'daal_model_') or
             sp.issparse(X) or
             not good_shape_for_daal or
-            not (X.dtype == np.float64 or X.dtype == np.float32) or
             (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
         logging.info("sklearn.linear_model.Ridge.predict: " + get_patch_message("sklearn"))
         return self._decision_function(X)
