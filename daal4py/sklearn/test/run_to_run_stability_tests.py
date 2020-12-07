@@ -23,6 +23,9 @@ import daal4py as d4p
 from daal4py.sklearn import patch_sklearn
 patch_sklearn()
 
+# to reproduce errors even in CI
+d4p.daalinit(nthreads=100)
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
