@@ -46,7 +46,7 @@ def run_clf_test(func):
     X, y = make_classification(n_samples=4000, n_features=5, random_state=0)
     baseline, name = func(X, y)
 
-    for iter in range(5):
+    for i in range(5):
         res, _ = func(X, y)
 
         for a, b, n in zip(res, baseline, name):
@@ -56,7 +56,7 @@ def run_reg_test(func):
     X, y = make_regression(n_samples=4000, n_features=5, random_state=0)
     baseline, name = func(X, y)
 
-    for iter in range(5):
+    for i in range(5):
         res, _ = func(X, y)
 
         for a, b, n in zip(res, baseline, name):
@@ -225,8 +225,6 @@ def run_pca_full(X, Y):
 def run_pca_daal4py_corr(X, Y):
     algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, method="correlationDense")
     result1 = algo.compute(X)
-
-    result1.eigenvalues, result1.eigenvectors, result1.means, result1.variances
 
     pcatrans_algo = d4p.pca_transform(nComponents=X.shape[1]//2)
     transform = pcatrans_algo.compute(X, result1.eigenvectors, result1.dataForTransform).transformedData
