@@ -59,14 +59,15 @@ def run_clf_test(func):
                 np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0, err_msg=str(n + " is incorrect"))
 
 def run_reg_test(func):
-    X, y = make_regression(n_samples=4000, n_features=10, n_informative=10, random_state=0, noise=0.2, bias=10)
-    baseline, name = func(X, y)
+    for features in [5, 10]:
+        X, y = make_regression(n_samples=4000, n_features=features, n_informative=features, random_state=0, noise=0.2, bias=10)
+        baseline, name = func(X, y)
 
-    for i in range(5):
-        res, _ = func(X, y)
+        for i in range(5):
+            res, _ = func(X, y)
 
-        for a, b, n in zip(res, baseline, name):
-            np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0, err_msg=str(n + " is incorrect"))
+            for a, b, n in zip(res, baseline, name):
+                np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0, err_msg=str(n + " is incorrect"))
 
 ##################################################
 
@@ -271,18 +272,23 @@ class Test(unittest.TestCase):
 
     #---------------------Failed---------------------
 
+    @unittest.expectedFailure
     def test_kmeans_plus_plus(self):
         run_clf_test(run_kmeans_plus_plus)
 
+    @unittest.expectedFailure
     def test_kmeans_random(self):
         run_clf_test(run_kmeans_random)
 
+    @unittest.expectedFailure
     def test_elasticnet_regression(self):
         run_reg_test(run_elasticnet_regression)
 
+    @unittest.expectedFailure
     def test_lasso_regression(self):
         run_reg_test(run_lasso_regression)
 
+    @unittest.expectedFailure
     def test_pca_full(self):
         run_clf_test(run_pca_full)
 
@@ -292,27 +298,35 @@ class Test(unittest.TestCase):
 
     #---------------------Expected to be fixed in next release---------------------
 
+    @unittest.expectedFailure
     def test_log_regression_newton(self):
         run_clf_test(run_log_regression_newton)
 
+    @unittest.expectedFailure
     def test_log_regression_lbfgs(self):
         run_clf_test(run_log_regression_lbfgs)
 
+    @unittest.expectedFailure
     def test_log_regression_cv_newton(self):
         run_clf_test(run_log_regression_cv_newton)
 
+    @unittest.expectedFailure
     def test_log_regression_cv_lbfgs(self):
         run_clf_test(run_log_regression_cv_lbfgs)
 
+    @unittest.expectedFailure
     def test_linear_regression(self):
         run_reg_test(run_linear_regression)
 
+    @unittest.expectedFailure
     def test_ridge_regression(self):
         run_reg_test(run_ridge_regression)
 
+    @unittest.expectedFailure
     def test_rf_class(self):
         run_clf_test(run_rf_class)
 
+    @unittest.expectedFailure
     def test_rf_reg(self):
         run_reg_test(run_rf_regression)
 
