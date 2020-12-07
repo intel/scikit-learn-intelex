@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$PY3K" == "1" ]; then
-    ARGS=""
+    ARGS=" --single-version-externally-managed --record=record.txt"
 else
     ARGS="--old-and-unmanageable"
 fi
