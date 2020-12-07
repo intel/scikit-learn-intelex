@@ -46,17 +46,20 @@ from sklearn.datasets import make_regression
 ##################################################
 
 def run_clf_test(func):
-    X, y = make_classification(n_samples=4000, n_features=5, random_state=0)
-    baseline, name = func(X, y)
+    for features in [5, 10]:
+        X, y = make_classification(n_samples=4000, n_features=features, n_informative=features, n_redundant=0,
+            n_clusters_per_class=8, random_state=0)
 
-    for i in range(5):
-        res, _ = func(X, y)
+        baseline, name = func(X, y)
 
-        for a, b, n in zip(res, baseline, name):
-            np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0, err_msg=str(n + " is incorrect"))
+        for i in range(5):
+            res, _ = func(X, y)
+
+            for a, b, n in zip(res, baseline, name):
+                np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0, err_msg=str(n + " is incorrect"))
 
 def run_reg_test(func):
-    X, y = make_regression(n_samples=4000, n_features=5, random_state=0)
+    X, y = make_regression(n_samples=4000, n_features=10, n_informative=10, random_state=0, noise=0.2, bias=10)
     baseline, name = func(X, y)
 
     for i in range(5):
@@ -75,28 +78,28 @@ def run_rf_class(X, Y):
     return res, name
 
 def run_log_regression_newton(X, Y):
-    clf = LogisticRegression(random_state=0, solver="newton-cg")
+    clf = LogisticRegression(random_state=0, solver="newton-cg", max_iter=1000)
     clf.fit(X, Y)
     res  = [clf.predict(X), clf.predict_proba(X), clf.coef_, clf.intercept_, clf.n_iter_]
     name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.coef_", "clf.intercept_", "clf.n_iter_"]
     return res, name
 
 def run_log_regression_lbfgs(X, Y):
-    clf = LogisticRegression(random_state=0, solver="lbfgs")
+    clf = LogisticRegression(random_state=0, solver="lbfgs", max_iter=1000)
     clf.fit(X, Y)
     res  = [clf.predict(X), clf.predict_proba(X), clf.coef_, clf.intercept_, clf.n_iter_]
     name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.coef_", "clf.intercept_", "clf.n_iter_"]
     return res, name
 
 def run_log_regression_cv_newton(X, Y):
-    clf = LogisticRegressionCV(random_state=0, solver="newton-cg", n_jobs=-1)
+    clf = LogisticRegressionCV(random_state=0, solver="newton-cg", n_jobs=-1, max_iter=1000)
     clf.fit(X, Y)
     res  = [clf.predict(X), clf.predict_proba(X), clf.coef_, clf.intercept_, clf.n_iter_, clf.Cs_, clf.C_]
     name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.coef_", "clf.intercept_", "clf.n_iter_", "clf.Cs_", "clf.C_"]
     return res, name
 
 def run_log_regression_cv_lbfgs(X, Y):
-    clf = LogisticRegressionCV(random_state=0, solver="lbfgs", n_jobs=-1)
+    clf = LogisticRegressionCV(random_state=0, solver="lbfgs", n_jobs=-1, max_iter=1000)
     clf.fit(X, Y)
     res  = [clf.predict(X), clf.predict_proba(X), clf.coef_, clf.intercept_, clf.n_iter_, clf.Cs_, clf.C_]
     name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.coef_", "clf.intercept_", "clf.n_iter_", "clf.Cs_", "clf.C_"]
@@ -260,6 +263,9 @@ class Test(unittest.TestCase):
     def test_svc_linear(self):
         run_clf_test(run_svc_linear)
 
+    def test_svc_rbf(self):
+        run_clf_test(run_svc_rbf)
+
     def test_svc_rbf_const_gamma(self):
         run_clf_test(run_svc_rbf_const_gamma)
 
@@ -276,9 +282,6 @@ class Test(unittest.TestCase):
 
     def test_lasso_regression(self):
         run_reg_test(run_lasso_regression)
-
-    def test_svc_rbf(self):
-        run_clf_test(run_svc_rbf)
 
     def test_pca_full(self):
         run_clf_test(run_pca_full)
