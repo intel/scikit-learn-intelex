@@ -1,5 +1,6 @@
 #*******************************************************************************
-# Copyright 2014-2020 Intel Corporation
+# Copyright 2020 Intel Corporation
+
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -117,14 +118,16 @@ def run_svc_rbf(X, Y):
     clf = SVC(random_state=0, probability=True, kernel='rbf')
     clf.fit(X, Y)
     res  = [clf.predict(X), clf.predict_proba(X), clf.support_, clf.support_vectors_, clf.n_support_, clf.dual_coef_, clf.intercept_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.support_", "clf.support_vectors_", "clf.n_support_", "clf.dual_coef_", "clf.coef_", "clf.intercept_"]
+    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.support_", "clf.support_vectors_", "clf.n_support_", "clf.dual_coef_", "clf.intercept_"]
+
     return res, name
 
 def run_svc_rbf_const_gamma(X, Y):
     clf = SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01)
     clf.fit(X, Y)
     res  = [clf.predict(X), clf.predict_proba(X), clf.support_, clf.support_vectors_, clf.n_support_, clf.dual_coef_, clf.intercept_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.support_", "clf.support_vectors_", "clf.n_support_", "clf.dual_coef_", "clf.coef_", "clf.intercept_"]
+    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.support_", "clf.support_vectors_", "clf.n_support_", "clf.dual_coef_",  "clf.intercept_"]
+
     return res, name
 
 def run_knn_class_brute_uniform(X, Y):
