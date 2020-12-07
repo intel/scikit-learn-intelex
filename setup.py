@@ -400,6 +400,5 @@ setup(  name             = "daal4py",
                     'daal4py.sklearn.utils',
                     'daal4py.sklearn.model_selection',
         ],
-        ext_modules = getpyexts(),
-        python_requires='>=3.6',
+        ext_modules = getpyexts()
 )

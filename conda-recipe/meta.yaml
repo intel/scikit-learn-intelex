@@ -29,6 +29,7 @@ requirements:
         - setuptools
         - numpy {{ numpy }}
         - daal-devel >=2020.3
+        - daal >=2020.3
         - cython
         - jinja2
         - mpich  # [osx]
