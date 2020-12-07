@@ -52,7 +52,7 @@ def run_clf_test(func):
 
         baseline, name = func(X, y)
 
-        for i in range(5):
+        for i in range(10):
             res, _ = func(X, y)
 
             for a, b, n in zip(res, baseline, name):
@@ -63,7 +63,7 @@ def run_reg_test(func):
         X, y = make_regression(n_samples=4000, n_features=features, n_informative=features, random_state=0, noise=0.2, bias=10)
         baseline, name = func(X, y)
 
-        for i in range(5):
+        for i in range(10):
             res, _ = func(X, y)
 
             for a, b, n in zip(res, baseline, name):
@@ -272,61 +272,61 @@ class Test(unittest.TestCase):
 
     #---------------------Failed---------------------
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_kmeans_plus_plus(self):
         run_clf_test(run_kmeans_plus_plus)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_kmeans_random(self):
         run_clf_test(run_kmeans_random)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_elasticnet_regression(self):
         run_reg_test(run_elasticnet_regression)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_lasso_regression(self):
         run_reg_test(run_lasso_regression)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_pca_full(self):
         run_clf_test(run_pca_full)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_pca_daal4py_corr(self):
         run_clf_test(run_pca_daal4py_corr)
 
     #---------------------Expected to be fixed in next release---------------------
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_log_regression_newton(self):
         run_clf_test(run_log_regression_newton)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_log_regression_lbfgs(self):
         run_clf_test(run_log_regression_lbfgs)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_log_regression_cv_newton(self):
         run_clf_test(run_log_regression_cv_newton)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_log_regression_cv_lbfgs(self):
         run_clf_test(run_log_regression_cv_lbfgs)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_linear_regression(self):
         run_reg_test(run_linear_regression)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_ridge_regression(self):
         run_reg_test(run_ridge_regression)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_rf_class(self):
         run_clf_test(run_rf_class)
 
-    @unittest.expectedFailure
+    @unittest.skip("unstable")
     def test_rf_reg(self):
         run_reg_test(run_rf_regression)
 
