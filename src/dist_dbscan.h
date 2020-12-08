@@ -549,27 +549,11 @@ void sendTableMasterToAll(size_t beginId, size_t endId, size_t rankId, int tag, 
 void sendTable(NumericTablePtr & table, int recpnt, int tag)
 {
     tcvr->send<NumericTablePtr>(table, recpnt, tag * 2);
-    //ByteBuffer buff;
-    //size_t size = (table.get() && table->getNumberOfRows() > 0) ? serializeDAALObject(table.get(), buff) : 0;
-    //MPI_Send(&size, sizeof(size_t), MPI_BYTE, recpnt, tag * 2 + 0, MPI_COMM_WORLD);
-    //if (size)
-    //{
-        //MPI_Send(&buff[0], size, MPI_BYTE, recpnt, tag * 2 + 1, MPI_COMM_WORLD);
-    //}
 }
 
 void recvTable(NumericTablePtr & table, int sender, int tag)
 {
     table = tcvr->recv<NumericTablePtr>(sender, tag * 2);
-    //size_t size = 0;
-    //MPI_Status status;
-    //MPI_Recv(&size, sizeof(size_t), MPI_BYTE, sender, tag * 2 + 0, MPI_COMM_WORLD, &status);
-    //if (size)
-    //{
-    //    ByteBuffer buff(size);
-    //    MPI_Recv(&buff[0], size, MPI_BYTE, sender, tag * 2 + 1, MPI_COMM_WORLD, &status);
-    //    table = NumericTable::cast(deserializeDAALObject(&buff[0], size));
-    //}
 }
 };
 

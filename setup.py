@@ -317,7 +317,6 @@ def getpyexts():
                                         language='c++')))
 
     if not no_dist:
-        #include_dir_plat.append(mpi_root + '/include')
         exts.append(Extension('mpi_transceiver',
                               MPI_CPPS,
                               depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
@@ -356,8 +355,6 @@ def gen_pyx(odir):
 
 
 gen_pyx(os.path.abspath('./build'))
-
-print(f"glob.glob(jp(os.path.abspath('src'), '*.h')) = {glob.glob(jp(os.path.abspath('src'), '*.h'))}")
 
 # daal setup
 setup(  name        = "daal4py",
