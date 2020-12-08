@@ -19,8 +19,6 @@
 
 #include "dist_custom.h"
 #include "daal4py_defines.h"
-//#include "transceiver.h"
-//#include <mpi.h>
 
 using namespace std;
 using namespace daal;
