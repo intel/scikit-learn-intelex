@@ -20,7 +20,7 @@ jobs:
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             mkdir -p /tmp/out
-            conda build --python=37 --override-channels -c conda-forge -c intel --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
+            conda build --python=37 --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
@@ -28,8 +28,6 @@ jobs:
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
-            # work around bug in scikit-learn
-            conda install -y -c conda-forge --override-channels cython
             conda install /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
@@ -62,7 +60,7 @@ jobs:
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             mkdir -p /tmp/out
-            conda build --python=37 --override-channels -c conda-forge -c intel --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
+            conda build --python=37 --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
@@ -70,8 +68,7 @@ jobs:
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
-            conda install -y --override-channels -c intel cython
-            conda install -y -c conda-forge threadpoolctl
+            conda install -y -c conda-forge threadpoolctl cython
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
             conda install -y /tmp/out/*/daal4py-*.tar.bz2
