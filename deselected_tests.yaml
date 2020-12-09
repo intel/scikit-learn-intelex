@@ -50,7 +50,7 @@ deselected_tests:
   - linear_model/tests/test_logistic.py::test_dtype_match
 
   # _hist_gradient_boosting tests (added in 0.21.0) times out in CircleCI
-  - ensemble/_hist_gradient_boosting/tests/test_gradient_boosting.py
+  - ensemble/_hist_gradient_boosting/tests
 
   # https://github.com/scikit-learn/scikit-learn/pull/15857
   - ensemble/tests/test_stacking.py::test_stacking_cv_influence >=0.22
