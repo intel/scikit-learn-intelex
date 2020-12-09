@@ -46,11 +46,11 @@ except:
 # Commone code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data):
     # Configure a Linear regression training object
-    train_algo = d4p.linear_regression_training(interceptFlag=True, fptype='float')
+    train_algo = d4p.linear_regression_training(interceptFlag=True)
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(train_indep_data, train_dep_data)
     # Now let's do some prediction
-    predict_algo = d4p.linear_regression_prediction(fptype='float')
+    predict_algo = d4p.linear_regression_prediction()
     # now predict using the model from the training above
     return predict_algo.compute(test_indep_data, train_result.model), train_result
 
