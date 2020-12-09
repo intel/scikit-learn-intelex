@@ -287,8 +287,8 @@ def getpyexts():
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
-                                libraries=libraries_plat + MPI_LIBS,
-                                library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
+                                libraries=libraries_plat,
+                                library_dirs=DAAL_LIBDIRS,
                                 language='c++'),
     ])
 
@@ -355,7 +355,6 @@ def gen_pyx(odir):
 
 
 gen_pyx(os.path.abspath('./build'))
-
 
 # daal setup
 setup(  name        = "daal4py",
