@@ -356,11 +356,18 @@ def gen_pyx(odir):
 
 gen_pyx(os.path.abspath('./build'))
 
+project_urls = {
+    'Bug Tracker': 'https://github.com/IntelPython/daal4py/issues',
+    'Documentation': 'https://intelpython.github.io/daal4py/',
+    'Source Code': 'https://github.com/IntelPython/daal4py'
+}
+
 # daal setup
-setup(  name        = "daal4py",
-        description = "A convenient Python API to Intel(R) oneAPI Data Analytics Library",
-        author      = "Intel",
-        version     = d4p_version,
+setup(  name             = "daal4py",
+        description      = "A convenient Python API to Intel(R) oneAPI Data Analytics Library",
+        author           = "Intel",
+        version          = d4p_version,
+        url              = project_urls,
         classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Environment :: Console',
@@ -371,13 +378,13 @@ setup(  name        = "daal4py",
             'Operating System :: MacOS :: MacOS X',
             'Operating System :: Microsoft :: Windows',
             'Operating System :: POSIX :: Linux',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Topic :: Scientific/Engineering',
             'Topic :: System',
             'Topic :: Software Development',
           ],
         setup_requires = ['numpy>=1.14', 'cython', 'jinja2'],
+        install_requires = ['numpy>=1.14', 'daal', 'dpcpp_cpp_rt'],
         packages = ['daal4py',
                     'daal4py.oneapi',
                     'daal4py.sklearn',
@@ -393,5 +400,5 @@ setup(  name        = "daal4py",
                     'daal4py.sklearn.utils',
                     'daal4py.sklearn.model_selection',
         ],
-        ext_modules = getpyexts(),
+        ext_modules = getpyexts()
 )
