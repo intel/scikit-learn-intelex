@@ -9,6 +9,8 @@ conda create -n bld python=3.7 conda-build
 source activate bld
 conda install -q --override-channels -c conda-forge numpy scipy pytest pandas pyyaml joblib numpydoc
 conda install -q --override-channels -c intel dal
+# need to remove after making dependencies optional
+conda install -q --override-channels -c intel dpcpp_cpp_rt impi_rt
 gcc -v
 g++ -v
 head /proc/cpuinfo
