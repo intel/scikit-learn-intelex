@@ -45,8 +45,9 @@ except Exception as e:
 
 # Commone code for both CPU and GPU computations
 def compute(train_data, train_labels, predict_data, method='defaultDense'):
-    # Configure a training object 
+    # Configure a training object
     train_algo = d4p.decision_forest_regression_training(nTrees=100,
+                                                         fptype='float',
                                                          engine = d4p.engines_mt2203(seed=777),
                                                          varImportance='MDA_Raw',
                                                          bootstrap=True,
@@ -57,7 +58,7 @@ def compute(train_data, train_labels, predict_data, method='defaultDense'):
     train_result = train_algo.compute(train_data, train_labels)
 
     # now predict using the model from the training above
-    predict_algo = d4p.decision_forest_regression_prediction()
+    predict_algo = d4p.decision_forest_regression_prediction(fptype='float')
 
     predict_result = predict_algo.compute(predict_data, train_result.model)
 
@@ -97,7 +98,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
     assert (np.square(predict_result.prediction - predict_labels).mean() < 18).any()
 
-    train_data   = to_numpy(train_data) 
+    train_data   = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
     predict_data = to_numpy(predict_data)
 

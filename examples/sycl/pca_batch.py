@@ -46,9 +46,9 @@ except:
 # Commone code for both CPU and GPU computations
 def compute(data):
     # 'normalization' is an optional parameter to PCA; we use z-score which could be configured differently
-    zscore = d4p.normalization_zscore()
+    zscore = d4p.normalization_zscore(fptype='float')
     # configure a PCA object
-    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
+    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", fptype='float', isDeterministic=True, normalization=zscore)
     return algo.compute(data)
 
 
@@ -73,7 +73,7 @@ def main(readcsv=read_csv, method='svdDense'):
     infile = os.path.join('..', 'data', 'batch', 'pca_normalized.csv')
 
     # Load the data
-    data = readcsv(infile)
+    data = readcsv(infile, t=np.float32)
 
     # Using of the classic way (computations on CPU)
     result_classic = compute(data)

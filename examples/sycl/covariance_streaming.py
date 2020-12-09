@@ -62,7 +62,7 @@ def main(readcsv=None, method='defaultDense'):
 
     # Using of the classic way (computations on CPU)
     # configure a covariance object
-    algo = d4p.covariance(streaming=True)
+    algo = d4p.covariance(streaming=True, fptype='float')
     # get the generator (defined in stream.py)...
     rn = read_next(infile, 112, readcsv)
     # ... and iterate through chunks/stream
@@ -84,7 +84,7 @@ def main(readcsv=None, method='defaultDense'):
     if gpu_available:
         with gpu_context():
             # configure a covariance object
-            algo = d4p.covariance(streaming=True)
+            algo = d4p.covariance(streaming=True, fptype='float')
             # get the generator (defined in stream.py)...
             rn = read_next(infile, 112, readcsv)
             # ... and iterate through chunks/stream
@@ -100,7 +100,7 @@ def main(readcsv=None, method='defaultDense'):
     # It is possible to specify to make the computations on CPU
     with cpu_context():
         # configure a covariance object
-        algo = d4p.covariance(streaming=True)
+        algo = d4p.covariance(streaming=True, fptype='float')
         # get the generator (defined in stream.py)...
         rn = read_next(infile, 112, readcsv)
         # ... and iterate through chunks/stream

@@ -46,11 +46,11 @@ except:
 # Commone code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data):
     # Configure a Linear regression training object
-    train_algo = d4p.linear_regression_training(interceptFlag=True)
+    train_algo = d4p.linear_regression_training(interceptFlag=True, fptype='float')
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(train_indep_data, train_dep_data)
     # Now let's do some prediction
-    predict_algo = d4p.linear_regression_prediction()
+    predict_algo = d4p.linear_regression_prediction(fptype='float')
     # now predict using the model from the training above
     return predict_algo.compute(test_indep_data, train_result.model), train_result
 
@@ -75,13 +75,13 @@ def to_numpy(data):
 def main(readcsv=read_csv, method='defaultDense'):
     # read training data. Let's have 10 independent, and 2 dependent variables (for each observation)
     trainfile = os.path.join('..', 'data', 'batch', 'linear_regression_train.csv')
-    train_indep_data = readcsv(trainfile, range(10))
-    train_dep_data = readcsv(trainfile, range(10,12))
+    train_indep_data = readcsv(trainfile, range(10), t=np.float32)
+    train_dep_data = readcsv(trainfile, range(10,12), t=np.float32)
 
     # read testing data
     testfile = os.path.join('..', 'data', 'batch', 'linear_regression_test.csv')
-    test_indep_data = readcsv(testfile, range(10))
-    test_dep_data = readcsv(testfile, range(10,12))
+    test_indep_data = readcsv(testfile, range(10), t=np.float32)
+    test_dep_data = readcsv(testfile, range(10,12), t=np.float32)
 
     # Using of the classic way (computations on CPU)
     result_classic, train_result = compute(train_indep_data, train_dep_data, test_indep_data)

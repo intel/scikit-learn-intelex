@@ -64,7 +64,7 @@ def main(readcsv=None, method='defaultDense'):
 
     # Using of the classic way (computations on CPU)
     # Configure a low order moments object for streaming
-    algo = d4p.low_order_moments(streaming=True)
+    algo = d4p.low_order_moments(streaming=True, fptype='float')
     # get the generator (defined in stream.py)...
     rn = read_next(infile, 55, readcsv)
     # ... and iterate through chunks/stream
@@ -86,7 +86,7 @@ def main(readcsv=None, method='defaultDense'):
     try:
         with gpu_context():
             # Configure a low order moments object for streaming
-            algo = d4p.low_order_moments(streaming=True)
+            algo = d4p.low_order_moments(streaming=True, fptype='float')
             # get the generator (defined in stream.py)...
             rn = read_next(infile, 55, readcsv)
             # ... and iterate through chunks/stream
@@ -103,7 +103,7 @@ def main(readcsv=None, method='defaultDense'):
     # It is possible to specify to make the computations on CPU
     with cpu_context():
         # Configure a low order moments object for streaming
-        algo = d4p.low_order_moments(streaming=True)
+        algo = d4p.low_order_moments(streaming=True, fptype='float')
         # get the generator (defined in stream.py)...
         rn = read_next(infile, 55, readcsv)
         # ... and iterate through chunks/stream

@@ -62,11 +62,11 @@ def to_numpy(data):
 # Common code for both CPU and GPU computations
 def compute(train_data, train_labels, predict_data, nClasses):
     # Create an algorithm object and call compute
-    train_algo = d4p.bf_knn_classification_training(nClasses=nClasses)
+    train_algo = d4p.bf_knn_classification_training(nClasses=nClasses, fptype='float')
     train_result = train_algo.compute(train_data, train_labels)
 
     # Create an algorithm object and call compute
-    predict_algo = d4p.bf_knn_classification_prediction(nClasses=nClasses)
+    predict_algo = d4p.bf_knn_classification_prediction(nClasses=nClasses, fptype='float')
     predict_result = predict_algo.compute(predict_data, train_result.model)
     return predict_result
 
@@ -78,10 +78,10 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Read data. Let's use 5 features per observation
     nFeatures = 5
     nClasses = 5
-    train_data = readcsv(train_file, range(nFeatures))
-    train_labels = readcsv(train_file, range(nFeatures, nFeatures+1))
-    predict_data = readcsv(predict_file, range(nFeatures))
-    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures+1))
+    train_data = readcsv(train_file, range(nFeatures), t=np.float32)
+    train_labels = readcsv(train_file, range(nFeatures, nFeatures+1), t=np.float32)
+    predict_data = readcsv(predict_file, range(nFeatures), t=np.float32)
+    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures+1), t=np.float32)
 
     predict_result_classic = compute(train_data, train_labels, predict_data, nClasses)
 

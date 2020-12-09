@@ -46,10 +46,10 @@ except:
 # Commone code for both CPU and GPU computations
 def compute(train_data, train_labels, predict_data, nClasses):
     # set parameters and train
-    train_alg = d4p.logistic_regression_training(nClasses=nClasses, interceptFlag=True)
+    train_alg = d4p.logistic_regression_training(nClasses=nClasses, interceptFlag=True, fptype='float')
     train_result = train_alg.compute(train_data, train_labels)
     # set parameters and compute predictions
-    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses)
+    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses, fptype='float')
     return predict_alg.compute(predict_data, train_result.model), train_result
 
 
@@ -76,13 +76,13 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # read training data from file with 20 features per observation and 1 class label
     trainfile = os.path.join('..', 'data', 'batch', 'binary_cls_train.csv')
-    train_data = readcsv(trainfile, range(nFeatures))
-    train_labels = readcsv(trainfile, range(nFeatures, nFeatures + 1))
+    train_data = readcsv(trainfile, range(nFeatures), t=np.float32)
+    train_labels = readcsv(trainfile, range(nFeatures, nFeatures + 1), t=np.float32)
 
     # read testing data from file with 20 features per observation
     testfile = os.path.join('..', 'data', 'batch', 'binary_cls_test.csv')
-    predict_data = readcsv(testfile, range(nFeatures))
-    predict_labels = readcsv(testfile, range(nFeatures, nFeatures + 1))
+    predict_data = readcsv(testfile, range(nFeatures), t=np.float32)
+    predict_labels = readcsv(testfile, range(nFeatures, nFeatures + 1), t=np.float32)
 
     # Using of the classic way (computations on CPU)
     result_classic, train_result = compute(train_data, train_labels, predict_data, nClasses)
