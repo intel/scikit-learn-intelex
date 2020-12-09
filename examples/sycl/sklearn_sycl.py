@@ -58,12 +58,12 @@ elif sycl_extention_available:
 def k_means_init_x():
     print("KMeans init=X[:2]")
     X = np.array([[1., 2.], [1., 4.], [1., 0.],
-                  [10., 2.], [10., 4.], [10., 0.]])
+                  [10., 2.], [10., 4.], [10., 0.]], dtype=np.float32)
     kmeans = KMeans(n_clusters=2, random_state=0, init=X[:2]).fit(X)
     print("kmeans.labels_")
     print(kmeans.labels_)
     print("kmeans.predict([[0, 0], [12, 3]])")
-    print(kmeans.predict([[0, 0], [12, 3]]))
+    print(kmeans.predict(np.array([[0, 0], [12, 3]], dtype=np.float32)))
     print("kmeans.cluster_centers_")
     print(kmeans.cluster_centers_)
 
@@ -71,21 +71,21 @@ def k_means_init_x():
 def k_means_random():
     print("KMeans init='random'")
     X = np.array([[1., 2.], [1., 4.], [1., 0.],
-                  [10., 2.], [10., 4.], [10., 0.]])
+                  [10., 2.], [10., 4.], [10., 0.]], dtype=np.float32)
     kmeans = KMeans(n_clusters=2, random_state=0, init='random').fit(X)
     print("kmeans.labels_")
     print(kmeans.labels_)
     print("kmeans.predict([[0, 0], [12, 3]])")
-    print(kmeans.predict([[0, 0], [12, 3]]))
+    print(kmeans.predict(np.array([[0, 0], [12, 3]], dtype=np.float32)))
     print("kmeans.cluster_centers_")
     print(kmeans.cluster_centers_)
 
 
 def linear_regression():
     print("LinearRegression")
-    X = np.array([[1., 1.], [1., 2.], [2., 2.], [2., 3.]])
+    X = np.array([[1., 1.], [1., 2.], [2., 2.], [2., 3.]], dtype=np.float32)
     # y = 1 * x_0 + 2 * x_1 + 3
-    y = np.dot(X, np.array([1, 2])) + 3
+    y = np.dot(X, np.array([1, 2], dtype=np.float32)) + 3
     reg = LinearRegression().fit(X, y)
     print("reg.score(X, y)")
     print(reg.score(X, y))
@@ -93,14 +93,16 @@ def linear_regression():
     print(reg.coef_)
     print("reg.intercept_")
     print(reg.intercept_)
-    print("reg.predict(np.array([[3, 5]]))")
-    print(reg.predict(np.array([[3, 5]])))
+    print("reg.predict(np.array([[3, 5]], dtype=np.float32))")
+    print(reg.predict(np.array([[3, 5]], dtype=np.float32)))
 
 
 def logistic_regression_lbfgs():
     print("LogisticRegression solver='lbfgs'")
     X, y = load_iris(return_X_y=True)
-    clf = LogisticRegression(random_state=0, solver='lbfgs').fit(X, y)
+    clf = LogisticRegression(random_state=0, solver='lbfgs').fit(
+        X.astype('float32'),
+        y.astype('float32'))
     print("clf.predict(X[:2, :])")
     print(clf.predict(X[:2, :]))
     print("clf.predict_proba(X[:2, :])")
@@ -112,7 +114,9 @@ def logistic_regression_lbfgs():
 def logistic_regression_newton():
     print("LogisticRegression solver='newton-cg'")
     X, y = load_iris(return_X_y=True)
-    clf = LogisticRegression(random_state=0, solver='newton-cg').fit(X, y)
+    clf = LogisticRegression(random_state=0, solver='newton-cg').fit(
+        X.astype('float32'),
+        y.astype('float32'))
     print("clf.predict(X[:2, :])")
     print(clf.predict(X[:2, :]))
     print("clf.predict_proba(X[:2, :])")
@@ -124,7 +128,7 @@ def logistic_regression_newton():
 def dbscan():
     print("DBSCAN")
     X = np.array([[1., 2.], [2., 2.], [2., 3.],
-                  [8., 7.], [8., 8.], [25., 80.]])
+                  [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
     clustering = DBSCAN(eps=3, min_samples=2).fit(X)
     print("clustering.labels_")
     print(clustering.labels_)

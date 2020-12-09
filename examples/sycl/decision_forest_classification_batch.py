@@ -47,6 +47,7 @@ except Exception as e:
 def compute(train_data, train_labels, predict_data, method='defaultDense'):
     # Configure a training object (5 classes)
     train_algo = d4p.decision_forest_classification_training(5,
+                                                             fptype='float',
                                                              nTrees=10,
                                                              minObservationsInLeafNode=8,
                                                              featuresPerNode=3,
@@ -61,7 +62,7 @@ def compute(train_data, train_labels, predict_data, method='defaultDense'):
 
     # now predict using the model from the training above
     predict_algo = d4p.decision_forest_classification_prediction(nClasses=5,
-        resultsToEvaluate="computeClassLabels|computeClassProbabilities", votingMethod="unweighted")
+        fptype='float', resultsToEvaluate="computeClassLabels|computeClassProbabilities", votingMethod="unweighted")
 
     predict_result = predict_algo.compute(predict_data, train_result.model)
 
@@ -101,7 +102,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
     assert (np.mean(predict_result.prediction != predict_labels) < 0.03).any()
 
-    train_data   = to_numpy(train_data) 
+    train_data   = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
     predict_data = to_numpy(predict_data)
 

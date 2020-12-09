@@ -46,10 +46,10 @@ except:
 # Commone code for both CPU and GPU computations
 def compute(data, nComponents):
     # configure a PCA object and perform PCA
-    pca_algo = d4p.pca(isDeterministic=True, resultsToCompute="mean|variance|eigenvalue")
+    pca_algo = d4p.pca(isDeterministic=True, fptype='float', resultsToCompute="mean|variance|eigenvalue")
     pca_res = pca_algo.compute(data)
     # Apply transform with whitening because means and eigenvalues are provided
-    pcatrans_algo = d4p.pca_transform(nComponents=nComponents)
+    pcatrans_algo = d4p.pca_transform(fptype='float', nComponents=nComponents)
     return pcatrans_algo.compute(data, pca_res.eigenvectors, pca_res.dataForTransform)
 
 
@@ -75,7 +75,7 @@ def main(readcsv=read_csv, method='svdDense'):
     nComponents = 2
 
     # read data
-    data = readcsv(dataFileName, range(3))
+    data = readcsv(dataFileName, range(3), t=np.float32)
 
     # Using of the classic way (computations on CPU)
     result_classic = compute(data, nComponents)
