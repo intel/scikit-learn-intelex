@@ -20,7 +20,7 @@ jobs:
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             mkdir -p /tmp/out
-            conda build --python=37 --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
+            conda build --python=37 --override-channels -c conda-forge -c intel --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
@@ -36,7 +36,6 @@ jobs:
             source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
-
 
   build_master:
     docker:
@@ -63,7 +62,7 @@ jobs:
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             mkdir -p /tmp/out
-            conda build --python=37 --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
+            conda build --python=37 --override-channels -c conda-forge -c intel --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
@@ -75,7 +74,6 @@ jobs:
             conda install -y -c conda-forge threadpoolctl
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
-            conda remove daal4py --force
             conda install -y /tmp/out/*/daal4py-*.tar.bz2
             conda list
             source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
@@ -98,6 +96,6 @@ workflows:
           cron: "49 23 * * *"
           filters:
             branches:
-              only: test-sklearn-master
+              only: master
     jobs:
       - build_master

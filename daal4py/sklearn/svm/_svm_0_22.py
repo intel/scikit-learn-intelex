@@ -302,19 +302,6 @@ def _daal4py_fit(self, X, y_inp, sample_weight, kernel):
         self._probB = np.empty(0)
 
 
-
-
-def _daal_var(X):
-    """DAAL-based threaded computation of X.std()"""
-    fpt = getFPType(X)
-    try:
-        alg = daal4py.low_order_moments(fptype=fpt, method='defaultDense', estimatesToCompute='estimatesMeanVariance')
-    except AttributeError:
-        return np.var(X)
-    ssc = alg.compute(X.reshape(-1,1)).sumSquaresCentered
-    return ssc[0, 0] / X.size
-
-
 def __compute_gamma__(gamma, kernel, X, sparse, use_var=True, deprecation=True):
     """
     Computes actual value of 'gamma' parameter of RBF kernel
@@ -339,7 +326,7 @@ def __compute_gamma__(gamma, kernel, X, sparse, use_var=True, deprecation=True):
                 # var = E[X^2] - E[X]^2
                 X_sc = (X.multiply(X)).mean() - (X.mean())**2
             else:
-                X_sc = _daal_var(X) # X.var()
+                X_sc = X.var()
             if not use_var:
                 X_sc = np.sqrt(X_sc)
         else:

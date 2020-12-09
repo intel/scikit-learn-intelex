@@ -38,9 +38,8 @@ else:
 
 
 def daal4py_classifier_predict(estimator, X, base_predict):
-    X = check_array(X, accept_sparse='csr')
+    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     daal_model = getattr(estimator, '_daal_model', None)
-
     n_features = getattr(estimator, 'n_features_in_', None)
     shape = getattr(X, 'shape', None)
     if n_features and shape and len(shape) > 1 and shape[1] != n_features:
