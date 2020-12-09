@@ -123,7 +123,6 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
             if not np.array_equal(labels, [0, 1]):
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
-            print('roc_auc_score for daal')
             result = d4p.daal_roc_auc_score(y_true.reshape(1, -1), y_score.reshape(1, -1))
         else:
             y_true = label_binarize(y_true, classes=labels)[:, 0]
