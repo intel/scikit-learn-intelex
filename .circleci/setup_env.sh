@@ -8,8 +8,9 @@ conda update -q conda
 conda create -n bld python=3.7 conda-build
 source activate bld
 conda install -q --override-channels -c conda-forge numpy scipy pytest pandas pyyaml joblib numpydoc
-# need to remove impi_rt after making dependencies optional
 conda install -q --override-channels -c intel dal impi_rt
+# need to remove mpi after making dependencies optional
+conda install -q --override-channels -c conda-forge --override-channels mpi mpich
 gcc -v
 g++ -v
 head /proc/cpuinfo
