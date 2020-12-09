@@ -51,6 +51,7 @@ deselected_tests:
 
   # _hist_gradient_boosting tests (added in 0.21.0) times out in CircleCI
   - ensemble/_hist_gradient_boosting/tests
+  - feature_selection/tests/test_from_model.py
 
   # https://github.com/scikit-learn/scikit-learn/pull/15857
   - ensemble/tests/test_stacking.py::test_stacking_cv_influence >=0.22
