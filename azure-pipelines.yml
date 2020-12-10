@@ -1,6 +1,6 @@
 variables:
   - name: WINDOWS_BASEKIT_URL
-    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17191/w_BaseKit_p_2021.1.0.2664.exe
+    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17453/w_BaseKit_p_2021.1.0.2664.exe
   - name: WINDOWS_DPCPP_COMPONENTS
     value: intel.oneapi.win.dpcpp-compiler intel.oneapi.win.tbb.devel intel.oneapi.win.daal.devel
 
