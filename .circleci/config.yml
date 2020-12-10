@@ -28,6 +28,8 @@ jobs:
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
+            # work around bug in scikit-learn
+            conda install -y -c conda-forge --override-channels cython
             conda install /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
