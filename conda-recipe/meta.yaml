@@ -36,6 +36,7 @@ requirements:
         - clang-tools
     run:
         - python
+        - dpcpp_cpp_rt
         - daal >=2020.3
     ignore_run_exports:
         - numpy
