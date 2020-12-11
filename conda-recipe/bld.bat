@@ -18,6 +18,6 @@ IF DEFINED DPCPPROOT (
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
 
 SETLOCAL
-ARGS="--single-version-externally-managed --record=record.txt"
+set ARGS="--single-version-externally-managed --record=record.txt"
 %PYTHON% setup.py install %ARGS%
 ENDLOCAL
