@@ -19,9 +19,10 @@ jobs:
           command: |
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
+            export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
             python setup.py install
-            
+
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
