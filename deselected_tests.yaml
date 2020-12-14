@@ -139,3 +139,6 @@ deselected_tests:
 
   # module name should starts with 'sklearn.metrics' but we have 'daal4py.sklearn.metrics'
   - metrics/tests/test_score_objects.py::test_scoring_is_not_metric
+  
+  # Stability issue with max absolute difference: 4.33846826e-08. Remove in next release
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_dataframe[features-integer-None-estimator-brute]
