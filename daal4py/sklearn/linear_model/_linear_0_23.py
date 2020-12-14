@@ -62,7 +62,7 @@ def _daal4py_fit(self, X, y_):
         except RuntimeError:
             # fall back on sklearn
             return None
-        
+
 
     lr_model = lr_res.model
     self.daal_model_ = lr_model
