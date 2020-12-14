@@ -21,7 +21,7 @@ jobs:
             conda activate bld
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
-            python setup.py install
+            python setup.py install --single-version-externally-managed --record=record.txt
 
       - run:
           name: Testing sklearn patches
