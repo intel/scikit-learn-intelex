@@ -7,8 +7,8 @@ conda config --set always_yes yes --set changeps1 no
 conda update -q conda
 conda create -n bld python=3.7 conda-build
 source activate bld
-conda install -q --override-channels -c defaults numpy scipy pytest pandas pyyaml joblib numpydoc
-conda install -q --override-channels -c intel dal
+conda install -q scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools
+conda install -q --override-channels -c intel dal dal-include
 gcc -v
 g++ -v
 head /proc/cpuinfo
