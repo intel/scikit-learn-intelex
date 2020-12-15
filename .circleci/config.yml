@@ -1,7 +1,7 @@
 version: 2.0
 
 jobs:
-  build_pypi:
+  build_master:
     docker:
       - image: circleci/python:3.7.5
 
@@ -36,7 +36,7 @@ jobs:
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
 
-  build_master:
+  build_pypi:
     docker:
       - image: circleci/python:3.7.5
 
