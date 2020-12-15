@@ -1,8 +1,8 @@
 variables:
   - name: WINDOWS_BASEKIT_URL
-    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17191/w_BaseKit_b_2021.1.10.2260.exe
+    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17453/w_BaseKit_p_2021.1.0.2664.exe
   - name: WINDOWS_DPCPP_COMPONENTS
-    value: intel.oneapi.win.dpcpp-compiler intel.oneapi.win.tbb.devel intel.oneapi.win.daal.devel
+    value: intel.oneapi.win.dpcpp-compiler
 
 jobs:
 - job: Linux
@@ -16,7 +16,7 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda build --override-channels -c intel -c conda-forge --numpy=1.17 conda-recipe
+      conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
     displayName: conda build
 
 - job: Linux_DPCPP
@@ -33,7 +33,6 @@ jobs:
       sudo apt-get install                  \
           intel-oneapi-common-vars          \
           intel-oneapi-common-licensing     \
-          intel-oneapi-dal-devel            \
           intel-oneapi-dpcpp-cpp-compiler   \
           intel-oneapi-dev-utilities        \
           intel-oneapi-libdpstd-devel
@@ -46,11 +45,9 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
-      export DALROOT=/opt/intel/oneapi/dal/latest
-      export TBBROOT=/opt/intel/oneapi/tbb/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda build --override-channels -c intel -c conda-forge --numpy=1.17 conda-recipe
+      conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
     displayName: conda build
 
 - job: MacOS
@@ -100,9 +97,7 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      set "DALROOT=C:\Program Files (x86)\Intel\oneAPI\dal\latest"
-      set "TBBROOT=C:\Program Files (x86)\Intel\oneAPI\tbb\latest"
-      conda build --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder=. conda-recipe
+      conda build --override-channels -c intel -c conda-forge --numpy=1.19 --output-folder=. conda-recipe
     displayName: conda build
   - task: CopyFiles@2
     inputs:
