@@ -60,8 +60,9 @@ jobs:
           command: |
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
-            mkdir -p /tmp/out
-            conda build --python=37 --override-channels -c intel -c conda-forge --numpy=1.17 --output-folder /tmp/out --no-test conda-recipe
+            export DALROOT=$CONDA_PREFIX
+            export NO_DIST=1
+            python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
@@ -72,7 +73,6 @@ jobs:
             conda install -y -c conda-forge threadpoolctl cython
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
-            conda install -y /tmp/out/*/daal4py-*.tar.bz2
             conda list
             source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
       - store_artifacts:
