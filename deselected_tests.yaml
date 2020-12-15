@@ -142,3 +142,5 @@ deselected_tests:
 
   # Stability issue with max absolute difference: 4.33846826e-08. Remove in next release
   - inspection/tests/test_partial_dependence.py::test_partial_dependence_dataframe[features-integer-None-estimator-brute]
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_dataframe[features-string-None-estimator-brute]
+
