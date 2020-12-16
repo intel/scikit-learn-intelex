@@ -19,17 +19,18 @@ jobs:
           command: |
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
-            export DALROOT=$CONDA_PREFIX
+            mkdir -p /tmp/out
             export NO_DIST=1
-            python setup.py install --single-version-externally-managed --record=record.txt
-
+            conda build --python=37 --override-channels -c conda-forge -c defaults --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
-          no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
+            # work around bug in scikit-learn
+            conda install -y -c conda-forge --override-channels cython
+            conda install -q /tmp/out/*/daal4py-*.tar.bz2
             pip install -q scikit-learn
             conda list
             source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
@@ -61,17 +62,18 @@ jobs:
           command: |
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
-            export DALROOT=$CONDA_PREFIX
+            mkdir -p /tmp/out
             export NO_DIST=1
-            python setup.py install --single-version-externally-managed --record=record.txt
+            conda build --python=37 --override-channels -c intel -c conda-forge --output-folder /tmp/out --no-test conda-recipe
       - run:
           name: Testing sklearn patches
-          no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
-            conda install -y -c conda-forge threadpoolctl cython
+            conda install -y --override-channels -c intel cython
+            conda install -q /tmp/out/*/daal4py-*.tar.bz2
+            conda install -c conda-forge threadpoolctl
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
             conda list
