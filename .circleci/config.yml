@@ -94,6 +94,6 @@ workflows:
           cron: "49 23 * * *"
           filters:
             branches:
-              only: master
+              only: test-sklearn-master
     jobs:
       - build_master
