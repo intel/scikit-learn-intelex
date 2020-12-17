@@ -360,7 +360,7 @@ std::vector<daal::services::SharedPtr<T> > transceiver::gather(const daal::servi
 {
     // we split into 2 gathers: one to send the sizes, a second to send the actual data
     if(varying == false) std::cerr << "Performance warning: no optimization implemented for non-varying gather sizes\n";
-    
+ 
     size_t mysize = 0;
     daal::data_management::InputDataArchive in_arch;
     // If we got the data then serialize the partial result into a data archive

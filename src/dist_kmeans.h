@@ -20,6 +20,12 @@
 #include <cmath>
 #include "dist_custom.h"
 #include "map_reduce_tree.h"
+#include "daal4py_defines.h"
+
+using namespace std;
+using namespace daal;
+using namespace daal::algorithms;
+using namespace daal::data_management;
 
 namespace dist_custom {
 
@@ -27,6 +33,7 @@ template<typename fptype, daal::algorithms::kmeans::Method method>
 class dist_custom< kmeans_manager< fptype, method > >
 {
 public:
+    typedef std::vector<daal::byte> ByteBuffer;
     typedef kmeans_manager< fptype, method > Algo;
 
     /*
@@ -53,11 +60,9 @@ public:
             if(iter) tcvr->bcast(centroids);
             ++iter;
             auto s1_result = algo.run_step1Local(input1, centroids);
-            // reduce all partial results
-            auto pres = map_reduce_tree::map_reduce_tree<Algo>::reduce(algo, s1_result);
-            // finalize and check convergence/end of iteration
+            auto res = tcvr->gather(s1_result);
             if(tcvr->me() == 0) {
-                fres = algo.run_step2Master__final(std::vector< daal::algorithms::kmeans::PartialResultPtr >(1, pres));
+                fres = algo.run_step2Master__final(res);
                 // now check if we convered/reached max_iter
                 if(iter < algo._maxIterations) {
                     double new_goal = fres->get(daal::algorithms::kmeans::objectiveFunction)->daal::data_management::NumericTable::template getValue<double>(0, 0);
@@ -96,3 +101,4 @@ public:
 } // namespace dist_kmeans {
 
 #endif // _DIST_KMEANS_INCLUDED_
+

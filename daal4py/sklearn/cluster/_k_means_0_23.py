@@ -33,6 +33,8 @@ from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
 from .._utils import getFPType, get_patch_message, daal_check_version
+from .distributed_k_means_fit import distributed_k_means_fit
+from modin import pandas as modin_pd
 import logging
 
 def _validate_center_shape(X, n_centers, centers):
@@ -276,11 +278,15 @@ def _fit(self, X, y=None, sample_weight=None):
 
     if daal_ready:
         logging.info("sklearn.cluster.KMeans.fit: " + get_patch_message("daal"))
-        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
-        self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
-            _daal4py_k_means_fit(
-                X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
-                self.verbose, random_state)
+        
+        if isinstance(X, modin_pd.DataFrame) and self.init == "random":
+            self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = distributed_k_means_fit(X, self.n_clusters, self.max_iter)
+        else:
+            X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
+            self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
+                _daal4py_k_means_fit(
+                    X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
+                    self.verbose, random_state)
     else:
         logging.info("sklearn.cluster.KMeans.fit: " + get_patch_message("sklearn"))
         super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
