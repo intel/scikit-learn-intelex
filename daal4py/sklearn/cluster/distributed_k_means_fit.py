@@ -100,4 +100,3 @@ def distributed_k_means_fit(X, n_clusters, max_iter):
     )
 
     return centroids, assignments, inertia, max_iter
-
