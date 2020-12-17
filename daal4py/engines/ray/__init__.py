@@ -18,4 +18,3 @@
 from .ray_context import RayContext
 
 __all__ = ["RayContext"]
-

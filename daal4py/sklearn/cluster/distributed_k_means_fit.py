@@ -1,3 +1,20 @@
+#
+#*******************************************************************************
+# Copyright 2014-2020 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#******************************************************************************/
+
 import daal4py
 from daal4py.engines.row_partition_actor import RowPartitionsActor
 from daal4py.engines.ray.ray_context import RayContext
@@ -51,11 +68,10 @@ def distributed_k_means_fit(X, n_clusters, max_iter):
 
     actor_ips = [ray.get(actors[j].get_actor_ip.remote()) for j in range(len(actors))]
 
-    for i in range(len(row_part_ips)):
-        row_part_ip = row_part_ips[i]
+    for i, row_part_ip in enumerate(row_part_ips):
         row_part = row_partitions[i][1]
-        for j in range(len(actor_ips)):
-            if row_part_ip in actor_ips[j]:
+        for j, actor_ip in enumerate(actor_ips):
+            if row_part_ip in actor_ip:
                 actors[j].append_row_part._remote(args=(row_part,))
 
     for actor in actors:

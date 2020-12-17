@@ -21,4 +21,3 @@ from .row_partition_actor import RowPartitionsActor
 __all__ = [
     "ray", "Context", "RowPartitionsActor"
 ]
-
