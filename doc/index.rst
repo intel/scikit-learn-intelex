@@ -10,7 +10,7 @@ oneAPI Data Analytics Library to deliver the best performance.
 
 Designed for Data Scientists and Framework Designers
 ----------------------------------------------------
-daal4py was created to give data scientists the easist way to utilize Intel(R) oneAPI Data Analytics
+daal4py was created to give data scientists the easiest way to utilize Intel(R) oneAPI Data Analytics
 Library powerful machine learning building blocks directly in a high-productivity manner. A
 simplified API gives high-level abstractions to the user with minimal boilerplate, allowing for
 quick to write and easy to maintain code when utilizing Jupyter Notebooks. For scaling capabilities,
@@ -88,8 +88,8 @@ The design of daal4py utilizes several different technologies to deliver Intel(R
 Analytics Library performance in a flexible design to Data Scientists and Framework designers. The
 package uses Jinja templates to generate Cython-wrapped oneDAL C++ headers, with Cython as a bridge
 between the generated oneDAL code and the Python layer. This design allows for quicker development
-cycles and acts as a reference design to those looking to tailor their build of daal4py.  Cython
-also allows for good Python behavior, both for compatability to different frameworks and for
+cycles and acts as a reference design to those looking to tailor their build of daal4py. Cython
+also allows for good Python behavior, both for compatibility to different frameworks and for
 pickling and serialization.
 
 Built for Performance

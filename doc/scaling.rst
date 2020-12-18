@@ -23,7 +23,7 @@ Add the distribution parameter to the algorithm construction::
 When calling the actual computation each process expects an input file or input
 array/DataFrame. Your program needs to tell each process which
 file/array/DataFrame it should operate on. Like with other SPMD programs this is
-usually done conditinally on the process id/rank ('daal4py.my_procid()'). Assume
+usually done conditionally on the process id/rank ('daal4py.my_procid()'). Assume
 we have one file for each process, all having the same prefix 'file' and being
 suffixed by a number. The code could then look like this::
 
