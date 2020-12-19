@@ -18,10 +18,7 @@
 import pandas as pd
 import pytest
 import numpy as np
-from daal4py.sklearn.ensemble \
-    import RandomForestClassifier as DaalRandomForestClassifier
-from daal4py.sklearn.ensemble \
-    import RandomForestRegressor as DaalRandomForestRegressor
+
 from daal4py.sklearn.neighbors import KNeighborsClassifier
 from sklearn.datasets import make_classification
 from sklearn.metrics import accuracy_score

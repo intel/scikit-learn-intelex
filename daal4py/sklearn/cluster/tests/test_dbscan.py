@@ -18,7 +18,7 @@
 import numpy as np
 
 from sklearn.cluster import DBSCAN as DBSCAN_SKLEARN
-from daal4py.sklearn.cluster import DBSCANN as DBSCAN_DAAL
+from daal4py.sklearn.cluster import DBSCAN as DBSCAN_DAAL
 
 def generate_data(low: int, high: int, samples_number: int, sample_dimension: tuple) -> tuple:
     generator = np.random.RandomState()
