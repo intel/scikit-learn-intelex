@@ -16,7 +16,7 @@
 # ****************************************************************************
 
 import numpy as np
-
+import pytest
 from sklearn.cluster import DBSCAN as DBSCAN_SKLEARN
 from daal4py.sklearn.cluster import DBSCAN as DBSCAN_DAAL
 
