@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -29,7 +29,6 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
-
 def main(readcsv=read_csv, method='defaultDense'):
     nFeatures = 3
     nClasses = 5
@@ -43,7 +42,8 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_algo = d4p.gbt_classification_training(nClasses=nClasses,
                                                  maxIterations=maxIterations,
                                                  minObservationsInLeafNode=minObservationsInLeafNode,
-                                                 featuresPerNode=nFeatures)
+                                                 featuresPerNode=nFeatures,
+                                                 varImportance='weight|totalCover|cover|totalGain|gain')
 
     # Read data. Let's use 3 features per observation
     data   = readcsv(infile, range(3), t=np.float32)
@@ -51,7 +51,9 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
-    predict_algo = d4p.gbt_classification_prediction(5)
+    # previous version has different interface
+    predict_algo = d4p.gbt_classification_prediction(nClasses=nClasses,
+                                                     resultsToEvaluate="computeClassLabels|computeClassProbabilities")
     # read test data (with same #features)
     pdata = readcsv(testfile, range(3), t=np.float32)
     # now predict using the model from the training above
@@ -68,4 +70,10 @@ if __name__ == "__main__":
     (train_result, predict_result, plabels) = main()
     print("\nGradient boosted trees prediction results (first 10 rows):\n", predict_result.prediction[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
+    print("\nGradient boosted trees prediction probabilities (first 10 rows):\n", predict_result.probabilities[0:10])
+    print("\nvariableImportanceByWeight:\n", train_result.variableImportanceByWeight)
+    print("\nvariableImportanceByTotalCover:\n", train_result.variableImportanceByTotalCover)
+    print("\nvariableImportanceByCover:\n", train_result.variableImportanceByCover)
+    print("\nvariableImportanceByTotalGain:\n", train_result.variableImportanceByTotalGain)
+    print("\nvariableImportanceByGain:\n", train_result.variableImportanceByGain)
     print('All looks good!')

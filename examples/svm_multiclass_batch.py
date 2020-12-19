@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -41,7 +41,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Create and configure algorithm object
     algorithm = d4p.multi_class_classifier_training(nClasses=nClasses,
-                                                    training=d4p.svm_training(),
+                                                    training=d4p.svm_training(method='thunder'),
                                                     prediction=d4p.svm_prediction())
     
     # Pass data to training. Training result provides model
@@ -57,7 +57,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     
     # Create an algorithm object to predict multi-class SVM values
     algorithm = d4p.multi_class_classifier_prediction(nClasses,
-                                                      training=d4p.svm_training(doShrinking=True),
+                                                      training=d4p.svm_training(method='thunder'),
                                                       prediction=d4p.svm_prediction())
     # Pass data to prediction. Prediction result provides prediction
     pred_result = algorithm.compute(pred_data, train_result.model)

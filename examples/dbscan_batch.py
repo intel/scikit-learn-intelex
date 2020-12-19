@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -32,8 +32,8 @@ except:
 
 def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/dbscan_dense.csv"
-    epsilon = 0.02
-    minObservations = 180
+    epsilon = 0.04
+    minObservations = 45
     
     # Load the data
     data = readcsv(infile, range(2))
@@ -46,7 +46,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Note: we could have done this in just one line:
     # assignments = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations').compute(data).assignments
 
-    # DBSCAN result objects provide assignments and coreIndices/coreObservations (if requested)
+    # DBSCAN result objects provide assignments, nClusters and coreIndices/coreObservations (if requested)
     assert result.assignments.shape == (data.shape[0], 1)
     assert result.coreObservations.shape == (result.coreIndices.shape[0], data.shape[1])
     
@@ -58,4 +58,5 @@ if __name__ == "__main__":
     print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
     print("\nFirst 10 cluster core indices:\n", result.coreIndices[0:10])
     print("\nFirst 10 cluster core observations:\n", result.coreObservations[0:10])
+    print("\nNumber of clusters:\n", result.nClusters)
     print('All looks good!')

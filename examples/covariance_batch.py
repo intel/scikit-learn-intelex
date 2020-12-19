@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -35,7 +35,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a covariance object
     algo = d4p.covariance()
-    
+
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 

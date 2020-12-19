@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -36,10 +36,8 @@ def printTree(nodes, values):
             printNodes(node["left_child"], nodes, values, level + 1)
         if node["right_child"] != -1:
             printNodes(node["right_child"], nodes, values, level + 1)
-        return
 
     printNodes(0, nodes, values, 0)
-    return
 
 if __name__ == "__main__":
     # First get our result and model

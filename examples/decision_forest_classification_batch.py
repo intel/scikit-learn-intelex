@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -29,7 +29,6 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
-
 def main(readcsv=read_csv, method='defaultDense'):
     # input data file
     infile = "./data/batch/df_classification_train.csv"
@@ -44,7 +43,7 @@ def main(readcsv=read_csv, method='defaultDense'):
                                                              varImportance='MDI',
                                                              bootstrap=True,
                                                              resultsToCompute='computeOutOfBagError')
-    
+
     # Read data. Let's use 3 features per observation
     data   = readcsv(infile, range(3), t=np.float32)
     labels = readcsv(infile, range(3,4), t=np.float32)
@@ -52,7 +51,8 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
     # Now let's do some prediction
-    predict_algo = d4p.decision_forest_classification_prediction(5)
+    predict_algo = d4p.decision_forest_classification_prediction(nClasses=5,
+            resultsToEvaluate="computeClassLabels|computeClassProbabilities", votingMethod="unweighted")
     # read test data (with same #features)
     pdata = readcsv(testfile, range(3), t=np.float32)
     plabels = readcsv(testfile, range(3,4), t=np.float32)
@@ -70,5 +70,6 @@ if __name__ == "__main__":
     print("\nVariable importance results:\n", train_result.variableImportance)
     print("\nOOB error:\n", train_result.outOfBagError)
     print("\nDecision forest prediction results (first 10 rows):\n", predict_result.prediction[0:10])
+    print("\nDecision forest probabilities results (first 10 rows):\n", predict_result.probabilities[0:10])
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
     print('All looks good!')

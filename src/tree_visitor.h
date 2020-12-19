@@ -18,13 +18,13 @@
 #define _TREE_VISITOR_H_INCLUDED_
 
 #include "daal4py.h"
+#include "daal4py_defines.h"
 #include <daal.h>
 #include <vector>
 #include <algorithm>
 
 #define TERMINAL_NODE -1
 #define NO_FEATURE -2
-#define DEFAULT_DOUBLE_VALUE NaN64
 
 // cython will convert this struct into an numpy structured array
 // This is the layout that sklearn expects for its tree traversal mechanics
@@ -41,8 +41,8 @@ struct skl_tree_node {
         : left_child(TERMINAL_NODE),
           right_child(TERMINAL_NODE),
           feature(NO_FEATURE),
-          threshold(DEFAULT_DOUBLE_VALUE),
-          impurity(DEFAULT_DOUBLE_VALUE),
+          threshold(get_nan64()),
+          impurity(get_nan64()),
           n_node_samples(0),
           weighted_n_node_samples(0.0)
     {}
@@ -201,12 +201,13 @@ toSKLearnTreeObjectVisitor<M>::toSKLearnTreeObjectVisitor(size_t _depth, size_t 
     : node_id(0),
       parents(arange<ssize_t>(-1, _depth-1))
 {
+    max_n_classes = _max_n_classes;
     node_count = _n_nodes;
     max_depth = _depth;
     leaf_count = _n_leafs;
     class_count = _max_n_classes;
     node_ar = new skl_tree_node[node_count];
-    value_ar = new double[node_count*1*class_count](); // DAAL only supports scalar responses for now
+    value_ar = new double[node_count*1*class_count](); // oneDAL only supports scalar responses for now
 }
 
 
@@ -252,7 +253,6 @@ bool toSKLearnTreeObjectVisitor<M>::onLeafNode(const typename TNVT<M>::leaf_desc
 template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const daal::algorithms::tree_utils::NodeDescriptor &desc)
 {
-
     if(desc.level) {
         ssize_t parent = parents[desc.level - 1];
         if(node_ar[parent].left_child > 0) {
@@ -274,6 +274,7 @@ template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::false_type)
 {
     _onLeafNode(desc);
+    DAAL4PY_OVERFLOW_CHECK_BY_MULTIPLICATION(int, node_id, class_count);
     value_ar[node_id*1*class_count] = desc.response;
 
     // wrap-up
@@ -285,6 +286,7 @@ template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::true_type)
 {
     _onLeafNode(desc);
+    DAAL4PY_OVERFLOW_CHECK_BY_ADDING(int, node_id*1*class_count, desc.label);
     value_ar[node_id*1*class_count + desc.label] += desc.nNodeSampleCount;
 
     // wrap-up

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ def _main():
 
     parser = argparse.ArgumentParser(prog="python -m daal4py.sklearn_patches", description="""
                 Run your Python script with Intel(R) Distribution for Python* patches of scikit-learn,
-                optimizing solvers of scikit-learn with Intel(R) DAAL.
+                optimizing solvers of scikit-learn with Intel(R) oneAPI Data Analytics Library.
              """, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-m', action='store_true', dest='module',
@@ -43,10 +43,9 @@ def _main():
     sys.argv = [args.name] + args.args
     if '_' + args.name in globals():
         return globals()['_' + args.name](*args.args)
-    else:
-        import runpy
-        runf = runpy.run_module if args.module else runpy.run_path
-        runf(args.name, run_name='__main__')
+    import runpy
+    runf = runpy.run_module if args.module else runpy.run_path
+    runf(args.name, run_name='__main__')
 
 
 sys.exit(_main())

@@ -108,7 +108,7 @@ namespace dist_custom {
              * the number of weights is nFeatures + 1 */
             // FIXME: else?
             size_t N = x->getNumberOfColumns() + 1;
-            fptype * weights_ptr = new fptype[N];
+            fptype * weights_ptr = static_cast<fptype *>(daal::services::daal_malloc(N * sizeof(fptype)));
             std::fill_n(weights_ptr, N, 1e-2);
             daal::data_management::NumericTablePtr weights(new daal::data_management::HomogenNumericTable<fptype>(weights_ptr, 1, N));
     

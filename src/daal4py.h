@@ -49,6 +49,14 @@ using daal::services::LibraryVersionInfo;
 #define PyUnicode_FromString(_x) PyString_FromString(_x)
 #endif
 
+#include "data_management/data/internal/finiteness_checker.h"
+#include "data_management/data/internal/train_test_split.h"
+
+#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210200
+    #include "data_management/data/internal/roc_auc_score.h"
+#endif
+
+
 extern "C" {
 void c_daalinit(int nthreads=-1);
 void c_daalfini();
@@ -57,8 +65,8 @@ size_t c_num_procs();
 size_t c_my_procid();
 }
 
+using daal::data_management::NumericTablePtr;
 typedef daal::services::SharedPtr< std::vector< std::vector< daal::byte > > > BytesArray;
-typedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;
 typedef std::string std_string;
 typedef std::unordered_map<std::string, int64_t> str2i_map_t;
 typedef std::unordered_map<int64_t, std::string> i2str_map_t;
@@ -93,13 +101,13 @@ inline bool use_default(const int & attr)
 
 inline bool use_default(const size_t & attr)
 {
-    return (long)attr == (long)-1;
+    return static_cast<long>(attr) == static_cast<long>(-1);
 }
 
 #ifndef _WIN32
 inline bool use_default(const DAAL_UINT64 & attr)
 {
-    return (long)attr == (long)-1;
+    return static_cast<long>(attr) == static_cast<long>(-1);
 }
 #endif
 
@@ -173,7 +181,7 @@ struct data_or_file
     data_or_file(PyObject *);
 };
 
-// return input as DAAL numeric table.
+// return input as oneDAL numeric table.
 extern const daal::data_management::NumericTablePtr get_table(const data_or_file & t);
 
 template< typename T >
@@ -210,8 +218,15 @@ static std::string to_std_string(PyObject * o)
     return PyUnicode_AsUTF8(o);
 }
 
-const double NaN64 = std::numeric_limits<double>::quiet_NaN();
-const float NaN32 = std::numeric_limits<float>::quiet_NaN();
+inline static const double get_nan64()
+{
+    return std::numeric_limits<double>::quiet_NaN();
+}
+
+inline static const float get_nan32()
+{
+    return std::numeric_limits<float>::quiet_NaN();
+}
 
 typedef daal::data_management::DataCollectionPtr data_management_DataCollectionPtr;
 typedef daal::data_management::NumericTablePtr data_management_NumericTablePtr;
@@ -278,7 +293,7 @@ public:
     // we need a virtual destructor
     virtual ~VSP() {};
 };
-// typed virtual shared pointer, for simplicity we make it a DAAL shared pointer
+// typed virtual shared pointer, for simplicity we make it a oneDAL shared pointer
 template< typename T >
 class TVSP : public VSP, public daal::services::SharedPtr<T>
 {
@@ -294,7 +309,7 @@ extern void rawp_free_cap(PyObject *);
 template< typename T >
 void set_sp_base(PyArrayObject * ary, daal::services::SharedPtr<T> & sp)
 {
-    void * tmp_sp = (void*) new TVSP<T>(sp);
+    void * tmp_sp = static_cast<void*>(new TVSP<T>(sp));
     PyObject* cap = PyCapsule_New(tmp_sp, NULL, daalsp_free_cap);
     PyArray_SetBaseObject(ary, cap);
 }
@@ -307,6 +322,23 @@ static T* _daal_clone(const T & o)
 
 extern "C" {
 void set_rawp_base(PyArrayObject *, void *);
+}
+
+extern "C" {
+bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype);
+}
+
+extern "C" {
+void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test,
+                        data_or_file & train_idx, data_or_file & test_idx);
+}
+
+extern "C" {
+double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test);
+}
+
+extern "C" {
+void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state);
 }
 
 #endif // _HLAPI_H_INCLUDED_

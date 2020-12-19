@@ -117,18 +117,21 @@ doc_state = enum(none=0, single=1, multi=2, template=3)
 class comment_parser(object):
     """parse documentation in comments"""
     def parse(self, l, ctxt):
-        assert not re.match(r'.*\*/(.+)', l), "Found the code after closed comment in the same line"
+        # delete comments, after which there is code in one line
+        line = re.sub(r'\/\*(.*?)\*\/', '', l) if re.match(r'.*\*/(.+)', l) else l
 
-        # delete '%', it marks non-key words in DAAL Doxygen documentation
-        line = l.replace('%', '')
+        assert not re.match(r'.*\*/(.+)', line), "Found the code after closed comment in the same line"
 
-        # delete keys for formulas in DAAL Doxygen documentation
+        # delete '%', it marks non-key words in oneDAL Doxygen documentation
+        line = line.replace('%', '')
+
+        # delete keys for formulas in oneDAL Doxygen documentation
         line = line.replace('\\f$', '')
 
-        # delete internal references in DAAL Doxygen documentation
+        # delete internal references in oneDAL Doxygen documentation
         line = re.sub(r',?\s+\\ref[^(*/)]*', '', line)
 
-        # delete DAAL C++ substrings
+        # delete oneDAL C++ substrings
         line = re.sub(r',?\s*\w+::[:\w]+', '', line)
 
         # try to find the beginning of algorithm template description
@@ -258,13 +261,12 @@ class enum_parser(object):
             if me:
                 ctxt.enum = False
                 return True
-            else:
-                me = re.match(r'^\s*(\w+)(?:\s*=\s*((\(int\))?\w(\w|:|\s|\+)*))?(\s*,)?\s*((/\*|//).*)?$', l)
-                if me and not me.group(1).startswith('last'):
-                    # save the destination for documentation
-                    ctxt.doc_lambda = lambda: ctxt.gdict['enums'][ctxt.enum][me.group(1)]
-                    ctxt.gdict['enums'][ctxt.enum][me.group(1)] = [me.group(2) if me.group(2) else '', ctxt.doc]
-                    return True
+            me = re.match(r'^\s*(\w+)(?:\s*=\s*((\(int\))?\w(\w|:|\s|\+)*))?(\s*,)?\s*((/\*|//).*)?$', l)
+            if me and not me.group(1).startswith('last'):
+                # save the destination for documentation
+                ctxt.doc_lambda = lambda: ctxt.gdict['enums'][ctxt.enum][me.group(1)]
+                ctxt.gdict['enums'][ctxt.enum][me.group(1)] = [me.group(2) if me.group(2) else '', ctxt.doc]
+                return True
         return False
 
 
@@ -329,9 +331,8 @@ class setget_parser(object):
                         assert len(ctxt.template) == 1 and ctxt.template[0][1] == 'fptypes'
                         ctxt.gdict['classes'][ctxt.curr_class].gets[name] = ('double', '<double>')
                         return False
-                    else:
-                        ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(1)
-                        return True
+                    ctxt.gdict['classes'][ctxt.curr_class].gets[name] = mgs.group(1)
+                    return True
             # some get-methods accept an argument!
             # We support only a single argument for now, and only simple types like int, size_t etc, no refs, no pointers
             mgs = re.match(r'\s*(?:virtual\s*)?((\w|:|<|>)+)([*&]\s+|\s+[&*]|\s+)(get\w+)\(\s*((?:\w|_)+)\s+((?:\w|_)+)\s*\)', l)
@@ -357,7 +358,7 @@ class member_parser(object):
     """Parse class members"""
     def parse(self, l, ctxt):
         if ctxt.curr_class and ctxt.access:
-            mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?([\w_]+)\s*;', l)
+            mm = re.match(r'\s*((?:[\w:_]|< ?| ?>| ?, ?)+)(?<!return|delete)\s+[\*&]?\s*([\w_]+)\s*;', l)
             if mm :
                 if mm.group(2) not in ctxt.gdict['classes'][ctxt.curr_class].members:
                     # save the destination for documentation
@@ -462,8 +463,6 @@ class class_template_parser(object):
                     ctxt.gdict['classes'][ctxt.curr_class].templates.append([ctxt.curr_class + '::' + m.group(5), ctxt.template])
                     ctxt.template = False
                     return True
-                else:
-                    pass
                 #error_template_string += fname + ':\n\tignoring ' + m.group(5)
             elif ctxt.access and not mt and not m and not any(s in l for s in ctxt.ignores):
                 # not a class but a non-mapped template
@@ -494,7 +493,7 @@ class pcontext(object):
 
 
 ###############################################################################
-# parse a DAAL header file and extract information relevant for SWIG interface files
+# parse a oneDAL header file and extract information relevant for SWIG interface files
 # Common template argument lists are formatted properly for use
 #   in interface files config dict
 # Also returns string for errors in parsing templates
@@ -518,6 +517,8 @@ def parse_header(header, ignores):
         # first strip of eol comments if it is not the link
         if not re.search(r'https?://', l):
             l = l.split('//')[0]
+        # delete 'DAAL_DEPRECATED'
+        l = l.replace('DAAL_DEPRECATED ', '')
         # apply each parser, continue to next line if possible
         for p in parsers:
             if p.parse(l, ctxt):
@@ -528,19 +529,27 @@ def parse_header(header, ignores):
 
 
 def parse_version(header):
-    """Parse DAAL version strings"""
-    v = (None, None, None)
+    """Parse oneDAL version strings"""
+    v = (None, None, None, None)
     for l in header:
         if '#define __INTEL_DAAL_' in l:
             m = re.match(r'#define __INTEL_DAAL__ (\d+)', l)
             if m:
-                v = (m.group(1), v[1], v[2])
+                v = (m.group(1), v[1], v[2], v[3])
             m = re.match(r'#define __INTEL_DAAL_MINOR__ (\d+)', l)
             if m:
-                v = (v[0], m.group(1), v[2])
+                v = (v[0], m.group(1), v[2], v[3])
             m = re.match(r'#define __INTEL_DAAL_UPDATE__ (\d+)', l)
             if m:
-                v = (v[0], v[1], m.group(1))
+                v = (v[0], v[1], m.group(1), v[3])
+            m = re.match(r'#define __INTEL_DAAL_STATUS__ (.\w.)', l)
+            if m:
+                if m.group(1) != 'P':
+                    v = (v[0], v[1], v[2], m.group(1))
+                else:
+                    v = (v[0], v[1], v[2], '')
+            else:
+                v = (v[0], v[1], v[2], v[3])
         if None not in v:
             return v
     return v

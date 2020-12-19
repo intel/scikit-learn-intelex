@@ -17,12 +17,11 @@
 
 from collections import defaultdict, OrderedDict, namedtuple
 
-# given a C++ namespace and a DAAL version, return if namespace/algo should be
+# given a C++ namespace and a oneDAL version, return if namespace/algo should be
 # wrapped in daal4py.
 def wrap_algo(algo, ver):
-    #return True if 'kmeans' in algo and not 'interface' in algo else False
     # Ignore some algos if using older DAAL
-    if ver < (2020, 1) and any(x in algo for x in ['stump', 'adaboost', 'brownboost', 'logitboost',]):
+    if ver < (2020, 0) and any(x in algo for x in ['adaboost', 'stump', 'brownboost', 'logitboost',]):
         return False
     # ignore deprecated version of stump
     if 'stump' in algo and not any(x in algo for x in ['stump::regression', 'stump::classification']):
@@ -73,6 +72,8 @@ required = {
     'algorithms::optimization_solver::lbfgs': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
     'algorithms::optimization_solver::adagrad': [('function', 'daal::algorithms::optimization_solver::sum_of_functions::BatchPtr')],
     'algorithms::dbscan': [('epsilon', 'fptype'), ('minObservations', 'size_t')],
+    'algorithms::adaboost::prediction': [('nClasses', 'size_t')],
+    'algorithms::adaboost::training': [('nClasses', 'size_t')],
 }
 
 # Some algorithms have no public constructors and need to be instantiated with 'create'
@@ -90,7 +91,17 @@ add_setup = {
     'algorithms::optimization_solver::mse': ['data', 'dependentVariables'],
     'algorithms::optimization_solver::logistic_loss': ['data', 'dependentVariables'],
     'algorithms::optimization_solver::cross_entropy_loss': ['data', 'dependentVariables'],
+    'algorithms::optimization_solver::coordinate_descent': ['inputArgument'],
 }
+
+# Some algorithms require a function to obtain result from the algorithm instance without explicit call of compute
+# Example: optimization solvers as a parameter to other algorithms can contain their own result
+add_get_result = [
+    'algorithms::optimization_solver::coordinate_descent',
+    'algorithms::optimization_solver::mse',
+    'algorithms::optimization_solver::logistic_loss',
+    'algorithms::optimization_solver::cross_entropy_loss',
+]
 
 # Some parameters/inputs are not used when C++ datastructures are shared across
 # different algos (like training and prediction)
@@ -100,13 +111,15 @@ add_setup = {
 ignore = {
     'algorithms::kmeans::init': ['firstIteration', 'outputForStep5Required',], # internal for distributed
     'algorithms::kmeans::init::interface1': ['nRowsTotal', 'offset', 'seed',], # internal for distributed, deprecated
-    'algorithms::gbt::regression::training': ['dependentVariables'], # dependentVariables from parent class is not used
+    'algorithms::gbt::regression::training': ['dependentVariables', 'weights'], # dependentVariables, weights from parent class is not used
     'algorithms::decision_forest::training': ['seed',], # deprecated
     'algorithms::decision_forest::classification::training': ['updatedEngine',], # output
     'algorithms::decision_forest::regression::training': ['algorithms::regression::training::InputId', # InputId from parent class is not used
                                                           'updatedEngine',], # output
     'algorithms::linear_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
+    'algorithms::linear_regression::training': ['weights',], # weights from parent class is not used
     'algorithms::ridge_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
+    'algorithms::ridge_regression::training': ['weights',], # weights from parent class is not used
     'algorithms::optimization_solver::sgd': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
                                              'pastUpdateVector', 'pastWorkValue', 'seed',], # internal stuff, deprecated
     'algorithms::optimization_solver::lbfgs': ['optionalArgument', 'algorithms::optimization_solver::iterative_solver::OptionalResultId',
@@ -124,12 +137,20 @@ ignore = {
     'algorithms::em_gmm::init': ['seed',], # deprecated
     'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
+    'algorithms::kdtree_knn_classification::prediction': ['algorithms::classifier::prediction::ResultId',
+                                                          'algorithms::classifier::prediction::Result'],
+    'algorithms::bf_knn_classification::prediction': ['algorithms::classifier::prediction::ResultId',
+                                                      'algorithms::classifier::prediction::Result'],
     'algorithms::lasso_regression::training': ['optionalArgument'], # internal stuff
     'algorithms::lasso_regression::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
+    'algorithms::multi_class_classifier': [ 'algorithms::multi_class_classifier::getTwoClassClassifierModels'], # unsupported return type ModelPtr*
+    'algorithms::multi_class_classifier::prediction': [ 'algorithms::classifier::prediction::ResultId', 'algorithms::classifier::prediction::Result'],
+    'algorithms::elastic_net::training': ['optionalArgument'], # internal stuff
+    'algorithms::elastic_net::prediction': ['algorithms::linear_model::interceptFlag',], # parameter
 }
 
 # List of InterFaces, classes that can be arguments to other algorithms
-# Mapping iface class to fully qualified DAAL type as shared pointer
+# Mapping iface class to fully qualified oneDAL type as shared pointer
 ifaces = {
     'kernel_function::KernelIface': ('daal::algorithms::kernel_function::KernelIfacePtr', None),
     'classifier::prediction::Batch': ('daal::services::SharedPtr<daal::algorithms::classifier::prediction::Batch>', None),
@@ -155,7 +176,8 @@ defaults = {
     'algorithms::brownboost::training': {'weights': True,},
     'algorithms::logitboost::training': {'weights': True,},
     'algorithms::svm::training': {'weights': True,},
-    'algorithms::kdtree_knn_classification::training': {'weights': True,},
+    'algorithms::kdtree_knn_classification::training': {'weights': True, 'labels': True,},
+    'algorithms::bf_knn_classification::training': {'weights': True, 'labels': True,},
     'algorithms::multi_class_classifier::training': {'weights': True,},
     'algorithms::multinomial_naive_bayes::training': {'weights': True,},
     'algorithms::gbt::regression::training': {'weights': True,},
@@ -164,12 +186,14 @@ defaults = {
     'algorithms::decision_tree::classification::training': {'weights': True,},
     'algorithms::decision_tree::regression::training': {'weights': True,},
     'algorithms::decision_forest::classification::training': {'weights': True,},
+    'algorithms::decision_forest::regression::training': {'weights': True,},
     'algorithms::linear_regression::training': {'weights': True,},
     'algorithms::ridge_regression::training': {'weights': True,},
     'algorithms::stump::classification::training': {'weights': True,},
     'algorithms::stump::regression::training': {'weights': True,},
     'algorithms::dbscan': {'weights': True,},
     'algorithms::lasso_regression::training': {'weights': True, 'gramMatrix': True},
+    'algorithms::elastic_net::training': {'weights': True, 'gramMatrix': True},
 }
 
 # For enums that are used to access KeyValueDataCollections we need an inverse map
@@ -178,10 +202,25 @@ enum_maps = {
     'algorithms::pca::ResultToComputeId' : 'result_dataForTransform',
 }
 
+# Enums are used as a values to define bit-mask in Parameter
+# Parameter itself defined as DAAL_UINT64, we can't determine possible values
+# this dict shows what Enum contain a values for Parameter
+# if such parameter is not in this dict then we think that it is 'ResultToComputeId'
+# Parameter->Enum of values
+enum_params = {
+    'algorithms::gbt::classification::training::varImportance': 'algorithms::gbt::training::VariableImportanceModes',
+    'algorithms::gbt::regression::training::varImportance': 'algorithms::gbt::training::VariableImportanceModes',
+}
+
+# For enums ResultToComputeId which has the same definition in the base class.
+result_to_compute = {
+    'algorithms::multi_class_classifier::prediction': 'algorithms::multi_class_classifier::ResultToComputeId',
+}
+
 # The distributed algorithm configuration parameters
 # Note that all have defaults and so are optional.
 # In particular note that the name of a single input argument defaults to data.
-# Use the DAAL step enums as names. You can use the same enum value by prepending '__*' to the name.
+# Use the oneDAL step enums as names. You can use the same enum value by prepending '__*' to the name.
 #  Trailing '__*' will be trunkated when using the name as a template argument.
 SSpec = namedtuple('step_spec', ['input',        # array of input types
                                  'extrainput',   # extra input arguments (added to run_* as-is)
@@ -197,9 +236,10 @@ SSpec = namedtuple('step_spec', ['input',        # array of input types
                                  'params',       # indicates if init_parameters should be called
                                  'inputnames',   # array of names of input args, aligned with 'input'
                                  'inputdists',   # array of distributions (hpat) of input args, aligned with 'input'
+                                 'keepsstate',   # set to True if step needs to be called multiple times and it keeps state
                              ]
 )
-SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-4) + ([], True, ['data'], ['OneD'])
+SSpec.__new__.__defaults__ = (None,) * (len(SSpec._fields)-5) + ([], True, ['data'], ['OneD'], False)
 
 # We list all algos with distributed versions here.
 # The indivdual dicts get passed to jinja as global vars (as-is).
@@ -395,7 +435,8 @@ has_dist = {
                              input     = ['daal::data_management::NumericTablePtr'],
                              output    = 'daal::algorithms::kmeans::init::DistributedStep3MasterPlusPlusPartialResultPtr',
                              iomanager = 'PartialIOManager',
-                             addinput  = ['daal::algorithms::kmeans::init::inputOfStep3FromStep2, i']),
+                             addinput  = ['daal::algorithms::kmeans::init::inputOfStep3FromStep2, i'],
+                             keepsstate = True),
                        SSpec(name      = 'step4Local',
                              input     = ['daal::data_management::NumericTablePtr', 'daal::data_management::DataCollectionPtr', 'daal::data_management::NumericTablePtr'],
                              setinput  = ['daal::algorithms::kmeans::init::data', 'daal::algorithms::kmeans::init::internalInput', 'daal::algorithms::kmeans::init::inputOfStep4FromStep3'],
@@ -437,6 +478,18 @@ has_dist = {
                              construct = '_nClusters',)
                    ],
     },
+    'algorithms::dbscan' : {
+        'pattern': 'dist_custom',
+        'step_specs': [SSpec(name      = 'step1Local',
+                             input     = ['daal::data_management::NumericTablePtr'],
+                             setinput  = ['daal::algorithms::dbscan::data'],
+                             inputnames = ['data'],
+                             inputdists  = ['OneD'],
+                             output    = 'daal::algorithms::dbscan::DistributedPartialResultStep1Ptr',
+                             iomanager = 'PartialIOManager',
+                             ),
+                   ],
+    },
 }
 
 no_warn = {
@@ -465,6 +518,7 @@ no_warn = {
     'algorithms::implicit_als': ['Result',],
     'algorithms::implicit_als::prediction': ['Result',],
     'algorithms::kdtree_knn_classification': ['Result',],
+    'algorithms::bf_knn_classification': ['Result',],
     'algorithms::linear_model': ['Result',],
     'algorithms::linear_regression': ['Result',],
     'algorithms::linear_regression::prediction': ['ParameterType',],
@@ -496,6 +550,8 @@ no_warn = {
     'algorithms::weak_learner': ['Result',],
     'algorithms::lasso_regression': ['Result',],
     'algorithms::lasso_regression::prediction': ['ParameterType',],
+    'algorithms::elastic_net': ['Result',],
+    'algorithms::elastic_net::prediction': ['ParameterType',],
 }
 
 # we need to be more specific about numeric table types for the lowering phase in HPAT

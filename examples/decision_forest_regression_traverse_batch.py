@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -36,23 +36,16 @@ def printTree(nodes, values):
             printNodes(node["left_child"], nodes, values, level + 1)
         if node["right_child"] != -1:
             printNodes(node["right_child"], nodes, values, level + 1)
-        return
 
     printNodes(0, nodes, values, 0)
-    return
 
 
 if __name__ == "__main__":
-    from daal4py import __daal_link_version__ as dv
-    daal_version = tuple(map(int, (dv[0:4], dv[4:8])))
-    if daal_version < (2019, 1):
-        print("Need Intel(R) DAAL 2019.1 or later")
-    else:
-        # First get our result and model
-        (train_result, _, _) = df_regression()
-        # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
-        for treeId in range(train_result.model.NumberOfTrees):
-            treeState = d4p.getTreeState(train_result.model, treeId)
-            printTree(treeState.node_ar, treeState.value_ar)
-        print('Traversed {} trees.'.format(train_result.model.NumberOfTrees))
-        print('All looks good!')
+    # First get our result and model
+    (train_result, _, _) = df_regression()
+    # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
+    for treeId in range(train_result.model.NumberOfTrees):
+        treeState = d4p.getTreeState(train_result.model, treeId)
+        printTree(treeState.node_ar, treeState.value_ar)
+    print('Traversed {} trees.'.format(train_result.model.NumberOfTrees))
+    print('All looks good!')

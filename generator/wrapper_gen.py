@@ -16,7 +16,7 @@
 
 ###############################################################################
 # The code generator.
-# We define jinja2 templates to generate code for all the DAAL algorithms and their
+# We define jinja2 templates to generate code for all the oneDAL algorithms and their
 # Result and Model objects. Most macros work on one namespace and expect expect
 # values/variables in their env. If not specificied otherwise, we assume we can
 # use the following
@@ -46,6 +46,7 @@
 # FIXME a revision from scratch would be helpful...
 
 import jinja2
+from jinja2 import select_autoescape
 from collections import OrderedDict
 from pprint import pprint
 import re
@@ -73,10 +74,20 @@ try:
     import pandas
     pdDataFrame = pandas.DataFrame
     pdSeries = pandas.Series
-except:
+except ImportError:
     class pdDataFrame:
         pass
     class pdSeries:
+        pass
+
+try:
+    from modin import pandas
+    mdDataFrame = pandas.DataFrame
+    mdSeries = pandas.Series
+except ImportError:
+    class mdDataFrame:
+        pass
+    class mdSeries:
         pass
 
 npc.import_array()
@@ -112,8 +123,8 @@ cdef class data_management_datacollection:
 
 
 cdef extern from "daal4py.h":
-    cdef const double NaN64
-    cdef const float  NaN32
+    cdef double get_nan64()
+    cdef float get_nan32()
 
     cdef cppclass data_or_file :
         data_or_file(PyObject *) except +
@@ -141,8 +152,8 @@ cdef extern from "daal4py.h":
 
     cdef T* _daal_clone[T](const T & o)
 
-NAN64 = NaN64
-NAN32 = NaN32
+NAN64 = get_nan64()
+NAN32 = get_nan64()
 
 
 cdef extern from "daal.h":
@@ -173,11 +184,19 @@ def my_procid():
     return c_my_procid()
 
 
-def _get_data(x):
+def get_data(x):
     if isinstance(x, pdDataFrame):
-        x = [x.loc[:,i].values for i in x]
+        x_dtypes = x.dtypes.values
+        if np.all(x_dtypes == x_dtypes[0]):
+            x = x.to_numpy()
+        else:
+            x = [xi.to_numpy() for _, xi in x.items()]
+    elif isinstance(x, mdDataFrame):
+        x = x.to_numpy()
     elif isinstance(x, pdSeries):
-        x = [x.values]
+        x = x.to_numpy().reshape(-1, 1)
+    elif isinstance(x, mdSeries):
+        x = x.to_numpy().reshape(-1, 1)
     return x
 
 
@@ -202,6 +221,56 @@ def _str(instance, properties):
             result += '\\n\\n'
         return result[:-2]
 
+
+cdef extern from "daal4py.h":
+    cdef bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype) except +
+
+
+def daal_assert_all_finite(X, allow_nan=False, dtype=0):
+    return c_assert_all_finite(data_or_file(<PyObject*>X), allow_nan, dtype)
+
+
+cdef extern from "daal4py.h":
+    cdef void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test, data_or_file & train_idx, data_or_file & test_idx) except +
+
+
+def daal_train_test_split(orig, train, test, train_idx, test_idx):
+    c_train_test_split(data_or_file(<PyObject*>orig), data_or_file(<PyObject*>train), data_or_file(<PyObject*>test), data_or_file(<PyObject*>train_idx), data_or_file(<PyObject*>test_idx))
+
+
+cdef extern from "daal4py.h":
+    cdef double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test) except +
+
+
+def daal_roc_auc_score(y_true, y_test):
+    return c_roc_auc_score(data_or_file(<PyObject*>y_true), data_or_file(<PyObject*>y_test))
+
+cdef extern from "daal4py.h":
+    cdef void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state) except +
+
+
+def daal_generate_shuffled_indices(idx, random_state):
+    c_generate_shuffled_indices(data_or_file(<PyObject*>idx), data_or_file(<PyObject*>random_state))
+
+import sys
+def _execute_with_context(func):
+    def exec_func(*args, **keyArgs):
+        # we check is DPPY imported or not
+        # possible we should check are we in defined context or not
+        if 'dpctl' in sys.modules:
+            from dpctl import is_in_device_context, get_current_queue
+
+            if is_in_device_context():
+                from _dpctl_interop import set_current_queue_to_daal_context, reset_daal_context
+
+                set_current_queue_to_daal_context()
+                res = func(*args, **keyArgs)
+                reset_daal_context()
+
+                return res
+
+        return func(*args, **keyArgs)
+    return exec_func
 '''
 
 ###############################################################################
@@ -307,7 +376,7 @@ cdef class {{flatname}}:
         :type: {{frtype.replace('data_management_NumericTablePtr', 'Numpy array')}}
         '''
         if not is_valid_ptrptr(self.c_ptr):
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         return res
@@ -317,7 +386,7 @@ cdef class {{flatname}}:
         :type: {{'Numpy array' if 'NumericTablePtr' in rtype else rtype}}
         '''
         if not is_valid_ptrptr(self.c_ptr):
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
 {% if 'NumericTablePtr' in rtype %}
         cdef {{rtype}} * res = get_{{flatname}}_{{m[1]}}(self.c_ptr)
         res_obj = {{'<object>make_nda(res, e2s_algorithms_'+flatname+'_'+m[1]+')' if 'dict_NumericTablePtr' in rtype else '<object>make_nda(res)'}}
@@ -338,7 +407,7 @@ cdef class {{flatname}}:
         :type: size_t
         '''
         if not is_valid_ptrptr(self.c_ptr):
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         return get_{{flatname}}_numberOfTrees(self.c_ptr)
 {% endif %}
 
@@ -362,7 +431,7 @@ cdef class {{flatname}}:
     def {{m[1]|d2cy(False)}}(self, {{m[2]|d2cy(False)}} {{m[3]}}):
         ':type: {{frtype}} (or derived)'
         if not is_valid_ptrptr(self.c_ptr):
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
 {% if 'Ptr' in m[0] %}
         cdef {{frtype}} res = {{frtype}}.__new__({{frtype}})
         res.c_ptr = get_{{flatname}}_{{m[1]}}(self.c_ptr, {{m[3]}})
@@ -384,7 +453,7 @@ cdef class {{flatname}}:
 
     def __getstate__(self):
         if self.c_ptr == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         bytes = serialize_si(self.c_ptr)
         return bytes
 
@@ -424,7 +493,7 @@ hpat_spec.append({
 {% endif %}
 """
 
-# macro generating C++ class for DAAL interface classes
+# macro generating C++ class for oneDAL interface classes
 # accepts interface name and C++ type
 gen_cpp_iface_macro = """
 {% macro gen_cpp_iface(iface_name, iface_type) %}
@@ -443,7 +512,7 @@ static {{iface_type}} to_daal(c_{{iface_name}}__iface__ * t) {return t ? t->get_
 {% endmacro %}
 """
 
-# macro generating cython class for DAAL interface classes
+# macro generating cython class for oneDAL interface classes
 # accepts interface name and C++ type
 gen_cython_iface_macro = """
 {% macro gen_cython_iface(iface_name, iface_type) %}
@@ -515,7 +584,10 @@ gen_inst_algo = """
 {% set ctor = '(' + params_req|fmt('to_daal({})', 'arg_member', sep=', ') + ')' %}
 {% endif %}
 {% if member %}
-_algo{{suffix}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
+_{{algo}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
+{% elif step_spec.keepsstate %}
+if(! _{{algo}}) _{{algo}}{{' = (' if create else '.reset(new '}}{{algo}}_type{{ctor}});
+        {{algo}}_type * {{algo}} = _{{algo}}.get();
 {% elif create %}
 auto {{algo}} = {{algo}}_type{{ctor}};
 {% else %}
@@ -640,6 +712,9 @@ struct {{algo}}__iface__ : public {{prnt}}
     virtual {{result_map.class_type}} * compute({{input_args|fmt('{}', 'decl_cpp', sep=',\n')|indent(indent)}},
 {{' '*indent}}bool setup_only = false)
         {assert(false); return NULL;}
+{% if add_get_result %}
+    virtual {{result_map.class_type}} * get_result() {assert(false); return NULL;}
+{% endif %}
 {% if streaming.name %}
     virtual {{result_map.class_type}} * finalize() {assert(false); return NULL;}
 {% endif %}
@@ -739,6 +814,7 @@ private:
     }
 
 {% endif %}
+
 {% if step_specs is defined and distributed.name %}
     // Distributed computing
 public:
@@ -746,6 +822,12 @@ public:
 {{gen_typedefs(ns, template_decl, template_args, mode="Distributed", suffix=step_specs[i].name, step_spec=step_specs[i])}}
 {% endfor %}
 
+private:
+{% for i in range(step_specs|length) if step_specs[i].keepsstate %}
+    daal::services::SharedPtr< algo{{step_specs[i].name}}_type > _algo{{step_specs[i].name}};
+{% endfor %}
+
+public:
 {% for i in range(step_specs|length) %}
 {% set sname = "run_"+step_specs[i].name %}
     typename iom{{step_specs[i].name}}_type::result_type {{sname + gen_compute(ns, input_args, params_req, params_opt, suffix=step_specs[i].name, step_spec=step_specs[i], tonative=False)}}
@@ -763,6 +845,9 @@ public:
 private:
     typename iomb_type::result_type distributed()
     {
+{% for i in range(step_specs|length) if step_specs[i].keepsstate %}
+        _algo{{step_specs[i].name}}.reset();
+{% endfor %}
         return {{pattern}}::{{pattern}}< {{algo}}_manager< {{template_args|fmt('{}', 'name')}} > >::compute(*this, to_daal(_{{'), to_daal(_'.join(inp_names)}}));
     }
 {% endif %}
@@ -781,6 +866,14 @@ public:
         return new typename iomb_type::result_type({{batchcall}});
 {% endif %}
     }
+
+{% if add_get_result %}
+    typename iomb_type::result_type * get_result()
+    {
+        return new typename iomb_type::result_type(iomb_type::getResult(*_algob));
+    }
+{% endif %}
+
 };
 """
 
@@ -793,6 +886,9 @@ cdef extern from "daal4py.h":
 {% set indent = 17+(result_map.class_type|flat|length) %}
         {{result_map.class_type|flat}} compute({{input_args|fmt('{}', 'decl_cyext', sep=',\n')|indent(indent)}},
 {{' '*indent}}const bool setup_only) except +
+{% if add_get_result %}
+        {{result_map.class_type|flat}} get_result() except +
+{% endif %}
 {% if streaming.name %}
         {{result_map.class_type|flat}} finalize() except +
 {% endif %}
@@ -832,11 +928,12 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
+    @_execute_with_context
     def _compute(self,
                  {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
                  setup=False):
         if self.c_ptr.get() == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         {{input_args|fmt('{}', 'get_obj', sep='\n')|indent(8)}}
         cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
@@ -858,11 +955,22 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         '''
         return self._compute({{input_args|fmt('{}', 'name', sep=', ')}}, False)
 
+{% if add_get_result %}
+    def __get_result__(self):
+        if self.c_ptr.get() == NULL:
+            raise ValueError("Pointer to oneDAL entity is NULL")
+        cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
+        # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
+        cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
+        res.c_ptr = deref(algo).get_result()
+        return res
+{% endif %}
+
 {% if streaming.name %}
     # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
     def finalize(self):
         if self.c_ptr.get() == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
@@ -898,7 +1006,7 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
     # finalize simply forwards to the C++ de-templatized manager__iface__::finalize
     def finalize(self):
         if self.c_ptr.get() == NULL:
-            raise ValueError("Pointer to DAAL entity is NULL")
+            raise ValueError("Pointer to oneDAL entity is NULL")
         cdef c_{{algo}}_manager__iface__* algo = <c_{{algo}}_manager__iface__*>self.c_ptr.get()
         # we cannot have a constructor accepting a c-pointer, so we split into construction and setting pointer
         cdef {{cytype}} res = {{cytype}}.__new__({{cytype}})
@@ -925,7 +1033,7 @@ algo_wrapper_template = """
 {{tfactory(tmpl_spec[1:], prefix, params, dist, args+[a], indent+4)}}
 {% endif %}
 {{" "*(indent)}}} else {% if loop.last %} {
-{{" "*(indent+4)}} std::cerr << "Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': '" << {{tmpl_spec[0][0]}} << "'" << std::endl;
+{{" "*(indent+4)}} throw std::runtime_error(std::string("Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': ") + {{tmpl_spec[0][0]}} + "'");
 {{" "*(indent)}}}
 {% endif %}
 {% endfor %}
@@ -937,7 +1045,7 @@ mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(4+(algo|length)
     ThreadAllow _allow_;
 {% if template_decl %}
 {{tfactory(template_decl.items()|list, algo+'_manager', params_ds, dist=dist)}}
-    std::cerr << "Error: Could not construct {{algo}}." << std::endl;
+    throw std::runtime_error("Error: Could not construct {{algo}}.");
     return daal::services::SharedPtr<{{algo}}__iface__>();
 {% else %}
     return daal::services::SharedPtr<{{algo}}__iface__>(new {{algo}}_manager({{params_ds|fmt('{}', 'arg_cpp')}}));
@@ -1013,19 +1121,21 @@ def getTreeState(model, i=0, n_classes=1):
     return state
 
 
-cdef extern from "daal.h":
+cdef extern from "daal4py_version.h":
     cdef const long long INTEL_DAAL_VERSION
     cdef const long long __INTEL_DAAL_BUILD_DATE
+    cdef const std_string __INTEL_DAAL_STATUS__
     cppclass LibraryVersionInfo:
         LibraryVersionInfo()
         int majorVersion, minorVersion, updateVersion
         char * build_rev
-__version__ = "{}".format({{version}})
-__daal_link_version__ = "{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_BUILD_DATE)
-cdef _get__daal_run_version__():
+def _get__version__():
+    return "{}".format({{version}})
+def _get__daal_link_version__():
+    return "{}{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_STATUS__, __INTEL_DAAL_BUILD_DATE)
+def _get__daal_run_version__():
     cdef LibraryVersionInfo li
     return "{}{}{}_{}".format(li.majorVersion, str(li.minorVersion).zfill(2), str(li.updateVersion).zfill(2), li.build_rev)
-__daal_run_version__ = _get__daal_run_version__()
 
 '''
 
@@ -1042,7 +1152,7 @@ cpp_footer_template = '''
 
 ##################################################################################
 # A set of jinja2 filters to convert arguments, types etc which where extracted
-# from DAAL C++ headers to cython syntax and/or C++ for our own code
+# from oneDAL C++ headers to cython syntax and/or C++ for our own code
 ##################################################################################
 def flat(t, cpp=True):
     '''Flatten C++ name, leaving only what's needed to disambiguate names.
@@ -1086,7 +1196,10 @@ def fmt(*args, **kwargs):
     sep = kwargs['sep'] if 'sep' in kwargs else ', '
     return sep.join([y for y in [x.format(args[1], *args[2:]) for x in args[0]] if y])
 
-jenv = jinja2.Environment(trim_blocks=True)
+jenv = jinja2.Environment(trim_blocks=True, autoescape=select_autoescape(
+    disabled_extensions=('pyx'),
+    default_for_string=False
+))
 jenv.filters['match'] = lambda a, x : [x for x in a if s in x]
 jenv.filters['d2cy'] = d2cy
 jenv.filters['flat'] = flat
@@ -1104,7 +1217,7 @@ class wrapper_gen(object):
         """
         return code for initing
         """
-        cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\ntypedef daal::data_management::interface1::NumericTablePtr NumericTablePtr;"
+        cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\n"
         pyx = ''
         for i in self.ifaces:
             tstr = gen_cython_iface_macro + '{{gen_cython_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
@@ -1152,8 +1265,8 @@ class wrapper_gen(object):
 
     def lp(self, t):
         tmp = t.split('\n')
-        for i in range(len(tmp)):
-            print(i, tmp[i])
+        for i in enumerate(tmp):
+            print(i[0], i[1])
 
     ##################################################################################
     def gen_wrapper(self, ns, algo):
@@ -1183,6 +1296,7 @@ class wrapper_gen(object):
         jparams.update(cfg['params']['params_templ'])
         jparams['create'] = cfg['create']
         jparams['add_setup']  = cfg['add_setup']
+        jparams['add_get_result']  = cfg['add_get_result']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
         jparams['params_ds'] = jparams['params_req'] + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
@@ -1196,7 +1310,7 @@ class wrapper_gen(object):
         t = jenv.from_string(algo_iface_template)
         cpp_begin += t.render(**jparams) + '\n'
 
-        if len(jparams):
+        if jparams:
             if 'dist' in cfg:
                 # a wrapper for distributed mode
                 jparams.update(cfg['dist'])
@@ -1226,7 +1340,6 @@ class wrapper_gen(object):
 
         if no_dist:
             return ('', pyx_footer, '')
-        else:
-            t = jenv.from_string(cpp_footer_template)
-            cpp_footer = t.render(algos=algos, dist_custom_algos=dist_custom_algos)
-            return ('', pyx_footer, cpp_footer)
+        t = jenv.from_string(cpp_footer_template)
+        cpp_footer = t.render(algos=algos, dist_custom_algos=dist_custom_algos)
+        return ('', pyx_footer, cpp_footer)

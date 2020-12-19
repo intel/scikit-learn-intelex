@@ -1,57 +1,93 @@
-{% set version = '0.2019.5' %}
-{% set buildnumber = 0 %}
+{% set version = '2021.1' %}
+{% set buildnumber = 4 %}
 
 package:
     name: daal4py
-    version: {{version}}
+    version: {{ version }}
 
 source:
     path: ..
-    #git_url: https://github.com/IntelPython/daal4py.git
 
 build:
-    number: {{buildnumber}}
+    number: {{ buildnumber }}
     include_recipe: False
+    script_env:
+    - DPCPPROOT
+    - DAALROOT
+    - DALROOT
+    - TBBROOT
+    ignore_run_exports:
+       - python
+       - mpich
 
 requirements:
+    build:
+        - {{ compiler('cxx') }}  # [not osx]
+        - {{ compiler('c') }}  # [not osx]
     host:
         - python
         - setuptools
-        - numpy >=1.15
-        - tbb-devel
-        - daal-devel >=2019.0
+        - numpy {{ numpy }}
+        - daal-devel >=2020.3
         - cython
         - jinja2
-        - mpich                  # [not win]
-        - impi-devel             # [win]
+        - mpich  # [osx]
+        - impi-devel  # [not osx]
+        - clang-tools
     run:
         - python
-        - tbb
-        - daal >=2019.0
-        - {{ pin_compatible('numpy') }}
+        - dpcpp_cpp_rt
+        - daal >=2020.3
+    ignore_run_exports:
+        - numpy
 
 test:
     requires:
+        - lightgbm  # [not win]
         - pandas
         - scipy
         - scikit-learn
-        - mpich                  # [not win]
-        - impi_rt                # [win]
+        - threadpoolctl
+        - xgboost  # [not win]
         - pytest
-    imports:
-        - daal4py
+        - mpich  # [osx]
+        - impi_rt  # [not osx]
     source_files:
         - examples
         - tests
+        - daal4py
     commands:
+        - python -c "import daal4py"
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
-        - python -m pytest tests/algorithms/test*.py
-        - cd examples && python run_examples.py
+        - pytest --pyargs daal4py/sklearn/
+        - python examples/run_examples.py
+        - python -m daal4py examples/sycl/sklearn_sycl.py
 
 about:
-    home: https://intelpython.github.io/daal4py/
-    license: Apache 2.0
-    license_file: LICENSE
-    summary: A convenient Python API to Intel (R) DAAL
+    about:
+        home: https://intelpython.github.io/daal4py/
+        license: Apache-2.0
+        license_file:
+              - LICENSE
+              - doc/third-party-programs.txt
+        summary: A convenient Python API to Intel (R) oneAPI Data Analytics Library
+        description: |
+          <strong>LEGAL NOTICE: Use of this software package is subject to the
+          software license agreement (as set forth above, in the license section of
+          the installed Conda package and/or the README file) and all notices,
+          disclaimers or license terms for third party or open source software
+          included in or with the software.</strong>
+          <br/><br/>
+          EULA: <a href="https://opensource.org/licenses/Apache-2.0" target="_blank">Apache-2.0</a>
+          <br/><br/>
+        dev_url: https://github.com/IntelPython/daal4py
+        doc_url: https://intelpython.github.io/daal4py
+
+extra:
+    recipe-maintainers:
+        # GitHub IDs for maintainers of the recipe.
+        - napetrov
+        - PetrovKP
+        - SmirnovEgorRu

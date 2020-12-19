@@ -41,16 +41,16 @@ The following algorithms support streaming:
 
 - Linear Regression Training (linear_regression_training)
 
-  - `Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_stream.py>`_
+  - `Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_streaming.py>`_
 
 - Ridge Regression Training (ridge_regression_training)
 
-  - `Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_stream.py>`_
+  - `Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_streaming.py>`_
 
 - Multinomial Naive Bayes Training (multinomial_naive_bayes_training)
 
-  - `Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_stream.py>`_
+  - `Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_streaming.py>`_
 
 - Moments of Low Order
 
-  - `Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_streaming.py>`_
+  - `Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_streaming.py>`_

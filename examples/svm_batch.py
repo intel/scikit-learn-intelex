@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -36,9 +36,9 @@ def main(readcsv=read_csv, method='defaultDense'):
     testfile = "./data/batch/svm_two_class_test_dense.csv"
 
     # Configure a SVM object to use rbf kernel (and adjusting cachesize)
-    kern = d4p.kernel_function_linear(method=method)  # need an object that lives when creating train_algo
-    train_algo = d4p.svm_training(doShrinking=True, kernel=kern, cacheSize=600000000)
-    
+    kern = d4p.kernel_function_linear()  # need an object that lives when creating train_algo
+    train_algo = d4p.svm_training(method='thunder', kernel=kern, cacheSize=600000000)
+
     # Read data. Let's use features per observation
     data   = readcsv(infile, range(20))
     labels = readcsv(infile, range(20,21))
@@ -55,11 +55,17 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Prediction result provides prediction
     assert(predict_result.prediction.shape == (pdata.shape[0], 1))
 
-    return (predict_result, plabels)
+    # result of classification
+    decision_result = predict_result.prediction
+    predict_labels = np.where(decision_result >=0, 1, -1)
+
+    return (decision_result, predict_labels, plabels)
 
 
 if __name__ == "__main__":
-    (predict_result, plabels) = main()
-    print("\nSVM classification results (first 20 observations):\n", predict_result.prediction[0:20])
+    (decision_function, predict_labels, plabels) = main()
+
+    print("\nSVM classification decision function (first 20 observations):\n", decision_function[0:20])
+    print("\nSVM classification results (first 20 observations):\n", predict_labels[0:20])
     print("\nGround truth (first 20 observations):\n", plabels[0:20])
     print('All looks good!')

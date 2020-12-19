@@ -15,25 +15,27 @@
 *******************************************************************************/
 
 #include "mpi_transceiver.h"
+#include "daal4py_defines.h"
 #include <mpi.h>
 #include <Python.h>
+#include <limits>
 
 void mpi_transceiver::init()
 {
-    int is_initialized;
-    MPI_Initialized(&is_initialized);
+    int is_mpi_initialized = 0;
+    MPI_Initialized(&is_mpi_initialized);
     // protect against double-init
-    if(!is_initialized) {
+    if(!is_mpi_initialized) {
         MPI_Init(NULL, NULL);
-        transceiver_impl::init();
     }
+    transceiver_impl::init();	
 }
 
 void mpi_transceiver::fini()
 {
     MPI_Finalize();
 }
-    
+
 size_t mpi_transceiver::nMembers()
 {
     int size;
@@ -68,28 +70,44 @@ void * mpi_transceiver::gather(const void * ptr, size_t N, size_t root, const si
     if(varying) {
         // -> gatherv
         if(m_me == root) {
-            int * offsets = new int[m_nMembers];
+            int * offsets = static_cast<int *>(daal::services::daal_malloc(m_nMembers * sizeof(int)));
+            DAAL4PY_CHECK_MALLOC(offsets);
+            DAAL4PY_CHECK_BAD_CAST(sizes[0] <= std::numeric_limits<int>::max());
             int tot_sz = sizes[0];
             offsets[0] = 0;
             for(int i = 1; i < m_nMembers; ++i) {
+                DAAL4PY_OVERFLOW_CHECK_BY_ADDING(int, offsets[i-1], sizes[i-1]);
                 offsets[i] = offsets[i-1] + sizes[i-1];
+                DAAL4PY_OVERFLOW_CHECK_BY_ADDING(int, tot_sz, sizes[i]);
                 tot_sz += sizes[i];
             }
-            buff = new char[tot_sz];
-            int * szs = new int[m_nMembers];
-            for(size_t i=0; i<m_nMembers; ++i) szs[i] = static_cast<int>(sizes[i]);
+            buff = static_cast<char *>(daal::services::daal_malloc(tot_sz));
+            DAAL4PY_CHECK_MALLOC(buff);
+            int * szs = static_cast<int *>(daal::services::daal_malloc(m_nMembers * sizeof(int)));
+            DAAL4PY_CHECK_MALLOC(szs);
+            for(size_t i=0; i<m_nMembers; ++i)
+            {
+                szs[i] = static_cast<int>(sizes[i]);
+            }
             MPI_Gatherv(ptr, N, MPI_CHAR,
                         buff, szs, offsets, MPI_CHAR,
                         root, MPI_COMM_WORLD);
-            delete [] szs;
-            delete [] offsets;
+            daal::services::daal_free(szs);
+            szs = NULL;
+            daal::services::daal_free(offsets);
+            offsets = NULL;
+
         } else {
             MPI_Gatherv(ptr, N, MPI_CHAR,
                         NULL, NULL, NULL, MPI_CHAR,
                         root, MPI_COMM_WORLD);
         }
     } else {
-        if(m_me == root) buff = new char[m_nMembers*N];
+        if(m_me == root)
+        {
+            buff = static_cast<char *>(daal::services::daal_malloc(m_nMembers*N));
+            DAAL4PY_CHECK_MALLOC(buff);
+        }
         // -> gather with same size on all procs
         MPI_Gather(ptr, N, MPI_CHAR, buff, N, MPI_CHAR, root, MPI_COMM_WORLD);
     }
@@ -148,11 +166,10 @@ void mpi_transceiver::reduce_exscan(void * inout, transceiver_iface::type_type T
 // ************************************
 // ************************************
 
-// shared pointer, will GC transceiver when shutting down
-static std::shared_ptr<mpi_transceiver> s_smt;
-
 extern "C" PyMODINIT_FUNC PyInit_mpi_transceiver(void)
 {
+    // shared pointer, will GC transceiver when shutting down
+    static std::shared_ptr<mpi_transceiver> s_smt;
     PyObject *m;
     static struct PyModuleDef moduledef = { PyModuleDef_HEAD_INIT, "mpi_transceiver", "No docs", -1, NULL, };
     m = PyModule_Create(&moduledef);

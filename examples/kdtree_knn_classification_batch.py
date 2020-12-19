@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -16,7 +16,7 @@
 # limitations under the License.
 #*******************************************************************************
 
-# daal4py KNN example for shared memory systems
+# daal4py KD-Tree KNN example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -38,11 +38,12 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Read data. Let's use 5 features per observation
     nFeatures = 5
+    nClasses = 5
     train_data   = readcsv(train_file, range(nFeatures))
     train_labels = readcsv(train_file, range(nFeatures, nFeatures+1))
 
     # Create an algorithm object and call compute
-    train_algo = d4p.kdtree_knn_classification_training()
+    train_algo = d4p.kdtree_knn_classification_training(nClasses=nClasses)
     # 'weights' is optional argument, let's use equal weights
     # in this case results must be the same as without weights
     weights = np.ones((train_data.shape[0], 1))
@@ -53,7 +54,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_labels = readcsv(predict_file, range(nFeatures, nFeatures+1))
                         
     # Create an algorithm object and call compute
-    predict_algo = d4p.kdtree_knn_classification_prediction()
+    predict_algo = d4p.kdtree_knn_classification_prediction(nClasses=nClasses)
     predict_result = predict_algo.compute(predict_data, train_result.model)
     
     # We expect less than 170 mispredicted values
@@ -64,6 +65,6 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     (train_result, predict_result, predict_labels) = main()    
-    print("KD-tree based kNN classification results (first 20 observations):")
+    print("KD-tree based kNN classification results:")
     print("Ground truth(observations #30-34):\n", predict_labels[30:35])
     print("Classification results(observations #30-34):\n", predict_result.prediction[30:35])

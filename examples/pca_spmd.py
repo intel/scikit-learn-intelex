@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -42,8 +42,8 @@ if __name__ == "__main__":
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
     assert allclose(result1.eigenvalues, result2.eigenvalues)
     assert allclose(result1.eigenvectors, result2.eigenvectors)
-    assert result1.means == None and result2.means == None or allclose(result1.means, result2.means)
-    assert result1.variances == None and result2.variances == None or allclose(result1.variances, result2.variances)
+    assert result1.means is None and result2.means is None or allclose(result1.means, result2.means)
+    assert result1.variances is None and result2.variances is None or allclose(result1.variances, result2.variances)
 
     print('All looks good!')
     d4p.daalfini()

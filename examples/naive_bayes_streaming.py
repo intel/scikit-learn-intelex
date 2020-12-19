@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -81,4 +81,3 @@ if __name__ == "__main__":
     print("\nNaiveBayes classification results (first 20 observations):\n", result.prediction[0:20])
     print("\nGround truth (first 20 observations)\n", labels[0:20])
     print('All looks good!')
-

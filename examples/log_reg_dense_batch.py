@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -29,7 +29,6 @@ except:
     # fall back to numpy loadtxt
     read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
-
 def main(readcsv=read_csv, method='defaultDense'):
     nClasses = 5
     nFeatures = 6
@@ -52,7 +51,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
-                                                     resultsToCompute="computeClassesLabels|computeClassesProbabilities|computeClassesLogProbabilities")
+                                                     resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
     predict_result = predict_alg.compute(predict_data, train_result.model)
     # the prediction result provides prediction, probabilities and logProbabilities
     assert predict_result.probabilities.shape == (predict_data.shape[0], nClasses)

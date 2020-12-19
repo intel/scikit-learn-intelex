@@ -24,8 +24,8 @@ import re
 # default values of paramters/inputs are set by daal itself.
 # We indicate with these defaults that we want to use daal's defaults
 pydefaults = defaultdict(lambda: 'None')
-pydefaults.update({'double': 'NaN64',
-                   'float': 'NaN32',
+pydefaults.update({'double': 'get_nan64()',
+                   'float': 'get_nan32()',
                    'int': '-1',
                    'long': '-1',
                    'size_t': '-1',
@@ -146,11 +146,11 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                     decl_c = 'double* {0}_p, size_t {0}_nrows, size_t {0}_ncols, ssize_t {0}_layout'.format(d4pname)
                     arg_c = 'data_or_file({0}_p, {0}_ncols, {0}_nrows, {0}_layout)'.format(d4pname)
                 # default values (see above pydefaults)
-                if dflt != None:
+                if dflt is not None:
                     pd = (pydefaults[typ] if dflt == True else dflt).rsplit('::', 1)[-1]
                     sphinx_default = '"{}"'.format(pd) if typ == 'std::string' else '{}'.format(pd)
                     pydefault = ' = {}'.format(sphinx_default)
-                    cppdefault = ' = {}'.format(cppdefaults[typ] if dflt == True else dflt) if dflt != None else ''
+                    cppdefault = ' = {}'.format(cppdefaults[typ] if dflt else dflt)
                 else:
                     pydefault = ''
                     cppdefault = ''
@@ -161,7 +161,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
             self.daalname      = name
             self.value         = value if name else ''
             self.typ_cpp       = typ if name else ''
-            self.get_obj       = '{0} = _get_data({0})'.format(d4pname) if 'data_or_file' in typ else ''
+            self.get_obj       = '{0} = get_data({0})'.format(d4pname) if 'data_or_file' in typ else ''
             self.arg_cpp       = d4pname
             self.arg_py        = d4pname
             self.arg_cyext     = cy_callext(d4pname, typ_cy, typ_cyext, s2e) if name else ''

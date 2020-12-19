@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -47,7 +47,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     algo = d4p.kmeans(nClusters, maxIter, assignFlag=True)
     # compute the clusters/centroids
     result = algo.compute(data, initrain_result.centroids)
-    
+
     # Note: we could have done this in just one line:
     # d4p.kmeans(nClusters, maxIter, assignFlag=True).compute(data, d4p.kmeans_init(nClusters, method="plusPlusDense").compute(data).centroids)
 

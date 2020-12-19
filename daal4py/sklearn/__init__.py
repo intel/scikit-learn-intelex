@@ -1,6 +1,6 @@
 #
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ from .monkeypatch.dispatcher import enable as patch_sklearn
 from .monkeypatch.dispatcher import disable as unpatch_sklearn
 from .monkeypatch.dispatcher import _patch_names as sklearn_patch_names
 
-__all__ = ["patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
-           "neighbors", "ensemble", "svm", "linear_model",
-           "cluster", "decomposition"]
+__all__ = [
+    "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
+    "cluster", "decomposition", "ensemble",
+    "linear_model", "manifold", "neighbors",
+    "svm", "tree", "utils", "model_selection", "metrics",
+]

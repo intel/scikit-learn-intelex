@@ -1,0 +1,13 @@
+# build artefacts
+*.so
+*.egg
+build
+daal4py.egg-info
+**/__pycache__
+
+# Cython generated code
+src/oneapi/oneapi_api.h
+src/oneapi/oneapi.cpp
+
+# IDE properties
+.vscode

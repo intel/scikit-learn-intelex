@@ -1,5 +1,5 @@
 #*******************************************************************************
-# Copyright 2014-2019 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 # All Rights Reserved.
 #
 # This software is licensed under the Apache License, Version 2.0 (the
@@ -23,17 +23,13 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
-if __name__ == "__main__":
-
-    # Initialize SPMD mode
-    d4p.daalinit()
-
+def main(method='plusPlusDense'):
     infile = "./data/distributed/kmeans_dense.csv"
     nClusters = 10
     maxIter = 25
 
     # configure a kmeans-init
-    init_algo = d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True)
+    init_algo = d4p.kmeans_init(nClusters, method=method, distributed=True)
     # Load the data
     data = loadtxt(infile, delimiter=',')
     # now slice the data, it would have been better to read only what we need, of course...
@@ -60,8 +56,17 @@ if __name__ == "__main__":
     algo = d4p.kmeans(nClusters, 0, assignFlag=True) # maxIt=0; not distributed, we compute on local data only!
     assignments = algo.compute(data, result.centroids).assignments
 
-    print("\nFirst 10 cluster assignments:\n", assignments[0:10])
-    print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
-    print("\nObjective function value:\n", result.objectiveFunction)
-    print('All looks good!')
+    return (assignments, result)
+
+
+if __name__ == "__main__":
+    # Initialize SPMD mode
+    d4p.daalinit()
+    (assignments, result) = main()
+    # result is available on all processes - but we print only on root
+    if d4p.my_procid() == 0:
+        print("\nFirst 10 cluster assignments:\n", assignments[0:10])
+        print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
+        print("\nObjective function value:\n", result.objectiveFunction)
+        print('All looks good!')
     d4p.daalfini()

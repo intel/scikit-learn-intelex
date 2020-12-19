@@ -1,6 +1,6 @@
 #
 #*******************************************************************************
-# Copyright 2014-2017 Intel Corporation
+# Copyright 2014-2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 import numpy as np
 
 import daal4py
-from ..utils import (make2d, getFPType)
+from .._utils import (make2d, getFPType)
 
 def _resultsToCompute_string(value=True, gradient=True, hessian=False):
     results_needed = []
@@ -89,7 +89,7 @@ def _daal4py_loss_and_grad(beta, objF_instance, X, y, n):
     beta_ = make2d(beta)
     res = objF_instance.compute(X, y, beta_)
     gr = res.gradientIdx.ravel()
-    gr *= n
+    gr = gr * n # force copy
     v = res.valueIdx[0,0]
     v *= n
     return (v, gr)
@@ -114,8 +114,8 @@ def _daal4py_grad_(beta, objF_instance, X, y, n, l2_unused):
     # Copy is needed for newton-cg to work correctly
     # Otherwise evaluation at nearby point in line search
     # overwrites gradient at the starting point
-    gr = res.gradientIdx.ravel().copy()
-    gr *= n
+    gr = res.gradientIdx.ravel()
+    gr = gr * n # force copy
     return gr
 
 
@@ -124,8 +124,8 @@ def _daal4py_grad_hess_(beta, objF_instance, X, y, n, l2):
     if beta_.shape[1] != 1 and beta_.shape[0] == 1:
         beta_ = beta_.T
     res = objF_instance.compute(X, y, beta_)
-    gr = res.gradientIdx.ravel().copy()
-    gr *= n
+    gr = res.gradientIdx.ravel()
+    gr = gr * n
     
     if isinstance(objF_instance, daal4py.optimization_solver_logistic_loss):
         # dealing with binary logistic regression
