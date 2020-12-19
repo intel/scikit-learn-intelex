@@ -24,7 +24,6 @@ from sklearn.datasets import make_classification
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
-
 DISTANCES = ['minkowski']
 ALGORITHMS = ['brute', 'kd_tree', 'auto']
 WEIGHTS = ['uniform', 'distance']

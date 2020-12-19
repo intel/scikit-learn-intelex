@@ -20,6 +20,9 @@ import numpy as np
 from sklearn.cluster import DBSCAN as DBSCAN_SKLEARN
 from daal4py.sklearn.cluster import DBSCAN as DBSCAN_DAAL
 
+METRIC = ('euclidean')
+USE_WEIGHTS = (True, False)
+
 def generate_data(low: int, high: int, samples_number: int, sample_dimension: tuple) -> tuple:
     generator = np.random.RandomState()
     table_size = (samples_number, sample_dimension)
@@ -41,6 +44,7 @@ def check_labels_equals(left_labels: np.ndarray, right_labels: np.ndarray) -> bo
             raise Exception("Wrong clustering")
     return True
 
+
 def _test_dbscan_big_data_numpy_gen(eps: float, min_samples: int, metric: str, use_weights: bool, 
                                     low=-100.0, high=100.0, samples_number=1000, sample_dimension=4):
     data, weights = generate_data(low=low, high=high, samples_number=samples_number, sample_dimension=sample_dimension)
@@ -50,10 +54,14 @@ def _test_dbscan_big_data_numpy_gen(eps: float, min_samples: int, metric: str, u
     initialized_sklearn_dbscan = DBSCAN_SKLEARN(metric=metric, eps=eps, min_samples=min_samples).fit(X=data, sample_weight=weights)
     check_labels_equals(initialized_daal_dbscan.labels_, initialized_sklearn_dbscan.labels_)
 
-def test_dbscan_big_data_numpy_gen(metric, use_weights):
+
+@pytest.mark.parametrize('metric', METRIC)
+@pytest.mark.parametrize('use_weights', USE_WEIGHTS)
+def test_dbscan_big_data_numpy_gen(metric, use_weights: bool):
     eps = 35.0
     min_samples = 6
     _test_dbscan_big_data_numpy_gen(eps=eps, min_samples=min_samples, metric=metric, use_weights=use_weights)
+
 
 def _test_across_grid_parameter_numpy_gen(metric, use_weights: bool):
     eps_begin = 0.05
@@ -66,5 +74,8 @@ def _test_across_grid_parameter_numpy_gen(metric, use_weights: bool):
         for min_samples in range(min_samples_begin, min_samples_end, min_samples_step):
             _test_dbscan_big_data_numpy_gen(eps=eps, min_samples=min_samples, metric=metric, use_weights=use_weights)
 
-def test_across_grid_parameter_numpy_gen(metric, use_weights):
+
+@pytest.mark.parametrize('metric', METRIC)
+@pytest.mark.parametrize('use_weights', USE_WEIGHTS)
+def test_across_grid_parameter_numpy_gen(metric, use_weights: bool):
     _test_across_grid_parameter_numpy_gen(metric=metric, use_weights=use_weights)
