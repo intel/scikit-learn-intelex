@@ -20,7 +20,7 @@ import pytest
 from sklearn.cluster import DBSCAN as DBSCAN_SKLEARN
 from daal4py.sklearn.cluster import DBSCAN as DBSCAN_DAAL
 
-METRIC = ('euclidean')
+METRIC = ('euclidean', )
 USE_WEIGHTS = (True, False)
 
 def generate_data(low: int, high: int, samples_number: int, sample_dimension: tuple) -> tuple:
