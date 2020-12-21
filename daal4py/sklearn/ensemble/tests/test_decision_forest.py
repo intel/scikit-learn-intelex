@@ -34,7 +34,7 @@ from daal4py.sklearn.ensemble \
 N_TRIES = 10
 ACCURACY_RATIO = 0.8
 MSE_RATIO = 1.122
-LOG_LOSS_RATIO = 1.59
+LOG_LOSS_RATIO = 1.72
 ROC_AUC_RATIO = 0.978
 IRIS = load_iris()
 CLASS_WEIGHTS_IRIS = [
@@ -77,12 +77,12 @@ CLASS_WEIGHTS_IRIS = [
 ]
 
 
-def check_accuracy_classifier_class_weight_iris(weight):
+def _test_classifier_class_weight_iris(weight):
     for _ in range(N_TRIES):
         x_train, x_test, y_train, y_test = \
             train_test_split(IRIS.data, IRIS.target,
                              test_size=0.33, random_state=31)
-
+        # models
         scikit_model = ScikitRandomForestClassifier(n_estimators=100,
                                                     class_weight=weight,
                                                     max_depth=None,
@@ -91,85 +91,41 @@ def check_accuracy_classifier_class_weight_iris(weight):
                                                    class_weight=weight,
                                                    max_depth=None,
                                                    random_state=777)
-
-        scikit_predict = scikit_model.fit(x_train, y_train).predict(x_test)
-        daal4py_predict = daal4py_model.fit(x_train, y_train).predict(x_test)
-
+        # training                                                   
+        scikit_model.fit(x_train, y_train)
+        daal4py_model.fit(x_train, y_train)
+        #predict
+        scikit_predict = scikit_model.predict(x_test)
+        daal4py_predict = daal4py_model.predict(x_test)
+        #accuracy
         scikit_accuracy = accuracy_score(scikit_predict, y_test)
         daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
-
         ratio = daal4py_accuracy / scikit_accuracy
         assert ratio >= ACCURACY_RATIO, \
         f'Classifier class weight: scikit_accuracy={scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}'
-
-
-@pytest.mark.parametrize('weight', CLASS_WEIGHTS_IRIS)
-def test_accuracy_classifier_class_weight_iris(weight):
-    check_accuracy_classifier_class_weight_iris(weight)
-
-
-def check_log_loss_classifier_class_weight_iris(weight):
-    for _ in range(N_TRIES):
-        x_train, x_test, y_train, y_test = \
-            train_test_split(IRIS.data, IRIS.target,
-                             test_size=0.33, random_state=31)
-
-        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
-                                                    class_weight=weight,
-                                                    max_depth=None,
-                                                    random_state=777)
-        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
-                                                   class_weight=weight,
-                                                   max_depth=None,
-                                                   random_state=777)
-
-        scikit_predict_proba = scikit_model.fit(x_train, y_train).predict_proba(x_test)
-        daal4py_predict_proba = daal4py_model.fit(x_train, y_train).predict_proba(x_test)
-
+        if weight == {0: 0, 1: 0, 2: 0}:
+            continue
+        # predict_proba
+        scikit_predict_proba = scikit_model.predict_proba(x_test)
+        daal4py_predict_proba = daal4py_model.predict_proba(x_test)
+        #log_loss
         scikit_log_loss = log_loss(y_test, scikit_predict_proba)
         daal4py_log_loss = log_loss(y_test, daal4py_predict_proba)
-
         ratio = daal4py_log_loss / scikit_log_loss
         assert ratio <= LOG_LOSS_RATIO, \
         f'Classifier class weight: scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}'
-
-
-@pytest.mark.parametrize('weight', CLASS_WEIGHTS_IRIS)
-def test_log_loss_classifier_class_weight_iris(weight):
-    if weight != {0: 0, 1: 0, 2: 0}:
-        check_log_loss_classifier_class_weight_iris(weight)
-
-
-def check_roc_auc_classifier_class_weight_iris(weight):
-    for _ in range(N_TRIES):
-        x_train, x_test, y_train, y_test = \
-            train_test_split(IRIS.data, IRIS.target,
-                             test_size=0.33, random_state=31)
-
-        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
-                                                    class_weight=weight,
-                                                    max_depth=None,
-                                                    random_state=777)
-        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
-                                                   class_weight=weight,
-                                                   max_depth=None,
-                                                   random_state=777)
-
-        scikit_predict_proba = scikit_model.fit(x_train, y_train).predict_proba(x_test)
-        daal4py_predict_proba = daal4py_model.fit(x_train, y_train).predict_proba(x_test)
-
+        # ROC AUC
         scikit_roc_auc = roc_auc_score(y_test, scikit_predict_proba, multi_class='ovr')
         daal4py_roc_auc = roc_auc_score(y_test, daal4py_predict_proba, multi_class='ovr')
-
         ratio = daal4py_roc_auc / scikit_roc_auc
         assert ratio >= ROC_AUC_RATIO, \
         f'Classifier class weight: scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}'
 
 
 @pytest.mark.parametrize('weight', CLASS_WEIGHTS_IRIS)
-def test_roc_auc_classifier_class_weight_iris(weight):
-    if weight != {0: 0, 1: 0, 2: 0}:
-        check_roc_auc_classifier_class_weight_iris(weight)
+def test_classifier_class_weight_iris(weight):
+    _test_classifier_class_weight_iris(weight)
+
 
 SAMPLE_WEIGHTS_IRIS = [
     (np.full_like(range(150), 0), 'Only 0'),
@@ -183,103 +139,61 @@ SAMPLE_WEIGHTS_IRIS = [
 ]
 
 
-def check_accuracy_classifier_sample_weight(weight):
+def _test_classifier_sample_weight(weight):
     for _ in range(N_TRIES):
         x_train, x_test, y_train, y_test = \
             train_test_split(IRIS.data, IRIS.target, 
                              test_size=0.33, random_state=31)
-
+        #models
         scikit_model = ScikitRandomForestClassifier(n_estimators=100,
                                                     max_depth=None,
                                                     random_state=777)
         daal4py_model = DaalRandomForestClassifier(n_estimators=100,
                                                    max_depth=None,
                                                    random_state=777)
-
-        scikit_predict = scikit_model.fit(x_train, y_train,
-                                sample_weight=weight[0][:100]).predict(x_test)
-        daal4py_predict = daal4py_model.fit(x_train, y_train,
-                                sample_weight=weight[0][:100]).predict(x_test)
-
+        #training
+        scikit_model.fit(x_train, y_train,
+                         sample_weight=weight[0][:100])
+        daal4py_model.fit(x_train, y_train,
+                          sample_weight=weight[0][:100])
+        #predict
+        scikit_predict = scikit_model.predict(x_test)
+        daal4py_predict = daal4py_model.predict(x_test)
+        #accuracy
         scikit_accuracy = accuracy_score(scikit_predict, y_test)
         daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
         ratio = daal4py_accuracy / scikit_accuracy
         assert ratio >= ACCURACY_RATIO, \
         f'Classifier sample weights: sample_weight_type={weight[1]},scikit_accuracy={scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}'
-
-
-@pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
-def test_accuracy_classifier_sample_weight_iris(weight):
-    check_accuracy_classifier_sample_weight(weight)
-
-
-def check_log_loss_classifier_sample_weight(weight):
-    for _ in range(N_TRIES):
-        x_train, x_test, y_train, y_test = \
-            train_test_split(IRIS.data, IRIS.target,
-                             test_size=0.33, random_state=31)
-
-        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
-                                                    max_depth=None,
-                                                    random_state=777)
-        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
-                                                   max_depth=None,
-                                                   random_state=777)
-
-        scikit_predict_proba = scikit_model.fit(x_train, y_train,
-                                sample_weight=weight[0][:100]).predict_proba(x_test)
-        daal4py_predict_proba = daal4py_model.fit(x_train, y_train,
-                                sample_weight=weight[0][:100]).predict_proba(x_test)
-
+        if weight[1] == 'Only 0':
+            continue
+        # predict_proba
+        scikit_predict_proba = scikit_model.predict_proba(x_test)
+        daal4py_predict_proba = daal4py_model.predict_proba(x_test)
+        #log_loss
         scikit_log_loss = log_loss(y_test, scikit_predict_proba, sample_weight=weight[0][100:150])
         daal4py_log_loss = log_loss(y_test, daal4py_predict_proba, sample_weight=weight[0][100:150])
         ratio = daal4py_log_loss / scikit_log_loss
         assert ratio <= LOG_LOSS_RATIO, \
         f'Classifier sample weights: sample_weight_type={weight[1]},scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}'
-
-
-@pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
-def test_log_loss_classifier_sample_weight_iris(weight):
-    if weight[1] != 'Only 0':
-        check_log_loss_classifier_sample_weight(weight)
-
-
-def check_roc_auc_classifier_sample_weight(weight):
-    for _ in range(N_TRIES):
-        x_train, x_test, y_train, y_test = \
-            train_test_split(IRIS.data, IRIS.target, 
-                             test_size=0.33, random_state=31)
-
-        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
-                                                    max_depth=None,
-                                                    random_state=777)
-        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
-                                                   max_depth=None,
-                                                   random_state=777)
-
-        scikit_predict_proba = scikit_model.fit(x_train, y_train,
-                                sample_weight=weight[0][:100]).predict_proba(x_test)
-        daal4py_predict_proba = daal4py_model.fit(x_train, y_train,
-                                sample_weight=weight[0][:100]).predict_proba(x_test)
-
+        # ROC AUC
         scikit_roc_auc = roc_auc_score(y_test, scikit_predict_proba,
+                                       sample_weight=weight[0][100:150],
+                                       multi_class='ovr')
+        daal4py_roc_auc = roc_auc_score(y_test, daal4py_predict_proba,
                                         sample_weight=weight[0][100:150],
                                         multi_class='ovr')
-        daal4py_roc_auc = roc_auc_score(y_test, daal4py_predict_proba,
-                                         sample_weight=weight[0][100:150],
-                                         multi_class='ovr')
         ratio = daal4py_roc_auc / scikit_roc_auc
         assert ratio >= ROC_AUC_RATIO, \
         f'Classifier sample weights: sample_weight_type={weight[1]},scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}'
 
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
-def test_roc_auc_classifier_sample_weight_iris(weight):
-    if weight[1] != 'Only 0':
-        check_roc_auc_classifier_sample_weight(weight)
+def test_classifier_sample_weight_iris(weight):
+    _test_classifier_sample_weight(weight)
 
 
-def check_mse_regressor_sample_weight(weight):
+def _test_mse_regressor_sample_weight(weight):
     for _ in range(N_TRIES):
         x_train, x_test, y_train, y_test = \
             train_test_split(IRIS.data, IRIS.target,
@@ -308,4 +222,4 @@ def check_mse_regressor_sample_weight(weight):
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
 def test_mse_regressor_sample_weight_iris(weight):
     if weight[1] != 'Only 0':
-        check_mse_regressor_sample_weight(weight)
+        _test_mse_regressor_sample_weight(weight)
