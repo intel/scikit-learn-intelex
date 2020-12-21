@@ -33,7 +33,7 @@ from daal4py.sklearn.ensemble \
 
 N_TRIES = 10
 ACCURACY_RATIO = 0.8
-MSE_RATIO = 1.4
+MSE_RATIO = 1.5
 LOG_LOSS_RATIO = 2.1
 ROC_AUC_RATIO = 0.97
 IRIS = load_iris()
