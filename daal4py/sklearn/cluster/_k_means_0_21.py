@@ -20,7 +20,7 @@ from scipy import sparse as sp
 from sklearn.utils import (check_random_state, check_array)
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import (check_is_fitted, _num_samples)
-from sklearn.cluster.k_means_ import (k_means, _labels_inertia, _k_init, _validate_center_shape)
+from sklearn.cluster.k_means_ import (k_means, _labels_inertia, _validate_center_shape)
 
 from sklearn.utils.extmath import row_norms
 import warnings

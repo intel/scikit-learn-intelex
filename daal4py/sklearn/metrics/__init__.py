@@ -1,6 +1,6 @@
 #
 #*******************************************************************************
-# Copyright 2014-2020 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,6 @@
 # limitations under the License.
 #******************************************************************************/
 
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+from ._ranking import _daal_roc_auc_score
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.23"):
-    from ._pca_0_23 import *
-elif LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-    from ._pca_0_22 import *
-else:
-    from ._pca_0_21 import *
+__all__ = ['_daal_roc_auc_score']

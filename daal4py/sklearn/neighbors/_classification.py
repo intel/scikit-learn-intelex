@@ -38,9 +38,8 @@ else:
 
 
 def daal4py_classifier_predict(estimator, X, base_predict):
-    X = check_array(X, accept_sparse='csr')
+    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     daal_model = getattr(estimator, '_daal_model', None)
-
     n_features = getattr(estimator, 'n_features_in_', None)
     shape = getattr(X, 'shape', None)
     if n_features and shape and len(shape) > 1 and shape[1] != n_features:
@@ -51,8 +50,7 @@ def daal4py_classifier_predict(estimator, X, base_predict):
     except ValueError:
         fptype = None
 
-    if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and daal_model is not None \
-    and fptype is not None and not sp.issparse(X):
+    if daal_model is not None and fptype is not None and not sp.issparse(X):
         logging.info("sklearn.neighbors.KNeighborsClassifier.predict: " + get_patch_message("daal"))
 
         params = {

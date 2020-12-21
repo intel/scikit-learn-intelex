@@ -46,7 +46,7 @@ except:
 # Common code for both CPU and GPU computations
 def compute(data, method):
     # configure a covariance object
-    algo = d4p.covariance(method=method)
+    algo = d4p.covariance(method=method, fptype='float')
     return algo.compute(data)
 
 
@@ -71,7 +71,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     infile = os.path.join('..', 'data', 'batch', 'covcormoments_dense.csv')
 
     # Load the data
-    data = readcsv(infile, range(10))
+    data = readcsv(infile, range(10), t=np.float32)
 
     # Using of the classic way (computations on CPU)
     result_classic = compute(data, method)

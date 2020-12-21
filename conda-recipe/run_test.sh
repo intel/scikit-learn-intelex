@@ -24,9 +24,13 @@ if [ ! -z "${DPCPPROOT}" ]; then
 fi
 
 # if DAALROOT is specified
-if [ ! -z "${DAALROOT}" ]; then
+if [ "${DAALROOT}" != "" ] && [ "${DALROOT}" == "" ] ; then
+    export DALROOT="${DAALROOT}"
+fi
+
+if [ "${DALROOT}" != "" ]; then
     conda remove daal --force -y
-    source ${DAALROOT}/env/vars.sh
+    source ${DALROOT}/env/vars.sh
 fi
 
 # if TBBROOT is specified

@@ -45,28 +45,21 @@ else:
 def training_algorithm(method, fptype, params):
     if method == 'brute':
         train_alg = d4p.bf_knn_classification_training
-        # Brute force method always computes in doubles due to precision need
-        compute_fptype = 'double'
+
     else:
         train_alg = d4p.kdtree_knn_classification_training
-        compute_fptype = fptype
 
-    params['fptype'] = compute_fptype
-
+    params['fptype'] = fptype
     return train_alg(**params)
 
 
 def prediction_algorithm(method, fptype, params):
     if method == 'brute':
         predict_alg = d4p.bf_knn_classification_prediction
-        # Brute force method always computes in doubles due to precision need
-        compute_fptype = 'double'
     else:
         predict_alg = d4p.kdtree_knn_classification_prediction
-        compute_fptype = fptype
 
-    params['fptype'] = compute_fptype
-
+    params['fptype'] = fptype
     return predict_alg(**params)
 
 
@@ -138,7 +131,7 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
 
     if X is not None:
         query_is_train = False
-        X = check_array(X, accept_sparse='csr')
+        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     else:
         query_is_train = True
         X = estimator._fit_X
@@ -188,8 +181,7 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
             distances[i] = distances[i][seq]
 
     if return_distance:
-        return_fptype = 'double' if method == 'kd_tree' else fptype
-        results = distances.astype(return_fptype), indices.astype(int)
+        results = distances, indices.astype(int)
     else:
         results = indices.astype(int)
 
@@ -286,7 +278,7 @@ class NeighborsBase(BaseNeighborsBase):
 
         if y is not None or requires_y:
             if not X_incorrect_type or y is None:
-                X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True)
+                X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True, dtype=[np.float64, np.float32])
                 single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
 
             shape = y.shape
@@ -318,7 +310,7 @@ class NeighborsBase(BaseNeighborsBase):
                 self._y = y
         else:
             if not X_incorrect_type:
-                X, _ = validate_data(self, X, accept_sparse='csr')
+                X, _ = validate_data(self, X, accept_sparse='csr', dtype=[np.float64, np.float32])
             self._y = None
 
         if not X_incorrect_type:
@@ -339,8 +331,20 @@ class NeighborsBase(BaseNeighborsBase):
                 result = super(NeighborsBase, self)._fit(X)
             return result
 
-        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and not X_incorrect_type \
-        and weights in ['uniform', 'distance'] and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
+        if self.n_neighbors is not None:
+            if self.n_neighbors <= 0:
+                raise ValueError(
+                    "Expected n_neighbors > 0. Got %d" %
+                    self.n_neighbors
+                )
+            if not isinstance(self.n_neighbors, numbers.Integral):
+                raise TypeError(
+                    "n_neighbors does not take %s value, "
+                    "enter integer value" %
+                    type(self.n_neighbors))
+
+        if not X_incorrect_type and weights in ['uniform', 'distance'] \
+        and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
         and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
         and single_output and fptype is not None and not sp.issparse(X) and correct_n_classes:
             try:
@@ -369,8 +373,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_check_version(((2020,'P', 3),(2021,'B', 110))) and daal_model is not None \
-        and fptype is not None and not sp.issparse(X):
+        if daal_model is not None and fptype is not None and not sp.issparse(X):
             logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("daal"))
             result = daal4py_kneighbors(self, X, n_neighbors, return_distance)
         else:

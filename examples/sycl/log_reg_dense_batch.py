@@ -47,12 +47,14 @@ except:
 def compute(train_data, train_labels, predict_data, nClasses):
     # set parameters and train
     train_alg = d4p.logistic_regression_training(nClasses=nClasses,
+                                                 fptype='float',
                                                  penaltyL1=0.1,
                                                  penaltyL2=0.1,
                                                  interceptFlag=True)
     train_result = train_alg.compute(train_data, train_labels)
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
+                                                     fptype='float',
                                                      resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
     return predict_alg.compute(predict_data, train_result.model), train_result
 
@@ -80,12 +82,12 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # read training data from file with 6 features per observation and 1 class label
     trainfile = os.path.join('..', 'data', 'batch', 'logreg_train.csv')
-    train_data = readcsv(trainfile, range(nFeatures))
-    train_labels = readcsv(trainfile, range(nFeatures, nFeatures + 1))
+    train_data = readcsv(trainfile, range(nFeatures), t=np.float32)
+    train_labels = readcsv(trainfile, range(nFeatures, nFeatures + 1), t=np.float32)
 
     # read testing data from file with 6 features per observation
     testfile = os.path.join('..', 'data', 'batch', 'logreg_test.csv')
-    predict_data = readcsv(testfile, range(nFeatures))
+    predict_data = readcsv(testfile, range(nFeatures), t=np.float32)
 
     # Using of the classic way (computations on CPU)
     result_classic, train_result = compute(train_data, train_labels, predict_data, nClasses)

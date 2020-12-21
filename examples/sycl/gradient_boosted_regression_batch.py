@@ -35,10 +35,10 @@ except:
 # Commone code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data, maxIterations):
     # Configure a training object
-    train_algo = d4p.gbt_regression_training(maxIterations=maxIterations)
+    train_algo = d4p.gbt_regression_training(maxIterations=maxIterations, fptype='float')
     train_result = train_algo.compute(train_indep_data, train_dep_data)
     # Now let's do some prediction
-    predict_algo = d4p.gbt_regression_prediction()
+    predict_algo = d4p.gbt_regression_prediction(fptype='float')
     # now predict using the model from the training above
     return predict_algo.compute(test_indep_data, train_result.model)
 

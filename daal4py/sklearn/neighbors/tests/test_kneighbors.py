@@ -26,7 +26,6 @@ from sklearn.datasets import (load_iris, make_classification)
 from sklearn.metrics import (accuracy_score, log_loss, roc_auc_score)
 from sklearn.model_selection import train_test_split
 
-
 DISTANCES = ['minkowski']
 ALGORITHMS = ['brute', 'kd_tree', 'auto']
 WEIGHTS = ['uniform', 'distance']

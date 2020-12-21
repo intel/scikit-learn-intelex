@@ -1,5 +1,5 @@
 {% set version = '2021.1' %}
-{% set buildnumber = 0 %}
+{% set buildnumber = 4 %}
 
 package:
     name: daal4py
@@ -14,6 +14,7 @@ build:
     script_env:
     - DPCPPROOT
     - DAALROOT
+    - DALROOT
     - TBBROOT
     ignore_run_exports:
        - python
@@ -35,9 +36,10 @@ requirements:
         - clang-tools
     run:
         - python
-        - numpy >=1.15
+        - dpcpp_cpp_rt
         - daal >=2020.3
-        - {{ pin_compatible('numpy') }}
+    ignore_run_exports:
+        - numpy
 
 test:
     requires:
@@ -64,19 +66,24 @@ test:
         - python -m daal4py examples/sycl/sklearn_sycl.py
 
 about:
-    home: https://intelpython.github.io/daal4py/
-    license: Apache 2.0
-    license_file: LICENSE
-    summary: A convenient Python API to Intel(R) oneAPI Data Analytics Library
-    description: ' <strong>LEGAL NOTICE: Use of this software package is subject to the software
-    license agreement (as set forth above, in the license section of the installed Conda package
-    and/or the README file) and all notices, disclaimers or license terms for third party or open
-    source software included in or with the software.</strong> <br/><br/>
-    EULA: <a href="https://opensource.org/licenses/Apache-2.0"
-    target="_blank">Apache 2.0 License</a><br/><br/>'
-    third_party_programs_file: doc/third-party-programs.txt
-    dev_url: https://github.com/IntelPython/daal4py
-    doc_url: https://intelpython.github.io/daal4py/
+    about:
+        home: https://intelpython.github.io/daal4py/
+        license: Apache-2.0
+        license_file:
+              - LICENSE
+              - doc/third-party-programs.txt
+        summary: A convenient Python API to Intel (R) oneAPI Data Analytics Library
+        description: |
+          <strong>LEGAL NOTICE: Use of this software package is subject to the
+          software license agreement (as set forth above, in the license section of
+          the installed Conda package and/or the README file) and all notices,
+          disclaimers or license terms for third party or open source software
+          included in or with the software.</strong>
+          <br/><br/>
+          EULA: <a href="https://opensource.org/licenses/Apache-2.0" target="_blank">Apache-2.0</a>
+          <br/><br/>
+        dev_url: https://github.com/IntelPython/daal4py
+        doc_url: https://intelpython.github.io/daal4py
 
 extra:
     recipe-maintainers:

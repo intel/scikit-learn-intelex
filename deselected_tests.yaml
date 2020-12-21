@@ -136,3 +136,12 @@ deselected_tests:
 
   # daal4py is throwing the exception from the library. Will be fixed.
   - tests/test_common.py::test_check_n_features_in_after_fitting
+
+  # module name should starts with 'sklearn.metrics' but we have 'daal4py.sklearn.metrics'
+  - metrics/tests/test_score_objects.py::test_scoring_is_not_metric
+
+  # Stability issue with max absolute difference: 4.33846826e-08/1.17613697e-11. Remove in next release
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_dataframe[features-integer-None-estimator-brute]
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_dataframe[features-string-None-estimator-brute]
+  - ensemble/tests/test_bagging.py::test_estimators_samples_deterministic
+

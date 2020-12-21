@@ -52,6 +52,10 @@ using daal::services::LibraryVersionInfo;
 #include "data_management/data/internal/finiteness_checker.h"
 #include "data_management/data/internal/train_test_split.h"
 
+#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210200
+    #include "data_management/data/internal/roc_auc_score.h"
+#endif
+
 
 extern "C" {
 void c_daalinit(int nthreads=-1);
@@ -327,6 +331,10 @@ bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype);
 extern "C" {
 void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file & test,
                         data_or_file & train_idx, data_or_file & test_idx);
+}
+
+extern "C" {
+double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test);
 }
 
 extern "C" {

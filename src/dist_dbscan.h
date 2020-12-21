@@ -19,7 +19,6 @@
 
 #include "dist_custom.h"
 #include "daal4py_defines.h"
-#include <mpi.h>
 
 using namespace std;
 using namespace daal;
@@ -109,9 +108,11 @@ const int step10ResultQueriesTag                   = 15;
 const int step11ResultQueriesTag                   = 16;
 const int step12ResultAssignmentQueriesTag         = 17;
 
+transceiver * tcvr;
+
 int main(const T1& input1)
 {
-    auto tcvr = get_transceiver();
+    tcvr = get_transceiver();
     rankId = tcvr->me();
     comm_size = tcvr->nMembers();
 
@@ -417,7 +418,7 @@ void sendCollectionAllToAll(size_t beginId, size_t endId, size_t curId, int tag,
 }
 
 void sendTableAllToAll(size_t beginId, size_t endId, size_t curId, int tag, NumericTablePtr & table, DataCollectionPtr & destCollection,
-                       bool preserveOrder = false)
+                    bool preserveOrder = false)
 {
     size_t nIds    = endId - beginId;
     size_t nShifts = 1;
@@ -545,26 +546,12 @@ void sendTableMasterToAll(size_t beginId, size_t endId, size_t rankId, int tag, 
 
 void sendTable(NumericTablePtr & table, int recpnt, int tag)
 {
-    ByteBuffer buff;
-    size_t size = (table.get() && table->getNumberOfRows() > 0) ? serializeDAALObject(table.get(), buff) : 0;
-    MPI_Send(&size, sizeof(size_t), MPI_BYTE, recpnt, tag * 2 + 0, MPI_COMM_WORLD);
-    if (size)
-    {
-        MPI_Send(&buff[0], size, MPI_BYTE, recpnt, tag * 2 + 1, MPI_COMM_WORLD);
-    }
+    tcvr->send<NumericTablePtr>(table, recpnt, tag * 2);
 }
 
 void recvTable(NumericTablePtr & table, int sender, int tag)
 {
-    size_t size = 0;
-    MPI_Status status;
-    MPI_Recv(&size, sizeof(size_t), MPI_BYTE, sender, tag * 2 + 0, MPI_COMM_WORLD, &status);
-    if (size)
-    {
-        ByteBuffer buff(size);
-        MPI_Recv(&buff[0], size, MPI_BYTE, sender, tag * 2 + 1, MPI_COMM_WORLD, &status);
-        table = NumericTable::cast(deserializeDAALObject(&buff[0], size));
-    }
+    table = tcvr->recv<NumericTablePtr>(sender, tag * 2);
 }
 };
 

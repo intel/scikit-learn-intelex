@@ -45,7 +45,7 @@ except:
 
 # Commone code for both CPU and GPU computations
 def compute(data, method):
-    alg = d4p.low_order_moments(method=method)
+    alg = d4p.low_order_moments(method=method, fptype='float')
     return alg.compute(data)
 
 
@@ -69,7 +69,7 @@ def to_numpy(data):
 def main(readcsv=read_csv, method="defaultDense"):
     # read data from file
     file = os.path.join('..', 'data', 'batch', 'covcormoments_dense.csv')
-    data = readcsv(file, range(10))
+    data = readcsv(file, range(10), t=np.float32)
 
     # Using of the classic way (computations on CPU)
     result_classic = compute(data, method)

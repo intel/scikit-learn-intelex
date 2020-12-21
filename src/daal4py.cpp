@@ -166,20 +166,17 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
         size_t n      = csr_ptr->getDataSize();
         T * data_copy = static_cast<T *>(daal::services::daal_malloc(n * sizeof(T)));
         DAAL4PY_CHECK_MALLOC(data_copy);
-        daal::services::internal::daal_memcpy_s(data_ptr,
-                                                sizeof(T) * n,
-                                                data_copy,
-                                                sizeof(T) * n);
-        PyObject * py_data       = _make_npy_from_data<T, NPTYPE>(data_copy, n);
-        n                        = csr_ptr->getNumberOfColumns();
+        daal::services::internal::daal_memcpy_s(data_ptr, sizeof(T) * n, data_copy, sizeof(T) * n);
+        PyObject * py_data        = _make_npy_from_data<T, NPTYPE>(data_copy, n);
+        n                         = csr_ptr->getNumberOfColumns();
         size_t * col_indices_copy = static_cast<size_t *>(daal::services::daal_malloc(n * sizeof(size_t)));
         DAAL4PY_CHECK_MALLOC(col_indices_copy);
         for (size_t i = 0; i < n; ++i)
         {
             col_indices_copy[i] = col_indices_ptr[i] - 1;
         }
-        PyObject * py_col        = _make_npy_from_data<size_t, NPTYPE>(col_indices_copy, n);
-        n                        = csr_ptr->getNumberOfRows();
+        PyObject * py_col         = _make_npy_from_data<size_t, NPTYPE>(col_indices_copy, n);
+        n                         = csr_ptr->getNumberOfRows();
         size_t * row_offsets_copy = static_cast<size_t *>(daal::services::daal_malloc(n * sizeof(size_t)));
         DAAL4PY_CHECK_MALLOC(row_offsets_copy);
         for (size_t i = 0; i < n; ++i)
@@ -831,12 +828,12 @@ extern "C"
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
 {
     bool result = false;
-    auto tab = get_table(t);
+    auto tab    = get_table(t);
     switch (dtype)
     {
-        case 0: result = daal::data_management::internal::allValuesAreFinite<double>(*tab, allowNaN); break;
-        case 1: result = daal::data_management::internal::allValuesAreFinite<float>(*tab, allowNaN); break;
-        default: throw std::invalid_argument("Invalid data type specified.");
+    case 0: result = daal::data_management::internal::allValuesAreFinite<double>(*tab, allowNaN); break;
+    case 1: result = daal::data_management::internal::allValuesAreFinite<float>(*tab, allowNaN); break;
+    default: throw std::invalid_argument("Invalid data type specified.");
     }
     return result;
 }
@@ -849,6 +846,38 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
     auto trainIdxTable = get_table(train_idx);
     auto testIdxTable  = get_table(test_idx);
     daal::data_management::internal::trainTestSplit<int>(origTable, trainTable, testTable, trainIdxTable, testIdxTable);
+}
+
+double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
+{
+#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210200
+    const size_t col_true = y_true.table->getNumberOfColumns();
+    const size_t row_true = y_true.table->getNumberOfRows();
+    const size_t col_test = y_test.table->getNumberOfColumns();
+    const size_t row_test = y_test.table->getNumberOfRows();
+
+    if (row_true != 1 || row_test != 1 || col_true != col_test)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
+        return NULL;
+    }
+
+    auto table_true = get_table(y_true);
+    auto table_test = get_table(y_test);
+    auto type       = (*table_test->getDictionary())[0].indexType;
+    if (type == daal::data_management::data_feature_utils::DAAL_FLOAT64 || type == daal::data_management::data_feature_utils::DAAL_INT64_S || type == daal::data_management::data_feature_utils::DAAL_INT64_U)
+    {
+        return daal::data_management::internal::rocAucScore<double>(table_true, table_test);
+    }
+    else if (type == daal::data_management::data_feature_utils::DAAL_FLOAT32 || type == daal::data_management::data_feature_utils::DAAL_INT32_S || type == daal::data_management::data_feature_utils::DAAL_INT32_U)
+    {
+        return daal::data_management::internal::rocAucScore<float>(table_true, table_test);
+    }
+    PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
+    return NULL;
+#else
+    return NULL;
+#endif
 }
 
 void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state)

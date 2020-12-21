@@ -64,6 +64,7 @@ def to_numpy(data):
 def compute(data, minObservations, epsilon):
     # configure dbscan main object: we also request the indices and observations of cluster cores
     algo = d4p.dbscan(minObservations=minObservations,
+                      fptype='float',
                       epsilon=epsilon,
                       resultsToCompute='computeCoreIndices|computeCoreObservations',
                       memorySavingMode=True)
@@ -77,7 +78,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     minObservations = 45
 
     # Load the data
-    data = readcsv(infile, range(2))
+    data = readcsv(infile, range(2), t=np.float32)
 
     result_classic = compute(data, minObservations, epsilon)
 
@@ -93,7 +94,6 @@ def main(readcsv=read_csv, method='defaultDense'):
         cpu_context = lambda: sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
-    print('gpu', gpu_available)
     if gpu_available:
         with gpu_context():
             sycl_data = sycl_buffer(data)
@@ -104,7 +104,8 @@ def main(readcsv=read_csv, method='defaultDense'):
             assert np.allclose(result_classic.coreObservations, result_gpu.coreObservations)
 
     with cpu_context():
-        sycl_data = sycl_buffer(data)
+        # TODO: investigate hangs with data as sycl_buffer
+        sycl_data = data
         result_cpu = compute(sycl_data, minObservations, epsilon)
         assert np.allclose(result_classic.nClusters, result_cpu.nClusters)
         assert np.allclose(result_classic.assignments, result_cpu.assignments)

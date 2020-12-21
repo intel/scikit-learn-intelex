@@ -39,20 +39,22 @@ IS_WIN = False
 IS_MAC = False
 IS_LIN = False
 
-daal_root = os.environ['DAALROOT']
+daal_root = os.environ.get('DAALROOT')
+dal_root = os.environ.get('DALROOT')
+if not dal_root:
+    dal_root = daal_root
 
 if 'linux' in sys.platform:
     IS_LIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64')
+    lib_dir = jp(dal_root, 'lib', 'intel64')
 elif sys.platform == 'darwin':
     IS_MAC = True
-    lib_dir = jp(daal_root, 'lib')
+    lib_dir = jp(dal_root, 'lib')
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
-    lib_dir = jp(daal_root, 'lib', 'intel64')
+    lib_dir = jp(dal_root, 'lib', 'intel64')
 else:
     assert False, sys.platform + ' not supported'
-
 
 def get_lib_suffix():
     
@@ -133,6 +135,21 @@ dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
 dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
 #itac_root = os.environ['VT_ROOT']
+IS_WIN = False
+IS_MAC = False
+IS_LIN = False
+
+if 'linux' in sys.platform:
+    IS_LIN = True
+    lib_dir = jp(dal_root, 'lib', 'intel64')
+elif sys.platform == 'darwin':
+    IS_MAC = True
+    lib_dir = jp(dal_root, 'lib')
+elif sys.platform in ['win32', 'cygwin']:
+    IS_WIN = True
+    lib_dir = jp(dal_root, 'lib', 'intel64')
+else:
+    assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 DAAL_LIBDIRS = [daal_lib_dir]
@@ -170,14 +187,14 @@ else:
 #Level Zero workaround for oneDAL Beta06
 from generator.parse import parse_version
 
-header_path = os.path.join(daal_root, 'include', 'services', 'library_version_info.h')
+header_path = os.path.join(dal_root, 'include', 'services', 'library_version_info.h')
 
 with open(header_path) as header:
     v = parse_version(header)
     dal_build_version = (int(v[0]), int(v[1]), int(v[2]), str(v[3]))
 
 if dpcpp:
-    DPCPP_CFLAGS = ['-D_DPCPP_']
+    DPCPP_CFLAGS = ['-D_DPCPP_ -fno-builtin-memset']
     DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
     if IS_LIN:
         DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
@@ -225,7 +242,7 @@ def get_type_defines():
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
 
 def getpyexts():
-    include_dir_plat = [os.path.abspath('./src'), daal_root + '/include',]
+    include_dir_plat = [os.path.abspath('./src'), dal_root + '/include',]
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
@@ -270,8 +287,8 @@ def getpyexts():
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
                                 extra_link_args=ela,
-                                libraries=libraries_plat + MPI_LIBS,
-                                library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
+                                libraries=libraries_plat,
+                                library_dirs=DAAL_LIBDIRS,
                                 language='c++'),
     ])
 
@@ -334,17 +351,23 @@ def gen_pyx(odir):
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
-    gen_daal4py(daal_root, odir, d4p_version, no_dist=no_dist, no_stream=no_stream)
+    gen_daal4py(dal_root, odir, d4p_version, no_dist=no_dist, no_stream=no_stream)
 
 
 gen_pyx(os.path.abspath('./build'))
 
+project_urls = {
+    'Bug Tracker': 'https://github.com/IntelPython/daal4py/issues',
+    'Documentation': 'https://intelpython.github.io/daal4py/',
+    'Source Code': 'https://github.com/IntelPython/daal4py'
+}
 
 # daal setup
-setup(  name        = "daal4py",
-        description = "A convenient Python API to Intel(R) oneAPI Data Analytics Library",
-        author      = "Intel",
-        version     = d4p_version,
+setup(  name             = "daal4py",
+        description      = "A convenient Python API to Intel(R) oneAPI Data Analytics Library",
+        author           = "Intel",
+        version          = d4p_version,
+        url              = project_urls,
         classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Environment :: Console',
@@ -355,13 +378,13 @@ setup(  name        = "daal4py",
             'Operating System :: MacOS :: MacOS X',
             'Operating System :: Microsoft :: Windows',
             'Operating System :: POSIX :: Linux',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Topic :: Scientific/Engineering',
             'Topic :: System',
             'Topic :: Software Development',
           ],
         setup_requires = ['numpy>=1.14', 'cython', 'jinja2'],
+        install_requires = ['numpy>=1.14', 'daal', 'dpcpp_cpp_rt'],
         packages = ['daal4py',
                     'daal4py.oneapi',
                     'daal4py.sklearn',
@@ -370,11 +393,12 @@ setup(  name        = "daal4py",
                     'daal4py.sklearn.ensemble',
                     'daal4py.sklearn.linear_model',
                     'daal4py.sklearn.manifold',
+                    'daal4py.sklearn.metrics',
                     'daal4py.sklearn.neighbors',
                     'daal4py.sklearn.monkeypatch',
                     'daal4py.sklearn.svm',
                     'daal4py.sklearn.utils',
                     'daal4py.sklearn.model_selection',
         ],
-        ext_modules = getpyexts(),
+        ext_modules = getpyexts()
 )

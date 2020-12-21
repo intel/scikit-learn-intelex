@@ -10,10 +10,12 @@ IF DEFINED DPCPPROOT (
     dpcpp --version
 )
 
-IF DEFINED DAALROOT (
-    echo "Sourcing DAALROOT"
-    call "%DAALROOT%\env\vars.bat"
-    echo "Finish sourcing DAALROOT"
+IF DEFINED DAALROOT (set DALROOT=%DAALROOT%) 
+
+IF DEFINED DALROOT (
+    echo "Sourcing DALROOT"
+    call "%DALROOT%\env\vars.bat"
+    echo "Finish sourcing DALROOT"
 )
 
 IF DEFINED TBBROOT (

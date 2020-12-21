@@ -43,16 +43,16 @@ except:
     except:
         gpu_available=False
 
-# Commone code for both CPU and GPU computations
+# Common code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data, method='defaultDense'):
     # Configure a SVM object to use linear kernel
-    kernel_function = d4p.kernel_function_linear(method='defaultDense', k=1.0, b=0.0)
-    train_algo = d4p.svm_training(method=method, kernel=kernel_function, C=1.0, accuracyThreshold=1e-3, tau=1e-8, cacheSize=600000000)
+    kernel_function = d4p.kernel_function_linear(fptype='float', method='defaultDense', k=1.0, b=0.0)
+    train_algo = d4p.svm_training(fptype='float', method=method, kernel=kernel_function, C=1.0, accuracyThreshold=1e-3, tau=1e-8, cacheSize=600000000)
 
     train_result = train_algo.compute(train_indep_data, train_dep_data)
 
     # Create an algorithm object and call compute
-    predict_algo = d4p.svm_prediction(kernel=kernel_function)
+    predict_algo = d4p.svm_prediction(fptype='float', kernel=kernel_function)
     predict_result = predict_algo.compute(test_indep_data, train_result.model)
     decision_result = predict_result.prediction
     predict_labels = np.where(decision_result >=0, 1, -1)
@@ -81,10 +81,10 @@ def main(readcsv=read_csv):
     predict_file = os.path.join('..', 'data', 'batch', 'svm_two_class_test_dense.csv')
 
     nFeatures = 20
-    train_data = readcsv(train_file, range(nFeatures))
-    train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1))
-    predict_data = readcsv(predict_file, range(nFeatures))
-    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1))
+    train_data = readcsv(train_file, range(nFeatures), t=np.float32)
+    train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1), t=np.float32)
+    predict_data = readcsv(predict_file, range(nFeatures), t=np.float32)
+    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1), t=np.float32)
 
     predict_result_classic, decision_function_classic = compute(train_data, train_labels, predict_data, 'boser')
 
@@ -95,9 +95,11 @@ def main(readcsv=read_csv):
     try:
         from dpctx import device_context, device_type
         gpu_context = lambda: device_context(device_type.gpu, 0)
+        cpu_context = lambda: device_context(device_type.cpu, 0)
     except:
         from daal4py.oneapi import sycl_context
         gpu_context = lambda: sycl_context('gpu')
+        cpu_context = lambda: sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
@@ -108,6 +110,13 @@ def main(readcsv=read_csv):
 
             predict_result_gpu, decision_function_gpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, 'thunder')
             assert np.allclose(predict_result_gpu, predict_result_classic)
+
+    with cpu_context():
+        sycl_train_data = sycl_buffer(train_data)
+        sycl_predict_data = sycl_buffer(predict_data)
+
+        predict_result_cpu, decision_function_cpu = compute(sycl_train_data, train_labels, sycl_predict_data, 'thunder')
+        assert np.allclose(predict_result_cpu, predict_result_classic)
 
     return predict_labels, predict_result_classic, decision_function_classic
 
