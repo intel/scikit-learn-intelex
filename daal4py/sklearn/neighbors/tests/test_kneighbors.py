@@ -31,9 +31,9 @@ ALGORITHMS = ['brute', 'kd_tree', 'auto']
 WEIGHTS = ['uniform', 'distance']
 KS = [1, 3, 7, 15, 31]
 N_TRIES = 10
-CHECK_ACCURACY_RATIO_KNN = 0.85
-CHECK_LOG_LOSS_RATIO_KNN = 1.006
-CHECK_ROC_AUC_RATIO_KNN = 0.987
+ACCURACY_RATIO = 0.85
+LOG_LOSS_RATIO = 1.006
+ROC_AUC_RATIO = 0.987
 IRIS = load_iris()
 
 def make_dataset(n_samples=256, n_features=5, n_classes=2,
@@ -57,7 +57,7 @@ def check_determenistic(distance, algorithm, weight, k):
         labels = alg.predict(x_test)
         alg_results.append((distances, indices, labels))
         accuracy = accuracy_score(labels, y_test)
-        assert accuracy >= CHECK_ACCURACY_RATIO_KNN,\
+        assert accuracy >= ACCURACY_RATIO,\
             f'kNN classifier:accuracy={accuracy}'
 
     for i in range(1, N_TRIES):
@@ -95,7 +95,7 @@ def check_log_loss(distance, algorithm, weight, k):
         scikit_log_loss = log_loss(y_test, scikit_predict_proba)
         daal_log_loss = log_loss(y_test, daal_predict_proba)
         ratio = daal_log_loss / scikit_log_loss
-        assert ratio <= CHECK_LOG_LOSS_RATIO_KNN,\
+        assert ratio <= LOG_LOSS_RATIO,\
             f'kNN log_loss: scikit_log_loss={scikit_log_loss},daal_log_loss={daal_log_loss}, ratio={ratio}'
 
 
@@ -128,7 +128,7 @@ def check_roc_auc(distance, algorithm, weight, k):
         scikit_roc_auc = roc_auc_score(y_test, scikit_predict_proba, multi_class='ovr')
         daal_roc_auc = roc_auc_score(y_test, daal_predict_proba, multi_class='ovr')
         ratio = daal_roc_auc / scikit_roc_auc
-        assert ratio >= CHECK_ROC_AUC_RATIO_KNN,\
+        assert ratio >= ROC_AUC_RATIO,\
             f'kNN log_loss: scikit_roc_auc={scikit_roc_auc},daal_roc_auc={daal_roc_auc}, ratio={ratio}'
 
 

@@ -32,10 +32,10 @@ from daal4py.sklearn.ensemble \
     import RandomForestRegressor as DaalRandomForestRegressor
 
 N_TRIES = 10
-CHECK_ACCURACY_RATIO_CLASSIFIER = 0.8
-CHECK_ACCURACY_RATIO_REGRESSOR = 1.4
-CHECK_LOG_LOSS_RATIO = 2.1
-CHECK_ROC_AUC_RATIO = 0.97
+ACCURACY_RATIO = 0.8
+MSE_RATIO = 1.4
+LOG_LOSS_RATIO = 2.1
+ROC_AUC_RATIO = 0.97
 IRIS = load_iris()
 CLASS_WEIGHTS_IRIS = [
     {0: 0, 1: 0, 2: 0},
@@ -83,9 +83,13 @@ def check_accuracy_classifier_class_weight_iris(weight):
             train_test_split(IRIS.data, IRIS.target,
                              test_size=0.33, random_state=31)
 
-        scikit_model = ScikitRandomForestClassifier(class_weight=weight,
+        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
+                                                    class_weight=weight,
+                                                    max_depth=5,
                                                     random_state=777)
-        daal4py_model = DaalRandomForestClassifier(class_weight=weight,
+        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
+                                                   class_weight=weight,
+                                                   max_depth=5,
                                                    random_state=777)
 
         scikit_predict = scikit_model.fit(x_train, y_train).predict(x_test)
@@ -95,7 +99,7 @@ def check_accuracy_classifier_class_weight_iris(weight):
         daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
 
         ratio = daal4py_accuracy / scikit_accuracy
-        assert ratio >= CHECK_ACCURACY_RATIO_CLASSIFIER, \
+        assert ratio >= ACCURACY_RATIO, \
         f'Classifier class weight: scikit_accuracy={scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}'
 
 
@@ -110,9 +114,13 @@ def check_log_loss_classifier_class_weight_iris(weight):
             train_test_split(IRIS.data, IRIS.target,
                              test_size=0.33, random_state=31)
 
-        scikit_model = ScikitRandomForestClassifier(class_weight=weight,
+        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
+                                                    class_weight=weight,
+                                                    max_depth=5,
                                                     random_state=777)
-        daal4py_model = DaalRandomForestClassifier(class_weight=weight,
+        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
+                                                   class_weight=weight,
+                                                   max_depth=5,
                                                    random_state=777)
 
         scikit_predict_proba = scikit_model.fit(x_train, y_train).predict_proba(x_test)
@@ -122,7 +130,7 @@ def check_log_loss_classifier_class_weight_iris(weight):
         daal4py_log_loss = log_loss(y_test, daal4py_predict_proba)
 
         ratio = daal4py_log_loss / scikit_log_loss
-        assert ratio <= CHECK_LOG_LOSS_RATIO, \
+        assert ratio <= LOG_LOSS_RATIO, \
         f'Classifier class weight: scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}'
 
 
@@ -138,9 +146,13 @@ def check_roc_auc_classifier_class_weight_iris(weight):
             train_test_split(IRIS.data, IRIS.target,
                              test_size=0.33, random_state=31)
 
-        scikit_model = ScikitRandomForestClassifier(class_weight=weight,
+        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
+                                                    class_weight=weight,
+                                                    max_depth=5,
                                                     random_state=777)
-        daal4py_model = DaalRandomForestClassifier(class_weight=weight,
+        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
+                                                   class_weight=weight,
+                                                   max_depth=5,
                                                    random_state=777)
 
         scikit_predict_proba = scikit_model.fit(x_train, y_train).predict_proba(x_test)
@@ -150,7 +162,7 @@ def check_roc_auc_classifier_class_weight_iris(weight):
         daal4py_roc_auc = roc_auc_score(y_test, daal4py_predict_proba, multi_class='ovr')
 
         ratio = daal4py_roc_auc / scikit_roc_auc
-        assert ratio >= CHECK_ROC_AUC_RATIO, \
+        assert ratio >= ROC_AUC_RATIO, \
         f'Classifier class weight: scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}'
 
 
@@ -178,8 +190,12 @@ def check_accuracy_classifier_sample_weight(weight):
             train_test_split(IRIS.data, IRIS.target, 
                              test_size=0.33, random_state=31)
 
-        scikit_model = ScikitRandomForestClassifier(random_state=777)
-        daal4py_model = DaalRandomForestClassifier(random_state=777)
+        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
+                                                    max_depth=5,
+                                                    random_state=777)
+        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
+                                                   max_depth=5,
+                                                   random_state=777)
 
         scikit_predict = scikit_model.fit(x_train, y_train,
                                 sample_weight=weight[0][:100]).predict(x_test)
@@ -189,7 +205,7 @@ def check_accuracy_classifier_sample_weight(weight):
         scikit_accuracy = accuracy_score(scikit_predict, y_test)
         daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
         ratio = daal4py_accuracy / scikit_accuracy
-        assert ratio >= CHECK_ACCURACY_RATIO_CLASSIFIER, \
+        assert ratio >= ACCURACY_RATIO, \
         f'Classifier sample weights: sample_weight_type={weight[1]},scikit_accuracy={scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}'
 
 
@@ -204,8 +220,12 @@ def check_log_loss_classifier_sample_weight(weight):
             train_test_split(IRIS.data, IRIS.target,
                              test_size=0.33, random_state=31)
 
-        scikit_model = ScikitRandomForestClassifier(random_state=777)
-        daal4py_model = DaalRandomForestClassifier(random_state=777)
+        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
+                                                    max_depth=5,
+                                                    random_state=777)
+        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
+                                                   max_depth=5,
+                                                   random_state=777)
 
         scikit_predict_proba = scikit_model.fit(x_train, y_train,
                                 sample_weight=weight[0][:100]).predict_proba(x_test)
@@ -215,7 +235,7 @@ def check_log_loss_classifier_sample_weight(weight):
         scikit_log_loss = log_loss(y_test, scikit_predict_proba, sample_weight=weight[0][100:150])
         daal4py_log_loss = log_loss(y_test, daal4py_predict_proba, sample_weight=weight[0][100:150])
         ratio = daal4py_log_loss / scikit_log_loss
-        assert ratio <= CHECK_LOG_LOSS_RATIO, \
+        assert ratio <= LOG_LOSS_RATIO, \
         f'Classifier sample weights: sample_weight_type={weight[1]},scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}'
 
 
@@ -231,8 +251,12 @@ def check_roc_auc_classifier_sample_weight(weight):
             train_test_split(IRIS.data, IRIS.target, 
                              test_size=0.33, random_state=31)
 
-        scikit_model = ScikitRandomForestClassifier(random_state=777)
-        daal4py_model = DaalRandomForestClassifier(random_state=777)
+        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
+                                                    max_depth=5,
+                                                    random_state=777)
+        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
+                                                   max_depth=5,
+                                                   random_state=777)
 
         scikit_predict_proba = scikit_model.fit(x_train, y_train,
                                 sample_weight=weight[0][:100]).predict_proba(x_test)
@@ -246,7 +270,7 @@ def check_roc_auc_classifier_sample_weight(weight):
                                          sample_weight=weight[0][100:150],
                                          multi_class='ovr')
         ratio = daal4py_roc_auc / scikit_roc_auc
-        assert ratio >= CHECK_ROC_AUC_RATIO, \
+        assert ratio >= ROC_AUC_RATIO, \
         f'Classifier sample weights: sample_weight_type={weight[1]},scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}'
 
 
@@ -262,19 +286,24 @@ def check_accuracy_regressor_sample_weight(weight):
             train_test_split(IRIS.data, IRIS.target,
                              test_size=0.33, random_state=31)
 
-        scikit_model = ScikitRandomForestRegressor(random_state=777)
-        daal4py_model = DaalRandomForestRegressor(random_state=777)
+        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
+                                                    max_depth=5,
+                                                    random_state=777)
+        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
+                                                   max_depth=5,
+                                                   random_state=777)
 
         scikit_predict = scikit_model.fit(x_train, y_train,
                                 sample_weight=weight[0][:100]).predict(x_test)
         daal4py_predict = daal4py_model.fit(x_train, y_train,
                                 sample_weight=weight[0][:100]).predict(x_test)
 
-        scikit_accuracy = mean_squared_error(scikit_predict, y_test)
-        daal4py_accuracy = mean_squared_error(daal4py_predict, y_test)
-        ratio = daal4py_accuracy / scikit_accuracy
-        assert ratio <= CHECK_ACCURACY_RATIO_REGRESSOR, \
-        f'Regression sample weights: sample_weight_type={weight[1]},scikit_accuracy={scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}'
+        scikit_mse = mean_squared_error(scikit_predict, y_test)
+        daal4py_mse = mean_squared_error(daal4py_predict, y_test)
+        ratio = daal4py_mse / scikit_mse
+
+        assert ratio <= MSE_RATIO, \
+        f'Regression sample weights: sample_weight_type={weight[1]},scikit_mse={scikit_mse}, daal4py_mse={daal4py_mse}'
 
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
