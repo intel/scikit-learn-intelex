@@ -17,18 +17,24 @@
 
 import daal4py as d4p
 import numpy as np
-from sklearn.utils import check_array
-from ..utils.validation import _daal_assert_all_finite
-from sklearn.utils.multiclass import type_of_target, is_multilabel
-from sklearn.preprocessing import label_binarize
-from sklearn.metrics._ranking import _multiclass_roc_auc_score, _binary_roc_auc_score
-from sklearn.metrics._base import _average_binary_score
-from .._utils import get_patch_message
-import logging
 from functools import partial
-
 from collections.abc import Sequence
 from scipy.sparse.base import spmatrix
+
+from sklearn.utils import check_array
+from sklearn.utils.multiclass import is_multilabel
+from sklearn.preprocessing import label_binarize
+
+from ..utils.validation import _daal_assert_all_finite
+from .._utils import get_patch_message, sklearn_check_version
+import logging
+
+if sklearn_check_version('0.22'):
+    from sklearn.metrics._ranking import _multiclass_roc_auc_score as multiclass_roc_auc_score
+    from sklearn.metrics._ranking import _binary_roc_auc_score
+    from sklearn.metrics._base import _average_binary_score
+else:
+    from sklearn.metrics.ranking import roc_auc_score as multiclass_roc_auc_score
 
 try:
     import pandas as pd
@@ -115,8 +121,8 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
         if multi_class == 'raise':
             raise ValueError("multi_class must be in ('ovo', 'ovr')")
         logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
-        result = _multiclass_roc_auc_score(y_true, y_score, labels,
-                                           multi_class, average, sample_weight)
+        result = multiclass_roc_auc_score(y_true, y_score, labels,
+                                          multi_class, average, sample_weight)
     elif y_type[0] == "binary":
         labels = y_type[1]
         if max_fpr is None and sample_weight is None and len(labels) == 2:
@@ -127,14 +133,24 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
         else:
             y_true = label_binarize(y_true, classes=labels)[:, 0]
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
+            if sklearn_check_version('0.22'):
+                result = _average_binary_score(partial(_binary_roc_auc_score,
+                                                       max_fpr=max_fpr),
+                                               y_true, y_score, average,
+                                               sample_weight=sample_weight)
+            else:
+                result = multiclass_roc_auc_score(y_true, y_score, average,
+                                                  sample_weight=sample_weight,
+                                                  max_fpr=max_fpr)
+    else:
+        logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
+        if sklearn_check_version('0.22'):
             result = _average_binary_score(partial(_binary_roc_auc_score,
                                                    max_fpr=max_fpr),
                                            y_true, y_score, average,
                                            sample_weight=sample_weight)
-    else:
-        logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
-        result = _average_binary_score(partial(_binary_roc_auc_score,
-                                               max_fpr=max_fpr),
-                                       y_true, y_score, average,
-                                       sample_weight=sample_weight)
+        else:
+            result = multiclass_roc_auc_score(y_true, y_score, average,
+                                              sample_weight=sample_weight,
+                                              max_fpr=max_fpr)
     return result

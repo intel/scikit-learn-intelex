@@ -23,7 +23,6 @@ import numpy as np
 from scipy.sparse import issparse
 
 from sklearn.manifold import TSNE as BaseTSNE
-from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.utils.validation import check_non_negative
@@ -31,6 +30,11 @@ from sklearn.utils import check_random_state, check_array
 
 from ..neighbors import NearestNeighbors
 from .._utils import sklearn_check_version
+
+if sklearn_check_version('0.22'):
+    from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
+else:
+    from sklearn.manifold.t_sne import _joint_probabilities, _joint_probabilities_nn
 
 
 class TSNE(BaseTSNE):

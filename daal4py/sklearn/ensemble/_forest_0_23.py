@@ -21,18 +21,17 @@ import numbers
 import warnings
 
 import daal4py
-from .._utils import (make2d, getFPType, get_patch_message)
+from .._utils import (getFPType, get_patch_message)
 import logging
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
-from sklearn.tree._tree import (DTYPE, Tree)
+from sklearn.tree._tree import Tree
 from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_original
 from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
 from sklearn.utils import (check_random_state, check_array)
-from sklearn.utils.multiclass import check_classification_targets
-from sklearn.utils.validation import (check_is_fitted, check_consistent_length, _check_sample_weight)
+from sklearn.utils.validation import (check_is_fitted, check_consistent_length, _num_samples)
 from sklearn.base import clone
-from sklearn.exceptions import DataConversionWarning, NotFittedError
+from sklearn.exceptions import DataConversionWarning
 
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
@@ -232,7 +231,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         )
     _check_parameters(self)
     if sample_weight is not None:
-            sample_weight = _check_sample_weight(sample_weight, X)
+            sample_weight = check_sample_weight(sample_weight, X)
 
     daal_ready = (self.warm_start is False
         and self.criterion == "gini"
@@ -343,7 +342,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
         )
     _check_parameters(self)
     if sample_weight is not None:
-        sample_weight = _check_sample_weight(sample_weight, X)
+        sample_weight = check_sample_weight(sample_weight, X)
 
     daal_ready = (self.warm_start is False
         and self.criterion == "mse"
@@ -383,7 +382,6 @@ def _fit_regressor(self, X, y, sample_weight=None):
         return self
     logging.info("sklearn.ensemble.RandomForestRegressor.fit: " + get_patch_message("sklearn"))
     return super(RandomForestRegressor, self).fit(X, y, sample_weight=sample_weight)
-    
 
 def _daal_predict_regressor(self, X):
     X = self._validate_X_predict(X)
@@ -394,6 +392,31 @@ def _daal_predict_regressor(self, X):
     pred = dfr_predictionResult.prediction
 
     return pred.ravel()
+
+def check_sample_weight(sample_weight, X, dtype=None):
+    n_samples = _num_samples(X)
+
+    if dtype is not None and dtype not in [np.float32, np.float64]:
+        dtype = np.float64
+
+    if sample_weight is None:
+        sample_weight = np.ones(n_samples, dtype=dtype)
+    elif isinstance(sample_weight, numbers.Number):
+        sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
+    else:
+        if dtype is None:
+            dtype = [np.float64, np.float32]
+        sample_weight = check_array(
+            sample_weight, accept_sparse=False, ensure_2d=False, dtype=dtype,
+            order="C"
+        )
+        if sample_weight.ndim != 1:
+            raise ValueError("Sample weights must be 1D array or scalar")
+
+        if sample_weight.shape != (n_samples,):
+            raise ValueError("sample_weight.shape == {}, expected {}!"
+                             .format(sample_weight.shape, (n_samples,)))
+    return sample_weight
 
 class RandomForestClassifier(RandomForestClassifier_original):
     __doc__ = RandomForestClassifier_original.__doc__
