@@ -300,8 +300,8 @@ def check_accuracy_regressor_sample_weight(weight):
 
         scikit_mse = mean_squared_error(scikit_predict, y_test)
         daal4py_mse = mean_squared_error(daal4py_predict, y_test)
-        ratio = daal4py_mse / scikit_mse
 
+        ratio = daal4py_mse / scikit_mse
         assert ratio <= MSE_RATIO, \
         f'Regression sample weights: sample_weight_type={weight[1]},scikit_mse={scikit_mse}, daal4py_mse={daal4py_mse}'
 
