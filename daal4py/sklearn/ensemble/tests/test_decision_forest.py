@@ -32,10 +32,10 @@ from daal4py.sklearn.ensemble \
     import RandomForestRegressor as DaalRandomForestRegressor
 
 N_TRIES = 10
-ACCURACY_RATIO = 0.85
-MSE_RATIO = 1.5
-LOG_LOSS_RATIO = 2.1
-ROC_AUC_RATIO = 0.97
+ACCURACY_RATIO = 0.8
+MSE_RATIO = 1.122
+LOG_LOSS_RATIO = 1.59
+ROC_AUC_RATIO = 0.978
 IRIS = load_iris()
 CLASS_WEIGHTS_IRIS = [
     {0: 0, 1: 0, 2: 0},
@@ -178,7 +178,6 @@ SAMPLE_WEIGHTS_IRIS = [
     (np.full_like(range(150), 50), 'Only 50'),
     (np.random.rand(150), 'Uniform distribution'),
     (np.random.normal(1000, 10, 150), 'Gaussian distribution'),
-    (np.random.exponential(5, 150), 'Exponential distribution'),
     (np.random.poisson(lam=10, size=150), 'Poisson distribution'),
     (np.random.rayleigh(scale=1, size=150), 'Rayleigh distribution'),
 ]
@@ -271,7 +270,7 @@ def check_roc_auc_classifier_sample_weight(weight):
                                          multi_class='ovr')
         ratio = daal4py_roc_auc / scikit_roc_auc
         assert ratio >= ROC_AUC_RATIO, \
-        f'Classifier sample weights: sample_weight_type={weight[1]},scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}'
+        f'Classifier sample weights: sample_weight_type={weight[1]},scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}'
 
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
@@ -280,7 +279,7 @@ def test_roc_auc_classifier_sample_weight_iris(weight):
         check_roc_auc_classifier_sample_weight(weight)
 
 
-def check_accuracy_regressor_sample_weight(weight):
+def check_mse_regressor_sample_weight(weight):
     for _ in range(N_TRIES):
         x_train, x_test, y_train, y_test = \
             train_test_split(IRIS.data, IRIS.target,
@@ -307,6 +306,6 @@ def check_accuracy_regressor_sample_weight(weight):
 
 
 @pytest.mark.parametrize('weight', SAMPLE_WEIGHTS_IRIS)
-def test_accuracy_regressor_sample_weight_iris(weight):
+def test_mse_regressor_sample_weight_iris(weight):
     if weight[1] != 'Only 0':
-        check_accuracy_regressor_sample_weight(weight)
+        check_mse_regressor_sample_weight(weight)

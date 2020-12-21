@@ -31,9 +31,9 @@ ALGORITHMS = ['brute', 'kd_tree', 'auto']
 WEIGHTS = ['uniform', 'distance']
 KS = [1, 3, 7, 15, 31]
 N_TRIES = 10
-ACCURACY_RATIO = 0.88
-LOG_LOSS_RATIO = 1.006
-ROC_AUC_RATIO = 0.987
+ACCURACY_RATIO = 1.0
+LOG_LOSS_RATIO = 1.00145
+ROC_AUC_RATIO = 0.999
 IRIS = load_iris()
 
 def make_dataset(n_samples=256, n_features=5, n_classes=2,
@@ -49,16 +49,28 @@ def check_determenistic(distance, algorithm, weight, k):
 
     alg_results = []
     for _ in range(N_TRIES):
-        alg = DaalKNeighborsClassifier(
-            n_neighbors=k, weights=weight, algorithm=algorithm,
-            leaf_size=30, p=2, metric=distance)
-        alg.fit(x_train, y_train)
-        distances, indices = alg.kneighbors(x_test)
-        labels = alg.predict(x_test)
-        alg_results.append((distances, indices, labels))
-        accuracy = accuracy_score(labels, y_test)
-        assert accuracy >= ACCURACY_RATIO,\
-            f'kNN classifier:accuracy={accuracy}'
+        scikit_model = ScikitKNeighborsClassifier(n_neighbors=k,
+                                                  weights=weight,
+                                                  algorithm=algorithm,
+                                                  leaf_size=30, p=2,
+                                                  metric=distance)
+        daal_model = DaalKNeighborsClassifier(n_neighbors=k, weights=weight,
+                                              algorithm=algorithm,
+                                              leaf_size=30, p=2,
+                                              metric=distance)
+        
+        scikit_predict = scikit_model.fit(x_train, y_train).predict(x_test)
+        daal_predict = daal_model.fit(x_train, y_train).predict(x_test)
+
+        distances, indices = daal_model.kneighbors(x_test)
+        alg_results.append((distances, indices, daal_predict))
+
+        scikit_accuracy = accuracy_score(y_test, scikit_predict)
+        daal_accuracy = accuracy_score(y_test, daal_predict)
+
+        ratio = daal_accuracy / scikit_accuracy
+        assert ratio >= ACCURACY_RATIO,\
+            f'kNN classifier:accuracy={ratio}'
 
     for i in range(1, N_TRIES):
         for j, res in enumerate(alg_results[i]):
