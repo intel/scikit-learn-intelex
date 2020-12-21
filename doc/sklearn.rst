@@ -68,7 +68,7 @@ algorithms:
 17. `sklearn.manifold.TSNE <https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html>`__
 18. `sklearn.metrics.roc_auc_score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html>`__
 
-Monkey-patched scikit-learn clases and functions passes scikit-learn's own test
+Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
 <https://github.com/IntelPython/daal4py/blob/master/deselected_tests.yaml>`__.
 
