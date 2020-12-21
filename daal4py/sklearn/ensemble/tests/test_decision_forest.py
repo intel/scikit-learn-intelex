@@ -32,7 +32,7 @@ from daal4py.sklearn.ensemble \
     import RandomForestRegressor as DaalRandomForestRegressor
 
 N_TRIES = 10
-ACCURACY_RATIO = 0.8
+ACCURACY_RATIO = 0.85
 MSE_RATIO = 1.5
 LOG_LOSS_RATIO = 2.1
 ROC_AUC_RATIO = 0.97
@@ -85,11 +85,11 @@ def check_accuracy_classifier_class_weight_iris(weight):
 
         scikit_model = ScikitRandomForestClassifier(n_estimators=100,
                                                     class_weight=weight,
-                                                    max_depth=5,
+                                                    max_depth=None,
                                                     random_state=777)
         daal4py_model = DaalRandomForestClassifier(n_estimators=100,
                                                    class_weight=weight,
-                                                   max_depth=5,
+                                                   max_depth=None,
                                                    random_state=777)
 
         scikit_predict = scikit_model.fit(x_train, y_train).predict(x_test)
@@ -116,11 +116,11 @@ def check_log_loss_classifier_class_weight_iris(weight):
 
         scikit_model = ScikitRandomForestClassifier(n_estimators=100,
                                                     class_weight=weight,
-                                                    max_depth=5,
+                                                    max_depth=None,
                                                     random_state=777)
         daal4py_model = DaalRandomForestClassifier(n_estimators=100,
                                                    class_weight=weight,
-                                                   max_depth=5,
+                                                   max_depth=None,
                                                    random_state=777)
 
         scikit_predict_proba = scikit_model.fit(x_train, y_train).predict_proba(x_test)
@@ -148,11 +148,11 @@ def check_roc_auc_classifier_class_weight_iris(weight):
 
         scikit_model = ScikitRandomForestClassifier(n_estimators=100,
                                                     class_weight=weight,
-                                                    max_depth=5,
+                                                    max_depth=None,
                                                     random_state=777)
         daal4py_model = DaalRandomForestClassifier(n_estimators=100,
                                                    class_weight=weight,
-                                                   max_depth=5,
+                                                   max_depth=None,
                                                    random_state=777)
 
         scikit_predict_proba = scikit_model.fit(x_train, y_train).predict_proba(x_test)
@@ -191,10 +191,10 @@ def check_accuracy_classifier_sample_weight(weight):
                              test_size=0.33, random_state=31)
 
         scikit_model = ScikitRandomForestClassifier(n_estimators=100,
-                                                    max_depth=5,
+                                                    max_depth=None,
                                                     random_state=777)
         daal4py_model = DaalRandomForestClassifier(n_estimators=100,
-                                                   max_depth=5,
+                                                   max_depth=None,
                                                    random_state=777)
 
         scikit_predict = scikit_model.fit(x_train, y_train,
@@ -221,10 +221,10 @@ def check_log_loss_classifier_sample_weight(weight):
                              test_size=0.33, random_state=31)
 
         scikit_model = ScikitRandomForestClassifier(n_estimators=100,
-                                                    max_depth=5,
+                                                    max_depth=None,
                                                     random_state=777)
         daal4py_model = DaalRandomForestClassifier(n_estimators=100,
-                                                   max_depth=5,
+                                                   max_depth=None,
                                                    random_state=777)
 
         scikit_predict_proba = scikit_model.fit(x_train, y_train,
@@ -252,10 +252,10 @@ def check_roc_auc_classifier_sample_weight(weight):
                              test_size=0.33, random_state=31)
 
         scikit_model = ScikitRandomForestClassifier(n_estimators=100,
-                                                    max_depth=5,
+                                                    max_depth=None,
                                                     random_state=777)
         daal4py_model = DaalRandomForestClassifier(n_estimators=100,
-                                                   max_depth=5,
+                                                   max_depth=None,
                                                    random_state=777)
 
         scikit_predict_proba = scikit_model.fit(x_train, y_train,
@@ -286,11 +286,11 @@ def check_accuracy_regressor_sample_weight(weight):
             train_test_split(IRIS.data, IRIS.target,
                              test_size=0.33, random_state=31)
 
-        scikit_model = ScikitRandomForestClassifier(n_estimators=100,
-                                                    max_depth=5,
+        scikit_model = ScikitRandomForestRegressor(n_estimators=100,
+                                                    max_depth=None,
                                                     random_state=777)
-        daal4py_model = DaalRandomForestClassifier(n_estimators=100,
-                                                   max_depth=5,
+        daal4py_model = DaalRandomForestRegressor(n_estimators=100,
+                                                   max_depth=None,
                                                    random_state=777)
 
         scikit_predict = scikit_model.fit(x_train, y_train,
