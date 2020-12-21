@@ -20,14 +20,17 @@
 import warnings
 from time import time
 import numpy as np
-from scipy.sparse import csr_matrix, issparse
-from ..neighbors import NearestNeighbors
+from scipy.sparse import issparse
+
 from sklearn.manifold import TSNE as BaseTSNE
 from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.utils.validation import check_non_negative
-from sklearn.utils import check_random_state
+from sklearn.utils import check_random_state, check_array
+
+from ..neighbors import NearestNeighbors
+from .._utils import sklearn_check_version
 
 
 class TSNE(BaseTSNE):
@@ -53,12 +56,20 @@ class TSNE(BaseTSNE):
                               FutureWarning)
 
         if self.method == 'barnes_hut':
-            X = self._validate_data(X, accept_sparse=['csr'],
-                                    ensure_min_samples=2,
-                                    dtype=[np.float32, np.float64])
+            if sklearn_check_version('0.23'):
+                X = self._validate_data(X, accept_sparse=['csr'],
+                                        ensure_min_samples=2,
+                                        dtype=[np.float32, np.float64])
+            else:
+                X = check_array(X, accept_sparse=['csr'], ensure_min_samples=2,
+                                dtype=[np.float32, np.float64])
         else:
-            X = self._validate_data(X, accept_sparse=['csr', 'csc', 'coo'],
-                                    dtype=[np.float32, np.float64])
+            if sklearn_check_version('0.23'):
+                X = self._validate_data(X, accept_sparse=['csr', 'csc', 'coo'],
+                                        dtype=[np.float32, np.float64])
+            else:
+                X = check_array(X, accept_sparse=['csr', 'csc', 'coo'],
+                                dtype=[np.float32, np.float64])
         if self.metric == "precomputed":
             if isinstance(self.init, str) and self.init == 'pca':
                 raise ValueError("The parameter init=\"pca\" cannot be "

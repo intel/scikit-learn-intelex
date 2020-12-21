@@ -17,15 +17,12 @@
 
 import numpy as np
 import numbers
-
-from sklearn import decomposition
-from sklearn.utils import check_array
-
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils.extmath import stable_cumsum
-
 from math import sqrt
 from scipy.sparse import issparse
+
+from sklearn.utils import check_array
+from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.extmath import stable_cumsum
 
 import daal4py
 from .._utils import getFPType, get_patch_message, sklearn_check_version
@@ -172,8 +169,12 @@ class PCA(PCA_original):
             raise TypeError('PCA does not support sparse input. See '
                             'TruncatedSVD for a possible alternative.')
 
-        X = self._validate_data(X, dtype=[np.float64, np.float32],
-                                ensure_2d=True, copy=self.copy)
+        if sklearn_check_version('0.23'):
+            X = self._validate_data(X, dtype=[np.float64, np.float32],
+                                    ensure_2d=True, copy=self.copy)
+        else:
+            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True,
+                            copy=self.copy)
 
         if self.n_components is None:
             if self.svd_solver != 'arpack':
