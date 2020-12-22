@@ -569,7 +569,7 @@ class cython_interface(object):
 ###############################################################################
     def get_all_parameter_classes(self, ns):
         res = []
-        for c in self.namespace_dict[ns].classes:
+        for c in sorted(self.namespace_dict[ns].classes):
             if any(re.match(r'{}(<.+>)?$'.format(x), c) for x in ['Batch', 'Online', 'Distributed']):
                 p = self.get_class_for_typedef(ns, c, 'ParameterType')
                 if p and p not in res:

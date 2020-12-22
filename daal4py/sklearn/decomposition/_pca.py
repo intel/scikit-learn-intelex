@@ -82,15 +82,15 @@ class PCA(PCA_original):
             daal_n_components = n_components
 
         fpType = getFPType(X)
-        centering_algo = daal4py.normalization_zscore(
-            fptype=fpType, doScale=False)
+
+        covariance_algo = daal4py.covariance(fptype=fpType, outputMatrixType='covarianceMatrix')
         pca_alg = daal4py.pca(
             fptype=fpType,
-            method='svdDense',
-            normalization=centering_algo,
+            method='correlationDense',
             resultsToCompute='mean|variance|eigenvalue',
             isDeterministic=True,
-            nComponents=daal_n_components
+            nComponents=daal_n_components,
+            covariance=covariance_algo
         )
         pca_res = pca_alg.compute(X)
 
