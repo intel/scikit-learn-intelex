@@ -876,9 +876,9 @@ double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
     }
 
     PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
-    return NULL;
+    return 0.0;
 #else
-    return -1;
+    return -1.0;
 #endif
 }
 
