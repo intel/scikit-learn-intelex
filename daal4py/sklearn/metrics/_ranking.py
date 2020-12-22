@@ -119,12 +119,14 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
                                            multi_class, average, sample_weight)
     elif y_type[0] == "binary":
         labels = y_type[1]
-        if max_fpr is None and sample_weight is None and len(labels) == 2:
+        condition = max_fpr is None and sample_weight is None and len(labels) == 2
+        if condition:
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
             if not np.array_equal(labels, [0, 1]):
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
             result = d4p.daal_roc_auc_score(y_true.reshape(-1, 1), y_score.reshape(-1, 1))
-        else:
+
+        if not condition or result == -1:
             y_true = label_binarize(y_true, classes=labels)[:, 0]
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
             result = _average_binary_score(partial(_binary_roc_auc_score,
