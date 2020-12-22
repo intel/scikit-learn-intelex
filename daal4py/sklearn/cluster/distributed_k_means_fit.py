@@ -62,20 +62,25 @@ def distributed_k_means_fit(X, n_clusters, max_iter):
         actors
     ), f"number of nodes {num_nodes} is not equal to number of actors {len(actors)}"
 
-    row_partitions = unwrap_row_partitions(X, bind_ip=True)
+    row_partitions = unwrap_row_partitions(X)
 
-    row_part_ips = [ray.get(row_partitions[i][0]) for i in range(len(row_partitions))]
+    row_parts_last_idx = (
+        len(row_partitions) // num_nodes
+        if len(row_partitions) % num_nodes == 0
+        else len(row_partitions) // num_nodes + 1
+    )
 
-    actor_ips = [ray.get(actors[j].get_actor_ip.remote()) for j in range(len(actors))]
-
-    for i, row_part_ip in enumerate(row_part_ips):
-        row_part = row_partitions[i][1]
-        for j, actor_ip in enumerate(actor_ips):
-            if row_part_ip in actor_ip:
-                actors[j].append_row_part._remote(args=(row_part,))
-
+    i = 0
     for actor in actors:
-        actor.concat_row_parts.remote()
+        actor.set_row_parts._remote(
+            args=(
+            row_partitions[
+                slice(i, i + row_parts_last_idx)
+                if i + row_parts_last_idx < len(row_partitions)
+                else slice(i, len(row_partitions))
+            ])
+        )
+        i += row_parts_last_idx
 
     context = RayContext()
     pyccl = PyOneCCL(context.get_world_size(), context.current_node_id())
