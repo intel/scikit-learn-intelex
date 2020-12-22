@@ -22,11 +22,6 @@
 #include "map_reduce_tree.h"
 #include "daal4py_defines.h"
 
-using namespace std;
-using namespace daal;
-using namespace daal::algorithms;
-using namespace daal::data_management;
-
 namespace dist_custom {
 
 template<typename fptype, daal::algorithms::kmeans::Method method>
