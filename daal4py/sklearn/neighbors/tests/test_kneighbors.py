@@ -36,19 +36,15 @@ LOG_LOSS_RATIO = 1.00145
 ROC_AUC_RATIO = 0.999
 IRIS = load_iris()
 
-def make_dataset(n_samples=256, n_features=5, n_classes=2,
-                 test_size=0.5, shuffle=True):
-    x, y = make_classification(n_samples=n_samples, n_features=n_features,
-                               n_classes=n_classes, random_state=777)
-    return train_test_split(x, y, random_state=777,
-                            test_size=test_size, shuffle=shuffle)
 
-
-def check_determenistic(distance, algorithm, weight, k):
-    x_train, x_test, y_train, y_test = make_dataset()
+def _test_determenistic(distance, algorithm, weight, k):
+    x_train, x_test, y_train, y_test = \
+            train_test_split(IRIS.data, IRIS.target,
+                             test_size=0.33, random_state=31)
 
     alg_results = []
     for _ in range(N_TRIES):
+        # models
         scikit_model = ScikitKNeighborsClassifier(n_neighbors=k,
                                                   weights=weight,
                                                   algorithm=algorithm,
@@ -58,19 +54,36 @@ def check_determenistic(distance, algorithm, weight, k):
                                               algorithm=algorithm,
                                               leaf_size=30, p=2,
                                               metric=distance)
-        
-        scikit_predict = scikit_model.fit(x_train, y_train).predict(x_test)
-        daal_predict = daal_model.fit(x_train, y_train).predict(x_test)
+        # training
+        scikit_model.fit(x_train, y_train)
+        daal_model.fit(x_train, y_train)
+        # predict
+        scikit_predict = scikit_model.predict(x_test)
+        daal_predict = daal_model.predict(x_test)
 
         distances, indices = daal_model.kneighbors(x_test)
         alg_results.append((distances, indices, daal_predict))
-
+        # accuracy
         scikit_accuracy = accuracy_score(y_test, scikit_predict)
         daal_accuracy = accuracy_score(y_test, daal_predict)
-
         ratio = daal_accuracy / scikit_accuracy
         assert ratio >= ACCURACY_RATIO,\
-            f'kNN classifier:accuracy={ratio}'
+            f'kNN accuracy: scikit_accuracy={scikit_accuracy},daal_accuracy={daal_accuracy}, ratio={ratio}'
+        # predict proba
+        scikit_predict_proba = scikit_model.predict_proba(x_test)
+        daal_predict_proba = daal_model.predict_proba(x_test)
+        # log loss
+        scikit_log_loss = log_loss(y_test, scikit_predict_proba)
+        daal_log_loss = log_loss(y_test, daal_predict_proba)
+        ratio = daal_log_loss / scikit_log_loss
+        assert ratio <= LOG_LOSS_RATIO,\
+            f'kNN log_loss: scikit_log_loss={scikit_log_loss},daal_log_loss={daal_log_loss}, ratio={ratio}'
+        # ROC AUC
+        scikit_roc_auc = roc_auc_score(y_test, scikit_predict_proba, multi_class='ovr')
+        daal_roc_auc = roc_auc_score(y_test, daal_predict_proba, multi_class='ovr')
+        ratio = daal_roc_auc / scikit_roc_auc
+        assert ratio >= ROC_AUC_RATIO,\
+            f'kNN roc_auc: scikit_roc_auc={scikit_roc_auc},daal_roc_auc={daal_roc_auc}, ratio={ratio}'
 
     for i in range(1, N_TRIES):
         for j, res in enumerate(alg_results[i]):
@@ -83,70 +96,4 @@ def check_determenistic(distance, algorithm, weight, k):
 @pytest.mark.parametrize('weight', WEIGHTS)
 @pytest.mark.parametrize('k', KS)
 def test_determenistic(distance, algorithm, weight, k):
-    check_determenistic(distance, algorithm, weight, k)
-
-
-def check_log_loss(distance, algorithm, weight, k):
-    for _ in range(N_TRIES):
-        x_train, x_test, y_train, y_test = \
-            train_test_split(IRIS.data, IRIS.target,
-                             test_size=0.33, random_state=31)
-
-        scikit_model = ScikitKNeighborsClassifier(n_neighbors=k,
-                                                  weights=weight,
-                                                  algorithm=algorithm,
-                                                  leaf_size=30, p=2,
-                                                  metric=distance)
-        daal_model = DaalKNeighborsClassifier(n_neighbors=k, weights=weight,
-                                              algorithm=algorithm,
-                                              leaf_size=30, p=2,
-                                              metric=distance)
-
-        scikit_predict_proba = scikit_model.fit(x_train, y_train).predict_proba(x_test)
-        daal_predict_proba = daal_model.fit(x_train, y_train).predict_proba(x_test)
-        scikit_log_loss = log_loss(y_test, scikit_predict_proba)
-        daal_log_loss = log_loss(y_test, daal_predict_proba)
-        ratio = daal_log_loss / scikit_log_loss
-        assert ratio <= LOG_LOSS_RATIO,\
-            f'kNN log_loss: scikit_log_loss={scikit_log_loss},daal_log_loss={daal_log_loss}, ratio={ratio}'
-
-
-@pytest.mark.parametrize('distance', DISTANCES)
-@pytest.mark.parametrize('algorithm', ALGORITHMS)
-@pytest.mark.parametrize('weight', WEIGHTS)
-@pytest.mark.parametrize('k', KS)
-def test_log_loss(distance, algorithm, weight, k):
-    check_log_loss(distance, algorithm, weight, k)
-
-
-def check_roc_auc(distance, algorithm, weight, k):
-    for _ in range(N_TRIES):
-        x_train, x_test, y_train, y_test = \
-            train_test_split(IRIS.data, IRIS.target,
-                             test_size=0.33, random_state=31)
-
-        scikit_model = ScikitKNeighborsClassifier(n_neighbors=k,
-                                                  weights=weight,
-                                                  algorithm=algorithm,
-                                                  leaf_size=30, p=2,
-                                                  metric=distance)
-        daal_model = DaalKNeighborsClassifier(n_neighbors=k, weights=weight,
-                                              algorithm=algorithm,
-                                              leaf_size=30, p=2,
-                                              metric=distance)
-
-        scikit_predict_proba = scikit_model.fit(x_train, y_train).predict_proba(x_test)
-        daal_predict_proba = daal_model.fit(x_train, y_train).predict_proba(x_test)
-        scikit_roc_auc = roc_auc_score(y_test, scikit_predict_proba, multi_class='ovr')
-        daal_roc_auc = roc_auc_score(y_test, daal_predict_proba, multi_class='ovr')
-        ratio = daal_roc_auc / scikit_roc_auc
-        assert ratio >= ROC_AUC_RATIO,\
-            f'kNN log_loss: scikit_roc_auc={scikit_roc_auc},daal_roc_auc={daal_roc_auc}, ratio={ratio}'
-
-
-@pytest.mark.parametrize('distance', DISTANCES)
-@pytest.mark.parametrize('algorithm', ALGORITHMS)
-@pytest.mark.parametrize('weight', WEIGHTS)
-@pytest.mark.parametrize('k', KS)
-def test_roc_auc(distance, algorithm, weight, k):
-    check_roc_auc(distance, algorithm, weight, k)
+    _test_determenistic(distance, algorithm, weight, k)
