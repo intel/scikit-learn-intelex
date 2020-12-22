@@ -59,7 +59,9 @@ jobs:
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
-      conda create -n CB python=3.7 daal daal-include cython mpich jinja2 numpy clang-tools scikit-learn lightgbm xgboost pandas pytest -c conda-forge -c intel
+      conda create -n CB python=3.7 
+      conda install -q scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools lightgbm xgboost scikit-learn mpich
+      conda install -q --override-channels -c intel dal dal-include
     displayName: Create Anaconda environment
   - script: |
       source activate CB
@@ -69,13 +71,14 @@ jobs:
       export LDFLAGS="${LDFLAGS//-Wl,-dead_strip_dylibs}"
       export LDFLAGS_LD="${LDFLAGS_LD//-dead_strip_dylibs}"
       export LDSHARED="-bundle -undefined dynamic_lookup -flto -Wl,-export_dynamic -Wl,-pie -Wl,-headerpad_max_install_names"
-      python setup.py install
+      python setup.py install --single-version-externally-managed --record=record.txt
     displayName: Conda build
   - script: |
       source activate CB
       python -c "import daal4py"
       mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
       python -m unittest discover -v -s tests -p test*.py
+      pytest --pyargs daal4py/sklearn/
     displayName: Testing
   - script: |
       source activate CB
