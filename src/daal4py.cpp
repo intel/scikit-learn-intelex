@@ -856,7 +856,7 @@ double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
     const size_t col_test = y_test.table->getNumberOfColumns();
     const size_t row_test = y_test.table->getNumberOfRows();
 
-    if (row_true != 1 || row_test != 1 || col_true != col_test)
+    if (col_true != 1 || col_test != 1 || row_true != row_test)
     {
         PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
         return NULL;
@@ -865,18 +865,20 @@ double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
     auto table_true = get_table(y_true);
     auto table_test = get_table(y_test);
     auto type       = (*table_test->getDictionary())[0].indexType;
-    if (type == daal::data_management::data_feature_utils::DAAL_FLOAT64 || type == daal::data_management::data_feature_utils::DAAL_INT64_S || type == daal::data_management::data_feature_utils::DAAL_INT64_U)
+    if (type == daal::data_management::data_feature_utils::DAAL_FLOAT64 ||
+        type == daal::data_management::data_feature_utils::DAAL_INT64_S ||
+        type == daal::data_management::data_feature_utils::DAAL_INT64_U ||
+        type == daal::data_management::data_feature_utils::DAAL_FLOAT32 ||
+        type == daal::data_management::data_feature_utils::DAAL_INT32_S ||
+        type == daal::data_management::data_feature_utils::DAAL_INT32_U)
     {
-        return daal::data_management::internal::rocAucScore<double>(table_true, table_test);
+        return daal::data_management::internal::rocAucScore(table_true, table_test);
     }
-    else if (type == daal::data_management::data_feature_utils::DAAL_FLOAT32 || type == daal::data_management::data_feature_utils::DAAL_INT32_S || type == daal::data_management::data_feature_utils::DAAL_INT32_U)
-    {
-        return daal::data_management::internal::rocAucScore<float>(table_true, table_test);
-    }
+
     PyErr_SetString(PyExc_RuntimeError, "Unknown shape data");
-    return NULL;
+    return 0.0;
 #else
-    return NULL;
+    return -1.0;
 #endif
 }
 
