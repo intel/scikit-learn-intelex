@@ -61,8 +61,8 @@ jobs:
       conda update -q conda
       conda create -n CB python=3.7
       source activate CB
-      conda install -q scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools lightgbm scikit-learn mpich
-      conda install -q --override-channels -c intel dal dal-include
+      conda install -q scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn mpich
+      conda install -q --override-channels -c intel dal dal-include cython
     displayName: Create Anaconda environment
   - script: |
       source activate CB
