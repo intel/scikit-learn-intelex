@@ -194,8 +194,12 @@ class PCA(PCA_original):
                 self._fit_svd_solver = 'full'
 
         if self._fit_svd_solver == 'full':
-            logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
-            return self._fit_full(X, n_components)
+            if X.shape[1]/X.shape[0] < 2:
+                logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
+                return self._fit_full(X, n_components)
+            else:
+                logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
+                return PCA_original._fit_full(self, X, n_components)
         elif self._fit_svd_solver in ['arpack', 'randomized']:
             logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
             return self._fit_truncated(X, n_components, self._fit_svd_solver)
