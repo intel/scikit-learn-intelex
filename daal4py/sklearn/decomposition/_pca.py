@@ -194,7 +194,7 @@ class PCA(PCA_original):
                 self._fit_svd_solver = 'full'
 
         if self._fit_svd_solver == 'full':
-            if X.shape[1]/X.shape[0] < 2:
+            if X.shape[1] / X.shape[0] < 2:
                 logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
                 return self._fit_full(X, n_components)
             else:
