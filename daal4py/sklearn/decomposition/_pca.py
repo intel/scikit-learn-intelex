@@ -196,16 +196,18 @@ class PCA(PCA_original):
         if self._fit_svd_solver == 'full':
             if X.shape[1] / X.shape[0] < 2:
                 logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
-                return self._fit_full(X, n_components)
+                result = self._fit_full(X, n_components)
             else:
                 logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
-                return PCA_original._fit_full(self, X, n_components)
+                result = PCA_original._fit_full(self, X, n_components)
         elif self._fit_svd_solver in ['arpack', 'randomized']:
             logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
-            return self._fit_truncated(X, n_components, self._fit_svd_solver)
+            result = self._fit_truncated(X, n_components, self._fit_svd_solver)
         else:
             raise ValueError("Unrecognized svd_solver='{0}'"
                              "".format(self._fit_svd_solver))
+
+        return result
 
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
         if sklearn_check_version('0.22'):
