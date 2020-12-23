@@ -149,5 +149,6 @@ deselected_tests:
   - metrics/tests/test_ranking.py::test_roc_curve_hard < 0.22
   - metrics/tests/test_ranking.py::test_precision_recall_curve < 0.22
 
-  # Eigenvalues in the last component aren't equal because of different implementations of PCA
+  # Some values in PCA.components_ (in the last component) aren't equal (0.6 on average for absolute error in this test)
+  # because of different implementations of PCA. Also, results are not stable.
   - decomposition/tests/test_incremental_pca.py::test_whitening
