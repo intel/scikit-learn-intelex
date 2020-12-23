@@ -42,9 +42,8 @@ the linear regression workflow is showcased below::
 In the example above, it can be seen that model is divided into training and
 prediction.  This gives flexibility when writing custom grid searches and custom
 functions that modify model behavior or use it as a parameter. Daal4py also
-allows for direct usage of NumPy arrays and Pandas DataFrames instead of DAAL's
+allows for direct usage of NumPy arrays and Pandas DataFrames instead of oneDAL's
 NumericTables, which allow for better integration with the Pandas/NumPy/SciPy stack.
-
 
 Daal4py machine learning algorithms are constructed with a rich set of
 parameters. Assuming we want to find the initial set of centroids for kmeans,
@@ -81,6 +80,32 @@ Last but not least, daal4py allows :ref:`getting input data from streams <stream
     for input in stream_or_filelist:
         algo.compute(input)
     result = algo.finalize()
+
+oneAPI and GPU support in daal4py
+---------------------------------
+daal4py provide support of oneAPI conepts such as context and queues. This allow execution of
+algorithms on different devices, particularly GPUs. This implemented via 'with sycl_context("xpu")'
+blocks that will direct execution to selected device type. gpu, cpu and host devices are supported
+at the moment. Same aproach implemented for scikit-learn patching, so scikit-learn programs can be
+executed on GPU devices as well.   
+
+Intel CPU/GPU optimizations patching:
+```py
+from daal4py.sklearn import patch_sklearn
+from daal4py.oneapi import sycl_context
+patch_sklearn()
+
+from sklearn.svm import SVC
+from sklearn.datasets import load_digits
+digits = load_digits()
+X, y = digits.data, digits.target
+with sycl_context("gpu"):
+    clf = SVC().fit(X, y)
+    res = clf.predict(X)
+```
+For GPU execution DPC++ runtime(compiler runtime and driver) are requered - DPC++ system
+requirements(https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html)
+
 
 Daal4py's Design
 ----------------
