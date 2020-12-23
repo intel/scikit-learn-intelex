@@ -383,11 +383,6 @@ class ElasticNet(ElasticNet_original):
         if check_input:
             X, y = check_X_y(X, y, copy=False, accept_sparse='csc', dtype=[np.float64, np.float32], multi_output=True, y_numeric=True)
             y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
-        else:
-            #only for compliance with Sklearn, this assert is not required for Intel(R) oneAPI Data
-            #Analytics Library
-            if (isinstance(X, np.ndarray) and X.flags['F_CONTIGUOUS'] == False):
-                raise ValueError("ndarray is not Fortran contiguous")
 
         if isinstance(X, np.ndarray):
             self.fit_shape_good_for_daal_ = True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False   
@@ -403,6 +398,14 @@ class ElasticNet(ElasticNet_original):
             res_new = super(ElasticNet, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
+
+        if not check_input:
+            #only for compliance with Sklearn, this assert is not required for Intel(R) oneAPI Data
+            #Analytics Library
+            if (isinstance(X, np.ndarray) and X.flags['F_CONTIGUOUS'] == False):
+                # print(X.flags)
+                raise ValueError("ndarray is not Fortran contiguous")
+
         self.n_iter_ = None
         self._gap = None
         #only for pass tests "check_estimators_fit_returns_self(readonly_memmap=True) and check_regressors_train(readonly_memmap=True)

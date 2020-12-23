@@ -94,8 +94,8 @@ def _daal_type_of_target(y):
         _daal_assert_all_finite(y)
         return 'continuous' + suffix
 
-    unique = np.sort(pd.unique(y.ravel())) if pandas_is_imported else np.unique(y)
-
+    # unique = np.sort(pd.unique(y.ravel())) if pandas_is_imported else np.unique(y)
+    unique = np.unique(y)
     if (len(unique) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
         result = ('multiclass' + suffix, None)  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
     else:
