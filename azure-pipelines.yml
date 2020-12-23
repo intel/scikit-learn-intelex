@@ -78,7 +78,6 @@ jobs:
       python -c "import daal4py"
       mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
       python -m unittest discover -v -s tests -p test*.py
-      pytest --pyargs daal4py/sklearn/
     displayName: Testing
   - script: |
       source activate CB
