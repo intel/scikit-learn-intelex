@@ -95,16 +95,20 @@ from daal4py.sklearn import patch_sklearn
 from daal4py.oneapi import sycl_context
 patch_sklearn()
 
-from sklearn.svm import SVC
-from sklearn.datasets import load_digits
-digits = load_digits()
-X, y = digits.data, digits.target
+from sklearn.cluster import DBSCAN
+
+X = np.array([[1., 2.], [2., 2.], [2., 3.],
+            [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
 with sycl_context("gpu"):
-    clf = SVC().fit(X, y)
-    res = clf.predict(X)
+    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 ```
 For execution on GPU, DPC++ compiler runtime and driver are required. Refer to `DPC++ system
 requirements <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
+
+DPC++ compiler runtime can be installed from:
+PyPi - pip install dpcpp-cpp-rt
+
+Anaconda - conda install dpcpp_cpp_rt -c intel 
 
 
 Daal4py's Design
