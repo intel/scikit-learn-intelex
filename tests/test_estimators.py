@@ -71,11 +71,9 @@ def _restore_from_saved(md, saved_dict):
 
 
 class Test(unittest.TestCase):
-    @unittest.skipUnless(check_version(((2019,'P',0),(2021,'P', 200)), daal_version), "not supported in this library version")
     def test_KNeighborsClassifier(self):
-        check_estimator(KNeighborsClassifier(algorithm='kd_tree'))
+        check_estimator(KNeighborsClassifier())
 
-    @unittest.skipUnless(check_version(((2019,'P',0),(2021,'B', 107)), daal_version), "not supported in this library version")
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:
@@ -86,7 +84,7 @@ class Test(unittest.TestCase):
 
         md = sklearn.utils.estimator_checks
         saved = _replace_and_save(md, ['check_methods_subset_invariance', 'check_dict_unchanged'], dummy)
-        check_estimator(RandomForestClassifier)
+        check_estimator(RandomForestClassifier())
         _restore_from_saved(md, saved)
 
     def test_RandomForestRegressor(self):
@@ -102,7 +100,7 @@ class Test(unittest.TestCase):
         _restore_from_saved(md, saved)
 
     def test_GBTDAALClassifier(self):
-        check_estimator(GBTDAALClassifier)
+        check_estimator(GBTDAALClassifier())
 
     def test_GBTDAALRegressor(self):
         def dummy(*args, **kwargs):
@@ -111,12 +109,11 @@ class Test(unittest.TestCase):
         md = sklearn.utils.estimator_checks
         # got unexpected slightly different prediction result between two same calls in this test
         saved = _replace_and_save(md, ['check_estimators_data_not_an_array'], dummy)
-        check_estimator(GBTDAALRegressor)
+        check_estimator(GBTDAALRegressor())
         _restore_from_saved(md, saved)
 
-    @unittest.skipUnless(check_version(((2020,'P',0)), daal_version), "not supported in this library version")
     def test_AdaBoostClassifier(self):
-        check_estimator(AdaBoostClassifier)
+        check_estimator(AdaBoostClassifier())
 
 
 if __name__ == '__main__':

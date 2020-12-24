@@ -153,7 +153,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
 
-        self.n_features_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
         rs_ = check_random_state(self.random_state)
         seed_ = rs_.randint(0, np.iinfo('i').max)
@@ -224,7 +224,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
         for i in range(self.n_estimators):
             # print("Tree #{}".format(i))
             est_i = clone(est)
-            est_i.n_features_ = self.n_features_
+            est_i.n_features_in_ = self.n_features_in_
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = self.classes_
             est_i.n_classes_ = self.n_classes_
@@ -242,7 +242,7 @@ class RandomForestClassifier(skl_RandomForestClassifier):
                 'nodes' : tree_i_state_class.node_ar,
                 'values': tree_i_state_class.value_ar }
             # 
-            est_i.tree_ = Tree(self.n_features_, np.array([self.n_classes_], dtype=np.intp), self.n_outputs_)
+            est_i.tree_ = Tree(self.n_features_in_, np.array([self.n_classes_], dtype=np.intp), self.n_outputs_)
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
 
@@ -386,7 +386,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
             y = np.reshape(y, (-1, 1))
 
         self.n_outputs_ = y.shape[1]
-        self.n_features_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         rs_ = check_random_state(self.random_state)
 
         if not self.bootstrap and self.oob_score:
@@ -455,7 +455,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
         estimators_ = []
         for i in range(self.n_estimators):
             est_i = clone(est)
-            est_i.n_features_ = self.n_features_
+            est_i.n_features_in_ = self.n_features_in_
             est_i.n_outputs_ = self.n_outputs_
 
             tree_i_state_class = daal4py.getTreeState(self.daal_model_, i)
@@ -465,7 +465,7 @@ class RandomForestRegressor(skl_RandomForestRegressor):
                 'nodes' : tree_i_state_class.node_ar,
                 'values': tree_i_state_class.value_ar }
 
-            est_i.tree_ = Tree(self.n_features_, np.array([1], dtype=np.intp), self.n_outputs_)
+            est_i.tree_ = Tree(self.n_features_in_, np.array([1], dtype=np.intp), self.n_outputs_)
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
 

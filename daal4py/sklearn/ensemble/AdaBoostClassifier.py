@@ -90,7 +90,7 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
 
         self.n_classes_ = len(self.classes_)
 
-        self.n_features_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
         # Classifier can't train when only one class is present.
         # Trivial case
@@ -133,11 +133,11 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
             check_is_fitted(self)
         else:
-            check_is_fitted(self, ['n_features_', 'n_classes_'])
+            check_is_fitted(self, ['n_features_in_', 'n_classes_'])
 
         # Input validation
         X = check_array(X, dtype=[np.single, np.double])
-        if X.shape[1] != self.n_features_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError('Shape of input is different from what was seen in `fit`')
 
         # Trivial case
