@@ -84,20 +84,23 @@ class PCA(PCA_original):
         fpType = getFPType(X)
 
         covariance_algo = daal4py.covariance(fptype=fpType, outputMatrixType='covarianceMatrix')
+        covariance_res = covariance_algo.compute(X)
+
+        self.mean_ = covariance_res.mean.ravel()
+        covariance = covariance_res.covariance
+        variances_ = np.array([covariance[i: i] for i in range(n_features)])
+
         pca_alg = daal4py.pca(
             fptype=fpType,
             method='correlationDense',
-            resultsToCompute='mean|variance|eigenvalue',
+            resultsToCompute='eigenvalue',
             isDeterministic=True,
-            nComponents=daal_n_components,
-            covariance=covariance_algo
+            nComponents=daal_n_components
         )
-        pca_res = pca_alg.compute(X)
+        pca_res = pca_alg.compute(X, covariance)
 
-        self.mean_ = pca_res.means.ravel()
-        variances_ = pca_res.variances.ravel()
         components_ = pca_res.eigenvectors
-        explained_variance_ = pca_res.eigenvalues.ravel()
+        explained_variance_ = np.maximum(pca_res.eigenvalues.ravel(), 0)
         tot_var  = explained_variance_.sum()
         explained_variance_ratio_ = explained_variance_ / tot_var
 
