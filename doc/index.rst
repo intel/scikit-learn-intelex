@@ -105,10 +105,15 @@ with sycl_context("gpu"):
 For execution on GPU, DPC++ compiler runtime and driver are required. Refer to `DPC++ system
 requirements <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
 
-DPC++ compiler runtime can be installed from:
-PyPi - pip install dpcpp-cpp-rt
+DPC++ compiler runtime can be installed either from PyPI or Anaconda:
 
-Anaconda - conda install dpcpp_cpp_rt -c intel 
+- Install from PyPI::
+  
+     pip install dpcpp-cpp-rt
+
+- Install from Anaconda::
+  
+     conda install dpcpp_cpp_rt -c intel 
 
 
 Daal4py's Design
