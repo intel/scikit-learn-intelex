@@ -90,18 +90,18 @@ Same approach is implemented for scikit-learn patching, so scikit-learn programs
 executed on GPU devices as well.
 
 To patch your code with Intel CPU/GPU optimizations:
-```py
-from daal4py.sklearn import patch_sklearn
-from daal4py.oneapi import sycl_context
-patch_sklearn()
+.. code-block:: python
 
-from sklearn.cluster import DBSCAN
+   from daal4py.sklearn import patch_sklearn
+   from daal4py.oneapi import sycl_context
+   patch_sklearn()
 
-X = np.array([[1., 2.], [2., 2.], [2., 3.],
-            [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
-with sycl_context("gpu"):
-    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
-```
+   from sklearn.cluster import DBSCAN
+
+   X = np.array([[1., 2.], [2., 2.], [2., 3.],
+               [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+   with sycl_context("gpu"):
+      clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 For execution on GPU, DPC++ compiler runtime and driver are required. Refer to `DPC++ system
 requirements <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
 
