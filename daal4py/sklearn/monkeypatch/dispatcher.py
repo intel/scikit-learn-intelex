@@ -23,8 +23,8 @@ from ..neighbors import KNeighborsClassifier as KNeighborsClassifier_daal4py
 from ..model_selection import _daal_train_test_split
 from ..utils.validation import _daal_assert_all_finite
 from ..svm.svm import SVC as SVC_daal4py
-from ..ensemble.forest import RandomForestClassifier as RandomForestClassifier_daal4py
-from ..ensemble.forest import RandomForestRegressor as RandomForestRegressor_daal4py
+from ..ensemble._forest import RandomForestClassifier as RandomForestClassifier_daal4py
+from ..ensemble._forest import RandomForestRegressor as RandomForestRegressor_daal4py
 from ..metrics import _daal_roc_auc_score
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
