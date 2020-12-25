@@ -57,7 +57,7 @@ else:
     assert False, sys.platform + ' not supported'
 
 def get_lib_suffix():
-    
+
     def walk_ld_library_path():
         if IS_WIN:
             ld_library_path = os.environ.get('LIBRARY_LIB')
@@ -129,6 +129,8 @@ if not no_dist and sys.version_info <= (3, 6):
     no_dist = True
 no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
 mpi_root = None if no_dist else os.environ['MPIROOT']
+oneccl = True if not no_dist and 'CCL_ROOT' in os.environ else False
+oneccl_root = None if not oneccl else os.environ['CCL_ROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
@@ -166,12 +168,22 @@ if no_dist :
     MPI_LIBDIRS = []
     MPI_LIBS    = []
     MPI_CPPS     = []
+    if oneccl:
+        ONECCL_INCDIRS = []
+        ONECCL_LIBDIRS = []
+        ONECCL_LIBS    = []
+        ONECCL_CPPS     = []
 else:
     DIST_CFLAGS  = ['-D_DIST_',]
     DIST_CPPS    = ['src/transceiver.cpp']
     MPI_INCDIRS = [jp(mpi_root, 'include')]
     MPI_LIBDIRS = [jp(mpi_root, 'lib')]
     MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
+
+    if oneccl:
+        ONECCL_INCDIRS = [jp(oneccl_root, 'include')]
+        ONECCL_LIBDIRS = [jp(oneccl_root, 'lib')]
+
     if MPI_LIBNAME:
         MPI_LIBS = [MPI_LIBNAME]
     elif IS_WIN:
@@ -182,6 +194,11 @@ else:
         assert MPI_LIBS, "Couldn't find MPI library"
     else:
         MPI_LIBS    = ['mpi']
+        if oneccl:
+             ONECCL_LIBS    = ['ccl']
+    if oneccl:
+        ONECCL_LIBS    = ['ccl']
+        ONECCL_CPPS = ['src/oneccl/oneccl_transceiver.cpp']
     MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
 
 #Level Zero workaround for oneDAL Beta06
@@ -246,6 +263,8 @@ def getpyexts():
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
+        if oneccl:
+            include_dir_plat.append(oneccl_root + '/include')
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl', 'dpcpp']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-DD4P_VERSION="'+d4p_version+'"', '-DNPY_ALLOW_THREADS=1'] + get_type_defines()
     ela = []
@@ -326,6 +345,16 @@ def getpyexts():
                               libraries=libraries_plat + MPI_LIBS,
                               library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
                               language='c++'))
+        if oneccl:
+            exts.append(Extension('oneccl_transceiver',
+                                  ONECCL_CPPS,
+                                  depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
+                                  include_dirs=include_dir_plat + [np.get_include()] + ONECCL_INCDIRS,
+                                  extra_compile_args=eca,
+                                  extra_link_args=ela + ["-Wl,-rpath,{}".format(x) for x in ONECCL_LIBDIRS],
+                                  libraries=libraries_plat + ONECCL_LIBS,
+                                  library_dirs=DAAL_LIBDIRS + ONECCL_LIBDIRS,
+                                  language='c++'))
     return exts
 
 
@@ -387,6 +416,8 @@ setup(  name             = "daal4py",
         install_requires = ['numpy>=1.14', 'daal', 'dpcpp_cpp_rt'],
         packages = ['daal4py',
                     'daal4py.oneapi',
+                    'daal4py.engines',
+                    'daal4py.engines.ray',
                     'daal4py.sklearn',
                     'daal4py.sklearn.cluster',
                     'daal4py.sklearn.decomposition',

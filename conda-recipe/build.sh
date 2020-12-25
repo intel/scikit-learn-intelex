@@ -14,6 +14,12 @@ if [ ! -z "${DPCPPROOT}" ]; then
     dpcpp --version
 fi
 
+# if oneccl vars path is specified
+if [ "${CCLROOT}" != "" ]; then
+    source ${CCLROOT}/env/setvars.sh
+    source ${CCLROOT}/env/vars.sh
+fi
+
 # if DAALROOT not exists then provide PREFIX
 if [ "${DAALROOT}" != "" ] && [ "${DALROOT}" == "" ] ; then
     export DALROOT="${DAALROOT}"

@@ -15,9 +15,22 @@
 # limitations under the License.
 #******************************************************************************/
 
-from .validation import _daal_assert_all_finite
-from .pyoneccl import PyOneCCL
+import ray
+from daal4py.engines.context import Context
 
+class RayContext(Context):
 
-__all__ = ['_daal_assert_all_finite', '_daal_check_array', '_daal_check_X_y',
-           '_daal_validate_data', 'PyOneCCL']
+    def current_node_id(self):
+        return ray.services.get_node_ip_address()
+
+    def node_ids(self):
+        return ray.state.node_ids()
+
+    def available_resources(self):
+        return ray.available_resources()
+
+    def get_world_size(self):
+        return len(ray.nodes())
+
+    def cluster_resources(self):
+        return ray.cluster_resources()

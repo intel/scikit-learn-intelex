@@ -16,6 +16,7 @@ build:
     - DAALROOT
     - DALROOT
     - TBBROOT
+    - CCLROOT
     ignore_run_exports:
        - python
        - mpich

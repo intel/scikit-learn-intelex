@@ -15,9 +15,27 @@
 # limitations under the License.
 #******************************************************************************/
 
-from .validation import _daal_assert_all_finite
-from .pyoneccl import PyOneCCL
+import pandas
 
+class RowPartitionsActor:
+    def __init__(self, node):
+        self.row_parts_ = []
+        self.node_ = node
 
-__all__ = ['_daal_assert_all_finite', '_daal_check_array', '_daal_check_X_y',
-           '_daal_validate_data', 'PyOneCCL']
+    def set_row_parts(self, *row_parts):
+        self.row_parts_ = pandas.concat(list(row_parts), axis=0)
+
+    def set_row_parts_list(self, *row_parts_list):
+        self.row_parts_ = list(row_parts_list)
+
+    def append_row_part(self, row_part):
+        self.row_parts_.append(row_part)
+
+    def concat_row_parts(self):
+        self.row_parts_ = pandas.concat(self.row_parts_, axis=0)
+
+    def get_row_parts(self):
+        return self.row_parts_
+
+    def get_actor_ip(self):
+        return self.node_

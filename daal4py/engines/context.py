@@ -15,9 +15,17 @@
 # limitations under the License.
 #******************************************************************************/
 
-from .validation import _daal_assert_all_finite
-from .pyoneccl import PyOneCCL
+class Context:
+    def get_world_size(self):
+        pass
 
+    def current_node_id(self):
+        pass
 
-__all__ = ['_daal_assert_all_finite', '_daal_check_array', '_daal_check_X_y',
-           '_daal_validate_data', 'PyOneCCL']
+    def node_ids(self):
+        pass
+
+    def available_resources(self):
+        pass
+    def cluster_resources(self):
+        pass

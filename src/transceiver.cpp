@@ -15,6 +15,7 @@
  *******************************************************************************/
 
 #include "mpi/mpi_transceiver.h"
+#include "oneccl/oneccl_transceiver.h"
 #include <mutex>
 #include <Python.h>
 #include <cstdlib>

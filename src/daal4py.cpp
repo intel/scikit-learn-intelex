@@ -429,8 +429,8 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     npy_intp column_len = PyArray_DIM(ary, 0);
                     int ary_numtype     = PyArray_TYPE(ary);
                     /*
-		     * Input is 2D F-contiguous array: represent it as SOA numeric table
-		     */
+             * Input is 2D F-contiguous array: represent it as SOA numeric table
+             */
                     daal::data_management::SOANumericTablePtr soatbl;
 
                     // iterate over columns
