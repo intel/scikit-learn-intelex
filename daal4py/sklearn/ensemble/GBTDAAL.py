@@ -132,7 +132,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
         self.n_classes_ = len(self.classes_)
 
-        self.n_features_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
         # Classifier can't train when only one class is present.
         # Trivial case
@@ -172,11 +172,11 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
     def _predict(self, X, resultsToEvaluate):
         # Check is fit had been called
-        check_is_fitted(self, ['n_features_', 'n_classes_'])
+        check_is_fitted(self, ['n_features_in_', 'n_classes_'])
         
         # Input validation
         X = check_array(X, dtype=[np.single, np.double])
-        if X.shape[1] != self.n_features_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError('Shape of input is different from what was seen in `fit`')
 
         # Trivial case
@@ -232,7 +232,7 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         # Convert to 2d array
         y_ = y.reshape((-1, 1))
 
-        self.n_features_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
         # Get random seed
         rs_ = check_random_state(self.random_state)
@@ -266,11 +266,11 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
 
     def predict(self, X):
         # Check is fit had been called
-        check_is_fitted(self, ['n_features_'])
+        check_is_fitted(self, ['n_features_in_'])
 
         # Input validation
         X = check_array(X, dtype=[np.single, np.double])
-        if X.shape[1] != self.n_features_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError('Shape of input is different from what was seen in `fit`')
 
         if not hasattr(self, 'daal_model_'):
