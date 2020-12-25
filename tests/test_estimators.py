@@ -26,9 +26,6 @@ from daal4py import _get__daal_link_version__ as dv
 daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
 print('DAAL version:', daal_version)
 
-from daal4py.sklearn.neighbors import KNeighborsClassifier
-from daal4py.sklearn.ensemble.decision_forest import RandomForestClassifier
-from daal4py.sklearn.ensemble.decision_forest import RandomForestRegressor
 from daal4py.sklearn.ensemble import GBTDAALClassifier
 from daal4py.sklearn.ensemble import GBTDAALRegressor
 from daal4py.sklearn.ensemble import AdaBoostClassifier
@@ -71,31 +68,6 @@ def _restore_from_saved(md, saved_dict):
 
 
 class Test(unittest.TestCase):
-    def test_RandomForestClassifier(self):
-        # check_methods_subset_invariance fails.
-        # Issue is created:
-        # https://github.com/IntelPython/daal4py/issues/129
-        # Skip the test
-        def dummy(*args, **kwargs):
-            pass
-
-        md = sklearn.utils.estimator_checks
-        saved = _replace_and_save(md, ['check_methods_subset_invariance', 'check_dict_unchanged', 'check_requires_y_none'], dummy)
-        check_estimator(RandomForestClassifier())
-        _restore_from_saved(md, saved)
-
-    def test_RandomForestRegressor(self):
-        # check_fit_idempotent is known to fail with DAAL's decision
-        # forest regressor, due to different partitioning of data
-        # between threads from run to run.
-        # Hence skip that test
-        def dummy(*args, **kwargs):
-            pass
-        md = sklearn.utils.estimator_checks
-        saved = _replace_and_save(md, ['check_methods_subset_invariance', 'check_dict_unchanged', 'check_requires_y_none'], dummy)
-        check_estimator(RandomForestRegressor())
-        _restore_from_saved(md, saved)
-
     def test_GBTDAALClassifier(self):
         check_estimator(GBTDAALClassifier())
 
