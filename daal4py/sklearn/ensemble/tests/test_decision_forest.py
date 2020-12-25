@@ -32,7 +32,7 @@ from daal4py.sklearn.ensemble \
     import RandomForestRegressor as DaalRandomForestRegressor
 
 N_TRIES = 10
-ACCURACY_RATIO = 0.8
+ACCURACY_RATIO = 0.7
 MSE_RATIO = 1.42
 LOG_LOSS_RATIO = 2.28
 ROC_AUC_RATIO = 0.978
