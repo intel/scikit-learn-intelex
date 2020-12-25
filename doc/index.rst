@@ -42,9 +42,8 @@ the linear regression workflow is showcased below::
 In the example above, it can be seen that model is divided into training and
 prediction.  This gives flexibility when writing custom grid searches and custom
 functions that modify model behavior or use it as a parameter. Daal4py also
-allows for direct usage of NumPy arrays and Pandas DataFrames instead of DAAL's
-NumericTables, which allow for better integration with the Pandas/NumPy/SciPy stack.
-
+allows for direct usage of NumPy arrays and pandas DataFrames instead of oneDAL
+NumericTables, which allow for better integration with the pandas/NumPy/SciPy stack.
 
 Daal4py machine learning algorithms are constructed with a rich set of
 parameters. Assuming we want to find the initial set of centroids for kmeans,
@@ -81,6 +80,43 @@ Last but not least, daal4py allows :ref:`getting input data from streams <stream
     for input in stream_or_filelist:
         algo.compute(input)
     result = algo.finalize()
+
+oneAPI and GPU support in daal4py
+---------------------------------
+daal4py provides support of oneAPI concepts such as context and queues, which means that
+algorithms can be executed on different devices, GPUs in particular. This is implemented via 'with sycl_context("xpu")'
+blocks that redirect execution to a device of the selected type: GPU, CPU, or host.
+Same approach is implemented for scikit-learn patching, so scikit-learn programs can be
+executed on GPU devices as well.
+
+To patch your code with Intel CPU/GPU optimizations:
+
+.. code-block:: python
+
+   from daal4py.sklearn import patch_sklearn
+   from daal4py.oneapi import sycl_context
+   patch_sklearn()
+
+   from sklearn.cluster import DBSCAN
+
+   X = np.array([[1., 2.], [2., 2.], [2., 3.],
+               [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+   with sycl_context("gpu"):
+      clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+
+For execution on GPU, DPC++ compiler runtime and driver are required. Refer to `DPC++ system
+requirements <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
+
+DPC++ compiler runtime can be installed either from PyPI or Anaconda:
+
+- Install from PyPI::
+  
+     pip install dpcpp-cpp-rt
+
+- Install from Anaconda::
+  
+     conda install dpcpp_cpp_rt -c intel 
+
 
 Daal4py's Design
 ----------------

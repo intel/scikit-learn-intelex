@@ -44,14 +44,14 @@ Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Sam
 Intel CPU optimizations patching
 ```py
 from daal4py.sklearn import patch_sklearn
+from daal4py.oneapi import sycl_context
 patch_sklearn()
 
-from sklearn.svm import SVC
-from sklearn.datasets import load_digits
-digits = load_digits()
-X, y = digits.data, digits.target
-clf = SVC().fit(X, y)
-res = clf.predict(X)
+from sklearn.cluster import DBSCAN
+
+X = np.array([[1., 2.], [2., 2.], [2., 3.],
+            [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 ```
 
 Intel CPU/GPU optimizations patching
@@ -60,14 +60,14 @@ from daal4py.sklearn import patch_sklearn
 from daal4py.oneapi import sycl_context
 patch_sklearn()
 
-from sklearn.svm import SVC
-from sklearn.datasets import load_digits
-digits = load_digits()
-X, y = digits.data, digits.target
+from sklearn.cluster import DBSCAN
+
+X = np.array([[1., 2.], [2., 2.], [2., 3.],
+            [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
 with sycl_context("gpu"):
-    clf = SVC().fit(X, y)
-    res = clf.predict(X)
+    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 ```
+
 daal4py API, allows you to use wider set of Intel(R) oneAPI Data Analytics Library algorithms in just one line:
 ```py
 import daal4py as d4p
