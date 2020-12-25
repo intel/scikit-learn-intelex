@@ -135,6 +135,7 @@ ignore = {
     'algorithms::normalization::zscore': ['moments'], # parameter, required an interface
     'algorithms::em_gmm': ['inputValues', 'covariance'], # optional input is dictionary, parameter
     'algorithms::em_gmm::init': ['seed',], # deprecated
+    'algorithms::pca': ['covariance'], # parameter defined multiple times with different types
     'algorithms::kdtree_knn_classification': ['seed',], # deprecated
     'algorithms::kdtree_knn_classification::prediction': ['algorithms::classifier::prediction::ResultId',
                                                           'algorithms::classifier::prediction::Result'],
@@ -161,7 +162,6 @@ ifaces = {
     'regression::training::Batch': ('daal::services::SharedPtr<daal::algorithms::regression::training::Batch>', None),
     'regression::prediction::Batch': ('daal::services::SharedPtr<daal::algorithms::regression::prediction::Batch>', None),
     'normalization::zscore::BatchImpl': ('daal::services::SharedPtr<daal::algorithms::normalization::zscore::BatchImpl>', None),
-    'covariance::BatchImpl': ('daal::services::SharedPtr<daal::algorithms::covariance::BatchImpl>', None),
 }
 
 # By default input arguments have no default value (e.g. they are required).
