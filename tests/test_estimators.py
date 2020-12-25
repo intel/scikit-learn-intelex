@@ -71,9 +71,6 @@ def _restore_from_saved(md, saved_dict):
 
 
 class Test(unittest.TestCase):
-    def test_KNeighborsClassifier(self):
-        check_estimator(KNeighborsClassifier())
-
     def test_RandomForestClassifier(self):
         # check_methods_subset_invariance fails.
         # Issue is created:
@@ -83,7 +80,7 @@ class Test(unittest.TestCase):
             pass
 
         md = sklearn.utils.estimator_checks
-        saved = _replace_and_save(md, ['check_methods_subset_invariance', 'check_dict_unchanged'], dummy)
+        saved = _replace_and_save(md, ['check_methods_subset_invariance', 'check_dict_unchanged', 'check_requires_y_none'], dummy)
         check_estimator(RandomForestClassifier())
         _restore_from_saved(md, saved)
 
@@ -95,8 +92,8 @@ class Test(unittest.TestCase):
         def dummy(*args, **kwargs):
             pass
         md = sklearn.utils.estimator_checks
-        saved = _replace_and_save(md, ['check_methods_subset_invariance', 'check_dict_unchanged'], dummy)
-        check_estimator(RandomForestRegressor)
+        saved = _replace_and_save(md, ['check_methods_subset_invariance', 'check_dict_unchanged', 'check_requires_y_none'], dummy)
+        check_estimator(RandomForestRegressor())
         _restore_from_saved(md, saved)
 
     def test_GBTDAALClassifier(self):
