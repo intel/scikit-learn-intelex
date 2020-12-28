@@ -33,7 +33,7 @@ WEIGHTS = ['uniform', 'distance']
 KS = [1, 3, 7, 15, 31]
 N_TRIES = 10
 ACCURACY_RATIO = 1.0 if daal_check_version(((2020, 'P', 300))) else 0.9
-LOG_LOSS_RATIO = 1.00145
+LOG_LOSS_RATIO = 1.02
 ROC_AUC_RATIO = 0.999
 IRIS = load_iris()
 
