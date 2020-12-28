@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,28 @@
   
 
   
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Input Data" href="data.html" />
@@ -50,7 +50,7 @@
           
 
           
-            <a href="contents.html" class="icon icon-home"> daal4py
+            <a href="contents.html" class="icon icon-home" alt="Documentation Home"> daal4py
           
 
           
@@ -77,6 +77,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -89,6 +90,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">About daal4py</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#designed-for-data-scientists-and-framework-designers">Designed for Data Scientists and Framework Designers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#api-design-and-usage">API Design and usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#oneapi-and-gpu-support-in-daal4py">oneAPI and GPU support in daal4py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#daal4py-s-design">Daal4py’s Design</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#built-for-performance">Built for Performance</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getting-daal4py">Getting daal4py</a></li>
@@ -107,6 +109,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -145,7 +148,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="contents.html">Docs</a> &raquo;</li>
+      <li><a href="contents.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Fast, Scalable and Easy Machine Learning With DAAL4PY</li>
     
@@ -174,7 +177,7 @@ be easily and efficiently scaled out to clusters of workstations.  Internally it
 oneAPI Data Analytics Library to deliver the best performance.</p>
 <div class="section" id="designed-for-data-scientists-and-framework-designers">
 <h2>Designed for Data Scientists and Framework Designers<a class="headerlink" href="#designed-for-data-scientists-and-framework-designers" title="Permalink to this headline">¶</a></h2>
-<p>daal4py was created to give data scientists the easist way to utilize Intel(R) oneAPI Data Analytics
+<p>daal4py was created to give data scientists the easiest way to utilize Intel(R) oneAPI Data Analytics
 Library powerful machine learning building blocks directly in a high-productivity manner. A
 simplified API gives high-level abstractions to the user with minimal boilerplate, allowing for
 quick to write and easy to maintain code when utilizing Jupyter Notebooks. For scaling capabilities,
@@ -205,8 +208,8 @@ the linear regression workflow is showcased below:</p>
 <p>In the example above, it can be seen that model is divided into training and
 prediction.  This gives flexibility when writing custom grid searches and custom
 functions that modify model behavior or use it as a parameter. Daal4py also
-allows for direct usage of NumPy arrays and Pandas DataFrames instead of DAAL’s
-NumericTables, which allow for better integration with the Pandas/NumPy/SciPy stack.</p>
+allows for direct usage of NumPy arrays and pandas DataFrames instead of oneDAL
+NumericTables, which allow for better integration with the pandas/NumPy/SciPy stack.</p>
 <p>Daal4py machine learning algorithms are constructed with a rich set of
 parameters. Assuming we want to find the initial set of centroids for kmeans,
 we first create an algorithm and configure it for 10 clusters using the ‘PlusPlus’ method:</p>
@@ -244,14 +247,50 @@ adding initializing/finalizing the network and adding a keyword-parameter:</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="oneapi-and-gpu-support-in-daal4py">
+<h2>oneAPI and GPU support in daal4py<a class="headerlink" href="#oneapi-and-gpu-support-in-daal4py" title="Permalink to this headline">¶</a></h2>
+<p>daal4py provides support of oneAPI concepts such as context and queues, which means that
+algorithms can be executed on different devices, GPUs in particular. This is implemented via ‘with sycl_context(“xpu”)’
+blocks that redirect execution to a device of the selected type: GPU, CPU, or host.
+Same approach is implemented for scikit-learn patching, so scikit-learn programs can be
+executed on GPU devices as well.</p>
+<p>To patch your code with Intel CPU/GPU optimizations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py.sklearn</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
+<span class="kn">from</span> <span class="nn">daal4py.oneapi</span> <span class="kn">import</span> <span class="n">sycl_context</span>
+<span class="n">patch_sklearn</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">DBSCAN</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">8.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">],</span> <span class="p">[</span><span class="mf">8.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">],</span> <span class="p">[</span><span class="mf">25.</span><span class="p">,</span> <span class="mf">80.</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">sycl_context</span><span class="p">(</span><span class="s2">&quot;gpu&quot;</span><span class="p">):</span>
+   <span class="n">clustering</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For execution on GPU, DPC++ compiler runtime and driver are required. Refer to <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html">DPC++ system
+requirements</a> for details.</p>
+<p>DPC++ compiler runtime can be installed either from PyPI or Anaconda:</p>
+<ul>
+<li><p>Install from PyPI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">dpcpp</span><span class="o">-</span><span class="n">cpp</span><span class="o">-</span><span class="n">rt</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install from Anaconda:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">dpcpp_cpp_rt</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
 <div class="section" id="daal4py-s-design">
 <h2>Daal4py’s Design<a class="headerlink" href="#daal4py-s-design" title="Permalink to this headline">¶</a></h2>
 <p>The design of daal4py utilizes several different technologies to deliver Intel(R) oneAPI Data
 Analytics Library performance in a flexible design to Data Scientists and Framework designers. The
 package uses Jinja templates to generate Cython-wrapped oneDAL C++ headers, with Cython as a bridge
 between the generated oneDAL code and the Python layer. This design allows for quicker development
-cycles and acts as a reference design to those looking to tailor their build of daal4py.  Cython
-also allows for good Python behavior, both for compatability to different frameworks and for
+cycles and acts as a reference design to those looking to tailor their build of daal4py. Cython
+also allows for good Python behavior, both for compatibility to different frameworks and for
 pickling and serialization.</p>
 </div>
 <div class="section" id="built-for-performance">
@@ -332,11 +371,19 @@ for more details.</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Intel
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -347,7 +394,6 @@ for more details.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
