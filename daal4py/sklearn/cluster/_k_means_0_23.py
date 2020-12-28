@@ -229,7 +229,7 @@ def _fit(self, X, y=None, sample_weight=None):
 
     """
     if self.precompute_distances != 'deprecated':
-        if sklearn_check_version('1.0'):
+        if sklearn_check_version('0.24'):
             warnings.warn("'precompute_distances' was deprecated in version "
                           "0.23 and will be removed in 1.0 (renaming of 0.25). It has no "
                           "effect", FutureWarning)
@@ -239,7 +239,7 @@ def _fit(self, X, y=None, sample_weight=None):
                           "effect", FutureWarning)
 
     if self.n_jobs != 'deprecated':
-        if sklearn_check_version('1.0'):
+        if sklearn_check_version('0.24'):
             warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
                           " removed in 1.0 (renaming of 0.25).", FutureWarning)
         elif sklearn_check_version('0.23'):
