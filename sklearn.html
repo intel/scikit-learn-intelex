@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,28 @@
   
 
   
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Examples" href="examples.html" /> 
@@ -49,7 +49,7 @@
           
 
           
-            <a href="contents.html" class="icon icon-home"> daal4py
+            <a href="contents.html" class="icon icon-home" alt="Documentation Home"> daal4py
           
 
           
@@ -76,6 +76,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -102,6 +103,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -140,7 +142,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="contents.html">Docs</a> &raquo;</li>
+      <li><a href="contents.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Scikit-Learn API and patching</li>
     
@@ -216,8 +218,9 @@ algorithms:</p>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html">sklearn.ensemble.RandomForestRegressor</a></p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html">sklearn.model_selection.train_test_split</a></p></li>
 <li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html">sklearn.manifold.TSNE</a></p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html">sklearn.metrics.roc_auc_score</a></p></li>
 </ol>
-<p>Monkey-patched scikit-learn clases and functions passes scikit-learn’s own test
+<p>Monkey-patched scikit-learn classes and functions passes scikit-learn’s own test
 suite, with few exceptions, specified in <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/deselected_tests.yaml">deselected_tests.yaml</a>.</p>
 <p>In particular the tests execute <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.estimator_checks.check_estimator.html">check_estimator</a>
 on all added and monkey-patched classes, which are discovered by means of
@@ -270,6 +273,7 @@ implement a subset of scikit-learn algorithms using Intel(R) oneAPI Data Analyti
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.linear_model.ElasticNet</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.linear_model.Lasso</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.model_selection._daal_train_test_split</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daal4py.sklearn.metrics._daal_roc_auc_score</span></code></p></li>
 </ol>
 <p>These classes are always available, whether the scikit-learn itself has been
 patched, or not. For example:</p>
@@ -308,11 +312,19 @@ patched, or not. For example:</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Intel
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -323,7 +335,6 @@ patched, or not. For example:</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

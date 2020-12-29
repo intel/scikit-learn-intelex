@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,28 @@
   
 
   
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Streaming Data" href="streaming.html" />
@@ -50,7 +50,7 @@
           
 
           
-            <a href="contents.html" class="icon icon-home"> daal4py
+            <a href="contents.html" class="icon icon-home" alt="Documentation Home"> daal4py
           
 
           
@@ -77,6 +77,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -102,6 +103,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -140,7 +142,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="contents.html">Docs</a> &raquo;</li>
+      <li><a href="contents.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Scaling on Distributed Memory (Multiprocessing)</li>
     
@@ -182,7 +184,7 @@ run on a cluster of workstations. Initialize the distribution engine:</p>
 <p>When calling the actual computation each process expects an input file or input
 array/DataFrame. Your program needs to tell each process which
 file/array/DataFrame it should operate on. Like with other SPMD programs this is
-usually done conditinally on the process id/rank (‘daal4py.my_procid()’). Assume
+usually done conditionally on the process id/rank (‘daal4py.my_procid()’). Assume
 we have one file for each process, all having the same prefix ‘file’ and being
 suffixed by a number. The code could then look like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s2">&quot;file</span><span class="si">{}</span><span class="s2">.csv&quot;</span><span class="p">,</span> <span class="n">daal4py</span><span class="o">.</span><span class="n">my_procid</span><span class="p">())</span>
@@ -282,11 +284,19 @@ daal4py can also be compiled for any other MPI implementation.</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Intel
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -297,7 +307,6 @@ daal4py can also be compiled for any other MPI implementation.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

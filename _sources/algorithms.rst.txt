@@ -4,15 +4,13 @@ Algorithms
 
 Classification
 --------------
-See also `Intel(R) oneAPI Data Analytics Library Classification
-<https://software.intel.com/en-us/daal-programming-guide-classification>`__.
+See also |onedal-dg-classification|_.
 
 Decision Forest Classification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Classification Decision Forest <https://software.intel.com/en-us/daal-programming-guide-decision-forest-2>`__
+Parameters and semantics are described in |onedal-dg-classification-decision-forest|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Decision Forest Classification
   <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_batch.py>`__
@@ -30,10 +28,9 @@ Examples:
 
 Decision Tree Classification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Classification Decision Tree <https://software.intel.com/en-us/daal-programming-guide-decision-tree-2>`__
+Parameters and semantics are described in |onedal-dg-classification-decision-tree|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Decision Tree Classification
   <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_classification_batch.py>`__
@@ -51,10 +48,9 @@ Examples:
 
 Gradient Boosted Classification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Classification Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-2>`__
+Parameters and semantics are described in |onedal-dg-classification-gradient-boosted-tree|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Gradient Boosted Classification
   <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_classification_batch.py>`__
@@ -72,11 +68,9 @@ Examples:
 
 k-Nearest Neighbors (kNN)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library k-Nearest Neighbors (kNN)
-<https://software.intel.com/en-us/daal-programming-guide-k-nearest-neighbors-knn-classifier>`__
+Parameters and semantics are described in |onedal-dg-k-nearest-neighbors-knn|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process kNN
   <https://github.com/IntelPython/daal4py/blob/master/examples/kdtree_knn_classification_batch.py>`__
@@ -94,9 +88,7 @@ Examples:
 
 Brute-force k-Nearest Neighbors (kNN)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library k-Nearest Neighbors (kNN)
-<https://software.intel.com/en-us/daal-programming-guide-k-nearest-neighbors-knn-classifier>`__
+Parameters and semantics are described in |onedal-dg-k-nearest-neighbors-knn|_.
 
 .. autoclass:: daal4py.bf_knn_classification_training
    :members: compute
@@ -111,10 +103,9 @@ Detailed description of parameters and semantics are described in
 
 AdaBoost Classification
 ^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Classification AdaBoost <https://software.intel.com/en-us/daal-programming-guide-adaboost-classifier>`__
+Parameters and semantics are described in |onedal-dg-classification-adaboost|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process AdaBoost Classification
   <https://github.com/IntelPython/daal4py/blob/master/examples/adaboost_batch.py>`__
@@ -132,10 +123,9 @@ Examples:
 
 BrownBoost Classification
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Classification BrownBoost <https://software.intel.com/en-us/daal-programming-guide-brownboost-classifier>`__
+Parameters and semantics are described in |onedal-dg-classification-brownboost|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process BrownBoost Classification
   <https://github.com/IntelPython/daal4py/blob/master/examples/brownboost_batch.py>`__
@@ -153,10 +143,9 @@ Examples:
 
 LogitBoost Classification
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Classification LogitBoost <https://software.intel.com/en-us/daal-programming-guide-logitboost-classifier>`__
+Parameters and semantics are described in |onedal-dg-classification-logitboost|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process LogitBoost Classification
   <https://github.com/IntelPython/daal4py/blob/master/examples/logitboost_batch.py>`__
@@ -174,10 +163,9 @@ Examples:
 
 Stump Weak Learner Classification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Classification Weak Learner Stump <https://software.intel.com/en-us/daal-programming-guide-stump-weak-learner-classifier>`__
+Parameters and semantics are described in |onedal-dg-classification-weak-learner-stump|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Stump Weak Learner Classification
   <https://github.com/IntelPython/daal4py/blob/master/examples/stump_classification_batch.py>`__
@@ -195,11 +183,9 @@ Examples:
 
 Multinomial Naive Bayes
 ^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Naive Bayes
-<https://software.intel.com/en-us/daal-programming-guide-naive-bayes-classifier>`__
+Parameters and semantics are described in |onedal-dg-naive-bayes|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_batch.py>`__
 - `Streaming Naive Bayes <https://github.com/IntelPython/daal4py/blob/master/examples/naive_bayes_streaming.py>`__
@@ -218,12 +204,11 @@ Examples:
 
 Support Vector Machine (SVM)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library SVM <https://software.intel.com/en-us/daal-programming-guide-support-vector-machine-classifier>`__
+Parameters and semantics are described in |onedal-dg-svm|_.
 
 Note: For the labels parameter, data is formatted as -1s and 1s
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process SVM
   <https://github.com/IntelPython/daal4py/blob/master/examples/svm_batch.py>`__
@@ -241,10 +226,9 @@ Examples:
 
 Logistic Regression
 ^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Logistic Regression <https://software.intel.com/en-us/daal-programming-guide-logistic-regression>`__
+Parameters and semantics are described in |onedal-dg-logistic-regression|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Binary Class Logistic Regression
   <https://github.com/IntelPython/daal4py/blob/master/examples/log_reg_binary_dense_batch.py>`__
@@ -264,15 +248,13 @@ Examples:
 
 Regression
 ----------
-See also `Intel(R) oneAPI Data Analytics Library Regression
-<https://software.intel.com/en-us/daal-programming-guide-regression>`__.
+See also |onedal-dg-regression|_.
 
 Decision Forest Regression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Regression Decision Forest <https://software.intel.com/en-us/daal-programming-guide-decision-forest-1>`__
+Parameters and semantics are described in |onedal-dg-regression-decision-forest|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Decision Forest Regression
   <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_batch.py>`__
@@ -290,10 +272,9 @@ Examples:
 
 Decision Tree Regression
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Regression Decision Tree <https://software.intel.com/en-us/daal-programming-guide-decision-tree-1>`__
+Parameters and semantics are described in |onedal-dg-regression-decision-tree|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Decision Tree Regression
   <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_regression_batch.py>`__
@@ -311,10 +292,9 @@ Examples:
 
 Gradient Boosted Regression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Regression Gradient Boosted Tree <https://software.intel.com/en-us/daal-programming-guide-gradient-boosted-trees-1>`__
+Parameters and semantics are described in |onedal-dg-regression-gradient-boosted-tree|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Boosted Regression Regression
   <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_regression_batch.py>`__
@@ -332,10 +312,9 @@ Examples:
 
 Linear Regression
 ^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Linear and Ridge Regression <https://software.intel.com/en-us/daal-programming-guide-linear-and-ridge-regressions-computation>`__
+Parameters and semantics are described in |onedal-dg-linear-regression|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_batch.py>`__
 - `Streaming Linear Regression <https://github.com/IntelPython/daal4py/blob/master/examples/linear_regression_streaming.py>`__
@@ -354,10 +333,9 @@ Examples:
 
 Least Absolute Shrinkage and Selection Operator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Least Absolute Shrinkage and Selection Operator <https://software.intel.com/en-us/daal-programming-guide-least-absolute-shrinkage-and-selection-operator>`__
+Parameters and semantics are described in |onedal-dg-least-absolute-shrinkage-and-selection-operator|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process LASSO Regression <https://github.com/IntelPython/daal4py/blob/master/examples/lasso_regression_batch.py>`__
 
@@ -374,10 +352,9 @@ Examples:
 
 Ridge Regression
 ^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Linear and Ridge Regression <https://software.intel.com/en-us/daal-programming-guide-linear-and-ridge-regressions-computation>`__
+Parameters and semantics are described in |onedal-dg-ridge-regression|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_batch.py>`__
 - `Streaming Ridge Regression <https://github.com/IntelPython/daal4py/blob/master/examples/ridge_regression_streaming.py>`__
@@ -396,10 +373,9 @@ Examples:
 
 Stump Regression
 ^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Regression Stump <https://software.intel.com/en-us/daal-programming-guide-regression-stump>`__
+Parameters and semantics are described in |onedal-dg-regression-stump|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Stump Regression
   <https://github.com/IntelPython/daal4py/blob/master/examples/stump_regression_batch.py>`__
@@ -417,10 +393,9 @@ Examples:
 
 Principal Component Analysis (PCA)
 ----------------------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library PCA <https://software.intel.com/en-us/daal-programming-guide-principal-component-analysis>`__
+Parameters and semantics are described in |onedal-dg-pca|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_batch.py>`__
 - `Multi-Process PCA <https://github.com/IntelPython/daal4py/blob/master/examples/pca_spmd.py>`__
@@ -432,10 +407,9 @@ Examples:
 
 Principal Component Analysis (PCA) Transform
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library PCA Transform <https://software.intel.com/en-us/daal-programming-guide-principal-components-analysis-transform>`__
+Parameters and semantics are described in |onedal-dg-pca-transform|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process PCA Transform <https://github.com/IntelPython/daal4py/blob/master/examples/pca_transform_batch.py>`__
 
@@ -446,18 +420,16 @@ Examples:
 
 K-Means Clustering
 ------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library K-Means-Clustering <https://software.intel.com/en-us/daal-programming-guide-k-means-clustering>`__
+Parameters and semantics are described in |onedal-dg-k-means-clustering|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_batch.py>`__
 - `Multi-Process K-Means <https://github.com/IntelPython/daal4py/blob/master/examples/kmeans_spmd.py>`__
 
 K-Means Initialization
 ^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library K-Means Initialization <https://software.intel.com/en-us/daal-programming-guide-initialization>`__
+Parameters and semantics are described in |onedal-dg-k-means-initialization|_.
 
 .. autoclass:: daal4py.kmeans_init
    :members: compute
@@ -466,8 +438,7 @@ Detailed description of parameters and semantics are described in
 
 K-Means
 ^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library K-Means Computation <https://software.intel.com/en-us/daal-programming-guide-computation>`__
+Parameters and semantics are described in |onedal-dg-k-means-computation|_.
 
 .. autoclass:: daal4py.kmeans
    :members: compute
@@ -476,10 +447,9 @@ Detailed description of parameters and semantics are described in
 
 Density-Based Spatial Clustering of Applications with Noise
 -----------------------------------------------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Density-Based Spatial Clustering of Applications with Noise <https://software.intel.com/en-us/daal-programming-guide-density-based-spatial-clustering-of-applications-with-noise>`__
+Parameters and semantics are described in |onedal-dg-density-based-spatial-clustering-of-applications-with-noise|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process DBSCAN <https://github.com/IntelPython/daal4py/blob/master/examples/dbscan_batch.py>`__
 
@@ -492,10 +462,9 @@ Outlier Detection
 -----------------
 Multivariate Outlier Detection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Multivariate Outlier Detection <https://software.intel.com/en-us/daal-programming-guide-multivariate-outlier-detection>`__
+Parameters and semantics are described in |onedal-dg-multivariate-outlier-detection|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Multivariate Outlier Detection <https://github.com/IntelPython/daal4py/blob/master/examples/multivariate_outlier_batch.py>`__
 
@@ -506,10 +475,9 @@ Examples:
 
 Univariate Outlier Detection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Univariate Outlier Detection <https://software.intel.com/en-us/daal-programming-guide-univariate-outlier-detection>`__
+Parameters and semantics are described in |onedal-dg-univariate-outlier-detection|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Univariate Outlier Detection <https://github.com/IntelPython/daal4py/blob/master/examples/univariate_outlier_batch.py>`__
 
@@ -520,10 +488,9 @@ Examples:
 
 Multivariate Bacon Outlier Detection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Multivariate Bacon Outlier Detection <https://software.intel.com/en-us/daal-programming-guide-multivariate-bacon-outlier-detection>`__
+Parameters and semantics are described in |onedal-dg-multivariate-bacon-outlier-detection|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Bacon Outlier Detection <https://github.com/IntelPython/daal4py/blob/master/examples/bacon_outlier_batch.py>`__
 
@@ -538,10 +505,9 @@ Objective Functions
 ^^^^^^^^^^^^^^^^^^^
 Mean Squared Error Algorithm (MSE)
 """"""""""""""""""""""""""""""""""
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library MSE <https://software.intel.com/en-us/daal-programming-guide-mean-squared-error-algorithm>`__
+Parameters and semantics are described in |onedal-dg-mse|_.
 
-Examples:
+.. rubric:: Examples:
 - `In Adagrad <https://github.com/IntelPython/daal4py/blob/master/examples/adagrad_mse_batch.py>`__
 - `In LBFGS <https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_mse_batch.py>`__
 - `In SGD <https://github.com/IntelPython/daal4py/blob/master/examples/sgd_mse_batch.py>`__
@@ -553,10 +519,9 @@ Examples:
 
 Logistic Loss
 """""""""""""
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Logistic Loss <https://software.intel.com/en-us/daal-programming-guide-logistic-loss>`__
+Parameters and semantics are described in |onedal-dg-logistic-loss|_.
 
-Examples:
+.. rubric:: Examples:
 - `In SGD <https://github.com/IntelPython/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`__
 
 .. autoclass:: daal4py.optimization_solver_logistic_loss
@@ -566,10 +531,9 @@ Examples:
 
 Cross-entropy Loss
 """"""""""""""""""
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Cross Entropy Loss <https://software.intel.com/en-us/daal-programming-guide-cross-entropy-loss>`__
+Parameters and semantics are described in |onedal-dg-cross-entropy-loss|_.
 
-Examples:
+.. rubric:: Examples:
 - `In LBFGS <https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_cr_entr_loss_batch.py>`__
 
 .. autoclass:: daal4py.optimization_solver_cross_entropy_loss
@@ -581,10 +545,9 @@ Iterative Solvers
 ^^^^^^^^^^^^^^^^^
 Stochastic Gradient Descent Algorithm
 """""""""""""""""""""""""""""""""""""
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library SGD <https://software.intel.com/en-us/daal-programming-guide-stochastic-gradient-descent-algorithm>`__
+Parameters and semantics are described in |onedal-dg-sgd|_.
 
-Examples:
+.. rubric:: Examples:
 - `Using Logistic Loss <https://github.com/IntelPython/daal4py/blob/master/examples/sgd_logistic_loss_batch.py>`__
 - `Using MSE <https://github.com/IntelPython/daal4py//blob/master/examples/sgd_mse_batch.py>`__
 
@@ -595,10 +558,9 @@ Examples:
 
 Limited-Memory Broyden-Fletcher-Goldfarb-Shanno Algorithm
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library LBFGS <https://software.intel.com/en-us/daal-programming-guide-limited-memory-broyden-fletcher-goldfarb-shanno-algorithm>`__
+Parameters and semantics are described in |onedal-dg-lbfgs|_.
 
-Examples:
+.. rubric:: Examples:
 - `Using MSE <https://github.com/IntelPython/daal4py/blob/master/examples/lbfgs_mse_batch.py>`__
 
 .. autoclass:: daal4py.optimization_solver_lbfgs
@@ -608,10 +570,9 @@ Examples:
 
 Adaptive Subgradient Method
 """""""""""""""""""""""""""
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library AdaGrad <https://software.intel.com/en-us/daal-programming-guide-adaptive-subgradient-method>`__
+Parameters and semantics are described in |onedal-dg-adagrad|_.
 
-Examples:
+.. rubric:: Examples:
 - `Using MSE <https://github.com/IntelPython/daal4py/blob/master/examples/adagrad_mse_batch.py>`__
 
 .. autoclass:: daal4py.optimization_solver_adagrad
@@ -621,10 +582,9 @@ Examples:
 
 Stochastic Average Gradient Descent
 """""""""""""""""""""""""""""""""""
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Stochastic Average Gradient Descent SAGA <https://software.intel.com/en-us/daal-programming-guide-stochastic-average-gradient-descent>`__
+Parameters and semantics are described in |onedal-dg-stochastic-average-gradient-descent-saga|_.
 
-Examples:
+.. rubric:: Examples:
 - `Single Proces saga-logistc_loss <https://github.com/IntelPython/daal4py/blob/master/examples/saga_batch.py>`__
 
 .. autoclass:: daal4py.optimization_solver_saga
@@ -636,10 +596,9 @@ Distances
 ---------
 Cosine Distance Matrix
 ^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Cosine Distance <https://software.intel.com/en-us/daal-programming-guide-cosine-distance-matrix>`__
+Parameters and semantics are described in |onedal-dg-cosine-distance|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Cosine Distance <https://github.com/IntelPython/daal4py/blob/master/examples/cosine_distance_batch.py>`__
 
@@ -650,10 +609,9 @@ Examples:
 
 Correlation Distance Matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Correlation Distance <https://software.intel.com/en-us/daal-programming-guide-correlation-distance-matrix>`__
+Parameters and semantics are described in |onedal-dg-correlation-distance|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Correlation Distance <https://github.com/IntelPython/daal4py/blob/master/examples/correlation_distance_batch.py>`__
 
@@ -664,15 +622,13 @@ Examples:
 
 Expectation-Maximization (EM)
 -----------------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Expectation-Maximization <https://software.intel.com/en-us/daal-programming-guide-expectation-maximization>`__
+Parameters and semantics are described in |onedal-dg-expectation-maximization|_.
 
 Initialization for the Gaussian Mixture Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Expectation-Maximization Initialization <https://software.intel.com/en-us/daal-programming-guide-initialization-1>`__
+Parameters and semantics are described in |onedal-dg-expectation-maximization-initialization|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Expectation-Maximization <https://github.com/IntelPython/daal4py/blob/master/examples/em_gmm_batch.py>`__
 
@@ -683,10 +639,9 @@ Examples:
 
 EM algorithm for the Gaussian Mixture Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Expectation-Maximization <https://software.intel.com/en-us/daal-programming-guide-computation-1>`__
+Parameters and semantics are described in |onedal-dg-expectation-maximization-for-the-gaussian-mixture-model|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Expectation-Maximization <https://github.com/IntelPython/daal4py/blob/master/examples/em_gmm_batch.py>`__
 
@@ -697,15 +652,13 @@ Examples:
 
 QR Decomposition
 ----------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library QR Decomposition <https://software.intel.com/en-us/daal-programming-guide-qr-decomposition>`__
+Parameters and semantics are described in |onedal-dg-qr-decomposition|_.
 
 QR Decomposition (without pivoting)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library QR Decomposition <https://software.intel.com/en-us/daal-programming-guide-qr-decomposition-without-pivoting>`__
+Parameters and semantics are described in |onedal-dg-qr-decomposition-without-pivoting|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process QR <https://github.com/IntelPython/daal4py/blob/master/examples/qr_batch.py>`__
 - `Streaming QR <https://github.com/IntelPython/daal4py/blob/master/examples/qr_streaming.py>`__
@@ -717,10 +670,9 @@ Examples:
 
 Pivoted QR Decomposition
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Pivoted QR Decomposition <https://software.intel.com/en-us/daal-programming-guide-pivoted-qr-decomposition>`__
+Parameters and semantics are described in |onedal-dg-pivoted-qr-decomposition|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Pivoted QR <https://github.com/IntelPython/daal4py/blob/master/examples/pivoted_qr_batch.py>`__
 
@@ -731,15 +683,13 @@ Examples:
 
 Normalization
 -------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Normalization <https://software.intel.com/en-us/daal-programming-guide-normalization>`__
+Parameters and semantics are described in |onedal-dg-normalization|_.
 
 Z-Score
 ^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Z-Score <https://software.intel.com/en-us/daal-programming-guide-z-score>`__
+Parameters and semantics are described in |onedal-dg-z-score|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Z-Score Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_zscore_batch.py>`__
 
@@ -750,10 +700,9 @@ Examples:
 
 Min-Max
 ^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Min-Max <https://software.intel.com/en-us/daal-programming-guide-min-max>`__
+Parameters and semantics are described in |onedal-dg-min-max|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Min-Max Normalization <https://github.com/IntelPython/daal4py/blob/master/examples/normalization_minmax_batch.py>`__
 
@@ -764,16 +713,14 @@ Examples:
 
 Random Number Engines
 ---------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Min-Max <https://software.intel.com/en-us/daal-programming-guide-engines>`__
+Parameters and semantics are described in |onedal-dg-engines|_.
 
 .. autoclass:: daal4py.engines_result
    :members:
 
 mt19937
 ^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library mt19937 <https://software.intel.com/en-us/daal-programming-guide-mt19937>`__
+Parameters and semantics are described in |onedal-dg-mt19937|_.
 
 .. autoclass:: daal4py.engines_mt19937
    :members: compute
@@ -782,8 +729,7 @@ Detailed description of parameters and semantics are described in
 
 mt2203
 ^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library mt2203 <https://software.intel.com/en-us/daal-programming-guide-mt2203>`__
+Parameters and semantics are described in |onedal-dg-mt2203|_.
 
 .. autoclass:: daal4py.engines_mt2203
    :members: compute
@@ -792,8 +738,7 @@ Detailed description of parameters and semantics are described in
 
 mcg59
 ^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library mcg59 <https://software.intel.com/en-us/daal-programming-guide-mcg59>`__
+Parameters and semantics are described in |onedal-dg-mcg59|_.
 
 .. autoclass:: daal4py.engines_mcg59
    :members: compute
@@ -802,15 +747,13 @@ Detailed description of parameters and semantics are described in
 
 Distributions
 -------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Distributions <https://software.intel.com/en-us/daal-programming-guide-distributions>`__
+Parameters and semantics are described in |onedal-dg-distributions|_.
 
 Bernoulli
 ^^^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Bernoulli Distribution <https://software.intel.com/en-us/daal-programming-guide-bernoulli>`__
+Parameters and semantics are described in |onedal-dg-bernoulli-distribution|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Bernoulli Distribution <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_bernoulli_batch.py>`__
 
@@ -821,10 +764,9 @@ Examples:
 
 Normal
 ^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Normal Distribution <https://software.intel.com/en-us/daal-programming-guide-normal>`__
+Parameters and semantics are described in |onedal-dg-normal-distribution|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Normal Distribution <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_normal_batch.py>`__
 
@@ -835,10 +777,9 @@ Examples:
 
 Uniform
 ^^^^^^^
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Uniform Distribution <https://software.intel.com/en-us/daal-programming-guide-uniform>`__
+Parameters and semantics are described in |onedal-dg-uniform-distribution|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Uniform Distribution <https://github.com/IntelPython/daal4py/blob/master/examples/distributions_uniform_batch.py>`__
 
@@ -849,10 +790,9 @@ Examples:
 
 Association Rules
 -----------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Association Rules <https://software.intel.com/en-us/daal-programming-guide-association-rules>`__
+Parameters and semantics are described in |onedal-dg-association-rules|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Association Rules <https://github.com/IntelPython/daal4py/blob/master/examples/association_rules_batch.py>`__
 
@@ -863,10 +803,9 @@ Examples:
 
 Cholesky Decomposition
 ----------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Cholesky Decomposition <https://software.intel.com/en-us/daal-programming-guide-cholesky-decomposition>`__
+Parameters and semantics are described in |onedal-dg-cholesky-decomposition|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Cholesky <https://github.com/IntelPython/daal4py/blob/master/examples/cholesky_batch.py>`__
 
@@ -877,10 +816,9 @@ Examples:
 
 Correlation and Variance-Covariance Matrices
 --------------------------------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Correlation and Variance-Covariance Matrices <https://software.intel.com/en-us/daal-programming-guide-correlation-and-variance-covariance-matrices>`__
+Parameters and semantics are described in |onedal-dg-correlation-and-variance-covariance-matrices|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Covariance <https://github.com/IntelPython/daal4py/blob/master/examples/covariance_batch.py>`__
 - `Streaming Covariance <https://github.com/IntelPython/daal4py/blob/master/examples/covariance_streaming.py>`__
@@ -893,10 +831,9 @@ Examples:
 
 Implicit Alternating Least Squares (implicit ALS)
 -------------------------------------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library K-Means-Clustering <https://software.intel.com/en-us/daal-programming-guide-implicit-alternating-least-squares>`__
+Parameters and semantics are described in |onedal-dg-implicit-alternating-least-squares|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process implicit ALS <https://github.com/IntelPython/daal4py/blob/master/examples/implicit_als_batch.py>`__
 
@@ -913,10 +850,9 @@ Examples:
 
 Moments of Low Order
 --------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Moments of Low Order <https://software.intel.com/en-us/daal-programming-guide-moments-of-low-order>`__
+Parameters and semantics are described in |onedal-dg-moments-of-low-order|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_dense_batch.py>`__
 - `Streaming Low Order Moments <https://github.com/IntelPython/daal4py/blob/master/examples/low_order_moms_streaming.py>`__
@@ -929,10 +865,9 @@ Examples:
 
 Quantiles
 ---------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library Quantiles <https://software.intel.com/en-us/daal-programming-guide-quantile>`__
+Parameters and semantics are described in |onedal-dg-quantiles|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Quantiles <https://github.com/IntelPython/daal4py/blob/master/examples/quantiles_batch.py>`__
 
@@ -943,10 +878,9 @@ Examples:
 
 Singular Value Decomposition (SVD)
 ----------------------------------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library SVD <https://software.intel.com/en-us/daal-programming-guide-singular-value-decomposition>`__
+Parameters and semantics are described in |onedal-dg-svd|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_batch.py>`__
 - `Streaming SVD <https://github.com/IntelPython/daal4py/blob/master/examples/svd_streaming.py>`__
@@ -959,10 +893,9 @@ Examples:
 
 Sorting
 -------
-Detailed description of parameters and semantics are described in
-`Intel(R) oneAPI Data Analytics Library sorting <https://software.intel.com/en-us/daal-programming-guide-sorting>`__
+Parameters and semantics are described in |onedal-dg-sorting|_.
 
-Examples:
+.. rubric:: Examples:
 
 - `Single-Process Sorting <https://github.com/IntelPython/daal4py/blob/master/examples/sorting_batch.py>`__
 
@@ -975,7 +908,7 @@ Trees
 -----
 .. autofunction:: daal4py.getTreeState
 
-Examples:
+.. rubric:: Examples:
 
 - `Decision Forest Regression <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_traverse_batch.py>`__
 - `Decision Forest Classification <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_traverse_batch.py>`__
@@ -983,3 +916,195 @@ Examples:
 - `Decision Tree Classification <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_classification_traverse_batch.py>`__
 - `Gradient Boosted Trees Regression <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_regression_traverse_batch.py>`__
 - `Gradient Boosted Trees Classification <https://github.com/IntelPython/daal4py/blob/master/examples/gradient_boosted_classification_traverse_batch.py>`__
+
+.. Link replacements
+
+.. |onedal-dg-bernoulli-distribution| replace:: Intel(R) oneAPI Data Analytics Library Bernoulli Distribution
+.. _onedal-dg-bernoulli-distribution: https://oneapi-src.github.io/oneDAL/daal/algorithms/distributions/bernoulli.html
+
+.. |onedal-dg-svd| replace:: Intel(R) oneAPI Data Analytics Library SVD
+.. _onedal-dg-svd: https://oneapi-src.github.io/oneDAL/daal/algorithms/svd/singular-value-decomposition.html
+
+.. |onedal-dg-regression| replace:: Intel(R) oneAPI Data Analytics Library Regression
+.. _onedal-dg-regression: https://oneapi-src.github.io/oneDAL/daal/usage/training-and-prediction/regression.html
+
+.. |onedal-dg-k-means-clustering| replace:: Intel(R) oneAPI Data Analytics Library K-Means Clustering
+.. _onedal-dg-k-means-clustering: https://oneapi-src.github.io/oneDAL/daal/algorithms/kmeans/k-means-clustering.html
+
+.. |onedal-dg-lbfgs| replace:: Intel(R) oneAPI Data Analytics Library LBFGS
+.. _onedal-dg-lbfgs: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/limited-memory-broyden-fletcher-goldfarb-shanno-algorithm.html
+
+.. |onedal-dg-naive-bayes| replace:: Intel(R) oneAPI Data Analytics Library Naive Bayes
+.. _onedal-dg-naive-bayes: https://oneapi-src.github.io/oneDAL/daal/algorithms/naive_bayes/naive-bayes-classifier.html
+
+.. |onedal-dg-expectation-maximization| replace:: Intel(R) oneAPI Data Analytics Library Expectation-Maximization
+.. _onedal-dg-expectation-maximization: https://oneapi-src.github.io/oneDAL/daal/algorithms/em/expectation-maximization.html
+
+.. |onedal-dg-mcg59| replace:: Intel(R) oneAPI Data Analytics Library mcg59
+.. _onedal-dg-mcg59: https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mcg59.html
+
+.. |onedal-dg-least-absolute-shrinkage-and-selection-operator| replace:: Intel(R) oneAPI Data Analytics Library Least Absolute Shrinkage and Selection Operator
+.. _onedal-dg-least-absolute-shrinkage-and-selection-operator: https://oneapi-src.github.io/oneDAL/daal/algorithms/lasso_elastic_net/lasso.html
+
+.. |onedal-dg-sorting| replace:: Intel(R) oneAPI Data Analytics Library Sorting
+.. _onedal-dg-sorting: https://oneapi-src.github.io/oneDAL/daal/algorithms/sorting/index.html
+
+.. |onedal-dg-expectation-maximization-for-the-gaussian-mixture-model| replace:: Intel(R) oneAPI Data Analytics Library Expectation-Maximization for the Gaussian Mixture Model
+.. _onedal-dg-expectation-maximization-for-the-gaussian-mixture-model: https://oneapi-src.github.io/oneDAL/daal/algorithms/em/expectation-maximization.html#em-algorithm-for-the-gaussian-mixture-model
+
+.. |onedal-dg-multivariate-outlier-detection| replace:: Intel(R) oneAPI Data Analytics Library Multivariate Outlier Detection
+.. _onedal-dg-multivariate-outlier-detection: https://oneapi-src.github.io/oneDAL/daal/algorithms/outlier_detection/multivariate.html
+
+.. |onedal-dg-expectation-maximization-initialization| replace:: Intel(R) oneAPI Data Analytics Library Expectation-Maximization Initialization
+.. _onedal-dg-expectation-maximization-initialization: https://oneapi-src.github.io/oneDAL/daal/algorithms/em/expectation-maximization.html#initialization
+
+.. |onedal-dg-pivoted-qr-decomposition| replace:: Intel(R) oneAPI Data Analytics Library Pivoted QR Decomposition
+.. _onedal-dg-pivoted-qr-decomposition: https://oneapi-src.github.io/oneDAL/daal/algorithms/qr/qr-pivoted.html
+
+.. |onedal-dg-regression-decision-tree| replace:: Intel(R) oneAPI Data Analytics Library Regression Decision Tree
+.. _onedal-dg-regression-decision-tree: https://oneapi-src.github.io/oneDAL/daal/algorithms/decision_tree/decision-tree-regression.html
+
+.. |onedal-dg-k-nearest-neighbors-knn| replace:: Intel(R) oneAPI Data Analytics Library k-Nearest Neighbors (kNN)
+.. _onedal-dg-k-nearest-neighbors-knn: https://oneapi-src.github.io/oneDAL/daal/algorithms/k_nearest_neighbors/k-nearest-neighbors-knn-classifier.html
+
+.. |onedal-dg-pca| replace:: Intel(R) oneAPI Data Analytics Library PCA
+.. _onedal-dg-pca: https://oneapi-src.github.io/oneDAL/daal/algorithms/pca/principal-component-analysis.html
+
+.. |onedal-dg-sgd| replace:: Intel(R) oneAPI Data Analytics Library SGD
+.. _onedal-dg-sgd: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/stochastic-gradient-descent-algorithm.html
+
+.. |onedal-dg-uniform-distribution| replace:: Intel(R) oneAPI Data Analytics Library Uniform Distribution
+.. _onedal-dg-uniform-distribution: https://oneapi-src.github.io/oneDAL/daal/algorithms/distributions/uniform.html
+
+.. |onedal-dg-cross-entropy-loss| replace:: Intel(R) oneAPI Data Analytics Library Cross Entropy Loss
+.. _onedal-dg-cross-entropy-loss: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/objective-functions/cross-entropy.html
+
+.. |onedal-dg-classification| replace:: Intel(R) oneAPI Data Analytics Library Classification
+.. _onedal-dg-classification: https://oneapi-src.github.io/oneDAL/daal/usage/training-and-prediction/classification.html
+
+.. |onedal-dg-cosine-distance| replace:: Intel(R) oneAPI Data Analytics Library Cosine Distance
+.. _onedal-dg-cosine-distance: https://oneapi-src.github.io/oneDAL/daal/algorithms/distance/cosine.html
+
+.. |onedal-dg-regression-stump| replace:: Intel(R) oneAPI Data Analytics Library Regression Stump
+.. _onedal-dg-regression-stump: https://oneapi-src.github.io/oneDAL/daal/algorithms/stump/regression.html
+
+.. |onedal-dg-multivariate-bacon-outlier-detection| replace:: Intel(R) oneAPI Data Analytics Library Multivariate Bacon Outlier Detection
+.. _onedal-dg-multivariate-bacon-outlier-detection: https://oneapi-src.github.io/oneDAL/daal/algorithms/outlier_detection/multivariate-bacon.html
+
+.. |onedal-dg-logistic-regression| replace:: Intel(R) oneAPI Data Analytics Library Logistic Regression
+.. _onedal-dg-logistic-regression: https://oneapi-src.github.io/oneDAL/daal/algorithms/logistic_regression/logistic-regression.html
+
+.. |onedal-dg-quantiles| replace:: Intel(R) oneAPI Data Analytics Library Quantiles
+.. _onedal-dg-quantiles: https://oneapi-src.github.io/oneDAL/daal/algorithms/quantiles/index.html
+
+.. |onedal-dg-pca-transform| replace:: Intel(R) oneAPI Data Analytics Library PCA Transform
+.. _onedal-dg-pca-transform: https://oneapi-src.github.io/oneDAL/daal/algorithms/pca/transform.html
+
+.. |onedal-dg-correlation-distance| replace:: Intel(R) oneAPI Data Analytics Library Correlation Distance
+.. _onedal-dg-correlation-distance: https://oneapi-src.github.io/oneDAL/daal/algorithms/distance/correlation.html
+
+.. |onedal-dg-association-rules| replace:: Intel(R) oneAPI Data Analytics Library Association Rules
+.. _onedal-dg-association-rules: https://oneapi-src.github.io/oneDAL/daal/algorithms/association_rules/association-rules.html
+
+.. |onedal-dg-univariate-outlier-detection| replace:: Intel(R) oneAPI Data Analytics Library Univariate Outlier Detection
+.. _onedal-dg-univariate-outlier-detection: https://oneapi-src.github.io/oneDAL/daal/algorithms/outlier_detection/univariate.html
+
+.. |onedal-dg-classification-gradient-boosted-tree| replace:: Intel(R) oneAPI Data Analytics Library Classification Gradient Boosted Tree
+.. _onedal-dg-classification-gradient-boosted-tree: https://oneapi-src.github.io/oneDAL/daal/algorithms/gradient_boosted_trees/gradient-boosted-trees-classification.html
+
+.. |onedal-dg-classification-brownboost| replace:: Intel(R) oneAPI Data Analytics Library Classification BrownBoost
+.. _onedal-dg-classification-brownboost: https://oneapi-src.github.io/oneDAL/daal/algorithms/boosting/brownboost.html
+
+.. |onedal-dg-regression-decision-forest| replace:: Intel(R) oneAPI Data Analytics Library Regression Decision Forest
+.. _onedal-dg-regression-decision-forest: https://oneapi-src.github.io/oneDAL/daal/algorithms/decision_forest/decision-forest-regression.html
+
+.. |onedal-dg-z-score| replace:: Intel(R) oneAPI Data Analytics Library Z-Score
+.. _onedal-dg-z-score: https://oneapi-src.github.io/oneDAL/daal/algorithms/normalization/z-score.html
+
+.. |onedal-dg-classification-weak-learner-stump| replace:: Intel(R) oneAPI Data Analytics Library Classification Weak Learner Stump
+.. _onedal-dg-classification-weak-learner-stump: https://oneapi-src.github.io/oneDAL/daal/algorithms/stump/classification.html
+
+.. |onedal-dg-svm| replace:: Intel(R) oneAPI Data Analytics Library SVM
+.. _onedal-dg-svm: https://oneapi-src.github.io/oneDAL/daal/algorithms/svm/support-vector-machine-classifier.html
+
+.. |onedal-dg-regression-gradient-boosted-tree| replace:: Intel(R) oneAPI Data Analytics Library Regression Gradient Boosted Tree
+.. _onedal-dg-regression-gradient-boosted-tree: https://oneapi-src.github.io/oneDAL/daal/algorithms/gradient_boosted_trees/gradient-boosted-trees-regression.html
+
+.. |onedal-dg-logistic-loss| replace:: Intel(R) oneAPI Data Analytics Library Logistic Loss
+.. _onedal-dg-logistic-loss: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/objective-functions/logistic-loss.html
+
+.. |onedal-dg-adagrad| replace:: Intel(R) oneAPI Data Analytics Library AdaGrad
+.. _onedal-dg-adagrad: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/adaptive-subgradient-method.html
+
+.. |onedal-dg-qr-decomposition| replace:: Intel(R) oneAPI Data Analytics Library QR Decomposition
+.. _onedal-dg-qr-decomposition: https://oneapi-src.github.io/oneDAL/daal/algorithms/qr/qr-decomposition.html
+
+.. |onedal-dg-mt19937| replace:: Intel(R) oneAPI Data Analytics Library mt19937
+.. _onedal-dg-mt19937: https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mt19937.html
+
+.. |onedal-dg-implicit-alternating-least-squares| replace:: Intel(R) oneAPI Data Analytics Library Implicit Alternating Least Squares
+.. _onedal-dg-implicit-alternating-least-squares: https://oneapi-src.github.io/oneDAL/daal/algorithms/implicit_als/implicit-alternating-least-squares.html
+
+.. |onedal-dg-linear-regression| replace:: Intel(R) oneAPI Data Analytics Library Linear Regression
+.. _onedal-dg-linear-regression: https://oneapi-src.github.io/oneDAL/daal/algorithms/linear_ridge_regression/linear-regression.html
+
+.. |onedal-dg-classification-adaboost| replace:: Intel(R) oneAPI Data Analytics Library Classification AdaBoost
+.. _onedal-dg-classification-adaboost: https://oneapi-src.github.io/oneDAL/daal/algorithms/boosting/adaboost.html
+
+.. |onedal-dg-distributions| replace:: Intel(R) oneAPI Data Analytics Library Distributions
+.. _onedal-dg-distributions: https://oneapi-src.github.io/oneDAL/daal/algorithms/distributions/index.html
+
+.. |onedal-dg-correlation-and-variance-covariance-matrices| replace:: Intel(R) oneAPI Data Analytics Library Correlation and Variance-Covariance Matrices
+.. _onedal-dg-correlation-and-variance-covariance-matrices: https://oneapi-src.github.io/oneDAL/daal/algorithms/covariance/correlation-and-variance-covariance-matrices.html
+
+.. |onedal-dg-classification-decision-tree| replace:: Intel(R) oneAPI Data Analytics Library Classification Decision Tree
+.. _onedal-dg-classification-decision-tree: https://oneapi-src.github.io/oneDAL/daal/algorithms/decision_tree/decision-tree-classification.html
+
+.. |onedal-dg-ridge-regression| replace:: Intel(R) oneAPI Data Analytics Library Ridge Regression
+.. _onedal-dg-ridge-regression: https://oneapi-src.github.io/oneDAL/daal/algorithms/linear_ridge_regression/ridge-regression.html
+
+.. |onedal-dg-classification-logitboost| replace:: Intel(R) oneAPI Data Analytics Library Classification LogitBoost
+.. _onedal-dg-classification-logitboost: https://oneapi-src.github.io/oneDAL/daal/algorithms/boosting/logitboost.html
+
+.. |onedal-dg-k-means-initialization| replace:: Intel(R) oneAPI Data Analytics Library K-Means Initialization
+.. _onedal-dg-k-means-initialization: https://oneapi-src.github.io/oneDAL/daal/algorithms/kmeans/k-means-clustering.html#initialization
+
+.. |onedal-dg-qr-decomposition-without-pivoting| replace:: Intel(R) oneAPI Data Analytics Library QR Decomposition without pivoting
+.. _onedal-dg-qr-decomposition-without-pivoting: https://oneapi-src.github.io/oneDAL/daal/algorithms/qr/qr-without-pivoting.html
+
+.. |onedal-dg-mse| replace:: Intel(R) oneAPI Data Analytics Library MSE
+.. _onedal-dg-mse: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/objective-functions/mse.html
+
+.. |onedal-dg-stochastic-average-gradient-descent-saga| replace:: Intel(R) oneAPI Data Analytics Library Stochastic Average Gradient Descent SAGA
+.. _onedal-dg-stochastic-average-gradient-descent-saga: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/stochastic-average-gradient-accelerated-method.html
+
+.. |onedal-dg-engines| replace:: Intel(R) oneAPI Data Analytics Library Engines
+.. _onedal-dg-engines: https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/index.html
+
+.. |onedal-dg-cholesky-decomposition| replace:: Intel(R) oneAPI Data Analytics Library Cholesky Decomposition
+.. _onedal-dg-cholesky-decomposition: https://oneapi-src.github.io/oneDAL/daal/algorithms/cholesky/cholesky.html
+
+.. |onedal-dg-classification-decision-forest| replace:: Intel(R) oneAPI Data Analytics Library Classification Decision Forest
+.. _onedal-dg-classification-decision-forest: https://oneapi-src.github.io/oneDAL/daal/algorithms/decision_forest/decision-forest-classification.html
+
+.. |onedal-dg-normalization| replace:: Intel(R) oneAPI Data Analytics Library Normalization
+.. _onedal-dg-normalization: https://oneapi-src.github.io/oneDAL/daal/algorithms/normalization/index.html
+
+.. |onedal-dg-density-based-spatial-clustering-of-applications-with-noise| replace:: Intel(R) oneAPI Data Analytics Library Density-Based Spatial Clustering of Applications with Noise
+.. _onedal-dg-density-based-spatial-clustering-of-applications-with-noise: https://oneapi-src.github.io/oneDAL/daal/algorithms/dbscan/index.html
+
+.. |onedal-dg-moments-of-low-order| replace:: Intel(R) oneAPI Data Analytics Library Moments of Low Order
+.. _onedal-dg-moments-of-low-order: https://oneapi-src.github.io/oneDAL/daal/algorithms/moments/moments-of-low-order.html
+
+.. |onedal-dg-mt2203| replace:: Intel(R) oneAPI Data Analytics Library mt2203
+.. _onedal-dg-mt2203: https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mt2203.html
+
+.. |onedal-dg-normal-distribution| replace:: Intel(R) oneAPI Data Analytics Library Normal Distribution
+.. _onedal-dg-normal-distribution: https://oneapi-src.github.io/oneDAL/daal/algorithms/distributions/normal.html
+
+.. |onedal-dg-k-means-computation| replace:: Intel(R) oneAPI Data Analytics Library K-Means Computation
+.. _onedal-dg-k-means-computation: https://oneapi-src.github.io/oneDAL/daal/algorithms/kmeans/k-means-clustering.html#computation
+
+.. |onedal-dg-min-max| replace:: Intel(R) oneAPI Data Analytics Library Min-Max
+.. _onedal-dg-min-max: https://oneapi-src.github.io/oneDAL/daal/algorithms/normalization/min-max.html
+
