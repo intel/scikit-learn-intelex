@@ -4,7 +4,7 @@ trigger:
     - master
   paths:
     include:
-    - docs
+    - doc
     - examples
 
 pr:
@@ -13,7 +13,7 @@ pr:
     - master
   paths:
     include:
-    - docs
+    - doc
     - examples
 
 pool:
@@ -21,18 +21,18 @@ pool:
 
 steps:
 - script: |
-    cd docs
+    cd doc
     sudo apt-get install python3-setuptools
     sudo pip3 install -r requirements.txt
   displayName: 'Install requirements'
 
 - script: |
-    cd docs
+    cd doc
     make html
   displayName: 'Build documentation'
 
 - script: |
-    cp -R docs/build $(Build.ArtifactStagingDirectory)/html
+    cp -R doc/build $(Build.ArtifactStagingDirectory)/html
   displayName: 'Copy build'
 
 - task: PublishPipelineArtifact@0
