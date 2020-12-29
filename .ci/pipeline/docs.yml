@@ -32,7 +32,7 @@ steps:
   displayName: 'Build documentation'
 
 - script: |
-    cp -R doc/build $(Build.ArtifactStagingDirectory)/html
+    cp -R doc/_build $(Build.ArtifactStagingDirectory)/html
   displayName: 'Copy build'
 
 - task: PublishPipelineArtifact@0
