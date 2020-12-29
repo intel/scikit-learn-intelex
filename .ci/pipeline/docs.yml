@@ -1,0 +1,41 @@
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - docs
+    - examples
+
+pr:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - docs
+    - examples
+
+pool:
+  vmImage: 'ubuntu-20.04'
+
+steps:
+- script: |
+    cd docs
+    sudo apt-get install python3-setuptools
+    sudo pip3 install -r requirements.txt
+  displayName: 'Install requirements'
+
+- script: |
+    cd docs
+    make html
+  displayName: 'Build documentation'
+
+- script: |
+    cp -R docs/build $(Build.ArtifactStagingDirectory)/html
+  displayName: 'Copy build'
+
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'daal4py-documentation'
+    targetPath: '$(Build.ArtifactStagingDirectory)/html'
