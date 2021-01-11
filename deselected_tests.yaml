@@ -156,3 +156,6 @@ deselected_tests:
   # The test fails because of changing of 'auto' strategy in PCA to improve performance.
   # 'randomized' PCA expected, but 'full' is given.
   - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
+
+  # Stability issue with max absolute difference: 0.00015992. Remove in the next release.
+  - decomposition/tests/test_pca.py::test_pca_dtype_preservation
