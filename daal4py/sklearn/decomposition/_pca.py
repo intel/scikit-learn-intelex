@@ -188,16 +188,17 @@ class PCA(PCA_original):
             n_components = self.n_components
 
         self._fit_svd_solver = self.svd_solver
+        shape_good_for_daal = X.shape[1] / X.shape[0] < 2
         if self._fit_svd_solver == 'auto':
             if max(X.shape) <= 500 or n_components == 'mle':
                 self._fit_svd_solver = 'full'
-            elif n_components >= 1 and n_components < .8 * min(X.shape):
+            elif n_components >= 1 and n_components < (.1 if shape_good_for_daal else .8) * min(X.shape):
                 self._fit_svd_solver = 'randomized'
             else:
                 self._fit_svd_solver = 'full'
 
         if self._fit_svd_solver == 'full':
-            if X.shape[1] / X.shape[0] < 2:
+            if shape_good_for_daal:
                 logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
                 result = self._fit_full(X, n_components)
             else:

@@ -152,3 +152,7 @@ deselected_tests:
   # Some values in PCA.components_ (in the last component) aren't equal (0.6 on average for absolute error in this test)
   # because of different implementations of PCA. Also, results are not stable.
   - decomposition/tests/test_incremental_pca.py::test_whitening
+
+  # The test fails because of changing of 'auto' strategy in PCA to improve performance.
+  # 'randomized' PCA expected, but 'full' is given.
+  - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
