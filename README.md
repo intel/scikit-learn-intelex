@@ -44,19 +44,20 @@ Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Sam
 
 Intel CPU optimizations patching
 ```py
+import numpy as np
 from daal4py.sklearn import patch_sklearn
-from daal4py.oneapi import sycl_context
 patch_sklearn()
 
 from sklearn.cluster import DBSCAN
 
 X = np.array([[1., 2.], [2., 2.], [2., 3.],
-            [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
 clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 ```
 
 Intel CPU/GPU optimizations patching
 ```py
+import numpy as np
 from daal4py.sklearn import patch_sklearn
 from daal4py.oneapi import sycl_context
 patch_sklearn()
@@ -64,7 +65,7 @@ patch_sklearn()
 from sklearn.cluster import DBSCAN
 
 X = np.array([[1., 2.], [2., 2.], [2., 3.],
-            [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
 with sycl_context("gpu"):
     clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 ```
