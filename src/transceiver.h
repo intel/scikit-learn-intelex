@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2014-2019 Intel Corporation
+* Copyright 2014-2021 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-
 
 // Provides communication features on four levels
 // 1. Fundamental, low-level communction (transceiver_base_iface)
