@@ -81,22 +81,25 @@ class PCA(PCA_original):
             daal_n_components = n_components
 
         fpType = getFPType(X)
-        centering_algo = daal4py.normalization_zscore(
-            fptype=fpType, doScale=False)
+
+        covariance_algo = daal4py.covariance(fptype=fpType, outputMatrixType='covarianceMatrix')
+        covariance_res = covariance_algo.compute(X)
+
+        self.mean_ = covariance_res.mean.ravel()
+        covariance = covariance_res.covariance
+        variances_ = np.array([covariance[i: i] for i in range(n_features)])
+
         pca_alg = daal4py.pca(
             fptype=fpType,
-            method='svdDense',
-            normalization=centering_algo,
-            resultsToCompute='mean|variance|eigenvalue',
+            method='correlationDense',
+            resultsToCompute='eigenvalue',
             isDeterministic=True,
             nComponents=daal_n_components
         )
-        pca_res = pca_alg.compute(X)
+        pca_res = pca_alg.compute(X, covariance)
 
-        self.mean_ = pca_res.means.ravel()
-        variances_ = pca_res.variances.ravel()
         components_ = pca_res.eigenvectors
-        explained_variance_ = pca_res.eigenvalues.ravel()
+        explained_variance_ = np.maximum(pca_res.eigenvalues.ravel(), 0)
         tot_var  = explained_variance_.sum()
         explained_variance_ratio_ = explained_variance_ / tot_var
 
@@ -184,23 +187,30 @@ class PCA(PCA_original):
             n_components = self.n_components
 
         self._fit_svd_solver = self.svd_solver
+        shape_good_for_daal = X.shape[1] / X.shape[0] < 2
         if self._fit_svd_solver == 'auto':
             if max(X.shape) <= 500 or n_components == 'mle':
                 self._fit_svd_solver = 'full'
-            elif n_components >= 1 and n_components < .8 * min(X.shape):
+            elif n_components >= 1 and n_components < (.1 if shape_good_for_daal else .8) * min(X.shape):
                 self._fit_svd_solver = 'randomized'
             else:
                 self._fit_svd_solver = 'full'
 
         if self._fit_svd_solver == 'full':
-            logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
-            return self._fit_full(X, n_components)
+            if shape_good_for_daal:
+                logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
+                result = self._fit_full(X, n_components)
+            else:
+                logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
+                result = PCA_original._fit_full(self, X, n_components)
         elif self._fit_svd_solver in ['arpack', 'randomized']:
             logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
-            return self._fit_truncated(X, n_components, self._fit_svd_solver)
+            result = self._fit_truncated(X, n_components, self._fit_svd_solver)
         else:
             raise ValueError("Unrecognized svd_solver='{0}'"
                              "".format(self._fit_svd_solver))
+
+        return result
 
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
         if sklearn_check_version('0.22'):
