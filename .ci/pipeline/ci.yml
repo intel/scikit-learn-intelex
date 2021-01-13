@@ -41,7 +41,7 @@ jobs:
     displayName: 'apt-get'
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB python=3.7 conda-build conda-verify
+      conda create -q -y -n CB -c conda-forge python=3.7 conda-build=3.21.1 conda-verify
     displayName: Create Anaconda environment
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
