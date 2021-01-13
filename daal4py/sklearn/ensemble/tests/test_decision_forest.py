@@ -1,6 +1,5 @@
-#
-# ****************************************************************************
-# Copyright 2020 Intel Corporation
+#===============================================================================
+# Copyright 2020-2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ****************************************************************************
+#===============================================================================
 
 import numpy as np
 import pytest
@@ -32,7 +31,7 @@ from daal4py.sklearn.ensemble \
     import RandomForestRegressor as DaalRandomForestRegressor
 
 N_TRIES = 10
-ACCURACY_RATIO = 0.8
+ACCURACY_RATIO = 0.7
 MSE_RATIO = 1.42
 LOG_LOSS_RATIO = 2.28
 ROC_AUC_RATIO = 0.978

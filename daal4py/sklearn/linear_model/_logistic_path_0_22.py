@@ -1,6 +1,5 @@
-#
-#*******************************************************************************
-# Copyright 2014-2020 Intel Corporation
+#===============================================================================
+# Copyright 2014-2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#******************************************************************************/
+#===============================================================================
 
 import daal4py as d4p
 import numpy as np
@@ -977,9 +976,7 @@ def daal4py_predict(self, X, resultsToEvaluate):
         logging.info("sklearn.linear_model.LogisticRegression.predict: " + get_patch_message("daal"))
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
-            raise ValueError("X has %d features per sample; expecting %d"
-                             % (X.shape[1], n_features))
-
+            raise ValueError(f'X has {X.shape[1]} features, but expecting {n_features} features per sample')
         builder = d4p.logistic_regression_model_builder(X.shape[1], len(self.classes_))
         builder.set_beta(self.coef_, self.intercept_)
         predict = d4p.logistic_regression_prediction(nClasses=len(self.classes_),

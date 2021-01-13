@@ -1,6 +1,5 @@
-#
-# ****************************************************************************
-# Copyright 2020 Intel Corporation
+#===============================================================================
+# Copyright 2020-2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ****************************************************************************
+#===============================================================================
 
 import pandas as pd
 import pytest
@@ -25,14 +24,15 @@ from daal4py.sklearn.neighbors \
 from sklearn.datasets import (load_iris, make_classification)
 from sklearn.metrics import (accuracy_score, log_loss, roc_auc_score)
 from sklearn.model_selection import train_test_split
+from daal4py.sklearn._utils import daal_check_version
 
 DISTANCES = ['minkowski']
 ALGORITHMS = ['brute', 'kd_tree', 'auto']
 WEIGHTS = ['uniform', 'distance']
 KS = [1, 3, 7, 15, 31]
 N_TRIES = 10
-ACCURACY_RATIO = 1.0
-LOG_LOSS_RATIO = 1.00145
+ACCURACY_RATIO = 1.0 if daal_check_version(((2020, 'P', 300))) else 0.9
+LOG_LOSS_RATIO = 1.02
 ROC_AUC_RATIO = 0.999
 IRIS = load_iris()
 

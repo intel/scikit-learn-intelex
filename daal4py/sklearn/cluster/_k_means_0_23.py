@@ -1,6 +1,5 @@
-#
-#*******************************************************************************
-# Copyright 2014-2020 Intel Corporation
+#===============================================================================
+# Copyright 2014-2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#******************************************************************************/
+#===============================================================================
 
 import numpy as np
 from scipy import sparse as sp
@@ -32,7 +31,7 @@ import warnings
 from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
-from .._utils import getFPType, get_patch_message, daal_check_version
+from .._utils import getFPType, get_patch_message, daal_check_version, sklearn_check_version
 import logging
 
 def _validate_center_shape(X, n_centers, centers):
@@ -229,13 +228,22 @@ def _fit(self, X, y=None, sample_weight=None):
 
     """
     if self.precompute_distances != 'deprecated':
-        warnings.warn("'precompute_distances' was deprecated in version "
-                      "0.23 and will be removed in 0.25. It has no "
-                      "effect", FutureWarning)
+        if sklearn_check_version('0.24'):
+            warnings.warn("'precompute_distances' was deprecated in version "
+                          "0.23 and will be removed in 1.0 (renaming of 0.25). It has no "
+                          "effect", FutureWarning)
+        elif sklearn_check_version('0.23'):
+            warnings.warn("'precompute_distances' was deprecated in version "
+                          "0.23 and will be removed in 0.25. It has no "
+                          "effect", FutureWarning)
 
     if self.n_jobs != 'deprecated':
-        warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
-                      " removed in 0.25.", FutureWarning)
+        if sklearn_check_version('0.24'):
+            warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
+                          " removed in 1.0 (renaming of 0.25).", FutureWarning)
+        elif sklearn_check_version('0.23'):
+            warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
+                          " removed in 0.25.", FutureWarning)
         self._n_threads = self.n_jobs
     else:
         self._n_threads = None
