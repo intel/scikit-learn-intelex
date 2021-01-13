@@ -11,7 +11,7 @@ jobs:
   steps:
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB python=3.7 -c conda-forge conda-build==3.21.2 conda-verify
+      conda create -q -y -n CB python=3.7 -c conda-forge conda-build=3.21.2 conda-verify
     displayName: Create Anaconda environment
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
