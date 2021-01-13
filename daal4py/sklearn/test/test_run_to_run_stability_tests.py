@@ -14,7 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-import unittest
 import numpy as np
 import daal4py as d4p
 
@@ -41,295 +40,269 @@ from sklearn.svm import SVC
 from sklearn.datasets import make_classification
 from sklearn.datasets import make_regression
 
-##################################################
+import pytest
 
-def run_clf_test(func):
+WITHOUT_FIT = [
+    'DBSCAN',
+    'PCA_daal4py_corr',
+]
+
+TO_COMPUTE = [
+    'PCA_daal4py_corr',
+]
+
+def func(X, Y, model_name, model, attribute, methods):
+    clf = model
+    if model_name not in WITHOUT_FIT:
+        clf.fit(X, Y)
+    if model_name in TO_COMPUTE:
+        clf = clf.compute(X)
+
+    res = []
+    name = []
+    
+    if model_name == 'PCA_daal4py_corr':
+        pcatrans_algo = d4p.pca_transform(nComponents=X.shape[1]//2)
+        transform = pcatrans_algo.compute(X, clf.eigenvectors, clf.dataForTransform).transformedData
+        res.append(transform)
+        name.append('transform')
+
+    for i in methods:
+        if i == 'predict':
+            res.append(clf.predict(X))
+            name.append('clf.predict(X)')
+        elif i == 'predict_proba':
+            res.append(clf.predict_proba(X))
+            name.append('clf.predict_proba(X)')
+        elif i == 'kneighbors':
+            dist, idx = clf.kneighbors(X)
+            res.append(dist)
+            name.append('dist')
+            res.append(idx)
+            name.append('idx')
+        elif i == 'fit_predict':
+            predict = clf.fit_predict(X)
+            res.append(predict)
+            name.append('predict')
+        elif i == 'transform':
+            res.append(clf.transform(X))
+            name.append('clf.transform(X)')
+        elif i == 'get_covariance':
+            res.append(clf.get_covariance())
+            name.append('clf.get_covariance()')
+        elif i == 'get_precision':
+            res.append(clf.get_precision())
+            name.append('clf.get_precision()')
+        elif i == 'score_samples':
+            res.append(clf.score_samples(X))
+            name.append('clf.score_samples(X)')
+
+    for i in attribute:
+        res.append(getattr(clf, i))
+        name.append('clf.' + i)
+    return res, name
+    
+
+def _run_test(model_type, model_name, model, attribute, methods):
     for features in [5, 10]:
-        X, y = make_classification(n_samples=4000, n_features=features, n_informative=features, n_redundant=0,
-            n_clusters_per_class=8, random_state=0)
+        if model_type == 'clf':
+            X, y = make_classification(n_samples=4000, n_features=features, 
+                                       n_informative=features, n_redundant=0,
+                                       n_clusters_per_class=8, random_state=0)
+        elif model_type == 'reg':
+            X, y = make_regression(n_samples=4000, n_features=features, 
+                                   n_informative=features, random_state=0, 
+                                   noise=0.2, bias=10)
 
-        baseline, name = func(X, y)
+        baseline, name = func(X, y, model_name, model, attribute, methods)
 
         for i in range(10):
-            res, _ = func(X, y)
+            res, _ = func(X, y, model_name, model, attribute, methods)
 
             for a, b, n in zip(res, baseline, name):
                 np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0, err_msg=str(n + " is incorrect"))
 
-def run_reg_test(func):
-    for features in [5, 10]:
-        X, y = make_regression(n_samples=4000, n_features=features, n_informative=features, random_state=0, noise=0.2, bias=10)
-        baseline, name = func(X, y)
 
-        for i in range(10):
-            res, _ = func(X, y)
+MODELS_INFO = [
+    #----------------------Passed----------------------
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'KNN_brute_uniform', 
+        'model'         : KNeighborsClassifier(n_neighbors=10, algorithm='brute', weights="uniform"),
+        'attributes'    : [],
+        'methods'       : ['predict', 'predict_proba', 'kneighbors'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'KNN_brute_distance', 
+        'model'         : KNeighborsClassifier(n_neighbors=10, algorithm='brute', weights="distance"),
+        'attributes'    : [],
+        'methods'       : ['predict', 'predict_proba', 'kneighbors'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'KNN_kd_tree_uniform', 
+        'model'         : KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree', weights="uniform"),
+        'attributes'    : [],
+        'methods'       : ['predict', 'predict_proba', 'kneighbors'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'KNN_kd_tree_distance', 
+        'model'         : KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree', weights="distance"),
+        'attributes'    : [],
+        'methods'       : ['predict', 'predict_proba', 'kneighbors'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'DBSCAN', 
+        'model'         : DBSCAN(algorithm="brute", n_jobs=-1),
+        'attributes'    : ['core_sample_indices_', 'components_', 'labels_'],
+        'methods'       : ['fit_predict'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'SVC_linear', 
+        'model'         : SVC(random_state=0, probability=True, kernel='linear'),
+        'attributes'    : ['support_', 'support_vectors_', 'n_support_', 'dual_coef_', 'coef_', 'intercept_'],
+        'methods'       : ['predict', 'predict_proba'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'SVC_rbf', 
+        'model'         : SVC(random_state=0, probability=True, kernel='rbf'),
+        'attributes'    : ['support_', 'support_vectors_', 'n_support_', 'dual_coef_', 'intercept_'],
+        'methods'       : ['predict', 'predict_proba'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'SVC_rbf_const_gamma', 
+        'model'         : SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01),
+        'attributes'    : ['support_', 'support_vectors_', 'n_support_', 'dual_coef_', 'intercept_'],
+        'methods'       : ['predict', 'predict_proba'],
+    },
+    #----------------------Failed----------------------
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'KMeans_plus_plus', 
+        'model'         : KMeans(random_state=0, init="k-means++"),
+        'attributes'    : ['cluster_centers_', 'labels_', 'inertia_', 'n_iter_'],
+        'methods'       : ['predict'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'KMeans_random', 
+        'model'         : KMeans(random_state=0, init="random"),
+        'attributes'    : ['cluster_centers_', 'labels_', 'inertia_', 'n_iter_'],
+        'methods'       : ['predict'],
+    },
+    {
+        'model_type'    : 'reg', 
+        'model_name'    : 'ElasticNet', 
+        'model'         : ElasticNet(random_state=0),
+        'attributes'    : ['coef_', 'n_iter_', 'intercept_'],
+        'methods'       : ['predict'],
+    },
+    {
+        'model_type'    : 'reg', 
+        'model_name'    : 'Lasso', 
+        'model'         : Lasso(random_state=0),
+        'attributes'    : ['coef_', 'n_iter_', 'intercept_'],
+        'methods'       : ['predict'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'PCA_full', 
+        'model'         : PCA(n_components=0.5, svd_solver="full", random_state=0),
+        'attributes'    : ['components_', 'explained_variance_', 'explained_variance_ratio_', 'singular_values_', 'mean_', 'noise_variance_'],
+        'methods'       : ['transform', 'get_covariance', 'get_precision', 'score_samples'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'PCA_daal4py_corr', 
+        'model'         : d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, method="correlationDense"),
+        'attributes'    : ['eigenvalues', 'eigenvectors', 'means', 'variances'],
+        'methods'       : [],
+    },
+    #----------------------Expected to be fixed in next release----------------------
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'RandomForestClassifier', 
+        'model'         : RandomForestClassifier(random_state=0, oob_score=True, max_samples=0.5, max_features='sqrt'),
+        'attributes'    : ['feature_importances_', 'oob_score_'],
+        'methods'       : ['predict', 'predict_proba'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'LogisticRegression_newton', 
+        'model'         : LogisticRegression(random_state=0, solver="newton-cg", max_iter=1000),
+        'attributes'    : ['coef_', 'intercept_', 'n_iter_'],
+        'methods'       : ['predict', 'predict_proba'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'LogisticRegression_lbfgs', 
+        'model'         : LogisticRegression(random_state=0, solver="lbfgs", max_iter=1000),
+        'attributes'    : ['coef_', 'intercept_', 'n_iter_'],
+        'methods'       : ['predict', 'predict_proba'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'LogisticRegressionCV_newton', 
+        'model'         : LogisticRegressionCV(random_state=0, solver="newton-cg", n_jobs=-1, max_iter=1000),
+        'attributes'    : ['coef_', 'intercept_', 'n_iter_', 'Cs_', 'C_'],
+        'methods'       : ['predict', 'predict_proba'],
+    },
+    {
+        'model_type'    : 'clf', 
+        'model_name'    : 'LogisticRegressionCV_lbfgs', 
+        'model'         : LogisticRegressionCV(random_state=0, solver="lbfgs", n_jobs=-1, max_iter=1000),
+        'attributes'    : ['coef_', 'intercept_', 'n_iter_', 'Cs_', 'C_'],
+        'methods'       : ['predict', 'predict_proba'],
+    },
+    {
+        'model_type'    : 'reg', 
+        'model_name'    : 'RandomForestRegressor', 
+        'model'         : RandomForestRegressor(random_state=0, oob_score=True, max_samples=0.5, max_features='sqrt'),
+        'attributes'    : ['feature_importances_', 'oob_score_', 'oob_prediction_'],
+        'methods'       : ['predict'],
+    },
+    {
+        'model_type'    : 'reg', 
+        'model_name'    : 'LinearRegression', 
+        'model'         : LinearRegression(),
+        'attributes'    : ['coef_', 'rank_', 'singular_', 'intercept_'],
+        'methods'       : ['predict'],
+    },
+    {
+        'model_type'    : 'reg', 
+        'model_name'    : 'Ridge', 
+        'model'         : Ridge(random_state=0),
+        'attributes'    : ['coef_', 'n_iter_', 'intercept_'],
+        'methods'       : ['predict'],
+    }, 
+]
 
-            for a, b, n in zip(res, baseline, name):
-                np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0, err_msg=str(n + " is incorrect"))
-
-##################################################
-
-def run_rf_class(X, Y):
-    clf = RandomForestClassifier(random_state=0, oob_score=True, max_samples=0.5, max_features='sqrt')
-    clf.fit(X, Y)
-    res  = [clf.predict(X), clf.predict_proba(X), clf.feature_importances_, clf.oob_score_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.feature_importances_", "clf.oob_score_"]
-    return res, name
-
-def run_log_regression_newton(X, Y):
-    clf = LogisticRegression(random_state=0, solver="newton-cg", max_iter=1000)
-    clf.fit(X, Y)
-    res  = [clf.predict(X), clf.predict_proba(X), clf.coef_, clf.intercept_, clf.n_iter_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.coef_", "clf.intercept_", "clf.n_iter_"]
-    return res, name
-
-def run_log_regression_lbfgs(X, Y):
-    clf = LogisticRegression(random_state=0, solver="lbfgs", max_iter=1000)
-    clf.fit(X, Y)
-    res  = [clf.predict(X), clf.predict_proba(X), clf.coef_, clf.intercept_, clf.n_iter_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.coef_", "clf.intercept_", "clf.n_iter_"]
-    return res, name
-
-def run_log_regression_cv_newton(X, Y):
-    clf = LogisticRegressionCV(random_state=0, solver="newton-cg", n_jobs=-1, max_iter=1000)
-    clf.fit(X, Y)
-    res  = [clf.predict(X), clf.predict_proba(X), clf.coef_, clf.intercept_, clf.n_iter_, clf.Cs_, clf.C_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.coef_", "clf.intercept_", "clf.n_iter_", "clf.Cs_", "clf.C_"]
-    return res, name
-
-def run_log_regression_cv_lbfgs(X, Y):
-    clf = LogisticRegressionCV(random_state=0, solver="lbfgs", n_jobs=-1, max_iter=1000)
-    clf.fit(X, Y)
-    res  = [clf.predict(X), clf.predict_proba(X), clf.coef_, clf.intercept_, clf.n_iter_, clf.Cs_, clf.C_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.coef_", "clf.intercept_", "clf.n_iter_", "clf.Cs_", "clf.C_"]
-    return res, name
-
-def run_svc_linear(X, Y):
-    clf = SVC(random_state=0, probability=True, kernel='linear')
-    clf.fit(X, Y)
-    res  = [clf.predict(X), clf.predict_proba(X), clf.support_, clf.support_vectors_, clf.n_support_, clf.dual_coef_, clf.coef_, clf.intercept_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.support_", "clf.support_vectors_", "clf.n_support_", "clf.dual_coef_", "clf.coef_", "clf.intercept_"]
-    return res, name
-
-def run_svc_rbf(X, Y):
-    clf = SVC(random_state=0, probability=True, kernel='rbf')
-    clf.fit(X, Y)
-    res  = [clf.predict(X), clf.predict_proba(X), clf.support_, clf.support_vectors_, clf.n_support_, clf.dual_coef_, clf.intercept_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.support_", "clf.support_vectors_", "clf.n_support_", "clf.dual_coef_", "clf.intercept_"]
-
-    return res, name
-
-def run_svc_rbf_const_gamma(X, Y):
-    clf = SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01)
-    clf.fit(X, Y)
-    res  = [clf.predict(X), clf.predict_proba(X), clf.support_, clf.support_vectors_, clf.n_support_, clf.dual_coef_, clf.intercept_]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "clf.support_", "clf.support_vectors_", "clf.n_support_", "clf.dual_coef_",  "clf.intercept_"]
-
-    return res, name
-
-def run_knn_class_brute_uniform(X, Y):
-    clf = KNeighborsClassifier(n_neighbors=10, algorithm='brute', weights="uniform")
-    clf.fit(X, Y)
-
-    dist, idx = clf.kneighbors(X)
-    res  = [clf.predict(X), clf.predict_proba(X), dist, idx]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "dist", "idx"]
-    return res, name
-
-def run_knn_class_brute_distance(X, Y):
-    clf = KNeighborsClassifier(n_neighbors=10, algorithm='brute', weights="distance")
-    clf.fit(X, Y)
-    dist, idx = clf.kneighbors(X)
-    res  = [clf.predict(X), clf.predict_proba(X), dist, idx]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "dist", "idx"]
-    return res, name
-
-def run_knn_class_kdtree_uniform(X, Y):
-    clf = KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree', weights="uniform")
-    clf.fit(X, Y)
-    dist, idx = clf.kneighbors(X)
-    res  = [clf.predict(X), clf.predict_proba(X), dist, idx]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "dist", "idx"]
-    return res, name
-
-def run_knn_class_kdtree_distance(X, Y):
-    clf = KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree', weights="distance")
-    clf.fit(X, Y)
-    dist, idx = clf.kneighbors(X)
-    res  = [clf.predict(X), clf.predict_proba(X), dist, idx]
-    name = ["clf.predict(X)", "clf.predict_proba(X)", "dist", "idx"]
-    return res, name
-
-##################################################
-
-def run_rf_regression(X, Y):
-    clf = RandomForestRegressor(random_state=0, oob_score=True, max_samples=0.5, max_features='sqrt')
-    clf.fit(X, Y)
-    res  = [clf.predict(X),  clf.feature_importances_, clf.oob_score_, clf.oob_prediction_]
-    name = ["clf.predict(X)",  "clf.feature_importances_", "clf.oob_score_", "clf.oob_prediction_"]
-    return res, name
-
-def run_linear_regression(X, Y):
-    clf = LinearRegression()
-    clf.fit(X, Y)
-    res  = [clf.predict(X),  clf.coef_, clf.rank_, clf.singular_, clf.intercept_]
-    name = ["clf.predict(X)", "clf.coef_", "clf.rank_", "clf.singular_", "clf.intercept_"]
-    return res, name
-
-def run_ridge_regression(X, Y):
-    clf = Ridge(random_state=0)
-    clf.fit(X, Y)
-    res  = [clf.predict(X),  clf.coef_, clf.n_iter_, clf.intercept_]
-    name = ["clf.predict(X)", "clf.coef_", "clf.n_iter_", "clf.intercept_"]
-    return res, name
-
-def run_elasticnet_regression(X, Y):
-    clf = ElasticNet(random_state=0)
-    clf.fit(X, Y)
-    res  = [clf.predict(X),  clf.coef_, clf.n_iter_, clf.intercept_]
-    name = ["clf.predict(X)", "clf.coef_", "clf.n_iter_", "clf.intercept_"]
-    return res, name
-
-def run_lasso_regression(X, Y):
-    clf = Lasso(random_state=0)
-    clf.fit(X, Y)
-    res  = [clf.predict(X),  clf.coef_, clf.n_iter_, clf.intercept_]
-    name = ["clf.predict(X)", "clf.coef_", "clf.n_iter_", "clf.intercept_"]
-    return res, name
-
-##################################################
-
-def run_kmeans_plus_plus(X, Y):
-    clf = KMeans(random_state=0, init="k-means++")
-    clf.fit(X, Y)
-    res  = [clf.predict(X),  clf.cluster_centers_, clf.labels_, clf.inertia_, clf.n_iter_]
-    name = ["clf.predict(X)",  "clf.cluster_centers_", "clf.labels_", "clf.inertia_", "clf.n_iter_"]
-    return res, name
-
-def run_kmeans_random(X, Y):
-    clf = KMeans(random_state=0, init="random")
-    clf.fit(X, Y)
-    res  = [clf.predict(X),  clf.cluster_centers_, clf.labels_, clf.inertia_, clf.n_iter_]
-    name = ["clf.predict(X)",  "clf.cluster_centers_", "clf.labels_", "clf.inertia_", "clf.n_iter_"]
-    return res, name
-
-def run_dbascan(X, Y):
-    clf = DBSCAN(algorithm="brute", n_jobs=-1)
-    predict = clf.fit_predict(X)
-    res  = [predict, clf.core_sample_indices_, clf.components_, clf.labels_]
-    name = ["predict", "clf.core_sample_indices_", "clf.components_", "clf.labels_"]
-    return res, name
-
-##################################################
-
-def run_pca_full(X, Y):
-    clf = PCA(n_components=0.5, svd_solver="full", random_state=0)
-    clf.fit(X)
-    res  = [clf.transform(X), clf.get_covariance(), clf.get_precision(), clf.score_samples(X), clf.components_, clf.explained_variance_, clf.explained_variance_ratio_, clf.singular_values_, clf.mean_, clf.noise_variance_]
-    name = ["clf.transform(X)", "clf.get_covariance()", "clf.get_precision()", "clf.score_samples(X)", "clf.components_", "clf.explained_variance_", "clf.explained_variance_ratio_", "clf.singular_values_", "clf.mean_", "clf.noise_variance_"]
-    return res, name
-
-def run_pca_daal4py_corr(X, Y):
-    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, method="correlationDense")
-    result1 = algo.compute(X)
-
-    pcatrans_algo = d4p.pca_transform(nComponents=X.shape[1]//2)
-    transform = pcatrans_algo.compute(X, result1.eigenvectors, result1.dataForTransform).transformedData
-
-    res  = [transform, result1.eigenvalues, result1.eigenvectors, result1.means, result1.variances]
-    name = ["transform", "result1.eigenvalues", "result1.eigenvectors", "result1.means", "result1.variances"]
-    return res, name
-
-##################################################
-
-class Test(unittest.TestCase):
-
-    #---------------------Passed---------------------
-
-    def test_knn_class_brute_uniform(self):
-        run_clf_test(run_knn_class_brute_uniform)
-
-    def test_knn_class_brute_distance(self):
-        run_clf_test(run_knn_class_brute_distance)
-
-    def test_knn_class_kdtree_uniform(self):
-        run_clf_test(run_knn_class_kdtree_uniform)
-
-    def test_knn_class_kdtree_distance(self):
-        run_clf_test(run_knn_class_kdtree_distance)
-
-    def test_dbascan(self):
-        run_clf_test(run_dbascan) 
-
-    def test_svc_linear(self):
-        run_clf_test(run_svc_linear)
-
-    def test_svc_rbf(self):
-        run_clf_test(run_svc_rbf)
-
-    def test_svc_rbf_const_gamma(self):
-        run_clf_test(run_svc_rbf_const_gamma)
-
-    #---------------------Failed---------------------
-
-    @unittest.skip("unstable")
-    def test_kmeans_plus_plus(self):
-        run_clf_test(run_kmeans_plus_plus)
-
-    @unittest.skip("unstable")
-    def test_kmeans_random(self):
-        run_clf_test(run_kmeans_random)
-
-    @unittest.skip("unstable")
-    def test_elasticnet_regression(self):
-        run_reg_test(run_elasticnet_regression)
-
-    @unittest.skip("unstable")
-    def test_lasso_regression(self):
-        run_reg_test(run_lasso_regression)
-
-    @unittest.skip("unstable")
-    def test_pca_full(self):
-        run_clf_test(run_pca_full)
-
-    @unittest.skip("unstable")
-    def test_pca_daal4py_corr(self):
-        run_clf_test(run_pca_daal4py_corr)
-
-    #---------------------Expected to be fixed in next release---------------------
-
-    @unittest.skip("unstable")
-    def test_log_regression_newton(self):
-        run_clf_test(run_log_regression_newton)
-
-    @unittest.skip("unstable")
-    def test_log_regression_lbfgs(self):
-        run_clf_test(run_log_regression_lbfgs)
-
-    @unittest.skip("unstable")
-    def test_log_regression_cv_newton(self):
-        run_clf_test(run_log_regression_cv_newton)
-
-    @unittest.skip("unstable")
-    def test_log_regression_cv_lbfgs(self):
-        run_clf_test(run_log_regression_cv_lbfgs)
-
-    @unittest.skip("unstable")
-    def test_linear_regression(self):
-        run_reg_test(run_linear_regression)
-
-    @unittest.skip("unstable")
-    def test_ridge_regression(self):
-        run_reg_test(run_ridge_regression)
-
-    @unittest.skip("unstable")
-    def test_rf_class(self):
-        run_clf_test(run_rf_class)
-
-    @unittest.skip("unstable")
-    def test_rf_reg(self):
-        run_reg_test(run_rf_regression)
+TO_SKIP = [
+    'KMeans_plus_plus', 
+    'KMeans_random', 
+    'ElasticNet', 
+    'Lasso', 
+    'PCA_full', 
+    'PCA_daal4py_corr', 
+    'RandomForestClassifier', 
+    'LogisticRegression_newton', 
+    'LogisticRegression_lbfgs', 
+    'LogisticRegressionCV_newton', 
+    'LogisticRegressionCV_lbfgs', 
+    'RandomForestRegressor', 
+    'LinearRegression', 
+    'Ridge', 
+]
 
 
-if __name__ == '__main__':
-    unittest.main()
+@pytest.mark.parametrize('model_head', MODELS_INFO)
+def test_models(model_head):
+    if model_head['model_name'] in TO_SKIP:
+        pytest.skip("UNSTABLE", allow_module_level=False)
+    _run_test(model_head['model_type'], model_head['model_name'], model_head['model'], model_head['attributes'], model_head['methods'])
