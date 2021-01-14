@@ -366,6 +366,7 @@ class NeighborsBase(BaseNeighborsBase):
 class KNeighborsMixin(BaseKNeighborsMixin):
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         daal_model = getattr(self, '_daal_model', None)
+        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
         x = self._fit_X if X is None else X
         try:
             fptype = getFPType(x)
