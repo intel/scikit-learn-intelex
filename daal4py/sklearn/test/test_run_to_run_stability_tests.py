@@ -18,6 +18,8 @@ import daal4py as d4p
 import numpy as np
 import pytest
 
+patch_sklearn()
+
 from daal4py.sklearn import patch_sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
@@ -36,7 +38,6 @@ from sklearn.datasets import make_classification
 from sklearn.datasets import make_regression
 from sklearn.base import is_classifier, is_regressor
 
-patch_sklearn()
 
 # to reproduce errors even in CI
 d4p.daalinit(nthreads=100)
