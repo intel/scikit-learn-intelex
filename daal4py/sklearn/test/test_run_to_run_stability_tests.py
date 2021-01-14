@@ -18,9 +18,9 @@ import daal4py as d4p
 import numpy as np
 import pytest
 
+from daal4py.sklearn import patch_sklearn
 patch_sklearn()
 
-from daal4py.sklearn import patch_sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
