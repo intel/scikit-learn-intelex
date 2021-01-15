@@ -44,8 +44,6 @@ WITHOUT_FIT = [
     'DBSCAN',
 ]
 
-CLASSES_FOR_COMPARE = (bool, float, int, np.ndarray, np.float64)
-
 
 def func(X, Y, model, methods):
     clf = model
@@ -87,7 +85,7 @@ def func(X, Y, model, methods):
 
     for i in clf.__dict__.keys():
         ans = getattr(clf, i)
-        if isinstance(ans, CLASSES_FOR_COMPARE):
+        if isinstance(ans, (bool, float, int, np.ndarray, np.float64)):
             res.append(ans)
             name.append(get_class_name(model) + '.' + i)
     return res, name
