@@ -50,15 +50,7 @@ import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
 
-<<<<<<< HEAD
-if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-    import sklearn.linear_model._logistic as logistic_module
-    _patched_log_reg_path_func_name = '_logistic_regression_path'
-    from ..linear_model._logistic_path_0_22 import _logistic_regression_path as daal_optimized_logistic_path
-else:
-=======
 if LooseVersion(sklearn_version) < LooseVersion("0.22"):
->>>>>>> b769783... Log reg fit was patched
     import sklearn.linear_model.logistic as logistic_module
     if LooseVersion(sklearn_version) >= LooseVersion("0.21.0"):
         _patched_log_reg_path_func_name = '_logistic_regression_path'
@@ -97,7 +89,7 @@ def _get_map_of_algorithms():
     if LooseVersion(sklearn_version) < LooseVersion("0.22"):
         mapping['logistic'] = [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]]
     else:
-        mapping['log_reg'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
+        mapping['logistic'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
     if daal_check_version((2021,'P', 200)):
         mapping['roc_auc_score'] = [[(metrics, 'roc_auc_score', _daal_roc_auc_score), None]]
     return mapping

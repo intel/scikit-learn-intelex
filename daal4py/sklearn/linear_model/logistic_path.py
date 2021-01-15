@@ -18,6 +18,6 @@ from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-    from ._logistic_path_0_22 import *
+    from ._logistic_0_22 import *
 else:
-    from ._logistic_path_0_21 import *
+    from ._logistic_0_21 import *
