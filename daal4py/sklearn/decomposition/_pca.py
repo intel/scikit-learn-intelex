@@ -87,7 +87,7 @@ class PCA(PCA_original):
 
         self.mean_ = covariance_res.mean.ravel()
         covariance = covariance_res.covariance
-        variances_ = np.array([covariance[i: i] for i in range(n_features)])
+        variances_ = np.array([covariance[i, i] for i in range(n_features)])
 
         pca_alg = daal4py.pca(
             fptype=fpType,
