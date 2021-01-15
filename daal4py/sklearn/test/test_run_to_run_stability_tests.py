@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2020-2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 import daal4py as d4p
 import numpy as np
@@ -21,21 +21,14 @@ import pytest
 from daal4py.sklearn import patch_sklearn
 patch_sklearn()
 
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LogisticRegressionCV
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Ridge
-from sklearn.linear_model import ElasticNet
-from sklearn.linear_model import Lasso
-from sklearn.cluster import KMeans
-from sklearn.cluster import DBSCAN
+from sklearn.linear_model import LinearRegression, Ridge, ElasticNet, Lasso
+from sklearn.cluster import KMeans, DBSCAN
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
-from sklearn.datasets import make_classification
-from sklearn.datasets import make_regression
+from sklearn.datasets import make_classification, make_regression, make_blobs
 from sklearn.base import is_classifier, is_regressor
 
 
@@ -51,8 +44,10 @@ WITHOUT_FIT = [
     'DBSCAN',
 ]
 
+CLASSES_FOR_COMPARE = (bool, float, int, np.ndarray, np.float64)
 
-def func(X, Y, model, attribute, methods):
+
+def func(X, Y, model, methods):
     clf = model
     if get_class_name(model) not in WITHOUT_FIT:
         clf.fit(X, Y)
@@ -90,15 +85,20 @@ def func(X, Y, model, attribute, methods):
             res.append(clf.score_samples(X))
             name.append(get_class_name(model) + '.score_samples(X)')
 
-    for i in attribute:
-        res.append(getattr(clf, i))
-        name.append(get_class_name(model) + i)
+    for i in clf.__dict__.keys():
+        ans = getattr(clf, i)
+        if isinstance(ans, CLASSES_FOR_COMPARE):
+            res.append(ans)
+            name.append(get_class_name(model) + '.' + i)
     return res, name
 
 
-def _run_test(model, attribute, methods):
+def _run_test(model, methods):
     for features in [5, 10]:
-        if is_classifier(model) or get_class_name(model) == 'DBSCAN':
+        if get_class_name(model) in ['DBSCAN', 'KMeans']:
+            X, y = make_blobs(n_samples=4000, n_features=features,
+                              cluster_std=[1.0, 2.5, 0.5], random_state=0)
+        elif is_classifier(model) or get_class_name(model) == 'PCA':
             X, y = make_classification(n_samples=4000, n_features=features,
                                        n_informative=features, n_redundant=0,
                                        n_clusters_per_class=8, random_state=0)
@@ -109,10 +109,10 @@ def _run_test(model, attribute, methods):
         else:
             raise ValueError('model must be classifier or regressor')
 
-        baseline, name = func(X, y, model, attribute, methods)
+        baseline, name = func(X, y, model, methods)
 
         for i in range(10):
-            res, _ = func(X, y, model, attribute, methods)
+            res, _ = func(X, y, model, methods)
 
             for a, b, n in zip(res, baseline, name):
                 np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
@@ -124,120 +124,95 @@ MODELS_INFO = [
     {
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='brute',
                                       weights="uniform"),
-        'attributes': [],
         'methods': ['predict', 'predict_proba', 'kneighbors'],
     },
     {
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='brute',
                                       weights="distance"),
-        'attributes': [],
         'methods': ['predict', 'predict_proba', 'kneighbors'],
     },
     {
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree',
                                       weights="uniform"),
-        'attributes': [],
         'methods': ['predict', 'predict_proba', 'kneighbors'],
     },
     {
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree',
                                       weights="distance"),
-        'attributes': [],
         'methods': ['predict', 'predict_proba', 'kneighbors'],
     },
     {
         'model': DBSCAN(algorithm="brute", n_jobs=-1),
-        'attributes': ['core_sample_indices_', 'components_', 'labels_'],
         'methods': ['fit_predict'],
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='linear'),
-        'attributes': ['support_', 'support_vectors_', 'n_support_',
-                       'dual_coef_', 'coef_', 'intercept_'],
         'methods': ['predict', 'predict_proba'],
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='rbf'),
-        'attributes': ['support_', 'support_vectors_', 'n_support_',
-                       'dual_coef_', 'intercept_'],
         'methods': ['predict', 'predict_proba'],
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01),
-        'attributes': ['support_', 'support_vectors_', 'n_support_',
-                       'dual_coef_', 'intercept_'],
         'methods': ['predict', 'predict_proba'],
     },
     # ----------------------Failed----------------------
     {
         'model': KMeans(random_state=0, init="k-means++"),
-        'attributes': ['cluster_centers_', 'labels_', 'inertia_', 'n_iter_'],
         'methods': ['predict'],
     },
     {
         'model': KMeans(random_state=0, init="random"),
-        'attributes': ['cluster_centers_', 'labels_', 'inertia_', 'n_iter_'],
         'methods': ['predict'],
     },
     {
         'model': ElasticNet(random_state=0),
-        'attributes': ['coef_', 'n_iter_', 'intercept_'],
         'methods': ['predict'],
     },
     {
         'model': Lasso(random_state=0),
-        'attributes': ['coef_', 'n_iter_', 'intercept_'],
         'methods': ['predict'],
     },
     {
         'model': PCA(n_components=0.5, svd_solver="full", random_state=0),
-        'attributes': ['components_', 'explained_variance_', 'explained_variance_ratio_',
-                       'singular_values_', 'mean_', 'noise_variance_'],
         'methods': ['transform', 'get_covariance', 'get_precision', 'score_samples'],
     },
     # ----------------------Expected to be fixed in next release----------------------
     {
         'model': RandomForestClassifier(random_state=0, oob_score=True,
                                         max_samples=0.5, max_features='sqrt'),
-        'attributes': ['feature_importances_', 'oob_score_'],
         'methods': ['predict', 'predict_proba'],
     },
     {
         'model': LogisticRegression(random_state=0, solver="newton-cg", max_iter=1000),
-        'attributes': ['coef_', 'intercept_', 'n_iter_'],
         'methods': ['predict', 'predict_proba'],
     },
     {
         'model': LogisticRegression(random_state=0, solver="lbfgs", max_iter=1000),
-        'attributes': ['coef_', 'intercept_', 'n_iter_'],
         'methods': ['predict', 'predict_proba'],
     },
     {
         'model': LogisticRegressionCV(random_state=0, solver="newton-cg",
                                       n_jobs=-1, max_iter=1000),
-        'attributes': ['coef_', 'intercept_', 'n_iter_', 'Cs_', 'C_'],
         'methods': ['predict', 'predict_proba'],
     },
     {
         'model': LogisticRegressionCV(random_state=0, solver="lbfgs",
                                       n_jobs=-1, max_iter=1000),
-        'attributes': ['coef_', 'intercept_', 'n_iter_', 'Cs_', 'C_'],
         'methods': ['predict', 'predict_proba'],
     },
     {
         'model': RandomForestRegressor(random_state=0, oob_score=True,
                                        max_samples=0.5, max_features='sqrt'),
-        'attributes': ['feature_importances_', 'oob_score_', 'oob_prediction_'],
         'methods': ['predict'],
     },
     {
         'model': LinearRegression(),
-        'attributes': ['coef_', 'rank_', 'singular_', 'intercept_'],
         'methods': ['predict'],
     },
     {
         'model': Ridge(random_state=0),
-        'attributes': ['coef_', 'n_iter_', 'intercept_'],
         'methods': ['predict'],
     },
 ]
@@ -259,5 +234,5 @@ TO_SKIP = [
 @pytest.mark.parametrize('model_head', MODELS_INFO)
 def test_models(model_head):
     if get_class_name(model_head['model']) in TO_SKIP:
-        pytest.skip("UNSTABLE", allow_module_level=False)
-    _run_test(model_head['model'], model_head['attributes'], model_head['methods'])
+        pytest.skip("Unstable", allow_module_level=False)
+    _run_test(model_head['model'], model_head['methods'])
