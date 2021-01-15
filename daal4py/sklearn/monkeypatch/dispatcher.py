@@ -15,7 +15,6 @@
 #===============================================================================
 
 from daal4py.sklearn._utils import daal_check_version
-from daal4py import _get__version__ as daal4py_version
 from ..neighbors import KNeighborsRegressor as KNeighborsRegressor_daal4py
 from ..neighbors import NearestNeighbors as NearestNeighbors_daal4py
 from ..neighbors import KNeighborsClassifier as KNeighborsClassifier_daal4py
@@ -43,7 +42,6 @@ import sklearn.decomposition as decomposition_module
 import sklearn.linear_model as linear_model_module
 import sklearn.manifold as manifold_module
 import sys
-import warnings
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 from functools import lru_cache
@@ -54,12 +52,10 @@ import sklearn.svm as svm_module
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     import sklearn.linear_model._logistic as logistic_module
-    from sklearn.decomposition._pca import PCA
     _patched_log_reg_path_func_name = '_logistic_regression_path'
     from ..linear_model._logistic_path_0_22 import _logistic_regression_path as daal_optimized_logistic_path
 else:
     import sklearn.linear_model.logistic as logistic_module
-    from sklearn.decomposition.pca import PCA
     if LooseVersion(sklearn_version) >= LooseVersion("0.21.0"):
         _patched_log_reg_path_func_name = '_logistic_regression_path'
         from ..linear_model._logistic_path_0_21 import _logistic_regression_path as daal_optimized_logistic_path
