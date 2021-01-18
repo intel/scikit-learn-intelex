@@ -191,14 +191,31 @@ class PCA(PCA_original):
 
         self._fit_svd_solver = self.svd_solver
         shape_good_for_daal = X.shape[1] / X.shape[0] < 2
+
         if self._fit_svd_solver == 'auto':
-            if max(X.shape) <= 500 or n_components == 'mle':
+            if n_components == 'mle':
                 self._fit_svd_solver = 'full'
-            elif n_components >= 1 and \
-                    n_components < (.1 if shape_good_for_daal else .8) * min(X.shape):
-                self._fit_svd_solver = 'randomized'
             else:
-                self._fit_svd_solver = 'full'
+                n, p, k = X.shape[0], X.shape[1], n_components
+                regression_coefs = np.array([
+                    [2.912922, 1],
+                    [0.000003, n],
+                    [-0.000494, p],
+                    [0.003237, k],
+                    [-8.618582e-10, n*p],
+                    [1.558833e-08, n*k],
+                    [-1.777489e-12, n*p*k],
+                    [1.092922e-13, n*p*p],
+                    [-3.719898e-16, p*n*n],
+                    [-1.308729e-13, n*n],
+                    [1.336625e-08, p*p]
+                ])
+                predicted_speedup = np.dot(regression_coefs[:, 0], regression_coefs[:, 1])
+
+                if n_components >= 1 and predicted_speedup <= 2.6:
+                    self._fit_svd_solver = 'randomized'
+                else:
+                    self._fit_svd_solver = 'full'
 
         if self._fit_svd_solver == 'full':
             if shape_good_for_daal:
