@@ -23,11 +23,14 @@ patch_sklearn()
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor, NearestNeighbors
 from sklearn.linear_model import LinearRegression, Ridge, ElasticNet, Lasso
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
+from sklearn.manifold import TSNE
+from sklearn.model_selection import train_test_split
+
 from sklearn.datasets import make_classification, make_regression, make_blobs
 from sklearn.base import is_classifier, is_regressor
 
@@ -70,6 +73,9 @@ def func(X, Y, model, methods):
             predict = clf.fit_predict(X)
             res.append(predict)
             name.append(get_class_name(model) + '.fit_predict')
+        elif i == 'fit_transform':
+            res.append(clf.fit_transform(X))
+            name.append(get_class_name(model) + '.fit_transform')
         elif i == 'transform':
             res.append(clf.transform(X))
             name.append(get_class_name(model) + '.transform(X)')
@@ -93,10 +99,10 @@ def func(X, Y, model, methods):
 
 def _run_test(model, methods):
     for features in [5, 10]:
-        if get_class_name(model) in ['DBSCAN', 'KMeans']:
+        if get_class_name(model) in ['DBSCAN', 'KMeans', 'NearestNeighbors']:
             X, y = make_blobs(n_samples=4000, n_features=features,
                               cluster_std=[1.0, 2.5, 0.5], random_state=0)
-        elif is_classifier(model) or get_class_name(model) == 'PCA':
+        elif is_classifier(model) or get_class_name(model) in ['PCA', 'TSNE']:
             X, y = make_classification(n_samples=4000, n_features=features,
                                        n_informative=features, n_redundant=0,
                                        n_clusters_per_class=8, random_state=0)
@@ -138,6 +144,38 @@ MODELS_INFO = [
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree',
                                       weights="distance"),
         'methods': ['predict', 'predict_proba', 'kneighbors'],
+    },
+    {
+        'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
+                                      weights="distance"),
+        'methods': ['predict', 'kneighbors'],
+    },
+    {
+        'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
+                                      weights="uniform"),
+        'methods': ['predict', 'kneighbors'],
+    },
+    {
+        'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
+                                      weights="distance"),
+        'methods': ['predict', 'kneighbors'],
+    },
+    {
+        'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
+                                      weights="uniform"),
+        'methods': ['predict', 'kneighbors'],
+    },
+    {
+        'model': NearestNeighbors(n_neighbors=10, algorithm='brute'),
+        'methods': ['kneighbors'],
+    },
+    {
+        'model': NearestNeighbors(n_neighbors=10, algorithm='kd_tree'),
+        'methods': ['kneighbors'],
+    },
+    {
+        'model': TSNE(),
+        'methods': ['fit_transform'],
     },
     {
         'model': DBSCAN(algorithm="brute", n_jobs=-1),
@@ -234,3 +272,20 @@ def test_models(model_head):
     if get_class_name(model_head['model']) in TO_SKIP:
         pytest.skip("Unstable", allow_module_level=False)
     _run_test(model_head['model'], model_head['methods'])
+
+
+@pytest.mark.parametrize('features', range(5, 10))
+def test_train_test_split(features):
+    X, y = make_classification(n_samples=4000, n_features=features,
+                               n_informative=features, n_redundant=0,
+                               n_clusters_per_class=8, random_state=0)
+    baseline_X_train, baseline_X_test, baseline_y_train, baseline_y_test = \
+        train_test_split(X, y, test_size=0.33, random_state=0)
+    baseline = [baseline_X_train, baseline_X_test, baseline_y_train, baseline_y_test]
+    for i in range(10):
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, 
+                                                            random_state=0)
+        res = [X_train, X_test, y_train, y_test]
+        for a, b in zip(res, baseline):
+            np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
+                                       err_msg=str("train_test_split is incorrect"))
