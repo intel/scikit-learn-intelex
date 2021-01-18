@@ -32,8 +32,8 @@ from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 
 from sklearn.datasets import make_classification, make_regression, make_blobs
-from sklearn.datasets import fetch_20newsgroups_vectorized
 from sklearn.base import is_classifier, is_regressor
+from scipy import sparse
 
 
 # to reproduce errors even in CI
@@ -97,29 +97,25 @@ def func(X, Y, model, methods):
             name.append(get_class_name(model) + '.' + i)
     return res, name
 
-MAKE_BLOBS = [
-   'DBSCAN', 
-   'KMeans', 
-   'NearestNeighbors', 
-]
 
-def _run_test(model, methods):
+def _run_test(model, methods, dataset):
     for features in [5, 10]:
-        if 'sparse' in methods:
-            X, y = fetch_20newsgroups_vectorized(return_X_y=True)
-        elif get_class_name(model) in MAKE_BLOBS:
+        if dataset == 'blobs':
             X, y = make_blobs(n_samples=4000, n_features=features,
                               cluster_std=[1.0, 2.5, 0.5], random_state=0)
-        elif is_classifier(model) or get_class_name(model) in ['PCA', 'TSNE']:
+        elif dataset in ['classifier', 'sparse']:
             X, y = make_classification(n_samples=4000, n_features=features,
                                        n_informative=features, n_redundant=0,
                                        n_clusters_per_class=8, random_state=0)
-        elif is_regressor(model):
+        elif dataset == 'regression':
             X, y = make_regression(n_samples=4000, n_features=features,
                                    n_informative=features, random_state=0,
                                    noise=0.2, bias=10)
-        else:
-            raise ValueError('model must be classifier or regressor')
+        elif dataset != 'sparse':
+            raise ValueError('Unknown dataset type')
+
+        if dataset == 'sparse':
+            X = sparse.csr_matrix(X)
 
         baseline, name = func(X, y, model, methods)
 
@@ -137,147 +133,180 @@ MODELS_INFO = [
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='brute',
                                       weights="uniform"),
         'methods': ['predict', 'predict_proba', 'kneighbors'],
+        'dataset': 'classifier',
     },
     {
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='brute',
                                       weights="distance"),
         'methods': ['predict', 'predict_proba', 'kneighbors'],
+        'dataset': 'classifier',
     },
     {
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree',
                                       weights="uniform"),
         'methods': ['predict', 'predict_proba', 'kneighbors'],
+        'dataset': 'classifier',
     },
     {
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree',
                                       weights="distance"),
         'methods': ['predict', 'predict_proba', 'kneighbors'],
+        'dataset': 'classifier',
     },
     {
         'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
                                       weights="distance"),
         'methods': ['predict', 'kneighbors'],
+        'dataset': 'regression',
     },
     {
         'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
                                       weights="uniform"),
         'methods': ['predict', 'kneighbors'],
+        'dataset': 'regression',
     },
     {
         'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
                                       weights="distance"),
         'methods': ['predict', 'kneighbors'],
+        'dataset': 'regression',
     },
     {
         'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
                                       weights="uniform"),
         'methods': ['predict', 'kneighbors'],
+        'dataset': 'regression',
     },
     {
         'model': NearestNeighbors(n_neighbors=10, algorithm='brute'),
         'methods': ['kneighbors'],
+        'dataset': 'blobs',
     },
     {
         'model': NearestNeighbors(n_neighbors=10, algorithm='kd_tree'),
         'methods': ['kneighbors'],
+        'dataset': 'blobs',
     },
     {
         'model': TSNE(random_state=0),
         'methods': ['fit_transform'],
+        'dataset': 'classifier',
     },
     {
         'model': DBSCAN(algorithm="brute", n_jobs=-1),
         'methods': ['fit_predict'],
+        'dataset': 'blobs',
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='linear'),
         'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='rbf'),
         'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01),
         'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='linear'),
-        'methods': ['sparse', 'predict', 'predict_proba'],
+        'methods': ['predict', 'predict_proba'],
+        'dataset': 'sparse',
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='rbf'),
-        'methods': ['sparse', 'predict', 'predict_proba'],
+        'methods': ['predict', 'predict_proba'],
+        'dataset': 'sparse',
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01),
-        'methods': ['sparse', 'predict', 'predict_proba'],
+        'methods': ['predict', 'predict_proba'],
+        'dataset': 'sparse',
     },
     # ----------------------Failed----------------------
     {
         'model': KMeans(random_state=0, init="k-means++"),
         'methods': ['predict'],
+        'dataset': 'blobs',
     },
     {
         'model': KMeans(random_state=0, init="random"),
         'methods': ['predict'],
+        'dataset': 'blobs',
     },
     {
         'model': KMeans(random_state=0, init="k-means++"),
         'methods': ['sparse', 'predict'],
+        'dataset': 'blobs',
     },
     {
         'model': KMeans(random_state=0, init="random"),
         'methods': ['sparse', 'predict'],
+        'dataset': 'blobs',
     },
     {
         'model': ElasticNet(random_state=0),
         'methods': ['predict'],
+        'dataset': 'regression',
     },
     {
         'model': Lasso(random_state=0),
         'methods': ['predict'],
+        'dataset': 'regression',
     },
     {
         'model': PCA(n_components=0.5, svd_solver="full", random_state=0),
         'methods': ['transform', 'get_covariance', 'get_precision', 'score_samples'],
+        'dataset': 'classifier',
     },
     # ----------------------Expected to be fixed in next release----------------------
     {
         'model': RandomForestClassifier(random_state=0, oob_score=True,
                                         max_samples=0.5, max_features='sqrt'),
         'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
     },
     {
         'model': LogisticRegression(random_state=0, solver="newton-cg", max_iter=1000),
         'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
     },
     {
         'model': LogisticRegression(random_state=0, solver="lbfgs", max_iter=1000),
         'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
     },
     {
         'model': LogisticRegressionCV(random_state=0, solver="newton-cg",
                                       n_jobs=-1, max_iter=1000),
         'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
     },
     {
         'model': LogisticRegressionCV(random_state=0, solver="lbfgs",
                                       n_jobs=-1, max_iter=1000),
         'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
     },
     {
         'model': RandomForestRegressor(random_state=0, oob_score=True,
                                        max_samples=0.5, max_features='sqrt'),
         'methods': ['predict'],
+        'dataset': 'regression',
     },
     {
         'model': LinearRegression(),
         'methods': ['predict'],
+        'dataset': 'regression',
     },
     {
         'model': Ridge(random_state=0),
         'methods': ['predict'],
+        'dataset': 'regression',
     },
 ]
 
@@ -299,7 +328,7 @@ TO_SKIP = [
 def test_models(model_head):
     if get_class_name(model_head['model']) in TO_SKIP:
         pytest.skip("Unstable", allow_module_level=False)
-    _run_test(model_head['model'], model_head['methods'])
+    _run_test(model_head['model'], model_head['methods'], model_head['dataset'])
 
 
 @pytest.mark.parametrize('features', range(5, 10))
