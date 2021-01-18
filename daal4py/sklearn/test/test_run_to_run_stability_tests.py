@@ -32,6 +32,7 @@ from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 
 from sklearn.datasets import make_classification, make_regression, make_blobs
+from sklearn.datasets import fetch_20newsgroups_vectorized
 from sklearn.base import is_classifier, is_regressor
 
 
@@ -96,10 +97,17 @@ def func(X, Y, model, methods):
             name.append(get_class_name(model) + '.' + i)
     return res, name
 
+MAKE_BLOBS = [
+   'DBSCAN', 
+   'KMeans', 
+   'NearestNeighbors', 
+]
 
 def _run_test(model, methods):
     for features in [5, 10]:
-        if get_class_name(model) in ['DBSCAN', 'KMeans', 'NearestNeighbors']:
+        if 'sparse' in methods:
+            X, y = fetch_20newsgroups_vectorized(return_X_y=True)
+        elif get_class_name(model) in MAKE_BLOBS:
             X, y = make_blobs(n_samples=4000, n_features=features,
                               cluster_std=[1.0, 2.5, 0.5], random_state=0)
         elif is_classifier(model) or get_class_name(model) in ['PCA', 'TSNE']:
@@ -174,7 +182,7 @@ MODELS_INFO = [
         'methods': ['kneighbors'],
     },
     {
-        'model': TSNE(),
+        'model': TSNE(random_state=0),
         'methods': ['fit_transform'],
     },
     {
@@ -193,6 +201,18 @@ MODELS_INFO = [
         'model': SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01),
         'methods': ['predict', 'predict_proba'],
     },
+    {
+        'model': SVC(random_state=0, probability=True, kernel='linear'),
+        'methods': ['sparse', 'predict', 'predict_proba'],
+    },
+    {
+        'model': SVC(random_state=0, probability=True, kernel='rbf'),
+        'methods': ['sparse', 'predict', 'predict_proba'],
+    },
+    {
+        'model': SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01),
+        'methods': ['sparse', 'predict', 'predict_proba'],
+    },
     # ----------------------Failed----------------------
     {
         'model': KMeans(random_state=0, init="k-means++"),
@@ -201,6 +221,14 @@ MODELS_INFO = [
     {
         'model': KMeans(random_state=0, init="random"),
         'methods': ['predict'],
+    },
+    {
+        'model': KMeans(random_state=0, init="k-means++"),
+        'methods': ['sparse', 'predict'],
+    },
+    {
+        'model': KMeans(random_state=0, init="random"),
+        'methods': ['sparse', 'predict'],
     },
     {
         'model': ElasticNet(random_state=0),
