@@ -108,15 +108,14 @@ def _run_test(model, methods, dataset):
             X, y = make_classification(n_samples=4000, n_features=features,
                                        n_informative=features, n_redundant=0,
                                        n_clusters_per_class=8, random_state=0)
+            if dataset == 'sparse':
+                X = sparse.csr_matrix(X)
         elif dataset == 'regression':
             X, y = make_regression(n_samples=4000, n_features=features,
                                    n_informative=features, random_state=0,
                                    noise=0.2, bias=10)
-        elif dataset != 'sparse':
+        else:
             raise ValueError('Unknown dataset type')
-
-        if dataset == 'sparse':
-            X = sparse.csr_matrix(X)
 
         baseline, name = func(X, y, model, methods)
 
