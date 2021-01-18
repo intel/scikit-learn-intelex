@@ -339,7 +339,7 @@ def test_train_test_split(features):
                                        err_msg=str("train_test_split is incorrect"))
 
 
-@pytest.mark.parametrize('metric', ['euclidean', 'cosine', 'braycurtis', 'correlation'])
+@pytest.mark.parametrize('metric', ['cosine', 'correlation'])
 def test_pairwise_distances(metric):
     X = np.random.rand(1000)
     y = np.random.rand(1000)
