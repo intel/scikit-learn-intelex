@@ -37,7 +37,7 @@ from scipy import sparse
 
 
 # to reproduce errors even in CI
-d4p.daalinit(nthreads=100)
+#d4p.daalinit(nthreads=100)
 
 
 def get_class_name(x):
@@ -208,22 +208,12 @@ MODELS_INFO = [
         'dataset': 'classifier',
     },
     {
-        'model': SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'classifier',
-    },
-    {
         'model': SVC(random_state=0, probability=True, kernel='linear'),
         'methods': ['predict', 'predict_proba'],
         'dataset': 'sparse',
     },
     {
         'model': SVC(random_state=0, probability=True, kernel='rbf'),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'sparse',
-    },
-    {
-        'model': SVC(random_state=0, probability=True, kernel='rbf', gamma=0.01),
         'methods': ['predict', 'predict_proba'],
         'dataset': 'sparse',
     },
@@ -346,3 +336,7 @@ def test_train_test_split(features):
         for a, b in zip(res, baseline):
             np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
                                        err_msg=str("train_test_split is incorrect"))
+
+
+#def test_distances():
+
