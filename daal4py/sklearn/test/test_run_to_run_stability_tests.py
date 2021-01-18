@@ -33,11 +33,12 @@ from sklearn.model_selection import train_test_split
 
 from sklearn.datasets import make_classification, make_regression, make_blobs
 from sklearn.base import is_classifier, is_regressor
+from sklearn.metrics import pairwise_distances
 from scipy import sparse
 
 
 # to reproduce errors even in CI
-#d4p.daalinit(nthreads=100)
+d4p.daalinit(nthreads=20)
 
 
 def get_class_name(x):
@@ -338,5 +339,13 @@ def test_train_test_split(features):
                                        err_msg=str("train_test_split is incorrect"))
 
 
-#def test_distances():
-
+@pytest.mark.parametrize('metric', ['euclidean', 'cosine', 'braycurtis', 'correlation'])
+def test_pairwise_distances(metric):
+    X = np.random.rand(1000)
+    y = np.random.rand(1000)
+    baseline = pairwise_distances(X.reshape(1, -1), y.reshape(1, -1), metric=metric)
+    for i in range(5):
+        res = pairwise_distances(X.reshape(1, -1), y.reshape(1, -1), metric=metric)
+        for a, b in zip(res, baseline):
+            np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
+                                       err_msg=str("pairwise_distances is incorrect"))
