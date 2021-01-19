@@ -52,7 +52,7 @@ def _daal4py_correlation_distance_dense(X):
     return res.correlationDistance
 
 
-def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None, 
+def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
                             force_all_finite=True, **kwds):
     """ Compute the distance matrix from a vector array X and optional Y.
 
@@ -194,7 +194,7 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
             msg = "Data was converted to boolean for metric %s" % metric
             warnings.warn(msg, DataConversionWarning)
 
-        X, Y = check_pairwise_arrays(X, Y, dtype=dtype, 
+        X, Y = check_pairwise_arrays(X, Y, dtype=dtype,
                                      force_all_finite=force_all_finite)
 
         # precompute data-derived metric params

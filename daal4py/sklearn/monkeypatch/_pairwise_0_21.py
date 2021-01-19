@@ -34,7 +34,8 @@ from scipy.sparse import issparse
 from scipy.spatial import distance
 
 import daal4py
-from .._utils import getFPType
+from .._utils import (getFPType, get_patch_message)
+import logging
 
 
 def _daal4py_cosine_distance_dense(X):
@@ -145,15 +146,20 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None, **kwds):
         return X
     elif ((metric == 'cosine') and (Y is None)
           and (not issparse(X)) and X.dtype == np.float64):
+        logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("daal"))
         return _daal4py_cosine_distance_dense(X)
     elif ((metric == 'correlation') and (Y is None) and
           (not issparse(X)) and X.dtype == np.float64):
+        logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("daal"))
         return _daal4py_correlation_distance_dense(X)
     elif metric in PAIRWISE_DISTANCE_FUNCTIONS:
+        logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("sklearn"))
         func = PAIRWISE_DISTANCE_FUNCTIONS[metric]
     elif callable(metric):
+        logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("sklearn"))
         func = partial(_pairwise_callable, metric=metric, **kwds)
     else:
+        logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("sklearn"))
         if issparse(X) or issparse(Y):
             raise TypeError("scipy distance metrics do not"
                             " support sparse matrices.")
