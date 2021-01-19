@@ -31,8 +31,8 @@ from sklearn.svm import SVC
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 
-from sklearn.datasets import make_classification, make_regression, make_blobs
-from sklearn.base import is_classifier, is_regressor
+from sklearn.datasets import (make_classification, make_blobs,
+                              load_iris, load_boston)
 from sklearn.metrics import pairwise_distances
 from scipy import sparse
 
@@ -105,15 +105,11 @@ def _run_test(model, methods, dataset):
             X, y = make_blobs(n_samples=4000, n_features=features,
                               cluster_std=[1.0, 2.5, 0.5], random_state=0)
         elif dataset in ['classifier', 'sparse']:
-            X, y = make_classification(n_samples=4000, n_features=features,
-                                       n_informative=features, n_redundant=0,
-                                       n_clusters_per_class=8, random_state=0)
+            X, y = load_iris(return_X_y=True)
             if dataset == 'sparse':
                 X = sparse.csr_matrix(X)
         elif dataset == 'regression':
-            X, y = make_regression(n_samples=4000, n_features=features,
-                                   n_informative=features, random_state=0,
-                                   noise=0.2, bias=10)
+            X, y = load_boston(return_X_y=True)
         else:
             raise ValueError('Unknown dataset type')
 
@@ -155,25 +151,25 @@ MODELS_INFO = [
     },
     {
         'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
-                                      weights="distance"),
+                                     weights="distance"),
         'methods': ['predict', 'kneighbors'],
         'dataset': 'regression',
     },
     {
         'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
-                                      weights="uniform"),
+                                     weights="uniform"),
         'methods': ['predict', 'kneighbors'],
         'dataset': 'regression',
     },
     {
         'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
-                                      weights="distance"),
+                                     weights="distance"),
         'methods': ['predict', 'kneighbors'],
         'dataset': 'regression',
     },
     {
         'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
-                                      weights="uniform"),
+                                     weights="uniform"),
         'methods': ['predict', 'kneighbors'],
         'dataset': 'regression',
     },
@@ -197,26 +193,26 @@ MODELS_INFO = [
         'methods': ['fit_predict'],
         'dataset': 'blobs',
     },
-    # {
-    #     'model': SVC(random_state=0, probability=True, kernel='linear'),
-    #     'methods': ['predict', 'predict_proba'],
-    #     'dataset': 'classifier',
-    # },
-    # {
-    #     'model': SVC(random_state=0, probability=True, kernel='rbf'),
-    #     'methods': ['predict', 'predict_proba'],
-    #     'dataset': 'classifier',
-    # },
-    # {
-    #     'model': SVC(random_state=0, probability=True, kernel='linear'),
-    #     'methods': ['predict', 'predict_proba'],
-    #     'dataset': 'sparse',
-    # },
-    # {
-    #     'model': SVC(random_state=0, probability=True, kernel='rbf'),
-    #     'methods': ['predict', 'predict_proba'],
-    #     'dataset': 'sparse',
-    # },
+    {
+        'model': SVC(random_state=0, probability=True, kernel='linear'),
+        'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
+    },
+    {
+        'model': SVC(random_state=0, probability=True, kernel='rbf'),
+        'methods': ['predict', 'predict_proba'],
+        'dataset': 'classifier',
+    },
+    {
+        'model': SVC(random_state=0, probability=True, kernel='linear'),
+        'methods': ['predict', 'predict_proba'],
+        'dataset': 'sparse',
+    },
+    {
+        'model': SVC(random_state=0, probability=True, kernel='rbf'),
+        'methods': ['predict', 'predict_proba'],
+        'dataset': 'sparse',
+    },
     # ----------------------Failed----------------------
     {
         'model': KMeans(random_state=0, init="k-means++"),
@@ -330,7 +326,7 @@ def test_train_test_split(features):
         train_test_split(X, y, test_size=0.33, random_state=0)
     baseline = [baseline_X_train, baseline_X_test, baseline_y_train, baseline_y_test]
     for i in range(10):
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, 
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
                                                             random_state=0)
         res = [X_train, X_test, y_train, y_test]
         for a, b in zip(res, baseline):
