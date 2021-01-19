@@ -202,21 +202,21 @@ MODELS_INFO = [
     #     'methods': ['predict', 'predict_proba'],
     #     'dataset': 'classifier',
     # },
-    {
-        'model': SVC(random_state=0, probability=True, kernel='rbf'),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'classifier',
-    },
+    # {
+    #     'model': SVC(random_state=0, probability=True, kernel='rbf'),
+    #     'methods': ['predict', 'predict_proba'],
+    #     'dataset': 'classifier',
+    # },
     # {
     #     'model': SVC(random_state=0, probability=True, kernel='linear'),
     #     'methods': ['predict', 'predict_proba'],
     #     'dataset': 'sparse',
     # },
-    {
-        'model': SVC(random_state=0, probability=True, kernel='rbf'),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'sparse',
-    },
+    # {
+    #     'model': SVC(random_state=0, probability=True, kernel='rbf'),
+    #     'methods': ['predict', 'predict_proba'],
+    #     'dataset': 'sparse',
+    # },
     # ----------------------Failed----------------------
     {
         'model': KMeans(random_state=0, init="k-means++"),
