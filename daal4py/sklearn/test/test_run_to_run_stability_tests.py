@@ -297,6 +297,7 @@ MODELS_INFO = [
 ]
 
 TO_SKIP = [
+    'TSNE',
     'KMeans',
     'ElasticNet',
     'Lasso',
