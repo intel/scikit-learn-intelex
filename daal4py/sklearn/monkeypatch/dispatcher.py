@@ -76,7 +76,7 @@ def _get_map_of_algorithms():
         'pca':                      [[(decomposition_module, 'PCA', PCA_daal4py), None]],
         'kmeans':                   [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
         'dbscan':                   [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]],
-        'distances':                [[(pairwise, 'pairwise_distances', daal_pairwise_distances), None]],
+        'distances':                [[(metrics, 'pairwise_distances', daal_pairwise_distances), None]],
         'linear':                   [[(linear_model_module, 'LinearRegression', LinearRegression_daal4py), None]],
         'ridge':                    [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
         'elasticnet':               [[(linear_model_module, 'ElasticNet', ElasticNet_daal4py), None]],
