@@ -88,7 +88,7 @@ def _daal4py_loss_and_grad(beta, objF_instance, X, y, n):
     beta_ = make2d(beta)
     res = objF_instance.compute(X, y, beta_)
     gr = res.gradientIdx.ravel()
-    gr = gr * n # force copy
+    gr = gr.astype(np.float64) * n # force copy
     v = res.valueIdx[0,0]
     v *= n
     return (v, gr)
@@ -125,7 +125,7 @@ def _daal4py_grad_hess_(beta, objF_instance, X, y, n, l2):
     res = objF_instance.compute(X, y, beta_)
     gr = res.gradientIdx.ravel()
     gr = gr * n
-    
+
     if isinstance(objF_instance, daal4py.optimization_solver_logistic_loss):
         # dealing with binary logistic regression
         # pp - array of probabilities for class=1, shape=(nSamples,)

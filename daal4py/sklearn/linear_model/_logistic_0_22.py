@@ -797,6 +797,8 @@ def __logistic_regression_path(X, y, classes, pos_class=None, Cs=10, fit_interce
                 args=extra_args,
                 options={"iprint": iprint, "gtol": tol, "maxiter": max_iter}
             )
+            if type(opt_res.message) is str:
+                opt_res.message = opt_res.message.encode('latin1')
             n_iter_i = _check_optimize_result(
                 solver, opt_res, max_iter,
                 extra_warning_msg=_LOGISTIC_SOLVER_CONVERGENCE_MSG)
@@ -921,7 +923,7 @@ def daal4py_fit(self, X, y, sample_weight=None):
         logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("daal"))
     else:
         logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("sklearn"))
-        return LogisticRegression_original.fit(self, X, y, sample_weight=None)
+        return LogisticRegression_original.fit(self, X, y, sample_weight=sample_weight)
 
     if not isinstance(self.C, numbers.Number) or self.C < 0:
         raise ValueError("Penalty term must be positive; got (C=%r)"
