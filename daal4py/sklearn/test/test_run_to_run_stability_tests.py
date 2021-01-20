@@ -31,7 +31,7 @@ from sklearn.svm import SVC
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 
-from sklearn.datasets import (make_classification,
+from sklearn.datasets import (make_classification, make_regression, load_breast_cancer,
                               load_iris, load_boston)
 from sklearn.metrics import pairwise_distances
 from scipy import sparse
@@ -102,12 +102,35 @@ def func(X, Y, model, methods):
 
 
 def _run_test(model, methods, dataset):
+    # ------------light datasets------------
     if dataset in ['blobs', 'classifier', 'sparse']:
         X, y = load_iris(return_X_y=True)
         if dataset == 'sparse':
             X = sparse.csr_matrix(X)
     elif dataset == 'regression':
         X, y = load_boston(return_X_y=True)
+    else:
+        raise ValueError('Unknown dataset type')
+
+    baseline, name = func(X, y, model, methods)
+
+    for i in range(10):
+        res, _ = func(X, y, model, methods)
+
+        for a, b, n in zip(res, baseline, name):
+            np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
+                                       err_msg=str(n + " is incorrect"))
+    if get_class_name(model) == 'SVC':  # because of runtime in CI
+        return
+    # ------------hard datasets------------
+    if dataset in ['blobs', 'classifier', 'sparse']:
+        X, y = load_breast_cancer(return_X_y=True)
+        if dataset == 'sparse':
+            X = sparse.csr_matrix(X)
+    elif dataset == 'regression':
+        X, y = make_regression(n_samples=5000, n_features=100,
+                               n_informative=10, random_state=0,
+                               noise=0.2, bias=10)
     else:
         raise ValueError('Unknown dataset type')
 
@@ -292,9 +315,11 @@ MODELS_INFO = [
 ]
 
 TO_SKIP = [
+    'KNeighborsClassifier',  # problem with indeces in algorithm='brute'
+    'NearestNeighbors',  # problem with indeces in algorithm='brute'
     'TSNE',  # Absolute diff is 1e-10, potential problem in KNN,
              # will be fixed for next release
-    # 'KMeans',
+    'KMeans',  # Absolute diff is 1e-8
     'ElasticNet',  # Absolute diff is 1e-13
     'Lasso',  # Absolute diff is 1e-13
     'PCA',  # Absolute diff is 1e-15
