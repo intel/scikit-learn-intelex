@@ -31,14 +31,14 @@ from sklearn.svm import SVC
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 
-from sklearn.datasets import (make_classification, make_blobs,
+from sklearn.datasets import (make_classification,
                               load_iris, load_boston)
 from sklearn.metrics import pairwise_distances
 from scipy import sparse
 
 
 # to reproduce errors even in CI
-d4p.daalinit(nthreads=20)
+d4p.daalinit(nthreads=100)
 
 
 def get_class_name(x):
@@ -94,37 +94,34 @@ def func(X, Y, model, methods):
     for i in clf.__dict__.keys():
         ans = getattr(clf, i)
         if isinstance(ans, (bool, float, int, np.ndarray, np.float64)):
+            if isinstance(ans, np.ndarray) and None in ans:
+                continue
             res.append(ans)
             name.append(get_class_name(model) + '.' + i)
     return res, name
 
 
 def _run_test(model, methods, dataset):
-    for features in [5, 10]:
-        if dataset == 'blobs':
-            X, y = make_blobs(n_samples=4000, n_features=features,
-                              cluster_std=[1.0, 2.5, 0.5], random_state=0)
-        elif dataset in ['classifier', 'sparse']:
-            X, y = load_iris(return_X_y=True)
-            if dataset == 'sparse':
-                X = sparse.csr_matrix(X)
-        elif dataset == 'regression':
-            X, y = load_boston(return_X_y=True)
-        else:
-            raise ValueError('Unknown dataset type')
+    if dataset in ['blobs', 'classifier', 'sparse']:
+        X, y = load_iris(return_X_y=True)
+        if dataset == 'sparse':
+            X = sparse.csr_matrix(X)
+    elif dataset == 'regression':
+        X, y = load_boston(return_X_y=True)
+    else:
+        raise ValueError('Unknown dataset type')
 
-        baseline, name = func(X, y, model, methods)
+    baseline, name = func(X, y, model, methods)
 
-        for i in range(10):
-            res, _ = func(X, y, model, methods)
+    for i in range(10):
+        res, _ = func(X, y, model, methods)
 
-            for a, b, n in zip(res, baseline, name):
-                np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
-                                           err_msg=str(n + " is incorrect"))
+        for a, b, n in zip(res, baseline, name):
+            np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
+                                       err_msg=str(n + " is incorrect"))
 
 
 MODELS_INFO = [
-    # ----------------------Passed----------------------
     {
         'model': KNeighborsClassifier(n_neighbors=10, algorithm='brute',
                                       weights="uniform"),
@@ -184,11 +181,6 @@ MODELS_INFO = [
         'dataset': 'blobs',
     },
     {
-        'model': TSNE(random_state=0),
-        'methods': ['fit_transform'],
-        'dataset': 'classifier',
-    },
-    {
         'model': DBSCAN(algorithm="brute", n_jobs=-1),
         'methods': ['fit_predict'],
         'dataset': 'blobs',
@@ -213,7 +205,11 @@ MODELS_INFO = [
         'methods': ['predict', 'predict_proba'],
         'dataset': 'sparse',
     },
-    # ----------------------Failed----------------------
+    {
+        'model': TSNE(random_state=0),
+        'methods': ['fit_transform'],
+        'dataset': 'classifier',
+    },
     {
         'model': KMeans(random_state=0, init="k-means++"),
         'methods': ['predict'],
@@ -226,13 +222,13 @@ MODELS_INFO = [
     },
     {
         'model': KMeans(random_state=0, init="k-means++"),
-        'methods': ['sparse', 'predict'],
-        'dataset': 'blobs',
+        'methods': ['predict'],
+        'dataset': 'sparse',
     },
     {
         'model': KMeans(random_state=0, init="random"),
-        'methods': ['sparse', 'predict'],
-        'dataset': 'blobs',
+        'methods': ['predict'],
+        'dataset': 'sparse',
     },
     {
         'model': ElasticNet(random_state=0),
@@ -249,7 +245,6 @@ MODELS_INFO = [
         'methods': ['transform', 'get_covariance', 'get_precision', 'score_samples'],
         'dataset': 'classifier',
     },
-    # ----------------------Expected to be fixed in next release----------------------
     {
         'model': RandomForestClassifier(random_state=0, oob_score=True,
                                         max_samples=0.5, max_features='sqrt'),
@@ -297,17 +292,18 @@ MODELS_INFO = [
 ]
 
 TO_SKIP = [
-    'TSNE',
-    'KMeans',
-    'ElasticNet',
-    'Lasso',
-    'PCA',
-    'RandomForestClassifier',
-    'LogisticRegression',
-    'LogisticRegressionCV',
-    'RandomForestRegressor',
-    'LinearRegression',
-    'Ridge',
+    'TSNE',  # Absolute diff is 1e-10, potential problem in KNN,
+             # will be fixed for next release
+    # 'KMeans',
+    'ElasticNet',  # Absolute diff is 1e-13
+    'Lasso',  # Absolute diff is 1e-13
+    'PCA',  # Absolute diff is 1e-15
+    # 'LogisticRegression',
+    # 'LogisticRegressionCV',
+    'RandomForestClassifier',  # will be fixed for next release
+    'RandomForestRegressor',  # will be fixed for next release
+    'LinearRegression',  # Absolute diff is 1e-12, will be fixed for next release
+    'Ridge',  # Absolute diff is 1e-12, will be fixed for next release
 ]
 
 
@@ -338,10 +334,10 @@ def test_train_test_split(features):
 @pytest.mark.parametrize('metric', ['cosine', 'correlation'])
 def test_pairwise_distances(metric):
     X = np.random.rand(1000)
-    y = np.random.rand(1000)
-    baseline = pairwise_distances(X.reshape(1, -1), y.reshape(1, -1), metric=metric)
+    X = np.array(X, dtype=np.float64)
+    baseline = pairwise_distances(X.reshape(1, -1), metric=metric)
     for i in range(5):
-        res = pairwise_distances(X.reshape(1, -1), y.reshape(1, -1), metric=metric)
+        res = pairwise_distances(X.reshape(1, -1), metric=metric)
         for a, b in zip(res, baseline):
             np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
                                        err_msg=str("pairwise_distances is incorrect"))
