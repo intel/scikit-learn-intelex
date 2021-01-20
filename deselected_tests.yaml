@@ -169,7 +169,7 @@ deselected_tests:
   # Not need of testing for daal4py patching
   - cluster/tests/test_mean_shift.py
   - cluster/tests/test_optics.py
-  - ensemble/_hist_gradient_boosting/*
+  - ensemble/_hist_gradient_boosting/
   - ensemble/tests/test_gradient_boosting.py
   - ensemble/tests/test_iforest.py
   - manifold/tests/test_locally_linear.py
@@ -178,7 +178,7 @@ deselected_tests:
   - tests/test_docstring_parameters.py
   - utils/tests/test_cython_blas.py
   - utils/tests/test_estimator_html_repr.py
-  
+
   - datasets/*.py
   - experimental/*.py
   - impute/*.py
