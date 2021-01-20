@@ -209,6 +209,5 @@ deselected_tests:
   - experimental/
   - feature_extraction/
   - impute/
-  - inspection/
   - neural_network/
   - preprocessing/
