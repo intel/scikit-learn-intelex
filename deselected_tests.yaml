@@ -164,3 +164,16 @@ deselected_tests:
   # Scikit-learn logistic regression predict depends from decision_function while d4p is not.
   # Assertion error in check_estimator(PoorScoreLogisticRegression())
   - utils/tests/test_estimator_checks.py::test_check_estimator
+
+  # --------------------------------------------------------------------------------------------
+  # Not need of testing for daal4py patching
+  - cluster/tests/test_mean_shift.py
+  - cluster/tests/test_optics.py
+  - datasets/*
+  - ensemble/_hist_gradient_boosting/*
+  - ensemble/tests/test_gradient_boosting.py
+  - ensemble/tests/test_iforest.py
+  - experimental/*
+  - impute/*
+  - inspection/*
+  
