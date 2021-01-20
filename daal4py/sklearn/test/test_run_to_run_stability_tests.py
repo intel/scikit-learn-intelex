@@ -50,21 +50,16 @@ WITHOUT_FIT = [
 ]
 
 
-def func(X, Y, model, methods):
-    clf = model
-    if get_class_name(model) not in WITHOUT_FIT:
-        clf.fit(X, Y)
-
+def method_processing(X, clf, methods):
     res = []
     name = []
-
     for i in methods:
         if i == 'predict':
             res.append(clf.predict(X))
-            name.append(get_class_name(model) + '.predict(X)')
+            name.append(get_class_name(clf) + '.predict(X)')
         elif i == 'predict_proba':
             res.append(clf.predict_proba(X))
-            name.append(get_class_name(model) + '.predict_proba(X)')
+            name.append(get_class_name(clf) + '.predict_proba(X)')
         elif i == 'kneighbors':
             dist, idx = clf.kneighbors(X)
             res.append(dist)
@@ -74,22 +69,31 @@ def func(X, Y, model, methods):
         elif i == 'fit_predict':
             predict = clf.fit_predict(X)
             res.append(predict)
-            name.append(get_class_name(model) + '.fit_predict')
+            name.append(get_class_name(clf) + '.fit_predict')
         elif i == 'fit_transform':
             res.append(clf.fit_transform(X))
-            name.append(get_class_name(model) + '.fit_transform')
+            name.append(get_class_name(clf) + '.fit_transform')
         elif i == 'transform':
             res.append(clf.transform(X))
-            name.append(get_class_name(model) + '.transform(X)')
+            name.append(get_class_name(clf) + '.transform(X)')
         elif i == 'get_covariance':
             res.append(clf.get_covariance())
-            name.append(get_class_name(model) + '.get_covariance()')
+            name.append(get_class_name(clf) + '.get_covariance()')
         elif i == 'get_precision':
             res.append(clf.get_precision())
-            name.append(get_class_name(model) + '.get_precision()')
+            name.append(get_class_name(clf) + '.get_precision()')
         elif i == 'score_samples':
             res.append(clf.score_samples(X))
-            name.append(get_class_name(model) + '.score_samples(X)')
+            name.append(get_class_name(clf) + '.score_samples(X)')
+    return res, name
+
+
+def func(X, Y, model, methods):
+    clf = model
+    if get_class_name(model) not in WITHOUT_FIT:
+        clf.fit(X, Y)
+
+    res, name = method_processing(X, clf, methods)
 
     for i in clf.__dict__.keys():
         ans = getattr(clf, i)
