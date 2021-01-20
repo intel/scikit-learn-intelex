@@ -178,6 +178,7 @@ deselected_tests:
   - tests/test_docstring_parameters.py
   - utils/tests/test_cython_blas.py
   - utils/tests/test_estimator_html_repr.py
+  
   - datasets/*.py
   - experimental/*.py
   - impute/*.py
