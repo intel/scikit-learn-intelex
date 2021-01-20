@@ -174,7 +174,6 @@ deselected_tests:
 
   - decomposition/tests/test_dict_learning.py
   - decomposition/tests/test_nmf.py
-
   - ensemble/tests/test_gradient_boosting.py
   - ensemble/tests/test_gradient_boosting_loss_functions.py
   - ensemble/tests/test_iforest.py
