@@ -167,28 +167,43 @@ deselected_tests:
 
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
+  - cluster/tests/test_affinity_propagation.py
+  - cluster/tests/test_bicluster.py
+  - cluster/tests/test_birch.py
   - cluster/tests/test_mean_shift.py
   - cluster/tests/test_optics.py
 
   - compose/tests/test_column_transformer.py
 
   - decomposition/tests/test_dict_learning.py
+  - decomposition/tests/test_factor_analysis.py
   - decomposition/tests/test_nmf.py
+  - decomposition/tests/test_online_lda.py
+
   - ensemble/tests/test_gradient_boosting.py
   - ensemble/tests/test_gradient_boosting_loss_functions.py
   - ensemble/tests/test_iforest.py
 
-  - feature_selection/tests/test_sequential.py
+  - feature_selection/tests/test_chi2.py
   - feature_selection/tests/test_feature_select.py
+  - feature_selection/tests/test_mutual_info.py
+  - feature_selection/tests/test_sequential.py
 
+  - manifold/tests/test_isomap.py
   - manifold/tests/test_locally_linear.py
   - manifold/tests/test_spectral_embedding.py
 
   - model_selection/tests/test_successive_halving.py
-  
+
+  - neighbors/tests/test_ball_tree.py
+  - neighbors/tests/test_kd_tree.py
+  - neighbors/tests/test_quad_tree.py
+
   - tests/test_kernel_approximation.py
   - tests/test_docstring_parameters.py
+  - tests/test_dummy.py
   - tests/test_random_projection.py
+  - tests/test_naive_bayes.py
 
   - utils/tests/test_arpack.py
   - utils/tests/test_cython_blas.py
@@ -202,11 +217,13 @@ deselected_tests:
   - utils/tests/test_utils.py
 
   - _loss/
+  - covariance/
   - cross_decomposition/
   - datasets/
   - ensemble/_hist_gradient_boosting/
   - experimental/
   - feature_extraction/
+  - gaussian_process/
   - impute/
   - neural_network/
   - preprocessing/
