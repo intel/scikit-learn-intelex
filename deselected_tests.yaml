@@ -165,11 +165,10 @@ deselected_tests:
   # Assertion error in check_estimator(PoorScoreLogisticRegression())
   - utils/tests/test_estimator_checks.py::test_check_estimator
 
-  # --------------------------------------------------------------------------------------------
+  # --------------------------------------------------------
   # Not need of testing for daal4py patching
   - cluster/tests/test_mean_shift.py
   - cluster/tests/test_optics.py
-  - ensemble/_hist_gradient_boosting/
   - ensemble/tests/test_gradient_boosting.py
   - ensemble/tests/test_iforest.py
   - manifold/tests/test_locally_linear.py
@@ -179,9 +178,10 @@ deselected_tests:
   - utils/tests/test_cython_blas.py
   - utils/tests/test_estimator_html_repr.py
 
-  - datasets/*.py
-  - experimental/*.py
-  - impute/*.py
-  - inspection/*.py
-  - neural_network/*.py
-  - preprocessing/*.py
+  - ensemble/_hist_gradient_boosting/
+  - datasets/
+  - experimental/
+  - impute/
+  - inspection/
+  - neural_network/
+  - preprocessing/
