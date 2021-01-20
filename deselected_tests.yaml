@@ -174,9 +174,13 @@ deselected_tests:
   - ensemble/tests/test_iforest.py
   - manifold/tests/test_locally_linear.py
   - manifold/tests/test_spectral_embedding.py
-  - datasets
-  - experimental
-  - impute
-  - inspection
-  - neural_network
-  - preprocessing
+  - tests/test_kernel_approximation.py
+  - tests/test_docstring_parameters.py
+  - utils/tests/test_cython_blas.py
+  - utils/tests/test_estimator_html_repr.py
+  - datasets/*.py
+  - experimental/*.py
+  - impute/*.py
+  - inspection/*.py
+  - neural_network/*.py
+  - preprocessing/*.py
