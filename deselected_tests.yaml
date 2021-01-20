@@ -169,23 +169,38 @@ deselected_tests:
   # Not need of testing for daal4py patching
   - cluster/tests/test_mean_shift.py
   - cluster/tests/test_optics.py
+
   - compose/tests/test_column_transformer.py
+
   - decomposition/tests/test_dict_learning.py
   - decomposition/tests/test_nmf.py
+  
   - ensemble/tests/test_gradient_boosting.py
   - ensemble/tests/test_gradient_boosting_loss_functions.py
   - ensemble/tests/test_iforest.py
+  
   - feature_selection/tests/test_sequential.py
   - feature_selection/tests/test_feature_select.py
+  
   - manifold/tests/test_locally_linear.py
   - manifold/tests/test_spectral_embedding.py
+  
   - model_selection/tests/test_successive_halving.py
+  
   - tests/test_kernel_approximation.py
   - tests/test_docstring_parameters.py
   - tests/test_random_projection.py
+  
+  - utils/tests/test_arpack.py
   - utils/tests/test_cython_blas.py
+  - utils/tests/test_encode.py
   - utils/tests/test_estimator_html_repr.py
   - utils/tests/test_extmath.py
+  - utils/tests/test_fast_dict.py
+  - utils/tests/test_mocking.py
+  - utils/tests/test_murmurhash.py
+  - utils/tests/test_sparsefuncs.py
+  - utils/tests/test_utils.py
 
   - _loss/
   - cross_decomposition/
@@ -194,5 +209,6 @@ deselected_tests:
   - experimental/
   - feature_extraction/
   - impute/
+  - inspection/
   - neural_network/
   - preprocessing/
