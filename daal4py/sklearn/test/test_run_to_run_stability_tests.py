@@ -17,6 +17,7 @@
 import daal4py as d4p
 import numpy as np
 import pytest
+import random
 
 from daal4py.sklearn import patch_sklearn
 patch_sklearn()
@@ -31,9 +32,9 @@ from sklearn.svm import SVC
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 
-from sklearn.datasets import (make_classification, make_regression, load_breast_cancer,
-                              load_iris, load_boston)
-from sklearn.metrics import pairwise_distances
+from sklearn.datasets import (make_classification, load_breast_cancer,
+                              load_diabetes, load_iris, load_boston)
+from sklearn.metrics import pairwise_distances, roc_auc_score
 from scipy import sparse
 
 
@@ -99,44 +100,32 @@ def func(X, Y, clf, methods):
 
 
 def _run_test(model, methods, dataset):
-    # ------------light datasets------------
+    datasets = []
     if dataset in ['blobs', 'classifier', 'sparse']:
-        X, y = load_iris(return_X_y=True)
+        X1, y1 = load_iris(return_X_y=True)
         if dataset == 'sparse':
-            X = sparse.csr_matrix(X)
+            X1 = sparse.csr_matrix(X1)
+        datasets.append((X1, y1))
+        X2, y2 = load_breast_cancer(return_X_y=True)
+        if dataset == 'sparse':
+            X2 = sparse.csr_matrix(X2)
+        datasets.append((X2, y2))
     elif dataset == 'regression':
-        X, y = load_boston(return_X_y=True)
+        X1, y1 = load_boston(return_X_y=True)
+        datasets.append((X1, y1))
+        X2, y2 = load_diabetes(return_X_y=True)
+        datasets.append((X2, y2))
     else:
         raise ValueError('Unknown dataset type')
 
-    baseline, name = func(X, y, model, methods)
+    for X, y in datasets:
+        baseline, name = func(X, y, model, methods)
+        for i in range(10):
+            res, _ = func(X, y, model, methods)
 
-    for i in range(10):
-        res, _ = func(X, y, model, methods)
-
-        for a, b, n in zip(res, baseline, name):
-            np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
-                                       err_msg=str(n + " is incorrect"))
-    # ------------hard datasets------------
-    if dataset in ['blobs', 'classifier', 'sparse']:
-        X, y = load_breast_cancer(return_X_y=True)
-        if dataset == 'sparse':
-            X = sparse.csr_matrix(X)
-    elif dataset == 'regression':
-        X, y = make_regression(n_samples=5000, n_features=100,
-                               n_informative=10, random_state=0,
-                               noise=0.2, bias=10)
-    else:
-        raise ValueError('Unknown dataset type')
-
-    baseline, name = func(X, y, model, methods)
-
-    for i in range(10):
-        res, _ = func(X, y, model, methods)
-
-        for a, b, n in zip(res, baseline, name):
-            np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
-                                       err_msg=str(n + " is incorrect"))
+            for a, b, n in zip(res, baseline, name):
+                np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
+                                           err_msg=str(n + " is incorrect"))
 
 
 MODELS_INFO = [
@@ -361,3 +350,14 @@ def test_pairwise_distances(metric):
         for a, b in zip(res, baseline):
             np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
                                        err_msg=str("pairwise_distances is incorrect"))
+
+
+@pytest.mark.parametrize('len', [100, 1000, 10000])
+def test_roc_auc(len):
+    a = [random.randint(0, 1) for i in range(len)]
+    b = [random.randint(0, 1) for i in range(len)]
+    baseline = roc_auc_score(a, b)
+    for i in range(5):
+        res = roc_auc_score(a, b)
+        np.testing.assert_allclose(baseline, res, rtol=0.0, atol=0.0,
+                                   err_msg=str("roc_auc is incorrect"))
