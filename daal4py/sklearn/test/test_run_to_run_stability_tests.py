@@ -45,11 +45,6 @@ def get_class_name(x):
     return x.__class__.__name__
 
 
-WITHOUT_FIT = [
-    'DBSCAN',
-]
-
-
 def method_processing(X, clf, methods):
     res = []
     name = []
@@ -88,10 +83,8 @@ def method_processing(X, clf, methods):
     return res, name
 
 
-def func(X, Y, model, methods):
-    clf = model
-    if get_class_name(model) not in WITHOUT_FIT:
-        clf.fit(X, Y)
+def func(X, Y, clf, methods):
+    clf.fit(X, Y)
 
     res, name = method_processing(X, clf, methods)
 
@@ -101,7 +94,7 @@ def func(X, Y, model, methods):
             if isinstance(ans, np.ndarray) and None in ans:
                 continue
             res.append(ans)
-            name.append(get_class_name(model) + '.' + i)
+            name.append(get_class_name(clf) + '.' + i)
     return res, name
 
 
@@ -124,8 +117,6 @@ def _run_test(model, methods, dataset):
         for a, b, n in zip(res, baseline, name):
             np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
                                        err_msg=str(n + " is incorrect"))
-    if get_class_name(model) == 'SVC':  # because of runtime in CI
-        return
     # ------------hard datasets------------
     if dataset in ['blobs', 'classifier', 'sparse']:
         X, y = load_breast_cancer(return_X_y=True)
