@@ -434,7 +434,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     daal::data_management::SOANumericTablePtr soatbl;
 
                     // iterate over columns
-                    PyArrayIterObject * it = reinterpret_cast<PyArrayIterObject *>(PyArray_IterAllButAxis(obj, &_axes));
+                    PyObject * it = PyArray_IterAllButAxis(obj, &_axes);
                     if (it == NULL)
                     {
                         Py_XDECREF(it);
@@ -450,13 +450,14 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                         Py_INCREF(ary);
 #define SETARRAY_(_T)                                                                                           \
     {                                                                                                           \
-        daal::services::SharedPtr<_T> _tmp(reinterpret_cast<_T *>(PyArray_ITER_DATA(it)), NumpyDeleter(slice)); \
+        daal::services::SharedPtr<_T> _tmp(reinterpret_cast<_T *>(PyArray_DATA(slice)), NumpyDeleter(slice));   \
         soatbl->setArray(_tmp, i);                                                                              \
     }
                         SET_NPY_FEATURE(PyArray_DESCR(ary)->type, SETARRAY_, throw std::invalid_argument("Found unsupported array type"));
 #undef SETARRAY_
                         PyArray_ITER_NEXT(it);
                     }
+                    Py_DECREF(it);
 
                     if (soatbl->getNumberOfColumns() != N)
                     {
