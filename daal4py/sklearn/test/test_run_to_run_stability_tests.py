@@ -352,10 +352,10 @@ def test_pairwise_distances(metric):
                                        err_msg=str("pairwise_distances is incorrect"))
 
 
-@pytest.mark.parametrize('len', [100, 1000, 10000])
-def test_roc_auc(len):
-    a = [random.randint(0, 1) for i in range(len)]
-    b = [random.randint(0, 1) for i in range(len)]
+@pytest.mark.parametrize('array_size', [100, 1000, 10000])
+def test_roc_auc(array_size):
+    a = [random.randint(0, 1) for i in range(array_size)]
+    b = [random.randint(0, 1) for i in range(array_size)]
     baseline = roc_auc_score(a, b)
     for i in range(5):
         res = roc_auc_score(a, b)
