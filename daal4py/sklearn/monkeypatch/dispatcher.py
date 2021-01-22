@@ -134,7 +134,6 @@ def enable(name=None, verbose=True):
     if verbose and sys.stderr is not None:
         sys.stderr.write("Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
                          "https://intelpython.github.io/daal4py/sklearn.html\n")
-    _get_map_of_algorithms.cache_clear()
 
 
 def disable(name=None):
@@ -143,7 +142,7 @@ def disable(name=None):
     else:
         for key in _get_map_of_algorithms():
             do_unpatch(key)
-    _get_map_of_algorithms.cache_clear()
+        _get_map_of_algorithms.cache_clear()
 
 
 def _patch_names():
