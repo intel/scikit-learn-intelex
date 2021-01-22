@@ -225,5 +225,6 @@ deselected_tests:
   - feature_extraction/
   - gaussian_process/
   - impute/
+  - inspection/
   - neural_network/
   - preprocessing/
