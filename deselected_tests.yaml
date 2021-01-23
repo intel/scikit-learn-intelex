@@ -167,6 +167,7 @@ deselected_tests:
 
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
+reduced_tests:
   - cluster/tests/test_affinity_propagation.py
   - cluster/tests/test_bicluster.py
   - cluster/tests/test_birch.py
