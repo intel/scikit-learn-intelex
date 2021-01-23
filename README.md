@@ -28,6 +28,15 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 - [Building from Sources](INSTALL.md)
 - [About Intel(R) oneAPI Data Analytics Library](https://oneapi-src.github.io/oneDAL/)
 
+## Support
+
+Please report questions, issues and suggestions using:
+
+- [GitHub Issues](https://github.com/IntelPython/daal4py/issues)
+- [Forum](https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python)
+
+You may reach out to project maintainers privately at onedal.maintainers@intel.com
+
 # Installation
 daal4py can be installed from conda-forge (recommended):
 ```bash
