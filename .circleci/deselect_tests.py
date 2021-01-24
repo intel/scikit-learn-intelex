@@ -47,7 +47,7 @@ if __name__ == '__main__':
     )
     argParser.add_argument('conf_file', nargs=1, type=str)
     argParser.add_argument('--absolute', action='store_true')
-
+    argParser.add_argument('--reduced', action='store_true')
     args = argParser.parse_args()
 
     fn = args.conf_file[0] 
@@ -64,6 +64,9 @@ if __name__ == '__main__':
 
         filtered_deselection = [filter_by_version(test_name, sklearn_version)
                                 for test_name in  dt.get('deselected_tests', [])]
+        if args.reduced:
+            filtered_deselection.extend([filter_by_version(test_name, sklearn_version)
+                                for test_name in  dt.get('reduced_tests', [])])
         pytest_switches = [ "--deselect " + base_dir + test_name
                             for test_name in filtered_deselection if test_name]
         print(" ".join(pytest_switches) )
