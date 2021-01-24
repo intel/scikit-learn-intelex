@@ -112,7 +112,7 @@ jobs:
       artifactName: 'daal4py win'
       targetPath: '$(Build.ArtifactStagingDirectory)/'
     condition: always()
-  - job: Pep8
+- job: PEP8
   pool:
     vmImage: 'ubuntu-20.04'
   steps:
