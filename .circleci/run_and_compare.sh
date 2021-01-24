@@ -2,7 +2,7 @@
 DAAL4PY_ROOT=$1
 OUTPUT_ROOT=$2
 cd $DAAL4PY_ROOT/.circleci
-touch ~/d4p.out ~/skl.out
+touch ~/d4p.out
 export DESELECTED_TESTS=$(python deselect_tests.py ../deselected_tests.yaml --absolute --reduced)
 echo "-m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
 cd && ((python -m daal4py -m pytest ${DESELECTED_TESTS} -ra --disable-warnings --pyargs sklearn | tee ~/d4p.out) || true)
