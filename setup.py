@@ -101,9 +101,9 @@ def get_lib_suffix():
             ld_lib_path_suffix == 'onedal',
             lib_dir_suffix == 'onedal']):
         return 'onedal'
-    if any([find_library('daal_core') is not None,
-            ld_lib_path_suffix == 'daal',
-            lib_dir_suffix == 'daal']):
+    elif any([find_library('daal_core') is not None,
+              ld_lib_path_suffix == 'daal',
+              lib_dir_suffix == 'daal']):
         return 'daal'
 
     raise ImportError('Unable to import oneDAL or oneDAL lib')
