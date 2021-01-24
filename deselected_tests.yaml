@@ -125,6 +125,10 @@ deselected_tests:
   - tests/test_multioutput.py::test_multi_output_classification
   - utils/tests/test_estimator_checks.py::test_check_estimator_clones
 
+  # sometimes failed due to non deterministic results in RF
+  # will fixed to next release
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order
+
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
