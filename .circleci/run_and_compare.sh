@@ -1,5 +1,7 @@
 #!/bin/bash
-cd ~/daal4py-ci/.circleci
+DAAL4PY_ROOT=$1
+OUTPUT_ROOT=$2
+cd $DAAL4PY_ROOT/.circleci
 touch ~/d4p.out ~/skl.out
 export DESELECTED_TESTS=`python deselect_tests.py ../deselected_tests.yaml --absolute`
 echo "-m daal4py -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
@@ -12,4 +14,4 @@ export SKL=`grep -E "=(\s\d*\w*,?)+ in .*\s=" ~/skl.out`
 tar cjf $1 ~/d4p.out ~/skl.out
 echo "Summary of patched run: " $D4P
 echo "Summary of unpatched run: " $SKL
-python ~/daal4py-ci/.circleci/compare_runs.py
+python $DAAL4PY_ROOT/.circleci/compare_runs.py
