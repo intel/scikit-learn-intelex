@@ -17,16 +17,12 @@
 
 # System imports
 import os
-import subprocess
 import sys
 import time
-from distutils.core import *
-from distutils      import sysconfig
-from setuptools     import setup, Extension
+from setuptools import setup, Extension
 from os.path import join as jp
 from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
-from Cython.Distutils import build_ext
 import glob
 import numpy as np
 
@@ -56,8 +52,9 @@ elif sys.platform in ['win32', 'cygwin']:
 else:
     assert False, sys.platform + ' not supported'
 
+
 def get_lib_suffix():
-    
+
     def walk_ld_library_path():
         if IS_WIN:
             ld_library_path = os.environ.get('LIBRARY_LIB')
@@ -100,9 +97,13 @@ def get_lib_suffix():
 
     ld_lib_path_suffix = walk_ld_library_path()
     lib_dir_suffix = walk_libdir()
-    if find_library('onedal_core') is not None or ld_lib_path_suffix == 'onedal' or lib_dir_suffix == 'onedal':
+    if any([find_library('onedal_core') is not None,
+            ld_lib_path_suffix == 'onedal',
+            lib_dir_suffix == 'onedal']):
         return 'onedal'
-    elif find_library('daal_core') is not None or ld_lib_path_suffix == 'daal'  or lib_dir_suffix == 'daal':
+    elif any([find_library('daal_core') is not None,
+              ld_lib_path_suffix == 'daal',
+              lib_dir_suffix == 'daal']):
         return 'daal'
     else:
         raise ImportError('Unable to import oneDAL or oneDAL lib')
@@ -120,14 +121,15 @@ def get_win_major_version():
     return version
 
 
-d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('2021.%Y%m%d.%H%M%S')
+d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
+               else time.strftime('2021.%Y%m%d.%H%M%S'))
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
 if not no_dist and sys.version_info <= (3, 6):
     print('distributed mode not supported for python version < 3.6\n')
     no_dist = True
-no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
+no_stream = 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
@@ -156,19 +158,19 @@ DAAL_LIBDIRS = [daal_lib_dir]
 if IS_WIN:
     DAAL_LIBDIRS.append(f"{os.environ.get('CONDA_PREFIX')}/Library/lib")
 
-if no_stream :
+if no_stream:
     print('\nDisabling support for streaming mode\n')
-if no_dist :
+if no_dist:
     print('\nDisabling support for distributed mode\n')
-    DIST_CFLAGS  = []
-    DIST_CPPS    = []
+    DIST_CFLAGS = []
+    DIST_CPPS = []
     MPI_INCDIRS = []
     MPI_LIBDIRS = []
-    MPI_LIBS    = []
-    MPI_CPPS     = []
+    MPI_LIBS = []
+    MPI_CPPS = []
 else:
-    DIST_CFLAGS  = ['-D_DIST_',]
-    DIST_CPPS    = ['src/transceiver.cpp']
+    DIST_CFLAGS = ['-D_DIST_', ]
+    DIST_CPPS = ['src/transceiver.cpp']
     MPI_INCDIRS = [jp(mpi_root, 'include')]
     MPI_LIBDIRS = [jp(mpi_root, 'lib')]
     MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
@@ -176,12 +178,12 @@ else:
         MPI_LIBS = [MPI_LIBNAME]
     elif IS_WIN:
         if os.path.isfile(jp(mpi_root, 'lib', 'mpi.lib')):
-            MPI_LIBS    = ['mpi']
+            MPI_LIBS = ['mpi']
         if os.path.isfile(jp(mpi_root, 'lib', 'impi.lib')):
-            MPI_LIBS    = ['impi']
+            MPI_LIBS = ['impi']
         assert MPI_LIBS, "Couldn't find MPI library"
     else:
-        MPI_LIBS    = ['mpi']
+        MPI_LIBS = ['mpi']
     MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
 
 #Level Zero workaround for oneDAL Beta06
