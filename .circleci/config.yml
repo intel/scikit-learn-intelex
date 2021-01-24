@@ -3,7 +3,7 @@ version: 2.0
 jobs:
   build_pypi:
     docker:
-      - image: circleci/python:3.7.5
+      - image: circleci/python:3.9.1
 
     working_directory: ~/daal4py-ci
 
@@ -31,13 +31,13 @@ jobs:
             conda activate bld
             pip install -q scikit-learn
             conda list
-            source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
 
   build_master:
     docker:
-      - image: circleci/python:3.7.5
+      - image: circleci/python:3.9.1
 
     working_directory: ~/daal4py-ci
 
@@ -73,7 +73,7 @@ jobs:
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
             conda list
-            source ./.circleci/run_and_compare.sh /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
 
@@ -96,3 +96,4 @@ workflows:
               only: test-sklearn-master
     jobs:
       - build_master
+  
