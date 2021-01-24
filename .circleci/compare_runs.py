@@ -16,7 +16,7 @@ def sum_of_attributes(counts, keys):
 
 d4p = get_counts('D4P')
 
-if d4p and sum_of_attributes(d4p, 'failed') != 0:
+if d4p and sum_of_attributes(d4p, 'failed') == 0:
     print("Patched scikit-learn passed the compatibility check")
     sys.exit(0)
 else:
