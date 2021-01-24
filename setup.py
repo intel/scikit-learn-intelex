@@ -221,42 +221,57 @@ else:
 
 DAAL_DEFAULT_TYPE = 'double'
 
+
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
         return DIST_CFLAGS + DPCPP_CFLAGS + ['-fstack-protector-strong', '-fPIC',
-                                             '-D_FORTIFY_SOURCE=2', '-Wformat', '-Wformat-security',
-                                             '-fno-strict-overflow', '-fno-delete-null-pointer-checks']
+                                             '-D_FORTIFY_SOURCE=2', '-Wformat',
+                                             '-Wformat-security', '-fno-strict-overflow',
+                                             '-fno-delete-null-pointer-checks']
     elif IS_WIN:
-        return DIST_CFLAGS + DPCPP_CFLAGS + ['-GS',]
+        return DIST_CFLAGS + DPCPP_CFLAGS + ['-GS', ]
+
 
 def get_sdl_ldflags():
     if IS_LIN:
-        return ['-Wl,-z,noexecstack,-z,relro,-z,now,-fstack-protector-strong,-fno-strict-overflow,-fno-delete-null-pointer-checks,-fwrapv']
+        return ['-Wl,-z,noexecstack,-z,relro,-z,now,-fstack-protector-strong,'
+                '-fno-strict-overflow,-fno-delete-null-pointer-checks,-fwrapv']
     elif IS_MAC:
-        return ['-fstack-protector-strong','-fno-strict-overflow','-fno-delete-null-pointer-checks','-fwrapv']
+        return ['-fstack-protector-strong',
+                '-fno-strict-overflow',
+                '-fno-delete-null-pointer-checks',
+                '-fwrapv']
     elif IS_WIN:
         return ['-NXCompat', '-DynamicBase']
 
+
 def get_type_defines():
-    daal_type_defines = ['DAAL_ALGORITHM_FP_TYPE', 'DAAL_SUMMARY_STATISTICS_TYPE', 'DAAL_DATA_TYPE']
+    daal_type_defines = ['DAAL_ALGORITHM_FP_TYPE',
+                         'DAAL_SUMMARY_STATISTICS_TYPE',
+                         'DAAL_DATA_TYPE']
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
 
+
 def getpyexts():
-    include_dir_plat = [os.path.abspath('./src'), dal_root + '/include',]
+    include_dir_plat = [os.path.abspath('./src'), dal_root + '/include', ]
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
     using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl', 'dpcpp']
-    eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API', '-DD4P_VERSION="'+d4p_version+'"', '-DNPY_ALLOW_THREADS=1'] + get_type_defines()
+    eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API',
+           '-DD4P_VERSION="' + d4p_version + '"',
+           '-DNPY_ALLOW_THREADS=1'] + get_type_defines()
     ela = []
 
     if using_intel and IS_WIN:
-        include_dir_plat.append(jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
+        include_dir_plat.append(jp(os.environ.get('ICPP_COMPILER16', ''),
+                                   'compiler',
+                                   'include'))
         eca += ['-std=c++11', '-w', '/MD']
     elif not using_intel and IS_WIN:
         eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/MD']
     else:
-        eca += ['-std=c++11', '-w',]  # '-D_GLIBCXX_USE_CXX11_ABI=0']
+        eca += ['-std=c++11', '-w', ]  # '-D_GLIBCXX_USE_CXX11_ABI=0']
 
     # Security flags
     eca += get_sdl_cflags()
@@ -275,14 +290,14 @@ def getpyexts():
         ela.append("-Wl,-rpath,{}".format(daal_lib_dir))
     elif IS_WIN:
         ela.append('-IGNORE:4197')
-    elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x] for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
+    elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x]
+                            for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
 
     exts = cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
-                                 os.path.abspath('build/daal4py_cy.pyx')]
-                                + DIST_CPPS,
+                                 os.path.abspath('build/daal4py_cy.pyx')] + DIST_CPPS,
                                 depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
                                 include_dirs=include_dir_plat + [np.get_include()],
                                 extra_compile_args=eca,
@@ -290,42 +305,48 @@ def getpyexts():
                                 libraries=libraries_plat,
                                 library_dirs=DAAL_LIBDIRS,
                                 language='c++'),
-    ])
+                      ])
 
     eca_dpcpp = eca.copy()
 
     if dpcpp:
-        exts.extend(cythonize(Extension('_oneapi',
-                                        [os.path.abspath('src/oneapi/oneapi.pyx'),],
-                                        depends=['src/oneapi/oneapi.h',],
-                                        include_dirs=include_dir_plat + [np.get_include()],
-                                        extra_compile_args=eca_dpcpp,
-                                        extra_link_args=ela,
-                                        libraries=libraries_plat + DPCPP_LIBS,
-                                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
-                                        language='c++')))
+        ext = Extension('_oneapi',
+                        [os.path.abspath('src/oneapi/oneapi.pyx'), ],
+                        depends=['src/oneapi/oneapi.h', ],
+                        include_dirs=include_dir_plat + [np.get_include()],
+                        extra_compile_args=eca_dpcpp,
+                        extra_link_args=ela,
+                        libraries=libraries_plat + DPCPP_LIBS,
+                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
+                        language='c++')
+        exts.extend(cythonize(ext))
     if dpctl:
-        exts.extend(cythonize(Extension('_dpctl_interop',
-                                        [os.path.abspath('src/dpctl_interop/dpctl_interop.pyx'),
-                                         os.path.abspath('src/dpctl_interop/daal_context_service.cpp'),],
-                                        depends=['src/dpctl_interop/daal_context_service.h',],
-                                        include_dirs=include_dir_plat + DPCTL_INCDIRS,
-                                        extra_compile_args=eca_dpcpp,
-                                        extra_link_args=ela,
-                                        libraries=libraries_plat + DPCPP_LIBS + DPCTL_LIBS,
-                                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS + DPCTL_LIBDIRS,
-                                        language='c++')))
+        ext = Extension('_dpctl_interop',
+                        [
+                            os.path.abspath('src/dpctl_interop/dpctl_interop.pyx'),
+                            os.path.abspath('src/dpctl_interop/daal_context_service.cpp'),
+                        ],
+                        depends=['src/dpctl_interop/daal_context_service.h', ],
+                        include_dirs=include_dir_plat + DPCTL_INCDIRS,
+                        extra_compile_args=eca_dpcpp,
+                        extra_link_args=ela,
+                        libraries=libraries_plat + DPCPP_LIBS + DPCTL_LIBS,
+                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS + DPCTL_LIBDIRS,
+                        language='c++')
+        exts.extend(cythonize(ext))
 
     if not no_dist:
-        exts.append(Extension('mpi_transceiver',
-                              MPI_CPPS,
-                              depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
-                              include_dirs=include_dir_plat + [np.get_include()] + MPI_INCDIRS,
-                              extra_compile_args=eca,
-                              extra_link_args=ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS],
-                              libraries=libraries_plat + MPI_LIBS,
-                              library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
-                              language='c++'))
+        ext = Extension('mpi_transceiver',
+                        MPI_CPPS,
+                        depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
+                        include_dirs=include_dir_plat + [np.get_include()] + MPI_INCDIRS,
+                        extra_compile_args=eca,
+                        extra_link_args=ela + ["-Wl,-rpath,{}".format(x)
+                                               for x in MPI_LIBDIRS],
+                        libraries=libraries_plat + MPI_LIBS,
+                        library_dirs=DAAL_LIBDIRS + MPI_LIBDIRS,
+                        language='c++')
+        exts.append(ext)
     return exts
 
 
@@ -344,7 +365,8 @@ def gen_pyx(odir):
         src_files.sort(key=lambda x: os.path.getmtime(x))
         gtr_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
         if os.path.getmtime(src_files[0]) > os.path.getmtime(gtr_files[0]):
-            print('Generated files are all newer than generator code. Skipping code generation')
+            print('Generated files are all newer than generator code.'
+                  'Skipping code generation')
             return
 
     from generator.gen_daal4py import gen_daal4py
