@@ -63,9 +63,9 @@ if d4p.__has_dist__:
                                                 distributed=True).compute(spmd_data)
 
                 if init_method in ['parallelPlusDense']:
-                    print("Warning: It is well known"
-                          "that results of parallelPlusDense init"
-                          " does not match with batch algorithm")
+                    print("Warning: It is well known "
+                          "that results of parallelPlusDense init "
+                          "does not match with batch algorithm")
                 else:
                     reason = "Initial centroids with " + init_method
                     reason += " does not match with batch algorithm"
