@@ -17,7 +17,6 @@
 import sys
 import unittest
 
-
 if __name__ == '__main__':
     test_suite = unittest.defaultTestLoader.discover('tests', 'test*.py')
     test_runner = unittest.TextTestRunner()
