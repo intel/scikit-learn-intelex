@@ -77,7 +77,7 @@ jobs:
       source activate CB
       python -c "import daal4py"
       mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
-      python -m unittest discover -v -s tests -p test*.py
+      python tests/run_tests.py
     displayName: Testing
   - script: |
       source activate CB
