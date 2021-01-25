@@ -1,24 +1,5 @@
- 
-set DAAL4PY_VERSION=%PKG_VERSION%
-set MPIROOT=%PREFIX%\Library
-
-IF DEFINED DPCPPROOT (
-    echo "Sourcing DPCPPROOT"
-    call "%DPCPPROOT%\env\vars.bat"
-    set "CC=dpcpp"
-    set "CXX=dpcpp"
-    dpcpp --version
-)
-
-IF DEFINED DAALROOT (set DALROOT=%DAALROOT%) 
-
-IF DEFINED DALROOT (
-    echo "Sourcing DALROOT"
-    call "%DALROOT%\env\vars.bat"
-    echo "Finish sourcing DALROOT"
-)
-
-IF DEFINED TBBROOT (
-    echo "Sourcing TBBROOT"
-    call "%TBBROOT%\env\vars.bat"
-)
+python -c "import daal4py"
+python -m unittest discover -v -s tests -p test*.py
+pytest --pyargs daal4py/sklearn/
+python examples/run_examples.py
+python -m daal4py examples/sycl/sklearn_sycl.py

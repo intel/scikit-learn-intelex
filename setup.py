@@ -41,6 +41,8 @@ IS_LIN = False
 
 daal_root = os.environ.get('DAALROOT')
 dal_root = os.environ.get('DALROOT')
+lib_dir = None
+
 if not dal_root:
     dal_root = daal_root
 
@@ -57,7 +59,7 @@ else:
     assert False, sys.platform + ' not supported'
 
 def get_lib_suffix():
-    
+
     def walk_ld_library_path():
         if IS_WIN:
             ld_library_path = os.environ.get('LIBRARY_LIB')
@@ -120,36 +122,16 @@ def get_win_major_version():
     return version
 
 
-d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('2021.%Y%m%d.%H%M%S')
+d4p_version = os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ else time.strftime('%Y.%m.%d')
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
-if not no_dist and sys.version_info <= (3, 6):
-    print('distributed mode not supported for python version < 3.6\n')
-    no_dist = True
 no_stream = True if 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues else False
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
 dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
-
-#itac_root = os.environ['VT_ROOT']
-IS_WIN = False
-IS_MAC = False
-IS_LIN = False
-
-if 'linux' in sys.platform:
-    IS_LIN = True
-    lib_dir = jp(dal_root, 'lib', 'intel64')
-elif sys.platform == 'darwin':
-    IS_MAC = True
-    lib_dir = jp(dal_root, 'lib')
-elif sys.platform in ['win32', 'cygwin']:
-    IS_WIN = True
-    lib_dir = jp(dal_root, 'lib', 'intel64')
-else:
-    assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 DAAL_LIBDIRS = [daal_lib_dir]
@@ -356,6 +338,16 @@ def gen_pyx(odir):
 
 gen_pyx(os.path.abspath('./build'))
 
+requirements = []
+daal4py_repo_root = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(daal4py_repo_root, 'requirements.txt'), 'r') as f:
+    requirements.extend(f.read().splitlines())
+
+dev_requirements = []
+with open(os.path.join(daal4py_repo_root, 'requirements-dev.txt'), 'r') as f:
+    dev_requirements.extend(f.read().splitlines())
+
 project_urls = {
     'Bug Tracker': 'https://github.com/IntelPython/daal4py/issues',
     'Documentation': 'https://intelpython.github.io/daal4py/',
@@ -366,6 +358,8 @@ project_urls = {
 setup(  name             = "daal4py",
         description      = "A convenient Python API to Intel(R) oneAPI Data Analytics Library",
         author           = "Intel",
+        author_email     = "onedal.maintainers@intel.com",
+        maintainer_email = "onedal.maintainers@intel.com",
         version          = d4p_version,
         url              = 'https://github.com/IntelPython/daal4py',
         project_urls     = project_urls,
@@ -384,8 +378,14 @@ setup(  name             = "daal4py",
             'Topic :: System',
             'Topic :: Software Development',
           ],
-        setup_requires = ['numpy>=1.14', 'cython', 'jinja2'],
-        install_requires = ['numpy>=1.14', 'daal', 'dpcpp_cpp_rt'],
+        keyword = [
+            'machine learning',
+            'scikit-learn',
+            'data science',
+        ],
+        python_requires  ='>=3.6',
+        setup_requires   = dev_requirements,
+        install_requires = requirements,
         packages = ['daal4py',
                     'daal4py.oneapi',
                     'daal4py.sklearn',

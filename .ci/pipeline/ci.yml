@@ -3,26 +3,21 @@ variables:
     value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17453/w_BaseKit_p_2021.1.0.2664_offline.exe
   - name: WINDOWS_DPCPP_COMPONENTS
     value: intel.oneapi.win.dpcpp-compiler
+  - name: python.version
+    value: '3.9'
+  - name: PKG_VERSION
+    value: '2021.2.0'
+
 
 jobs:
-- job: Linux
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-  - script: |
-      conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge python=3.7 conda-build=3.21.1 conda-verify
-    displayName: Create Anaconda environment
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
-    displayName: conda build
-
 - job: Linux_DPCPP
   pool:
     vmImage: 'ubuntu-20.04'
   steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+    inputs:
+      versionSpec: '$(python.version)'
   - script: |
       wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
       sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
@@ -40,74 +35,57 @@ jobs:
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
   - script: |
-      conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge python=3.7 conda-build=3.21.1 conda-verify
-    displayName: Create Anaconda environment
-  - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
-    displayName: conda build
+      export PKG_VERSION='$(PKG_VERSION)
+      export NO_DIST=1
+      export ARGS=1
+      pip install -r requirements-dev.txt
+      ./conda-recipe/build.sh
+    displayName: daal4py build
+  - script: |
+      pip install -r requirements-test.txt
+      ./conda-recipe/run_test.sh
+    displayName: daal4py testing
 
 - job: MacOS
   pool:
     vmImage: 'macOS-10.15'
   steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+    inputs:
+      versionSpec: '$(python.version)'
   - script: |
-      echo "##vso[task.prependpath]$CONDA/bin"
-      sudo chown -R $USER $CONDA
-      conda config --set always_yes yes --set changeps1 no
-      conda update -q conda
-      conda create -n CB python=3.7
-      conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn mpich
-      conda install -n CB -q --override-channels -c intel dal dal-include
-    displayName: Create Anaconda environment
+      export PKG_VERSION=$(PKG_VERSION)
+      export NO_DIST=1
+      export ARGS=1
+      pip install -r requirements-dev.txt
+      ./conda-recipe/build.sh
+    displayName: daal4py build
   - script: |
-      source activate CB
-      export DALROOT=$CONDA_PREFIX
-      export MPIROOT=$CONDA_PREFIX
-      export MACOSX_DEPLOYMENT_TARGET=10.15
-      export LDFLAGS="${LDFLAGS//-Wl,-dead_strip_dylibs}"
-      export LDFLAGS_LD="${LDFLAGS_LD//-dead_strip_dylibs}"
-      export LDSHARED="-bundle -undefined dynamic_lookup -flto -Wl,-export_dynamic -Wl,-pie -Wl,-headerpad_max_install_names"
-      python setup.py install --single-version-externally-managed --record=record.txt
-    displayName: Conda build
-  - script: |
-      source activate CB
-      python -c "import daal4py"
-      mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
-      python -m unittest discover -v -s tests -p test*.py
-    displayName: Testing
-  - script: |
-      source activate CB
-      cd examples && python run_examples.py
-    displayName: Examples
+      pip install -r requirements-test.txt
+      ./conda-recipe/run_test.sh
+    displayName: daal4py testing
 
 - job: Windows_DPCPP
   pool:
     vmImage: 'windows-latest'
-
   steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+    inputs:
+      versionSpec: '$(python.version)'
   - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
     timeoutInMinutes: 15
     displayName: oneAPI environment
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
-  - script: conda create -q -y -n CB python=3.7 conda-build conda-verify
-    displayName: Create Anaconda environment
   - script: |
-      call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      conda build --override-channels -c intel -c conda-forge --numpy=1.19 --output-folder=. conda-recipe
-    displayName: conda build
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
-      Contents: 'daal4py*'
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'daal4py win'
-      targetPath: '$(Build.ArtifactStagingDirectory)/'
-    condition: always()
+      set PKG_VERSION=$(PKG_VERSION)
+      set NO_DIST=1
+      pip install -r requirements-dev.txt
+      call conda-recipe\bld.bat
+    displayName: daal4py build
+  - script: |
+      pip install -r requirements-test.txt
+      call conda-recipe\run_test.bat
+    displayName: daal4py testing
