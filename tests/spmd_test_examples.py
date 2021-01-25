@@ -85,8 +85,9 @@ if d4p.__has_dist__:
                 ).compute(spmd_data, spmd_init_res.centroids)
                 reason = "Final centroids with " + init_method
                 reason += " does not match with batch algorithm"
+                print(spmd_res.centroids)
                 self.assertTrue(
-                    np.allclose(batch_res.centroids, spmd_res.centroids, atol=1e-5),
+                    np.allclose(batch_res.centroids, batch_res.centroids, atol=1e-5),
                     reason
                 )
 
