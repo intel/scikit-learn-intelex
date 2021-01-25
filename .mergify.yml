@@ -1,0 +1,17 @@
+pull_request_rules:
+  - name: delete head branch after merge
+    conditions:
+      - head~=^renovate/
+      - merged
+    actions:
+      delete_head_branch: {}
+  - name: Review assigment for renovate requests
+    conditions:
+      - author=renovate[bot]
+      - -closed
+    actions:
+      label:
+        add: [infra]
+      request_reviews:
+        users:
+          - PetrovKP
