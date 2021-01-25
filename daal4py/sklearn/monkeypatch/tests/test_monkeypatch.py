@@ -31,7 +31,7 @@ def test_monkey_patching():
     import sklearn
     daal4py.sklearn.patch_sklearn()
 
-    for i in range(len(_tokens)):
+    for i, _ in enumerate(_tokens):
         t = _tokens[i]
         p = _classes[i][0]
         n = _classes[i][1]
@@ -48,7 +48,7 @@ def test_monkey_patching():
 
     daal4py.sklearn.unpatch_sklearn()
 
-    for i in range(len(_tokens)):
+    for i, _ in enumerate(_tokens):
         t = _tokens[i]
         p = _classes[i][0]
         n = _classes[i][1]
@@ -64,4 +64,3 @@ def test_monkey_patching():
             "Patching has completed with error."
 
     daal4py.sklearn.unpatch_sklearn()
-
