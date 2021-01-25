@@ -63,9 +63,9 @@ if d4p.__has_dist__:
                                                 distributed=True).compute(spmd_data)
 
                 if init_method in ['parallelPlusDense']:
-                    print("Warning: It is well known "
-                          "that results of parallelPlusDense init "
-                          "does not match with batch algorithm")
+                    print("Warning: It is well known"
+                          "that results of parallelPlusDense init"
+                          " does not match with batch algorithm")
                 else:
                     reason = "Initial centroids with " + init_method
                     reason += " does not match with batch algorithm"
@@ -76,23 +76,19 @@ if d4p.__has_dist__:
 
                 batch_res = d4p.kmeans(
                     nClusters=nClusters,
-                    maxIterations=maxIter).compute(data, batch_init_res.centroids)
+                    maxIterations=maxIter
+                ).compute(data, batch_init_res.centroids)
                 spmd_res = d4p.kmeans(
                     nClusters=nClusters,
                     maxIterations=maxIter,
-                    distributed=True).compute(spmd_data, spmd_init_res.centroids)
-
-                if init_method in ['parallelPlusDense']:
-                    print("Warning: It is well known "
-                          "that results of parallelPlusDense init "
-                          "does not match with batch algorithm")
-                else:
-                    reason = "Final centroids with " + init_method
-                    reason += " does not match with batch algorithm"
-                    self.assertTrue(
-                        np.allclose(batch_res.centroids, spmd_res.centroids),
-                        reason
-                    )
+                    distributed=True
+                ).compute(spmd_data, spmd_init_res.centroids)
+                reason = "Final centroids with " + init_method
+                reason += " does not match with batch algorithm"
+                self.assertTrue(
+                    np.allclose(batch_res.centroids, spmd_res.centroids, atol=1e-5),
+                    reason
+                )
 
         def test_dbscan_spmd(self):
             epsilon = 0.04
