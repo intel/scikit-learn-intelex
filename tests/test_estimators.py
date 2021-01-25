@@ -20,13 +20,16 @@ from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
 
 from daal4py import _get__daal_link_version__ as dv
-# First item is major version - 2021, second is minor+patch - 0110, third item is status - B
+# First item is major version - 2021,
+# second is minor+patch - 0110,
+# third item is status - B
 daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
 print('DAAL version:', daal_version)
 
 from daal4py.sklearn.ensemble import GBTDAALClassifier
 from daal4py.sklearn.ensemble import GBTDAALRegressor
 from daal4py.sklearn.ensemble import AdaBoostClassifier
+
 
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
@@ -36,9 +39,10 @@ def check_version(rule, target):
         for rule_item in rule:
             if rule_item > target:
                 return False
-            if rule_item[0]==target[0]:
+            if rule_item[0] == target[0]:
                 break
     return True
+
 
 def _replace_and_save(md, fns, replacing_fn):
     """
@@ -74,7 +78,8 @@ class Test(unittest.TestCase):
             pass
 
         md = sklearn.utils.estimator_checks
-        # got unexpected slightly different prediction result between two same calls in this test
+        # got unexpected slightly different
+        # prediction result between two same calls in this test
         saved = _replace_and_save(md, ['check_estimators_data_not_an_array'], dummy)
         check_estimator(GBTDAALRegressor())
         _restore_from_saved(md, saved)
