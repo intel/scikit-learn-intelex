@@ -21,4 +21,6 @@ if __name__ == '__main__':
     test_suite = unittest.defaultTestLoader.discover('tests', 'test*.py')
     test_runner = unittest.TextTestRunner()
     result = test_runner.run(test_suite)
+    print(len(result.errors))
+    print(result.errors)
     sys.exit(len(result.errors) == 0 and not result.wasSuccessful())
