@@ -794,9 +794,8 @@ class cython_interface(object):
                             )
                     else:
                         print(
-                            '// Warning: parameter member ' + p + ' of'
-                            ' ' + pns + ' is no stdtype, no enum and not a DAAl class.'
-                            ' Ignored.'
+                            '// Warning: parameter member ' + p + ' of ' + pns + ' '
+                            'is no stdtype, no enum and not a DAAl class. Ignored.'
                         )
 
             # we now prepare the optional arguments per Parameter class,
@@ -831,7 +830,7 @@ class cython_interface(object):
                         if '::NumericTablePtr' in itype:
                             # ns in has_dist and \
                             # iname in has_dist[ns]['step_specs'][0].inputnames or \
-                            # iname in ['data', 'labels',
+                            # iname in ['data', 'labels',\
                             #           'dependentVariable', 'tableToFill']:
                             itype = 'data_or_file &'
                         ins = re.sub(r'(?<!daal::)algorithms::',
