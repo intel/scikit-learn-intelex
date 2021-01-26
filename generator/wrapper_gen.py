@@ -1033,7 +1033,11 @@ algo_wrapper_template = """
 {{tfactory(tmpl_spec[1:], prefix, params, dist, args+[a], indent+4)}}
 {% endif %}
 {{" "*(indent)}}} else {% if loop.last %} {
-{{" "*(indent+4)}} throw std::runtime_error(std::string("Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': ") + {{tmpl_spec[0][0]}} + "'");
+{{" "*(indent+4)}} throw std::runtime_error(
+std::string(
+"Error in {{algo}}: Cannot handle unknown value for parameter '{{tmpl_spec[0][0]}}': "
+) + {{tmpl_spec[0][0]}} + "'"
+);
 {{" "*(indent)}}}
 {% endif %}
 {% endfor %}
@@ -1048,13 +1052,16 @@ mk_{{algo}}({{params_all|fmt('{}', 'decl_cpp', sep=',\n')|indent(4+(algo|length)
     throw std::runtime_error("Error: Could not construct {{algo}}.");
     return daal::services::SharedPtr<{{algo}}__iface__>();
 {% else %}
-    return daal::services::SharedPtr<{{algo}}__iface__>(new {{algo}}_manager({{params_ds|fmt('{}', 'arg_cpp')}}));
+    return daal::services::SharedPtr<{{algo}}__iface__>(new {{algo}}_manager(
+        {{params_ds|fmt('{}', 'arg_cpp')}})
+    );
 {% endif %}
 }
 
 // A C interface to compute, used for HPAT
 extern "C" void * compute_{{algo}}(daal::services::SharedPtr<{{algo}}__iface__> * algo,
-{{' '*(27+(algo|length))}}{{input_args|fmt('{}', 'decl_c', sep=',\n')|indent(27+(algo|length))}},
+{{' '*(27+(algo|length))}}{{input_args|fmt(
+    '{}', 'decl_c', sep=',\n')|indent(27+(algo|length))}},
 {{' '*(27+(algo|length))}}bool setup=false)
 {
 {% if distributed.name %}
@@ -1086,7 +1093,8 @@ def getTreeState(model, i=0, n_classes=1):
     cdef TreeState cTreeState
     if False:
         pass
-{% for model in ['algorithms::decision_forest::classification', 'algorithms::gbt::classification'] %}
+{% for model in ['algorithms::decision_forest::classification',
+                 'algorithms::gbt::classification'] %}
 {% if model in algos %}
 {% set flatname = '::'.join([model, 'model'])|flat %}
     elif isinstance(model, {{flatname}}):
@@ -1100,7 +1108,8 @@ def getTreeState(model, i=0, n_classes=1):
         cTreeState = _getTreeState((<{{flatname}}>model).c_ptr, n_classes)
 {% endif %}
 {% endfor %}
-{% for model in ['algorithms::decision_forest::regression', 'algorithms::gbt::regression'] %}
+{% for model in ['algorithms::decision_forest::regression',
+                 'algorithms::gbt::regression'] %}
 {% if model in algos %}
 {% set flatname = '::'.join([model, 'model'])|flat %}
     elif isinstance(model, {{flatname}}):
@@ -1132,10 +1141,12 @@ cdef extern from "daal4py_version.h":
 def _get__version__():
     return "{}".format({{version}})
 def _get__daal_link_version__():
-    return "{}{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_STATUS__, __INTEL_DAAL_BUILD_DATE)
+    return "{}{}_{}".format(INTEL_DAAL_VERSION, __INTEL_DAAL_STATUS__,
+                            __INTEL_DAAL_BUILD_DATE)
 def _get__daal_run_version__():
     cdef LibraryVersionInfo li
-    return "{}{}{}_{}".format(li.majorVersion, str(li.minorVersion).zfill(2), str(li.updateVersion).zfill(2), li.build_rev)
+    return "{}{}{}_{}".format(li.majorVersion, str(li.minorVersion).zfill(2),
+                              str(li.updateVersion).zfill(2), li.build_rev)
 
 '''
 
@@ -1149,6 +1160,7 @@ cpp_footer_template = '''
 {% endif %}
 {% endfor %}
 '''
+
 
 ##################################################################################
 # A set of jinja2 filters to convert arguments, types etc which where extracted
@@ -1170,18 +1182,24 @@ def flat(t, cpp=True):
                 r = '_'.join(nn[1:])
             else:
                 r = '_'.join(nn)
-            return ('c_' if cpp and typ.endswith('__iface__') else '') + r + (' *' if cpp and any(typ.endswith(x) for x in ['__iface__', 'Ptr']) else '')
-        ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr', 'daal::services::SharedPtr<kernel_function::KernelIface>')
-        ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr', r'daal::services::SharedPtr<engines::BatchBase>', ty)
-        ty = re.sub(r'(?:daal::)?(?:algorithms::)?([^:]+::)BatchPtr', r'daal::services::SharedPtr<\1Batch>', ty)
+            return ('c_' if cpp and typ.endswith('__iface__') else '') + r + \
+                (' *' if cpp and any(typ.endswith(x)
+                                     for x in ['__iface__', 'Ptr']) else '')
+        ty = ty.replace('daal::algorithms::kernel_function::KernelIfacePtr',
+                        'daal::services::SharedPtr<kernel_function::KernelIface>')
+        ty = re.sub(r'(daal::)?(algorithms::)?(engines::)?EnginePtr',
+                    r'daal::services::SharedPtr<engines::BatchBase>', ty)
+        ty = re.sub(r'(?:daal::)?(?:algorithms::)?([^:]+::)BatchPtr',
+                    r'daal::services::SharedPtr<\1Batch>', ty)
         ty = re.sub(r'(daal::)?services::SharedPtr<([^>]+)>', r'\2__iface__', ty)
         return ' '.join([__flat(x).replace('const', '') for x in ty.split(' ')])
-    return [_flat(x) for x in t if x] if isinstance(t,list) else _flat(t)
+    return [_flat(x) for x in t if x] if isinstance(t, list) else _flat(t)
+
 
 def d2cy(ty, cpp=True):
     def flt(t, cpp):
         return flat(t, cpp).replace('lambda', 'lambda_')
-    return [flt(x,cpp) for x in ty if x] if isinstance(ty,list) else flt(ty,cpp)
+    return [flt(x, cpp) for x in ty if x] if isinstance(ty, list) else flt(ty, cpp)
 
 
 def d2hpat(arg, ty, fn):
@@ -1189,24 +1207,28 @@ def d2hpat(arg, ty, fn):
         rtype = d2cy(t)
         if fn in hpat_types and arg in hpat_types[fn]:
             return hpat_types[fn][arg]
-        return 'dtable_type' if 'NumericTablePtr' in rtype else rtype.replace('ModelPtr', 'model').replace(' ', '')
-    return [flt(x,y) for x,y in zip(arg, ty)] if isinstance(ty,list) else flt(arg, ty)
+        return 'dtable_type' if 'NumericTablePtr' in rtype \
+            else rtype.replace('ModelPtr', 'model').replace(' ', '')
+    return [flt(x, y) for x, y in zip(arg, ty)] if isinstance(ty, list) else flt(arg, ty)
+
 
 def fmt(*args, **kwargs):
     sep = kwargs['sep'] if 'sep' in kwargs else ', '
     return sep.join([y for y in [x.format(args[1], *args[2:]) for x in args[0]] if y])
 
+
 jenv = jinja2.Environment(trim_blocks=True, autoescape=select_autoescape(
     disabled_extensions=('pyx'),
     default_for_string=False
 ))
-jenv.filters['match'] = lambda a, x : [x for x in a if s in x]
+jenv.filters['match'] = lambda a, x: [x for x in a if s in x]
 jenv.filters['d2cy'] = d2cy
 jenv.filters['flat'] = flat
 jenv.filters['d2hpat'] = d2hpat
-jenv.filters['strip'] = lambda s, c : s.strip(c)
-jenv.filters['quote'] = lambda x: "'"+x+"'" if x else ''
+jenv.filters['strip'] = lambda s, c: s.strip(c)
+jenv.filters['quote'] = lambda x: "'" + x + "'" if x else ''
 jenv.filters['fmt'] = fmt
+
 
 class wrapper_gen(object):
     def __init__(self, ac, ifaces):
@@ -1217,18 +1239,20 @@ class wrapper_gen(object):
         """
         return code for initing
         """
-        cpp = "#ifndef DAAL4PY_CPP_INC_\n#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\n"
+        cpp = "#ifndef DAAL4PY_CPP_INC_\n" + \
+            "#define DAAL4PY_CPP_INC_\n#include <daal4py_dist.h>\n\n"
         pyx = ''
         for i in self.ifaces:
-            tstr = gen_cython_iface_macro + '{{gen_cython_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
+            tstr = gen_cython_iface_macro + \
+                '{{gen_cython_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
             t = jenv.from_string(tstr)
             pyx += t.render({'parent': self.ifaces[i][1]}) + '\n'
-            tstr = gen_cpp_iface_macro + '{{gen_cpp_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
+            tstr = gen_cpp_iface_macro + \
+                '{{gen_cpp_iface("' + i + '", "' + self.ifaces[i][0] + '")}}\n'
             t = jenv.from_string(tstr)
             cpp += t.render({'parent': self.ifaces[i][1]}) + '\n'
 
         return (cpp, cython_header + pyx)
-
 
     ##################################################################################
     def gen_modelmaps(self, ns, algo):
@@ -1244,7 +1268,6 @@ class wrapper_gen(object):
             return (t.render(**jparams) + '\n').split('%SNIP%')
         return '', '', ''
 
-
     ##################################################################################
     def gen_resultmaps(self, ns, algo):
         """
@@ -1253,7 +1276,8 @@ class wrapper_gen(object):
           - native_type: returns native representation of its argument
           - TMGC(n): deals with GC(refcounting for given number of references (R)
           -
-        Looks up Return type and then target-language independently creates lists of its content.
+        Looks up Return type and then target-language
+        independently creates lists of its content.
         """
         jparams = self.algocfg[ns + '::' + algo]['result_typemap']
         if len(jparams) > 0:
@@ -1275,7 +1299,8 @@ class wrapper_gen(object):
         allows us to cross-reference between algos, for example for multi-phased algos.
 
         We combine the argument (template, input, parameter) information appropriately.
-        We take care of the right order and bring them in the right format for our jinja templates.
+        We take care of the right order and bring them
+        in the right format for our jinja templates.
         We pass them to the templates in a dict jparams, used a globals vars for jinja.
 
         Handling single-phased algos only which are not part of a multi-phased algo
@@ -1295,13 +1320,17 @@ class wrapper_gen(object):
         jparams = cfg['params'].copy()
         jparams.update(cfg['params']['params_templ'])
         jparams['create'] = cfg['create']
-        jparams['add_setup']  = cfg['add_setup']
-        jparams['add_get_result']  = cfg['add_get_result']
+        jparams['add_setup'] = cfg['add_setup']
+        jparams['add_get_result'] = cfg['add_get_result']
         jparams['model_maps'] = cfg['model_typemap']
         jparams['result_map'] = cfg['result_typemap']
-        jparams['params_ds'] = jparams['params_req'] + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
-        jparams['params_all'] = jparams['params_req'] + (jparams['template_args'] if jparams['template_args'] else []) + jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
-        jparams['args_all']   = jparams['input_args'] + jparams['params_req'] + jparams['params_opt']
+        jparams['params_ds'] = jparams['params_req'] + \
+            jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
+        jparams['params_all'] = jparams['params_req'] + \
+            (jparams['template_args'] if jparams['template_args'] else []) + \
+            jparams['params_opt'] + [cfg['distributed'], cfg['streaming']]
+        jparams['args_all'] = \
+            jparams['input_args'] + jparams['params_req'] + jparams['params_opt']
 
         for p in ['distributed', 'streaming']:
             if p in cfg:
@@ -1331,9 +1360,9 @@ class wrapper_gen(object):
 
         return (cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end, typesstr)
 
-
     ##################################################################################
-    def gen_footers(self, no_dist=False, no_stream=False, algos=[], version='', dist_custom_algos=[]):
+    def gen_footers(self, no_dist=False, no_stream=False,
+                    algos=[], version='', dist_custom_algos=[]):
         t = jenv.from_string(pyx_footer_template)
         pyx_footer = t.render(algos=algos, version=version)
         pyx_footer += '__has_dist__ = {}\n\n'.format(not no_dist)
