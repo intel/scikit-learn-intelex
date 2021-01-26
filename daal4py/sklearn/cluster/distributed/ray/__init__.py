@@ -15,9 +15,6 @@
 # limitations under the License.
 #******************************************************************************/
 
-from .context import Context
-from .row_partition_actor import RowPartitionsActor
+from .distributed_k_means_fit import ray_distributed_k_means_fit
 
-__all__ = [
-    "ray", "Context", "RowPartitionsActor", "dask"
-]
+__all__ = ["ray_distributed_k_means_fit"]

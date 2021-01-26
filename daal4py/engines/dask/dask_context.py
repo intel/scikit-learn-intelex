@@ -15,9 +15,23 @@
 # limitations under the License.
 #******************************************************************************/
 
-from .context import Context
-from .row_partition_actor import RowPartitionsActor
+from dask.distributed import get_client
+from distributed.utils import get_ip
+from daal4py.engines.context import Context
 
-__all__ = [
-    "ray", "Context", "RowPartitionsActor", "dask"
-]
+class DaskContext(Context):
+
+    def current_node_id(self):
+        return get_ip()
+
+    def node_ids(self):
+        return get_client.scheduler_info()['workers']
+
+    def available_resources(self):
+        return get_client.scheduler_info()['workers']
+
+    def get_world_size(self):
+        return len(get_client.scheduler_info()['workers'])
+
+    def cluster_resources(self):
+        return get_client.scheduler_info()['workers']

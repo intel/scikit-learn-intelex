@@ -15,9 +15,6 @@
 # limitations under the License.
 #******************************************************************************/
 
-from .context import Context
-from .row_partition_actor import RowPartitionsActor
+from .dask_context import DaskContext
 
-__all__ = [
-    "ray", "Context", "RowPartitionsActor", "dask"
-]
+__all__ = ["DaskContext"]

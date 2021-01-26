@@ -49,7 +49,7 @@ class KMeansRowPartitionsActor(RowPartitionsActor):
         return result
 
 
-def distributed_k_means_fit(X, n_clusters, max_iter):
+def ray_distributed_k_means_fit(X, n_clusters, max_iter):
     num_nodes = len(ray.nodes())
 
     actors = [

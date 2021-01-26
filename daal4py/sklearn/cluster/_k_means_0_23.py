@@ -33,9 +33,16 @@ from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
 from .._utils import getFPType, get_patch_message, daal_check_version
-from .distributed_k_means_fit import distributed_k_means_fit
+from distributed.dask import dask_distributed_k_means_fit
+from distributed.ray import ray_distributed_k_means_fit
 from modin import pandas as modin_pd
+from modin.utils import get_current_backend
 import logging
+
+DISTRIBUTED_KMEANS_METHOD = {
+    "PandasOnDask": dask_distributed_k_means_fit,
+    "PandasOnRay": ray_distributed_k_means_fit
+}
 
 def _validate_center_shape(X, n_centers, centers):
     """Check if centers is compatible with X and n_centers"""
@@ -280,7 +287,8 @@ def _fit(self, X, y=None, sample_weight=None):
         logging.info("sklearn.cluster.KMeans.fit: " + get_patch_message("daal"))
         
         if isinstance(X, modin_pd.DataFrame) and self.init == "random":
-            self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = distributed_k_means_fit(X, self.n_clusters, self.max_iter)
+            self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
+                DISTRIBUTED_KMEANS_METHOD[get_current_backend()](X, self.n_clusters, self.max_iter)
         else:
             X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
             self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
