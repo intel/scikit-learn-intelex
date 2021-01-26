@@ -23,4 +23,4 @@ if __name__ == '__main__':
     result = test_runner.run(test_suite)
     print(len(result.errors))
     print(result.errors)
-    sys.exit(len(result.errors) == 0 and not result.wasSuccessful())
+    sys.exit(not (len(result.errors) == 0 and not result.wasSuccessful()))
