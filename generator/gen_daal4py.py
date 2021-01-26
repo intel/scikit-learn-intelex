@@ -704,11 +704,19 @@ class cython_interface(object):
                                 v = mk_var(prm, thetype, 'const', dflt, algo=func, doc=doc)
                                 jparams['params_opt'].append(v)
                         else:
-                            print('// Warning: do not know what to do with ' + pns + ' : ' + p + '(' + all_params[p] + ')')
+                            print(
+                                '// Warning: do not know what to do with ' + pns + ' :'
+                                ' ' + p + '(' + all_params[p] + ')'
+                            )
                     else:
-                        print('// Warning: parameter member ' + p + ' of ' + pns + ' is no stdtype, no enum and not a DAAl class. Ignored.')
+                        print(
+                            '// Warning: parameter member ' + p + ' of'
+                            ' ' + pns + ' is no stdtype, no enum and not a DAAl class.'
+                            ' Ignored.'
+                        )
 
-            # we now prepare the optional arguments per Parameter class, so that we can generate
+            # we now prepare the optional arguments per Parameter class,
+            # so that we can generate
             # specialized init_parameter()'s
             for pcls in opt_params:
                 val = opt_params[pcls]
@@ -737,16 +745,24 @@ class cython_interface(object):
                             reqi += 1
                             dflt = None
                         if '::NumericTablePtr' in itype:
-                            #ns in has_dist and iname in has_dist[ns]['step_specs'][0].inputnames or iname in ['data', 'labels', 'dependentVariable', 'tableToFill']:
+                            # ns in has_dist and \
+                            # iname in has_dist[ns]['step_specs'][0].inputnames or \
+                            # iname in ['data', 'labels',
+                            #           'dependentVariable', 'tableToFill']:
                             itype = 'data_or_file &'
-                        ins = re.sub(r'(?<!daal::)algorithms::', r'daal::algorithms::', ins)
-                        tmp_input_args.insert(i, mk_var(ins + '::' + iname, itype, 'const', dflt, inpt=True, algo=func, doc=doc))
+                        ins = re.sub(r'(?<!daal::)algorithms::',
+                                     r'daal::algorithms::', ins)
+                        tmp_input_args.insert(i, mk_var(ins + '::' + iname, itype,
+                                                        'const', dflt, inpt=True,
+                                                        algo=func, doc=doc))
             else:
                 print('// Warning: no input type found for ' + ns)
 
             # We have to bring the input args into the "right" order
             jparams['input_args'] = self.order_iargs(tmp_input_args)
-            # we will need something more sophisticated if the interesting parent class is not a direct parent (a grand-parent for example)
+            # we will need something more sophisticated
+            # if the interesting parent class
+            # is not a direct parent (a grand-parent for example)
             ifcs = []
             for i in self.namespace_dict[ns].classes[mode].parent:
                 pns = self.get_ns(ns, i, attrs=['classes'])
@@ -771,15 +787,20 @@ class cython_interface(object):
         }
         if not no_dist and ns in has_dist:
             retjp['dist'] = has_dist[ns]
-            retjp['distributed'] = mk_var('distributed', 'bool', dflt=True, algo=func, doc='enable distributed computation (SPMD)')
+            retjp['distributed'] = mk_var('distributed', 'bool',
+                                          dflt=True, algo=func,
+                                          doc='enable distributed computation (SPMD)')
         else:
             retjp['distributed'] = mk_var()
-        if not no_stream and  'Online' in self.namespace_dict[ns].classes and not ns.endswith('pca'):
-            retjp['streaming'] = mk_var('streaming', 'bool', dflt=True, algo=func, doc='enable streaming')
+        if all([not no_stream,
+                'Online' in self.namespace_dict[ns].classes,
+                not ns.endswith('pca')]):
+            retjp['streaming'] = mk_var('streaming', 'bool',
+                                        dflt=True, algo=func,
+                                        doc='enable streaming')
         else:
             retjp['streaming'] = mk_var()
-        return {ns + '::' + mode : retjp}
-
+        return {ns + '::' + mode: retjp}
 
     def prepare_model_hierachy(self, cfg):
         '''
@@ -822,7 +843,6 @@ class cython_interface(object):
             if ns in cfg:
                 cfg[ns]['model_typemap']['derived'] = model_hierarchy[m]
 
-
     def hlapi(self, version, no_dist=False, no_stream=False):
         """
         Generate high level wrappers for namespaces allowed by wrap_algo(ns, version).
@@ -842,7 +862,7 @@ class cython_interface(object):
 
         We generate strings for a C++ header, a C++ file and a cython file.
         """
-        tmaps, wrappers, hlapi, dtypes = '', '', '', ''
+        dtypes = ''
         algoconfig = {}
 
         algos = [x for x in self.namespace_dict if wrap_algo(x, version)]
@@ -863,54 +883,66 @@ class cython_interface(object):
                     func = '_'.join(nn[1:])
                 else:
                     func = '_'.join(nn)
-                algoconfig.update(self.prepare_hlwrapper(ns, 'Batch', func, no_dist, no_stream))
+                algoconfig.update(self.prepare_hlwrapper(ns,
+                                                         'Batch',
+                                                         func,
+                                                         no_dist,
+                                                         no_stream))
 
         self.prepare_model_hierachy(algoconfig)
 
         # and now we can finally generate the code
         wg = wrapper_gen(algoconfig, {cpp2hl(i): ifaces[i] for i in ifaces})
-        cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end = '', '', '#define NO_IMPORT_ARRAY\n#include "daal4py_cpp.h"\n', '', '', ''
+        cpp_map, cpp_begin, cpp_end, pyx_map, pyx_begin, pyx_end = \
+            '', '', '#define NO_IMPORT_ARRAY\n#include "daal4py_cpp.h"\n', '', '', ''
 
         for ns in algos:
-            if ns.startswith('algorithms::') and not ns.startswith('algorithms::neural_networks') and self.namespace_dict[ns].enums:
+            if all([ns.startswith('algorithms::'),
+                    not ns.startswith('algorithms::neural_networks'),
+                    self.namespace_dict[ns].enums]):
                 cpp_begin += 'static str2i_map_t s2e_' + ns.replace('::', '_') + ' =\n{\n'
-                for e in  self.namespace_dict[ns].enums:
+                for e in self.namespace_dict[ns].enums:
                     for v in self.namespace_dict[ns].enums[e]:
                         vv = ns + '::' + v
-                        cpp_begin += ' '*4 +'{"' + v + '", daal::' + vv + '},\n'
+                        cpp_begin += ' ' * 4 + '{"' + v + '", daal::' + vv + '},\n'
                 cpp_begin += '};\n\n'
-                # For enums that are used to access KeyValueDataCollections we need an inverse map
-                # value->string. Note this is enum-specific, we cannot have one for the ns because
+                # For enums that are used to access KeyValueDataCollections
+                # we need an inverse map value->string. Note this is enum-specific,
+                # we cannot have one for the ns because
                 # they might have duplicate values
-                for e in  self.namespace_dict[ns].enums:
+                for e in self.namespace_dict[ns].enums:
                     enm = '::'.join([ns, e])
                     if enm in enum_maps:
-                        cpp_begin += 'static i2str_map_t e2s_' + ns.replace('::', '_') + '_' + enum_maps[enm] +' =\n{\n'
+                        cpp_begin += 'static i2str_map_t e2s_' + \
+                            ns.replace('::', '_') + '_' + enum_maps[enm] + ' =\n{\n'
                         for v in self.namespace_dict[ns].enums[e]:
                             vv = ns + '::' + v
-                            cpp_begin += ' '*4 +'{daal::' + vv + ', "' + v + '"},\n'
+                            cpp_begin += ' ' * 4 + '{daal::' + vv + ', "' + v + '"},\n'
                         cpp_begin += '};\n\n'
-
 
         for a in algoconfig:
             (ns, algo) = splitns(a)
             if algo.startswith('Batch'):
                 tmp = wg.gen_wrapper(ns, algo)
                 if tmp:
-                    cpp_map   += tmp[0]
+                    cpp_map += tmp[0]
                     cpp_begin += tmp[1]
-                    cpp_end   += tmp[2]
-                    pyx_map   += tmp[3]
+                    cpp_end += tmp[2]
+                    pyx_map += tmp[3]
                     pyx_begin += tmp[4]
-                    pyx_end   += tmp[5]
-                    dtypes    += tmp[6]
+                    pyx_end += tmp[5]
+                    dtypes += tmp[6]
 
         hds = wg.gen_headers()
-        fts = wg.gen_footers(no_dist, no_stream, algos, version, [x for x in has_dist if has_dist[x]["pattern"] == "dist_custom"])
+        fts = wg.gen_footers(
+            no_dist, no_stream, algos, version,
+            [x for x in has_dist if has_dist[x]["pattern"] == "dist_custom"]
+        )
         pyx_end += fts[1]
 
         # Finally combine the different sections and return the 3 strings
-        return(hds[0] + cpp_map + cpp_begin + fts[2] + '\n#endif', cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
+        return (hds[0] + cpp_map + cpp_begin + fts[2] + '\n#endif',
+                cpp_end, hds[1] + pyx_map + pyx_begin + pyx_end)
 
 
 ###############################################################################
@@ -918,13 +950,16 @@ class cython_interface(object):
 ###############################################################################
 ###############################################################################
 
-def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_stream=False):
+def gen_daal4py(daalroot, outdir, version, warn_all=False,
+                no_dist=False, no_stream=False):
     global no_warn
     if warn_all:
         no_warn = {}
     orig_path = jp(daalroot, 'include')
-    assert os.path.isfile(jp(orig_path, 'algorithms', 'algorithm.h')) and os.path.isfile(jp(orig_path, 'algorithms', 'model.h')),\
-           "Path/$DAALROOT '"+orig_path+"' doesn't seem host oneDAL headers. Please provide correct daalroot."
+    assert all([os.path.isfile(jp(orig_path, 'algorithms', 'algorithm.h')),
+                os.path.isfile(jp(orig_path, 'algorithms', 'model.h'))]), \
+           "Path/$DAALROOT '" + orig_path + \
+           "' doesn't seem host oneDAL headers. Please provide correct daalroot."
     head_path = jp("build", "include")
     algo_path = jp(head_path, "algorithms")
     rmtree(head_path, ignore_errors=True)
@@ -947,18 +982,34 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False, no_dist=False, no_str
 
     pyx_gbt_model_builder = ''
     pyx_log_reg_model_builder = ''
-    if 'algorithms::gbt::classification' in iface.namespace_dict and \
-       'ModelBuilder' in iface.namespace_dict['algorithms::gbt::classification'].classes or \
-       'algorithms::gbt::regression' in iface.namespace_dict and \
-       'ModelBuilder' in iface.namespace_dict['algorithms::gbt::regression'].classes:
+    if any(
+        [
+            all(
+                [
+                    'algorithms::gbt::classification' in iface.namespace_dict,
+                    'ModelBuilder' in iface.namespace_dict[
+                        'algorithms::gbt::classification'
+                    ].classes,
+                ]
+            ),
+            all(
+                [
+                    'algorithms::gbt::regression' in iface.namespace_dict,
+                    'ModelBuilder' in iface.namespace_dict[
+                        'algorithms::gbt::regression'
+                    ].classes,
+                ]
+            )
+        ]
+    ):
         with open(jp('src', 'gbt_model_builder.pyx'), 'r') as f:
-            pyx_gbt_model_builder = f.read()   
+            pyx_gbt_model_builder = f.read()
     if iface.version[0] >= 2021 and iface.version[1] >= 1 and \
         iface.version[3] != 'None' and iface.version[3] >= '"P"' and \
        'algorithms::logistic_regression' in iface.namespace_dict and \
        'ModelBuilder' in iface.namespace_dict['algorithms::logistic_regression'].classes:
         with open(jp('src', 'log_reg_model_builder.pyx'), 'r') as f:
-            pyx_log_reg_model_builder = f.read() 
+            pyx_log_reg_model_builder = f.read()
     pyx_gbt_generators = ''
     with open(jp('src', 'gbt_convertors.pyx'), 'r') as f:
         pyx_gbt_generators = f.read()
