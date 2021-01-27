@@ -31,7 +31,7 @@ dpctx_available = False
 try:
     from dpctx import device_context, device_type
     dpctx_available = True
-except:
+except ImportError:
     try:
         from daal4py.oneapi import sycl_context
         sycl_extention_available = True
