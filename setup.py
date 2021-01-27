@@ -25,6 +25,7 @@ from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 import glob
 import numpy as np
+import distutils.ccompiler
 
 try:
     from ctypes.utils import find_library
@@ -49,6 +50,11 @@ elif sys.platform == 'darwin':
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
     lib_dir = jp(dal_root, 'lib', 'intel64')
+    if sys.platform == "win32":
+        # noinspection PyUnresolvedReferences
+        import dpcppcompiler
+        sys.modules["distutils.dpcppcompiler"] = sys.modules["dpcppcompiler"]
+        distutils.ccompiler.compiler_class["dpcpp"] = ("dpcppcompiler", "DPCPPCompiler", "Support of DPCPP compiler")
 else:
     assert False, sys.platform + ' not supported'
 
@@ -266,10 +272,11 @@ def getpyexts():
     ela = []
 
     if using_intel and IS_WIN:
-        include_dir_plat.append(jp(os.environ.get('ICPP_COMPILER16', ''),
-                                   'compiler',
-                                   'include'))
-        eca += ['-std=c++11', '-w', '/MD']
+        if os.environ.get('cc', '') == "dpcpp":
+            eca.append("/EHsc")
+        else:
+            include_dir_plat.append(jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
+            eca += ['-std=c++11', '-w', '/MD']
     elif not using_intel and IS_WIN:
         eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/MD']
     else:
