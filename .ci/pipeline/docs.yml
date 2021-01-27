@@ -1,3 +1,9 @@
+variables:
+  - name: python.version
+    value: '3.8'
+  - name: daal4py.version
+    value: '2021.2.0'
+
 trigger:
   branches:
     include:
@@ -18,14 +24,21 @@ pr:
 
 pool:
   vmImage: 'ubuntu-20.04'
-
 steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+    inputs:
+      versionSpec: '$(python.version)'
 - script: |
-    cd doc
-    sudo apt-get install python3-setuptools
-    sudo pip3 install -r requirements.txt
+    pip install -r requirements-dev.txt
+    pip install -r requirements-doc.txt
   displayName: 'Install requirements'
-
+- script: |
+    export PKG_VERSION='$(daal4py.version)
+    export NO_DIST=1
+    export ARGS=1
+    ./conda-recipe/build.sh
+  displayName: 'Build daal4py'
 - script: |
     cd doc
     make html
