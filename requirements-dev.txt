@@ -2,4 +2,4 @@ Cython==0.29.21
 Jinja2==2.11.2
 numpy>=1.14
 clang-format==9.0.0
-daal-devel==2021.1.0
+daal-devel>=2021.1.0
