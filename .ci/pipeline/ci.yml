@@ -16,7 +16,7 @@ steps:
       pip install -r requirements-doc.txt
     displayName: 'Install requirements'
   - script: |
-      export DALROOT=$(python -m site --user-site)
+      export DALROOT=/opt/hostedtoolcache/Python/3.8.7/x64/lib/python3.8/site-packages
       echo $DALROOT
       export PKG_VERSION=$(daal4py.version)
       export NO_DIST=1
