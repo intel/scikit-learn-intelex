@@ -53,6 +53,7 @@ elif sycl_extention_available:
     except:
         gpu_available = False
 
+
 def k_means_init_x():
     print("KMeans init=X[:2]")
     X = np.array([[1., 2.], [1., 4.], [1., 0.],
@@ -133,6 +134,7 @@ def dbscan():
     print("clustering")
     print(clustering)
 
+
 def get_context(device):
     if dpctx_available:
         return device_context(device, 0)
@@ -140,15 +142,16 @@ def get_context(device):
         return sycl_context(device)
     return None
 
+
 if __name__ == "__main__":
     examples = [
-                k_means_init_x,
-                k_means_random,
-                linear_regression,
-                logistic_regression_lbfgs,
-                logistic_regression_newton,
-                dbscan,
-               ]
+        k_means_init_x,
+        k_means_random,
+        linear_regression,
+        logistic_regression_lbfgs,
+        logistic_regression_newton,
+        dbscan,
+    ]
     devices = []
 
     if dpctx_available:
