@@ -11,26 +11,26 @@ steps:
     displayName: 'Use Python $(python.version)'
     inputs:
       versionSpec: '$(python.version)'
-- script: |
-    pip install -r requirements-dev.txt
-    pip install -r requirements-doc.txt
-  displayName: 'Install requirements'
-- script: |
-    export PKG_VERSION='$(daal4py.version)
-    export NO_DIST=1
-    export ARGS=1
-    ./conda-recipe/build.sh
-  displayName: 'Build daal4py'
-- script: |
-    cd doc
-    make html
-  displayName: 'Build documentation'
+  - script: |
+      pip install -r requirements-dev.txt
+      pip install -r requirements-doc.txt
+    displayName: 'Install requirements'
+  - script: |
+      export PKG_VERSION='$(daal4py.version)
+      export NO_DIST=1
+      export ARGS=1
+      ./conda-recipe/build.sh
+    displayName: 'Build daal4py'
+  - script: |
+      cd doc
+      make html
+    displayName: 'Build documentation'
 
-- script: |
-    cp -R doc/_build $(Build.ArtifactStagingDirectory)/html
-  displayName: 'Copy build'
+  - script: |
+      cp -R doc/_build $(Build.ArtifactStagingDirectory)/html
+    displayName: 'Copy build'
 
-- task: PublishPipelineArtifact@0
-  inputs:
-    artifactName: 'daal4py-documentation'
-    targetPath: '$(Build.ArtifactStagingDirectory)/html'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'daal4py-documentation'
+      targetPath: '$(Build.ArtifactStagingDirectory)/html'
