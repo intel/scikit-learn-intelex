@@ -41,7 +41,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     algorithm = d4p.multi_class_classifier_training(nClasses=nClasses,
                                                     training=d4p.svm_training(method='thunder'),
                                                     prediction=d4p.svm_prediction())
-    
+
     # Pass data to training. Training result provides model
     train_result = algorithm.compute(train_data, train_labels)
     assert train_result.model.NumberOfFeatures == nFeatures
@@ -52,7 +52,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     pred_file = 'data/batch/svm_multi_class_test_dense.csv'
     pred_data = readcsv(pred_file, range(nFeatures))
     pred_labels = readcsv(pred_file, range(nFeatures, nFeatures + 1))
-    
+
     # Create an algorithm object to predict multi-class SVM values
     algorithm = d4p.multi_class_classifier_prediction(nClasses,
                                                       training=d4p.svm_training(method='thunder'),
@@ -60,13 +60,12 @@ def main(readcsv=read_csv, method='defaultDense'):
     # Pass data to prediction. Prediction result provides prediction
     pred_result = algorithm.compute(pred_data, train_result.model)
     assert pred_result.prediction.shape == (train_data.shape[0], 1)
-    
+
     return (pred_result, pred_labels)
 
 
 if __name__ == "__main__":
     (pred_res, pred_labels) = main()
-
     print("\nSVM classification results (first 20 observations):\n", pred_res.prediction[0:20])
     print("\nGround truth (first 20 observations):\n", pred_labels[0:20])
     print('All looks good!')
