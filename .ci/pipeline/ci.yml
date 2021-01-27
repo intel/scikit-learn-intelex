@@ -17,7 +17,7 @@ steps:
       ls $(python -m site --user-site)/../../../
     displayName: 'Install requirements'
   - script: |
-      export DALROOT=$(python -m site --user-site)/../../../
+      export DALROOT=/opt/hostedtoolcache/Python/3.8.6/x64
       export LD_LIBRARY_PATH=${DALROOT}/lib:${LD_LIBRARY_PATH}
       echo $DALROOT
       export PKG_VERSION=$(daal4py.version)
