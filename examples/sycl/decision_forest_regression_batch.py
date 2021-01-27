@@ -27,7 +27,7 @@ try:
 
     def read_csv(f, c, t=np.float64):
         return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except Exception:
+except:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
         return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
@@ -36,12 +36,12 @@ try:
     from dpctx import device_context, device_type
     with device_context(device_type.gpu, 0):
         gpu_available = True
-except Exception:
+except:
     try:
         from daal4py.oneapi import sycl_context
         with sycl_context('gpu'):
             gpu_available = True
-    except Exception:
+    except:
         gpu_available = False
 
 
@@ -75,12 +75,12 @@ def to_numpy(data):
         from pandas import DataFrame
         if isinstance(data, DataFrame):
             return np.ascontiguousarray(data.values)
-    except Exception:
+    except:
         try:
             from scipy.sparse import csr_matrix
             if isinstance(data, csr_matrix):
                 return data.toarray()
-        except Exception:
+        except:
             return data
 
     return data

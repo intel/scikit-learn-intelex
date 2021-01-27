@@ -25,11 +25,11 @@ from daal4py.oneapi import sycl_buffer
 try:
     import pandas
 
-    def read_csv(f, c=None, t=np.float64):
+    def read_csv(f, c, t=np.float64):
         return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except ImportError:
+except:
     # fall back to numpy loadtxt
-    def read_csv(f, c=None, t=np.float64):
+    def read_csv(f, c, t=np.float64):
         return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
