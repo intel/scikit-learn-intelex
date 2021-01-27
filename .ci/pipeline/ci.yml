@@ -16,11 +16,11 @@ steps:
       pip install -r requirements-doc.txt
     displayName: 'Install requirements'
   - script: |
-      export DALROOT=/opt/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/site-packages
+      export DALROOT=$(python -m site --user-site)
+      echo $DALROOT
       export PKG_VERSION=$(daal4py.version)
       export NO_DIST=1
-      export ARGS=1
-      ./conda-recipe/build.sh
+      python setup.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build daal4py'
   - script: |
       cd doc
