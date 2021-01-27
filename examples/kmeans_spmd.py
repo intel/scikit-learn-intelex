@@ -19,7 +19,8 @@
 #    mpirun -n 4 python ./kmeans_spmd.py
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+from numpy import loadtxt
+
 
 def main(method='plusPlusDense'):
     infile = "./data/distributed/kmeans_dense.csv"
@@ -30,9 +31,10 @@ def main(method='plusPlusDense'):
     init_algo = d4p.kmeans_init(nClusters, method=method, distributed=True)
     # Load the data
     data = loadtxt(infile, delimiter=',')
-    # now slice the data, it would have been better to read only what we need, of course...
-    rpp = int(data.shape[0]/d4p.num_procs())
-    data = data[rpp*d4p.my_procid():rpp*d4p.my_procid()+rpp,:]
+    # now slice the data,
+    # it would have been better to read only what we need, of course...
+    rpp = int(data.shape[0] / d4p.num_procs())
+    data = data[rpp * d4p.my_procid(): rpp * d4p.my_procid() + rpp, :]
 
     # compute initial centroids
     init_result = init_algo.compute(data)
@@ -43,15 +45,25 @@ def main(method='plusPlusDense'):
     algo = d4p.kmeans(nClusters, maxIter, distributed=True)
     # compute the clusters/centroids
     result = algo.compute(data, init_result.centroids)
-    
-    # Note: we could have done this in just one line:
-    # d4p.kmeans(nClusters, maxIter, assignFlag=True, distributed=True).compute(data, d4p.kmeans_init(nClusters, method="plusPlusDense", distributed=True).compute(data).centroids)
 
-    # Kmeans result objects provide centroids, goalFunction, nIterations and objectiveFunction
+    # Note: we could have done this in just one line:
+    # d4p.kmeans(nClusters, maxIter, assignFlag=True, distributed=True).compute(
+    #     data,
+    #     d4p.kmeans_init(
+    #         nClusters,
+    #         method="plusPlusDense",
+    #         distributed=True
+    #     ).compute(data).centroids
+    # )
+
+    # Kmeans result objects provide centroids, goalFunction,
+    # nIterations and objectiveFunction
     assert result.centroids.shape[0] == nClusters
     assert result.nIterations <= maxIter
-    # we need an extra call to kmeans to get the assignments (not directly supported through parameter assignFlag yet in SPMD mode)
-    algo = d4p.kmeans(nClusters, 0, assignFlag=True) # maxIt=0; not distributed, we compute on local data only!
+    # we need an extra call to kmeans to get the assignments
+    # (not directly supported through parameter assignFlag yet in SPMD mode)
+    algo = d4p.kmeans(nClusters, 0, assignFlag=True)
+    # maxIt=0; not distributed, we compute on local data only!
     assignments = algo.compute(data, result.centroids).assignments
 
     return (assignments, result)
@@ -64,7 +76,7 @@ if __name__ == "__main__":
     # result is available on all processes - but we print only on root
     if d4p.my_procid() == 0:
         print("\nFirst 10 cluster assignments:\n", assignments[0:10])
-        print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
+        print("\nFirst 10 dimensions of centroids:\n", result.centroids[:, 0:10])
         print("\nObjective function value:\n", result.objectiveFunction)
         print('All looks good!')
     d4p.daalfini()

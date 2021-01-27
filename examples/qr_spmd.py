@@ -21,13 +21,14 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
+
 def main():
     # Each process gets its own data
-    infile = "./data/distributed/qr_{}.csv".format(d4p.my_procid()+1)
+    infile = "./data/distributed/qr_{}.csv".format(d4p.my_procid() + 1)
 
     # configure a QR object
     algo = d4p.qr(distributed=True)
-    
+
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 

@@ -14,7 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-# daal4py LBFGS (limited memory Broyden-Fletcher-Goldfarb-Shanno) example for shared memory systems
+# daal4py LBFGS (limited memory Broyden-Fletcher-Goldfarb-Shanno)
+# example for shared memory systems
 # using Mean Squared Error objective function
 
 import daal4py as d4p
@@ -23,17 +24,20 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infile   = "./data/batch/lbfgs.csv"
+    infile = "./data/batch/lbfgs.csv"
     # Read the data, let's have 10 independent variables
-    data     = readcsv(infile, range(10))
-    dep_data = readcsv(infile, range(10,11))
+    data = readcsv(infile, range(10))
+    dep_data = readcsv(infile, range(10, 11))
     nVectors = data.shape[0]
 
     # configure a MSE object
@@ -48,7 +52,7 @@ def main(readcsv=read_csv, method='defaultDense'):
                                                nIterations=niters)
 
     # finally do the computation
-    inp = np.array([[100]]*11, dtype=np.double)
+    inp = np.array([[100]] * 11, dtype=np.double)
     res = lbfgs_algo.compute(inp)
 
     # The LBFGS result provides minimum and nIterations
@@ -59,7 +63,13 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     res = main()
-    print("\nExpected coefficients:\n", np.array([[11], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10]], dtype=np.double))
+    print(
+        "\nExpected coefficients:\n",
+        np.array(
+            [[11], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10]],
+            dtype=np.double
+        )
+    )
     print("\nResulting coefficients:\n", res.minimum)
     print("\nNumber of iterations performed:\n", res.nIterations[0][0])
     print('All looks good!')

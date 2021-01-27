@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -34,19 +37,20 @@ def main(readcsv=read_csv, method='defaultDense'):
     testfile = "./data/batch/svm_two_class_test_dense.csv"
 
     # Configure a SVM object to use rbf kernel (and adjusting cachesize)
-    kern = d4p.kernel_function_linear()  # need an object that lives when creating train_algo
+    kern = d4p.kernel_function_linear()
+    # need an object that lives when creating train_algo
     train_algo = d4p.svm_training(method='thunder', kernel=kern, cacheSize=600000000)
 
     # Read data. Let's use features per observation
-    data   = readcsv(infile, range(20))
-    labels = readcsv(infile, range(20,21))
+    data = readcsv(infile, range(20))
+    labels = readcsv(infile, range(20, 21))
     train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
     predict_algo = d4p.svm_prediction(kernel=kern)
     # read test data (with same #features)
     pdata = readcsv(testfile, range(20))
-    plabels = readcsv(testfile, range(20,21))
+    plabels = readcsv(testfile, range(20, 21))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
@@ -55,7 +59,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # result of classification
     decision_result = predict_result.prediction
-    predict_labels = np.where(decision_result >=0, 1, -1)
+    predict_labels = np.where(decision_result >= 0, 1, -1)
 
     return (decision_result, predict_labels, plabels)
 
@@ -63,7 +67,10 @@ def main(readcsv=read_csv, method='defaultDense'):
 if __name__ == "__main__":
     (decision_function, predict_labels, plabels) = main()
 
-    print("\nSVM classification decision function (first 20 observations):\n", decision_function[0:20])
+    print(
+        "\nSVM classification decision function (first 20 observations):\n",
+        decision_function[0:20]
+    )
     print("\nSVM classification results (first 20 observations):\n", predict_labels[0:20])
     print("\nGround truth (first 20 observations):\n", plabels[0:20])
     print('All looks good!')

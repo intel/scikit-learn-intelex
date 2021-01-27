@@ -21,13 +21,14 @@
 import daal4py as d4p
 from numpy import loadtxt, allclose
 
+
 def main():
     # Each process gets its own data
-    infile = "./data/distributed/svd_{}.csv".format(d4p.my_procid()+1)
+    infile = "./data/distributed/svd_{}.csv".format(d4p.my_procid() + 1)
 
     # configure a SVD object
     algo = d4p.svd(distributed=True)
-    
+
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 
@@ -35,7 +36,8 @@ def main():
     data = loadtxt(infile, delimiter=',')
     result2 = algo.compute(data)
 
-    # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues
+    # SVD result objects provide leftSingularMatrix,
+    # rightSingularMatrix and singularValues
     assert result1.leftSingularMatrix.shape == data.shape
     assert result1.singularValues.shape == (1, data.shape[1])
     assert result1.rightSingularMatrix.shape == (data.shape[1], data.shape[1])
@@ -53,7 +55,10 @@ if __name__ == "__main__":
     (_, result) = main()
     # result is available on all processes - but we print only on root
     if d4p.my_procid() == 0:
-        print("\nEach process has singularValues and rightSingularMatrix but only his part of leftSingularMatrix:\n")
+        print(
+            "\nEach process has singularValues and rightSingularMatrix "
+            "but only his part of leftSingularMatrix:\n"
+        )
         print(result)
         print('All looks good!')
     d4p.daalfini()

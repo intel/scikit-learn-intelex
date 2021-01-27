@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c=None, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c=None, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='svdDense'):
@@ -33,7 +36,7 @@ def main(readcsv=read_csv, method='svdDense'):
 
     # configure a QR object
     algo = d4p.qr()
-    
+
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 
@@ -49,7 +52,7 @@ def main(readcsv=read_csv, method='svdDense'):
     assert np.allclose(result1.matrixR, result2.matrixR, atol=1e-07)
 
     if hasattr(data, 'toarray'):
-        data = data.toarray() # to make the next assertion work with scipy's csr_matrix
+        data = data.toarray()  # to make the next assertion work with scipy's csr_matrix
     assert np.allclose(data, np.matmul(result1.matrixQ, result1.matrixR))
 
     return data, result1

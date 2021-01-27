@@ -18,24 +18,31 @@
 
 import math
 import daal4py as d4p
-from numpy import loadtxt, allclose
 
 from decision_tree_regression_batch import main as dt_regression
+
 
 def printTree(nodes, values):
     def printNodes(node_id, nodes, values, level):
         node = nodes[node_id]
         value = values[node_id]
         if not math.isnan(node["threshold"]):
-            print(" " * level + "Level " + str(level) + ": Feature = " + str(node["feature"]) + ", Threshold = " + str(node["threshold"]))
+            print(
+                " " * level + "Level " + str(level) + ": Feature ="
+                " " + str(node["feature"]) + ", Threshold = " + str(node["threshold"])
+            )
         else:
-            print(" " * level + "Level " + str(level) + ", Value = " + str(value).replace(" ", ""))
+            print(
+                " " * level + "Level " + str(level) + ", Value ="
+                " " + str(value).replace(" ", "")
+            )
         if node["left_child"] != -1:
             printNodes(node["left_child"], nodes, values, level + 1)
         if node["right_child"] != -1:
             printNodes(node["right_child"], nodes, values, level + 1)
 
     printNodes(0, nodes, values, 0)
+
 
 if __name__ == "__main__":
     # First get our result and model

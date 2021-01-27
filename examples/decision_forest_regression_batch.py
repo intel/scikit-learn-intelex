@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -33,24 +36,28 @@ def main(readcsv=read_csv, method='defaultDense'):
     testfile = "./data/batch/df_regression_test.csv"
 
     # Configure a Linear regression training object
-    train_algo = d4p.decision_forest_regression_training(nTrees=100,
-                                                         varImportance='MDA_Raw',
-                                                         bootstrap=True,
-                                                         engine = d4p.engines_mt2203(seed=777),
-                                                         resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation')
-    
-    # Read data. Let's have 13 independent, and 1 dependent variables (for each observation)
+    train_algo = d4p.decision_forest_regression_training(
+        nTrees=100,
+        varImportance='MDA_Raw',
+        bootstrap=True,
+        engine=d4p.engines_mt2203(seed=777),
+        resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation'
+    )
+
+    # Read data. Let's have 13 independent,
+    # and 1 dependent variables (for each observation)
     indep_data = readcsv(infile, range(13), t=np.float32)
-    dep_data   = readcsv(infile, range(13,14), t=np.float32)
+    dep_data = readcsv(infile, range(13, 14), t=np.float32)
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
-    # Traiing result provides (depending on parameters) model, outOfBagError, outOfBagErrorPerObservation and/or variableImportance
+    # Traiing result provides (depending on parameters) model,
+    # outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
     # Now let's do some prediction
     predict_algo = d4p.decision_forest_regression_prediction()
     # read test data (with same #features)
     pdata = readcsv(testfile, range(13), t=np.float32)
-    ptdata = readcsv(testfile, range(13,14), t=np.float32)
+    ptdata = readcsv(testfile, range(13, 14), t=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
@@ -64,6 +71,9 @@ if __name__ == "__main__":
     (train_result, predict_result, ptdata) = main()
     print("\nVariable importance results:\n", train_result.variableImportance)
     print("\nOOB error:\n", train_result.outOfBagError)
-    print("\nDecision forest prediction results (first 10 rows):\n", predict_result.prediction[0:10])
+    print(
+        "\nDecision forest prediction results (first 10 rows):\n",
+        predict_result.prediction[0:10]
+    )
     print("\nGround truth (first 10 rows):\n", ptdata[0:10])
     print('All looks good!')

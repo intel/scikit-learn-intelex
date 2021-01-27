@@ -22,10 +22,14 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+
 
 def main(readcsv=read_csv, method='defaultDense'):
     nClasses = 5
@@ -48,14 +52,24 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_data = readcsv(testfile, range(nFeatures))
 
     # set parameters and compute predictions
-    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses,
-                                                     resultsToEvaluate="computeClassLabels|computeClassProbabilities|computeClassLogProbabilities")
+    predict_alg = \
+        d4p.logistic_regression_prediction(
+            nClasses=nClasses,
+            resultsToEvaluate="computeClassLabels|computeClassProbabilities|"
+            "computeClassLogProbabilities"
+        )
     predict_result = predict_alg.compute(predict_data, train_result.model)
     # the prediction result provides prediction, probabilities and logProbabilities
     assert predict_result.probabilities.shape == (predict_data.shape[0], nClasses)
     assert predict_result.logProbabilities.shape == (predict_data.shape[0], nClasses)
-    predict_labels = np.loadtxt(testfile, usecols=range(nFeatures, nFeatures + 1), delimiter=',', ndmin=2)
-    assert np.count_nonzero(predict_result.prediction-predict_labels)/predict_labels.shape[0] < 0.025
+    predict_labels = np.loadtxt(
+        testfile,
+        usecols=range(nFeatures, nFeatures + 1),
+        delimiter=',',
+        ndmin=2
+    )
+    assert np.count_nonzero(predict_result.prediction - predict_labels) \
+           / predict_labels.shape[0] < 0.025
 
     return (train_result, predict_result, predict_labels)
 
@@ -63,8 +77,17 @@ def main(readcsv=read_csv, method='defaultDense'):
 if __name__ == "__main__":
     (train_result, predict_result, predict_labels) = main()
     print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
-    print("\nLogistic regression prediction results (first 10 rows):\n", predict_result.prediction[0:10])
+    print(
+        "\nLogistic regression prediction results (first 10 rows):\n",
+        predict_result.prediction[0:10]
+    )
     print("\nGround truth (first 10 rows):\n", predict_labels[0:10])
-    print("\nLogistic regression prediction probabilities (first 10 rows):\n", predict_result.probabilities[0:10])
-    print("\nLogistic regression prediction log probabilities (first 10 rows):\n", predict_result.logProbabilities[0:10])
+    print(
+        "\nLogistic regression prediction probabilities (first 10 rows):\n",
+        predict_result.probabilities[0:10]
+    )
+    print(
+        "\nLogistic regression prediction log probabilities (first 10 rows):\n",
+        predict_result.logProbabilities[0:10]
+    )
     print('All looks good!')

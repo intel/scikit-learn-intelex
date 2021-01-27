@@ -23,17 +23,20 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infile   = "./data/batch/custom.csv"
+    infile = "./data/batch/custom.csv"
     # Read the data, let's have 4 independent variables
-    data     = readcsv(infile, range(4))
-    dep_data = readcsv(infile, range(4,5))
+    data = readcsv(infile, range(4))
+    dep_data = readcsv(infile, range(4, 5))
     nVectors = data.shape[0]
 
     # configure a logistic loss object

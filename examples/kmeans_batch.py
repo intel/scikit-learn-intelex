@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -47,9 +50,12 @@ def main(readcsv=read_csv, method='defaultDense'):
     result = algo.compute(data, initrain_result.centroids)
 
     # Note: we could have done this in just one line:
-    # d4p.kmeans(nClusters, maxIter, assignFlag=True).compute(data, d4p.kmeans_init(nClusters, method="plusPlusDense").compute(data).centroids)
+    # d4p.kmeans(nClusters, maxIter, assignFlag=True).compute(
+    #     data, d4p.kmeans_init(nClusters, method="plusPlusDense").compute(data).centroids
+    # )
 
-    # Kmeans result objects provide assignments (if requested), centroids, goalFunction, nIterations and objectiveFunction
+    # Kmeans result objects provide assignments (if requested), centroids,
+    # goalFunction, nIterations and objectiveFunction
     assert result.centroids.shape[0] == nClusters
     assert result.assignments.shape == (data.shape[0], 1)
     assert result.nIterations <= maxIter
@@ -60,6 +66,6 @@ def main(readcsv=read_csv, method='defaultDense'):
 if __name__ == "__main__":
     result = main()
     print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
-    print("\nFirst 10 dimensions of centroids:\n", result.centroids[:,0:10])
+    print("\nFirst 10 dimensions of centroids:\n", result.centroids[:, 0:10])
     print("\nObjective function value:\n", result.objectiveFunction)
     print('All looks good!')

@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -36,19 +39,19 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a training object (5 classes)
     train_algo = d4p.decision_tree_classification_training(5)
-    
+
     # Read data. Let's use 5 features per observation
-    data   = readcsv(infile, range(5), t=np.float32)
-    labels = readcsv(infile, range(5,6), t=np.float32)
+    data = readcsv(infile, range(5), t=np.float32)
+    labels = readcsv(infile, range(5, 6), t=np.float32)
     prunedata = readcsv(prunefile, range(5), t=np.float32)
-    prunelabels = readcsv(prunefile, range(5,6), t=np.float32)
+    prunelabels = readcsv(prunefile, range(5, 6), t=np.float32)
     train_result = train_algo.compute(data, labels, prunedata, prunelabels)
 
     # Now let's do some prediction
     predict_algo = d4p.decision_tree_classification_prediction()
     # read test data (with same #features)
     pdata = readcsv(testfile, range(5), t=np.float32)
-    plabels = readcsv(testfile, range(5,6), t=np.float32)
+    plabels = readcsv(testfile, range(5, 6), t=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
@@ -60,6 +63,9 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     (train_result, predict_result, plabels) = main()
-    print("\nDecision tree prediction results (first 20 rows):\n", predict_result.prediction[0:20])
+    print(
+        "\nDecision tree prediction results (first 20 rows):\n",
+        predict_result.prediction[0:20]
+    )
     print("\nGround truth (first 20 rows):\n", plabels[0:20])
     print('All looks good!')

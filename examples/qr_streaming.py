@@ -17,10 +17,10 @@
 # daal4py QR example for shared memory systems
 
 import daal4py as d4p
-import numpy as np
 
 # let's use a generator for getting stream from file (defined in stream.py)
 from stream import read_next
+
 
 def main(readcsv=None, method='svdDense'):
     infile = "./data/batch/qr.csv"

@@ -22,7 +22,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, s=0, n=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=t)
+
+    def read_csv(f, c, s=0, n=None, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None,
+                               skiprows=s, nrows=n, dtype=t)
 except:
     # fall back to numpy genfromtxt
     def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
@@ -41,7 +44,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a training object (20 classes)
     train_algo = d4p.multinomial_naive_bayes_training(20, streaming=True, method=method)
-    
+
     chunk_size = 250
     lines_read = 0
     # read and feed chunk by chunk
@@ -49,8 +52,8 @@ def main(readcsv=read_csv, method='defaultDense'):
         # Read data in chunks
         # Read data. Let's use 20 features per observation
         try:
-            data   = readcsv(infile, range(20), lines_read, chunk_size)
-            labels = readcsv(infile, range(20,21), lines_read, chunk_size)
+            data = readcsv(infile, range(20), lines_read, chunk_size)
+            labels = readcsv(infile, range(20, 21), lines_read, chunk_size)
         except:
             break
         # Now feed chunk
@@ -64,7 +67,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     pred_algo = d4p.multinomial_naive_bayes_prediction(20, method=method)
     # read test data (with same #features)
     pred_data = readcsv(testfile, range(20))
-    pred_labels = readcsv(testfile, range(20,21))
+    pred_labels = readcsv(testfile, range(20, 21))
     # now predict using the model from the training above
     pred_result = pred_algo.compute(pred_data, train_result.model)
 
@@ -76,6 +79,9 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     (result, labels) = main()
-    print("\nNaiveBayes classification results (first 20 observations):\n", result.prediction[0:20])
+    print(
+        "\nNaiveBayes classification results (first 20 observations):\n",
+        result.prediction[0:20]
+    )
     print("\nGround truth (first 20 observations)\n", labels[0:20])
     print('All looks good!')

@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -34,10 +37,11 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a stump regression training object
     train_algo = d4p.stump_regression_training()
-    
-    # Read data. Let's have 20 independent, and 1 dependent variable (for each observation)
+
+    # Read data. Let's have 20 independent,
+    # and 1 dependent variable (for each observation)
     indep_data = readcsv(infile, range(20))
-    dep_data   = readcsv(infile, range(20,21))
+    dep_data = readcsv(infile, range(20, 21))
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
 
@@ -50,7 +54,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # The prediction result provides prediction
     assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
-    ptdata = np.loadtxt(testfile, usecols=range(20,21), delimiter=',', ndmin=2)
+    ptdata = np.loadtxt(testfile, usecols=range(20, 21), delimiter=',', ndmin=2)
     assert np.allclose(predict_result.prediction, ptdata)
 
     return (train_result, predict_result, ptdata)
@@ -59,5 +63,8 @@ def main(readcsv=read_csv, method='defaultDense'):
 if __name__ == "__main__":
     (train_result, predict_result, ptdata) = main()
     print("\nGround truth (first 20 observations):\n", ptdata[:20])
-    print("Stump regression results: (first 20 observations):\n", predict_result.prediction[:20])
+    print(
+        "Stump regression results: (first 20 observations):\n",
+        predict_result.prediction[:20]
+    )
     print('All looks good!')

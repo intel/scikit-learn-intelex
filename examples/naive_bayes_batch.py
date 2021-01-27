@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -35,17 +38,17 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a training object (20 classes)
     talgo = d4p.multinomial_naive_bayes_training(20, method=method)
-    
+
     # Read data. Let's use 20 features per observation
-    data   = readcsv(infile, range(20))
-    labels = readcsv(infile, range(20,21))
+    data = readcsv(infile, range(20))
+    labels = readcsv(infile, range(20, 21))
     tresult = talgo.compute(data, labels)
 
     # Now let's do some prediction
     palgo = d4p.multinomial_naive_bayes_prediction(20, method=method)
     # read test data (with same #features)
     pdata = readcsv(testfile, range(20))
-    plabels = readcsv(testfile, range(20,21))
+    plabels = readcsv(testfile, range(20, 21))
     # now predict using the model from the training above
     presult = palgo.compute(pdata, tresult.model)
 
@@ -57,6 +60,9 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     (presult, plabels) = main()
-    print("\nNaiveBayes classification results (first 20 observations):\n", presult.prediction[0:20])
+    print(
+        "\nNaiveBayes classification results (first 20 observations):\n",
+        presult.prediction[0:20]
+    )
     print("\nGround truth (first 20 observations)\n", plabels[0:20])
     print('All looks good!')

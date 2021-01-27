@@ -21,12 +21,15 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c=None, sr=0, nr=None, t=np.float64: pandas.read_csv(f,
-        usecols=c, skiprows=sr, nrows=nr, delimiter=',', header=None, dtype=t)
+
+    def read_csv(f, c=None, sr=0, nr=None, t=np.float64):
+        return pandas.read_csv(f, usecols=c, skiprows=sr, nrows=nr,
+                               delimiter=',', header=None, dtype=t)
 except:
     # fall back to numpy loadtxt
     def read_csv(f, c=None, sr=0, nr=np.iinfo(np.int64).max, t=np.float64):
-        res = np.genfromtxt(f, usecols=c, delimiter=',', skip_header=sr, max_rows=nr, dtype=t)
+        res = np.genfromtxt(f, usecols=c, delimiter=',',
+                            skip_header=sr, max_rows=nr, dtype=t)
         if res.ndim == 1:
             return res[:, np.newaxis]
         return res
@@ -54,7 +57,7 @@ if __name__ == "__main__":
     lines_in_file = whole_file.shape[0]
 
     # Read chunks
-    chunks_stack = np.empty([0,whole_file.shape[1]])
+    chunks_stack = np.empty([0, whole_file.shape[1]])
     for chunk_number in range(chunks_count):
         skiprows, nrows = get_chunk_params(lines_in_file, chunks_count, chunk_number)
         chunk = read_csv(infile, sr=skiprows, nr=nrows)

@@ -22,19 +22,24 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c=None, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c=None, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='svdDense'):
     infile = "./data/batch/pca_normalized.csv"
 
-    # 'normalization' is an optional parameter to PCA; we use z-score which could be configured differently
+    # 'normalization' is an optional parameter to PCA;
+    # we use z-score which could be configured differently
     zscore = d4p.normalization_zscore()
     # configure a PCA object
-    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue", isDeterministic=True, normalization=zscore)
+    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue",
+                   isDeterministic=True, normalization=zscore)
 
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)

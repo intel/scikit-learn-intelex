@@ -22,17 +22,20 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infile   = "./data/batch/XM.csv"
+    infile = "./data/batch/XM.csv"
     # Read the data, let's have 3 independent variables
-    data     = readcsv(infile, range(1))
-    dep_data = readcsv(infile, range(1,2))
+    data = readcsv(infile, range(1))
+    dep_data = readcsv(infile, range(1, 2))
     nVectors = data.shape[0]
 
     # configure a Logistic Loss object
@@ -45,7 +48,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure an Saga object
     lr = np.array([[0.01]], dtype=np.double)
-    niters=100000
+    niters = 100000
     saga_algo = d4p.optimization_solver_saga(nIterations=niters,
                                              accuracyThreshold=1e-5,
                                              batchSize=1,
@@ -53,14 +56,13 @@ def main(readcsv=read_csv, method='defaultDense'):
                                              learningRateSequence=lr,
                                              optionalResultRequired=True)
 
-
     # finally do the computation
     inp = np.zeros((2, 1), dtype=np.double)
     res = saga_algo.compute(inp, None)
 
     # The Saga result provides minimum and nIterations
     assert res.minimum.shape == inp.shape and res.nIterations[0][0] <= niters
-    assert np.allclose(res.minimum, [[-0.17663868],[ 0.35893627]])
+    assert np.allclose(res.minimum, [[-0.17663868], [0.35893627]])
 
     return res
 

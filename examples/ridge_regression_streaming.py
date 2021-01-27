@@ -22,7 +22,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, s=0, n=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=t)
+
+    def read_csv(f, c, s=0, n=None, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None,
+                               skiprows=s, nrows=n, dtype=t)
 except:
     # fall back to numpy genfromtxt
     def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
@@ -40,7 +43,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a Ridge regression training object for streaming
     train_algo = d4p.ridge_regression_training(interceptFlag=True, streaming=True)
-    
+
     chunk_size = 250
     lines_read = 0
     # read and feed chunk by chunk
@@ -49,7 +52,7 @@ def main(readcsv=read_csv, method='defaultDense'):
         # Let's have 10 independent, and 2 dependent variables (for each observation)
         try:
             indep_data = readcsv(infile, range(10), lines_read, chunk_size)
-            dep_data   = readcsv(infile, range(10,12), lines_read, chunk_size)
+            dep_data = readcsv(infile, range(10, 12), lines_read, chunk_size)
         except:
             break
         # Now feed chunk
@@ -63,7 +66,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_algo = d4p.ridge_regression_prediction()
     # read test data (with same #features)
     pdata = readcsv(testfile, range(10))
-    ptdata = readcsv(testfile, range(10,12))
+    ptdata = readcsv(testfile, range(10, 12))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
@@ -75,6 +78,9 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     (predict_result, ptdata) = main()
-    print("\nRidge Regression prediction results: (first 10 rows):\n", predict_result.prediction[0:10])
+    print(
+        "\nRidge Regression prediction results: (first 10 rows):\n",
+        predict_result.prediction[0:10]
+    )
     print("\nGround truth (first 10 rows):\n", ptdata[0:10])
     print('All looks good!')
