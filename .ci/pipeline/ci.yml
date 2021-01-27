@@ -4,24 +4,6 @@ variables:
   - name: daal4py.version
     value: '2021.2.0'
 
-trigger:
-  branches:
-    include:
-    - master
-  paths:
-    include:
-    - doc
-    - examples
-
-pr:
-  branches:
-    include:
-    - master
-  # paths:
-  #   include:
-  #   - doc
-  #   - examples
-
 pool:
   vmImage: 'ubuntu-20.04'
 steps:
