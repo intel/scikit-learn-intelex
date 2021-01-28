@@ -48,16 +48,16 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         if self.split_criterion not in ('gini', 'infoGain'):
             raise ValueError('Parameter "split_criterion" must be '
                              '"gini" or "infoGain".')
-        if not isinstance(self.max_tree_depth, numbers.Integral) or \
-                self.max_tree_depth < 0:
+        if not isinstance(self.max_tree_depth, numbers.Integral) and \
+                not self.max_tree_depth >= 0:
             raise ValueError('Parameter "max_tree_depth" must be '
                              'positive integer value or zero.')
-        if not isinstance(self.min_observations_in_leaf_node, numbers.Integral) or \
-                self.min_observations_in_leaf_node <= 0:
+        if not isinstance(self.min_observations_in_leaf_node, numbers.Integral) and \
+                not self.min_observations_in_leaf_node > 0:
             raise ValueError('Parameter "min_observations_in_leaf_node" must be '
                              'non-zero positive integer value.')
-        if not isinstance(self.max_iterations, numbers.Integral) or \
-                self.max_iterations <= 0:
+        if not isinstance(self.max_iterations, numbers.Integral) and \
+                not self.max_iterations > 0:
             raise ValueError('Parameter "max_iterations" must be '
                              'non-zero positive integer value.')
         if self.learning_rate <= 0:
@@ -66,7 +66,8 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         # it is not clear why it is so but we will get error from
         # Intel(R) oneAPI Data Analytics
         # Library otherwise
-        if self.accuracy_threshold < 0 and self.accuracy_threshold >= 1:
+        if not self.accuracy_threshold >= 0 and \
+                not self.accuracy_threshold < 1:
             raise ValueError('Parameter "accuracy_threshold" must be '
                              'more or equal to 0 and less than 1.')
 
