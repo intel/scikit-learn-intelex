@@ -19,8 +19,6 @@ pr:
 variables:
   - name: python.version
     value: '3.7'
-  - name: daal4py.version
-    value: '2021.2.0'
 
 pool:
   vmImage: 'ubuntu-20.04'
@@ -31,7 +29,7 @@ steps:
       versionSpec: '$(python.version)'
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB -c intel python=$(python.version) daal-devel
+      conda create -q -y -n CB -c intel python=$(python.version) dal-devel
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -43,7 +41,6 @@ steps:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       export DALROOT=$CONDA_PREFIX
-      export PKG_VERSION=$(daal4py.version)
       export NO_DIST=1
       python setup.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build daal4py'
