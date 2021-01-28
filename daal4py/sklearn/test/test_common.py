@@ -41,8 +41,9 @@ def make_dataset(n_samples=256, n_features=5, n_classes=2,
     return train_test_split(x, y, random_state=777,
                             test_size=test_size, shuffle=shuffle)
 
+
 ESTIMATORS = {
-    'KNeighborsClassifier':      
+    'KNeighborsClassifier':
         KNeighborsClassifier(n_neighbors=10),
     'DaalRandomForestClassifier':
         DaalRandomForestClassifier(n_estimators=10, random_state=777),
@@ -62,7 +63,6 @@ def check_data_formats_diff(name):
             x_train_copy = convert_data(x_train.copy(), data_format, order)
             x_test_copy = convert_data(x_test.copy(), data_format, order)
             y_train_copy = convert_data(y_train.copy(), data_format, order)
-            y_test_copy = convert_data(y_test.copy(), data_format, order)
             alg = ESTIMATORS[name]
             alg.fit(x_train_copy, y_train_copy)
             labels = alg.predict(x_test_copy)
