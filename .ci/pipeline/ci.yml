@@ -5,6 +5,10 @@ variables:
     value: intel.oneapi.win.dpcpp-compiler
   - name: python.version
     value: '3.7'
+  - name: 'PYTHON'
+    value: python
+  - name: 'ARGS'
+    value: '1'
 
 jobs:
 - job: Linux
@@ -29,7 +33,7 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      export PY3K=1
+      env
       ./conda-recipe/build.sh
     displayName: 'Build daal4py'
   - script: |
