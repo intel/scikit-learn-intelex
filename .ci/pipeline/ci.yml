@@ -14,7 +14,7 @@ steps:
   - script: |
       conda update -y -q conda
       conda create -q -y -n CB -c intel python=$(python.version) daal
-      source CB
+      source activate CB
       pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
     displayName: 'Install requirements'
