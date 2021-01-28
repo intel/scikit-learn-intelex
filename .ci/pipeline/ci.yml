@@ -27,7 +27,7 @@ steps:
       python setup.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build daal4py'
   - script: |
-        . /usr/share/miniconda/etc/profile.d/conda.sh
+      . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd doc
       make html
