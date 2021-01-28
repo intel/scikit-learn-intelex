@@ -41,7 +41,7 @@ def test_monkey_patching():
             "Patching has completed with error."
 
         daal4py.sklearn.unpatch_sklearn(t)
-
+        print(p, n)
         class_module = getattr(p, n).__module__
         assert class_module.startswith('sklearn'), \
             "Unpatching has completed with error."
