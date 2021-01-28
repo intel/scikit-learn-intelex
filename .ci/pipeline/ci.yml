@@ -32,7 +32,6 @@ jobs:
       source activate CB
       export PY3K=1
       ./build.sh
-    displayName: Conda build
     displayName: 'Build daal4py'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -51,7 +50,7 @@ jobs:
     inputs:
       artifactName: 'daal4py-documentation'
       targetPath: '$(Build.ArtifactStagingDirectory)/html'
-    
+
 - job: Linux_DPCPP
   pool:
     vmImage: 'ubuntu-20.04'
