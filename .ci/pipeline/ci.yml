@@ -100,7 +100,7 @@ jobs:
   - script: |
       source activate CB
       export PY3K=1
-     ./conda-recipe/build.sh
+      ./conda-recipe/build.sh
     displayName: Conda build
   - script: |
       source activate CB
