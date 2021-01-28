@@ -40,6 +40,7 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       ./conda-recipe/run_test.sh
+    displayName: Testing
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
