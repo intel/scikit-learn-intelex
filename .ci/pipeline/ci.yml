@@ -24,6 +24,7 @@ jobs:
       conda activate CB
       pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
+      pip install -r requirements-test.txt
     displayName: 'Install requirements'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -33,6 +34,10 @@ jobs:
       ./build.sh
     displayName: Conda build
     displayName: 'Build daal4py'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      ./conda-recipe/run_test.sh
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
