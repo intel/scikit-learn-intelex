@@ -28,12 +28,16 @@ if __name__ == "__main__":
     See wrapper_gen.py for code generation (cython and C++).
     """
 
-    argParser = argparse.ArgumentParser(prog="gen_daal4py.py",
-                                        description=description,
-                                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    argParser.add_argument('--daalroot', required=True,   help="DAAL root directory (reads include dir in there)")
-    argParser.add_argument('--outdir',   default='build', help="Output directory to store wrapper files to")
-    argParser.add_argument('--wall', default=False, action='store_true', help="Emit all warnings")
+    argParser = argparse.ArgumentParser(
+        prog="gen_daal4py.py",
+        description=description,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    argParser.add_argument('--daalroot', required=True,
+                           help="DAAL root directory (reads include dir in there)")
+    argParser.add_argument('--outdir', default='build',
+                           help="Output directory to store wrapper files to")
+    argParser.add_argument('--wall', default=False,
+                           action='store_true', help="Emit all warnings")
 
     args = argParser.parse_args()
     gen_daal4py(args.daalroot, args.outdir, "v_develop", args.wall)
