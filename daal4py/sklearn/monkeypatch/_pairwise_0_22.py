@@ -152,9 +152,9 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
     paired_distances : Computes the distances between corresponding
                        elements of two arrays
     """
-    if (metric not in _VALID_METRICS
-        and not callable(metric)
-        and metric != "precomputed"):
+    if all([metric not in _VALID_METRICS,
+            not callable(metric),
+            metric != "precomputed"]):
         raise ValueError("Unknown metric %s. "
                          "Valid metrics are %s, or 'precomputed', or a "
                          "callable" % (metric, _VALID_METRICS))
@@ -166,31 +166,36 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
                 " need to have non-negative values.")
         check_non_negative(X, whom=whom)
         return X
-    elif ((metric == 'cosine') and (Y is None)
-          and (not issparse(X)) and X.dtype == np.float64):
+    elif all([metric == 'cosine', Y is None, not issparse(X), X.dtype == np.float64]):
         logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("daal"))
         return _daal4py_cosine_distance_dense(X)
-    elif ((metric == 'correlation') and (Y is None) and
-          (not issparse(X)) and X.dtype == np.float64):
+    elif all([metric == 'correlation', Y is None,
+              not issparse(X), X.dtype == np.float64]):
         logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("daal"))
         return _daal4py_correlation_distance_dense(X)
     elif metric in PAIRWISE_DISTANCE_FUNCTIONS:
-        logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("sklearn"))
+        logging.info(
+            "sklearn.metrics."
+            "pairwise_distances: " + get_patch_message("sklearn"))
         func = PAIRWISE_DISTANCE_FUNCTIONS[metric]
     elif callable(metric):
-        logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("sklearn"))
+        logging.info(
+            "sklearn.metrics."
+            "pairwise_distances: " + get_patch_message("sklearn"))
         func = partial(_pairwise_callable, metric=metric,
                        force_all_finite=force_all_finite, **kwds)
     else:
-        logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("sklearn"))
+        logging.info(
+            "sklearn.metrics."
+            "pairwise_distances: " + get_patch_message("sklearn"))
         if issparse(X) or issparse(Y):
             raise TypeError("scipy distance metrics do not"
                             " support sparse matrices.")
 
         dtype = bool if metric in PAIRWISE_BOOLEAN_FUNCTIONS else None
 
-        if (dtype == bool
-            and (X.dtype != bool or (Y is not None and Y.dtype != bool))):
+        if all([dtype == bool,
+                (X.dtype != bool or (Y is not None and Y.dtype != bool))]):
             msg = "Data was converted to boolean for metric %s" % metric
             warnings.warn(msg, DataConversionWarning)
 
