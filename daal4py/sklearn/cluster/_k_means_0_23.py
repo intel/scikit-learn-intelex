@@ -368,8 +368,10 @@ def _predict(self, X, sample_weight=None):
 
     X = _daal4py_check_test_data(self, X)
 
-    if sample_weight is None and hasattr(X, '__array__') or \
-            sp.isspmatrix_csr(X):
+    daal_ready = sample_weight is None and hasattr(
+        X, '__array__') or sp.isspmatrix_csr(X)
+
+    if daal_ready:
         logging.info(
             "sklearn.cluster.KMeans."
             "predict: " + get_patch_message("daal"))
