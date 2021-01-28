@@ -20,9 +20,11 @@ import numpy as np
 import numbers
 import daal4py as d4p
 from scipy import sparse as sp
-from .._utils import getFPType, daal_check_version, sklearn_check_version, get_patch_message
+from .._utils import (
+    getFPType,
+    sklearn_check_version,
+    get_patch_message)
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
-from joblib import effective_n_jobs
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.base import is_classifier, is_regressor
 import logging
@@ -67,7 +69,8 @@ def parse_auto_method(estimator, method, n_samples, n_features):
 
     if (method in ['auto', 'ball_tree']):
         if estimator.metric == 'precomputed' or n_features > 11 or \
-           (estimator.n_neighbors is not None and estimator.n_neighbors >= estimator.n_samples_fit_ // 2):
+           all([estimator.n_neighbors is not None,
+                estimator.n_neighbors >= estimator.n_samples_fit_ // 2]):
             result_method = 'brute'
         else:
             if estimator.effective_metric_ in KDTree.valid_metrics:
@@ -97,7 +100,9 @@ def daal4py_fit(estimator, X, fptype):
 
     labels = None if estimator._y is None else estimator._y.reshape(-1, 1)
 
-    method = parse_auto_method(estimator, estimator.algorithm, estimator.n_samples_fit_, estimator.n_features_in_)
+    method = parse_auto_method(
+        estimator, estimator.algorithm,
+        estimator.n_samples_fit_, estimator.n_features_in_)
     estimator._fit_method = method
     train_alg = training_algorithm(method, fptype, params)
     estimator._daal_model = train_alg.compute(X, labels).model
@@ -107,7 +112,8 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
     n_features = getattr(estimator, 'n_features_in_', None)
     shape = getattr(X, 'shape', None)
     if n_features and shape and len(shape) > 1 and shape[1] != n_features:
-        raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
+        raise ValueError(
+            'Input data shape {} is inconsistent with the trained model'.format(X.shape))
 
     if sklearn_check_version("0.22"):
         check_is_fitted(estimator)
@@ -165,7 +171,8 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
     if hasattr(estimator, 'classes_'):
         params['nClasses'] = len(estimator.classes_)
 
-    method = parse_auto_method(estimator, estimator._fit_method, estimator.n_samples_fit_, n_features)
+    method = parse_auto_method(
+        estimator, estimator._fit_method, estimator.n_samples_fit_, n_features)
 
     predict_alg = prediction_algorithm(method, fptype, params)
     prediction_result = predict_alg.compute(X, estimator._daal_model)
@@ -222,7 +229,7 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
 
 
 def validate_data(estimator, X, y=None, reset=True,
-                       validate_separately=False, **check_params):
+                  validate_separately=False, **check_params):
     if y is None:
         try:
             requires_y = estimator._get_tags()["requires_y"]
@@ -259,12 +266,14 @@ class NeighborsBase(BaseNeighborsBase):
     def __init__(self, n_neighbors=None, radius=None,
                  algorithm='auto', leaf_size=30, metric='minkowski',
                  p=2, metric_params=None, n_jobs=None):
-        super().__init__(n_neighbors=n_neighbors, radius=radius,
+        super().__init__(
+            n_neighbors=n_neighbors, radius=radius,
             algorithm=algorithm, leaf_size=leaf_size, metric=metric,
             p=p, metric_params=metric_params, n_jobs=n_jobs)
 
     def _fit(self, X, y=None):
-        X_incorrect_type = isinstance(X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
+        X_incorrect_type = isinstance(
+            X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
         single_output = True
         self._daal_model = None
         shape = None
@@ -277,7 +286,9 @@ class NeighborsBase(BaseNeighborsBase):
 
         if y is not None or requires_y:
             if not X_incorrect_type or y is None:
-                X, y = validate_data(self, X, y, accept_sparse="csr", multi_output=True, dtype=[np.float64, np.float32])
+                X, y = validate_data(
+                    self, X, y, accept_sparse="csr", multi_output=True,
+                    dtype=[np.float64, np.float32])
                 single_output = False if y.ndim > 1 and y.shape[1] > 1 else True
 
             shape = y.shape
@@ -309,7 +320,8 @@ class NeighborsBase(BaseNeighborsBase):
                 self._y = y
         else:
             if not X_incorrect_type:
-                X, _ = validate_data(self, X, accept_sparse='csr', dtype=[np.float64, np.float32])
+                X, _ = validate_data(
+                    self, X, accept_sparse='csr', dtype=[np.float64, np.float32])
             self._y = None
 
         if not X_incorrect_type:
@@ -343,18 +355,26 @@ class NeighborsBase(BaseNeighborsBase):
                     type(self.n_neighbors))
 
         if not X_incorrect_type and weights in ['uniform', 'distance'] \
-        and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
-        and (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean') \
-        and single_output and fptype is not None and not sp.issparse(X) and correct_n_classes:
+            and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
+            and any([(self.metric == 'minkowski' and self.p == 2),
+                     self.metric == 'euclidean']) \
+            and single_output and fptype is not None and not sp.issparse(X) and \
+                correct_n_classes:
             try:
-                logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("daal"))
+                logging.info(
+                    "sklearn.neighbors.KNeighborsMixin."
+                    "kneighbors: " + get_patch_message("daal"))
                 daal4py_fit(self, X, fptype)
                 result = self
             except RuntimeError:
-                logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("sklearn_after_daal"))
+                logging.info(
+                    "sklearn.neighbors.KNeighborsMixin."
+                    "kneighbors: " + get_patch_message("sklearn_after_daal"))
                 result = stock_fit(self, X, y)
         else:
-            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("sklearn"))
+            logging.info(
+                "sklearn.neighbors.KNeighborsMixin."
+                "kneighbors: " + get_patch_message("sklearn"))
             result = stock_fit(self, X, y)
 
         if y is not None and is_regressor(self):
@@ -375,17 +395,22 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             fptype = None
 
         if daal_model is not None and fptype is not None and not sp.issparse(X):
-            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("daal"))
+            logging.info(
+                "sklearn.neighbors.KNeighborsMixin."
+                "kneighbors: " + get_patch_message("daal"))
             result = daal4py_kneighbors(self, X, n_neighbors, return_distance)
         else:
-            logging.info("sklearn.neighbors.KNeighborsMixin.kneighbors: " + get_patch_message("sklearn"))
-            if daal_model is not None \
-            or getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
+            logging.info(
+                "sklearn.neighbors.KNeighborsMixin."
+                "kneighbors:" + get_patch_message("sklearn"))
+            if daal_model is not None or getattr(self, '_tree', 0) is None and \
+                    self._fit_method == 'kd_tree':
                 if sklearn_check_version("0.24"):
                     BaseNeighborsBase._fit(self, self._fit_X, self._y)
                 else:
                     BaseNeighborsBase._fit(self, self._fit_X)
-            result = super(KNeighborsMixin, self).kneighbors(X, n_neighbors, return_distance)
+            result = super(KNeighborsMixin, self).kneighbors(
+                X, n_neighbors, return_distance)
 
         return result
 
@@ -395,15 +420,17 @@ class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
                          sort_results=False):
         daal_model = getattr(self, '_daal_model', None)
 
-        if daal_model is not None \
-        or getattr(self, '_tree', 0) is None and self._fit_method == 'kd_tree':
+        if daal_model is not None or getattr(self, '_tree', 0) is None and \
+                self._fit_method == 'kd_tree':
             if sklearn_check_version("0.24"):
                 BaseNeighborsBase._fit(self, self._fit_X, self._y)
             else:
                 BaseNeighborsBase._fit(self, self._fit_X)
         if sklearn_check_version("0.22"):
-            result = BaseRadiusNeighborsMixin.radius_neighbors(self, X, radius, return_distance, sort_results)
+            result = BaseRadiusNeighborsMixin.radius_neighbors(
+                self, X, radius, return_distance, sort_results)
         else:
-            result = BaseRadiusNeighborsMixin.radius_neighbors(self, X, radius, return_distance)
+            result = BaseRadiusNeighborsMixin.radius_neighbors(
+                self, X, radius, return_distance)
 
         return result
