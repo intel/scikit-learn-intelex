@@ -1,6 +1,6 @@
 variables:
   - name: python.version
-    value: '3.8'
+    value: '3.7'
   - name: daal4py.version
     value: '2021.2.0'
 
@@ -12,22 +12,26 @@ steps:
     inputs:
       versionSpec: '$(python.version)'
   - script: |
+      conda update -y -q conda
+      conda create -q -y -n CB -c intel python=$(python.version) daal
+      source CB
       pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
     displayName: 'Install requirements'
   - script: |
-      export DALROOT=/opt/hostedtoolcache/Python/3.8.6/x64
-      export LD_LIBRARY_PATH=${DALROOT}/lib:${LD_LIBRARY_PATH}
-      echo $DALROOT
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      export DALROOT=$CONDA_PREFIX
       export PKG_VERSION=$(daal4py.version)
       export NO_DIST=1
       python setup.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build daal4py'
   - script: |
+        . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
       cd doc
       make html
     displayName: 'Build documentation'
-
   - script: |
       cp -R doc/_build $(Build.ArtifactStagingDirectory)/html
     displayName: 'Copy build'
