@@ -82,7 +82,8 @@ class PCA(PCA_original):
 
         fpType = getFPType(X)
 
-        covariance_algo = daal4py.covariance(fptype=fpType, outputMatrixType='covarianceMatrix')
+        covariance_algo = daal4py.covariance(
+            fptype=fpType, outputMatrixType='covarianceMatrix')
         covariance_res = covariance_algo.compute(X)
 
         self.mean_ = covariance_res.mean.ravel()
@@ -100,14 +101,15 @@ class PCA(PCA_original):
 
         components_ = pca_res.eigenvectors
         explained_variance_ = np.maximum(pca_res.eigenvalues.ravel(), 0)
-        tot_var  = explained_variance_.sum()
+        tot_var = explained_variance_.sum()
         explained_variance_ratio_ = explained_variance_ / tot_var
 
         if n_components == 'mle':
             if sklearn_check_version('0.23'):
                 n_components = _infer_dimension(explained_variance_, n_samples)
             else:
-                n_components = _infer_dimension_(explained_variance_, n_samples, n_features)
+                n_components = \
+                    _infer_dimension_(explained_variance_, n_samples, n_features)
         elif 0 < n_components < 1.0:
             ratio_cumsum = stable_cumsum(explained_variance_ratio_)
             n_components = np.searchsorted(ratio_cumsum, n_components,
@@ -146,7 +148,8 @@ class PCA(PCA_original):
             if sklearn_check_version('0.23'):
                 n_components = _infer_dimension(self.explained_variance_, n_samples)
             else:
-                n_components = _infer_dimension_(self.explained_variance_, n_samples, n_features)
+                n_components = \
+                    _infer_dimension_(self.explained_variance_, n_samples, n_features)
         elif 0 < n_components < 1.0:
             ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
             n_components = np.searchsorted(ratio_cumsum, n_components,
@@ -191,17 +194,22 @@ class PCA(PCA_original):
         if self._fit_svd_solver == 'auto':
             if max(X.shape) <= 500 or n_components == 'mle':
                 self._fit_svd_solver = 'full'
-            elif n_components >= 1 and n_components < (.1 if shape_good_for_daal else .8) * min(X.shape):
+            elif n_components >= 1 and \
+                    n_components < (.1 if shape_good_for_daal else .8) * min(X.shape):
                 self._fit_svd_solver = 'randomized'
             else:
                 self._fit_svd_solver = 'full'
 
         if self._fit_svd_solver == 'full':
             if shape_good_for_daal:
-                logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("daal"))
+                logging.info(
+                    "sklearn.decomposition.PCA."
+                    "fit: " + get_patch_message("daal"))
                 result = self._fit_full(X, n_components)
             else:
-                logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
+                logging.info(
+                    "sklearn.decomposition.PCA."
+                    "fit: " + get_patch_message("sklearn"))
                 result = PCA_original._fit_full(self, X, n_components)
         elif self._fit_svd_solver in ['arpack', 'randomized']:
             logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
@@ -226,7 +234,8 @@ class PCA(PCA_original):
             tr_data['mean'] = self.mean_.reshape((1, -1))
         if whiten:
             if scale_eigenvalues:
-                tr_data['eigenvalue'] = (self.n_samples_ - 1) * self.explained_variance_.reshape((1, -1))
+                tr_data['eigenvalue'] = \
+                    (self.n_samples_ - 1) * self.explained_variance_.reshape((1, -1))
             else:
                 tr_data['eigenvalue'] = self.explained_variance_.reshape((1, -1))
         elif scale_eigenvalues:
@@ -235,9 +244,10 @@ class PCA(PCA_original):
                 self.n_samples_ - 1.0, dtype=X.dtype)
 
         if X.shape[1] != self.n_features_:
-            raise ValueError("The number of features of the input data, {}, is not "
-                              "equal to the number of features of the training data, {}".format(
-                                  X.shape[1], self.n_features_))
+            raise ValueError(
+                "The number of features of the input data, {}, is not "
+                "equal to the number of features of the training data, {}".format(
+                    X.shape[1], self.n_features_))
 
         tr_res = daal4py.pca_transform(
             fptype=fpType
@@ -247,11 +257,15 @@ class PCA(PCA_original):
 
     def transform(self, X):
         if self.n_components_ > 0:
-            logging.info("sklearn.decomposition.PCA.transform: " + get_patch_message("daal"))
+            logging.info(
+                "sklearn.decomposition.PCA."
+                "transform: " + get_patch_message("daal"))
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=True, scale_eigenvalues=False)
         else:
-            logging.info("sklearn.decomposition.PCA.transform: " + get_patch_message("sklearn"))
+            logging.info(
+                "sklearn.decomposition.PCA."
+                "transform: " + get_patch_message("sklearn"))
             return PCA_original.transform(self, X)
 
     def fit_transform(self, X, y=None):
@@ -259,7 +273,8 @@ class PCA(PCA_original):
 
         if self._fit_svd_solver == 'full':
             if self.n_components_ > 0:
-                return self._transform_daal4py(X, whiten=self.whiten, check_X=False, scale_eigenvalues=False)
+                return self._transform_daal4py(
+                    X, whiten=self.whiten, check_X=False, scale_eigenvalues=False)
             return np.empty((self.n_samples_, 0), dtype=X.dtype)
         else:
             U, S, _ = fit_result

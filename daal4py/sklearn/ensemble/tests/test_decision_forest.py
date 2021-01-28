@@ -100,10 +100,9 @@ def _test_classifier_class_weight_iris(weight):
         scikit_accuracy = accuracy_score(scikit_predict, y_test)
         daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
         ratio = daal4py_accuracy / scikit_accuracy
-        reason = 'Classifier class weight: scikit_accuracy=' + \
-            '{scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}'.format(
-                scikit_accuracy=scikit_accuracy, daal4py_accuracy=daal4py_accuracy
-            )
+        reason = ("Classifier class weight: scikit_accuracy={},"
+                  "daal4py_accuracy={}".format(
+                      scikit_accuracy, daal4py_accuracy))
         assert ratio >= ACCURACY_RATIO, reason
 
         if weight == {0: 0, 1: 0, 2: 0}:
@@ -115,20 +114,17 @@ def _test_classifier_class_weight_iris(weight):
         scikit_log_loss = log_loss(y_test, scikit_predict_proba)
         daal4py_log_loss = log_loss(y_test, daal4py_predict_proba)
         ratio = daal4py_log_loss / scikit_log_loss
-        reason = 'Classifier class weight: scikit_log_loss=' + \
-            '{scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}'.format(
-                scikit_log_loss=scikit_log_loss, daal4py_log_loss=daal4py_log_loss
-            )
+        reason = ("Classifier class weight: scikit_log_loss="
+                  "{}, daal4py_log_loss={}".format(
+                      scikit_log_loss, daal4py_log_loss))
         assert ratio <= LOG_LOSS_RATIO, reason
 
         # ROC AUC
         scikit_roc_auc = roc_auc_score(y_test, scikit_predict_proba, multi_class='ovr')
         daal4py_roc_auc = roc_auc_score(y_test, daal4py_predict_proba, multi_class='ovr')
         ratio = daal4py_roc_auc / scikit_roc_auc
-        reason = 'Classifier class weight: scikit_roc_auc=' + \
-            '{scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}'.format(
-                scikit_roc_auc=scikit_roc_auc, daal4py_roc_auc=daal4py_roc_auc
-            )
+        reason = "Classifier class weight: scikit_roc_auc={}, daal4py_roc_auc={}".format(
+            scikit_roc_auc, daal4py_roc_auc)
         assert ratio >= ROC_AUC_RATIO, reason
 
 
@@ -173,10 +169,9 @@ def _test_classifier_sample_weight(weight):
         scikit_accuracy = accuracy_score(scikit_predict, y_test)
         daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
         ratio = daal4py_accuracy / scikit_accuracy
-        reason = 'Classifier sample weights: sample_weight_type=' + \
-            '{weight},scikit_accuracy={scikit}, daal4py_accuracy={daal4py}'.format(
-                weight=weight[1], scikit=scikit_accuracy, daal4py=daal4py_accuracy
-            )
+        reason = ("Classifier sample weights: sample_weight_type={},"
+                  "scikit_accuracy={}, daal4py_accuracy={}".format(
+                      weight[1], scikit_accuracy, daal4py_accuracy))
         assert ratio >= ACCURACY_RATIO, reason
 
         if weight[1] == 'Only 0':
@@ -190,10 +185,9 @@ def _test_classifier_sample_weight(weight):
         daal4py_log_loss = log_loss(
             y_test, daal4py_predict_proba, sample_weight=weight[0][100:150])
         ratio = daal4py_log_loss / scikit_log_loss
-        reason = 'Classifier sample weights: sample_weight_type=' + \
-            '{weight},scikit_log_loss={scikit}, daal4py_log_loss={daal4py}'.format(
-                weight=weight[1], scikit=scikit_log_loss, daal4py=daal4py_log_loss
-            )
+        reason = ("Classifier sample weights: sample_weight_type={},"
+                  "scikit_log_loss={}, daal4py_log_loss={}".format(
+                      weight[1], scikit_log_loss, daal4py_log_loss))
         assert ratio <= LOG_LOSS_RATIO, reason
 
         # ROC AUC
@@ -204,10 +198,9 @@ def _test_classifier_sample_weight(weight):
                                         sample_weight=weight[0][100:150],
                                         multi_class='ovr')
         ratio = daal4py_roc_auc / scikit_roc_auc
-        reason = 'Classifier sample weights: sample_weight_type=' + \
-            '{weight},scikit_roc_auc={scikit}, daal4py_roc_auc={daal4py}'.format(
-                weight=weight[1], scikit=scikit_roc_auc, daal4py=daal4py_roc_auc
-            )
+        reason = ("Classifier sample weights: sample_weight_type={},"
+                  "scikit_roc_auc={}, daal4py_roc_auc={}".format(
+                      weight[1], scikit_roc_auc, daal4py_roc_auc))
         assert ratio >= ROC_AUC_RATIO, reason
 
 
@@ -240,10 +233,9 @@ def _test_mse_regressor_sample_weight(weight):
         daal4py_mse = mean_squared_error(daal4py_predict, y_test)
 
         ratio = daal4py_mse / scikit_mse
-        reason = 'Regression sample weights: sample_weight_type=' + \
-            '{weight},scikit_mse={scikit_mse}, daal4py_mse={daal4py_mse}'.format(
-                weight=weight[1], scikit_mse=scikit_mse, daal4py_mse=daal4py_mse
-            )
+        reason = ("Regression sample weights: sample_weight_type={},"
+                  "scikit_mse={}, daal4py_mse={}".format(
+                      weight[1], scikit_mse, daal4py_mse))
         assert ratio <= MSE_RATIO, reason
 
 

@@ -15,8 +15,6 @@
 #===============================================================================
 
 import numpy as np
-import warnings
-from scipy import sparse
 
 from sklearn.utils import check_array
 from sklearn.utils.validation import _check_sample_weight
@@ -44,14 +42,13 @@ def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     fpt = getFPType(XX)
     alg = daal4py.dbscan(
         method='defaultDense',
-        fptype = fpt,
+        fptype=fpt,
         epsilon=float(eps),
         minObservations=int(min_samples),
         memorySavingMode=False,
         resultsToCompute="computeCoreIndices")
 
     daal_res = alg.compute(XX, ww)
-    n_clusters = daal_res.nClusters[0, 0]
     assignments = daal_res.assignments.ravel()
     if daal_res.coreIndices is not None:
         core_ind = daal_res.coreIndices.ravel()
@@ -234,12 +231,14 @@ class DBSCAN(DBSCAN_original):
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
 
-        _daal_ready = ((self.algorithm in ['auto', 'brute']) and
-                       (self.metric == 'euclidean' or
-                       (self.metric == 'minkowski' and self.p == 2)) and 
-                       isinstance(X, np.ndarray))
+        _daal_ready = all([(self.algorithm in ['auto', 'brute']),
+                           any([self.metric == 'euclidean',
+                               (self.metric == 'minkowski' and self.p == 2)]),
+                           isinstance(X, np.ndarray)])
         if _daal_ready:
-            logging.info("sklearn.cluster.DBSCAN.fit: " + get_patch_message("daal"))
+            logging.info(
+                "sklearn.cluster.DBSCAN."
+                "fit: " + get_patch_message("daal"))
             core_ind, assignments = _daal_dbscan(
                 X, self.eps,
                 self.min_samples,
@@ -248,5 +247,7 @@ class DBSCAN(DBSCAN_original):
             self.labels_ = assignments
             self.components_ = np.take(X, core_ind, axis=0)
             return self
-        logging.info("sklearn.cluster.DBSCAN.fit: " + get_patch_message("sklearn"))
+        logging.info(
+            "sklearn.cluster.DBSCAN."
+            "fit: " + get_patch_message("sklearn"))
         return super().fit(X, y, sample_weight=sample_weight)
