@@ -29,7 +29,8 @@ from .._utils import get_patch_message, sklearn_check_version
 import logging
 
 if sklearn_check_version('0.22'):
-    from sklearn.metrics._ranking import _multiclass_roc_auc_score as multiclass_roc_auc_score
+    from sklearn.metrics._ranking import _multiclass_roc_auc_score as \
+        multiclass_roc_auc_score
     from sklearn.metrics._ranking import _binary_roc_auc_score
     from sklearn.metrics._base import _average_binary_score
 else:
@@ -41,9 +42,11 @@ try:
 except ImportError:
     pandas_is_imported = False
 
+
 def _daal_type_of_target(y):
-    valid = ((isinstance(y, (Sequence, spmatrix)) or hasattr(y, '__array__'))
-             and not isinstance(y, str))
+    valid = \
+        all([(isinstance(y, (Sequence, spmatrix)) or hasattr(y, '__array__')),
+             not isinstance(y, str)])
 
     if not valid:
         raise ValueError('Expected array-like (array or non-string sequence), '
@@ -64,8 +67,8 @@ def _daal_type_of_target(y):
 
     # The old sequence of sequences format
     try:
-        if (not hasattr(y[0], '__array__') and isinstance(y[0], Sequence)
-                and not isinstance(y[0], str)):
+        if all([not hasattr(y[0], '__array__'), isinstance(y[0], Sequence),
+                not isinstance(y[0], str)]):
             raise ValueError('You appear to be using a legacy multi-label data'
                              ' representation. Sequence of sequences are no'
                              ' longer supported; use a binary array or sparse'
@@ -75,8 +78,9 @@ def _daal_type_of_target(y):
         pass
 
     # Invalid inputs
-    if y.ndim > 2 or (y.dtype == object and len(y) != 0 and
-                      not isinstance(y.flat[0], str)):
+    if y.ndim > 2 or all([y.dtype == object,
+                          len(y) != 0,
+                          not isinstance(y.flat[0], str)]):
         return 'unknown'  # [[[1, 2]]] or [obj_1] and not ["label_1"]
 
     if y.ndim == 2 and y.shape[1] == 0:
@@ -102,15 +106,16 @@ def _daal_type_of_target(y):
     return result
 
 
-def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
-                  max_fpr=None, multi_class="raise", labels=None):
+def _daal_roc_auc_score(y_true, y_score, *, average="macro",
+                        sample_weight=None, max_fpr=None,
+                        multi_class="raise", labels=None):
     y_type = _daal_type_of_target(y_true)
     y_true = check_array(y_true, ensure_2d=False, dtype=None)
     y_score = check_array(y_score, ensure_2d=False)
 
-    if y_type[0] == "multiclass" or (y_type[0] == "binary" and
-                                  y_score.ndim == 2 and
-                                  y_score.shape[1] > 2):
+    if y_type[0] == "multiclass" or all([y_type[0] == "binary",
+                                         y_score.ndim == 2,
+                                         y_score.shape[1] > 2]):
         # do not support partial ROC computation for multiclass
         if max_fpr is not None and max_fpr != 1.:
             raise ValueError("Partial AUC computation not available in "
