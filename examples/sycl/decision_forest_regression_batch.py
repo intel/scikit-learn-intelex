@@ -36,12 +36,12 @@ try:
     from dpctx import device_context, device_type
     with device_context(device_type.gpu, 0):
         gpu_available = True
-except:
+except ImportError:
     try:
         from daal4py.oneapi import sycl_context
         with sycl_context('gpu'):
             gpu_available = True
-    except:
+    except ImportError:
         gpu_available = False
 
 
@@ -75,12 +75,12 @@ def to_numpy(data):
         from pandas import DataFrame
         if isinstance(data, DataFrame):
             return np.ascontiguousarray(data.values)
-    except:
+    except ImportError:
         try:
             from scipy.sparse import csr_matrix
             if isinstance(data, csr_matrix):
                 return data.toarray()
-        except:
+        except ImportError:
             return data
 
     return data
