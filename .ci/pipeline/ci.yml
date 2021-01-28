@@ -17,7 +17,7 @@ jobs:
       versionSpec: '$(python.version)'
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB -c intel python=$(python.version) dal-devel
+      conda create -q -y -n CB -c intel python=$(python.version) dal-devel impi-devel
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -28,9 +28,10 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      export DALROOT=$CONDA_PREFIX
-      export NO_DIST=1
-      python setup.py install --single-version-externally-managed --record=record.txt
+      source activate CB
+      export PY3K=1
+      ./build.sh
+    displayName: Conda build
     displayName: 'Build daal4py'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -94,20 +95,12 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       source activate CB
-      export DALROOT=$CONDA_PREFIX
-      export MPIROOT=$CONDA_PREFIX
-      export MACOSX_DEPLOYMENT_TARGET=10.15
-      export LDFLAGS="${LDFLAGS//-Wl,-dead_strip_dylibs}"
-      export LDFLAGS_LD="${LDFLAGS_LD//-dead_strip_dylibs}"
-      export LDSHARED="-bundle -undefined dynamic_lookup -flto -Wl,-export_dynamic -Wl,-pie -Wl,-headerpad_max_install_names"
-      python setup.py install --single-version-externally-managed --record=record.txt
+      export PY3K=1
+     ./conda-recipe/build.sh
     displayName: Conda build
   - script: |
       source activate CB
-      python -c "import daal4py"
-      mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
-      pytest --pyargs daal4py/sklearn/
-      python tests/run_tests.py
+      ./conda-recipe/run_test.sh
     displayName: Testing
   - script: |
       source activate CB
