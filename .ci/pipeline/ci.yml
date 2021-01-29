@@ -116,7 +116,7 @@ jobs:
     displayName: Examples
   - task: CopyFiles@2
     inputs:
-      SourceFolder: '$CONDA_PREFIX/CB/pkgs/'
+      SourceFolder: '$CONDA_PREFIX/CB/'
       Contents: 'daal4py*'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
   - task: PublishPipelineArtifact@0

@@ -22,6 +22,7 @@ import daal4py as d4p
 
 class Test(unittest.TestCase):
     def verify_on_dbscan(self, X):
+        assert True
         alg1 = d4p.dbscan(epsilon=2.0, minObservations=5, fptype='double')
         res1 = alg1.compute(X)
         Xc = np.ascontiguousarray(X)
