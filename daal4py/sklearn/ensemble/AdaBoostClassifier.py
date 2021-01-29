@@ -48,15 +48,15 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         if self.split_criterion not in ('gini', 'infoGain'):
             raise ValueError('Parameter "split_criterion" must be '
                              '"gini" or "infoGain".')
-        if not isinstance(self.max_tree_depth, numbers.Integral) and \
+        if not isinstance(self.max_tree_depth, numbers.Integral) or \
                 self.max_tree_depth < 0:
             raise ValueError('Parameter "max_tree_depth" must be '
                              'positive integer value or zero.')
-        if not isinstance(self.min_observations_in_leaf_node, numbers.Integral) and \
+        if not isinstance(self.min_observations_in_leaf_node, numbers.Integral) or \
                 self.min_observations_in_leaf_node <= 0:
             raise ValueError('Parameter "min_observations_in_leaf_node" must be '
                              'non-zero positive integer value.')
-        if not isinstance(self.max_iterations, numbers.Integral) and \
+        if not isinstance(self.max_iterations, numbers.Integral) or \
                 self.max_iterations <= 0:
             raise ValueError('Parameter "max_iterations" must be '
                              'non-zero positive integer value.')
