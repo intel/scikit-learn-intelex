@@ -77,7 +77,7 @@ class GBTDAALBase(BaseEstimator):
         if self.reg_lambda < 0:
             raise ValueError('Parameter "reg_lambda" must be '
                              'more or equal to zero.')
-        if not self.observations_per_tree_fraction > 0 and \
+        if self.observations_per_tree_fraction <= 0 and \
                 self.observations_per_tree_fraction <= 1:
             raise ValueError('Parameter "observations_per_tree_fraction" must be '
                              'more than 0 and less or equal to 1.')
