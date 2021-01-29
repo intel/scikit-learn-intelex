@@ -61,11 +61,11 @@ class GBTDAALBase(BaseEstimator):
             raise ValueError('Parameter "split_method" must be '
                              '"inexact" or "exact".')
         if not isinstance(self.max_iterations, numbers.Integral) and \
-                not self.max_iterations > 0:
+                self.max_iterations <= 0:
             raise ValueError('Parameter "max_iterations" must be '
                              'non-zero positive integer value.')
         if not isinstance(self.max_tree_depth, numbers.Integral) and \
-                not self.max_tree_depth >= 0:
+                self.max_tree_depth < 0:
             raise ValueError('Parameter "max_tree_depth" must be '
                              'positive integer value or zero.')
         if not ((self.shrinkage >= 0) and (self.shrinkage < 1)):
@@ -82,22 +82,22 @@ class GBTDAALBase(BaseEstimator):
             raise ValueError('Parameter "observations_per_tree_fraction" must be '
                              'more than 0 and less or equal to 1.')
         if not isinstance(self.features_per_node, numbers.Integral) and \
-                not self.features_per_node >= 0:
+                self.features_per_node < 0:
             raise ValueError('Parameter "features_per_node" must be '
                              'positive integer value or zero.')
         if not isinstance(self.min_observations_in_leaf_node, numbers.Integral) and \
-                not self.min_observations_in_leaf_node > 0:
+                self.min_observations_in_leaf_node <= 0:
             raise ValueError('Parameter "min_observations_in_leaf_node" must be '
                              'non-zero positive integer value.')
         if not isinstance(self.memory_saving_mode, bool):
             raise ValueError('Parameter "memory_saving_mode" must be '
                              'boolean value.')
         if not isinstance(self.max_bins, numbers.Integral) and \
-                not self.max_bins > 0:
+                self.max_bins <= 0:
             raise ValueError('Parameter "max_bins" must be '
                              'non-zero positive integer value.')
         if not isinstance(self.min_bin_size, numbers.Integral) and \
-                not self.min_bin_size > 0:
+                self.min_bin_size <= 0:
             raise ValueError('Parameter "min_bin_size" must be '
                              'non-zero positive integer value.')
 
