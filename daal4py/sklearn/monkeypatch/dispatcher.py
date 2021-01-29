@@ -50,11 +50,7 @@ import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-    import sklearn.linear_model._logistic as logistic_module
-    _patched_log_reg_path_func_name = '_logistic_regression_path'
-    from ..linear_model._logistic_path_0_22 import _logistic_regression_path as daal_optimized_logistic_path
-else:
+if LooseVersion(sklearn_version) < LooseVersion("0.22"):
     import sklearn.linear_model.logistic as logistic_module
     if LooseVersion(sklearn_version) >= LooseVersion("0.21.0"):
         _patched_log_reg_path_func_name = '_logistic_regression_path'
@@ -62,7 +58,6 @@ else:
     else:
         _patched_log_reg_path_func_name = 'logistic_regression_path'
         from ..linear_model._logistic_path_0_21 import logistic_regression_path as daal_optimized_logistic_path
-
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     from ._pairwise_0_22 import daal_pairwise_distances
@@ -82,7 +77,6 @@ def _get_map_of_algorithms():
         'elasticnet':               [[(linear_model_module, 'ElasticNet', ElasticNet_daal4py), None]],
         'lasso':                    [[(linear_model_module, 'Lasso', Lasso_daal4py), None]],
         'svm':                      [[(svm_module, 'SVC', SVC_daal4py), None]],
-        'logistic':                 [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]],
         'knn_classifier':           [[(neighbors_module, 'KNeighborsClassifier', KNeighborsClassifier_daal4py), None]],
         'nearest_neighbors':        [[(neighbors_module, 'NearestNeighbors', NearestNeighbors_daal4py), None]],
         'knn_regressor':            [[(neighbors_module, 'KNeighborsRegressor', KNeighborsRegressor_daal4py), None]],
@@ -92,8 +86,10 @@ def _get_map_of_algorithms():
         'fin_check':                [[(validation, '_assert_all_finite', _daal_assert_all_finite), None]],
         'tsne':                     [[(manifold_module, 'TSNE', TSNE_daal4py), None]],
     }
-    if daal_check_version((2021,'P', 100)):
-        mapping['log_reg'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
+    if LooseVersion(sklearn_version) < LooseVersion("0.22"):
+        mapping['logistic'] = [[(logistic_module, _patched_log_reg_path_func_name, daal_optimized_logistic_path), None]]
+    else:
+        mapping['logistic'] = [[(linear_model_module, 'LogisticRegression', LogisticRegression_daal4py), None]]
     if daal_check_version((2021,'P', 200)):
         mapping['roc_auc_score'] = [[(metrics, 'roc_auc_score', _daal_roc_auc_score), None]]
     return mapping

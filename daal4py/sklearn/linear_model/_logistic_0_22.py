@@ -26,7 +26,6 @@ from .logistic_loss import (_daal4py_loss_and_grad,
                             _daal4py_cross_entropy_loss_extra_args,
                             _daal4py_loss_, _daal4py_grad_,
                             _daal4py_grad_hess_)
-
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 from sklearn.utils import (check_array,
@@ -51,8 +50,10 @@ from sklearn.linear_model._logistic import (
     LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import (LabelEncoder, LabelBinarizer)
 from sklearn.linear_model._base import (LinearClassifierMixin, SparseCoefMixin, BaseEstimator)
+from sklearn.utils.multiclass import check_classification_targets
 from .._utils import (daal_check_version, getFPType,
                       get_patch_message)
+from ..utils.base import _daal_validate_data
 import logging
 
 # Code adapted from sklearn.linear_model.logistic prior to 0.21
@@ -502,7 +503,7 @@ def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
 
 # Code adapted from sklearn.linear_model.logistic version 0.21
-def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
+def __logistic_regression_path(X, y, classes, pos_class=None, Cs=10, fit_intercept=True,
                               max_iter=100, tol=1e-4, verbose=0,
                               solver='lbfgs', coef=None,
                               class_weight=None, dual=False, penalty='l2',
@@ -666,13 +667,12 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
     # Preprocessing.
     if check_input:
-        X = check_array(X, accept_sparse='csr', dtype=np.float64,
+        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
                         accept_large_sparse=solver != 'liblinear')
         y = check_array(y, ensure_2d=False, dtype=None)
         check_consistent_length(X, y)
     _, n_features = X.shape
 
-    classes = np.unique(y)
     random_state = check_random_state(random_state)
 
     multi_class = _check_multi_class(multi_class, solver, len(classes))
@@ -690,21 +690,6 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
     else:
         default_weights = (class_weight is None)
 
-    daal_ready = solver in ['lbfgs', 'newton-cg'] and not sparse.issparse(X)
-    daal_ready = daal_ready and sample_weight is None and class_weight is None
-
-    if not daal_ready:
-        sample_weight = _check_sample_weight(sample_weight, X,
-                                            dtype=X.dtype)
-    # If class_weights is a dict (provided by the user), the weights
-    # are assigned to the original labels. If it is "balanced", then
-    # the class_weights are assigned after masking the labels with a OvR.
-    le = LabelEncoder()
-    if (isinstance(class_weight, dict) or multi_class == 'multinomial') and not daal_ready:
-        class_weight_ = compute_class_weight(class_weight, classes=classes, y=y)
-        if not np.allclose(class_weight_, np.ones_like(class_weight_)):
-            sample_weight *= class_weight_[le.fit_transform(y)]
-
     # For doing a ovr, we need to mask the labels first. for the
     # multinomial case this is not necessary.
     if multi_class == 'ovr':
@@ -715,38 +700,15 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
         y_bin[~mask] = -1.
         # for compute_class_weight
 
-        if class_weight == "balanced" and not daal_ready:
-            class_weight_ = compute_class_weight(class_weight, classes=mask_classes,
-                                                 y=y_bin)
-            if not np.allclose(class_weight_, np.ones_like(class_weight_)):
-                sample_weight *= class_weight_[le.fit_transform(y_bin)]
-
-        if daal_ready:
-            w0 = np.zeros(n_features + 1, dtype=X.dtype)
-            y_bin[~mask] = 0.
-        else:
-            w0 = np.zeros(n_features + int(fit_intercept), dtype=X.dtype)
+        w0 = np.zeros(n_features + 1, dtype=X.dtype)
+        y_bin[~mask] = 0.
 
     else:
-        if solver not in ['sag', 'saga']:
-            if daal_ready:
-                Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
-            else:
-                lbin = LabelBinarizer()
-                Y_multi = lbin.fit_transform(y)
-                if Y_multi.shape[1] == 1:
-                    Y_multi = np.hstack([1 - Y_multi, Y_multi])
-        else:
-            # SAG multinomial solver needs LabelEncoder, not LabelBinarizer
-            le = LabelEncoder()
-            Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
+        le = LabelEncoder()
+        Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
 
-        if daal_ready:
-            w0 = np.zeros((classes.size, n_features + 1),
-                      order='C', dtype=X.dtype)
-        else:
-            w0 = np.zeros((classes.size, n_features + int(fit_intercept)),
-                      order='F', dtype=X.dtype)
+        w0 = np.zeros((classes.size, n_features + 1),
+                    order='C', dtype=X.dtype)
 
     if coef is not None:
         # it must work both giving the bias term and not
@@ -755,10 +717,7 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 raise ValueError(
                     'Initialization coef is of shape %d, expected shape '
                     '%d or %d' % (coef.size, n_features, w0.size))
-            if daal_ready:
-                w0[-coef.size:] = np.roll(coef, 1, -1) if coef.size != n_features else coef
-            else:
-                w0[:coef.size] = coef
+            w0[-coef.size:] = np.roll(coef, 1, -1) if coef.size != n_features else coef
         else:
             # For binary problems coef.shape[0] should be 1, otherwise it
             # should be classes.size.
@@ -774,14 +733,7 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                         coef.shape[0], coef.shape[1], classes.size,
                         n_features, classes.size, n_features + 1))
 
-            if daal_ready:
-                w0[:, -coef.shape[1]:] = np.roll(coef, 1, -1) if coef.shape[1] != n_features else coef
-            else:
-                if n_classes == 1:
-                    w0[0, :coef.shape[1]] = -coef
-                    w0[1, :coef.shape[1]] = coef
-                else:
-                    w0[:, :coef.shape[1]] = coef
+            w0[:, -coef.shape[1]:] = np.roll(coef, 1, -1) if coef.shape[1] != n_features else coef
 
     C_daal_multiplier = 1
     # commented out because this is Py3 feature
@@ -793,70 +745,50 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
     if multi_class == 'multinomial':
         # fmin_l_bfgs_b and newton-cg accepts only ravelled parameters.
-        if solver in ['lbfgs', 'newton-cg']:
-            if daal_ready and classes.size == 2:
-                w0_saved = w0
-                w0 = w0[-1:, :]
-            w0 = w0.ravel()
+        if classes.size == 2:
+            w0_saved = w0
+            w0 = w0[-1:, :]
+        w0 = w0.ravel()
         target = Y_multi
         if solver == 'lbfgs':
-            if daal_ready:
-                if classes.size == 2:
-                    # _map_to_binary_logistic_regression()
-                    C_daal_multiplier = 2
-                    w0 *= 2
-                    daal_extra_args_func = _daal4py_logistic_loss_extra_args
-                else:
-                    daal_extra_args_func = _daal4py_cross_entropy_loss_extra_args
-                func = _daal4py_loss_and_grad
+            if classes.size == 2:
+                # _map_to_binary_logistic_regression()
+                C_daal_multiplier = 2
+                w0 *= 2
+                daal_extra_args_func = _daal4py_logistic_loss_extra_args
             else:
-                func = lambda x, *args: _multinomial_loss_grad(x, *args)[0:2]
+                daal_extra_args_func = _daal4py_cross_entropy_loss_extra_args
+            func = _daal4py_loss_and_grad
         elif solver == 'newton-cg':
-            if daal_ready:
-                if classes.size == 2:
-                    # _map_to_binary_logistic_regression()
-                    C_daal_multiplier = 2
-                    w0 *= 2
-                    daal_extra_args_func = _daal4py_logistic_loss_extra_args
-                else:
-                    daal_extra_args_func = _daal4py_cross_entropy_loss_extra_args
-                func = _daal4py_loss_
-                grad = _daal4py_grad_
-                hess = _daal4py_grad_hess_
+            if classes.size == 2:
+                # _map_to_binary_logistic_regression()
+                C_daal_multiplier = 2
+                w0 *= 2
+                daal_extra_args_func = _daal4py_logistic_loss_extra_args
             else:
-                func = lambda x, *args: _multinomial_loss(x, *args)[0]
-                grad = lambda x, *args: _multinomial_loss_grad(x, *args)[1]
-                hess = _multinomial_grad_hess
+                daal_extra_args_func = _daal4py_cross_entropy_loss_extra_args
+            func = _daal4py_loss_
+            grad = _daal4py_grad_
+            hess = _daal4py_grad_hess_
         warm_start_sag = {'coef': w0.T}
     else:
         target = y_bin
         if solver == 'lbfgs':
-            if daal_ready:
-                func = _daal4py_loss_and_grad
-                daal_extra_args_func = _daal4py_logistic_loss_extra_args
-            else:
-                func = _logistic_loss_and_grad
+            func = _daal4py_loss_and_grad
+            daal_extra_args_func = _daal4py_logistic_loss_extra_args
         elif solver == 'newton-cg':
-            if daal_ready:
-                daal_extra_args_func = _daal4py_logistic_loss_extra_args
-                func = _daal4py_loss_
-                grad = _daal4py_grad_
-                hess = _daal4py_grad_hess_
-            else:
-                func = _logistic_loss
-                grad = lambda x, *args: _logistic_loss_and_grad(x, *args)[1]
-                hess = _logistic_grad_hess
+            daal_extra_args_func = _daal4py_logistic_loss_extra_args
+            func = _daal4py_loss_
+            grad = _daal4py_grad_
+            hess = _daal4py_grad_hess_
         warm_start_sag = {'coef': np.expand_dims(w0, axis=1)}
 
     coefs = list()
     n_iter = np.zeros(len(Cs), dtype=np.int32)
     for i, C in enumerate(Cs):
         if solver == 'lbfgs':
-            if daal_ready:
-                extra_args = daal_extra_args_func(classes.size, w0, X, target, 0., 0.5 / C / C_daal_multiplier,
-                                                  fit_intercept, value=True, gradient=True, hessian=False)
-            else:
-                extra_args = (X, target, 1. / C, sample_weight)
+            extra_args = daal_extra_args_func(classes.size, w0, X, target, 0., 0.5 / C / C_daal_multiplier,
+                                                fit_intercept, value=True, gradient=True, hessian=False)
 
             iprint = [-1, 50, 1, 100, 101][
                 np.searchsorted(np.array([0, 1, 2, 3]), verbose)]
@@ -865,97 +797,48 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                 args=extra_args,
                 options={"iprint": iprint, "gtol": tol, "maxiter": max_iter}
             )
+            if type(opt_res.message) is str:
+                opt_res.message = opt_res.message.encode('latin1')
             n_iter_i = _check_optimize_result(
                 solver, opt_res, max_iter,
                 extra_warning_msg=_LOGISTIC_SOLVER_CONVERGENCE_MSG)
             w0, loss = opt_res.x, opt_res.fun
-            if daal_ready and C_daal_multiplier == 2:
+            if C_daal_multiplier == 2:
                 w0 *= 0.5
         elif solver == 'newton-cg':
-            if daal_ready:
-                def make_ncg_funcs(f, value=False, gradient=False, hessian=False):
-                    daal_penaltyL2 = 0.5 / C / C_daal_multiplier
-                    _obj_, X_, y_, n_samples = daal_extra_args_func(
-                        classes.size, w0, X, target, 0., daal_penaltyL2, fit_intercept,
-                        value=value, gradient=gradient, hessian=hessian)
-                    _func_ = lambda x, *args: f(x, _obj_, *args)
-                    return _func_, (X_, y_, n_samples, daal_penaltyL2)
+            def make_ncg_funcs(f, value=False, gradient=False, hessian=False):
+                daal_penaltyL2 = 0.5 / C / C_daal_multiplier
+                _obj_, X_, y_, n_samples = daal_extra_args_func(
+                    classes.size, w0, X, target, 0., daal_penaltyL2, fit_intercept,
+                    value=value, gradient=gradient, hessian=hessian)
+                _func_ = lambda x, *args: f(x, _obj_, *args)
+                return _func_, (X_, y_, n_samples, daal_penaltyL2)
 
-                loss_func, extra_args  = make_ncg_funcs(func, value=True)
-                grad_func, _  = make_ncg_funcs(grad, gradient=True)
-                grad_hess_func, _ = make_ncg_funcs(hess, gradient=True)
-                w0, n_iter_i = _newton_cg(grad_hess_func, loss_func, grad_func, w0, args=extra_args,
-                                         maxiter=max_iter, tol=tol)
-            else:
-                args = (X, target, 1. / C, sample_weight)
-                w0, n_iter_i = _newton_cg(hess, func, grad, w0, args=args,
-                                         maxiter=max_iter, tol=tol)
-        elif solver == 'liblinear':
-            coef_, intercept_, n_iter_i, = _fit_liblinear(
-                X, target, C, fit_intercept, intercept_scaling, None,
-                penalty, dual, verbose, max_iter, tol, random_state,
-                sample_weight=sample_weight)
-            if fit_intercept:
-                w0 = np.concatenate([coef_.ravel(), intercept_])
-            else:
-                w0 = coef_.ravel()
-
-        elif solver in ['sag', 'saga']:
-            if multi_class == 'multinomial':
-                target = target.astype(X.dtype, copy=False)
-                loss = 'multinomial'
-            else:
-                loss = 'log'
-            # alpha is for L2-norm, beta is for L1-norm
-            if penalty == 'l1':
-                alpha = 0.
-                beta = 1. / C
-            elif penalty == 'l2':
-                alpha = 1. / C
-                beta = 0.
-            else:  # Elastic-Net penalty
-                alpha = (1. / C) * (1 - l1_ratio)
-                beta = (1. / C) * l1_ratio
-
-            w0, n_iter_i, warm_start_sag = sag_solver(
-                X, target, sample_weight, loss, alpha,
-                beta, max_iter, tol,
-                verbose, random_state, False, max_squared_sum, warm_start_sag,
-                is_saga=(solver == 'saga'))
-
+            loss_func, extra_args  = make_ncg_funcs(func, value=True)
+            grad_func, _  = make_ncg_funcs(grad, gradient=True)
+            grad_hess_func, _ = make_ncg_funcs(hess, gradient=True)
+            w0, n_iter_i = _newton_cg(grad_hess_func, loss_func, grad_func, w0, args=extra_args,
+                                        maxiter=max_iter, tol=tol)
         else:
-            raise ValueError("solver must be one of {'liblinear', 'lbfgs', "
-                             "'newton-cg', 'sag'}, got '%s' instead" % solver)
+            raise ValueError("unsupported solver for daal4py for, got '%s' instead" % solver)
 
         if multi_class == 'multinomial':
-            if daal_ready:
-                if classes.size == 2:
-                   multi_w0 = w0[np.newaxis, :]
-                else:
-                   multi_w0 = np.reshape(w0, (classes.size, -1))
+            if classes.size == 2:
+                multi_w0 = w0[np.newaxis, :]
             else:
-                n_classes = max(2, classes.size)
-                multi_w0 = np.reshape(w0, (n_classes, -1))
-                if n_classes == 2:
-                    multi_w0 = multi_w0[1][np.newaxis, :]
+                multi_w0 = np.reshape(w0, (classes.size, -1))
             coefs.append(np.require(multi_w0, requirements='O'))
         else:
             coefs.append(np.require(w0, requirements='O'))
 
         n_iter[i] = n_iter_i
 
-    if daal_ready:
-        if fit_intercept:
-            for i, ci in enumerate(coefs):
-                coefs[i] = np.roll(ci, -1, -1)
-        else:
-            for i, ci in enumerate(coefs):
-                coefs[i] = np.delete(ci, 0, axis=-1)
-
-    if daal_ready:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("daal"))
+    if fit_intercept:
+        for i, ci in enumerate(coefs):
+            coefs[i] = np.roll(ci, -1, -1)
     else:
-        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("sklearn"))
+        for i, ci in enumerate(coefs):
+            coefs[i] = np.delete(ci, 0, axis=-1)
 
     return np.array(coefs), np.array(Cs), n_iter
 
@@ -1012,29 +895,132 @@ def daal4py_predict(self, X, resultsToEvaluate):
     raise ValueError('resultsToEvaluate must be in [computeClassLabels, \
                      computeClassProbabilities, computeClassLogProbabilities]')
 
+def daal4py_fit(self, X, y, sample_weight=None):
+    """Fit the model according to the given training data.
+
+    Parameters
+    ----------
+    X : {array-like, sparse matrix} of shape (n_samples, n_features)
+        Training vector, where n_samples is the number of samples and
+        n_features is the number of features.
+
+    y : array-like of shape (n_samples,)
+        Target vector relative to X.
+
+    sample_weight : array-like of shape (n_samples,) default=None
+        Array of weights that are assigned to individual samples.
+        If not provided, then each sample is given unit weight.
+
+    Returns
+    -------
+    self : object
+    """
+    solver = _check_solver(self.solver, self.penalty, self.dual)
+    daal_ready = solver in ['lbfgs', 'newton-cg'] and not sparse.issparse(X)
+    daal_ready = daal_ready and sample_weight is None and self.class_weight is None
+
+    if daal_ready:
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("daal"))
+    else:
+        logging.info("sklearn.linear_model.LogisticRegression.fit: " + get_patch_message("sklearn"))
+        return LogisticRegression_original.fit(self, X, y, sample_weight=sample_weight)
+
+    if not isinstance(self.C, numbers.Number) or self.C < 0:
+        raise ValueError("Penalty term must be positive; got (C=%r)"
+                            % self.C)
+    if self.penalty == 'elasticnet':
+        if (not isinstance(self.l1_ratio, numbers.Number) or
+                self.l1_ratio < 0 or self.l1_ratio > 1):
+            raise ValueError("l1_ratio must be between 0 and 1;"
+                                " got (l1_ratio=%r)" % self.l1_ratio)
+    elif self.l1_ratio is not None:
+        warnings.warn("l1_ratio parameter is only used when penalty is "
+                        "'elasticnet'. Got "
+                        "(penalty={})".format(self.penalty))
+    if self.penalty == 'none':
+        if self.C != 1.0:
+            warnings.warn(
+                "Setting penalty='none' will ignore the C and l1_ratio "
+                "parameters"
+            )
+        C_ = np.inf
+        penalty = 'l2'
+    else:
+        C_ = self.C
+        penalty = self.penalty
+    if not isinstance(self.max_iter, numbers.Number) or self.max_iter < 0:
+        raise ValueError("Maximum number of iteration must be positive;"
+                            " got (max_iter=%r)" % self.max_iter)
+    if not isinstance(self.tol, numbers.Number) or self.tol < 0:
+        raise ValueError("Tolerance for stopping criteria must be "
+                            "positive; got (tol=%r)" % self.tol)
+
+    X, y = _daal_validate_data(self, X, y, accept_sparse='csr', dtype=[np.float64, np.float32],
+                                accept_large_sparse=solver != 'liblinear')
+    check_classification_targets(y)
+    self.classes_ = np.unique(y)
+
+    multi_class = _check_multi_class(self.multi_class, solver,
+                                        len(self.classes_))
+
+    max_squared_sum = None
+
+    n_classes = len(self.classes_)
+    classes_ = self.classes_
+    if n_classes < 2:
+        raise ValueError("This solver needs samples of at least 2 classes"
+                            " in the data, but the data contains only one"
+                            " class: %r" % classes_[0])
+
+    if len(self.classes_) == 2:
+        n_classes = 1
+        classes_ = classes_[1:]
+
+    if self.warm_start:
+        warm_start_coef = getattr(self, 'coef_', None)
+    else:
+        warm_start_coef = None
+    if warm_start_coef is not None and self.fit_intercept:
+        warm_start_coef = np.append(warm_start_coef,
+                                    self.intercept_[:, np.newaxis],
+                                    axis=1)
+
+    if multi_class == 'multinomial':
+        classes_ = [None]
+        warm_start_coef = [warm_start_coef]
+    if warm_start_coef is None:
+        warm_start_coef = [None] * n_classes
+
+    fold_coefs_ = []
+    for class_, warm_start_coef_ in zip(classes_, warm_start_coef):
+        fold_coefs_.append(__logistic_regression_path(X, y, self.classes_, pos_class=class_, Cs=[C_],
+                    l1_ratio=self.l1_ratio, fit_intercept=self.fit_intercept,
+                    tol=self.tol, verbose=self.verbose, solver=solver,
+                    multi_class=multi_class, max_iter=self.max_iter,
+                    class_weight=self.class_weight, check_input=False,
+                    random_state=self.random_state, coef=warm_start_coef_,
+                    penalty=penalty, max_squared_sum=max_squared_sum,
+                    sample_weight=sample_weight))
+    fold_coefs_, _, n_iter_ = zip(*fold_coefs_)
+    self.n_iter_ = np.asarray(n_iter_, dtype=np.int32)[:, 0]
+
+    n_features = X.shape[1]
+    if multi_class == 'multinomial':
+        self.coef_ = fold_coefs_[0][0]
+    else:
+        self.coef_ = np.asarray(fold_coefs_)
+        self.coef_ = self.coef_.reshape(n_classes, n_features +
+                                        int(self.fit_intercept))
+
+    if self.fit_intercept:
+        self.intercept_ = self.coef_[:, -1]
+        self.coef_ = self.coef_[:, :-1]
+    else:
+        self.intercept_ = np.zeros(n_classes)
+
+    return self
 
 if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
-    def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
-                              max_iter=100, tol=1e-4, verbose=0,
-                              solver='lbfgs', coef=None,
-                              class_weight=None, dual=False, penalty='l2',
-                              intercept_scaling=1., multi_class='auto',
-                              random_state=None, check_input=True,
-                              max_squared_sum=None, sample_weight=None,
-                              l1_ratio=None):
-        return __logistic_regression_path(X, y, pos_class=pos_class,
-                                          Cs=Cs, fit_intercept=fit_intercept,
-                                          max_iter=max_iter, tol=tol, verbose=verbose,
-                                          solver=solver, coef=coef,
-                                          class_weight=class_weight,
-                                          dual=dual, penalty=penalty,
-                                          intercept_scaling=intercept_scaling,
-                                          multi_class=multi_class,
-                                          random_state=random_state,
-                                          check_input=check_input,
-                                          max_squared_sum=max_squared_sum,
-                                          sample_weight=sample_weight,
-                                          l1_ratio=l1_ratio)
     class LogisticRegression(LogisticRegression_original, LinearClassifierMixin,
                              SparseCoefMixin, BaseEstimator):
         def __init__(self, penalty='l2', dual=False, tol=1e-4, C=1.0,
@@ -1058,10 +1044,11 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
             self.n_jobs = 1 if n_jobs is not None else None
             self.l1_ratio = l1_ratio
 
+        def fit(self, X, y, sample_weight=None):
+            return daal4py_fit(self, X, y, sample_weight=sample_weight)
 
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
-
 
         def predict_log_proba(self, X):
             return daal4py_predict(self, X, 'computeClassLogProbabilities')
@@ -1072,27 +1059,6 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
 
 
 elif (LooseVersion(sklearn_version) >= LooseVersion("0.22")):
-    def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
-                              max_iter=100, tol=1e-4, verbose=0,
-                              solver='lbfgs', coef=None,
-                              class_weight=None, dual=False, penalty='l2',
-                              intercept_scaling=1., multi_class='auto',
-                              random_state=None, check_input=True,
-                              max_squared_sum=None, sample_weight=None,
-                              l1_ratio=None):
-        return __logistic_regression_path(X, y, pos_class=pos_class,
-                                          Cs=Cs, fit_intercept=fit_intercept,
-                                          max_iter=max_iter, tol=tol, verbose=verbose,
-                                          solver=solver, coef=coef,
-                                          class_weight=class_weight,
-                                          dual=dual, penalty=penalty,
-                                          intercept_scaling=intercept_scaling,
-                                          multi_class=multi_class,
-                                          random_state=random_state,
-                                          check_input=check_input,
-                                          max_squared_sum=max_squared_sum,
-                                          sample_weight=sample_weight,
-                                          l1_ratio=l1_ratio)
     class LogisticRegression(LogisticRegression_original, BaseEstimator,
                              LinearClassifierMixin, SparseCoefMixin):
         def __init__(self, penalty='l2', dual=False, tol=1e-4, C=1.0,
@@ -1117,6 +1083,9 @@ elif (LooseVersion(sklearn_version) >= LooseVersion("0.22")):
             self.n_jobs = 1 if n_jobs is not None else None
             self.l1_ratio = l1_ratio
 
+        def fit(self, X, y, sample_weight=None):
+            return daal4py_fit(self, X, y, sample_weight=sample_weight)
+
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
 
@@ -1129,27 +1098,6 @@ elif (LooseVersion(sklearn_version) >= LooseVersion("0.22")):
             return daal4py_predict(self, X, 'computeClassProbabilities')
 
 elif (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
-    def _logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
-                              max_iter=100, tol=1e-4, verbose=0,
-                              solver='lbfgs', coef=None,
-                              class_weight=None, dual=False, penalty='l2',
-                              intercept_scaling=1., multi_class='warn',
-                              random_state=None, check_input=True,
-                              max_squared_sum=None, sample_weight=None,
-                              l1_ratio=None):
-        return __logistic_regression_path(X, y, pos_class=pos_class,
-                                          Cs=Cs, fit_intercept=fit_intercept,
-                                          max_iter=max_iter, tol=tol, verbose=verbose,
-                                          solver=solver, coef=coef,
-                                          class_weight=class_weight,
-                                          dual=dual, penalty=penalty,
-                                          intercept_scaling=intercept_scaling,
-                                          multi_class=multi_class,
-                                          random_state=random_state,
-                                          check_input=check_input,
-                                          max_squared_sum=max_squared_sum,
-                                          sample_weight=sample_weight,
-                                          l1_ratio=l1_ratio)
     class LogisticRegression(LogisticRegression_original, BaseEstimator,
                              LinearClassifierMixin, SparseCoefMixin):
         def __init__(self, penalty='l2', dual=False, tol=1e-4, C=1.0,
@@ -1174,6 +1122,8 @@ elif (LooseVersion(sklearn_version) >= LooseVersion("0.21")):
             self.n_jobs = 1 if n_jobs is not None else None
             self.l1_ratio = l1_ratio
 
+        def fit(self, X, y, sample_weight=None):
+            return daal4py_fit(self, X, y, sample_weight=sample_weight)
 
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
@@ -1208,6 +1158,9 @@ else:
             self.verbose = verbose
             self.warm_start = warm_start
             self.n_jobs = 1 if n_jobs is not None else None
+
+        def fit(self, X, y, sample_weight=None):
+            return daal4py_fit(self, X, y, sample_weight=sample_weight)
 
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
