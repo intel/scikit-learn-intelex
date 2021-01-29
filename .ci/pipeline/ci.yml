@@ -114,15 +114,13 @@ jobs:
       source activate CB
       cd examples && python run_examples.py
     displayName: Examples
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$CONDA_PREFIX/CB/'
-      Contents: 'daal4py*'
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - script: |
+      cp -R $(release.dir) $(Build.ArtifactStagingDirectory)/
+    displayName: 'Copy build'
   - task: PublishPipelineArtifact@0
     inputs:
-      artifactName: 'daal4py macOS'
-      targetPath: '$(Build.ArtifactStagingDirectory)/'
+      artifactName: 'Mac build'
+      targetPath: '$(release.dir)'
     condition: always()
 
 
