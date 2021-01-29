@@ -18,7 +18,24 @@
 # limitations under the License.
 #*******************************************************************************
 
+ok=0
+
+check_status () {
+    if [ $? -ne 0 ]; then
+        ok=1
+    fi
+}
+
 python -c "import daal4py"
+check_status
+
 mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
-pytest --pyargs daal4py/sklearn/
+check_status
+
+pytest --pyargs daal4py/sklearn/neighbors/tests
+check_status
+
 python tests/run_tests.py
+check_status
+
+exit $ok
