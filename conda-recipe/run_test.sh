@@ -20,5 +20,5 @@
 
 python -c "import daal4py"
 mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
-pytest --pyargs daal4py/sklearn/
 python tests/run_tests.py
+pytest --pyargs daal4py/sklearn/
