@@ -77,6 +77,7 @@ CLASS_WEIGHTS_IRIS = [
 
 
 def _test_classifier_class_weight_iris(weight):
+    assert False
     for _ in range(N_TRIES):
         x_train, x_test, y_train, y_test = \
             train_test_split(IRIS.data, IRIS.target,
