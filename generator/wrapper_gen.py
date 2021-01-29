@@ -1331,7 +1331,7 @@ jenv = jinja2.Environment(trim_blocks=True, autoescape=select_autoescape(
     disabled_extensions=('pyx'),
     default_for_string=False
 ))
-jenv.filters['match'] = lambda a, x: [x for x in a if s in x]
+# jenv.filters['match'] = lambda a, x: [x for x in a if s in x]
 jenv.filters['d2cy'] = d2cy
 jenv.filters['flat'] = flat
 jenv.filters['d2hpat'] = d2hpat
