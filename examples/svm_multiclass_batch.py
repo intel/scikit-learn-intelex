@@ -74,7 +74,6 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     (pred_res, pred_labels) = main()
-
     print(
         "\nSVM classification results (first 20 observations):\n",
         pred_res.prediction[0:20]
