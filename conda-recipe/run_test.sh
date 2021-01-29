@@ -20,22 +20,16 @@
 
 ok=0
 
-check_status () {
-    if [ $? -ne 0 ]; then
-        ok=1
-    fi
-}
-
-python -c "import daal4py"
-check_status
-
-mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
-check_status
-
-pytest --pyargs daal4py/sklearn/neighbors/tests
-check_status
-
-python tests/run_tests.py
-check_status
-
+if ! python -c "import daal4py"; then
+    ok=1
+fi
+if ! mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py; then
+    ok=1
+fi
+if ! pytest --pyargs daal4py/sklearn/neighbors/tests; then
+    ok=1
+fi
+if ! python tests/run_tests.py; then
+    ok=1
+fi
 exit $ok
