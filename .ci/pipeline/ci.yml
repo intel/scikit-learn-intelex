@@ -114,6 +114,17 @@ jobs:
       source activate CB
       cd examples && python run_examples.py
     displayName: Examples
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$CONDA_PREFIX/CB/pkgs/'
+      Contents: 'daal4py*'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'daal4py macOS'
+      targetPath: '$(Build.ArtifactStagingDirectory)/'
+    condition: always()
+
 
 - job: Windows_DPCPP
   pool:
