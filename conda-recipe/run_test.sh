@@ -26,7 +26,7 @@ fi
 if ! mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py; then
     ok=1
 fi
-if ! pytest --pyargs daal4py/sklearn/neighbors/tests; then
+if ! pytest --pyargs daal4py/sklearn/; then
     ok=1
 fi
 if ! python tests/run_tests.py; then
