@@ -63,6 +63,7 @@ elif sycl_extention_available:
     except RuntimeError:
         host_available = False
 
+
 def k_means_init_x():
     print("KMeans init=X[:2]")
     X = np.array([[1., 2.], [1., 4.], [1., 0.],
