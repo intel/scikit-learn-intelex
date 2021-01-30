@@ -62,20 +62,20 @@ availabe_devices = []
 try:
     from daal4py.oneapi import sycl_context
     sycl_extention_available = True
-except:
+except RuntimeError:
     sycl_extention_available = False
 
 if sycl_extention_available:
     try:
         with sycl_context('gpu'):
             availabe_devices.append("gpu")
-    except:
+    except RuntimeError:
         pass
     availabe_devices.append("host")
     try:
         with sycl_context('cpu'):
             availabe_devices.append("cpu")
-    except:
+    except RuntimeError:
         pass
 
 
