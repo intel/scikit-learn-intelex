@@ -23,10 +23,13 @@ import os
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -46,5 +49,5 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     res = main()
-    print("\nCosine distance (first 15 rows/columns):\n", res.cosineDistance[0:15,0:15])
+    print("\nCosine distance (first 15 rows/columns):\n", res.cosineDistance[0:15, 0:15])
     print("All looks good!")

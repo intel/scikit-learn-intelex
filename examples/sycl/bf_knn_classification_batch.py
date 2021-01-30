@@ -24,22 +24,26 @@ from daal4py.oneapi import sycl_buffer
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
     from dpctx import device_context, device_type
     with device_context(device_type.gpu, 0):
-        gpu_available=True
+        gpu_available = True
 except:
     try:
         from daal4py.oneapi import sycl_context
         with sycl_context('gpu'):
-            gpu_available=True
+            gpu_available = True
     except:
-        gpu_available=False
+        gpu_available = False
+
 
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
@@ -57,6 +61,7 @@ def to_numpy(data):
         pass
     return data
 
+
 # Common code for both CPU and GPU computations
 def compute(train_data, train_labels, predict_data, nClasses):
     # Create an algorithm object and call compute
@@ -68,6 +73,7 @@ def compute(train_data, train_labels, predict_data, nClasses):
     predict_result = predict_algo.compute(predict_data, train_result.model)
     return predict_result
 
+
 def main(readcsv=read_csv, method='defaultDense'):
     # Input data set parameters
     train_file = os.path.join('..', 'data', 'batch', 'k_nearest_neighbors_train.csv')
@@ -77,9 +83,9 @@ def main(readcsv=read_csv, method='defaultDense'):
     nFeatures = 5
     nClasses = 5
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)
-    train_labels = readcsv(train_file, range(nFeatures, nFeatures+1), t=np.float32)
+    train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1), t=np.float32)
     predict_data = readcsv(predict_file, range(nFeatures), t=np.float32)
-    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures+1), t=np.float32)
+    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1), t=np.float32)
 
     predict_result_classic = compute(train_data, train_labels, predict_data, nClasses)
 
@@ -92,12 +98,20 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     try:
         from dpctx import device_context, device_type
-        gpu_context = lambda: device_context(device_type.gpu, 0)
-        cpu_context = lambda: device_context(device_type.cpu, 0)
+
+        def gpu_context():
+            return device_context(device_type.gpu, 0)
+
+        def cpu_context():
+            return device_context(device_type.cpu, 0)
     except:
         from daal4py.oneapi import sycl_context
-        gpu_context = lambda: sycl_context('gpu')
-        cpu_context = lambda: sycl_context('cpu')
+
+        def gpu_context():
+            return sycl_context('gpu')
+
+        def cpu_context():
+            return sycl_context('cpu')
 
     if gpu_available:
         with gpu_context():
@@ -105,16 +119,20 @@ def main(readcsv=read_csv, method='defaultDense'):
             sycl_train_labels = sycl_buffer(train_labels)
             sycl_predict_data = sycl_buffer(predict_data)
 
-            predict_result_gpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
-            assert np.allclose(predict_result_gpu.prediction, predict_result_classic.prediction)
+            predict_result_gpu = compute(sycl_train_data, sycl_train_labels,
+                                         sycl_predict_data, nClasses)
+            assert np.allclose(predict_result_gpu.prediction,
+                               predict_result_classic.prediction)
 
     with cpu_context():
         sycl_train_data = sycl_buffer(train_data)
         sycl_train_labels = sycl_buffer(train_labels)
         sycl_predict_data = sycl_buffer(predict_data)
 
-        predict_result_cpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
-        assert np.allclose(predict_result_cpu.prediction, predict_result_classic.prediction)
+        predict_result_cpu = compute(sycl_train_data, sycl_train_labels,
+                                     sycl_predict_data, nClasses)
+        assert np.allclose(predict_result_cpu.prediction,
+                           predict_result_classic.prediction)
 
     return (predict_result_classic, predict_labels)
 
@@ -123,4 +141,7 @@ if __name__ == "__main__":
     (predict_result, predict_labels) = main()
     print("BF based KNN classification results:")
     print("Ground truth(observations #30-34):\n", predict_labels[30:35])
-    print("Classification results(observations #30-34):\n", predict_result.prediction[30:35])
+    print(
+        "Classification results(observations #30-34):\n",
+        predict_result.prediction[30:35]
+    )

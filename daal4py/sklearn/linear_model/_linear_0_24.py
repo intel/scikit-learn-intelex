@@ -21,6 +21,7 @@ from .._utils import get_patch_message
 from ._linear_0_23 import (_fit_linear, _predict_linear)
 import logging
 
+
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 
@@ -30,10 +31,11 @@ class LinearRegression(LinearRegression_original):
             fit_intercept=fit_intercept, normalize=normalize,
             copy_X=copy_X, n_jobs=n_jobs, positive=positive)
 
-
     def fit(self, X, y, sample_weight=None):
-        if self.positive == True:
-            logging.info("sklearn.linar_model.LinearRegression.fit: " + get_patch_message("sklearn"))
+        if self.positive is True:
+            logging.info(
+                "sklearn.linar_model.LinearRegression."
+                "fit: " + get_patch_message("sklearn"))
             return super(LinearRegression, self).fit(X, y=y, sample_weight=sample_weight)
         return _fit_linear(self, X, y, sample_weight=sample_weight)
 

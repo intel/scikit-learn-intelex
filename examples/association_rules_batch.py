@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c=None, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c=None, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -33,7 +36,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a association_rules object
     algo = d4p.association_rules(discoverRules=True, minSupport=0.001, minConfidence=0.7)
-    
+
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 
@@ -41,7 +44,8 @@ def main(readcsv=read_csv, method='defaultDense'):
     data = readcsv(infile)
     result2 = algo.compute(data)
 
-    # association_rules result objects provide antecedentItemsets, confidence, consequentItemsets, largeItemsets and largeItemsetsSupport
+    # association_rules result objects provide antecedentItemsets,
+    # confidence, consequentItemsets, largeItemsets and largeItemsetsSupport
     assert np.allclose(result1.largeItemsets, result2.largeItemsets)
     assert np.allclose(result1.largeItemsetsSupport, result2.largeItemsetsSupport)
     assert np.allclose(result1.antecedentItemsets, result2.antecedentItemsets)

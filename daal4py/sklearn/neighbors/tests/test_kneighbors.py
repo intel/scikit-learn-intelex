@@ -14,14 +14,12 @@
 # limitations under the License.
 #===============================================================================
 
-import pandas as pd
 import pytest
-import numpy as np
 from sklearn.neighbors \
     import KNeighborsClassifier as ScikitKNeighborsClassifier
 from daal4py.sklearn.neighbors \
     import KNeighborsClassifier as DaalKNeighborsClassifier
-from sklearn.datasets import (load_iris, make_classification)
+from sklearn.datasets import load_iris
 from sklearn.metrics import (accuracy_score, log_loss, roc_auc_score)
 from sklearn.model_selection import train_test_split
 from daal4py.sklearn._utils import daal_check_version
@@ -39,8 +37,8 @@ IRIS = load_iris()
 
 def _test_determenistic(distance, algorithm, weight, k):
     x_train, x_test, y_train, y_test = \
-            train_test_split(IRIS.data, IRIS.target,
-                             test_size=0.33, random_state=31)
+        train_test_split(IRIS.data, IRIS.target,
+                         test_size=0.33, random_state=31)
 
     alg_results = []
     for _ in range(N_TRIES):
@@ -67,8 +65,10 @@ def _test_determenistic(distance, algorithm, weight, k):
         scikit_accuracy = accuracy_score(y_test, scikit_predict)
         daal_accuracy = accuracy_score(y_test, daal_predict)
         ratio = daal_accuracy / scikit_accuracy
-        assert ratio >= ACCURACY_RATIO,\
-            f'kNN accuracy: scikit_accuracy={scikit_accuracy},daal_accuracy={daal_accuracy}, ratio={ratio}'
+        reason = ("kNN accuracy: scikit_accuracy={},daal_accuracy={}, ratio={}".format(
+            scikit_accuracy, daal_accuracy, ratio))
+        assert ratio >= ACCURACY_RATIO, reason
+
         # predict proba
         scikit_predict_proba = scikit_model.predict_proba(x_test)
         daal_predict_proba = daal_model.predict_proba(x_test)
@@ -76,19 +76,25 @@ def _test_determenistic(distance, algorithm, weight, k):
         scikit_log_loss = log_loss(y_test, scikit_predict_proba)
         daal_log_loss = log_loss(y_test, daal_predict_proba)
         ratio = daal_log_loss / scikit_log_loss
-        assert ratio <= LOG_LOSS_RATIO,\
-            f'kNN log_loss: scikit_log_loss={scikit_log_loss},daal_log_loss={daal_log_loss}, ratio={ratio}'
+        reason = "kNN log_loss: scikit_log_loss={},daal_log_loss={}, ratio={}".format(
+            scikit_log_loss, daal_log_loss, ratio)
+        assert ratio <= LOG_LOSS_RATIO, reason
+
         # ROC AUC
-        scikit_roc_auc = roc_auc_score(y_test, scikit_predict_proba, multi_class='ovr')
-        daal_roc_auc = roc_auc_score(y_test, daal_predict_proba, multi_class='ovr')
+        scikit_roc_auc = roc_auc_score(
+            y_test, scikit_predict_proba, multi_class='ovr')
+        daal_roc_auc = roc_auc_score(
+            y_test, daal_predict_proba, multi_class='ovr')
         ratio = daal_roc_auc / scikit_roc_auc
-        assert ratio >= ROC_AUC_RATIO,\
-            f'kNN roc_auc: scikit_roc_auc={scikit_roc_auc},daal_roc_auc={daal_roc_auc}, ratio={ratio}'
+        reason = "kNN roc_auc: scikit_roc_auc={}, daal_roc_auc={}, ratio={}".format(
+            scikit_roc_auc, daal_roc_auc, ratio)
+        assert ratio >= ROC_AUC_RATIO, reason
 
     for i in range(1, N_TRIES):
         for j, res in enumerate(alg_results[i]):
-            assert (res == alg_results[0][j]).mean() == 1, \
-                f'Results are different between runs for {algorithm}, {weight}, {distance}, k={k}'
+            reason = 'Results are different between runs for {}, {}, {}, k={}'.format(
+                algorithm, weight, distance, k)
+            assert (res == alg_results[0][j]).mean() == 1, reason
 
 
 @pytest.mark.parametrize('distance', DISTANCES)

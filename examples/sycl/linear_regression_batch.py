@@ -24,22 +24,26 @@ from daal4py.oneapi import sycl_buffer
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
     from dpctx import device_context, device_type
     with device_context(device_type.gpu, 0):
-        gpu_available=True
+        gpu_available = True
 except:
     try:
         from daal4py.oneapi import sycl_context
         with sycl_context('gpu'):
-            gpu_available=True
+            gpu_available = True
     except:
-        gpu_available=False
+        gpu_available = False
+
 
 # Commone code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data):
@@ -71,18 +75,20 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    # read training data. Let's have 10 independent, and 2 dependent variables (for each observation)
+    # read training data. Let's have 10 independent,
+    # and 2 dependent variables (for each observation)
     trainfile = os.path.join('..', 'data', 'batch', 'linear_regression_train.csv')
     train_indep_data = readcsv(trainfile, range(10), t=np.float32)
-    train_dep_data = readcsv(trainfile, range(10,12), t=np.float32)
+    train_dep_data = readcsv(trainfile, range(10, 12), t=np.float32)
 
     # read testing data
     testfile = os.path.join('..', 'data', 'batch', 'linear_regression_test.csv')
     test_indep_data = readcsv(testfile, range(10), t=np.float32)
-    test_dep_data = readcsv(testfile, range(10,12), t=np.float32)
+    test_dep_data = readcsv(testfile, range(10, 12), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    result_classic, train_result = compute(train_indep_data, train_dep_data, test_indep_data)
+    result_classic, train_result = \
+        compute(train_indep_data, train_dep_data, test_indep_data)
 
     train_indep_data = to_numpy(train_indep_data)
     train_dep_data = to_numpy(train_dep_data)
@@ -90,12 +96,20 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     try:
         from dpctx import device_context, device_type
-        gpu_context = lambda: device_context(device_type.gpu, 0)
-        cpu_context = lambda: device_context(device_type.cpu, 0)
+
+        def gpu_context():
+            return device_context(device_type.gpu, 0)
+
+        def cpu_context():
+            return device_context(device_type.cpu, 0)
     except:
         from daal4py.oneapi import sycl_context
-        gpu_context = lambda: sycl_context('gpu')
-        cpu_context = lambda: sycl_context('cpu')
+
+        def gpu_context():
+            return sycl_context('gpu')
+
+        def cpu_context():
+            return sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
@@ -103,7 +117,8 @@ def main(readcsv=read_csv, method='defaultDense'):
             sycl_train_indep_data = sycl_buffer(train_indep_data)
             sycl_train_dep_data = sycl_buffer(train_dep_data)
             sycl_test_indep_data = sycl_buffer(test_indep_data)
-            result_gpu, _ = compute(sycl_train_indep_data, sycl_train_dep_data, sycl_test_indep_data)
+            result_gpu, _ = compute(sycl_train_indep_data, sycl_train_dep_data,
+                                    sycl_test_indep_data)
         assert np.allclose(result_classic.prediction, result_gpu.prediction)
 
     # It is possible to specify to make the computations on CPU
@@ -111,10 +126,12 @@ def main(readcsv=read_csv, method='defaultDense'):
         sycl_train_indep_data = sycl_buffer(train_indep_data)
         sycl_train_dep_data = sycl_buffer(train_dep_data)
         sycl_test_indep_data = sycl_buffer(test_indep_data)
-        result_cpu, _ = compute(sycl_train_indep_data, sycl_train_dep_data, sycl_test_indep_data)
+        result_cpu, _ = compute(sycl_train_indep_data, sycl_train_dep_data,
+                                sycl_test_indep_data)
 
     # The prediction result provides prediction
-    assert result_classic.prediction.shape == (test_dep_data.shape[0], test_dep_data.shape[1])
+    assert result_classic.prediction.shape == (test_dep_data.shape[0],
+                                               test_dep_data.shape[1])
 
     assert np.allclose(result_classic.prediction, result_cpu.prediction)
 
@@ -124,6 +141,9 @@ def main(readcsv=read_csv, method='defaultDense'):
 if __name__ == "__main__":
     (train_result, predict_result, test_dep_data) = main()
     print("\nLinear Regression coefficients:\n", train_result.model.Beta)
-    print("\nLinear Regression prediction results: (first 10 rows):\n", predict_result.prediction[0:10])
+    print(
+        "\nLinear Regression prediction results: (first 10 rows):\n",
+        predict_result.prediction[0:10]
+    )
     print("\nGround truth (first 10 rows):\n", test_dep_data[0:10])
     print('All looks good!')

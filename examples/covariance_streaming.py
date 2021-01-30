@@ -17,10 +17,10 @@
 # daal4py covariance example for streaming on shared memory systems
 
 import daal4py as d4p
-import numpy as np
 
 # let's use a generator for getting stream from file (defined in stream.py)
 from stream import read_next
+
 
 def main(readcsv=None, method='defaultDense'):
     infile = "./data/batch/covcormoments_dense.csv"

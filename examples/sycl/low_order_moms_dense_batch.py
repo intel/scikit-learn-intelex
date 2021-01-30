@@ -24,22 +24,26 @@ from daal4py.oneapi import sycl_buffer
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
     from dpctx import device_context, device_type
     with device_context(device_type.gpu, 0):
-        gpu_available=True
+        gpu_available = True
 except:
     try:
         from daal4py.oneapi import sycl_context
         with sycl_context('gpu'):
-            gpu_available=True
+            gpu_available = True
     except:
-        gpu_available=False
+        gpu_available = False
+
 
 # Commone code for both CPU and GPU computations
 def compute(data, method):
@@ -76,20 +80,29 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     try:
         from dpctx import device_context, device_type
-        gpu_context = lambda: device_context(device_type.gpu, 0)
-        cpu_context = lambda: device_context(device_type.cpu, 0)
+
+        def gpu_context():
+            return device_context(device_type.gpu, 0)
+
+        def cpu_context():
+            return device_context(device_type.cpu, 0)
     except:
         from daal4py.oneapi import sycl_context
-        gpu_context = lambda: sycl_context('gpu')
-        cpu_context = lambda: sycl_context('cpu')
+
+        def gpu_context():
+            return sycl_context('gpu')
+
+        def cpu_context():
+            return sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
         with gpu_context():
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data, "defaultDense")
-        for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-                     'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
+        for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered',
+                     'mean', 'secondOrderRawMoment', 'variance', 'standardDeviation',
+                     'variation']:
             assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
 
     # It is possible to specify to make the computations on CPU
@@ -99,12 +112,12 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    assert(all(getattr(result_classic, name).shape==(1, data.shape[1]) for name in
-        ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-        'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']))
+    assert(all(getattr(result_classic, name).shape == (1, data.shape[1]) for name in
+           ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
+            'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']))
 
     for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-        'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
+                 'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
         assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
 
     return result_classic

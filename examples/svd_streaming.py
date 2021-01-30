@@ -22,7 +22,10 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, s=0, n=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, skiprows=s, nrows=n, dtype=t)
+
+    def read_csv(f, c, s=0, n=None, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',',
+                               header=None, skiprows=s, nrows=n, dtype=t)
 except:
     # fall back to numpy genfromtxt
     def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
@@ -35,20 +38,21 @@ except:
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    infiles = ["./data/distributed/svd_{}.csv".format(i) for i in range(1,5)]
+    infiles = ["./data/distributed/svd_{}.csv".format(i) for i in range(1, 5)]
 
     # configure a SVD object
     algo = d4p.svd(streaming=True)
-    
+
     # let's provide files directly, not a tables/arrays
     # Feed file by file
     for infile in infiles:
         algo.compute(infile)
 
     # All files are done, now finalize the computation
-    result= algo.finalize()
+    result = algo.finalize()
 
-    # SVD result objects provide leftSingularMatrix, rightSingularMatrix and singularValues
+    # SVD result objects provide leftSingularMatrix,
+    # rightSingularMatrix and singularValues
     return result
 
 
@@ -56,5 +60,8 @@ if __name__ == "__main__":
     result = main()
     print("\nSingular values:\n", result.singularValues)
     print("\nRight orthogonal matrix V:\n", result.rightSingularMatrix)
-    print("\nLeft orthogonal matrix U (first 10 rows):\n", result.leftSingularMatrix[0:10])
+    print(
+        "\nLeft orthogonal matrix U (first 10 rows):\n",
+        result.leftSingularMatrix[0:10]
+    )
     print('All looks good!')

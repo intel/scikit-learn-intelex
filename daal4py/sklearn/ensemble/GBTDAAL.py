@@ -18,7 +18,6 @@
 
 import numpy as np
 import numbers
-import warnings
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn import preprocessing
@@ -26,9 +25,6 @@ from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils import check_random_state
 import daal4py as d4p
 from .._utils import getFPType
-
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
 
 
 class GBTDAALBase(BaseEstimator):
@@ -64,16 +60,15 @@ class GBTDAALBase(BaseEstimator):
         if self.split_method not in ('inexact', 'exact'):
             raise ValueError('Parameter "split_method" must be '
                              '"inexact" or "exact".')
-        if not ((isinstance(self.max_iterations, numbers.Integral))
-                and (self.max_iterations > 0)):
+        if not isinstance(self.max_iterations, numbers.Integral) or \
+                self.max_iterations <= 0:
             raise ValueError('Parameter "max_iterations" must be '
                              'non-zero positive integer value.')
-        if not ((isinstance(self.max_tree_depth, numbers.Integral))
-                and (self.max_tree_depth >= 0)):
+        if not isinstance(self.max_tree_depth, numbers.Integral) or \
+                self.max_tree_depth < 0:
             raise ValueError('Parameter "max_tree_depth" must be '
                              'positive integer value or zero.')
-        if not ((self.shrinkage >= 0)
-                and (self.shrinkage < 1)):
+        if self.shrinkage < 0 or self.shrinkage >= 1:
             raise ValueError('Parameter "shrinkage" must be '
                              'more or equal to 0 and less than 1.')
         if self.min_split_loss < 0:
@@ -82,27 +77,27 @@ class GBTDAALBase(BaseEstimator):
         if self.reg_lambda < 0:
             raise ValueError('Parameter "reg_lambda" must be '
                              'more or equal to zero.')
-        if not ((self.observations_per_tree_fraction > 0)
-                and (self.observations_per_tree_fraction <= 1)):
+        if self.observations_per_tree_fraction <= 0 or \
+                self.observations_per_tree_fraction > 1:
             raise ValueError('Parameter "observations_per_tree_fraction" must be '
                              'more than 0 and less or equal to 1.')
-        if not ((isinstance(self.features_per_node, numbers.Integral))
-                and (self.features_per_node >= 0)):
+        if not isinstance(self.features_per_node, numbers.Integral) or \
+                self.features_per_node < 0:
             raise ValueError('Parameter "features_per_node" must be '
                              'positive integer value or zero.')
-        if not ((isinstance(self.min_observations_in_leaf_node, numbers.Integral))
-                and (self.min_observations_in_leaf_node > 0)):
+        if not isinstance(self.min_observations_in_leaf_node, numbers.Integral) or \
+                self.min_observations_in_leaf_node <= 0:
             raise ValueError('Parameter "min_observations_in_leaf_node" must be '
                              'non-zero positive integer value.')
         if not (isinstance(self.memory_saving_mode, bool)):
             raise ValueError('Parameter "memory_saving_mode" must be '
                              'boolean value.')
-        if not ((isinstance(self.max_bins, numbers.Integral))
-                and (self.max_bins > 0)):
+        if not isinstance(self.max_bins, numbers.Integral) or \
+                self.max_bins <= 0:
             raise ValueError('Parameter "max_bins" must be '
                              'non-zero positive integer value.')
-        if not ((isinstance(self.min_bin_size, numbers.Integral))
-                and (self.min_bin_size > 0)):
+        if not isinstance(self.min_bin_size, numbers.Integral) or \
+                self.min_bin_size <= 0:
             raise ValueError('Parameter "min_bin_size" must be '
                              'non-zero positive integer value.')
 
@@ -111,7 +106,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
     def fit(self, X, y):
         # Check the algorithm parameters
         self._check_params()
-        
+
         # Check that X and y have correct shape
         X, y = check_X_y(X, y, y_numeric=False, dtype=[np.single, np.double])
 
@@ -145,21 +140,22 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         fptype = getFPType(X)
 
         # Fit the model
-        train_algo = d4p.gbt_classification_training(fptype=fptype,
-                                                     nClasses=self.n_classes_,
-                                                     splitMethod=self.split_method,
-                                                     maxIterations=self.max_iterations,
-                                                     maxTreeDepth=self.max_tree_depth,
-                                                     shrinkage=self.shrinkage,
-                                                     minSplitLoss=self.min_split_loss,
-                                                     lambda_=self.reg_lambda,
-                                                     observationsPerTreeFraction=self.observations_per_tree_fraction,
-                                                     featuresPerNode=self.features_per_node,
-                                                     minObservationsInLeafNode=self.min_observations_in_leaf_node,
-                                                     memorySavingMode=self.memory_saving_mode,
-                                                     maxBins=self.max_bins,
-                                                     minBinSize=self.min_bin_size,
-                                                     engine=d4p.engines_mcg59(seed=seed_))
+        train_algo = d4p.gbt_classification_training(
+            fptype=fptype,
+            nClasses=self.n_classes_,
+            splitMethod=self.split_method,
+            maxIterations=self.max_iterations,
+            maxTreeDepth=self.max_tree_depth,
+            shrinkage=self.shrinkage,
+            minSplitLoss=self.min_split_loss,
+            lambda_=self.reg_lambda,
+            observationsPerTreeFraction=self.observations_per_tree_fraction,
+            featuresPerNode=self.features_per_node,
+            minObservationsInLeafNode=self.min_observations_in_leaf_node,
+            memorySavingMode=self.memory_saving_mode,
+            maxBins=self.max_bins,
+            minBinSize=self.min_bin_size,
+            engine=d4p.engines_mcg59(seed=seed_))
         train_result = train_algo.compute(X, y_)
 
         # Store the model
@@ -171,7 +167,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
     def _predict(self, X, resultsToEvaluate):
         # Check is fit had been called
         check_is_fitted(self, ['n_features_in_', 'n_classes_'])
-        
+
         # Input validation
         X = check_array(X, dtype=[np.single, np.double])
         if X.shape[1] != self.n_features_in_:
@@ -182,23 +178,27 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
             return np.full(X.shape[0], self.classes_[0])
 
         if not hasattr(self, 'daal_model_'):
-            raise ValueError(("The class {} instance does not have 'daal_model_' attribute set. "
-                              "Call 'fit' with appropriate arguments before using this method.").format(type(self).__name__))
+            raise ValueError((
+                "The class {} instance does not have 'daal_model_' attribute set. "
+                "Call 'fit' with appropriate arguments before using this method.").format(
+                    type(self).__name__))
 
         # Define type of data
         fptype = getFPType(X)
 
         # Prediction
-        predict_algo = d4p.gbt_classification_prediction(fptype=fptype,
-                                                             nClasses=self.n_classes_,
-                                                             resultsToEvaluate=resultsToEvaluate)
+        predict_algo = d4p.gbt_classification_prediction(
+            fptype=fptype,
+            nClasses=self.n_classes_,
+            resultsToEvaluate=resultsToEvaluate)
         predict_result = predict_algo.compute(X, self.daal_model_)
 
         if resultsToEvaluate == "computeClassLabels":
             # Decode labels
             le = preprocessing.LabelEncoder()
             le.classes_ = self.classes_
-            return le.inverse_transform(predict_result.prediction.ravel().astype(np.int64, copy=False))
+            return le.inverse_transform(
+                predict_result.prediction.ravel().astype(np.int64, copy=False))
         return predict_result.probabilities
 
     def predict(self, X):
@@ -240,20 +240,21 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         fptype = getFPType(X)
 
         # Fit the model
-        train_algo = d4p.gbt_regression_training(fptype=fptype,
-                                                 splitMethod=self.split_method,
-                                                 maxIterations=self.max_iterations,
-                                                 maxTreeDepth=self.max_tree_depth,
-                                                 shrinkage=self.shrinkage,
-                                                 minSplitLoss=self.min_split_loss,
-                                                 lambda_=self.reg_lambda,
-                                                 observationsPerTreeFraction=self.observations_per_tree_fraction,
-                                                 featuresPerNode=self.features_per_node,
-                                                 minObservationsInLeafNode=self.min_observations_in_leaf_node,
-                                                 memorySavingMode=self.memory_saving_mode,
-                                                 maxBins=self.max_bins,
-                                                 minBinSize=self.min_bin_size,
-                                                 engine=d4p.engines_mcg59(seed=seed_))
+        train_algo = d4p.gbt_regression_training(
+            fptype=fptype,
+            splitMethod=self.split_method,
+            maxIterations=self.max_iterations,
+            maxTreeDepth=self.max_tree_depth,
+            shrinkage=self.shrinkage,
+            minSplitLoss=self.min_split_loss,
+            lambda_=self.reg_lambda,
+            observationsPerTreeFraction=self.observations_per_tree_fraction,
+            featuresPerNode=self.features_per_node,
+            minObservationsInLeafNode=self.min_observations_in_leaf_node,
+            memorySavingMode=self.memory_saving_mode,
+            maxBins=self.max_bins,
+            minBinSize=self.min_bin_size,
+            engine=d4p.engines_mcg59(seed=seed_))
         train_result = train_algo.compute(X, y_)
 
         # Store the model
@@ -272,8 +273,10 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
             raise ValueError('Shape of input is different from what was seen in `fit`')
 
         if not hasattr(self, 'daal_model_'):
-            raise ValueError(("The class {} instance does not have 'daal_model_' attribute set. "
-                              "Call 'fit' with appropriate arguments before using this method.").format(type(self).__name__))
+            raise ValueError((
+                "The class {} instance does not have 'daal_model_' attribute set. "
+                "Call 'fit' with appropriate arguments before using this method.").format(
+                    type(self).__name__))
 
         # Define type of data
         fptype = getFPType(X)

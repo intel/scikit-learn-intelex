@@ -24,27 +24,33 @@ from daal4py.oneapi import sycl_buffer
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
     from dpctx import device_context, device_type
     with device_context(device_type.gpu, 0):
-        gpu_available=True
+        gpu_available = True
 except:
     try:
         from daal4py.oneapi import sycl_context
         with sycl_context('gpu'):
-            gpu_available=True
+            gpu_available = True
     except:
-        gpu_available=False
+        gpu_available = False
+
 
 # Commone code for both CPU and GPU computations
 def compute(train_data, train_labels, predict_data, nClasses):
     # set parameters and train
-    train_alg = d4p.logistic_regression_training(nClasses=nClasses, interceptFlag=True, fptype='float')
+    train_alg = d4p.logistic_regression_training(nClasses=nClasses,
+                                                 interceptFlag=True,
+                                                 fptype='float')
     train_result = train_alg.compute(train_data, train_labels)
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses, fptype='float')
@@ -83,7 +89,8 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_labels = readcsv(testfile, range(nFeatures, nFeatures + 1), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    result_classic, train_result = compute(train_data, train_labels, predict_data, nClasses)
+    result_classic, train_result = compute(train_data, train_labels,
+                                           predict_data, nClasses)
 
     train_data = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
@@ -91,12 +98,20 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     try:
         from dpctx import device_context, device_type
-        gpu_context = lambda: device_context(device_type.gpu, 0)
-        cpu_context = lambda: device_context(device_type.cpu, 0)
+
+        def gpu_context():
+            return device_context(device_type.gpu, 0)
+
+        def cpu_context():
+            return device_context(device_type.cpu, 0)
     except:
         from daal4py.oneapi import sycl_context
-        gpu_context = lambda: sycl_context('gpu')
-        cpu_context = lambda: sycl_context('cpu')
+
+        def gpu_context():
+            return sycl_context('gpu')
+
+        def cpu_context():
+            return sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
@@ -104,7 +119,8 @@ def main(readcsv=read_csv, method='defaultDense'):
             sycl_train_data = sycl_buffer(train_data)
             sycl_train_labels = sycl_buffer(train_labels)
             sycl_predict_data = sycl_buffer(predict_data)
-            result_gpu, _ = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
+            result_gpu, _ = compute(sycl_train_data, sycl_train_labels,
+                                    sycl_predict_data, nClasses)
         assert np.allclose(result_classic.prediction, result_gpu.prediction)
 
     # It is possible to specify to make the computations on GPU
@@ -112,10 +128,12 @@ def main(readcsv=read_csv, method='defaultDense'):
         sycl_train_data = sycl_buffer(train_data)
         sycl_train_labels = sycl_buffer(train_labels)
         sycl_predict_data = sycl_buffer(predict_data)
-        result_cpu, _ = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses)
+        result_cpu, _ = compute(sycl_train_data, sycl_train_labels,
+                                sycl_predict_data, nClasses)
 
     # the prediction result provides prediction
-    assert result_classic.prediction.shape == (predict_data.shape[0], train_labels.shape[1])
+    assert result_classic.prediction.shape == (predict_data.shape[0],
+                                               train_labels.shape[1])
 
     assert np.allclose(result_classic.prediction, result_cpu.prediction)
 
@@ -125,6 +143,9 @@ def main(readcsv=read_csv, method='defaultDense'):
 if __name__ == "__main__":
     (train_result, predict_result, predict_labels) = main()
     print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
-    print("\nLogistic regression prediction results (first 10 rows):\n", predict_result.prediction[0:10])
+    print(
+        "\nLogistic regression prediction results (first 10 rows):\n",
+        predict_result.prediction[0:10]
+    )
     print("\nGround truth (first 10 rows):\n", predict_labels[0:10])
     print('All looks good!')

@@ -29,8 +29,8 @@ def main(method='defaultDense'):
 
     # Load the data
     data = np.loadtxt(infile, delimiter=',')
-    rpp = int(data.shape[0]/d4p.num_procs())
-    data = data[rpp*d4p.my_procid():rpp*d4p.my_procid()+rpp,:]
+    rpp = int(data.shape[0] / d4p.num_procs())
+    data = data[rpp * d4p.my_procid(): rpp * d4p.my_procid() + rpp, :]
 
     # configure dbscan main object
     algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, distributed=True)

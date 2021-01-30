@@ -23,22 +23,25 @@ import os
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
     # Input data set parameters
     train_file = os.path.join('data', 'batch', 'k_nearest_neighbors_train.csv')
-    predict_file  = os.path.join('data', 'batch', 'k_nearest_neighbors_test.csv')
+    predict_file = os.path.join('data', 'batch', 'k_nearest_neighbors_test.csv')
 
     # Read data. Let's use 5 features per observation
     nFeatures = 5
     nClasses = 5
-    train_data   = readcsv(train_file, range(nFeatures))
-    train_labels = readcsv(train_file, range(nFeatures, nFeatures+1))
+    train_data = readcsv(train_file, range(nFeatures))
+    train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1))
 
     # Create an algorithm object and call compute
     train_algo = d4p.kdtree_knn_classification_training(nClasses=nClasses)
@@ -49,12 +52,12 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Now let's do some prediction
     predict_data = readcsv(predict_file, range(nFeatures))
-    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures+1))
-                        
+    predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1))
+
     # Create an algorithm object and call compute
     predict_algo = d4p.kdtree_knn_classification_prediction(nClasses=nClasses)
     predict_result = predict_algo.compute(predict_data, train_result.model)
-    
+
     # We expect less than 170 mispredicted values
     assert np.count_nonzero(predict_labels != predict_result.prediction) < 170
 
@@ -62,7 +65,10 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 
 if __name__ == "__main__":
-    (train_result, predict_result, predict_labels) = main()    
+    (train_result, predict_result, predict_labels) = main()
     print("KD-tree based kNN classification results:")
     print("Ground truth(observations #30-34):\n", predict_labels[30:35])
-    print("Classification results(observations #30-34):\n", predict_result.prediction[30:35])
+    print(
+        "Classification results(observations #30-34):\n",
+        predict_result.prediction[30:35]
+    )

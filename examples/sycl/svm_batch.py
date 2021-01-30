@@ -24,28 +24,42 @@ from daal4py.oneapi import sycl_buffer
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
     from dpctx import device_context, device_type
     with device_context(device_type.gpu, 0):
-        gpu_available=True
+        gpu_available = True
 except:
     try:
         from daal4py.oneapi import sycl_context
         with sycl_context('gpu'):
-            gpu_available=True
+            gpu_available = True
     except:
-        gpu_available=False
+        gpu_available = False
+
 
 # Common code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data, method='defaultDense'):
     # Configure a SVM object to use linear kernel
-    kernel_function = d4p.kernel_function_linear(fptype='float', method='defaultDense', k=1.0, b=0.0)
-    train_algo = d4p.svm_training(fptype='float', method=method, kernel=kernel_function, C=1.0, accuracyThreshold=1e-3, tau=1e-8, cacheSize=600000000)
+    kernel_function = d4p.kernel_function_linear(
+        fptype='float', method='defaultDense', k=1.0, b=0.0
+    )
+    train_algo = d4p.svm_training(
+        fptype='float',
+        method=method,
+        kernel=kernel_function,
+        C=1.0,
+        accuracyThreshold=1e-3,
+        tau=1e-8,
+        cacheSize=600000000
+    )
 
     train_result = train_algo.compute(train_indep_data, train_dep_data)
 
@@ -53,8 +67,9 @@ def compute(train_indep_data, train_dep_data, test_indep_data, method='defaultDe
     predict_algo = d4p.svm_prediction(fptype='float', kernel=kernel_function)
     predict_result = predict_algo.compute(test_indep_data, train_result.model)
     decision_result = predict_result.prediction
-    predict_labels = np.where(decision_result >=0, 1, -1)
+    predict_labels = np.where(decision_result >= 0, 1, -1)
     return predict_labels, decision_result
+
 
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
@@ -84,7 +99,8 @@ def main(readcsv=read_csv):
     predict_data = readcsv(predict_file, range(nFeatures), t=np.float32)
     predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1), t=np.float32)
 
-    predict_result_classic, decision_function_classic = compute(train_data, train_labels, predict_data, 'boser')
+    predict_result_classic, decision_function_classic = \
+        compute(train_data, train_labels, predict_data, 'boser')
 
     train_data = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
@@ -92,12 +108,20 @@ def main(readcsv=read_csv):
 
     try:
         from dpctx import device_context, device_type
-        gpu_context = lambda: device_context(device_type.gpu, 0)
-        cpu_context = lambda: device_context(device_type.cpu, 0)
+
+        def gpu_context():
+            return device_context(device_type.gpu, 0)
+
+        def cpu_context():
+            return device_context(device_type.cpu, 0)
     except:
         from daal4py.oneapi import sycl_context
-        gpu_context = lambda: sycl_context('gpu')
-        cpu_context = lambda: sycl_context('cpu')
+
+        def gpu_context():
+            return sycl_context('gpu')
+
+        def cpu_context():
+            return sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
@@ -106,14 +130,16 @@ def main(readcsv=read_csv):
             sycl_train_labels = sycl_buffer(train_labels)
             sycl_predict_data = sycl_buffer(predict_data)
 
-            predict_result_gpu, decision_function_gpu = compute(sycl_train_data, sycl_train_labels, sycl_predict_data, 'thunder')
+            predict_result_gpu, decision_function_gpu = \
+                compute(sycl_train_data, sycl_train_labels, sycl_predict_data, 'thunder')
             assert np.allclose(predict_result_gpu, predict_result_classic)
 
     with cpu_context():
         sycl_train_data = sycl_buffer(train_data)
         sycl_predict_data = sycl_buffer(predict_data)
 
-        predict_result_cpu, decision_function_cpu = compute(sycl_train_data, train_labels, sycl_predict_data, 'thunder')
+        predict_result_cpu, decision_function_cpu = \
+            compute(sycl_train_data, train_labels, sycl_predict_data, 'thunder')
         assert np.allclose(predict_result_cpu, predict_result_classic)
 
     return predict_labels, predict_result_classic, decision_function_classic
@@ -122,7 +148,13 @@ def main(readcsv=read_csv):
 if __name__ == "__main__":
     predict_labels, predict_result, decision_function = main()
     np.set_printoptions(precision=0)
-    print("\nSVM classification decision function (first 10 observations):\n", decision_function[0:10])
-    print("\nSVM classification predict result (first 10 observations):\n", predict_result[0:10])
+    print(
+        "\nSVM classification decision function (first 10 observations):\n",
+        decision_function[0:10]
+    )
+    print(
+        "\nSVM classification predict result (first 10 observations):\n",
+        predict_result[0:10]
+    )
     print("\nGround truth (first 10 observations):\n", predict_labels[0:10])
     print('All looks good!')

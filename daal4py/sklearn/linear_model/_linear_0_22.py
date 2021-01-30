@@ -18,7 +18,6 @@ import numpy as np
 from scipy import sparse as sp
 from scipy import linalg
 
-from sklearn.utils import deprecated, as_float_array
 from sklearn.linear_model._base import _rescale_data
 from ..utils.validation import _daal_check_array, _daal_check_X_y
 
@@ -34,8 +33,9 @@ except ImportError:
 
 import daal4py
 from .._utils import (make2d, getFPType, get_patch_message,
-                    is_DataFrame, get_dtype)
+                      is_DataFrame, get_dtype)
 import logging
+
 
 def _daal4py_fit(self, X, y_):
     y = make2d(y_)
@@ -60,14 +60,13 @@ def _daal4py_fit(self, X, y_):
         except RuntimeError:
             # fall back on sklearn
             return None
-        
 
     lr_model = lr_res.model
     self.daal_model_ = lr_model
     coefs = lr_model.Beta
 
-    self.intercept_ = coefs[:,0].copy(order='C')
-    self.coef_ = coefs[:,1:].copy(order='C')
+    self.intercept_ = coefs[:, 0].copy(order='C')
+    self.coef_ = coefs[:, 1:].copy(order='C')
     self.n_features_in_ = X.shape[1]
     self.rank_ = X.shape[1]
     self.singular_ = np.full((X.shape[1],), np.nan)
@@ -89,7 +88,9 @@ def _daal4py_predict(self, X):
     try:
         lr_res = lr_pred.compute(X, self.daal_model_)
     except RuntimeError:
-        raise ValueError('Input data shape {} is inconsistent with the trained model'.format(X.shape))
+        raise ValueError(
+            'Input data shape {} is inconsistent with the trained model'.format(
+                X.shape))
 
     res = lr_res.prediction
     if res.shape[1] == 1 and self.coef_.ndim == 1:
@@ -132,19 +133,26 @@ def _fit_linear(self, X, y, sample_weight=None):
                                              dtype=dtype)
 
     self.sample_weight_ = sample_weight
-    self.fit_shape_good_for_daal_ = bool(X.shape[0] > X.shape[1] + int(self.fit_intercept))
+    self.fit_shape_good_for_daal_ = bool(
+        X.shape[0] > X.shape[1] + int(self.fit_intercept))
 
-    if (self.fit_shape_good_for_daal_ and
-            not sp.issparse(X) and
-            (dtype == np.float64 or dtype == np.float32) and
-            sample_weight is None):
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + get_patch_message("daal"))
+    if self.fit_shape_good_for_daal_ and \
+            not sp.issparse(X) and \
+            (dtype == np.float64 or dtype == np.float32) and \
+            sample_weight is None:
+        logging.info(
+            "sklearn.linar_model.LinearRegression."
+            "fit: " + get_patch_message("daal"))
         res = _daal4py_fit(self, X, y)
         if res is not None:
             return res
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + get_patch_message("sklearn_after_daal"))
+        logging.info(
+            "sklearn.linar_model.LinearRegression."
+            "fit: " + get_patch_message("sklearn_after_daal"))
     else:
-        logging.info("sklearn.linar_model.LinearRegression.fit: " + get_patch_message("sklearn"))
+        logging.info(
+            "sklearn.linar_model.LinearRegression."
+            "fit: " + get_patch_message("sklearn"))
 
     if sample_weight is not None:
         sample_weight = np.asarray(sample_weight)
@@ -193,6 +201,7 @@ def _fit_linear(self, X, y, sample_weight=None):
     self._set_intercept(X_offset, y_offset, X_scale)
     return self
 
+
 def _predict_linear(self, X):
     """Predict using the linear model
 
@@ -208,18 +217,23 @@ def _predict_linear(self, X):
     """
     is_df = is_DataFrame(X)
     X = np.asarray(X) if not sp.issparse(X) and not is_df else X
-    good_shape_for_daal = True if X.ndim <= 1 else True if X.shape[0] > X.shape[1] else False
+    good_shape_for_daal = \
+        True if X.ndim <= 1 else True if X.shape[0] > X.shape[1] else False
     dtype = get_dtype(X)
 
-    if (sp.issparse(X) or
-            not hasattr(self, 'daal_model_') or
-            not self.fit_shape_good_for_daal_ or
-            not good_shape_for_daal or
-            not (dtype == np.float64 or dtype == np.float32) or
-            (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)):
-        logging.info("sklearn.linar_model.LinearRegression.predict: " + get_patch_message("sklearn"))
+    if sp.issparse(X) or \
+            not hasattr(self, 'daal_model_') or \
+            not self.fit_shape_good_for_daal_ or \
+            not good_shape_for_daal or \
+            not (dtype == np.float64 or dtype == np.float32) or \
+            (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None):
+        logging.info(
+            "sklearn.linar_model.LinearRegression."
+            "predict: " + get_patch_message("sklearn"))
         return self._decision_function(X)
-    logging.info("sklearn.linar_model.LinearRegression.predict: " + get_patch_message("daal"))
+    logging.info(
+        "sklearn.linar_model.LinearRegression."
+        "predict: " + get_patch_message("daal"))
     X = _daal_check_array(X)
     return _daal4py_predict(self, X)
 

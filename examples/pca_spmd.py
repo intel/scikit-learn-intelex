@@ -26,7 +26,7 @@ if __name__ == "__main__":
     d4p.daalinit()
 
     # Each process gets its own data
-    infile = "./data/distributed/pca_normalized_" + str(d4p.my_procid()+1) + ".csv"
+    infile = "./data/distributed/pca_normalized_" + str(d4p.my_procid() + 1) + ".csv"
 
     # configure a PCA object to use svd instead of default correlation
     algo = d4p.pca(method='svdDense', distributed=True)
@@ -40,8 +40,12 @@ if __name__ == "__main__":
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
     assert allclose(result1.eigenvalues, result2.eigenvalues)
     assert allclose(result1.eigenvectors, result2.eigenvectors)
-    assert result1.means is None and result2.means is None or allclose(result1.means, result2.means)
-    assert result1.variances is None and result2.variances is None or allclose(result1.variances, result2.variances)
+    assert result1.means is None and \
+           result2.means is None or \
+           allclose(result1.means, result2.means)
+    assert result1.variances is None and \
+           result2.variances is None or \
+           allclose(result1.variances, result2.variances)
 
     print('All looks good!')
     d4p.daalfini()

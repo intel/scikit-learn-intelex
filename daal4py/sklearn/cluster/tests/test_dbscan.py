@@ -22,13 +22,17 @@ from daal4py.sklearn.cluster import DBSCAN as DBSCAN_DAAL
 METRIC = ('euclidean', )
 USE_WEIGHTS = (True, False)
 
-def generate_data(low: int, high: int, samples_number: int, sample_dimension: tuple) -> tuple:
+
+def generate_data(low: int, high: int, samples_number: int,
+                  sample_dimension: tuple) -> tuple:
     generator = np.random.RandomState()
     table_size = (samples_number, sample_dimension)
-    return generator.uniform(low=low, high=high, size=table_size), generator.uniform(size=samples_number)
+    return generator.uniform(
+        low=low, high=high, size=table_size), generator.uniform(size=samples_number)
 
 
-def check_labels_equals(left_labels: np.ndarray, right_labels: np.ndarray) -> bool:
+def check_labels_equals(left_labels: np.ndarray,
+                        right_labels: np.ndarray) -> bool:
     if left_labels.shape != right_labels.shape:
         raise Exception("Shapes not equals")
     if len(left_labels.shape) != 1:
@@ -38,20 +42,30 @@ def check_labels_equals(left_labels: np.ndarray, right_labels: np.ndarray) -> bo
     dict_checker = {}
     for index_sample in range(left_labels.shape[0]):
         if left_labels[index_sample] not in dict_checker:
-            dict_checker[left_labels[index_sample]] = right_labels[index_sample]
+            dict_checker[left_labels[index_sample]
+                         ] = right_labels[index_sample]
         elif dict_checker[left_labels[index_sample]] != right_labels[index_sample]:
             raise Exception("Wrong clustering")
     return True
 
 
-def _test_dbscan_big_data_numpy_gen(eps: float, min_samples: int, metric: str, use_weights: bool, 
-                                    low=-100.0, high=100.0, samples_number=1000, sample_dimension=4):
-    data, weights = generate_data(low=low, high=high, samples_number=samples_number, sample_dimension=sample_dimension)
+def _test_dbscan_big_data_numpy_gen(eps: float, min_samples: int, metric: str,
+                                    use_weights: bool, low=-100.0, high=100.0,
+                                    samples_number=1000, sample_dimension=4):
+    data, weights = generate_data(
+        low=low, high=high, samples_number=samples_number,
+        sample_dimension=sample_dimension)
     if use_weights is False:
         weights = None
-    initialized_daal_dbscan = DBSCAN_DAAL(eps=eps, min_samples=min_samples, metric=metric).fit(X=data, sample_weight=weights)
-    initialized_sklearn_dbscan = DBSCAN_SKLEARN(metric=metric, eps=eps, min_samples=min_samples).fit(X=data, sample_weight=weights)
-    check_labels_equals(initialized_daal_dbscan.labels_, initialized_sklearn_dbscan.labels_)
+    initialized_daal_dbscan = DBSCAN_DAAL(
+        eps=eps, min_samples=min_samples, metric=metric).fit(
+        X=data, sample_weight=weights)
+    initialized_sklearn_dbscan = DBSCAN_SKLEARN(
+        metric=metric, eps=eps, min_samples=min_samples).fit(
+        X=data, sample_weight=weights)
+    check_labels_equals(
+        initialized_daal_dbscan.labels_,
+        initialized_sklearn_dbscan.labels_)
 
 
 @pytest.mark.parametrize('metric', METRIC)
@@ -59,7 +73,11 @@ def _test_dbscan_big_data_numpy_gen(eps: float, min_samples: int, metric: str, u
 def test_dbscan_big_data_numpy_gen(metric, use_weights: bool):
     eps = 35.0
     min_samples = 6
-    _test_dbscan_big_data_numpy_gen(eps=eps, min_samples=min_samples, metric=metric, use_weights=use_weights)
+    _test_dbscan_big_data_numpy_gen(
+        eps=eps,
+        min_samples=min_samples,
+        metric=metric,
+        use_weights=use_weights)
 
 
 def _test_across_grid_parameter_numpy_gen(metric, use_weights: bool):
@@ -70,11 +88,17 @@ def _test_across_grid_parameter_numpy_gen(metric, use_weights: bool):
     min_samples_end = 15
     min_samples_step = 1
     for eps in np.arange(eps_begin, eps_end, eps_step):
-        for min_samples in range(min_samples_begin, min_samples_end, min_samples_step):
-            _test_dbscan_big_data_numpy_gen(eps=eps, min_samples=min_samples, metric=metric, use_weights=use_weights)
+        for min_samples in range(
+                min_samples_begin, min_samples_end, min_samples_step):
+            _test_dbscan_big_data_numpy_gen(
+                eps=eps,
+                min_samples=min_samples,
+                metric=metric,
+                use_weights=use_weights)
 
 
 @pytest.mark.parametrize('metric', METRIC)
 @pytest.mark.parametrize('use_weights', USE_WEIGHTS)
 def test_across_grid_parameter_numpy_gen(metric, use_weights: bool):
-    _test_across_grid_parameter_numpy_gen(metric=metric, use_weights=use_weights)
+    _test_across_grid_parameter_numpy_gen(
+        metric=metric, use_weights=use_weights)

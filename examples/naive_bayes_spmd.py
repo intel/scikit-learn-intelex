@@ -19,7 +19,7 @@
 #    mpirun -n 4 python ./naive_bayes_spmd.py
 
 import daal4py as d4p
-from numpy import loadtxt, allclose
+from numpy import loadtxt
 
 if __name__ == "__main__":
     # Initialize SPMD mode
@@ -30,11 +30,11 @@ if __name__ == "__main__":
 
     # Configure a training object (20 classes)
     talgo = d4p.multinomial_naive_bayes_training(20, distributed=True)
-    
+
     # Read data. Let's use 20 features per observation
-    data   = loadtxt(infile, delimiter=',', usecols=range(20))
-    labels = loadtxt(infile, delimiter=',', usecols=range(20,21))
-    labels.shape = (labels.size, 1) # must be a 2d array
+    data = loadtxt(infile, delimiter=',', usecols=range(20))
+    labels = loadtxt(infile, delimiter=',', usecols=range(20, 21))
+    labels.shape = (labels.size, 1)  # must be a 2d array
     tresult = talgo.compute(data, labels)
 
     # Now let's do some prediction
@@ -42,7 +42,8 @@ if __name__ == "__main__":
     if d4p.my_procid() == 0:
         palgo = d4p.multinomial_naive_bayes_prediction(20)
         # read test data (with same #features)
-        pdata = loadtxt("./data/batch/naivebayes_test_dense.csv", delimiter=',', usecols=range(20))
+        pdata = loadtxt("./data/batch/naivebayes_test_dense.csv",
+                        delimiter=',', usecols=range(20))
         # now predict using the model from the training above
         presult = palgo.compute(pdata, tresult.model)
 

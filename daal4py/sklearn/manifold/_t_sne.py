@@ -130,7 +130,8 @@ class TSNE(BaseTSNE):
                 raise ValueError("All distances should be positive, the "
                                  "metric given is not correct")
 
-            if self.metric != "euclidean" and getattr(self, 'square_distances', True) is True:
+            if self.metric != "euclidean" and \
+                    getattr(self, 'square_distances', True) is True:
                 distances **= 2
 
             # compute the joint probability distribution for the input space
@@ -173,7 +174,8 @@ class TSNE(BaseTSNE):
             # Free the memory used by the ball_tree
             del knn
 
-            if getattr(self, 'square_distances', True) is True or self.metric == "euclidean":
+            if getattr(self, 'square_distances', True) is True or \
+                    self.metric == "euclidean":
                 # knn return the euclidean distance but we need it squared
                 # to be consistent with the 'exact' method. Note that the
                 # the method was derived using the euclidean method as in the

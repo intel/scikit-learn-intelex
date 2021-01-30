@@ -29,14 +29,14 @@ else:
 if sklearn_check_version("0.21") and not sklearn_check_version("0.22"):
     class NearestNeighbors(KNeighborsMixin, RadiusNeighborsMixin, NeighborsBase):
         def __init__(self, n_neighbors=5, radius=1.0,
-                 algorithm='auto', leaf_size=30, metric='minkowski',
-                 p=2, metric_params=None, n_jobs=None, **kwargs):
+                     algorithm='auto', leaf_size=30, metric='minkowski',
+                     p=2, metric_params=None, n_jobs=None, **kwargs):
             super().__init__(
-              n_neighbors=n_neighbors,
-              radius=radius,
-              algorithm=algorithm,
-              leaf_size=leaf_size, metric=metric, p=p,
-              metric_params=metric_params, n_jobs=n_jobs, **kwargs)
+                n_neighbors=n_neighbors,
+                radius=radius,
+                algorithm=algorithm,
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params, n_jobs=n_jobs, **kwargs)
 
         def fit(self, X, y=None):
             return NeighborsBase._fit(self, X)
@@ -46,11 +46,11 @@ elif sklearn_check_version("0.22") and not sklearn_check_version("0.23"):
                      algorithm='auto', leaf_size=30, metric='minkowski',
                      p=2, metric_params=None, n_jobs=None):
             super().__init__(
-                  n_neighbors=n_neighbors,
-                  radius=radius,
-                  algorithm=algorithm,
-                  leaf_size=leaf_size, metric=metric, p=p,
-                  metric_params=metric_params, n_jobs=n_jobs)
+                n_neighbors=n_neighbors,
+                radius=radius,
+                algorithm=algorithm,
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params, n_jobs=n_jobs)
 
         def fit(self, X, y=None):
             return NeighborsBase._fit(self, X)
@@ -61,11 +61,11 @@ else:
                      algorithm='auto', leaf_size=30, metric='minkowski',
                      p=2, metric_params=None, n_jobs=None):
             super().__init__(
-                  n_neighbors=n_neighbors,
-                  radius=radius,
-                  algorithm=algorithm,
-                  leaf_size=leaf_size, metric=metric, p=p,
-                  metric_params=metric_params, n_jobs=n_jobs)
+                n_neighbors=n_neighbors,
+                radius=radius,
+                algorithm=algorithm,
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params, n_jobs=n_jobs)
 
         def fit(self, X, y=None):
             return NeighborsBase._fit(self, X)

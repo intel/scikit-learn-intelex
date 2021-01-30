@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -34,10 +37,11 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Configure a Ridge regression training object
     train_algo = d4p.ridge_regression_training(interceptFlag=True)
-    
-    # Read data. Let's have 10 independent, and 2 dependent variables (for each observation)
+
+    # Read data. Let's have 10 independent,
+    # and 2 dependent variables (for each observation)
     indep_data = readcsv(infile, range(10))
-    dep_data   = readcsv(infile, range(10,12))
+    dep_data = readcsv(infile, range(10, 12))
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
 
@@ -45,7 +49,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_algo = d4p.ridge_regression_prediction()
     # read test data (with same #features)
     pdata = readcsv(testfile, range(10))
-    ptdata = readcsv(testfile, range(10,12))
+    ptdata = readcsv(testfile, range(10, 12))
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
@@ -57,6 +61,9 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     (predict_result, ptdata) = main()
-    print("\nRidge Regression prediction results: (first 10 rows):\n", predict_result.prediction[0:10])
+    print(
+        "\nRidge Regression prediction results: (first 10 rows):\n",
+        predict_result.prediction[0:10]
+    )
     print("\nGround truth (first 10 rows):\n", ptdata[0:10])
     print('All looks good!')

@@ -22,10 +22,11 @@ import warnings
 from contextlib import suppress
 import scipy.sparse as sp
 from numpy.core.numeric import ComplexWarning
-from sklearn.utils.validation import _num_samples, _ensure_no_complex_data, \
-                                     _ensure_sparse_format, column_or_1d, \
-                                     check_consistent_length
+from sklearn.utils.validation import (_num_samples, _ensure_no_complex_data,
+                                      _ensure_sparse_format, column_or_1d,
+                                      check_consistent_length)
 from .._utils import is_DataFrame, get_dtype, get_number_of_types
+
 
 def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
     """Like assert_all_finite, but only for ndarray."""
@@ -39,7 +40,7 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
     num_of_types = get_number_of_types(X)
 
     # if X is heterogeneous pandas.DataFrame then
-    # covert it to a list of arrays 
+    # covert it to a list of arrays
     if is_df and num_of_types > 1:
         lst = []
         for idx in X:
@@ -56,10 +57,9 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
     type_err = 'infinity' if allow_nan else 'NaN, infinity'
     err = msg_err.format(type_err, msg_dtype if msg_dtype is not None else dt)
 
-    if (X.ndim in [1, 2]
-        and not np.any(np.equal(X.shape, 0))
-        and dt in [np.float32, np.float64]
-        ):
+    if all([X.ndim in [1, 2],
+            not np.any(np.equal(X.shape, 0)),
+            dt in [np.float32, np.float64]]):
         if X.ndim == 1:
             X = X.reshape((-1, 1))
 
@@ -78,8 +78,8 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
     elif is_float and (np.isfinite(_safe_accumulator_op(np.sum, X))):
         pass
     elif is_float:
-        if (allow_nan and np.isinf(X).any() or
-                not allow_nan and not np.isfinite(X).all()):
+        if any([allow_nan and np.isinf(X).any(),
+                not allow_nan and not np.isfinite(X).all()]):
             raise ValueError(err)
     # for object dtype data, we only check for NaNs (GH-13254)
     elif dt == np.dtype('object') and not allow_nan:
@@ -219,8 +219,8 @@ def _daal_check_array(array, accept_sparse=False, *, accept_large_sparse=True,
     # a branch for heterogeneous pandas.DataFrame
     if is_DataFrame(array) and get_number_of_types(array) > 1:
         from pandas.api.types import is_sparse
-        if (hasattr(array, 'sparse') or
-                not array.dtypes.apply(is_sparse).any()):
+        if any([hasattr(array, 'sparse'),
+                not array.dtypes.apply(is_sparse).any()]):
             return _pandas_check_array(array, array_orig, force_all_finite,
                                        ensure_min_samples, ensure_min_features,
                                        copy, context)
@@ -242,8 +242,8 @@ def _daal_check_array(array, accept_sparse=False, *, accept_large_sparse=True,
         # array.sparse exists and sparsity will be perserved (later).
         with suppress(ImportError):
             from pandas.api.types import is_sparse
-            if (not hasattr(array, 'sparse') and
-                    array.dtypes.apply(is_sparse).any()):
+            if all([not hasattr(array, 'sparse'),
+                    array.dtypes.apply(is_sparse).any()]):
                 warnings.warn(
                     "pandas.DataFrame with sparse columns found."
                     "It will be converted to a dense numpy array."
@@ -330,7 +330,7 @@ def _daal_check_array(array, accept_sparse=False, *, accept_large_sparse=True,
         # when no dtype conversion happened, for example dtype = None. The
         # result is that np.array(..) produces an array of complex dtype
         # and we need to catch and raise exception for such cases.
-        _ensure_no_complex_data(array) # doing nothing for DataFrame
+        _ensure_no_complex_data(array)  # doing nothing for DataFrame
 
         if ensure_2d:
             # If input is scalar raise error
@@ -498,17 +498,19 @@ def _daal_check_X_y(X, y, accept_sparse=False, *, accept_large_sparse=True,
     if y is None:
         raise ValueError("y cannot be None")
 
-    X = _daal_check_array(X, accept_sparse=accept_sparse,
-                    accept_large_sparse=accept_large_sparse,
-                    dtype=dtype, order=order, copy=copy,
-                    force_all_finite=force_all_finite,
-                    ensure_2d=ensure_2d, allow_nd=allow_nd,
-                    ensure_min_samples=ensure_min_samples,
-                    ensure_min_features=ensure_min_features,
-                    estimator=estimator)
+    X = _daal_check_array(
+        X, accept_sparse=accept_sparse,
+        accept_large_sparse=accept_large_sparse,
+        dtype=dtype, order=order, copy=copy,
+        force_all_finite=force_all_finite,
+        ensure_2d=ensure_2d, allow_nd=allow_nd,
+        ensure_min_samples=ensure_min_samples,
+        ensure_min_features=ensure_min_features,
+        estimator=estimator
+    )
     if multi_output:
         y = _daal_check_array(y, accept_sparse='csr', force_all_finite=True,
-                        ensure_2d=False, dtype=None)
+                              ensure_2d=False, dtype=None)
     else:
         y = column_or_1d(y, warn=True)
         _daal_assert_all_finite(y)

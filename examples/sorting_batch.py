@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c=None, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c=None, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -33,7 +36,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # configure a sorting object
     algo = d4p.sorting()
-    
+
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
 
@@ -43,7 +46,10 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # sorting result objects provide sortedData
     assert np.allclose(result1.sortedData, result2.sortedData)
-    assert np.allclose(result1.sortedData, np.sort(data.toarray() if hasattr(data, 'toarray') else data, axis=0))
+    assert np.allclose(
+        result1.sortedData,
+        np.sort(data.toarray() if hasattr(data, 'toarray') else data, axis=0)
+    )
 
     return result1
 

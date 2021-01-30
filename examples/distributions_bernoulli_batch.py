@@ -19,19 +19,27 @@
 import daal4py as d4p
 import numpy as np
 
+
 def main(readcsv=None, method='defaultDense'):
 
     # Create algorithm
     algorithm = d4p.distributions_bernoulli(0.5, engine=d4p.engines_mt19937(seed=777))
 
     # Create array and fill with bernoulli distribution
-    data = np.zeros((1,10))
+    data = np.zeros((1, 10))
     res = algorithm.compute(data)
 
     assert(np.allclose(data, res.randomNumbers))
-    assert(np.allclose(data, [[1.0,1.000,1.000,0.000,1.000,0.000,1.000,0.000,1.000,0.000]]))
+    assert(np.allclose(
+        data,
+        [[
+            1.0, 1.000, 1.000, 0.000, 1.000,
+            0.000, 1.000, 0.000, 1.000, 0.000
+        ]]
+    ))
 
     return data
+
 
 if __name__ == "__main__":
     res = main()

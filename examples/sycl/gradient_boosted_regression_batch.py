@@ -24,10 +24,13 @@ from daal4py.oneapi import sycl_buffer
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
 # Commone code for both CPU and GPU computations
@@ -67,12 +70,13 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Read data. Let's use 13 features per observation
     train_indep_data = readcsv(infile, range(13), t=np.float32)
-    train_dep_data = readcsv(infile, range(13,14), t=np.float32)
+    train_dep_data = readcsv(infile, range(13, 14), t=np.float32)
     # read test data (with same #features)
     test_indep_data = readcsv(testfile, range(13), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    result_classic = compute(train_indep_data, train_dep_data, test_indep_data, maxIterations)
+    result_classic = compute(train_indep_data, train_dep_data,
+                             test_indep_data, maxIterations)
 
     train_indep_data = to_numpy(train_indep_data)
     train_dep_data = to_numpy(train_dep_data)
@@ -80,25 +84,34 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     try:
         from dpctx import device_context, device_type
-        gpu_context = lambda: device_context(device_type.gpu, 0)
+
+        def gpu_context():
+            return device_context(device_type.gpu, 0)
     except:
         from daal4py.oneapi import sycl_context
-        gpu_context = lambda: sycl_context('gpu')
+
+        def gpu_context():
+            return sycl_context('gpu')
 
     # It is possible to specify to make the computations on GPU
     with gpu_context():
         sycl_train_indep_data = sycl_buffer(train_indep_data)
         sycl_train_dep_data = sycl_buffer(train_dep_data)
         sycl_test_indep_data = sycl_buffer(test_indep_data)
-        result_gpu = compute(sycl_train_indep_data, sycl_train_dep_data, sycl_test_indep_data, maxIterations)
+        _ = compute(sycl_train_indep_data, sycl_train_dep_data,
+                    sycl_test_indep_data, maxIterations)
 
-    test_dep_data = np.loadtxt(testfile, usecols=range(13,14), delimiter=',', ndmin=2, dtype=np.float32)
+    test_dep_data = np.loadtxt(testfile, usecols=range(13, 14), delimiter=',',
+                               ndmin=2, dtype=np.float32)
 
     return (result_classic, test_dep_data)
 
 
 if __name__ == "__main__":
     (predict_result, test_dep_data) = main()
-    print("\nGradient boosted trees prediction results (first 10 rows):\n", predict_result.prediction[0:10])
+    print(
+        "\nGradient boosted trees prediction results (first 10 rows):\n",
+        predict_result.prediction[0:10]
+    )
     print("\nGround truth (first 10 rows):\n", test_dep_data[0:10])
     print('All looks good!')

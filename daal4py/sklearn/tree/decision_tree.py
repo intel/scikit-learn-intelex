@@ -20,17 +20,15 @@ import numpy as np
 import numbers
 import warnings
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.exceptions import DataConversionWarning, NotFittedError
+from sklearn.exceptions import DataConversionWarning
 from sklearn.utils.validation import (
-    check_X_y, check_array, check_is_fitted, check_consistent_length)
+    check_array, check_is_fitted, check_consistent_length
+)
 from sklearn.utils.multiclass import check_classification_targets
-from sklearn.utils import check_random_state
 import daal4py as d4p
 from .._utils import (make2d, getFPType)
 from scipy.sparse import issparse
 
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
 
 class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     """
@@ -58,18 +56,22 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
 
     estimators_ : list of estimators
         The collection of fitted base estimators.
-    
+
 
     Training:
         inputs: dataForPruning, labelsForPruning
-        parameters: fptype, method, nClasses, splitCriterion, pruning, maxTreeDepth, minObservationsInLeafNodes
+        parameters: fptype, method, nClasses, splitCriterion, pruning,
+                    maxTreeDepth, minObservationsInLeafNodes
 
     Prediction:
-        parameters: fptype, method, nBins, nClasses, resultsToEvaluate (computeClassesLabels|computeClassProbabilities)
+        parameters: fptype, method, nBins, nClasses,
+        resultsToEvaluate (computeClassesLabels|computeClassProbabilities)
         N.B.: The only supported value for current version of the library is nBins=1.
-              nBins is the number of bins used to compute probabilities of the observations belonging to the class.
+              nBins is the number of bins used to compute probabilities of the
+              observations belonging to the class.
     """
-    def __init__(self, max_depth=None, min_observations_in_leaf_node=1, split_criterion='gini'):
+    def __init__(self, max_depth=None, min_observations_in_leaf_node=1,
+                 split_criterion='gini'):
         self.max_depth = max_depth
         self.min_observations_in_leaf_node = min_observations_in_leaf_node
         self.split_criterion = split_criterion
@@ -80,18 +82,20 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
         y = make2d(y)
 
         if pruning_set is None:
-            _pruning="none"
+            _pruning = "none"
             _pruning_X = None
             _pruning_y = None
         else:
-            _pruning="reducedErrorPruning"
-            if isinstance(pruning_set, (tuple, list)) and len(pruning_set)==2:
+            _pruning = "reducedErrorPruning"
+            if isinstance(pruning_set, (tuple, list)) and len(pruning_set) == 2:
                 _pruning_X, _pruning_y = pruning_set
                 check_consistent_length(_pruning_X, _pruning_y)
                 _pruning_X = make2d(_pruning_X)
                 _pruning_y = make2d(_pruning_y)
             else:
-                raise ValueError("pruning_set parameter is expected to be a tuple of pruning features and pruning dependent variables")
+                raise ValueError("pruning_set parameter is expected to be "
+                                 "a tuple of pruning features and pruning "
+                                 "dependent variables")
 
         if w is not None:
             w = make2d(np.asarray(w))
@@ -112,7 +116,6 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
         self.daal_model_ = res.model
         self._cached_tree_state_ = None
 
-
     def _get_tree_state(self):
         """
         Internal utility that returns an array behind scikit-learn's tree object
@@ -123,7 +126,7 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
             tree_state_class = d4p.getTreeState(self.daal_model_, int(self.n_classes_))
             self._cached_tree_state_ = tree_state_class
         return self._cached_tree_state_
-    
+
     def get_n_leaves(self):
         ts = self._get_tree_state()
         return ts.leaf_count
@@ -131,7 +134,6 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     def get_depth(self):
         ts = self._get_tree_state()
         return ts.max_depth
-
 
     def fit(self, X, y, sample_weight=None, pruning_set=None):
         """Build a decision tree classifier from the training set (X, y).
@@ -153,7 +155,7 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
             ignored if they would result in any single class carrying a
             negative weight in either child node.
 
-        pruning_set: None or a tuple of (X, y) corrsponding to features and 
+        pruning_set: None or a tuple of (X, y) corrsponding to features and
             associated labels used for tree pruning. See [1] for more details.
 
         Returns
@@ -162,34 +164,35 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
             Fitted estimator.
 
 
-        [1] https://software.intel.com/en-us/daal-programming-guide-decision-tree-2        
+        [1] https://software.intel.com/en-us/daal-programming-guide-decision-tree-2
         """
 
         if self.split_criterion not in ('gini', 'infoGain'):
             raise ValueError('Parameter "split_criterion" must be '
                              '"gini" or "infoGain".')
 
-        if not (isinstance(self.max_depth, numbers.Integral)
-                and (self.max_depth >= 0)):
+        if not all([isinstance(self.max_depth, numbers.Integral),
+                    self.max_depth >= 0]):
             if self.max_depth is not None:
                 raise ValueError('Parameter "max_depth" must be '
                                  'a non-negative integer value or None.')
 
-        if not (isinstance(self.min_observations_in_leaf_node, numbers.Integral)
-                and (self.min_observations_in_leaf_node > 0)):
+        if not all([isinstance(self.min_observations_in_leaf_node, numbers.Integral),
+                    self.min_observations_in_leaf_node > 0]):
             raise ValueError('Parameter "min_observations_in_leaf_node" must be '
                              'non-zero positive integer value.')
 
-        
         X = check_array(X, dtype=[np.single, np.double])
         y = np.asarray(y)
         y = np.atleast_1d(y)
 
         if y.ndim == 2 and y.shape[1] == 1:
-            warnings.warn("A column-vector y was passed when a 1d array was"
-                 " expected. Please change the shape of y to "
-                 "(n_samples,), for example using ravel().",
-                 DataConversionWarning, stacklevel=2)
+            warnings.warn(
+                "A column-vector y was passed when a 1d array was"
+                " expected. Please change the shape of y to "
+                "(n_samples,), for example using ravel().",
+                DataConversionWarning, stacklevel=2
+            )
 
         check_consistent_length(X, y)
 
@@ -201,10 +204,10 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
         self.n_outputs_ = y.shape[1]
         if self.n_outputs_ != 1:
             _class_name = self.__class__.__name__
-            raise ValueError(_class_name + 
-                             " does not currently support multi-output data. " + 
+            raise ValueError(_class_name + " does not currently support "
+                             "multi-output data. "
                              "Consider using OneHotEncoder")
-        
+
         y = check_array(y, ensure_2d=False, dtype=None)
         check_classification_targets(y)
 
@@ -233,13 +236,12 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
 
         return self
 
-
     def _validate_X_predict(self, X, check_input):
         """Validate X whenever one tries to predict, apply, predict_proba"""
         if check_input:
             X = check_array(X, dtype=[np.single, np.double], accept_sparse="csr")
-            if issparse(X) and (X.indices.dtype != np.intc or
-                                X.indptr.dtype != np.intc):
+            if issparse(X) and any([X.indices.dtype != np.intc,
+                                    X.indptr.dtype != np.intc]):
                 raise ValueError("No support for np.int64 index based "
                                  "sparse matrices")
 
@@ -255,11 +257,12 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     def _daal4py_predict(self, X):
         fptype = getFPType(X)
         alg = d4p.decision_tree_classification_prediction(
-            fptype=fptype, 
+            fptype=fptype,
             method="defaultDense",
             nBins=1,
             nClasses=self.n_classes_,
-            resultsToEvaluate="computeClassLabels")
+            resultsToEvaluate="computeClassLabels"
+        )
         res = alg.compute(X, self.daal_model_)
         return res.prediction.ravel()
 
@@ -274,4 +277,3 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
         X = self._validate_X_predict(X, check_input)
         y = self._daal4py_predict(X)
         return self.classes_.take(np.asarray(y, dtype=np.intp), axis=0)
-        

@@ -7,6 +7,7 @@ import sklearn
 from sklearn import __version__ as sklearn_version
 import warnings
 
+
 def evaluate_cond(cond, v):
     if cond.startswith(">="):
         return LooseVersion(v) >= LooseVersion(cond[2:])
@@ -20,9 +21,12 @@ def evaluate_cond(cond, v):
         return LooseVersion(v) < LooseVersion(cond[1:])
     if cond.startswith(">"):
         return LooseVersion(v) > LooseVersion(cond[1:])
-    warnings.warn('Test selection condition "{0}" should start with >=, <=, ==, !=, < or > to compare to version of scikit-learn run. The test will not be deselected'.format(cond))
+    warnings.warn(
+        'Test selection condition "{0}" should start with '
+        '>=, <=, ==, !=, < or > to compare to version of scikit-learn run. '
+        'The test will not be deselected'.format(cond))
     return False
-    
+
 
 def filter_by_version(entry, sk_ver):
     if not entry:
@@ -50,7 +54,7 @@ if __name__ == '__main__':
     argParser.add_argument('--reduced', action='store_true')
     args = argParser.parse_args()
 
-    fn = args.conf_file[0] 
+    fn = args.conf_file[0]
     if os.path.exists(fn):
         with open(fn, 'r') as fh:
             dt = yaml_load(fh, Loader=FullLoader)
@@ -62,11 +66,13 @@ if __name__ == '__main__':
         else:
             base_dir = ""
 
-        filtered_deselection = [filter_by_version(test_name, sklearn_version)
-                                for test_name in  dt.get('deselected_tests', [])]
+        filtered_deselection = [
+            filter_by_version(test_name, sklearn_version)
+            for test_name in dt.get('deselected_tests', [])]
         if args.reduced:
-            filtered_deselection.extend([filter_by_version(test_name, sklearn_version)
-                                for test_name in  dt.get('reduced_tests', [])])
-        pytest_switches = [ "--deselect " + base_dir + test_name
-                            for test_name in filtered_deselection if test_name]
-        print(" ".join(pytest_switches) )
+            filtered_deselection.extend(
+                [filter_by_version(test_name, sklearn_version)
+                 for test_name in dt.get('reduced_tests', [])])
+        pytest_switches = ["--deselect " + base_dir + test_name
+                           for test_name in filtered_deselection if test_name]
+        print(" ".join(pytest_switches))

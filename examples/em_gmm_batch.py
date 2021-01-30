@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c=None, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c=None, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c=None, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c=None, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -45,7 +48,8 @@ def main(readcsv=read_csv, method='defaultDense'):
     # and compute em_gmm using initial weights and means
     result2 = algo2.compute(data, result1.weights, result1.means, result1.covariances)
 
-    # implicit als prediction result objects provide covariances, goalFunction, means, nIterations and weights
+    # implicit als prediction result objects provide covariances,
+    # goalFunction, means, nIterations and weights
     return result2
 
 

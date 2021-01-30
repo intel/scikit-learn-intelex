@@ -20,14 +20,24 @@ import os
 if d4p.__has_dist__:
     import unittest
     import numpy as np
-    from test_examples import np_read_csv, add_test, unittest_data_path
-
+    from test_examples import np_read_csv, add_test
 
     class Base():
         def test_svd_spmd(self):
             import svd_spmd as ex
             (data, result) = self.call(ex)
-            self.assertTrue(np.allclose(data, np.matmul(np.matmul(result.leftSingularMatrix, np.diag(result.singularValues[0])), result.rightSingularMatrix)))
+            self.assertTrue(
+                np.allclose(
+                    data,
+                    np.matmul(
+                        np.matmul(
+                            result.leftSingularMatrix,
+                            np.diag(result.singularValues[0])
+                        ),
+                        result.rightSingularMatrix
+                    )
+                )
+            )
 
         def test_qr_spmd(self):
             import qr_spmd as ex
@@ -40,68 +50,94 @@ if d4p.__has_dist__:
 
             data = np.loadtxt("./data/distributed/kmeans_dense.csv", delimiter=',')
 
-            rpp = int(data.shape[0]/d4p.num_procs())
-            spmd_data = data[rpp*d4p.my_procid():rpp*d4p.my_procid()+rpp,:]
+            rpp = int(data.shape[0] / d4p.num_procs())
+            spmd_data = data[rpp * d4p.my_procid():rpp * d4p.my_procid() + rpp, :]
 
-            for init_method in ['plusPlusDense', 'parallelPlusDense', 'deterministicDense']:
-                batch_init_res = d4p.kmeans_init(nClusters=nClusters, method=init_method).compute(data)
-                spmd_init_res = d4p.kmeans_init(nClusters=nClusters, method=init_method, distributed=True).compute(spmd_data)
+            for init_method in ['plusPlusDense',
+                                'parallelPlusDense',
+                                'deterministicDense']:
+                batch_init_res = d4p.kmeans_init(nClusters=nClusters,
+                                                 method=init_method).compute(data)
+                spmd_init_res = d4p.kmeans_init(nClusters=nClusters,
+                                                method=init_method,
+                                                distributed=True).compute(spmd_data)
 
                 if init_method in ['parallelPlusDense']:
-                    print("Warning: It is well known that results of parallelPlusDense init does not match with batch algorithm")
+                    print("Warning: It is well known "
+                          "that results of parallelPlusDense init "
+                          "does not match with batch algorithm")
                 else:
-                    self.assertTrue(np.allclose(batch_init_res.centroids, spmd_init_res.centroids),
-                                    "Initial centroids with " + init_method + " does not match with batch algorithm")
+                    reason = "Initial centroids with " + init_method
+                    reason += " does not match with batch algorithm"
+                    self.assertTrue(
+                        np.allclose(batch_init_res.centroids, spmd_init_res.centroids),
+                        reason
+                    )
 
-                batch_res = d4p.kmeans(nClusters=nClusters, maxIterations=maxIter).compute(data, batch_init_res.centroids)
-                spmd_res = d4p.kmeans(nClusters=nClusters, maxIterations=maxIter, distributed=True).compute(spmd_data, spmd_init_res.centroids)
+                batch_res = d4p.kmeans(
+                    nClusters=nClusters,
+                    maxIterations=maxIter).compute(data, batch_init_res.centroids)
+                spmd_res = d4p.kmeans(
+                    nClusters=nClusters,
+                    maxIterations=maxIter,
+                    distributed=True).compute(spmd_data, spmd_init_res.centroids)
 
-                self.assertTrue(np.allclose(batch_res.centroids, batch_res.centroids),
-                                "Final centroids with " + init_method + " does not match with batch algorithm")
+                if init_method in ['parallelPlusDense']:
+                    print("Warning: It is well known "
+                          "that results of parallelPlusDense init "
+                          "does not match with batch algorithm")
+                else:
+                    reason = "Final centroids with " + init_method
+                    reason += " does not match with batch algorithm"
+                    self.assertTrue(
+                        np.allclose(batch_res.centroids, spmd_res.centroids),
+                        reason
+                    )
 
         def test_dbscan_spmd(self):
             epsilon = 0.04
             minObservations = 45
             data = np_read_csv(os.path.join(".", 'data', 'batch', 'dbscan_dense.csv'))
 
-            batch_algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices')
+            batch_algo = d4p.dbscan(minObservations=minObservations,
+                                    epsilon=epsilon,
+                                    resultsToCompute='computeCoreIndices')
             batch_result = batch_algo.compute(data)
 
-            rpp = int(data.shape[0]/d4p.num_procs())
+            rpp = int(data.shape[0] / d4p.num_procs())
             node_stride = rpp * d4p.my_procid()
             node_range = range(node_stride, node_stride + rpp)
-            node_data = data[node_range,:]
+            node_data = data[node_range, :]
 
-            spmd_algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, distributed=True)
+            spmd_algo = d4p.dbscan(minObservations=minObservations,
+                                   epsilon=epsilon, distributed=True)
             spmd_result = spmd_algo.compute(node_data)
 
-            # clusters can get different indexes in batch and spmd algos, to compare them we should take care about it
+            # clusters can get different indexes in batch and spmd algos,
+            # to compare them we should take care about it
             cluster_index_dict = {}
             for i in node_range:
-                # border points assignments can be different with different amount of nodes but cores are the same
+                # border points assignments can be different
+                # with different amount of nodes but cores are the same
                 if i in batch_result.coreIndices:
+                    right = spmd_result.assignments[i - node_stride][0]
                     if not batch_result.assignments[i][0] in cluster_index_dict:
-                        cluster_index_dict[batch_result.assignments[i][0]] = spmd_result.assignments[i - node_stride][0]
-                    self.assertTrue(cluster_index_dict[batch_result.assignments[i][0]] == spmd_result.assignments[i - node_stride][0])
-
+                        cluster_index_dict[batch_result.assignments[i][0]] = right
+                    left = cluster_index_dict[batch_result.assignments[i][0]]
+                    self.assertTrue(
+                        left == right
+                    )
 
     gen_examples = [
         ('covariance_spmd', 'covariance.csv', 'covariance'),
-        ('low_order_moms_spmd', 'low_order_moms_dense_batch.csv', lambda r: np.vstack((r.minimum,
-                                                                                       r.maximum,
-                                                                                       r.sum,
-                                                                                       r.sumSquares,
-                                                                                       r.sumSquaresCentered,
-                                                                                       r.mean,
-                                                                                       r.secondOrderRawMoment,
-                                                                                       r.variance,
-                                                                                       r.standardDeviation,
-                                                                                       r.variation))),
+        ('low_order_moms_spmd', 'low_order_moms_dense_batch.csv',
+         lambda r: np.vstack((r.minimum, r.maximum, r.sum, r.sumSquares,
+                              r.sumSquaresCentered, r.mean, r.secondOrderRawMoment,
+                              r.variance, r.standardDeviation, r.variation))),
     ]
 
     for example in gen_examples:
         add_test(Base, *example)
-
 
     class Test(Base, unittest.TestCase):
         @classmethod
@@ -114,7 +150,6 @@ if d4p.__has_dist__:
 
         def call(self, ex):
             return ex.main()
-
 
     if __name__ == '__main__':
         unittest.main()

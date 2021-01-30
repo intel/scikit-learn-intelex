@@ -29,14 +29,14 @@ from stream import read_next
 try:
     from dpctx import device_context, device_type
     with device_context(device_type.gpu, 0):
-        gpu_available=True
+        gpu_available = True
 except:
     try:
         from daal4py.oneapi import sycl_context
         with sycl_context('gpu'):
-            gpu_available=True
+            gpu_available = True
     except:
-        gpu_available=False
+        gpu_available = False
 
 
 # At this moment with sycl we are working only with numpy arrays
@@ -73,12 +73,20 @@ def main(readcsv=None, method='defaultDense'):
 
     try:
         from dpctx import device_context, device_type
-        gpu_context = lambda: device_context(device_type.gpu, 0)
-        cpu_context = lambda: device_context(device_type.cpu, 0)
+
+        def gpu_context():
+            return device_context(device_type.gpu, 0)
+
+        def cpu_context():
+            return device_context(device_type.cpu, 0)
     except:
         from daal4py.oneapi import sycl_context
-        gpu_context = lambda: sycl_context('gpu')
-        cpu_context = lambda: sycl_context('cpu')
+
+        def gpu_context():
+            return sycl_context('gpu')
+
+        def cpu_context():
+            return sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     try:
@@ -93,8 +101,9 @@ def main(readcsv=None, method='defaultDense'):
                 algo.compute(sycl_chunk)
             # finalize computation
             result_gpu = algo.finalize()
-        for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-                     'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
+        for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered',
+                     'mean', 'secondOrderRawMoment', 'variance', 'standardDeviation',
+                     'variation']:
             assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
     except RuntimeError:
         pass

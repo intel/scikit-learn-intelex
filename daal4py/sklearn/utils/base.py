@@ -16,8 +16,9 @@
 
 from .validation import _daal_check_array, _daal_check_X_y
 
+
 def _daal_validate_data(self, X, y=None, reset=True,
-                   validate_separately=False, **check_params):
+                        validate_separately=False, **check_params):
     """Validate input data and set or check the `n_features_in_` attribute.
 
     Parameters

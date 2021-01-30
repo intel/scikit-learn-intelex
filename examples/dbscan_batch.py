@@ -22,32 +22,45 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/dbscan_dense.csv"
     epsilon = 0.04
     minObservations = 45
-    
+
     # Load the data
     data = readcsv(infile, range(2))
 
-    # configure dbscan main object: we also request the indices and observations of cluster cores
-    algo = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations')
+    # configure dbscan main object:
+    # we also request the indices and observations of cluster cores
+    algo = d4p.dbscan(
+        minObservations=minObservations,
+        epsilon=epsilon,
+        resultsToCompute='computeCoreIndices|computeCoreObservations'
+    )
     # and compute
     result = algo.compute(data)
-    
-    # Note: we could have done this in just one line:
-    # assignments = d4p.dbscan(minObservations=minObservations, epsilon=epsilon, resultsToCompute='computeCoreIndices|computeCoreObservations').compute(data).assignments
 
-    # DBSCAN result objects provide assignments, nClusters and coreIndices/coreObservations (if requested)
+    # Note: we could have done this in just one line:
+    # assignments = d4p.dbscan(
+    #     minObservations=minObservations,
+    #     epsilon=epsilon,
+    #     resultsToCompute='computeCoreIndices|computeCoreObservations'
+    # ).compute(data).assignments
+
+    # DBSCAN result objects provide assignments,
+    # nClusters and coreIndices/coreObservations (if requested)
     assert result.assignments.shape == (data.shape[0], 1)
     assert result.coreObservations.shape == (result.coreIndices.shape[0], data.shape[1])
-    
+
     return result
 
 

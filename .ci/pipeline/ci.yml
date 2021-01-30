@@ -143,3 +143,16 @@ jobs:
       artifactName: 'daal4py win'
       targetPath: '$(Build.ArtifactStagingDirectory)/'
     condition: always()
+- job: PEP8
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+      addToPath: true
+  - script: |
+      python -m pip install --upgrade pip setuptools
+      pip install flake8
+      flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
+    displayName: 'PEP 8 check'

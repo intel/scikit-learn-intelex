@@ -22,25 +22,31 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
     nFeatures = 20
     nClasses = 5
 
-    # read training data from file with nFeatures features per observation and 1 class label
+    # read training data from file
+    # with nFeatures features per observation and 1 class label
     train_file = 'data/batch/svm_multi_class_train_dense.csv'
     train_data = readcsv(train_file, range(nFeatures))
     train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1))
 
     # Create and configure algorithm object
-    algorithm = d4p.multi_class_classifier_training(nClasses=nClasses,
-                                                    training=d4p.svm_training(method='thunder'),
-                                                    prediction=d4p.svm_prediction())
+    algorithm = d4p.multi_class_classifier_training(
+        nClasses=nClasses,
+        training=d4p.svm_training(method='thunder'),
+        prediction=d4p.svm_prediction()
+    )
 
     # Pass data to training. Training result provides model
     train_result = algorithm.compute(train_data, train_labels)
@@ -54,9 +60,11 @@ def main(readcsv=read_csv, method='defaultDense'):
     pred_labels = readcsv(pred_file, range(nFeatures, nFeatures + 1))
 
     # Create an algorithm object to predict multi-class SVM values
-    algorithm = d4p.multi_class_classifier_prediction(nClasses,
-                                                      training=d4p.svm_training(method='thunder'),
-                                                      prediction=d4p.svm_prediction())
+    algorithm = d4p.multi_class_classifier_prediction(
+        nClasses,
+        training=d4p.svm_training(method='thunder'),
+        prediction=d4p.svm_prediction()
+    )
     # Pass data to prediction. Prediction result provides prediction
     pred_result = algorithm.compute(pred_data, train_result.model)
     assert pred_result.prediction.shape == (train_data.shape[0], 1)
@@ -66,6 +74,9 @@ def main(readcsv=read_csv, method='defaultDense'):
 
 if __name__ == "__main__":
     (pred_res, pred_labels) = main()
-    print("\nSVM classification results (first 20 observations):\n", pred_res.prediction[0:20])
+    print(
+        "\nSVM classification results (first 20 observations):\n",
+        pred_res.prediction[0:20]
+    )
     print("\nGround truth (first 20 observations):\n", pred_labels[0:20])
     print('All looks good!')

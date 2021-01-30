@@ -14,8 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-import pytest
 import daal4py.sklearn
+
 
 def test_monkey_patching():
     _tokens = daal4py.sklearn.sklearn_patch_names()
@@ -28,7 +28,6 @@ def test_monkey_patching():
     assert isinstance(_tokens, list) and len(_tokens) > 0, \
         "Internal Error: list of patched names has unexcepable format."
 
-    import sklearn
     daal4py.sklearn.patch_sklearn()
 
     for i, _ in enumerate(_tokens):
@@ -41,7 +40,7 @@ def test_monkey_patching():
             "Patching has completed with error."
 
         daal4py.sklearn.unpatch_sklearn(t)
-
+        print(p, n)
         class_module = getattr(p, n).__module__
         assert class_module.startswith('sklearn'), \
             "Unpatching has completed with error."

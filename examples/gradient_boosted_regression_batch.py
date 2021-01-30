@@ -22,10 +22,13 @@ import numpy as np
 # let's try to use pandas' fast csv reader
 try:
     import pandas
-    read_csv = lambda f, c, t=np.float64: pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
-except:
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
+except ImportError:
     # fall back to numpy loadtxt
-    read_csv = lambda f, c, t=np.float64: np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
@@ -40,7 +43,7 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Read data. Let's use 3 features per observation
     data = readcsv(infile, range(13), t=np.float32)
-    deps = readcsv(infile, range(13,14), t=np.float32)
+    deps = readcsv(infile, range(13, 14), t=np.float32)
     train_result = train_algo.compute(data, deps)
 
     # Now let's do some prediction
@@ -51,17 +54,25 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    ptdata = np.loadtxt(testfile, usecols=range(13,14), delimiter=',', ndmin=2, dtype=np.float32)
-    #ptdata = np.loadtxt('../tests/unittest_data/gradient_boosted_regression_batch.csv', delimiter=',', ndmin=2, dtype=np.float32)
+    ptdata = np.loadtxt(testfile, usecols=range(13, 14),
+                        delimiter=',', ndmin=2, dtype=np.float32)
+    # ptdata = np.loadtxt('../tests/unittest_data/gradient_boosted_regression_batch.csv',
+    #                     delimiter=',', ndmin=2, dtype=np.float32)
     if hasattr(ptdata, 'toarray'):
-        ptdata = ptdata.toarray() # to make the next assertion work with scipy's csr_matrix
-    assert True or np.square(predict_result.prediction - ptdata).mean() < 1e-2, np.square(predict_result.prediction - ptdata).mean()
+        ptdata = ptdata.toarray()
+        # to make the next assertion work with scipy's csr_matrix
+    assert True or \
+           np.square(predict_result.prediction - ptdata).mean() < 1e-2, \
+           np.square(predict_result.prediction - ptdata).mean()
 
     return (train_result, predict_result, ptdata)
 
 
 if __name__ == "__main__":
     (train_result, predict_result, ptdata) = main()
-    print("\nGradient boosted trees prediction results (first 10 rows):\n", predict_result.prediction[0:10])
+    print(
+        "\nGradient boosted trees prediction results (first 10 rows):\n",
+        predict_result.prediction[0:10]
+    )
     print("\nGround truth (first 10 rows):\n", ptdata[0:10])
     print('All looks good!')
