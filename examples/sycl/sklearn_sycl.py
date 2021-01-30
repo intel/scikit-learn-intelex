@@ -57,6 +57,11 @@ elif sycl_extention_available:
             cpu_available = True
     except RuntimeError:
         cpu_available = False
+    try:
+        with sycl_context('host'):
+            host_available = True
+    except RuntimeError:
+        host_available = False
 
 def k_means_init_x():
     print("KMeans init=X[:2]")
@@ -166,7 +171,8 @@ if __name__ == "__main__":
             devices.append(device_type.gpu)
 
     elif sycl_extention_available:
-        devices.append('host')
+        if host_available:
+            devices.append('host')
         if cpu_available:
             devices.append('cpu')
         if gpu_available:
