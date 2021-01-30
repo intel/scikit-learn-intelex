@@ -68,12 +68,15 @@ except:
 if sycl_extention_available:
     try:
         with sycl_context('gpu'):
-            gpu_available = True
             availabe_devices.append("gpu")
     except:
-        gpu_available = False
+        pass
     availabe_devices.append("host")
-    availabe_devices.append("cpu")
+    try:
+        with sycl_context('cpu'):
+            availabe_devices.append("cpu")
+    except:
+        pass
 
 
 def check_version(rule, target):
