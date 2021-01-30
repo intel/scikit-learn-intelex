@@ -14,176 +14,207 @@
 # limitations under the License.
 #===============================================================================
 
-# daal4py Scikit-Learn examples for GPU
-# run like this:
-#    python -m daal4py ./sklearn_sycl.py
+import os
+import struct
+import subprocess
+import sys
 
-import numpy as np
+from daal4py import __has_dist__
+from daal4py.sklearn._utils import get_daal_version
 
-from sklearn.cluster import KMeans
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import LogisticRegression
-from sklearn.cluster import DBSCAN
+print('Starting examples validation')
+# First item is major version - 2021,
+# second is minor+patch - 0110,
+# third item is status - B
+print('DAAL version:', get_daal_version())
 
-from sklearn.datasets import load_iris
+from os.path import join as jp
+from time import gmtime, strftime
+from collections import defaultdict
 
-dpctx_available = False
+exdir = os.path.dirname(os.path.realpath(__file__))
+
+IS_WIN = False
+IS_MAC = False
+IS_LIN = False
+system_os = "not_supported"
+if 'linux' in sys.platform:
+    IS_LIN = True
+    system_os = "lnx"
+elif sys.platform == 'darwin':
+    IS_MAC = True
+    system_os = "mac"
+elif sys.platform in ['win32', 'cygwin']:
+    IS_WIN = True
+    system_os = "win"
+else:
+    assert False, sys.platform + ' not supported'
+
+assert 8 * struct.calcsize('P') in [32, 64]
+
+if 8 * struct.calcsize('P') == 32:
+    logdir = jp(exdir, '_results', 'ia32')
+else:
+    logdir = jp(exdir, '_results', 'intel64')
+
+availabe_devices = []
+
 try:
-    from dpctx import device_context, device_type
-    dpctx_available = True
-except ImportError:
-    try:
-        from daal4py.oneapi import sycl_context
-        sycl_extention_available = True
-    except:
-        sycl_extention_available = False
+    from daal4py.oneapi import sycl_context
+    sycl_extention_available = True
+except RuntimeError:
+    sycl_extention_available = False
 
-gpu_available = False
-if dpctx_available:
-    try:
-        with device_context(device_type.gpu, 0):
-            gpu_available = True
-    except RuntimeError:
-        gpu_available = False
-
-elif sycl_extention_available:
+if sycl_extention_available:
     try:
         with sycl_context('gpu'):
-            gpu_available = True
+            availabe_devices.append("gpu")
     except RuntimeError:
-        gpu_available = False
-    try:
-        with sycl_context('cpu'):
-            cpu_available = True
-    except RuntimeError:
-        cpu_available = False
+        pass
     try:
         with sycl_context('host'):
-            host_available = True
+            availabe_devices.append("host")
     except RuntimeError:
-        host_available = False
-
-def k_means_init_x():
-    print("KMeans init=X[:2]")
-    X = np.array([[1., 2.], [1., 4.], [1., 0.],
-                  [10., 2.], [10., 4.], [10., 0.]], dtype=np.float32)
-    kmeans = KMeans(n_clusters=2, random_state=0, init=X[:2]).fit(X)
-    print("kmeans.labels_")
-    print(kmeans.labels_)
-    print("kmeans.predict([[0, 0], [12, 3]])")
-    print(kmeans.predict(np.array([[0, 0], [12, 3]], dtype=np.float32)))
-    print("kmeans.cluster_centers_")
-    print(kmeans.cluster_centers_)
+        pass
+    try:
+        with sycl_context('cpu'):
+            availabe_devices.append("cpu")
+    except RuntimeError:
+        pass
 
 
-def k_means_random():
-    print("KMeans init='random'")
-    X = np.array([[1., 2.], [1., 4.], [1., 0.],
-                  [10., 2.], [10., 4.], [10., 0.]], dtype=np.float32)
-    kmeans = KMeans(n_clusters=2, random_state=0, init='random').fit(X)
-    print("kmeans.labels_")
-    print(kmeans.labels_)
-    print("kmeans.predict([[0, 0], [12, 3]])")
-    print(kmeans.predict(np.array([[0, 0], [12, 3]], dtype=np.float32)))
-    print("kmeans.cluster_centers_")
-    print(kmeans.cluster_centers_)
+def check_version(rule, target):
+    if not isinstance(rule[0], type(target)):
+        if rule > target:
+            return False
+    else:
+        for rule_item in rule:
+            if rule_item > target:
+                return False
+            if rule_item[0] == target[0]:
+                break
+    return True
 
 
-def linear_regression():
-    print("LinearRegression")
-    X = np.array([[1., 1.], [1., 2.], [2., 2.], [2., 3.]], dtype=np.float32)
-    # y = 1 * x_0 + 2 * x_1 + 3
-    y = np.dot(X, np.array([1, 2], dtype=np.float32)) + 3
-    reg = LinearRegression().fit(X, y)
-    print("reg.score(X, y)")
-    print(reg.score(X, y))
-    print("reg.coef_")
-    print(reg.coef_)
-    print("reg.intercept_")
-    print(reg.intercept_)
-    print("reg.predict(np.array([[3, 5]], dtype=np.float32))")
-    print(reg.predict(np.array([[3, 5]], dtype=np.float32)))
+def check_device(rule, target):
+    for rule_item in rule:
+        if rule_item not in target:
+            return False
+    return True
 
 
-def logistic_regression_lbfgs():
-    print("LogisticRegression solver='lbfgs'")
-    X, y = load_iris(return_X_y=True)
-    clf = LogisticRegression(random_state=0, solver='lbfgs').fit(
-        X.astype('float32'),
-        y.astype('float32'))
-    print("clf.predict(X[:2, :])")
-    print(clf.predict(X[:2, :]))
-    print("clf.predict_proba(X[:2, :])")
-    print(clf.predict_proba(X[:2, :]))
-    print("clf.score(X, y)")
-    print(clf.score(X, y))
+def check_os(rule, target):
+    for rule_item in rule:
+        if rule_item not in target:
+            return False
+    return True
 
 
-def logistic_regression_newton():
-    print("LogisticRegression solver='newton-cg'")
-    X, y = load_iris(return_X_y=True)
-    clf = LogisticRegression(random_state=0, solver='newton-cg').fit(
-        X.astype('float32'),
-        y.astype('float32'))
-    print("clf.predict(X[:2, :])")
-    print(clf.predict(X[:2, :]))
-    print("clf.predict_proba(X[:2, :])")
-    print(clf.predict_proba(X[:2, :]))
-    print("clf.score(X, y)")
-    print(clf.score(X, y))
+def check_library(rule):
+    for rule_item in rule:
+        try:
+            import importlib
+            importlib.import_module(rule_item, package=None)
+        except ImportError:
+            return False
+    return True
 
 
-def dbscan():
-    print("DBSCAN")
-    X = np.array([[1., 2.], [2., 2.], [2., 3.],
-                  [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
-    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
-    print("clustering.labels_")
-    print(clustering.labels_)
-    print("clustering")
-    print(clustering)
+req_version = defaultdict(lambda: (2019, 'P', 0))
+req_version['sycl/dbscan_batch.py'] = \
+    (2021, 'P', 100)  # hangs in beta08, need to be fixed
+req_version['sycl/linear_regression_batch.py'] = \
+    (2021, 'P', 100)  # hangs in beta08, need to be fixed
+req_version['sycl/kmeans_batch.py'] = \
+    (2021, 'P', 200)  # not equal results for host and gpu runs
+req_version['sycl/pca_transform_batch.py'] = (2021, 'P', 200)
+
+req_device = defaultdict(lambda: [])
+req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
+
+req_library = defaultdict(lambda: [])
+req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
+req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
+
+req_os = defaultdict(lambda: [])
 
 
-def get_context(device):
-    if dpctx_available:
-        return device_context(device, 0)
-    if sycl_extention_available:
-        return sycl_context(device)
+def get_exe_cmd(ex, nodist, nostream):
+    if os.path.dirname(ex).endswith("sycl"):
+        if not sycl_extention_available:
+            return None
+        if not check_version(req_version["sycl/" + os.path.basename(ex)],
+                             get_daal_version()):
+            return None
+        if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
+            return None
+        if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
+            return None
+
+    if os.path.dirname(ex).endswith("examples"):
+        if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
+            return None
+        if not check_library(req_library[os.path.basename(ex)]):
+            return None
+    if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
+        return '"' + sys.executable + '" "' + ex + '"'
+    if not nostream and ex.endswith('streaming.py'):
+        return '"' + sys.executable + '" "' + ex + '"'
+    if not nodist and ex.endswith('spmd.py'):
+        if IS_WIN:
+            return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
+        return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
     return None
 
 
-if __name__ == "__main__":
-    examples = [
-        k_means_init_x,
-        k_means_random,
-        linear_regression,
-        logistic_regression_lbfgs,
-        logistic_regression_newton,
-        dbscan,
-    ]
-    devices = []
+def run_all(nodist=False, nostream=False):
+    success = 0
+    n = 0
+    if not os.path.exists(logdir):
+        os.makedirs(logdir)
+    for (dirpath, dirnames, filenames) in os.walk(exdir):
+        for script in filenames:
+            if any(script.endswith(x) for x in ['spmd.py',
+                                                'streaming.py',
+                                                'stream.py',
+                                                'batch.py']):
+                n += 1
+                logfn = jp(logdir, script.replace('.py', '.res'))
+                with open(logfn, 'w') as logfile:
+                    print('\n##### ' + jp(dirpath, script))
+                    execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
+                    if execute_string:
+                        os.chdir(dirpath)
+                        proc = subprocess.Popen(
+                            execute_string if IS_WIN else ['/bin/bash',
+                                                           '-c',
+                                                           execute_string],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            shell=False
+                        )
+                        out = proc.communicate()[0]
+                        logfile.write(out.decode('ascii'))
+                        if proc.returncode:
+                            print(out)
+                            print(
+                                strftime("%H:%M:%S", gmtime()) + '\tFAILED'
+                                '\t' + script + '\twith errno\t' + str(proc.returncode)
+                            )
+                        else:
+                            success += 1
+                            print(strftime("%H:%M:%S", gmtime()) + '\tPASSED\t' + script)
+                    else:
+                        success += 1
+                        print(strftime("%H:%M:%S", gmtime()) + '\tSKIPPED\t' + script)
 
-    if dpctx_available:
-        devices.append(device_type.host)
-        if cpu_available:
-            devices.append(device_type.cpu)
-        if gpu_available:
-            devices.append(device_type.gpu)
+    if success != n:
+        print('{}/{} examples passed/skipped, {} failed'.format(success, n, n - success))
+        print('Error(s) occured. Logs can be found in ' + logdir)
+        return 4711
+    print('{}/{} examples passed/skipped'.format(success, n))
+    return 0
 
-    elif sycl_extention_available:
-        if host_available:
-            devices.append('host')
-        if cpu_available:
-            devices.append('cpu')
-        if gpu_available:
-            devices.append('gpu')
 
-    for device in devices:
-        for e in examples:
-            print("*" * 80)
-            print("device context:", device)
-            with get_context(device):
-                e()
-            print("*" * 80)
-
-    print('All looks good!')
+if __name__ == '__main__':
+    sys.exit(run_all('nodist' in sys.argv or not __has_dist__, 'nostream' in sys.argv))
