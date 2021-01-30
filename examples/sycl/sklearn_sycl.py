@@ -52,8 +52,6 @@ elif sycl_extention_available:
             gpu_available = True
     except:
         gpu_available = False
-
-elif sycl_extention_available:
     try:
         with sycl_context('cpu'):
             cpu_available = True
