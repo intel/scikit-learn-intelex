@@ -43,19 +43,19 @@ if dpctx_available:
     try:
         with device_context(device_type.gpu, 0):
             gpu_available = True
-    except:
+    except RuntimeError:
         gpu_available = False
 
 elif sycl_extention_available:
     try:
         with sycl_context('gpu'):
             gpu_available = True
-    except:
+    except RuntimeError:
         gpu_available = False
     try:
         with sycl_context('cpu'):
             cpu_available = True
-    except:
+    except RuntimeError:
         cpu_available = False
 
 def k_means_init_x():
