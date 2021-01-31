@@ -36,7 +36,7 @@ from sklearn.datasets import (make_classification, load_breast_cancer,
                               load_diabetes, load_iris, load_boston)
 from sklearn.metrics import pairwise_distances, roc_auc_score
 from scipy import sparse
-
+from daal4py.sklearn._utils import daal_check_version
 
 # to reproduce errors even in CI
 d4p.daalinit(nthreads=100)
@@ -318,6 +318,12 @@ TO_SKIP = [
 
 @pytest.mark.parametrize('model_head', MODELS_INFO)
 def test_models(model_head):
+    if (get_class_name(model_head['model']) == 'RandomForestClassifier') \
+            and daal_check_version((2021, 'P', 200)):
+        TO_SKIP.remove('RandomForestClassifier')
+    if (get_class_name(model_head['model']) == 'RandomForestRegressor') \
+            and daal_check_version((2021, 'P', 200)):
+        TO_SKIP.remove('RandomForestRegressor')
     if get_class_name(model_head['model']) in TO_SKIP:
         pytest.skip("Unstable", allow_module_level=False)
     _run_test(model_head['model'], model_head['methods'], model_head['dataset'])

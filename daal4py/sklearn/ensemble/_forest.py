@@ -639,9 +639,12 @@ class RandomForestClassifier(RandomForestClassifier_original):
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
+        random_state_checked = check_random_state(self.random_state)
         for i in range(self.n_estimators):
             # print("Tree #{}".format(i))
             est_i = clone(est)
+            est_i.set_params(
+                random_state=random_state_checked.randint(np.iinfo(np.int32).max))
             est_i.n_features_ = self.n_features_
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = classes_
@@ -809,8 +812,11 @@ class RandomForestRegressor(RandomForestRegressor_original):
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
+        random_state_checked = check_random_state(self.random_state)
         for i in range(self.n_estimators):
             est_i = clone(est)
+            est_i.set_params(
+                random_state=random_state_checked.randint(np.iinfo(np.int32).max))
             est_i.n_features_ = self.n_features_
             est_i.n_outputs_ = self.n_outputs_
 
