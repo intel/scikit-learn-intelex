@@ -62,7 +62,7 @@ availabe_devices = []
 try:
     from daal4py.oneapi import sycl_context
     sycl_extention_available = True
-except RuntimeError:
+except ModuleNotFoundError:
     sycl_extention_available = False
 
 if sycl_extention_available:
