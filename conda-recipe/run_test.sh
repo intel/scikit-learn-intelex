@@ -23,13 +23,17 @@ ok=0
 if ! python -c "import daal4py"; then
     ok=1
 fi
-if ! mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py; then
-    ok=1
+
+if ! $NO_DISTR; then
+    if ! mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py; then
+        ok=1
+    fi
 fi
+
 if ! pytest --pyargs daal4py/sklearn/; then
     ok=1
 fi
-if ! python tests/run_tests.py; then
+if ! python -m unittest discover -v -s tests -p test*.py; then
     ok=1
 fi
 exit $ok
