@@ -60,7 +60,7 @@ test:
         - python -c "import daal4py"
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
-        - python tests/run_tests.py
+        - python -m unittest discover -v -s tests -p test*.py
         - pytest --pyargs daal4py/sklearn/
         - python examples/run_examples.py
         - python -m daal4py examples/sycl/sklearn_sycl.py
