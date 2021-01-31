@@ -34,6 +34,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 Report issues, ask questions, and provide suggestions using:
 
 - [GitHub Issues](https://github.com/IntelPython/daal4py/issues)
+- [GitHub Discussions](https://github.com/IntelPython/daal4py/discussions)
 - [Forum](https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python)
 
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
