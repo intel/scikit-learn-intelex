@@ -2,6 +2,7 @@
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/daal4py.svg)](https://anaconda.org/conda-forge/daal4py)
 [![Conda Version](https://anaconda.org/intel/daal4py/badges/version.svg)](https://anaconda.org/intel/daal4py)
+[![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/IntelPython/daal4py/discussions)
 
 A simplified API to Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel(R) oneAPI Data Analytics Library for either direct usage or integration into one's own framework and extending this beyond by providing drop-in paching for scikit-learn.
 
@@ -33,6 +34,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 Report issues, ask questions, and provide suggestions using:
 
 - [GitHub Issues](https://github.com/IntelPython/daal4py/issues)
+- [GitHub Discussions](https://github.com/IntelPython/daal4py/discussions)
 - [Forum](https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python)
 
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
