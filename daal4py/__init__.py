@@ -15,6 +15,15 @@
 # limitations under the License.
 #===============================================================================
 
+import platform
+if "Windows" in platform.system():
+    import os
+    import sys
+    path_to_libs = os.path.join(os.path.dirname(sys.executable), "Library\\bin")
+    if sys.version_info.minor >= 8:
+        os.add_dll_directory(path_to_libs)
+    os.environ['PATH'] += os.pathsep + path_to_libs
+
 try:
     from _daal4py import *
     from _daal4py import (
