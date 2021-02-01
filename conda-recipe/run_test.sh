@@ -20,20 +20,18 @@
 
 ok=0
 
-if ! python -c "import daal4py"; then
-    ok=1
+python -c "import daal4py"
+ok=$[ $ok + $? ]
+
+if $NO_DISTR; then
+    mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
+    ok=$[ $ok + $? ]
 fi
 
-if ! $NO_DISTR; then
-    if ! mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py; then
-        ok=1
-    fi
-fi
+pytest --pyargs daal4py/sklearn/
+ok=$[ $ok + $? ]
 
-if ! pytest --pyargs daal4py/sklearn/; then
-    ok=1
-fi
-if ! python -m unittest discover -v -s tests -p test*.py; then
-    ok=1
-fi
+python -m unittest discover -v -s tests -p test*.py
+ok=$[ $ok + $? ]
+
 exit $ok
