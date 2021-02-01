@@ -27,7 +27,8 @@ class Test(unittest.TestCase):
     def gen_clsf_data(self):
         data, label = make_classification(
             n_samples=2000, n_features=50, random_state=777)
-        return data, label, data.size * data.dtype.itemsize + label.size * label.dtype.itemsize
+        return data, label, \
+            data.size * data.dtype.itemsize + label.size * label.dtype.itemsize
 
     def kfold_function_template(self, data_transform_function):
         tracemalloc.start()
@@ -50,8 +51,9 @@ class Test(unittest.TestCase):
         mem_after, _ = tracemalloc.get_traced_memory()
         tracemalloc.stop()
 
-        self.assertTrue(mem_after - mem_before < 0.25 * data_memory_size,
-                        'Size of extra allocated memory is greater than 25% of input data')
+        self.assertTrue(
+            mem_after - mem_before < 0.25 * data_memory_size,
+            'Size of extra allocated memory is greater than 25% of input data')
 
     def test_memory_leak_ndarray_c(self):
         self.kfold_function_template(lambda x, y: (x, y))
