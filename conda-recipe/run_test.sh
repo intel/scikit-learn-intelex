@@ -28,7 +28,7 @@ if $NO_DISTR; then
     ok=$(($ok + $?))
 fi
 
-pytest --pyargs daal4py/sklearn/
+python -m daal4py -m pytest daal4py/sklearn/
 ok=$(($ok + $?))
 
 python -m unittest discover -v -s tests -p test*.py
