@@ -1,0 +1,29 @@
+# Infra and tools
+.ci/                          @napetrov @PetrovKP
+.github/                      @napetrov @PetrovKP
+.circleci/                    @Pahandrovich @PetrovKP
+
+# Docs
+*.md                          @outoftardis
+doc/                          @outoftardis
+
+# DPC++
+**/oneapi/                    @michael-smirnov
+
+# Examples 
+examples/                     @michael-smirnov @PetrovKP
+
+# Dependencies
+setup.py                      @Pahandrovich @PetrovKP
+requirements*                 @Pahandrovich @PetrovKP
+conda-recipe/                 @Pahandrovich @PetrovKP
+
+# Testing
+**/test*.py                   @OnlyDeniko
+
+# Scikit-learn patching
+daal4py/sklearn/              @Pahandrovich @PetrovKP
+
+# Core
+src/                          @Pahandrovich @PetrovKP
+generator/                    @Pahandrovich @PetrovKP
