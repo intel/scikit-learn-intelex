@@ -21,17 +21,17 @@
 ok=0
 
 python -c "import daal4py"
-ok=$[ $ok + $? ]
+ok=$(($ok + $?))
 
 if $NO_DISTR; then
     mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
-    ok=$[ $ok + $? ]
+    ok=$(($ok + $?))
 fi
 
 pytest --pyargs daal4py/sklearn/
-ok=$[ $ok + $? ]
+ok=$(($ok + $?))
 
 python -m unittest discover -v -s tests -p test*.py
-ok=$[ $ok + $? ]
+ok=$(($ok + $?))
 
 exit $ok
