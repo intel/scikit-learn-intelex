@@ -21,4 +21,5 @@ IF DEFINED DPCPPROOT (
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
 
 %PYTHON% setup.py build %BUILD_ARGS%
+IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
 %PYTHON% setup.py install --single-version-externally-managed --record record.txt
