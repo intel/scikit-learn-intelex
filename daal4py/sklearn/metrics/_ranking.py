@@ -110,9 +110,8 @@ def _daal_type_of_target(y):
     return result
 
 
-def _daal_roc_auc_score(y_true, y_score, *, average="macro",
-                        sample_weight=None, max_fpr=None,
-                        multi_class="raise", labels=None):
+def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
+                        max_fpr=None, multi_class="raise", labels=None):
     y_type = _daal_type_of_target(y_true)
     y_true = check_array(y_true, ensure_2d=False, dtype=None)
     y_score = check_array(y_score, ensure_2d=False)
@@ -132,14 +131,13 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro",
                                           multi_class, average, sample_weight)
     elif y_type[0] == "binary":
         labels = y_type[1]
-        daal_use = max_fpr is None and sample_weight is None and len(
-            labels) == 2
+        daal_use = max_fpr is None and sample_weight is None and len(labels) == 2
         if daal_use:
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
             if not np.array_equal(labels, [0, 1]):
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
-            result = d4p.daal_roc_auc_score(
-                y_true.reshape(-1, 1), y_score.reshape(-1, 1))
+            result = d4p.daal_roc_auc_score(y_true.reshape(-1, 1),
+                                            y_score.reshape(-1, 1))
 
         if not daal_use or result == -1:
             y_true = label_binarize(y_true, classes=labels)[:, 0]

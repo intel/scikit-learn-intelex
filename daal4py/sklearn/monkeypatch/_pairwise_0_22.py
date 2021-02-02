@@ -153,9 +153,8 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
                        elements of two arrays
     """
     if metric not in _VALID_METRICS and not callable(metric) and metric != "precomputed":
-        raise ValueError("Unknown metric %s. "
-                         "Valid metrics are %s, or 'precomputed', or a "
-                         "callable" % (metric, _VALID_METRICS))
+        raise ValueError("Unknown metric %s. Valid metrics are %s, or 'precomputed', "
+                         "or a callable" % (metric, _VALID_METRICS))
 
     if metric == "precomputed":
         X, _ = check_pairwise_arrays(X, Y, precomputed=True,
