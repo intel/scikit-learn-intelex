@@ -12,8 +12,8 @@ def get_method(s):
     s = s[6:]
     cnt = 0
     ind = -1
-    for i in range(len(s)):
-        if s[i] == '.':
+    for i, elem in enumerate(s):
+        if elem == '.':
             cnt += 1
         if cnt == 3:
             ind = i
@@ -79,5 +79,7 @@ if __name__ == '__main__':
         else:
             mas.append(i.strip())
     for i in result:
+        branch = 'IDP' if result[i] is True else 'Scikit'
+        print(i, '->', branch)
         if result[i] is False:
             assert i in TO_SKIP, 'Test patching failed: ' + i
