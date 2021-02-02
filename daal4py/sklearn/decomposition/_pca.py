@@ -140,7 +140,7 @@ class PCA(PCA_original):
 
         self._fit_full_daal4py(X, min(X.shape))
 
-        U = self._transform_daal4py(X, whiten=True, check_X=False, scale_eigenvalues=True)
+        U = None
         V = self.components_
         S = self.singular_values_
 
@@ -191,30 +191,42 @@ class PCA(PCA_original):
         self._fit_svd_solver = self.svd_solver
         shape_good_for_daal = X.shape[1] / X.shape[0] < 2
 
-        if self._fit_svd_solver == 'auto':
-            if n_components == 'mle':
-                self._fit_svd_solver = 'full'
-            else:
-                n, p, k = X.shape[0], X.shape[1], n_components
-                regression_coefs = np.array([
-                    [2.912922, 1],
-                    [0.000003, n],
-                    [-0.000494, p],
-                    [0.003237, k],
-                    [-8.618582e-10, n * p],
-                    [1.558833e-08, n * k],
-                    [-1.777489e-12, n * p * k],
-                    [1.092922e-13, n * p * p],
-                    [-3.719898e-16, p * n * n],
-                    [-1.308729e-13, n * n],
-                    [1.336625e-08, p * p]
-                ])
-                predicted_speedup = np.dot(regression_coefs[:, 0], regression_coefs[:, 1])
+        # if self._fit_svd_solver == 'auto':
+        #     if n_components == 'mle':
+        #         self._fit_svd_solver = 'full'
+        #     else:
+        #         n, p, k = X.shape[0], X.shape[1], n_components
+        #         regression_coefs = np.array([
+        #             [2.912922, 1],
+        #             [0.000003, n],
+        #             [-0.000494, p],
+        #             [0.003237, k],
+        #             [-8.618582e-10, n * p],
+        #             [1.558833e-08, n * k],
+        #             [-1.777489e-12, n * p * k],
+        #             [1.092922e-13, n * p * p],
+        #             [-3.719898e-16, p * n * n],
+        #             [-1.308729e-13, n * n],
+        #             [1.336625e-08, p * p]
+        #         ])
+        #         predicted_speedup = np.dot(regression_coefs[:, 0], regression_coefs[:, 1])
 
-                if n_components >= 1 and predicted_speedup <= 2.95:
-                    self._fit_svd_solver = 'randomized'
-                else:
-                    self._fit_svd_solver = 'full'
+        #         if n_components >= 1 and predicted_speedup <= 2.95:
+        #             self._fit_svd_solver = 'randomized'
+        #         else:
+        #             self._fit_svd_solver = 'full'
+
+        # Handle svd_solver
+        self._fit_svd_solver = self.svd_solver
+        if self._fit_svd_solver == 'auto':
+            # Small problem or n_components == 'mle', just call full PCA
+            if max(X.shape) <= 500 or n_components == 'mle':
+                self._fit_svd_solver = 'full'
+            elif n_components >= 1 and n_components < .8 * min(X.shape):
+                self._fit_svd_solver = 'randomized'
+            # This is also the case of n_components in (0,1)
+            else:
+                self._fit_svd_solver = 'full'
 
         if not shape_good_for_daal or self._fit_svd_solver != 'full':
             if sklearn_check_version('0.23'):
@@ -291,15 +303,22 @@ class PCA(PCA_original):
             return PCA_original.transform(self, X)
 
     def fit_transform(self, X, y=None):
-        fit_result = self._fit(X)
+        U, S, _ = self._fit(X)
 
-        if self._fit_svd_solver == 'full':
+        if U is None:
             if self.n_components_ > 0:
+                logging.info(
+                    "sklearn.decomposition.PCA."
+                    "fit_transform: " + get_patch_message("daal"))
+
                 return self._transform_daal4py(
                     X, whiten=self.whiten, check_X=False, scale_eigenvalues=False)
             return np.empty((self.n_samples_, 0), dtype=X.dtype)
         else:
-            U, S, _ = fit_result
+            logging.info(
+                "sklearn.decomposition.PCA."
+                "fit_transform: " + get_patch_message("sklearn"))
+
             U = U[:, :self.n_components_]
 
             if self.whiten:

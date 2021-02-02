@@ -162,8 +162,7 @@ deselected_tests:
   - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
 
   # Different exception message because of changing of 'auto' strategy in PCA
-  - decomposition/tests/test_pca.py::test_pca_validation[auto-3-n_components={}L? must be between {}L? and min\\(n_samples, n_features\\)={}L? with svd_solver=\\'{}\\'-data0]
-  - decomposition/tests/test_pca.py::test_pca_validation[auto-3-n_components={}L? must be between {}L? and min\\(n_samples, n_features\\)={}L? with svd_solver=\\'{}\\'-data1]
+  - decomposition/tests/test_pca.py::test_pca_validation
 
   # Stability issue with max absolute difference: 0.00015992. Remove in the next release.
   - decomposition/tests/test_pca.py::test_pca_dtype_preservation
