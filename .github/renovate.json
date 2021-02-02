@@ -6,4 +6,5 @@
     "fileMatch": [
       "(^|/)requirements.*\\.txt$"
     ]
+  }
 }
