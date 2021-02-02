@@ -11,7 +11,7 @@ Running full scikit-learn test suite with daal4py optimization patches:
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
 
-## Follow us on Medium
+## 👁️ Follow us on Medium
 
 We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis the help of daal4py. Here are our latest blogs:
 
@@ -22,14 +22,14 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 - [Accelerate Linear Models for Machine Learning](https://medium.com/intel-analytics-software/accelerating-linear-models-for-machine-learning-5a75ff50a0fe)
 - [Accelerate K-Means Clustering](https://medium.com/intel-analytics-software/accelerate-k-means-clustering-6385088788a1)
 
-## Important links
+## 🔗 Important links
 - [Documentation](https://intelpython.github.io/daal4py/)
 - [scikit-learn API and patching](https://intelpython.github.io/daal4py/sklearn.html#sklearn)
 - [Source Code](https://github.com/IntelPython/daal4py/tree/master/src)
 - [Building from Sources](INSTALL.md)
 - [About Intel(R) oneAPI Data Analytics Library](https://oneapi-src.github.io/oneDAL/)
 
-## Support
+## 💬 Support
 
 Report issues, ask questions, and provide suggestions using:
 
@@ -39,18 +39,52 @@ Report issues, ask questions, and provide suggestions using:
 
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
 
-# Installation
-daal4py can be installed from conda-forge (recommended):
+# 🛠 Installation
+daal4py is available at the [Python Package Index], on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal4py) and in [Intel channel](https://anaconda.org/intel/daal4py) .
 ```bash
+# PyPi
+pip install daal4py
+```
+```bash
+# Anaconda Cloud from Conda-Forge channel
 conda install daal4py -c conda-forge
 ```
-or from Intel channel:
 ```bash
+# Anaconda Cloud from Intel channel
 conda install daal4py -c intel
 ```
+
+<details><summary>[Click to expand] ⚠️ Matrix support of Python / OSC</summary>
+  
+### PyPi channel
+
+| OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
+| :-----------------------| :-----------: | :------------: | :-----------:| :-----------:|
+|    **Linux**            |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
+|    **Winsows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
+|    **Maс**              |   ✔️         |     ✔️         |     ✔️      |      ❌      |
+
+### Anaconda Cloud - Conda-Forge channel
+
+| OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
+| :-----------------------| :-----------: | :------------: | :-----------:| :-----------:|
+|    **Linux**            |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
+|    **Winsows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
+|    **Maс**              |   ❌         |     ❌         |     ❌      |      ❌      |
+
+### Anaconda Cloud - Intel channel
+
+| OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
+| :-----------------------| :-----------: | :------------: | :-----------:| :-----------:|
+|    **Linux**            |   ❌         |     ✔️         |     ❌      |      ❌      |
+|    **Winsows**          |   ❌         |     ✔️         |     ❌      |      ❌      |
+|    **Maс**              |   ❌         |     ✔️         |     ❌      |      ❌      |
+
+</details>
+
 You can [build daal4py from sources](INSTALL.md) as well.
 
-# Getting Started
+# ⚡️ Getting Started
 Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution. 
 
 Intel CPU optimizations patching
@@ -96,7 +130,7 @@ result = init.compute(X, daal4py.my_procid())
 d4p.daalfini()
 ```
 
-# Scikit-learn patching
+# 🚀 Scikit-learn patching
 
 | *Speedups of daal4py-powered Scikit-learn over the original Scikit-learn* |
 |:--:|
@@ -105,7 +139,10 @@ d4p.daalfini()
 
 daal4py patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, daal4py fallbacks into stock Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/IntelPython/daal4py/issues).
 
-Scenarios that are already available in 2020.3 release:
+⚠️ We support optimizations for the last 4 versions of Scikit-learn. The latest release of daal4py-2021.1 suppors Scikit-learn 0.21, 0.22, 0.23 and 0.24.
+
+<details><summary>[Click to expand] 🔥 Scenarios that are already available in 2020.3 release </summary>
+ 
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
 |Classification|**SVC**|All parameters except `kernel` = 'poly' and 'sigmoid'. | No limitations.|
@@ -132,8 +169,11 @@ Scenarios that are only available in the `master` branch (not released yet):
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
 |Other|**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
+  
+ </details>
 
-## scikit-learn verbose
+
+## 📜 scikit-learn verbose
 
 To find out which implementation of the algorithm is currently used (daal4py or stock Scikit-learn), set the environment variable:
 - On Linux and Mac OS: `export IDP_SKLEARN_VERBOSE=INFO`
@@ -145,5 +185,3 @@ For example, for DBSCAN you get one of these print statements depending on which
 
 [Read more in the documentation](https://intelpython.github.io/daal4py/sklearn.html#scikit-learn-verbose).
 
-# Building from Source
-See [Building from Sources](INSTALL.md) for details.
