@@ -211,7 +211,7 @@ class PCA(PCA_original):
                 ])
                 predicted_speedup = np.dot(regression_coefs[:, 0], regression_coefs[:, 1])
 
-                if n_components >= 1 and predicted_speedup <= 2.6:
+                if n_components >= 1 and predicted_speedup <= 2.95:
                     self._fit_svd_solver = 'randomized'
                 else:
                     self._fit_svd_solver = 'full'
