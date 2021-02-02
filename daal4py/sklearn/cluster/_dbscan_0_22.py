@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014-2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import numpy as np
 
@@ -231,10 +231,11 @@ class DBSCAN(DBSCAN_original):
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
 
-        _daal_ready = all([(self.algorithm in ['auto', 'brute']),
-                           any([self.metric == 'euclidean',
-                               (self.metric == 'minkowski' and self.p == 2)]),
-                           isinstance(X, np.ndarray)])
+        _daal_ready = self.algorithm in [
+            'auto', 'brute'] and (
+            self.metric == 'euclidean' or (
+                self.metric == 'minkowski' and self.p == 2)) and isinstance(
+                X, np.ndarray)
         if _daal_ready:
             logging.info(
                 "sklearn.cluster.DBSCAN."

@@ -171,14 +171,14 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
             raise ValueError('Parameter "split_criterion" must be '
                              '"gini" or "infoGain".')
 
-        if not all([isinstance(self.max_depth, numbers.Integral),
-                    self.max_depth >= 0]):
+        if not isinstance(self.max_depth, numbers.Integral) or \
+                self.max_depth < 0:
             if self.max_depth is not None:
                 raise ValueError('Parameter "max_depth" must be '
                                  'a non-negative integer value or None.')
 
-        if not all([isinstance(self.min_observations_in_leaf_node, numbers.Integral),
-                    self.min_observations_in_leaf_node > 0]):
+        if not isinstance(self.min_observations_in_leaf_node, numbers.Integral) or \
+                self.min_observations_in_leaf_node <= 0:
             raise ValueError('Parameter "min_observations_in_leaf_node" must be '
                              'non-zero positive integer value.')
 
@@ -240,8 +240,8 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
         """Validate X whenever one tries to predict, apply, predict_proba"""
         if check_input:
             X = check_array(X, dtype=[np.single, np.double], accept_sparse="csr")
-            if issparse(X) and any([X.indices.dtype != np.intc,
-                                    X.indptr.dtype != np.intc]):
+            if issparse(X) and \
+                    (X.indices.dtype != np.intc or X.indptr.dtype != np.intc):
                 raise ValueError("No support for np.int64 index based "
                                  "sparse matrices")
 

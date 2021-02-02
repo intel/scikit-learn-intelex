@@ -997,9 +997,8 @@ def daal4py_predict(self, X, resultsToEvaluate):
     except ValueError:
         fptype = None
 
-    multinomial = any([
-        self.multi_class in ["multinomial", "warn"],
-        self.classes_.size == 2, resultsToEvaluate == 'computeClassLabels'])
+    multinomial = self.multi_class in ["multinomial", "warn"] or \
+        self.classes_.size == 2, resultsToEvaluate == 'computeClassLabels'
 
     if daal_check_version(((2021, 'P', 1))) and fptype is not None and \
             not sparse.issparse(X) and multinomial and not sparse.issparse(self.coef_):

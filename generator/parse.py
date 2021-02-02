@@ -347,8 +347,8 @@ class setget_parser(object):
                 name = mgs.group(4)
                 if name not in ['getSerializationTag']:
                     if ctxt.template and name.startswith('get'):
-                        assert all([len(ctxt.template) == 1,
-                                    ctxt.template[0][1] == 'fptypes'])
+                        assert len(ctxt.template) == 1 and \
+                               ctxt.template[0][1] == 'fptypes'
                         ctxt.gdict['classes'][ctxt.curr_class].gets[name] = \
                             ('double', '<double>')
                         return False
@@ -526,8 +526,8 @@ class class_template_parser(object):
                     ctxt.template = False
                     return True
                 #error_template_string += fname + ':\n\tignoring ' + m.group(5)
-            elif all([ctxt.access, not mt, not m,
-                      not any(s in elem for s in ctxt.ignores)]):
+            elif ctxt.access and not mt and not m and \
+                    not any(s in elem for s in ctxt.ignores):
                 # not a class but a non-mapped template
                 ctxt.gdict['error_template_string'] += \
                     '$FNAME:' + str(ctxt.n) + \

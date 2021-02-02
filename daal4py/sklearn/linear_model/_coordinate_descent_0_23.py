@@ -293,15 +293,14 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
             inputArgument[i][1:] = self.coef_[:].copy(order='C') if (
                 n_rows == 1) else self.coef_[i, :].copy(order='C')
         cd_solver.setup(inputArgument)
-
+    doUse_condition = self.copy_X is False or \
+        (self.fit_intercept and self.normalize and self.copy_X)
     lasso_alg = daal4py.lasso_regression_training(
         fptype=_fptype,
         method='defaultDense',
         interceptFlag=(self.fit_intercept is True),
-        dataUseInComputation='doUse'
-        if any([(self.copy_X is False),
-                (self.fit_intercept and self.normalize and self.copy_X)])
-        else 'doNotUse', lassoParameters=np.asarray(
+        dataUseInComputation='doUse' if doUse_condition else 'doNotUse',
+        lassoParameters=np.asarray(
             self.alpha, dtype=X.dtype
         ).reshape((1, -1)),
         optimizationSolver=cd_solver)

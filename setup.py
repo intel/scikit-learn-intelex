@@ -97,13 +97,13 @@ def get_lib_suffix():
 
     ld_lib_path_suffix = walk_ld_library_path()
     lib_dir_suffix = walk_libdir()
-    if any([find_library('onedal_core') is not None,
-            ld_lib_path_suffix == 'onedal',
-            lib_dir_suffix == 'onedal']):
+    if find_library('onedal_core') is not None or \
+       ld_lib_path_suffix == 'onedal' or \
+            lib_dir_suffix == 'onedal':
         return 'onedal'
-    if any([find_library('daal_core') is not None,
-            ld_lib_path_suffix == 'daal',
-            lib_dir_suffix == 'daal']):
+    if find_library('daal_core') is not None or \
+       ld_lib_path_suffix == 'daal' or \
+            lib_dir_suffix == 'daal':
         return 'daal'
 
     raise ImportError('Unable to import oneDAL or oneDAL lib')
