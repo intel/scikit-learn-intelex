@@ -176,10 +176,9 @@ class PCA(PCA_original):
 
         if sklearn_check_version('0.23'):
             X = self._validate_data(X, dtype=[np.float64, np.float32],
-                                    ensure_2d=True, copy=self.copy)
+                                    ensure_2d=True, copy=False)
         else:
-            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True,
-                            copy=self.copy)
+            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
 
         if self.n_components is None:
             if self.svd_solver != 'arpack':
@@ -216,6 +215,12 @@ class PCA(PCA_original):
                     self._fit_svd_solver = 'randomized'
                 else:
                     self._fit_svd_solver = 'full'
+
+        if not shape_good_for_daal or self._fit_svd_solver != 'full':
+            if sklearn_check_version('0.23'):
+                X = self._validate_data(X, copy=self.copy)
+            else:
+                X = check_array(X, copy=self.copy)
 
         if self._fit_svd_solver == 'full':
             if shape_good_for_daal:
