@@ -25,9 +25,8 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 ## 🔗 Important links
 - [Documentation](https://intelpython.github.io/daal4py/)
 - [scikit-learn API and patching](https://intelpython.github.io/daal4py/sklearn.html#sklearn)
-- [Source Code](https://github.com/IntelPython/daal4py/tree/master/src)
 - [Building from Sources](INSTALL.md)
-- [About Intel(R) oneAPI Data Analytics Library](https://oneapi-src.github.io/oneDAL/)
+- [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
 
 ## 💬 Support
 
