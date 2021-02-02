@@ -1,4 +1,4 @@
-pytest==6.2.1
+pytest==6.2.2
 scikit-learn==0.24.1
 pandas==1.2.1
 lightgbm==3.1.1
