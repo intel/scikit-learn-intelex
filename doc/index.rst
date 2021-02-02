@@ -110,12 +110,12 @@ requirements <https://software.intel.com/content/www/us/en/develop/articles/inte
 DPC++ compiler runtime can be installed either from PyPI or Anaconda:
 
 - Install from PyPI::
-  
+
      pip install dpcpp-cpp-rt
 
 - Install from Anaconda::
-  
-     conda install dpcpp_cpp_rt -c intel 
+
+     conda install dpcpp_cpp_rt -c intel
 
 
 Daal4py's Design
@@ -154,9 +154,53 @@ Oracle Linux Server release 7.4, using 64-bit floating point numbers
 
 Getting daal4py
 ---------------
-daal4py is available on our Intel channel on Anaconda (https://anaconda.org/intel/daal4py)
-, and also from source. Sources and build instructions are
-available at https://github.com/IntelPython/daal4py.
+daal4py is available at the [Python Package Index], on Anaconda Cloud in
+`Conda-Forge channel <https://anaconda.org/conda-forge/daal4py>`_ and in
+`Intel channel` <https://anaconda.org/intel/daal4py>`.
+Sources and build instructions are available at
+https://github.com/IntelPython/daal4py.
+
+- Install from PyPI::
+
+     pip install daal4py
+
+- Install from Anaconda Cloud - Conda-Forge channel::
+
+     onda install daal4py -c conda-forge
+
+- Install from Anaconda Cloud - Conda-Forge channel::
+    conda install daal4py -c intel
+
+⚠ Matrix support of Python / OS
+---------------------------------
+
+PyPi channel
+
+.. list-table::
+   :widths: 25 8 8 8 8
+   :header-rows: 1
+   :align: left
+
+   * - OS / Python version
+     - Python 36
+     - Python 37
+     - Python 38
+     - Python 39
+   * - Linux
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - Winsows
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - Maс
+     - ✔️
+     - ✔️
+     - ✔️
+     - ❌
 
 Overview
 --------
