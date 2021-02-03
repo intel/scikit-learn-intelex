@@ -139,8 +139,8 @@ introspection. This assures scikit-learn API compatibility of all
 `daal4py.sklearn` classes.
 
 .. note::
-    daal4py supports optimizations for the last 4 versions of Scikit-learn.
-    The latest release of daal4py-2021.1 suppors Scikit-learn 0.21.X, 0.22.X, 0.23.X and 0.24.X.
+    daal4py supports optimizations for the last four versions of scikit-learn.
+    The latest release of daal4py-2021.1 supports scikit-learn 0.21.X, 0.22.X, 0.23.X and 0.24.X.
 
 .. _sklearn_verbose:
 
