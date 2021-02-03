@@ -39,7 +39,9 @@ Report issues, ask questions, and provide suggestions using:
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
 
 # 🛠 Installation
-daal4py is available at the [Python Package Index], on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal4py) and in [Intel channel](https://anaconda.org/intel/daal4py) .
+daal4py is available at the [Python Package Index](https://pypi.org/project/daal4py/),
+on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal4py)
+and in [Intel channel](https://anaconda.org/intel/daal4py).
 ```bash
 # PyPi
 pip install daal4py
@@ -53,8 +55,8 @@ conda install daal4py -c conda-forge
 conda install daal4py -c intel
 ```
 
-<details><summary>[Click to expand] ⚠️ Matrix support of Python / OSC</summary>
-  
+<details><summary>[Click to expand] ⚠️ Matrix support of Python / OS </summary>
+
 ### PyPi channel
 
 | OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
@@ -62,6 +64,13 @@ conda install daal4py -c intel
 |    **Linux**            |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
 |    **Winsows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
 |    **Maс**              |   ✔️         |     ✔️         |     ✔️      |      ❌      |
+
+#### ℹ️ Additional limitations
+
+PyPi channel contains of the latest release -
+[daal4py - 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
+Has support Intel CPU and GPU.
+**We recommend PyPi first of all for use**.
 
 ### Anaconda Cloud - Conda-Forge channel
 
@@ -71,6 +80,12 @@ conda install daal4py -c intel
 |    **Winsows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
 |    **Maс**              |   ❌         |     ❌         |     ❌      |      ❌      |
 
+#### ℹ️ Additional limitations
+
+Conda-Forge channel contains of the release -
+[daal4py - 2020.3](https://github.com/IntelPython/daal4py/releases/tag/2020.3).
+Has support only Intel CPU.
+
 ### Anaconda Cloud - Intel channel
 
 | OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
@@ -79,12 +94,18 @@ conda install daal4py -c intel
 |    **Winsows**          |   ❌         |     ✔️         |     ❌      |      ❌      |
 |    **Maс**              |   ❌         |     ✔️         |     ❌      |      ❌      |
 
+#### ℹ️ Additional limitations
+
+Intel channel contains of the latest release -
+[daal4py - 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
+Has support Intel CPU and GPU.
+
 </details>
 
 You can [build daal4py from sources](INSTALL.md) as well.
 
 # ⚡️ Getting Started
-Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution. 
+Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution.
 
 Intel CPU optimizations patching
 ```py
@@ -114,21 +135,6 @@ with sycl_context("gpu"):
     clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 ```
 
-daal4py API, allows you to use wider set of Intel(R) oneAPI Data Analytics Library algorithms in just one line:
-```py
-import daal4py as d4p
-init = d4p.kmeans_init(data, 10, t_method="plusPlusDense")
-result = init.compute(X)
-```
-You can even run this on a cluster by making simple code changes:
-```py
-import daal4py as d4p
-d4p.daalinit()
-d4p.kmeans_init(data, 10, t_method="plusPlusDense", distributed=True)
-result = init.compute(X, daal4py.my_procid())
-d4p.daalfini()
-```
-
 # 🚀 Scikit-learn patching
 
 | *Speedups of daal4py-powered Scikit-learn over the original Scikit-learn* |
@@ -138,10 +144,11 @@ d4p.daalfini()
 
 daal4py patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, daal4py fallbacks into stock Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/IntelPython/daal4py/issues).
 
-⚠️ We support optimizations for the last 4 versions of Scikit-learn. The latest release of daal4py-2021.1 suppors Scikit-learn 0.21, 0.22, 0.23 and 0.24.
+⚠️ We support optimizations for the last 4 versions of Scikit-learn. The latest release of daal4py-2021.1 suppors Scikit-learn 0.21.X,
+0.22.X, 0.23.X and 0.24.X.
 
-<details><summary>[Click to expand] 🔥 Scenarios that are already available in 2020.3 release </summary>
- 
+<details><summary>[Click to expand] 🔥 Applying the daal4py patch will impact the following existing scikit-learn algorithms </summary>
+
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
 |Classification|**SVC**|All parameters except `kernel` = 'poly' and 'sigmoid'. | No limitations.|
@@ -168,7 +175,7 @@ Scenarios that are only available in the `master` branch (not released yet):
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
 |Other|**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
-  
+
  </details>
 
 

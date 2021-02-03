@@ -154,9 +154,9 @@ Oracle Linux Server release 7.4, using 64-bit floating point numbers
 
 Getting daal4py
 ---------------
-daal4py is available at the [Python Package Index], on Anaconda Cloud in
-`Conda-Forge channel <https://anaconda.org/conda-forge/daal4py>`_ and in
-`Intel channel` <https://anaconda.org/intel/daal4py>`.
+daal4py is available at the `Python Package Index <https://pypi.org/project/daal4py/>`_,
+on Anaconda Cloud in`Conda-Forge channel <https://anaconda.org/conda-forge/daal4py>`_
+and in `Intel channel` <https://anaconda.org/intel/daal4py>`_.
 Sources and build instructions are available at
 https://github.com/IntelPython/daal4py.
 
@@ -166,15 +166,16 @@ https://github.com/IntelPython/daal4py.
 
 - Install from Anaconda Cloud - Conda-Forge channel::
 
-     onda install daal4py -c conda-forge
+     сonda install daal4py -c conda-forge
 
-- Install from Anaconda Cloud - Conda-Forge channel::
+- Install from Anaconda Cloud - Intel channel::
+
     conda install daal4py -c intel
 
-⚠ Matrix support of Python / OS
----------------------------------
+Matrix support of Python / OS
+-----------------------------
 
-PyPi channel
+**PyPi channel**
 
 .. list-table::
    :widths: 25 8 8 8 8
@@ -201,6 +202,79 @@ PyPi channel
      - ✔️
      - ✔️
      - ❌
+
+.. note::
+
+    PyPi channel contains of the latest release -
+    [daal4py - 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
+    Has support Intel CPU and GPU.
+    **We recommend PyPi first of all for use**.
+
+**Anaconda Cloud - Conda-Forge channel**
+
+.. list-table::
+   :widths: 25 8 8 8 8
+   :header-rows: 1
+   :align: left
+
+   * - OS / Python version
+     - Python 36
+     - Python 37
+     - Python 38
+     - Python 39
+   * - Linux
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - Winsows
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - Maс
+     - ❌
+     - ❌
+     - ❌
+     - ❌
+
+.. note::
+    Conda-Forge channel contains of the release -
+    [daal4py - 2020.3](https://github.com/IntelPython/daal4py/releases/tag/2020.3).
+    Has support only Intel CPU.
+
+**Anaconda Cloud - Intel channel**
+
+.. list-table::
+   :widths: 25 8 8 8 8
+   :header-rows: 1
+   :align: left
+
+   * - OS / Python version
+     - Python 36
+     - Python 37
+     - Python 38
+     - Python 39
+   * - Linux
+     - ❌
+     - ✔️
+     - ❌
+     - ❌
+   * - Winsows
+     - ❌
+     - ✔️
+     - ❌
+     - ❌
+   * - Maс
+     - ❌
+     - ✔️
+     - ❌
+     - ❌
+
+.. note::
+    Intel channel contains of the latest release -
+    [daal4py - 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
+    Has support Intel CPU and GPU.
 
 Overview
 --------
