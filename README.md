@@ -39,37 +39,6 @@ Report issues, ask questions, and provide suggestions using:
 
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
 
-# ⚡️ Get Started
-Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution.
-
-Intel CPU optimizations patching
-```py
-import numpy as np
-from daal4py.sklearn import patch_sklearn
-patch_sklearn()
-
-from sklearn.cluster import DBSCAN
-
-X = np.array([[1., 2.], [2., 2.], [2., 3.],
-              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
-clustering = DBSCAN(eps=3, min_samples=2).fit(X)
-```
-
-Intel CPU/GPU optimizations patching
-```py
-import numpy as np
-from daal4py.sklearn import patch_sklearn
-from daal4py.oneapi import sycl_context
-patch_sklearn()
-
-from sklearn.cluster import DBSCAN
-
-X = np.array([[1., 2.], [2., 2.], [2., 3.],
-              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
-with sycl_context("gpu"):
-    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
-```
-
 # 🛠 Installation
 daal4py is available at the [Python Package Index](https://pypi.org/project/daal4py/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal4py)
@@ -119,6 +88,37 @@ conda install daal4py -c intel
 </details>
 
 You can [build daal4py from sources](INSTALL.md) as well.
+
+# ⚡️ Get Started
+Accelerate scikit-learn with the core functionality of dall4py without changing the code.
+
+Intel CPU optimizations patching
+```py
+import numpy as np
+from daal4py.sklearn import patch_sklearn
+patch_sklearn()
+
+from sklearn.cluster import DBSCAN
+
+X = np.array([[1., 2.], [2., 2.], [2., 3.],
+              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+```
+
+Intel CPU/GPU optimizations patching
+```py
+import numpy as np
+from daal4py.sklearn import patch_sklearn
+from daal4py.oneapi import sycl_context
+patch_sklearn()
+
+from sklearn.cluster import DBSCAN
+
+X = np.array([[1., 2.], [2., 2.], [2., 3.],
+              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+with sycl_context("gpu"):
+    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+```
 
 # 🚀 Scikit-learn patching
 
