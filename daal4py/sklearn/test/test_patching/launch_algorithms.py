@@ -54,11 +54,11 @@ MODELS_INFO = [
         'methods': ['decision_function', 'predict', 'predict_proba', 'score'],
         'dataset': 'classifier',
     },
-    {
-        'model': TSNE(),
-        'methods': ['fit_transform'],
-        'dataset': 'classifier',
-    },
+    # {
+    #     'model': TSNE(),
+    #     'methods': ['fit_transform'],
+    #     'dataset': 'classifier',
+    # },
     {
         'model': KMeans(),
         'methods': ['fit_predict', 'fit_transform', 'transform', 'predict', 'score'],
@@ -152,6 +152,7 @@ def run_patch(model_info, dtype):
     X, y = generate_dataset(model_info['dataset'], dtype[0])
     model = model_info['model']
     model.fit(X, y)
+    logging.info('fit')
     for i in model_info['methods']:
         if i == 'predict':
             model.predict(X)
@@ -159,20 +160,21 @@ def run_patch(model_info, dtype):
             model.predict_proba(X)
         elif i == 'predict_log_proba':
             model.predict_log_proba(X)
-        elif i == 'transform':
-            model.transform(X)
-        elif i == 'kneighbors':
-            model.kneighbors(X)
-        elif i == 'fit_predict':
-            model.fit_predict(X)
-        elif i == 'fit_transform':
-            model.fit_transform(X)
-        elif i == 'score':
-            model.score(X, y)
         elif i == 'decision_function':
             model.decision_function(X)
+        elif i == 'fit_predict':
+            model.fit_predict(X)
+        elif i == 'transform':
+            model.transform(X)
+        elif i == 'fit_transform':
+            model.fit_transform(X)
+        elif i == 'kneighbors':
+            model.kneighbors(X)
+        elif i == 'score':
+            model.score(X, y)
         else:
             raise ValueError(i + ' is wrong method')
+        logging.info(i)
 
 
 if __name__ == '__main__':

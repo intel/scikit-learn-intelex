@@ -9,7 +9,6 @@ def make_unique(mas):
 
 
 def get_method(s):
-    s = s[6:]
     cnt = 0
     ind = -1
     for i, elem in enumerate(s):
@@ -28,10 +27,14 @@ def get_method(s):
 
 
 def get_branch(s):
-    if 'uses Intel(R) oneAPI Data Analytics Library solver' in s:
-        return 'IDP'
-    if 'uses original Scikit-learn solver,' in s:
-        return 'IDP -> Scikit'
+    if len(s) == 0:
+        return 'NO INFO'
+    for i in s:
+        if 'uses original Scikit-learn solver,' in i:
+            return 'was in IDP, but go in Scikit'
+    for i in s:
+        if 'uses Intel(R) oneAPI Data Analytics Library solver' in i:
+            return 'IDP'
     return 'Scikit'
 
 
@@ -39,13 +42,16 @@ result = {}
 
 
 def run_parse(mas):
-    mas = make_unique(mas)
     name, dtype = mas[0].split()
+    temp = []
     for i in range(1, len(mas)):
-        ind = name + ' ' + dtype + ' ' + get_method(mas[i])
-        if ind in result:
-            continue
-        result[ind] = 'IDP' in get_branch(mas[i])
+        mas[i] = mas[i][6:]
+        if not mas[i].startswith('sklearn'):
+            ind = name + ' ' + dtype + ' ' + mas[i]
+            result[ind] = get_branch(temp)
+            temp.clear()
+        if mas[i].startswith('sklearn'):
+            temp.append(mas[i])
 
 
 TO_SKIP = [
@@ -69,7 +75,7 @@ TO_SKIP = [
 ]
 
 if __name__ == '__main__':
-    fin = open('daal4py/sklearn/test/test_patching/raw_log', 'r')
+    fin = open('raw_log', 'r')
     mas = []
     for i in fin:
         if not i.startswith('INFO') and len(mas) != 0:
@@ -79,7 +85,5 @@ if __name__ == '__main__':
         else:
             mas.append(i.strip())
     for i in result:
-        branch = 'IDP' if result[i] is True else 'Scikit'
-        print(i, '->', branch)
-        if result[i] is False:
-            assert i in TO_SKIP, 'Test patching failed: ' + i
+        if result[i] != 'IDP':
+            print(i, '->', result[i])
