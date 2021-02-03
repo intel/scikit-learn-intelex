@@ -110,12 +110,12 @@ requirements <https://software.intel.com/content/www/us/en/develop/articles/inte
 DPC++ compiler runtime can be installed either from PyPI or Anaconda:
 
 - Install from PyPI::
-  
+
      pip install dpcpp-cpp-rt
 
 - Install from Anaconda::
-  
-     conda install dpcpp_cpp_rt -c intel 
+
+     conda install dpcpp_cpp_rt -c intel
 
 
 Daal4py's Design
@@ -154,9 +154,125 @@ Oracle Linux Server release 7.4, using 64-bit floating point numbers
 
 Getting daal4py
 ---------------
-daal4py is available on our Intel channel on Anaconda (https://anaconda.org/intel/daal4py)
-, and also from source. Sources and build instructions are
-available at https://github.com/IntelPython/daal4py.
+daal4py is available at the `Python Package Index <https://pypi.org/project/daal4py/>`_,
+on Anaconda Cloud in `Conda Forge channel <https://anaconda.org/conda-forge/daal4py>`_
+and in `Intel channel <https://anaconda.org/intel/daal4py>`_.
+Sources and build instructions are available in
+`daal4py repository <https://github.com/IntelPython/daal4py>`_.
+
+- Install from PyPI::
+
+     pip install daal4py
+
+- Install from Anaconda Cloud: Conda-Forge channel::
+
+     сonda install daal4py -c conda-forge
+
+- Install from Anaconda Cloud: Intel channel::
+
+    conda install daal4py -c intel
+
+We recommend to use **PyPi**. If you are using Intel® Distribution for Python,
+we recommend using **Anaconda Cloud: Intel channel**.
+In other cases, use **Anaconda Cloud: conda-forge channel**.
+
+Supported configurations
+------------------------
+
+**PyPi channel**
+
+.. list-table::
+   :widths: 25 8 8 8 8
+   :header-rows: 1
+   :align: left
+
+   * - OS / Python version
+     - Python 3.6
+     - Python 3.7
+     - Python 3.8
+     - Python 3.9
+   * - Linux
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - Windows
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - OsX
+     - ✔️
+     - ✔️
+     - ✔️
+     - ❌
+
+.. note::
+    It supports Intel CPU and GPU except on OsX.
+
+**Anaconda Cloud: Conda-Forge channel**
+
+.. list-table::
+   :widths: 25 8 8 8 8
+   :header-rows: 1
+   :align: left
+
+   * - OS / Python version
+     - Python 3.6
+     - Python 3.7
+     - Python 3.8
+     - Python 3.9
+   * - Linux
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - Windows
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - OsX
+     - ❌
+     - ❌
+     - ❌
+     - ❌
+
+.. note::
+    It supports Intel CPU and GPU except on OsX.
+    Recommended for conda users by default.
+
+**Anaconda Cloud: Intel channel**
+
+.. list-table::
+   :widths: 25 8 8 8 8
+   :header-rows: 1
+   :align: left
+
+   * - OS / Python version
+     - Python 3.6
+     - Python 3.7
+     - Python 3.8
+     - Python 3.9
+   * - Linux
+     - ❌
+     - ✔️
+     - ❌
+     - ❌
+   * - Windows
+     - ❌
+     - ✔️
+     - ❌
+     - ❌
+   * - OsX
+     - ❌
+     - ✔️
+     - ❌
+     - ❌
+
+.. note::
+    It supports Intel CPU and GPU except on OsX.
+    Recommended for conda users who use other components from Intel(R) Distribution for Python.
 
 Overview
 --------
