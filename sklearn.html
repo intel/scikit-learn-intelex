@@ -7,12 +7,13 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Scikit-Learn API and patching &mdash; daal4py 2020.0 documentation</title>
+  <title>Scikit-Learn API and patching &mdash; daal4py 2021.1 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/style.css" type="text/css" />
 
   
   
@@ -62,7 +63,7 @@
             
             
               <div class="version">
-                2020
+                2021
               </div>
             
           
@@ -96,7 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Scikit-Learn API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#daal-accelerated-scikit-learn">DAAL accelerated scikit-learn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#onedal-accelerated-scikit-learn">oneDAL accelerated scikit-learn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scikit-learn-verbose">scikit-learn verbose</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scikit-learn-api">scikit-learn API</a></li>
 </ul>
@@ -173,8 +174,8 @@
 <p>Python interface to efficient Intel(R) oneAPI Data Analytics Library provided by daal4py allows one
 to create scikit-learn compatible estimators, transformers, clusterers, etc. powered by oneDAL which
 are nearly as efficient as native programs.</p>
-<div class="section" id="daal-accelerated-scikit-learn">
-<span id="sklearn-patches"></span><h2>DAAL accelerated scikit-learn<a class="headerlink" href="#daal-accelerated-scikit-learn" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="onedal-accelerated-scikit-learn">
+<span id="sklearn-patches"></span><h2>oneDAL accelerated scikit-learn<a class="headerlink" href="#onedal-accelerated-scikit-learn" title="Permalink to this headline">¶</a></h2>
 <p>daal4py can dynamically patch scikit-learn estimators to use Intel(R) oneAPI Data Analytics Library
 as the underlying solver, while getting the same solution faster.</p>
 <p>It is possible to enable those patches without editing the code of a scikit-learn application by
@@ -205,32 +206,119 @@ you can enable daal4py patches through an environment variable. To do this, set 
 </div>
 <p id="sklearn-algorithms">Applying the monkey patch will impact the following existing scikit-learn
 algorithms:</p>
-<ol class="arabic simple">
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html">sklearn.linear_model.LinearRegression</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html">sklearn.linear_model.Ridge</a> (solver=’auto’)</p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html">sklearn.linear_model.LogisticRegression</a> and <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegressionCV.html">sklearn.linear_model.LogisticRegressionCV</a> (solver in [‘lbfgs’, ‘newton-cg’])</p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html">sklearn.decomposition.PCA</a> (svd_solver=’full’, and introduces svd_solver=’daal’)</p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html">sklearn.cluster.KMeans</a> (algo=’full’)</p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise_distances.html">sklearn.metric.pairwise_distance</a>, with metric=’cosine’ or metric=’correlation’</p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html">sklearn.linear_model.ElasticNet</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html">sklearn.linear_model.Lasso</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">sklearn.neighbors.KNeighborsClassifier</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsRegressor.html">sklearn.neighbors.KNeighborsRegressor</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html">sklearn.neighbors.NearestNeighbors</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html">sklearn.cluster.DBSCAN</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html">sklearn.ensemble.RandomForestRegressor</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html">sklearn.model_selection.train_test_split</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html">sklearn.manifold.TSNE</a></p></li>
-<li><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html">sklearn.metrics.roc_auc_score</a></p></li>
-</ol>
+<table class="colwidths-given docutils align-left">
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 15%" />
+<col style="width: 46%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Task</p></th>
+<th class="head"><p>Functionality</p></th>
+<th class="head"><p>Parameters support</p></th>
+<th class="head"><p>Data support</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Classification</p></td>
+<td><p>SVC</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">poly</span></code> and <code class="docutils literal notranslate"><span class="pre">sigmoid</span></code> kernels.</p></td>
+<td><p>No limitations.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Classification</p></td>
+<td><p>RandomForestClassifier</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">warmstart</span></code> = True and <code class="docutils literal notranslate"><span class="pre">cpp_alpha</span></code> != 0, <code class="docutils literal notranslate"><span class="pre">criterion</span></code> != ‘gini’.</p></td>
+<td><p>Multi-output and sparse data is not supported.</p></td>
+</tr>
+<tr class="row-even"><td><p>Classification</p></td>
+<td><p>KNeighborsClassifier</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or <code class="docutils literal notranslate"><span class="pre">minkowski</span></code> with <code class="docutils literal notranslate"><span class="pre">p</span></code> = 2.</p></td>
+<td><p>Multi-output and sparse data is not supported.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Classification</p></td>
+<td><p>LogisticRegression</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">solver</span></code> != ‘lbfgs’ or ‘newton-cg’, <code class="docutils literal notranslate"><span class="pre">class_weight</span></code> != None, <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
+<td><p>Only dense data is supported.</p></td>
+</tr>
+<tr class="row-even"><td><p>Regression</p></td>
+<td><p>RandomForestRegressor</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">warmstart</span></code> = True and <code class="docutils literal notranslate"><span class="pre">cpp_alpha</span></code> != 0, <code class="docutils literal notranslate"><span class="pre">criterion</span></code> != ‘mse’.</p></td>
+<td><p>Multi-output and sparse data is not supported.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Regression</p></td>
+<td><p>KNeighborsRegressor</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or <code class="docutils literal notranslate"><span class="pre">minkowski</span></code> with <code class="docutils literal notranslate"><span class="pre">p</span></code> = 2.</p></td>
+<td><p>Multi-output and sparse data is not supported.</p></td>
+</tr>
+<tr class="row-even"><td><p>Regression</p></td>
+<td><p>LinearRegression</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">normalize</span></code> != False and <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
+<td><p>Only dense data is supported, #observations should be &gt;= #features.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Regression</p></td>
+<td><p>Ridge</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">normalize</span></code> != False, <code class="docutils literal notranslate"><span class="pre">solver</span></code> != ‘auto’ and <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
+<td><p>Only dense data is supported, #observations should be &gt;= #features.</p></td>
+</tr>
+<tr class="row-even"><td><p>Regression</p></td>
+<td><p>ElasticNet</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
+<td><p>Multi-output and sparse data is not supported, #observations should be &gt;= #features.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Regression</p></td>
+<td><p>Lasso</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
+<td><p>Multi-output and sparse data is not supported, #observations should be &gt;= #features.</p></td>
+</tr>
+<tr class="row-even"><td><p>Clustering</p></td>
+<td><p>KMeans</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">precompute_distances</span></code> and <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
+<td><p>No limitations.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Clustering</p></td>
+<td><p>DBSCAN</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or <code class="docutils literal notranslate"><span class="pre">minkowski</span></code> with <code class="docutils literal notranslate"><span class="pre">p</span></code> = 2.</p></td>
+<td><p>Only dense data is supported.</p></td>
+</tr>
+<tr class="row-even"><td><p>Dimensionality reduction</p></td>
+<td><p>PCA</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">svd_solver</span></code> != ‘full’.</p></td>
+<td><p>Sparse data is not supported.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Unsupervised</p></td>
+<td><p>NearestNeighbors</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or <code class="docutils literal notranslate"><span class="pre">minkowski</span></code> with <code class="docutils literal notranslate"><span class="pre">p</span></code> = 2.</p></td>
+<td><p>Sparse data is not supported.</p></td>
+</tr>
+<tr class="row-even"><td><p>Other</p></td>
+<td><p>train_test_split</p></td>
+<td><p>All parameters are supported.</p></td>
+<td><p>Only dense data is supported.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Other</p></td>
+<td><p>assert_all_finite</p></td>
+<td><p>All parameters are supported.</p></td>
+<td><p>Only dense data is supported.</p></td>
+</tr>
+<tr class="row-even"><td><p>Other</p></td>
+<td><p>pairwise_distance</p></td>
+<td><p>With metric=``cosine`` and <code class="docutils literal notranslate"><span class="pre">correlation</span></code>.</p></td>
+<td><p>Only dense data is supported.</p></td>
+</tr>
+</tbody>
+</table>
 <p>Monkey-patched scikit-learn classes and functions passes scikit-learn’s own test
 suite, with few exceptions, specified in <a class="reference external" href="https://github.com/IntelPython/daal4py/blob/master/deselected_tests.yaml">deselected_tests.yaml</a>.</p>
 <p>In particular the tests execute <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.estimator_checks.check_estimator.html">check_estimator</a>
 on all added and monkey-patched classes, which are discovered by means of
 introspection. This assures scikit-learn API compatibility of all
 <cite>daal4py.sklearn</cite> classes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>daal4py supports optimizations for the last four versions of scikit-learn.
+The latest release of daal4py-2021.1 supports scikit-learn 0.21.X, 0.22.X, 0.23.X and 0.24.X.</p>
+</div>
 </div>
 <div class="section" id="scikit-learn-verbose">
 <span id="sklearn-verbose"></span><h2>scikit-learn verbose<a class="headerlink" href="#scikit-learn-verbose" title="Permalink to this headline">¶</a></h2>
@@ -312,7 +400,7 @@ patched, or not. For example:</p>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2020, Intel.
+        &#169; Copyright 2021, Intel.
 
     </p>
   </div>

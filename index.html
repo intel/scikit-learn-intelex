@@ -7,12 +7,13 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Fast, Scalable and Easy Machine Learning With DAAL4PY &mdash; daal4py 2020.0 documentation</title>
+  <title>Fast, Scalable and Easy Machine Learning With DAAL4PY &mdash; daal4py 2021.1 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/style.css" type="text/css" />
 
   
   
@@ -63,7 +64,7 @@
             
             
               <div class="version">
-                2020
+                2021
               </div>
             
           
@@ -97,6 +98,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#daal4py-s-design">Daal4py’s Design</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#built-for-performance">Built for Performance</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#getting-daal4py">Getting daal4py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-configurations">Supported configurations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scikit-learn-api-and-patching">Scikit-Learn API and patching</a></li>
 </ul>
@@ -323,9 +325,162 @@ Oracle Linux Server release 7.4, using 64-bit floating point numbers</p>
 </div>
 <div class="section" id="getting-daal4py">
 <h2>Getting daal4py<a class="headerlink" href="#getting-daal4py" title="Permalink to this headline">¶</a></h2>
-<p>daal4py is available on our Intel channel on Anaconda (<a class="reference external" href="https://anaconda.org/intel/daal4py">https://anaconda.org/intel/daal4py</a>)
-, and also from source. Sources and build instructions are
-available at <a class="reference external" href="https://github.com/IntelPython/daal4py">https://github.com/IntelPython/daal4py</a>.</p>
+<p>daal4py is available at the <a class="reference external" href="https://pypi.org/project/daal4py/">Python Package Index</a>,
+on Anaconda Cloud in <a class="reference external" href="https://anaconda.org/conda-forge/daal4py">Conda Forge channel</a>
+and in <a class="reference external" href="https://anaconda.org/intel/daal4py">Intel channel</a>.
+Sources and build instructions are available in
+<a class="reference external" href="https://github.com/IntelPython/daal4py">daal4py repository</a>.</p>
+<ul>
+<li><p>Install from PyPI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">daal4py</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install from Anaconda Cloud: Conda-Forge channel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">сonda</span> <span class="n">install</span> <span class="n">daal4py</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install from Anaconda Cloud: Intel channel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">daal4py</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>We recommend to use <strong>PyPi</strong>. If you are using Intel® Distribution for Python,
+we recommend using <strong>Anaconda Cloud: Intel channel</strong>.
+In other cases, use <strong>Anaconda Cloud: conda-forge channel</strong>.</p>
+</div>
+<div class="section" id="supported-configurations">
+<h2>Supported configurations<a class="headerlink" href="#supported-configurations" title="Permalink to this headline">¶</a></h2>
+<p><strong>PyPi channel</strong></p>
+<table class="colwidths-given docutils align-left">
+<colgroup>
+<col style="width: 44%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
+<th class="head"><p>Python 3.6</p></th>
+<th class="head"><p>Python 3.7</p></th>
+<th class="head"><p>Python 3.8</p></th>
+<th class="head"><p>Python 3.9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Linux</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-odd"><td><p>Windows</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-even"><td><p>OsX</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>❌</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It supports Intel CPU and GPU except on OsX.</p>
+</div>
+<p><strong>Anaconda Cloud: Conda-Forge channel</strong></p>
+<table class="colwidths-given docutils align-left">
+<colgroup>
+<col style="width: 44%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
+<th class="head"><p>Python 3.6</p></th>
+<th class="head"><p>Python 3.7</p></th>
+<th class="head"><p>Python 3.8</p></th>
+<th class="head"><p>Python 3.9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Linux</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-odd"><td><p>Windows</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-even"><td><p>OsX</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It supports Intel CPU and GPU except on OsX.
+Recommended for conda users by default.</p>
+</div>
+<p><strong>Anaconda Cloud: Intel channel</strong></p>
+<table class="colwidths-given docutils align-left">
+<colgroup>
+<col style="width: 44%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
+<th class="head"><p>Python 3.6</p></th>
+<th class="head"><p>Python 3.7</p></th>
+<th class="head"><p>Python 3.8</p></th>
+<th class="head"><p>Python 3.9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Linux</p></td>
+<td><p>❌</p></td>
+<td><p>✔️</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p>Windows</p></td>
+<td><p>❌</p></td>
+<td><p>✔️</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-even"><td><p>OsX</p></td>
+<td><p>❌</p></td>
+<td><p>✔️</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It supports Intel CPU and GPU except on OsX.
+Recommended for conda users who use other components from Intel(R) Distribution for Python.</p>
+</div>
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
@@ -370,7 +525,7 @@ for more details.</p>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2020, Intel.
+        &#169; Copyright 2021, Intel.
 
     </p>
   </div>
