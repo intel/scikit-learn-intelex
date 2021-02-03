@@ -26,7 +26,7 @@ kek=$?
 echo "Exit code = $kek"
 ok=$(($ok + $kek))
 
-if ! $NO_DISTR; then
+if ! $NO_DIST; then
     echo "Running mpirun"
     mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
     kek=$?
