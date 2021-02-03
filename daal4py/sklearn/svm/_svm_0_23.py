@@ -603,8 +603,8 @@ def predict(self, X):
         raise ValueError("break_ties must be False when "
                          "decision_function_shape is 'ovo'")
 
-    if all([_break_ties, self.decision_function_shape == 'ovr',
-            len(self.classes_) > 2]):
+    if _break_ties and self.decision_function_shape == 'ovr' and \
+            len(self.classes_) > 2:
         y = np.argmax(self.decision_function(X), axis=1)
     else:
         X = self._validate_for_predict(X)

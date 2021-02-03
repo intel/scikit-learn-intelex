@@ -232,10 +232,13 @@ class DBSCAN(DBSCAN_original):
             sample_weight = np.asarray(sample_weight)
             check_consistent_length(X, sample_weight)
 
-        _daal_ready = all([(self.algorithm in ['auto', 'brute']),
-                           any([self.metric == 'euclidean',
-                               (self.metric == 'minkowski' and self.p == 2)]),
-                           isinstance(X, np.ndarray), X.dtype.kind in ['d', 'f']])
+        _daal_ready = self.algorithm in [
+            'auto', 'brute'] and (
+            self.metric == 'euclidean' or (
+                self.metric == 'minkowski' and self.p == 2)) and isinstance(
+                X, np.ndarray), X.dtype.kind in [
+                    'd', 'f']
+
         if _daal_ready:
             logging.info(
                 "sklearn.cluster.DBSCAN."

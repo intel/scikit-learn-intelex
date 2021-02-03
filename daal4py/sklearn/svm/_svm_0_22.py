@@ -472,9 +472,8 @@ def fit(self, X, y, sample_weight=None):
 
     # see comment on the other call to np.iinfo in this file
     seed = rnd.randint(np.iinfo('i').max)
-    if all([not sparse, not self.probability, not getattr(self, 'break_ties', False),
-            kernel in ['linear', 'rbf']]):
-
+    if not sparse and not self.probability and \
+            not getattr(self, 'break_ties', False) and kernel in ['linear', 'rbf']:
         logging.info("sklearn.svm.SVC.fit: " + get_patch_message("daal"))
         self._daal_fit = True
         _daal4py_fit(self, X, y, sample_weight, kernel)
@@ -564,9 +563,8 @@ def predict(self, X):
         raise ValueError("break_ties must be False when "
                          "decision_function_shape is 'ovo'")
 
-    if all([_break_ties,
-            self.decision_function_shape == 'ovr',
-            len(self.classes_) > 2]):
+    if _break_ties and self.decision_function_shape == 'ovr' and \
+            len(self.classes_) > 2:
         logging.info(
             "sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
         y = np.argmax(self.decision_function(X), axis=1)

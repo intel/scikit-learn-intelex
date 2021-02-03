@@ -26,7 +26,11 @@ import sklearn.svm.base
 import warnings
 
 import daal4py
-from .._utils import (make2d, getFPType, get_patch_message, sklearn_check_version)
+from .._utils import (
+    make2d,
+    getFPType,
+    get_patch_message,
+    sklearn_check_version)
 import logging
 
 
@@ -63,7 +67,8 @@ def group_indices_by_class(num_classes, sv_ind_by_clf, labels):
     sv_ind_counters = np.zeros(num_classes, dtype=np.intp)
 
     num_of_sv_per_class = np.bincount(labels[np.hstack(sv_ind_by_clf)])
-    sv_ind_by_class = [np.empty(n, dtype=np.int32) for n in num_of_sv_per_class]
+    sv_ind_by_class = [np.empty(n, dtype=np.int32)
+                       for n in num_of_sv_per_class]
 
     for indices_per_clf in sv_ind_by_clf:
         for sv_index in indices_per_clf:
@@ -112,7 +117,8 @@ def extract_dual_coef(num_classes, sv_ind_by_clf, sv_coef_by_clf, labels):
     Construct dual coefficients array in SKLearn peculiar layout,
     as well corresponding support vector indexes
     """
-    sv_ind_by_class = group_indices_by_class(num_classes, sv_ind_by_clf, labels)
+    sv_ind_by_class = group_indices_by_class(
+        num_classes, sv_ind_by_clf, labels)
     sv_ind_mapping = map_sv_to_columns_in_dual_coef_matrix(sv_ind_by_class)
 
     num_unique_sv = len(sv_ind_mapping)
@@ -289,7 +295,8 @@ def _daal4py_fit(self, X, y_inp, kernel):
     self.probB_ = np.empty(0)
 
 
-def __compute_gamma__(gamma, kernel, X, sparse, use_var=True, deprecation=True):
+def __compute_gamma__(gamma, kernel, X, sparse,
+                      use_var=True, deprecation=True):
     """
     Computes actual value of 'gamma' parameter of RBF kernel
     corresponding to SVC keyword values `gamma` and `kernel`, and feature
@@ -432,8 +439,9 @@ def fit(self, X, y, sample_weight=None):
     seed = rnd.randint(np.iinfo('i').max)
 
     is_support_weights = sample_weight.size == 0 and self.class_weight is None
-    if all([not sparse, not self.probability, not getattr(self, 'break_ties', False),
-            kernel in ['linear', 'rbf'], is_support_weights]):
+    if not sparse and not self.probability and not getattr(
+            self, 'break_ties', False) and \
+            kernel in ['linear', 'rbf'] and is_support_weights:
         logging.info("sklearn.svm.SVC.fit: " + get_patch_message("daal"))
         self._daal_fit = True
         _daal4py_fit(self, X, y, kernel)
@@ -457,8 +465,8 @@ def fit(self, X, y, sample_weight=None):
             self._internal_dual_coef_ *= -1
             self._internal_intercept_ *= -1
 
-    if all([not self._daal_fit, len(self.classes_) == 2,
-            self._impl in ['c_svc', 'nu_svc']]):
+    if not self._daal_fit and len(self.classes_) == 2 and self._impl in [
+            'c_svc', 'nu_svc']:
         self.intercept_ *= -1
         self.dual_coef_ *= -1
 
@@ -523,9 +531,8 @@ def predict(self, X):
         raise ValueError("break_ties must be False when "
                          "decision_function_shape is 'ovo'")
 
-    if all([_break_ties,
-            self.decision_function_shape == 'ovr',
-            len(self.classes_) > 2]):
+    if _break_ties and self.decision_function_shape == 'ovr' and len(
+            self.classes_) > 2:
         logging.info("sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
         y = np.argmax(self.decision_function(X), axis=1)
     else:
