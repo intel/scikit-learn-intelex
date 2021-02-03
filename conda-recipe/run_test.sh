@@ -34,7 +34,7 @@ ok=$(($ok + $?))
 python -m unittest discover -v -s tests -p test*.py
 ok=$(($ok + $?))
 
-./daal4py/sklearn/test/test_patching/run.sh
+python daal4py/sklearn/test/test_patching/test_patching.py
 ok=$(($ok + $?))
 
 exit $ok

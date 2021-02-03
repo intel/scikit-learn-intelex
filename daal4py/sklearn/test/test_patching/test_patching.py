@@ -199,6 +199,12 @@ TO_SKIP = [
 ]
 
 if __name__ == '__main__':
+    import subprocess
+    process = 'IDP_SKLEARN_VERBOSE=INFO ' + \
+        'python daal4py/sklearn/test/test_patching/launch_algorithms.py > ' + \
+        'daal4py/sklearn/test/test_patching/raw_log'
+    p1 = subprocess.Popen(process, shell=True)
+    subprocess.Popen.wait(p1)
     fin = open('daal4py/sklearn/test/test_patching/raw_log', 'r')
     mas = []
     for i in fin:
