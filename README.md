@@ -81,17 +81,14 @@ pip install daal4py
 ```
 
 ```bash
-# Anaconda Cloud : conda-forge channel
+# Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
 conda install daal4py -c conda-forge
 ```
 
 ```bash
-# Anaconda Cloud : Intel channel
+# Anaconda Cloud from Intel channel (recommended for conda users who use other components from Intel Distribution for Python)
 conda install daal4py -c intel
 ```
-We recommend **PyPi** first of all for use. If you using of Intel python,
-we recommend using **Anaconda Cloud : Intel channel**.
-For other case - Anaconda Cloud : conda-forge channel.
 
 <details><summary>[Click to expand] ℹ️ Supported configurations </summary>
 
@@ -99,25 +96,25 @@ For other case - Anaconda Cloud : conda-forge channel.
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
 | :-----------------------| :------------: | :-------------:| :------------:| :------------:|
-|    **Linux**            | ✔️ [CPU, GPU]  | ✔️ [CPU, GPU] | ✔️ [CPU, GPU] | ✔️ [CPU, GPU]|
-|    **Windows**          | ✔️ [CPU, GPU]  | ✔️ [CPU, GPU] | ✔️ [CPU, GPU] | ✔️ [CPU, GPU]|
-|    **OsX**              | ✔️ [CPU]       | ✔️ [CPU]      |  ✔️ [CPU]     |  ✔️ [CPU]    |
+|    **Linux**            |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU] |      [CPU, GPU]|
+|    **Windows**          |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU] |      [CPU, GPU]|
+|    **OsX**              |    [CPU]       |  [CPU]         |    [CPU]     |        ❌     |
 
 #### 📦 Anaconda Cloud: Conda-Forge channel
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
 | :-----------------------| :------------: | :------------: | :------------:| :------------:|
-|    **Linux**            |   ✔️ [CPU]    |   ✔️ [CPU]     |   ✔️ [CPU]   |  ✔️ [CPU]    |
-|    **Windows**          |   ✔️ [CPU]    |   ✔️ [CPU]     |   ✔️ [CPU]   |  ✔️ [CPU]    |
+|    **Linux**            |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]    |
+|    **Windows**          |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]    |
 |    **OsX**              |   ❌          |     ❌         |     ❌       |      ❌      |
 
 #### 📦 Anaconda Cloud: Intel channel
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
 | :-----------------------| :------------: | :-------------:| :------------:| :------------:|
-|    **Linux**            |   ❌         | ✔️ [CPU, GPU]   |     ❌      |      ❌      |
-|    **Windows**          |   ❌         | ✔️ [CPU, GPU]   |     ❌      |      ❌      |
-|    **OsX**              |   ❌         | ✔️ [CPU]        |     ❌      |      ❌      |
+|    **Linux**            |   ❌         |     [CPU, GPU]   |     ❌      |      ❌      |
+|    **Windows**          |   ❌         |     [CPU, GPU]   |     ❌      |      ❌      |
+|    **OsX**              |   ❌         |     [CPU]        |     ❌      |      ❌      |
 
 </details>
 
@@ -166,7 +163,6 @@ Scenarios that are only available in the `master` branch (not released yet):
 
  </details>
 
-
 ## 📜 scikit-learn verbose
 
 To find out which implementation of the algorithm is currently used (daal4py or stock Scikit-learn), set the environment variable:
@@ -178,4 +174,3 @@ For example, for DBSCAN you get one of these print statements depending on which
 - `INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver`
 
 [Read more in the documentation](https://intelpython.github.io/daal4py/sklearn.html#scikit-learn-verbose).
-

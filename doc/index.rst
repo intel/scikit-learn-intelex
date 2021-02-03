@@ -209,7 +209,6 @@ Supported configurations
 
 .. note::
     It supports Intel CPU and GPU expect OsX.
-    **We recommend PyPi first of all for use**.
 
 **Anaconda Cloud: Conda-Forge channel**
 
@@ -241,6 +240,7 @@ Supported configurations
 
 .. note::
     It supports Intel CPU and GPU expect OsX.
+    Recommended for conda users by default.
 
 **Anaconda Cloud: Intel channel**
 
@@ -272,7 +272,8 @@ Supported configurations
 
 .. note::
     It supports Intel CPU and GPU expect OsX.
-    We recommend **Intel channel**, if you using of Intel python.
+    Recommended for conda users who use other components from Intel Distribution for Python.
+
 Overview
 --------
 All algorithms in daal4py work the same way:
