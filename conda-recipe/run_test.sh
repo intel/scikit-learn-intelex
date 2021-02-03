@@ -20,30 +20,18 @@
 
 ok=0
 
-echo "Running import daal4py"
 python -c "import daal4py"
-kek=$?
-echo "Exit code = $kek"
-ok=$(($ok + $kek))
-echo "NO_DIST = $NO_DIST"
+ok=$(($ok + $?))
+
 if ! $NO_DIST; then
-    echo "Running mpirun"
     mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
-    kek=$?
-    echo "Exit code = $kek"
-    ok=$(($ok + $kek))
+    ok=$(($ok + $?))
 fi
 
-echo "Running pytest"
 pytest --pyargs daal4py/sklearn/
-kek=$?
-echo "Exit code = $kek"
-ok=$(($ok + $kek))
+ok=$(($ok + $?))
 
-echo "Running unittest"
 python -m unittest discover -v -s tests -p test*.py
-kek=$?
-echo "Exit code = $kek"
-ok=$(($ok + $kek))
+ok=$(($ok + $?))
 
 exit $ok
