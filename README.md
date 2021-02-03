@@ -86,7 +86,7 @@ conda install daal4py -c conda-forge
 ```
 
 ```bash
-# Anaconda Cloud from Intel channel (recommended for conda users who use other components from Intel Distribution for Python)
+# Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python)
 conda install daal4py -c intel
 ```
 

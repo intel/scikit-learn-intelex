@@ -73,8 +73,8 @@ Without conda-build you have to manually setup your environment before building 
   * Needed for distributed mode. You can disable support for distributed mode by setting NO_DIST to '1' or 'yes'
 For oneAPI support
 * A DPC++ compiler
-* Intel(R) oneAPI Data Analytics Library version 2021.1 or later (https://oneapi-src.github.io/oneDAL/)
-  * You can use the [pre-built conda package](https://anaconda.org/intel/daal) from Intel channel on anaconda.org
+* [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
+  * You can use the [pre-built conda package](https://anaconda.org/intel/daal) from Intel channel on anaconda.org.
 
 ### Setting up a build environment
 The easiest path for getting cython, oneDAL, MPI etc. is by creating a conda environment and setting environment variables:
