@@ -161,9 +161,6 @@ deselected_tests:
   # 'randomized' PCA expected, but 'full' is given.
   - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
 
-  # Different exception message because of changing of 'auto' strategy in PCA
-  - decomposition/tests/test_pca.py::test_pca_validation
-
   # Stability issue with max absolute difference: 0.00015992. Remove in the next release.
   - decomposition/tests/test_pca.py::test_pca_dtype_preservation
   - decomposition/tests/test_pca.py::test_pca_n_components_mostly_explained_variance_ratio
