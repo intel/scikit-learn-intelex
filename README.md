@@ -1,6 +1,9 @@
 # daal4py - A Convenient Python API to the Intel(R) oneAPI Data Analytics Library
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/IntelPython/daal4py/discussions)
+[![PyPI Version](https://img.shields.io/pypi/v/daal4py)](https://pypi.org/project/daal4py/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/daal4py)](https://anaconda.org/conda-forge/daal4py)
+
 
 A simplified API to Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel(R) oneAPI Data Analytics Library for either direct usage or integration into one's own framework and extending this beyond by providing drop-in paching for scikit-learn.
 
@@ -72,73 +75,49 @@ daal4py is available at the [Python Package Index](https://pypi.org/project/daal
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal4py)
 and in [Intel channel](https://anaconda.org/intel/daal4py).
 
-### 📦 PyPi channel
-[![PyPI Version](https://img.shields.io/pypi/v/daal4py)](https://pypi.org/project/daal4py/)
-[![Downloads](https://pepy.tech/badge/daal4py/month)](https://pypi.org/project/daal4py/)
-
 ```bash
+# PyPi
 pip install daal4py
 ```
-<details><summary>[Click to expand] ⚠️ Package limitations </summary>
-
-| OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
-| :-----------------------| :-----------: | :------------: | :-----------:| :-----------:|
-|    **Linux**            |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
-|    **Windows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
-|    **OsX**              |   ✔️         |     ✔️         |     ✔️      |      ❌      |
-
-#### ℹ️ Additional limitations
-
-PyPi channel contains of the latest release -
-[daal4py 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
-Has support Intel CPU and GPU.
-
-</details>
-
-### 📦 Anaconda Cloud - Conda-Forge channel
-[![Conda Version](https://img.shields.io/conda/vn/conda-forge/daal4py)](https://anaconda.org/conda-forge/daal4py)
-[![Downloads](https://img.shields.io/conda/dn/conda-forge/daal4py.svg)](https://anaconda.org/conda-forge/daal4py)
 
 ```bash
+# Anaconda Cloud : conda-forge channel
 conda install daal4py -c conda-forge
 ```
-<details><summary>[Click to expand] ⚠️ Package limitations </summary>
-
-| OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
-| :-----------------------| :-----------: | :------------: | :-----------:| :-----------:|
-|    **Linux**            |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
-|    **Windows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
-|    **OsX**              |   ❌         |     ❌         |     ❌      |      ❌      |
-
-#### ℹ️ Additional limitations
-
-Conda-Forge channel contains of the release -
-[daal4py 2020.3](https://github.com/IntelPython/daal4py/releases/tag/2020.3).
-Has support only Intel CPU.
-
-</details>
-
-### 📦 Anaconda Cloud - Intel channel
-[![Conda Version](https://anaconda.org/intel/daal4py/badges/version.svg)](https://anaconda.org/intel/daal4py)
-[![Downloads](https://img.shields.io/conda/dn/intel/daal4py.svg)](https://anaconda.org/intel/daal4py)
 
 ```bash
+# Anaconda Cloud : Intel channel
 conda install daal4py -c intel
 ```
+We recommend **PyPi** first of all for use. If you using of Intel python,
+we recommend using **Anaconda Cloud : Intel channel**.
+For other case - Anaconda Cloud : conda-forge channel.
 
-<details><summary>[Click to expand] ⚠️ Package limitations </summary>
+<details><summary>[Click to expand] ℹ️ Supported configurations </summary>
 
-| OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
-| :-----------------------| :-----------: | :------------: | :-----------:| :-----------:|
-|    **Linux**            |   ❌         |     ✔️         |     ❌      |      ❌      |
-|    **Windows**          |   ❌         |     ✔️         |     ❌      |      ❌      |
-|    **OsX**              |   ❌         |     ✔️         |     ❌      |      ❌      |
+#### 📦 PyPi channel
 
-#### ℹ️ Additional limitations
+| OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
+| :-----------------------| :------------: | :-------------:| :------------:| :------------:|
+|    **Linux**            | ✔️ [CPU, GPU]  | ✔️ [CPU, GPU] | ✔️ [CPU, GPU] | ✔️ [CPU, GPU]|
+|    **Windows**          | ✔️ [CPU, GPU]  | ✔️ [CPU, GPU] | ✔️ [CPU, GPU] | ✔️ [CPU, GPU]|
+|    **OsX**              | ✔️ [CPU]       | ✔️ [CPU]      |  ✔️ [CPU]     |  ✔️ [CPU]    |
 
-Intel channel contains of the latest release -
-[daal4py 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
-Has support Intel CPU and GPU.
+#### 📦 Anaconda Cloud: Conda-Forge channel
+
+| OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
+| :-----------------------| :------------: | :------------: | :------------:| :------------:|
+|    **Linux**            |   ✔️ [CPU]    |   ✔️ [CPU]     |   ✔️ [CPU]   |  ✔️ [CPU]    |
+|    **Windows**          |   ✔️ [CPU]    |   ✔️ [CPU]     |   ✔️ [CPU]   |  ✔️ [CPU]    |
+|    **OsX**              |   ❌          |     ❌         |     ❌       |      ❌      |
+
+#### 📦 Anaconda Cloud: Intel channel
+
+| OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
+| :-----------------------| :------------: | :-------------:| :------------:| :------------:|
+|    **Linux**            |   ❌         | ✔️ [CPU, GPU]   |     ❌      |      ❌      |
+|    **Windows**          |   ❌         | ✔️ [CPU, GPU]   |     ❌      |      ❌      |
+|    **OsX**              |   ❌         | ✔️ [CPU]        |     ❌      |      ❌      |
 
 </details>
 
@@ -156,7 +135,7 @@ daal4py patching affects performance of specific Scikit-learn functionality list
 ⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of daal4py-2021.1 supports scikit-learn 0.21.X,
 0.22.X, 0.23.X and 0.24.X.
 
-<details><summary>[Click to expand] 🔥 Applying the daal4py patch will impact the following existing scikit-learn algorithms </summary>
+<details><summary>[Click to expand] 🔥 Applying the daal4py patch will impact the following existing scikit-learn algorithms: </summary>
 
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|

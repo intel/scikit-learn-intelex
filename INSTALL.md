@@ -66,7 +66,7 @@ Without conda-build you have to manually setup your environment before building 
 * Cython
 * Numpy
 * A C++ compiler with C++11 support
-* Intel® oneAPI Data Analytics Library (oneDAL) version 2021.1 or later (https://github.com/oneapi-src/oneDAL)
+* [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
   * You can use the pre-built conda package from Intel channel on anaconda.org
 * MPI
   * You can use the pre-built conda package intel or conda-forge channel on anaconda.org
@@ -74,7 +74,7 @@ Without conda-build you have to manually setup your environment before building 
 For oneAPI support
 * A DPC++ compiler
 * Intel(R) oneAPI Data Analytics Library version 2021.1 or later (https://oneapi-src.github.io/oneDAL/)
-  * You can use the pre-built conda package from Intel channel on anaconda.org
+  * You can use the [pre-built conda package](https://anaconda.org/intel/daal) from Intel channel on anaconda.org
 
 ### Setting up a build environment
 The easiest path for getting cython, oneDAL, MPI etc. is by creating a conda environment and setting environment variables:
