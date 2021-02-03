@@ -55,20 +55,20 @@ conda install daal4py -c conda-forge
 conda install daal4py -c intel
 ```
 
-<details><summary>[Click to expand] ⚠️ Matrix support of Python / OS </summary>
+<details><summary>[Click to expand] ⚠️ Package limitations </summary>
 
 ### PyPi channel
 
 | OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
 | :-----------------------| :-----------: | :------------: | :-----------:| :-----------:|
 |    **Linux**            |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
-|    **Winsows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
-|    **Maс**              |   ✔️         |     ✔️         |     ✔️      |      ❌      |
+|    **Windows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
+|    **OsX**              |   ✔️         |     ✔️         |     ✔️      |      ❌      |
 
 #### ℹ️ Additional limitations
 
 PyPi channel contains of the latest release -
-[daal4py - 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
+[daal4py 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
 Has support Intel CPU and GPU.
 **We recommend PyPi first of all for use**.
 
@@ -77,13 +77,13 @@ Has support Intel CPU and GPU.
 | OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
 | :-----------------------| :-----------: | :------------: | :-----------:| :-----------:|
 |    **Linux**            |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
-|    **Winsows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
-|    **Maс**              |   ❌         |     ❌         |     ❌      |      ❌      |
+|    **Windows**          |   ✔️         |     ✔️         |     ✔️      |      ✔️      |
+|    **OsX**              |   ❌         |     ❌         |     ❌      |      ❌      |
 
 #### ℹ️ Additional limitations
 
 Conda-Forge channel contains of the release -
-[daal4py - 2020.3](https://github.com/IntelPython/daal4py/releases/tag/2020.3).
+[daal4py 2020.3](https://github.com/IntelPython/daal4py/releases/tag/2020.3).
 Has support only Intel CPU.
 
 ### Anaconda Cloud - Intel channel
@@ -91,13 +91,13 @@ Has support only Intel CPU.
 | OS / Python version     | **Python 36** | **Python 37**  | **Python 38**| **Python 39**|
 | :-----------------------| :-----------: | :------------: | :-----------:| :-----------:|
 |    **Linux**            |   ❌         |     ✔️         |     ❌      |      ❌      |
-|    **Winsows**          |   ❌         |     ✔️         |     ❌      |      ❌      |
-|    **Maс**              |   ❌         |     ✔️         |     ❌      |      ❌      |
+|    **Windows**          |   ❌         |     ✔️         |     ❌      |      ❌      |
+|    **OsX**              |   ❌         |     ✔️         |     ❌      |      ❌      |
 
 #### ℹ️ Additional limitations
 
 Intel channel contains of the latest release -
-[daal4py - 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
+[daal4py 2021.1](https://github.com/IntelPython/daal4py/releases/tag/2021.1).
 Has support Intel CPU and GPU.
 
 </details>

@@ -11,7 +11,7 @@ are nearly as efficient as native programs.
 .. _sklearn_patches:
 
 oneDAL accelerated scikit-learn
-------------------------------
+-------------------------------
 
 daal4py can dynamically patch scikit-learn estimators to use Intel(R) oneAPI Data Analytics Library
 as the underlying solver, while getting the same solution faster.
@@ -72,8 +72,7 @@ algorithms:
      - Multi-output and sparse data is not supported.
    * - Classification
      - LogisticRegression
-     - All parameters except ``solver`` != 'lbfgs' or 'newton-cg',
-     ``class_weight`` != None, ``sample_weight`` != None.
+     - All parameters except ``solver`` != 'lbfgs' or 'newton-cg', ``class_weight`` != None, ``sample_weight`` != None.
      - Only dense data is supported.
    * - Regression
      - RandomForestRegressor
