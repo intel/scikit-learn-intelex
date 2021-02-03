@@ -36,6 +36,37 @@ Report issues, ask questions, and provide suggestions using:
 
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
 
+# ⚡️ Get Started
+Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution.
+
+Intel CPU optimizations patching
+```py
+import numpy as np
+from daal4py.sklearn import patch_sklearn
+patch_sklearn()
+
+from sklearn.cluster import DBSCAN
+
+X = np.array([[1., 2.], [2., 2.], [2., 3.],
+              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+```
+
+Intel CPU/GPU optimizations patching
+```py
+import numpy as np
+from daal4py.sklearn import patch_sklearn
+from daal4py.oneapi import sycl_context
+patch_sklearn()
+
+from sklearn.cluster import DBSCAN
+
+X = np.array([[1., 2.], [2., 2.], [2., 3.],
+              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+with sycl_context("gpu"):
+    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+```
+
 # 🛠 Installation
 daal4py is available at the [Python Package Index](https://pypi.org/project/daal4py/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal4py)
@@ -113,37 +144,6 @@ Has support Intel CPU and GPU.
 
 You can [build daal4py from sources](INSTALL.md) as well.
 
-# ⚡️ Getting Started
-Core functioanlity of daal4py is in place Scikit-learn patching - Same Code, Same Behavior but faster execution.
-
-Intel CPU optimizations patching
-```py
-import numpy as np
-from daal4py.sklearn import patch_sklearn
-patch_sklearn()
-
-from sklearn.cluster import DBSCAN
-
-X = np.array([[1., 2.], [2., 2.], [2., 3.],
-              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
-clustering = DBSCAN(eps=3, min_samples=2).fit(X)
-```
-
-Intel CPU/GPU optimizations patching
-```py
-import numpy as np
-from daal4py.sklearn import patch_sklearn
-from daal4py.oneapi import sycl_context
-patch_sklearn()
-
-from sklearn.cluster import DBSCAN
-
-X = np.array([[1., 2.], [2., 2.], [2., 3.],
-              [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
-with sycl_context("gpu"):
-    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
-```
-
 # 🚀 Scikit-learn patching
 
 | *Speedups of daal4py-powered Scikit-learn over the original Scikit-learn* |
@@ -153,7 +153,7 @@ with sycl_context("gpu"):
 
 daal4py patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, daal4py fallbacks into stock Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/IntelPython/daal4py/issues).
 
-⚠️ We support optimizations for the last 4 versions of Scikit-learn. The latest release of daal4py-2021.1 suppors Scikit-learn 0.21.X,
+⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of daal4py-2021.1 supports scikit-learn 0.21.X,
 0.22.X, 0.23.X and 0.24.X.
 
 <details><summary>[Click to expand] 🔥 Applying the daal4py patch will impact the following existing scikit-learn algorithms </summary>
