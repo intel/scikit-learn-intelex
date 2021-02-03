@@ -8,17 +8,6 @@
       white-space: normal !important;
    }
 }
-/*
-   .wy-table-responsive {
-      overflow: visible !important;
-   }
-*/
-
-/* make the page width fill the window */
-.wy-nav-content {
-   max-width: none;
-}
-
 
 .code-block-caption {
     color: #000;
