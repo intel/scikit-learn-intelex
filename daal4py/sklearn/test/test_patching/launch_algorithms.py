@@ -22,11 +22,9 @@ from sklearn.cluster import (KMeans, DBSCAN)
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from sklearn.datasets import (
-    make_classification,
+    make_regression,
     load_iris,
-    load_breast_cancer,
-    load_diabetes,
-    load_boston)
+    load_diabetes)
 
 MODELS_INFO = [
     {
@@ -54,11 +52,11 @@ MODELS_INFO = [
         'methods': ['decision_function', 'predict', 'predict_proba', 'score'],
         'dataset': 'classifier',
     },
-    # {
-    #     'model': TSNE(),
-    #     'methods': ['fit_transform'],
-    #     'dataset': 'classifier',
-    # },
+    {
+        'model': TSNE(),
+        'methods': ['fit_transform'],
+        'dataset': 'classifier',
+    },
     {
         'model': KMeans(),
         'methods': ['fit_predict', 'fit_transform', 'transform', 'predict', 'score'],
@@ -133,13 +131,13 @@ def get_class_name(x):
     return x.__class__.__name__
 
 
-def generate_dataset(name, dtype):
-    if name in ['blobs', 'classifier']:
+def generate_dataset(name, dtype, model_name):
+    if model_name == 'LinearRegression':
+        X, y = make_regression(n_samples=1000, n_features=5)
+    elif name in ['blobs', 'classifier']:
         X, y = load_iris(return_X_y=True)
-        # X, y = make_classification(n_samples=10)
     elif name == 'regression':
         X, y = load_diabetes(return_X_y=True)
-        # X, y = make_regression(n_samples=1000, n_features=5)
     else:
         raise ValueError('Unknown dataset type')
     X = np.array(X, dtype=dtype)
@@ -149,7 +147,9 @@ def generate_dataset(name, dtype):
 
 def run_patch(model_info, dtype):
     print(get_class_name(model_info['model']), dtype[1])
-    X, y = generate_dataset(model_info['dataset'], dtype[0])
+    X, y = generate_dataset(model_info['dataset'],
+                            dtype[0],
+                            get_class_name(model_info['model']))
     model = model_info['model']
     model.fit(X, y)
     logging.info('fit')
