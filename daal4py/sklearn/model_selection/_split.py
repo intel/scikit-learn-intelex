@@ -100,10 +100,10 @@ def _daal_train_test_split(*arrays, **options):
                 random_state = mkl_random.RandomState(random_state, rng)
                 indexes = random_state.permutation(n_train + n_test)
                 test, train = indexes[:n_test], indexes[n_test:]
-            elif all([rng == 'OPTIMIZED_MT19937',
-                      daal_check_version(((2020, 'P', 3), (2021, 'B', 9))),
-                      (isinstance(random_state, int) or random_state is None),
-                      platform.system() != 'Windows']):
+            elif rng == 'OPTIMIZED_MT19937' and \
+                daal_check_version(((2020, 'P', 3), (2021, 'B', 9))) and \
+                (isinstance(random_state, int) or random_state is None) and \
+                    platform.system() != 'Windows':
                 indexes = np.empty(
                     shape=(n_train + n_test,),
                     dtype=np.int64 if n_train + n_test > 2 ** 31 - 1 else np.int32)
@@ -124,8 +124,8 @@ def _daal_train_test_split(*arrays, **options):
         # input format check
         if not isinstance(arr, np.ndarray):
             if pandas_is_imported:
-                if all([not isinstance(arr, pd.core.frame.DataFrame),
-                        not isinstance(arr, pd.core.series.Series)]):
+                if not isinstance(arr, pd.core.frame.DataFrame) and not isinstance(
+                        arr, pd.core.series.Series):
                     fallback = True
             else:
                 fallback = True
@@ -161,17 +161,31 @@ def _daal_train_test_split(*arrays, **options):
 
             arr_copy = d4p.get_data(arr)
             if not isinstance(arr_copy, list):
-                arr_copy = arr_copy.reshape((arr_copy.shape[0], n_cols), order='A')
+                arr_copy = arr_copy.reshape(
+                    (arr_copy.shape[0], n_cols), order='A')
             if isinstance(arr_copy, np.ndarray):
                 order = 'C' if arr_copy.flags['C_CONTIGUOUS'] else 'F'
                 train_arr = \
-                    np.empty(shape=(n_train, n_cols), dtype=arr_copy.dtype, order=order)
+                    np.empty(
+                        shape=(
+                            n_train,
+                            n_cols),
+                        dtype=arr_copy.dtype,
+                        order=order)
                 test_arr = \
-                    np.empty(shape=(n_test, n_cols), dtype=arr_copy.dtype, order=order)
-                d4p.daal_train_test_split(arr_copy, train_arr, test_arr, [train], [test])
+                    np.empty(
+                        shape=(
+                            n_test,
+                            n_cols),
+                        dtype=arr_copy.dtype,
+                        order=order)
+                d4p.daal_train_test_split(
+                    arr_copy, train_arr, test_arr, [train], [test])
                 if reshape_later:
                     train_arr, test_arr = \
-                        train_arr.reshape((n_train,)), test_arr.reshape((n_test,))
+                        train_arr.reshape(
+                            (n_train,)), test_arr.reshape(
+                            (n_test,))
             elif isinstance(arr_copy, list):
                 train_arr = [
                     np.empty(
@@ -184,9 +198,12 @@ def _daal_train_test_split(*arrays, **options):
                         order='C' if el.flags['C_CONTIGUOUS'] else 'F'
                     ) for el in arr_copy
                 ]
-                d4p.daal_train_test_split(arr_copy, train_arr, test_arr, [train], [test])
-                train_arr = {col: train_arr[i] for i, col in enumerate(arr.columns)}
-                test_arr = {col: test_arr[i] for i, col in enumerate(arr.columns)}
+                d4p.daal_train_test_split(
+                    arr_copy, train_arr, test_arr, [train], [test])
+                train_arr = {col: train_arr[i]
+                             for i, col in enumerate(arr.columns)}
+                test_arr = {col: test_arr[i]
+                            for i, col in enumerate(arr.columns)}
             else:
                 raise ValueError('Array can\'t be converted to needed format')
 
@@ -197,7 +214,8 @@ def _daal_train_test_split(*arrays, **options):
                 if isinstance(arr, pd.core.series.Series):
                     train_arr, test_arr = \
                         train_arr.reshape(n_train), test_arr.reshape(n_test)
-                    train_arr, test_arr = pd.Series(train_arr), pd.Series(test_arr)
+                    train_arr, test_arr = pd.Series(
+                        train_arr), pd.Series(test_arr)
 
             if hasattr(arr, 'index'):
                 train_arr.index = train

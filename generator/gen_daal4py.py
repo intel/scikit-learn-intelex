@@ -875,9 +875,8 @@ class cython_interface(object):
                                           doc='enable distributed computation (SPMD)')
         else:
             retjp['distributed'] = mk_var()
-        if all([not no_stream,
-                'Online' in self.namespace_dict[ns].classes,
-                not ns.endswith('pca')]):
+        if not no_stream and 'Online' in self.namespace_dict[ns].classes and \
+                not ns.endswith('pca'):
             retjp['streaming'] = mk_var('streaming', 'bool',
                                         dflt=True, algo=func,
                                         doc='enable streaming')
@@ -980,9 +979,9 @@ class cython_interface(object):
             '', '', '#define NO_IMPORT_ARRAY\n#include "daal4py_cpp.h"\n', '', '', ''
 
         for ns in algos:
-            if all([ns.startswith('algorithms::'),
-                    not ns.startswith('algorithms::neural_networks'),
-                    self.namespace_dict[ns].enums]):
+            if ns.startswith('algorithms::') and \
+               not ns.startswith('algorithms::neural_networks') and \
+                    self.namespace_dict[ns].enums:
                 cpp_begin += 'static str2i_map_t s2e_' + ns.replace('::', '_') + ' =\n{\n'
                 for e in self.namespace_dict[ns].enums:
                     for v in self.namespace_dict[ns].enums[e]:
@@ -1039,8 +1038,8 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False,
     if warn_all:
         no_warn = {}
     orig_path = jp(daalroot, 'include')
-    assert all([os.path.isfile(jp(orig_path, 'algorithms', 'algorithm.h')),
-                os.path.isfile(jp(orig_path, 'algorithms', 'model.h'))]), \
+    assert os.path.isfile(jp(orig_path, 'algorithms', 'algorithm.h')) and \
+           os.path.isfile(jp(orig_path, 'algorithms', 'model.h')), \
            "Path/$DAALROOT '" + orig_path + \
            "' doesn't seem host oneDAL headers. Please provide correct daalroot."
     head_path = jp("build", "include")

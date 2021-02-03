@@ -68,9 +68,9 @@ def parse_auto_method(estimator, method, n_samples, n_features):
     result_method = method
 
     if (method in ['auto', 'ball_tree']):
-        if estimator.metric == 'precomputed' or n_features > 11 or \
-           all([estimator.n_neighbors is not None,
-                estimator.n_neighbors >= estimator.n_samples_fit_ // 2]):
+        condition = estimator.n_neighbors is not None and \
+            estimator.n_neighbors >= estimator.n_samples_fit_ // 2
+        if estimator.metric == 'precomputed' or n_features > 11 or condition:
             result_method = 'brute'
         else:
             if estimator.effective_metric_ in KDTree.valid_metrics:
@@ -108,7 +108,8 @@ def daal4py_fit(estimator, X, fptype):
     estimator._daal_model = train_alg.compute(X, labels).model
 
 
-def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True):
+def daal4py_kneighbors(estimator, X=None, n_neighbors=None,
+                       return_distance=True):
     n_features = getattr(estimator, 'n_features_in_', None)
     shape = getattr(X, 'shape', None)
     if n_features and shape and len(shape) > 1 and shape[1] != n_features:
@@ -354,10 +355,11 @@ class NeighborsBase(BaseNeighborsBase):
                     "enter integer value" %
                     type(self.n_neighbors))
 
+        condition = (self.metric == 'minkowski' and self.p == 2) or \
+            self.metric == 'euclidean'
         if not X_incorrect_type and weights in ['uniform', 'distance'] \
             and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
-            and any([(self.metric == 'minkowski' and self.p == 2),
-                     self.metric == 'euclidean']) \
+            and condition \
             and single_output and fptype is not None and not sp.issparse(X) and \
                 correct_n_classes:
             try:
@@ -387,14 +389,17 @@ class KNeighborsMixin(BaseKNeighborsMixin):
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         daal_model = getattr(self, '_daal_model', None)
         if X is not None:
-            X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
+            X = check_array(
+                X, accept_sparse='csr', dtype=[
+                    np.float64, np.float32])
         x = self._fit_X if X is None else X
         try:
             fptype = getFPType(x)
         except ValueError:
             fptype = None
 
-        if daal_model is not None and fptype is not None and not sp.issparse(X):
+        if daal_model is not None and fptype is not None and not sp.issparse(
+                X):
             logging.info(
                 "sklearn.neighbors.KNeighborsMixin."
                 "kneighbors: " + get_patch_message("daal"))
