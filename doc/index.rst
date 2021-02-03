@@ -164,17 +164,17 @@ Sources and build instructions are available in
 
      pip install daal4py
 
-- Install from Anaconda Cloud - Conda-Forge channel::
+- Install from Anaconda Cloud: Conda-Forge channel::
 
      сonda install daal4py -c conda-forge
 
-- Install from Anaconda Cloud - Intel channel::
+- Install from Anaconda Cloud: Intel channel::
 
     conda install daal4py -c intel
 
-We recommend **PyPi** first of all for use. If you using of Intel python,
-we recommend using **Anaconda Cloud : Intel channel**.
-For other case - **Anaconda Cloud : conda-forge channel**.
+We recommend to use **PyPi**. If you are using Intel® Distribution for Python,
+we recommend using **Anaconda Cloud: Intel channel**.
+In other cases, use **Anaconda Cloud: conda-forge channel**.
 
 Supported configurations
 ------------------------
@@ -272,7 +272,7 @@ Supported configurations
 
 .. note::
     It supports Intel CPU and GPU except on OsX.
-    Recommended for conda users who use other components from Intel Distribution for Python.
+    Recommended for conda users who use other components from Intel(R) Distribution for Python.
 
 Overview
 --------

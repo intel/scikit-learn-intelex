@@ -50,7 +50,7 @@ Applying the monkey patch will impact the following existing scikit-learn
 algorithms:
 
 .. list-table::
-   :widths: 10 10 25 10
+   :widths: 10 10 30 15
    :header-rows: 1
    :align: left
 

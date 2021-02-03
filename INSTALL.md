@@ -50,7 +50,7 @@ To actually use your daal4py, dependent packages need to be installed. To ensure
 
 Linux and Windows:
 ```
-conda install -c intel mpi_rt daal numpy
+conda install -c intel impi_rt daal numpy
 ```
 OsX:
 ```

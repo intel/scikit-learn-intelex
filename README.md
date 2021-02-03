@@ -90,7 +90,7 @@ conda install daal4py -c intel
 You can [build daal4py from sources](INSTALL.md) as well.
 
 # ⚡️ Get Started
-Accelerate scikit-learn with the core functionality of dall4py without changing the code.
+Accelerate scikit-learn with the core functionality of daal4py without changing the code.
 
 Intel CPU optimizations patching
 ```py
