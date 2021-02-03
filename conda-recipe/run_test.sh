@@ -25,7 +25,7 @@ python -c "import daal4py"
 kek=$?
 echo "Exit code = $kek"
 ok=$(($ok + $kek))
-
+echo "NO_DIST = $NO_DIST"
 if ! $NO_DIST; then
     echo "Running mpirun"
     mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
