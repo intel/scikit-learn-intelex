@@ -41,11 +41,11 @@ daal4py is available at the [Python Package Index](https://pypi.org/project/daal
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal4py)
 and in [Intel channel](https://anaconda.org/intel/daal4py).
 
-### PyPi channel
+### 📦 PyPi channel
 [![PyPI Version](https://img.shields.io/pypi/v/daal4py)](https://pypi.org/project/daal4py/)
+[![Downloads](https://pepy.tech/badge/daal4py/month)](https://pypi.org/project/daal4py/)
 
 ```bash
-# PyPi
 pip install daal4py
 ```
 <details><summary>[Click to expand] ⚠️ Package limitations </summary>
@@ -64,11 +64,11 @@ Has support Intel CPU and GPU.
 
 </details>
 
-### Anaconda Cloud - Conda-Forge channel
+### 📦 Anaconda Cloud - Conda-Forge channel
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/daal4py)](https://anaconda.org/conda-forge/daal4py)
+[![Downloads](https://img.shields.io/conda/dn/conda-forge/daal4py.svg)](https://anaconda.org/conda-forge/daal4py)
 
 ```bash
-# Anaconda Cloud from Conda-Forge channel
 conda install daal4py -c conda-forge
 ```
 <details><summary>[Click to expand] ⚠️ Package limitations </summary>
@@ -87,11 +87,11 @@ Has support only Intel CPU.
 
 </details>
 
-### Anaconda Cloud - Intel channel
+### 📦 Anaconda Cloud - Intel channel
 [![Conda Version](https://anaconda.org/intel/daal4py/badges/version.svg)](https://anaconda.org/intel/daal4py)
+[![Downloads](https://img.shields.io/conda/dn/intel/daal4py.svg)](https://anaconda.org/intel/daal4py)
 
 ```bash
-# Anaconda Cloud from Intel channel
 conda install daal4py -c intel
 ```
 
