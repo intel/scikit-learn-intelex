@@ -310,7 +310,7 @@ def getpyexts():
                             for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
     if IS_LIN:
-        ela.append("-Wl,-rpath,$ORIGIN/../..")    
+        ela.append("-Wl,-rpath,$ORIGIN/../..")
 
     exts = cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
