@@ -399,9 +399,14 @@ project_urls = {
     'Source Code': 'https://github.com/IntelPython/daal4py'
 }
 
+with open('README.md') as f:
+    long_description = f.read()
+
 # daal setup
 setup(name="daal4py",
       description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
+      long_description=long_description,
+      license="Apache-2.0",
       author="Intel",
       version=d4p_version,
       url='https://github.com/IntelPython/daal4py',
