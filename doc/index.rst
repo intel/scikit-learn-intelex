@@ -174,7 +174,7 @@ Sources and build instructions are available in
 
 We recommend **PyPi** first of all for use. If you using of Intel python,
 we recommend using **Anaconda Cloud : Intel channel**.
-For other case - Anaconda Cloud : conda-forge channel.
+For other case - **Anaconda Cloud : conda-forge channel**.
 
 Supported configurations
 ------------------------
@@ -208,7 +208,7 @@ Supported configurations
      - ❌
 
 .. note::
-    It supports Intel CPU and GPU expect OsX.
+    It supports Intel CPU and GPU except on OsX.
 
 **Anaconda Cloud: Conda-Forge channel**
 
@@ -239,7 +239,7 @@ Supported configurations
      - ❌
 
 .. note::
-    It supports Intel CPU and GPU expect OsX.
+    It supports Intel CPU and GPU except on OsX.
     Recommended for conda users by default.
 
 **Anaconda Cloud: Intel channel**
@@ -271,7 +271,7 @@ Supported configurations
      - ❌
 
 .. note::
-    It supports Intel CPU and GPU expect OsX.
+    It supports Intel CPU and GPU except on OsX.
     Recommended for conda users who use other components from Intel Distribution for Python.
 
 Overview
