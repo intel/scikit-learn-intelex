@@ -140,7 +140,7 @@ class PCA(PCA_original):
 
         self._fit_full_daal4py(X, min(X.shape))
 
-        U = self._transform_daal4py(X, whiten=True, check_X=False, scale_eigenvalues=True)
+        U = None
         V = self.components_
         S = self.singular_values_
 
@@ -176,10 +176,9 @@ class PCA(PCA_original):
 
         if sklearn_check_version('0.23'):
             X = self._validate_data(X, dtype=[np.float64, np.float32],
-                                    ensure_2d=True, copy=self.copy)
+                                    ensure_2d=True, copy=False)
         else:
-            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True,
-                            copy=self.copy)
+            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
 
         if self.n_components is None:
             if self.svd_solver != 'arpack':
@@ -191,6 +190,7 @@ class PCA(PCA_original):
 
         self._fit_svd_solver = self.svd_solver
         shape_good_for_daal = X.shape[1] / X.shape[0] < 2
+
         if self._fit_svd_solver == 'auto':
             if max(X.shape) <= 500 or n_components == 'mle':
                 self._fit_svd_solver = 'full'
@@ -199,6 +199,12 @@ class PCA(PCA_original):
                 self._fit_svd_solver = 'randomized'
             else:
                 self._fit_svd_solver = 'full'
+
+        if not shape_good_for_daal or self._fit_svd_solver != 'full':
+            if sklearn_check_version('0.23'):
+                X = self._validate_data(X, copy=self.copy)
+            else:
+                X = check_array(X, copy=self.copy)
 
         if self._fit_svd_solver == 'full':
             if shape_good_for_daal:
@@ -269,15 +275,23 @@ class PCA(PCA_original):
             return PCA_original.transform(self, X)
 
     def fit_transform(self, X, y=None):
-        fit_result = self._fit(X)
+        U, S, _ = self._fit(X)
 
-        if self._fit_svd_solver == 'full':
+        if U is None:
             if self.n_components_ > 0:
-                return self._transform_daal4py(
+                logging.info(
+                    "sklearn.decomposition.PCA."
+                    "fit_transform: " + get_patch_message("daal"))
+
+                result = self._transform_daal4py(
                     X, whiten=self.whiten, check_X=False, scale_eigenvalues=False)
-            return np.empty((self.n_samples_, 0), dtype=X.dtype)
+            else:
+                result = np.empty((self.n_samples_, 0), dtype=X.dtype)
         else:
-            U, S, _ = fit_result
+            logging.info(
+                "sklearn.decomposition.PCA."
+                "fit_transform: " + get_patch_message("sklearn"))
+
             U = U[:, :self.n_components_]
 
             if self.whiten:
@@ -285,4 +299,6 @@ class PCA(PCA_original):
             else:
                 U *= S[:self.n_components_]
 
-            return U
+            result = U
+
+        return result
