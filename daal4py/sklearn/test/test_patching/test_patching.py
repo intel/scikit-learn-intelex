@@ -19,6 +19,7 @@ import subprocess
 import sys
 import pytest
 
+
 def get_method(s):
     cnt = 0
     ind = -1
@@ -80,6 +81,7 @@ TO_SKIP = [
     r'RandomForestClassifier .*predict_log_proba',
 ]
 
+
 def get_result_log():
     process = subprocess.run(
         [
@@ -101,6 +103,8 @@ def get_result_log():
 
 
 result_log = get_result_log()
+
+
 @pytest.mark.parametrize('configuration', result_log)
 def test_patching(configuration):
     if 'OPT' in result_log[configuration]:
