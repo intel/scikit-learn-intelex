@@ -17,6 +17,7 @@
 import numpy as np
 import daal4py as d4p
 import logging
+import random
 
 from daal4py.sklearn import patch_sklearn
 patch_sklearn()
@@ -37,6 +38,7 @@ from sklearn.linear_model import (
 from sklearn.cluster import (KMeans, DBSCAN)
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
+from sklearn.metrics import pairwise_distances, roc_auc_score
 from sklearn.datasets import (
     make_regression,
     load_iris,
@@ -194,6 +196,24 @@ def run_patch(model_info, dtype):
 
 
 if __name__ == '__main__':
+    # algorithms
     for info in MODELS_INFO:
         for t in TYPES:
             run_patch(info, t)
+    # pairwise_distances
+    for metric in ['cosine', 'correlation']:
+        for t in TYPES:
+            X = np.random.rand(1000)
+            X = np.array(X, dtype=t[0])
+            print('pairwise_distances', t[1])
+            res = pairwise_distances(X.reshape(1, -1), metric=metric)
+            logging.info('pairwise_distances')
+    # roc_auc_score
+    for t in TYPES:
+        a = [random.randint(0, 1) for i in range(1000)]
+        b = [random.randint(0, 1) for i in range(1000)]
+        a = np.array(a, dtype=t[0])
+        b = np.array(b, dtype=t[0])
+        print('roc_auc_score', t[1])
+        res = roc_auc_score(a, b)
+        logging.info('roc_auc_score')
