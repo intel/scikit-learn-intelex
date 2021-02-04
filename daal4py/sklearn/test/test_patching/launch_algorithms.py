@@ -68,11 +68,11 @@ MODELS_INFO = [
         'methods': ['decision_function', 'predict', 'predict_proba', 'score'],
         'dataset': 'classifier',
     },
-    {
-        'model': TSNE(),
-        'methods': ['fit_transform'],
-        'dataset': 'classifier',
-    },
+    # {
+    #     'model': TSNE(),
+    #     'methods': ['fit_transform'],
+    #     'dataset': 'classifier',
+    # },
     {
         'model': KMeans(),
         'methods': ['fit_predict', 'fit_transform', 'transform', 'predict', 'score'],

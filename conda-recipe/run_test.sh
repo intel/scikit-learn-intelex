@@ -28,13 +28,12 @@ if ! $NO_DIST; then
     ok=$(($ok + $?))
 fi
 
-pytest --pyargs daal4py/sklearn/
-ok=$(($ok + $?))
-
 python -m unittest discover -v -s tests -p test*.py
 ok=$(($ok + $?))
 
-python daal4py/sklearn/test/test_patching/test_patching.py
+export IDP_SKLEARN_VERBOSE=INFO
+pytest --pyargs daal4py/sklearn/
 ok=$(($ok + $?))
+unset IDP_SKLEARN_VERBOSE
 
 exit $ok
