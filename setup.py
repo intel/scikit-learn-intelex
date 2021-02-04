@@ -25,7 +25,11 @@ from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 import glob
 import numpy as np
+<<<<<<< HEAD
 import distutils.ccompiler
+=======
+import re
+>>>>>>> 2ce9a6b... setup.py refactoring part 1
 
 try:
     from ctypes.utils import find_library
@@ -134,9 +138,6 @@ d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
-if not no_dist and sys.version_info <= (3, 6):
-    print('distributed mode not supported for python version < 3.6\n')
-    no_dist = True
 no_stream = 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
@@ -144,22 +145,6 @@ dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
 dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
-#itac_root = os.environ['VT_ROOT']
-IS_WIN = False
-IS_MAC = False
-IS_LIN = False
-
-if 'linux' in sys.platform:
-    IS_LIN = True
-    lib_dir = jp(dal_root, 'lib', 'intel64')
-elif sys.platform == 'darwin':
-    IS_MAC = True
-    lib_dir = jp(dal_root, 'lib')
-elif sys.platform in ['win32', 'cygwin']:
-    IS_WIN = True
-    lib_dir = jp(dal_root, 'lib', 'intel64')
-else:
-    assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 DAAL_LIBDIRS = [daal_lib_dir]
@@ -310,6 +295,7 @@ def getpyexts():
                             for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
     if IS_LIN:
+        ela.append("-fPIC")
         ela.append("-Wl,-rpath,$ORIGIN/../..")
 
     exts = cythonize([Extension('_daal4py',
@@ -405,15 +391,30 @@ project_urls = {
 with open('README.md') as f:
     long_description = f.read()
 
+install_requires = []
+with open('requirements.txt') as f:
+    install_requires.extend(f.read().splitlines())
+    if IS_MAC:
+        for i, r in enumerate(install_requires):
+            if "dpcpp_cpp_rt" in r:
+                install_requires.remove(r)
+                break
+
+setup_requires = []
+with open('requirements-dev.txt') as f:
+    setup_requires.extend(f.read().splitlines())
+
 # daal setup
-setup(name="daal4py",
-      description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
-      long_description=long_description,
-      license="Apache-2.0",
-      author="Intel",
-      version=d4p_version,
-      url='https://github.com/IntelPython/daal4py',
-      project_urls=project_urls,
+setup(name             = "daal4py",
+      description      = "A convenient Python API to Intel(R) oneAPI Data Analytics Library",
+      long_description = long_description,
+      license          = "Apache-2.0",
+      author           = "Intel",
+      version          = d4p_version,
+      url              = 'https://github.com/IntelPython/daal4py',
+      author_email     = "onedal.maintainers@intel.com",
+      maintainer_email = "onedal.maintainers@intel.com",
+      project_urls     = project_urls,
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
@@ -425,12 +426,23 @@ setup(name="daal4py",
           'Operating System :: Microsoft :: Windows',
           'Operating System :: POSIX :: Linux',
           'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
           'Topic :: Scientific/Engineering',
           'Topic :: System',
           'Topic :: Software Development',
       ],
-      setup_requires=['numpy>=1.14', 'cython', 'jinja2'],
-      install_requires=['numpy>=1.14', 'daal', 'dpcpp_cpp_rt'],
+      python_requires  = '>=3.6',
+      setup_requires   = setup_requires,
+      install_requires = install_requires,
+      keywords = [
+          'machine learning',
+          'scikit-learn',
+          'data science',
+          'data analytics'
+      ],
       packages=['daal4py',
                 'daal4py.oneapi',
                 'daal4py.sklearn',
