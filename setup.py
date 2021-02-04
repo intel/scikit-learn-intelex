@@ -210,7 +210,7 @@ if dpcpp:
         else:
             DPCTL_LIBDIRS = [jp(dpctl_root, 'lib')]
         DPCTL_INCDIRS = [jp(dpctl_root, 'include')]
-        DPCTL_LIBS = ['DPPLSyclInterface']
+        DPCTL_LIBS = ['DPCTLSyclInterface']
     else:
         DPCTL_INCDIRS = []
         DPCTL_LIBDIRS = []

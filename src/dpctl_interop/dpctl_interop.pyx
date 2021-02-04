@@ -18,11 +18,11 @@
 # cython: language_level=2
 
 cdef extern from "dpctl_interop/daal_context_service.h":
-    void _dppl_set_current_queue_to_daal_context() except +
-    void _dppl_reset_daal_context() except +
+    void _dpctl_set_current_queue_to_daal_context() except +
+    void _dpctl_reset_daal_context() except +
 
 def set_current_queue_to_daal_context():
-    _dppl_set_current_queue_to_daal_context()
+    _dpctl_set_current_queue_to_daal_context()
 
 def reset_daal_context():
-    _dppl_reset_daal_context()
+    _dpctl_reset_daal_context()

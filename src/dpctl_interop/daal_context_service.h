@@ -17,8 +17,8 @@
 #ifndef __DAAL_CONTEXT_SERVICE_H_INCLUDED__
 #define __DAAL_CONTEXT_SERVICE_H_INCLUDED__
 
-void _dppl_set_current_queue_to_daal_context();
+void _dpctl_set_current_queue_to_daal_context();
 
-void _dppl_reset_daal_context();
+void _dpctl_reset_daal_context();
 
 #endif // __DAAL_CONTEXT_SERVICE_H_INCLUDED__
