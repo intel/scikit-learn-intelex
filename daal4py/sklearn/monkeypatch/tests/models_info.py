@@ -131,3 +131,23 @@ TYPES = [
     (np.uint32, 'uint32'),
     (np.uint64, 'uint64'),
 ]
+
+TO_SKIP = [
+    # --------------- NO INFO ---------------
+    r'KMeans .*transform',
+    r'KMeans .*score',
+    r'PCA .*score',
+    r'LogisticRegression .*decision_function',
+    r'LogisticRegressionCV .*decision_function',
+    r'LogisticRegressionCV .*predict',
+    r'LogisticRegressionCV .*predict_proba',
+    r'LogisticRegressionCV .*predict_log_proba',
+    r'LogisticRegressionCV .*score',
+    # --------------- Scikit ---------------
+    r'Ridge float16 predict',
+    r'Ridge float16 score',
+    r'RandomForestClassifier .*predict_proba',
+    r'RandomForestClassifier .*predict_log_proba',
+    r'pairwise_distances .*pairwise_distances',  # except float64
+    r'roc_auc_score .*roc_auc_score',  # except float32 and float64
+]

@@ -17,7 +17,6 @@
 import numpy as np
 import logging
 import random
-import sys
 
 from daal4py.sklearn import patch_sklearn
 patch_sklearn()
@@ -27,7 +26,11 @@ from sklearn.datasets import (
     make_regression,
     load_iris,
     load_diabetes)
-sys.path.append('daal4py/sklearn/monkeypatch/tests')
+
+import sys
+import pathlib
+absolute_path = str(pathlib.Path(__file__).parent.absolute())
+sys.path.append(absolute_path + '/../')
 from models_info import MODELS_INFO, TYPES
 
 
