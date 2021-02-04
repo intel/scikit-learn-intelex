@@ -306,7 +306,6 @@ TO_SKIP = [
     'KMeans',  # Absolute diff is 1e-8
     'ElasticNet',  # Absolute diff is 1e-13
     'Lasso',  # Absolute diff is 1e-13
-    'PCA',  # Absolute diff is 1e-15
     'LogisticRegression',  # Absolute diff is 1e-8, will be fixed for next release
     'LogisticRegressionCV',  # Absolute diff is 1e-10, will be fixed for next release
     'RandomForestClassifier',  # will be fixed for next release
