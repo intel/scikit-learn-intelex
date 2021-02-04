@@ -25,11 +25,7 @@ from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 import glob
 import numpy as np
-<<<<<<< HEAD
 import distutils.ccompiler
-=======
-import re
->>>>>>> 2ce9a6b... setup.py refactoring part 1
 
 try:
     from ctypes.utils import find_library
