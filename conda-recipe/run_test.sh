@@ -31,9 +31,7 @@ fi
 python -m unittest discover -v -s tests -p test*.py
 ok=$(($ok + $?))
 
-export IDP_SKLEARN_VERBOSE=INFO
 pytest --pyargs daal4py/sklearn/
 ok=$(($ok + $?))
-unset IDP_SKLEARN_VERBOSE
 
 exit $ok

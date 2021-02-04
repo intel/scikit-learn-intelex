@@ -17,7 +17,28 @@
 import re
 import subprocess
 import sys
+import os
 import pytest
+
+TO_SKIP = [
+    # --------------- NO INFO ---------------
+    r'KMeans .*transform',
+    r'KMeans .*score',
+    r'PCA .*score',
+    r'LogisticRegression .*decision_function',
+    r'LogisticRegressionCV .*decision_function',
+    r'LogisticRegressionCV .*predict',
+    r'LogisticRegressionCV .*predict_proba',
+    r'LogisticRegressionCV .*predict_log_proba',
+    r'LogisticRegressionCV .*score',
+    # --------------- Scikit ---------------
+    r'Ridge float16 predict',
+    r'Ridge float16 score',
+    r'RandomForestClassifier .*predict_proba',
+    r'RandomForestClassifier .*predict_log_proba',
+    r'pairwise_distances .*pairwise_distances',  # except float64
+    r'roc_auc_score .*roc_auc_score',  # except float32 and float64
+]
 
 
 def get_method(s):
@@ -49,32 +70,12 @@ def run_parse(mas, result):
             temp.append(mas[i])
 
 
-TO_SKIP = [
-    # --------------- NO INFO ---------------
-    r'KMeans .*transform',
-    r'KMeans .*score',
-    r'PCA .*score',
-    r'LogisticRegression .*decision_function',
-    r'LogisticRegressionCV .*decision_function',
-    r'LogisticRegressionCV .*predict',
-    r'LogisticRegressionCV .*predict_proba',
-    r'LogisticRegressionCV .*predict_log_proba',
-    r'LogisticRegressionCV .*score',
-    # --------------- Scikit ---------------
-    r'Ridge float16 predict',
-    r'Ridge float16 score',
-    r'RandomForestClassifier .*predict_proba',
-    r'RandomForestClassifier .*predict_log_proba',
-    r'pairwise_distances .*pairwise_distances',  # except float64
-    r'roc_auc_score .*roc_auc_score',  # except float32 and float64
-]
-
-
 def get_result_log():
+    os.environ['IDP_SKLEARN_VERBOSE'] = 'INFO'
     process = subprocess.run(
         [
             sys.executable,
-            'daal4py/sklearn/test/test_patching/launch_algorithms.py'
+            'daal4py/sklearn/monkeypatch/tests/utils/launch_algorithms.py'
         ],
         capture_output=True, text=True
     )
@@ -87,6 +88,7 @@ def get_result_log():
             mas.append(i.strip())
         else:
             mas.append(i.strip())
+    del os.environ['IDP_SKLEARN_VERBOSE']
     return result
 
 
