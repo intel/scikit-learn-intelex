@@ -21,21 +21,7 @@ import pytest
 
 
 def get_method(s):
-    cnt = 0
-    ind = -1
-    for i, elem in enumerate(s):
-        if elem == '.':
-            cnt += 1
-        if cnt == 3:
-            ind = i
-            break
-    assert ind != -1, "Bad string"
-    method = ''
-    for i in range(ind + 1, len(s)):
-        if s[i] == ':':
-            break
-        method += s[i]
-    return method
+    return s.split('.')[3].split(':')[0]
 
 
 def get_branch(s):
