@@ -68,6 +68,7 @@ def get_result_log():
     mas = []
     result = {}
     for i in process.stdout.split('\n'):
+        print(i)
         if not i.startswith('INFO') and len(mas) != 0:
             run_parse(mas, result)
             mas.clear()
@@ -83,7 +84,7 @@ result_log = get_result_log()
 
 @pytest.mark.parametrize('configuration', result_log)
 def test_patching(configuration):
-    print(configuration, result_log[configuration])
+    # print(configuration, result_log[configuration])
     if 'OPT' in result_log[configuration]:
         return
     for skip in TO_SKIP:
