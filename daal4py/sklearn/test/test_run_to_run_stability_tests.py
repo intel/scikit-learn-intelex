@@ -319,7 +319,7 @@ TO_SKIP = [
 @pytest.mark.parametrize('model_head', MODELS_INFO)
 def test_models(model_head):
     stable_algos = ['RandomForestClassifier', 'RandomForestRegressor',
-        'PCA', 'LinearRegression', 'Ridge']
+                    'PCA', 'LinearRegression', 'Ridge']
     if get_class_name(model_head['model']) in stable_algos \
             and daal_check_version((2021, 'P', 200)):
         TO_SKIP.remove(get_class_name(model_head['model']))
