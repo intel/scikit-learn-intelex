@@ -89,14 +89,15 @@ def run_algotithms():
         for t in TYPES:
             run_patch(info, t)
 
+
 def run_utils():
     # pairwise_distances
     for metric in ['cosine', 'correlation']:
         for t in TYPES:
             X = np.random.rand(1000)
             X = np.array(X, dtype=t)
-            print('pairwise_distances', t__name__)
-            res = pairwise_distances(X.reshape(1, -1), metric=metric)
+            print('pairwise_distances', t.__name__)
+            _ = pairwise_distances(X.reshape(1, -1), metric=metric)
             logging.info('pairwise_distances')
     # roc_auc_score
     for t in TYPES:
@@ -104,8 +105,8 @@ def run_utils():
         b = [random.randint(0, 1) for i in range(1000)]
         a = np.array(a, dtype=t)
         b = np.array(b, dtype=t)
-        print('roc_auc_score', t__name__)
-        res = roc_auc_score(a, b)
+        print('roc_auc_score', t.__name__)
+        _ = roc_auc_score(a, b)
         logging.info('roc_auc_score')
 
 
