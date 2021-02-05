@@ -20,11 +20,13 @@ import sys
 import os
 import pathlib
 import pytest
-from models_info import TO_SKIP
+from _models_info import TO_SKIP
 
 
 def get_method(s):
-    return s.split('.')[3].split(':')[0]
+    METHOD_AND_BRANCH_POS = 3
+    METHOD_POS = 0
+    return s.split('.')[METHOD_AND_BRANCH_POS].split(':')[METHOD_POS]
 
 
 def get_branch(s):
@@ -42,8 +44,9 @@ def get_branch(s):
 def run_parse(mas, result):
     name, dtype = mas[0].split()
     temp = []
+    INFO_POS = 6
     for i in range(1, len(mas)):
-        mas[i] = mas[i][6:]
+        mas[i] = mas[i][INFO_POS:]  # remove 'INFO: '
         if not mas[i].startswith('sklearn'):
             ind = name + ' ' + dtype + ' ' + mas[i]
             result[ind] = get_branch(temp)
@@ -58,7 +61,7 @@ def get_result_log():
     process = subprocess.run(
         [
             sys.executable,
-            absolute_path + '/utils/launch_algorithms.py'
+            absolute_path + '/utils/_launch_algorithms.py'
         ],
         capture_output=True, text=True
     )

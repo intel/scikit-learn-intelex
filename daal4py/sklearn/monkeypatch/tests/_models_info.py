@@ -59,11 +59,11 @@ MODELS_INFO = [
         'methods': ['decision_function', 'predict', 'predict_proba', 'score'],
         'dataset': 'classifier',
     },
-    {
-        'model': TSNE(),
-        'methods': ['fit_transform'],
-        'dataset': 'classifier',
-    },
+    # {
+    #     'model': TSNE(),
+    #     'methods': ['fit_transform'],
+    #     'dataset': 'classifier',
+    # },
     {
         'model': KMeans(),
         'methods': ['fit_predict', 'fit_transform', 'transform', 'predict', 'score'],
@@ -119,17 +119,17 @@ MODELS_INFO = [
 ]
 
 TYPES = [
-    (np.int8, 'int8'),
-    (np.int16, 'int16'),
-    (np.int32, 'int32'),
-    (np.int64, 'int64'),
-    (np.float16, 'float16'),
-    (np.float32, 'float32'),
-    (np.float64, 'float64'),
-    (np.uint8, 'uint8'),
-    (np.uint16, 'uint16'),
-    (np.uint32, 'uint32'),
-    (np.uint64, 'uint64'),
+    np.int8,
+    np.int16,
+    np.int32,
+    np.int64,
+    np.float16,
+    np.float32,
+    np.float64,
+    np.uint8,
+    np.uint16,
+    np.uint32,
+    np.uint64,
 ]
 
 TO_SKIP = [

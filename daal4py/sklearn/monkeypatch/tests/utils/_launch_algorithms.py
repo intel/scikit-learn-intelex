@@ -31,7 +31,7 @@ import sys
 import pathlib
 absolute_path = str(pathlib.Path(__file__).parent.absolute())
 sys.path.append(absolute_path + '/../')
-from models_info import MODELS_INFO, TYPES
+from _models_info import MODELS_INFO, TYPES
 
 
 def get_class_name(x):
@@ -53,9 +53,9 @@ def generate_dataset(name, dtype, model_name):
 
 
 def run_patch(model_info, dtype):
-    print(get_class_name(model_info['model']), dtype[1])
+    print(get_class_name(model_info['model']), dtype.__name__)
     X, y = generate_dataset(model_info['dataset'],
-                            dtype[0],
+                            dtype,
                             get_class_name(model_info['model']))
     model = model_info['model']
     model.fit(X, y)
@@ -84,25 +84,31 @@ def run_patch(model_info, dtype):
         logging.info(i)
 
 
-if __name__ == '__main__':
-    # algorithms
+def run_algotithms():
     for info in MODELS_INFO:
         for t in TYPES:
             run_patch(info, t)
+
+def run_utils():
     # pairwise_distances
     for metric in ['cosine', 'correlation']:
         for t in TYPES:
             X = np.random.rand(1000)
-            X = np.array(X, dtype=t[0])
-            print('pairwise_distances', t[1])
+            X = np.array(X, dtype=t)
+            print('pairwise_distances', t__name__)
             res = pairwise_distances(X.reshape(1, -1), metric=metric)
             logging.info('pairwise_distances')
     # roc_auc_score
     for t in TYPES:
         a = [random.randint(0, 1) for i in range(1000)]
         b = [random.randint(0, 1) for i in range(1000)]
-        a = np.array(a, dtype=t[0])
-        b = np.array(b, dtype=t[0])
-        print('roc_auc_score', t[1])
+        a = np.array(a, dtype=t)
+        b = np.array(b, dtype=t)
+        print('roc_auc_score', t__name__)
         res = roc_auc_score(a, b)
         logging.info('roc_auc_score')
+
+
+if __name__ == '__main__':
+    run_algotithms()
+    run_utils()
