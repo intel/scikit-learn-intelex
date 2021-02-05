@@ -431,7 +431,6 @@ setup(name="daal4py",
           'Topic :: Software Development',
       ],
       python_requires='>=3.6',
-      setup_requires=setup_requires,
       install_requires=install_requires,
       keywords=[
           'machine learning',
