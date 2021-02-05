@@ -28,10 +28,10 @@ if ! $NO_DIST; then
     ok=$(($ok + $?))
 fi
 
-pytest --pyargs daal4py/sklearn/
+python -m unittest discover -v -s tests -p test*.py
 ok=$(($ok + $?))
 
-python -m unittest discover -v -s tests -p test*.py
+pytest --pyargs daal4py/sklearn/
 ok=$(($ok + $?))
 
 exit $ok
