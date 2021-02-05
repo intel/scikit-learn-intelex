@@ -133,8 +133,6 @@ class PCA(PCA_original):
         self.singular_values_ = np.sqrt((n_samples - 1) * self.explained_variance_)
 
     def _fit_full(self, X, n_components):
-        X = check_array(X, dtype=[np.float64, np.float32])
-
         n_samples, n_features = X.shape
         self._validate_n_components(n_components, n_samples, n_features)
 
