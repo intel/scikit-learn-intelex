@@ -306,6 +306,7 @@ TO_SKIP = [
     'KMeans',  # Absolute diff is 1e-8
     'ElasticNet',  # Absolute diff is 1e-13
     'Lasso',  # Absolute diff is 1e-13
+    'PCA',  # Absolute diff is 1e-15
     'LogisticRegression',  # Absolute diff is 1e-8, will be fixed for next release
     'LogisticRegressionCV',  # Absolute diff is 1e-10, will be fixed for next release
     'RandomForestClassifier',  # will be fixed for next release
@@ -317,12 +318,11 @@ TO_SKIP = [
 
 @pytest.mark.parametrize('model_head', MODELS_INFO)
 def test_models(model_head):
-    if (get_class_name(model_head['model']) == 'RandomForestClassifier') \
+    stable_algos = ['RandomForestClassifier', 'RandomForestRegressor',
+        'PCA', 'LinearRegression', 'Ridge']
+    if get_class_name(model_head['model']) in stable_algos \
             and daal_check_version((2021, 'P', 200)):
-        TO_SKIP.remove('RandomForestClassifier')
-    if (get_class_name(model_head['model']) == 'RandomForestRegressor') \
-            and daal_check_version((2021, 'P', 200)):
-        TO_SKIP.remove('RandomForestRegressor')
+        TO_SKIP.remove(get_class_name(model_head['model']))
     if get_class_name(model_head['model']) in TO_SKIP:
         pytest.skip("Unstable", allow_module_level=False)
     _run_test(model_head['model'], model_head['methods'], model_head['dataset'])
