@@ -169,6 +169,9 @@ deselected_tests:
   # Assertion error in check_estimator(PoorScoreLogisticRegression())
   - utils/tests/test_estimator_checks.py::test_check_estimator
 
+  # Different exception message because of changing of 'auto' strategy in PCA
+  - decomposition/tests/test_pca.py::test_pca_validation
+
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
 reduced_tests:
