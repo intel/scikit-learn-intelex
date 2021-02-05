@@ -396,10 +396,6 @@ with open('requirements.txt') as f:
                 install_requires.remove(r)
                 break
 
-setup_requires = []
-with open('requirements-dev.txt') as f:
-    setup_requires.extend(f.read().splitlines())
-
 # daal setup
 setup(name="daal4py",
       description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
