@@ -83,6 +83,7 @@ result_log = get_result_log()
 
 @pytest.mark.parametrize('configuration', result_log)
 def test_patching(configuration):
+    print(configuration, result_log[configuration])
     if 'OPT' in result_log[configuration]:
         return
     for skip in TO_SKIP:
