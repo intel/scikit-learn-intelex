@@ -197,21 +197,13 @@ class PCA(PCA_original):
             else:
                 n, p, k = X.shape[0], X.shape[1], n_components
                 regression_coefs = np.array([
-                    [17.26186, 1],
-                    [0.000035, n],
-                    [-0.002962, p],
-                    [0.00424, k],
-                    [1.798586e-08, n * p],
-                    [1.040542e-07, n * k],
-                    [-1.063130e-11, n * p * k],
-                    [1.803406e-12, n * p * p],
-                    [-2.322795e-15, p * n * n],
-                    [-1.729660e-12, n * n],
-                    [5.096226e-08, p * p]
+                    [9.779873e-11, n * p * k],
+                    [-1.122062e-11, n * p * p],
+                    [1.127905e-09, n ** 2],
                 ])
-                predicted_speedup = np.dot(regression_coefs[:, 0], regression_coefs[:, 1])
 
-                if n_components >= 1 and predicted_speedup <= 10.3:
+                if n_components >= 1 \
+                        and np.dot(regression_coefs[:, 0], regression_coefs[:, 1]) <= 0:
                     self._fit_svd_solver = 'randomized'
                 else:
                     self._fit_svd_solver = 'full'
