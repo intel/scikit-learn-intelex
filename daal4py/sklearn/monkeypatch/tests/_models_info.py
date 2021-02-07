@@ -150,5 +150,6 @@ TO_SKIP = [
     r'RandomForestClassifier .*predict_proba',
     r'RandomForestClassifier .*predict_log_proba',
     r'pairwise_distances .*pairwise_distances',  # except float64
-    r'roc_auc_score .*roc_auc_score' if not daal_check_version((2021, 'P', 200)) else None,
+    r'roc_auc_score .*roc_auc_score' \
+        if not daal_check_version((2021, 'P', 200)) else None,
 ]
