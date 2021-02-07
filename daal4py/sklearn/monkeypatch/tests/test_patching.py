@@ -23,12 +23,6 @@ import pytest
 from _models_info import TO_SKIP
 
 
-def get_method(s):
-    METHOD_AND_BRANCH_POS = 3
-    METHOD_POS = 0
-    return s.split('.')[METHOD_AND_BRANCH_POS].split(':')[METHOD_POS]
-
-
 def get_branch(s):
     if len(s) == 0:
         return 'NO INFO'
@@ -68,7 +62,6 @@ def get_result_log():
     mas = []
     result = {}
     for i in process.stdout.split('\n'):
-        print(i)
         if not i.startswith('INFO') and len(mas) != 0:
             run_parse(mas, result)
             mas.clear()
@@ -84,7 +77,6 @@ result_log = get_result_log()
 
 @pytest.mark.parametrize('configuration', result_log)
 def test_patching(configuration):
-    # print(configuration, result_log[configuration])
     if 'OPT' in result_log[configuration]:
         return
     for skip in TO_SKIP:
