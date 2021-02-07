@@ -129,173 +129,173 @@ def _run_test(model, methods, dataset):
 
 
 MODELS_INFO = [
-    {
-        'model': KNeighborsClassifier(n_neighbors=10, algorithm='brute',
-                                      weights="uniform"),
-        'methods': ['predict', 'predict_proba', 'kneighbors'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': KNeighborsClassifier(n_neighbors=10, algorithm='brute',
-                                      weights="distance"),
-        'methods': ['predict', 'predict_proba', 'kneighbors'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree',
-                                      weights="uniform"),
-        'methods': ['predict', 'predict_proba', 'kneighbors'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree',
-                                      weights="distance"),
-        'methods': ['predict', 'predict_proba', 'kneighbors'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
-                                     weights="distance"),
-        'methods': ['predict', 'kneighbors'],
-        'dataset': 'regression',
-    },
-    {
-        'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
-                                     weights="uniform"),
-        'methods': ['predict', 'kneighbors'],
-        'dataset': 'regression',
-    },
-    {
-        'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
-                                     weights="distance"),
-        'methods': ['predict', 'kneighbors'],
-        'dataset': 'regression',
-    },
-    {
-        'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
-                                     weights="uniform"),
-        'methods': ['predict', 'kneighbors'],
-        'dataset': 'regression',
-    },
-    {
-        'model': NearestNeighbors(n_neighbors=10, algorithm='brute'),
-        'methods': ['kneighbors'],
-        'dataset': 'blobs',
-    },
-    {
-        'model': NearestNeighbors(n_neighbors=10, algorithm='kd_tree'),
-        'methods': ['kneighbors'],
-        'dataset': 'blobs',
-    },
-    {
-        'model': DBSCAN(algorithm="brute", n_jobs=-1),
-        'methods': ['fit_predict'],
-        'dataset': 'blobs',
-    },
-    {
-        'model': SVC(random_state=0, probability=True, kernel='linear'),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': SVC(random_state=0, probability=True, kernel='rbf'),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': SVC(random_state=0, probability=True, kernel='linear'),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'sparse',
-    },
-    {
-        'model': SVC(random_state=0, probability=True, kernel='rbf'),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'sparse',
-    },
-    {
-        'model': TSNE(random_state=0),
-        'methods': ['fit_transform'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': KMeans(random_state=0, init="k-means++"),
-        'methods': ['predict'],
-        'dataset': 'blobs',
-    },
-    {
-        'model': KMeans(random_state=0, init="random"),
-        'methods': ['predict'],
-        'dataset': 'blobs',
-    },
-    {
-        'model': KMeans(random_state=0, init="k-means++"),
-        'methods': ['predict'],
-        'dataset': 'sparse',
-    },
-    {
-        'model': KMeans(random_state=0, init="random"),
-        'methods': ['predict'],
-        'dataset': 'sparse',
-    },
-    {
-        'model': ElasticNet(random_state=0),
-        'methods': ['predict'],
-        'dataset': 'regression',
-    },
-    {
-        'model': Lasso(random_state=0),
-        'methods': ['predict'],
-        'dataset': 'regression',
-    },
-    {
-        'model': PCA(n_components=0.5, svd_solver="full", random_state=0),
-        'methods': ['transform', 'get_covariance', 'get_precision', 'score_samples'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': RandomForestClassifier(random_state=0, oob_score=True,
-                                        max_samples=0.5, max_features='sqrt'),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': LogisticRegression(random_state=0, solver="newton-cg", max_iter=1000),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': LogisticRegression(random_state=0, solver="lbfgs", max_iter=1000),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': LogisticRegressionCV(random_state=0, solver="newton-cg",
-                                      n_jobs=-1, max_iter=1000),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': LogisticRegressionCV(random_state=0, solver="lbfgs",
-                                      n_jobs=-1, max_iter=1000),
-        'methods': ['predict', 'predict_proba'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': RandomForestRegressor(random_state=0, oob_score=True,
-                                       max_samples=0.5, max_features='sqrt'),
-        'methods': ['predict'],
-        'dataset': 'regression',
-    },
-    {
-        'model': LinearRegression(),
-        'methods': ['predict'],
-        'dataset': 'regression',
-    },
-    {
-        'model': Ridge(random_state=0),
-        'methods': ['predict'],
-        'dataset': 'regression',
-    },
+#     {
+#         'model': KNeighborsClassifier(n_neighbors=10, algorithm='brute',
+#                                       weights="uniform"),
+#         'methods': ['predict', 'predict_proba', 'kneighbors'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': KNeighborsClassifier(n_neighbors=10, algorithm='brute',
+#                                       weights="distance"),
+#         'methods': ['predict', 'predict_proba', 'kneighbors'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree',
+#                                       weights="uniform"),
+#         'methods': ['predict', 'predict_proba', 'kneighbors'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': KNeighborsClassifier(n_neighbors=10, algorithm='kd_tree',
+#                                       weights="distance"),
+#         'methods': ['predict', 'predict_proba', 'kneighbors'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
+#                                      weights="distance"),
+#         'methods': ['predict', 'kneighbors'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': KNeighborsRegressor(n_neighbors=10, algorithm='kd_tree',
+#                                      weights="uniform"),
+#         'methods': ['predict', 'kneighbors'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
+#                                      weights="distance"),
+#         'methods': ['predict', 'kneighbors'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': KNeighborsRegressor(n_neighbors=10, algorithm='brute',
+#                                      weights="uniform"),
+#         'methods': ['predict', 'kneighbors'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': NearestNeighbors(n_neighbors=10, algorithm='brute'),
+#         'methods': ['kneighbors'],
+#         'dataset': 'blobs',
+#     },
+#     {
+#         'model': NearestNeighbors(n_neighbors=10, algorithm='kd_tree'),
+#         'methods': ['kneighbors'],
+#         'dataset': 'blobs',
+#     },
+#     {
+#         'model': DBSCAN(algorithm="brute", n_jobs=-1),
+#         'methods': ['fit_predict'],
+#         'dataset': 'blobs',
+#     },
+#     {
+#         'model': SVC(random_state=0, probability=True, kernel='linear'),
+#         'methods': ['predict', 'predict_proba'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': SVC(random_state=0, probability=True, kernel='rbf'),
+#         'methods': ['predict', 'predict_proba'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': SVC(random_state=0, probability=True, kernel='linear'),
+#         'methods': ['predict', 'predict_proba'],
+#         'dataset': 'sparse',
+#     },
+#     {
+#         'model': SVC(random_state=0, probability=True, kernel='rbf'),
+#         'methods': ['predict', 'predict_proba'],
+#         'dataset': 'sparse',
+#     },
+#     {
+#         'model': TSNE(random_state=0),
+#         'methods': ['fit_transform'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': KMeans(random_state=0, init="k-means++"),
+#         'methods': ['predict'],
+#         'dataset': 'blobs',
+#     },
+#     {
+#         'model': KMeans(random_state=0, init="random"),
+#         'methods': ['predict'],
+#         'dataset': 'blobs',
+#     },
+#     {
+#         'model': KMeans(random_state=0, init="k-means++"),
+#         'methods': ['predict'],
+#         'dataset': 'sparse',
+#     },
+#     {
+#         'model': KMeans(random_state=0, init="random"),
+#         'methods': ['predict'],
+#         'dataset': 'sparse',
+#     },
+#     {
+#         'model': ElasticNet(random_state=0),
+#         'methods': ['predict'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': Lasso(random_state=0),
+#         'methods': ['predict'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': PCA(n_components=0.5, svd_solver="full", random_state=0),
+#         'methods': ['transform', 'get_covariance', 'get_precision', 'score_samples'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': RandomForestClassifier(random_state=0, oob_score=True,
+#                                         max_samples=0.5, max_features='sqrt'),
+#         'methods': ['predict', 'predict_proba'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': LogisticRegression(random_state=0, solver="newton-cg", max_iter=1000),
+#         'methods': ['predict', 'predict_proba'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': LogisticRegression(random_state=0, solver="lbfgs", max_iter=1000),
+#         'methods': ['predict', 'predict_proba'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': LogisticRegressionCV(random_state=0, solver="newton-cg",
+#                                       n_jobs=-1, max_iter=1000),
+#         'methods': ['predict', 'predict_proba'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': LogisticRegressionCV(random_state=0, solver="lbfgs",
+#                                       n_jobs=-1, max_iter=1000),
+#         'methods': ['predict', 'predict_proba'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': RandomForestRegressor(random_state=0, oob_score=True,
+#                                        max_samples=0.5, max_features='sqrt'),
+#         'methods': ['predict'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': LinearRegression(),
+#         'methods': ['predict'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': Ridge(random_state=0),
+#         'methods': ['predict'],
+#         'dataset': 'regression',
+#     },
 ]
 
 TO_SKIP = [
