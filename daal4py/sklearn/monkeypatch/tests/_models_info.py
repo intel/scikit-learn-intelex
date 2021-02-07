@@ -34,88 +34,88 @@ from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 
 MODELS_INFO = [
-    {
-        'model': KNeighborsClassifier(algorithm='brute'),
-        'methods': ['kneighbors', 'predict', 'predict_proba', 'score'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': KNeighborsRegressor(algorithm='brute'),
-        'methods': ['kneighbors', 'predict', 'score'],
-        'dataset': 'regression',
-    },
-    {
-        'model': NearestNeighbors(algorithm='brute'),
-        'methods': ['kneighbors'],
-        'dataset': 'blobs',
-    },
-    {
-        'model': DBSCAN(),
-        'methods': ['fit_predict'],
-        'dataset': 'blobs',
-    },
-    {
-        'model': SVC(probability=True),
-        'methods': ['decision_function', 'predict', 'predict_proba', 'score'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': TSNE(),
-        'methods': ['fit_transform'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': KMeans(),
-        'methods': ['fit_predict', 'fit_transform', 'transform', 'predict', 'score'],
-        'dataset': 'blobs',
-    },
-    {
-        'model': ElasticNet(),
-        'methods': ['predict', 'score'],
-        'dataset': 'regression',
-    },
-    {
-        'model': Lasso(),
-        'methods': ['predict', 'score'],
-        'dataset': 'regression',
-    },
-    {
-        'model': PCA(),
-        'methods': ['fit_transform', 'transform', 'score'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': RandomForestClassifier(),
-        'methods': ['predict', 'predict_proba', 'predict_log_proba', 'score'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': LogisticRegression(max_iter=1000, multi_class='multinomial'),
-        'methods': ['decision_function', 'predict', 'predict_proba',
-                    'predict_log_proba', 'score'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': LogisticRegressionCV(max_iter=1000),
-        'methods': ['decision_function', 'predict', 'predict_proba',
-                    'predict_log_proba', 'score'],
-        'dataset': 'classifier',
-    },
-    {
-        'model': RandomForestRegressor(),
-        'methods': ['predict', 'score'],
-        'dataset': 'regression',
-    },
-    {
-        'model': LinearRegression(),
-        'methods': ['predict', 'score'],
-        'dataset': 'regression',
-    },
-    {
-        'model': Ridge(),
-        'methods': ['predict', 'score'],
-        'dataset': 'regression',
-    },
+#     {
+#         'model': KNeighborsClassifier(algorithm='brute'),
+#         'methods': ['kneighbors', 'predict', 'predict_proba', 'score'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': KNeighborsRegressor(algorithm='brute'),
+#         'methods': ['kneighbors', 'predict', 'score'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': NearestNeighbors(algorithm='brute'),
+#         'methods': ['kneighbors'],
+#         'dataset': 'blobs',
+#     },
+#     {
+#         'model': DBSCAN(),
+#         'methods': ['fit_predict'],
+#         'dataset': 'blobs',
+#     },
+#     {
+#         'model': SVC(probability=True),
+#         'methods': ['decision_function', 'predict', 'predict_proba', 'score'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': TSNE(),
+#         'methods': ['fit_transform'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': KMeans(),
+#         'methods': ['fit_predict', 'fit_transform', 'transform', 'predict', 'score'],
+#         'dataset': 'blobs',
+#     },
+#     {
+#         'model': ElasticNet(),
+#         'methods': ['predict', 'score'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': Lasso(),
+#         'methods': ['predict', 'score'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': PCA(),
+#         'methods': ['fit_transform', 'transform', 'score'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': RandomForestClassifier(),
+#         'methods': ['predict', 'predict_proba', 'predict_log_proba', 'score'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': LogisticRegression(max_iter=1000, multi_class='multinomial'),
+#         'methods': ['decision_function', 'predict', 'predict_proba',
+#                     'predict_log_proba', 'score'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': LogisticRegressionCV(max_iter=1000),
+#         'methods': ['decision_function', 'predict', 'predict_proba',
+#                     'predict_log_proba', 'score'],
+#         'dataset': 'classifier',
+#     },
+#     {
+#         'model': RandomForestRegressor(),
+#         'methods': ['predict', 'score'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': LinearRegression(),
+#         'methods': ['predict', 'score'],
+#         'dataset': 'regression',
+#     },
+#     {
+#         'model': Ridge(),
+#         'methods': ['predict', 'score'],
+#         'dataset': 'regression',
+#     },
 ]
 
 TYPES = [
