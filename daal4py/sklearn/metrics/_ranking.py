@@ -115,7 +115,7 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
     y_true = check_array(y_true, ensure_2d=False, dtype=[np.float64, np.float32])
     y_score = check_array(y_score, ensure_2d=False, dtype=[np.float64, np.float32])
     y_type = _daal_type_of_target(y_true)
-    print(y_type)
+
     if y_type[0] == "multiclass" or \
             (y_type[0] == "binary" and y_score.ndim == 2 and y_score.shape[1] > 2):
         # do not support partial ROC computation for multiclass
@@ -132,7 +132,6 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
     elif y_type[0] == "binary":
         labels = y_type[1]
         daal_use = max_fpr is None and sample_weight is None and len(labels) == 2
-        print(daal_use)
         if daal_use:
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
             if not np.array_equal(labels, [0, 1]):
@@ -141,7 +140,6 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
                                             y_score.reshape(-1, 1))
 
         if not daal_use or result == -1:
-            print('144')
             y_true = label_binarize(y_true, classes=labels)[:, 0]
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
             if sklearn_check_version('0.22'):
