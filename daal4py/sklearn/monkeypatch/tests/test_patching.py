@@ -23,12 +23,6 @@ import pytest
 from _models_info import TO_SKIP
 
 
-def get_method(s):
-    METHOD_AND_BRANCH_POS = 3
-    METHOD_POS = 0
-    return s.split('.')[METHOD_AND_BRANCH_POS].split(':')[METHOD_POS]
-
-
 def get_branch(s):
     if len(s) == 0:
         return 'NO INFO'

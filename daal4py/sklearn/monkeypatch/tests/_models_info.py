@@ -32,6 +32,7 @@ from sklearn.linear_model import (
 from sklearn.cluster import (KMeans, DBSCAN)
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
+from daal4py.sklearn._utils import daal_check_version
 
 MODELS_INFO = [
     {
@@ -149,5 +150,6 @@ TO_SKIP = [
     r'RandomForestClassifier .*predict_proba',
     r'RandomForestClassifier .*predict_log_proba',
     r'pairwise_distances .*pairwise_distances',  # except float64
-    r'roc_auc_score .*roc_auc_score',  # except float32 and float64
+    r'roc_auc_score .*roc_auc_score' \
+    if not daal_check_version((2021, 'P', 200)) else None,
 ]
