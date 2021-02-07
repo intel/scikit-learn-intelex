@@ -31,7 +31,7 @@ fi
 python -m unittest discover -v -s tests -p test*.py
 ok=$(($ok + $?))
 
-pytest --pyargs daal4py/sklearn/ -s
+pytest --pyargs daal4py/sklearn/
 ok=$(($ok + $?))
 
 exit $ok
