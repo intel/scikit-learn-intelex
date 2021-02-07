@@ -32,6 +32,7 @@ from sklearn.linear_model import (
 from sklearn.cluster import (KMeans, DBSCAN)
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
+from daal4py.sklearn._utils import daal_check_version
 
 MODELS_INFO = [
     {
