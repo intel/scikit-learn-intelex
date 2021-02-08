@@ -23,7 +23,7 @@ ok=0
 python -c "import daal4py"
 ok=$(($ok + $?))
 
-if ! $NO_DIST; then
+if [[ ! $NO_DIST ]]; then
     mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
     ok=$(($ok + $?))
 fi
