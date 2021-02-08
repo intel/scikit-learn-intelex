@@ -21,6 +21,7 @@ import warnings
 
 import daal4py
 from .._utils import (getFPType, get_patch_message)
+from daal4py.sklearn._utils import daal_check_version
 import logging
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
@@ -185,7 +186,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     dfc_algorithm = daal4py.decision_forest_classification_training(
         nClasses=int(n_classes_),
         fptype=X_fptype,
-        method='hist',
+        method='hist' if daal_check_version((2021, 'P', 200)) else 'defaultDense',
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap_
         if self.bootstrap is True else 1.,
@@ -342,7 +343,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     # create algorithm
     dfr_algorithm = daal4py.decision_forest_regression_training(
         fptype=getFPType(X),
-        method='hist',
+        method='hist' if daal_check_version((2021, 'P', 200)) else 'defaultDense',
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap if self.bootstrap is True else 1.,
         featuresPerNode=int(_featuresPerNode),
@@ -501,7 +502,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
                  ccp_alpha=0.0,
                  max_samples=None,
                  maxBins=256,
-                 minBinSize=5):
+                 minBinSize=1):
         super(RandomForestClassifier, self).__init__(
             n_estimators=n_estimators,
             criterion=criterion,
@@ -724,7 +725,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
                  ccp_alpha=0.0,
                  max_samples=None,
                  maxBins=256,
-                 minBinSize=5):
+                 minBinSize=1):
         super(RandomForestRegressor, self).__init__(
             n_estimators=n_estimators,
             criterion=criterion,

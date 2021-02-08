@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-# daal4py Decision Forest Classification example for shared memory systems
+# daal4py Decision Forest Regression example for shared memory systems
 
 import daal4py as d4p
 import numpy as np
@@ -24,66 +24,57 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
 def main(readcsv=read_csv, method='defaultDense'):
-    # input data file
-    infile = "./data/batch/df_classification_train.csv"
-    testfile = "./data/batch/df_classification_test.csv"
+    infile = "./data/batch/df_regression_train.csv"
+    testfile = "./data/batch/df_regression_test.csv"
 
-    # Configure a training object (5 classes)
-    train_algo = d4p.decision_forest_classification_training(
-        5,
-        nTrees=10,
-        minObservationsInLeafNode=8,
-        featuresPerNode=3,
-        engine=d4p.engines_mt19937(seed=777),
-        varImportance='MDI',
+    # Configure a Decision Forest regression training object
+    train_algo = d4p.decision_forest_regression_training(
+        method=method,
+        nTrees=100,
+        varImportance='MDA_Raw',
         bootstrap=True,
-        resultsToCompute='computeOutOfBagError'
+        engine=d4p.engines_mt2203(seed=777),
+        resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation'
     )
 
-    # Read data. Let's use 3 features per observation
-    data = readcsv(infile, range(3), t=np.float32)
-    labels = readcsv(infile, range(3, 4), t=np.float32)
-    train_result = train_algo.compute(data, labels)
+    # Read data. Let's have 13 independent,
+    # and 1 dependent variables (for each observation)
+    indep_data = readcsv(infile, range(13), t=np.float32)
+    dep_data = readcsv(infile, range(13, 14), t=np.float32)
+    # Now train/compute, the result provides the model for prediction
+    train_result = train_algo.compute(indep_data, dep_data)
     # Traiing result provides (depending on parameters) model,
     # outOfBagError, outOfBagErrorPerObservation and/or variableImportance
 
     # Now let's do some prediction
-    predict_algo = d4p.decision_forest_classification_prediction(
-        nClasses=5,
-        resultsToEvaluate="computeClassLabels|computeClassProbabilities",
-        votingMethod="unweighted"
-    )
+    predict_algo = d4p.decision_forest_regression_prediction()
     # read test data (with same #features)
-    pdata = readcsv(testfile, range(3), t=np.float32)
-    plabels = readcsv(testfile, range(3, 4), t=np.float32)
+    pdata = readcsv(testfile, range(13), t=np.float32)
+    ptdata = readcsv(testfile, range(13, 14), t=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
-    # Prediction result provides prediction
-    assert(predict_result.prediction.shape == (pdata.shape[0], 1))
+    # The prediction result provides prediction
+    assert predict_result.prediction.shape == (pdata.shape[0], dep_data.shape[1])
 
-    return (train_result, predict_result, plabels)
+    return (train_result, predict_result, ptdata)
 
 
 if __name__ == "__main__":
-    (train_result, predict_result, plabels) = main()
+    (train_result, predict_result, ptdata) = main()
     print("\nVariable importance results:\n", train_result.variableImportance)
     print("\nOOB error:\n", train_result.outOfBagError)
     print(
         "\nDecision forest prediction results (first 10 rows):\n",
         predict_result.prediction[0:10]
     )
-    print(
-        "\nDecision forest probabilities results (first 10 rows):\n",
-        predict_result.probabilities[0:10]
-    )
-    print("\nGround truth (first 10 rows):\n", plabels[0:10])
+    print("\nGround truth (first 10 rows):\n", ptdata[0:10])
     print('All looks good!')
