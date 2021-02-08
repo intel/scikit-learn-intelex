@@ -27,8 +27,10 @@ echo "daal4py_dir=$daal4py_dir"
 python -c "import daal4py"
 ok=$(($ok + $?))
 
+echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI unittest discover testing ..."
+    mpirun --version
     mpirun -n 4 python -m unittest discover -v -s ${daal4py_dir}/tests -p spmd*.py
     ok=$(($ok + $?))
 fi
