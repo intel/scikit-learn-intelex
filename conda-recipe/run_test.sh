@@ -21,7 +21,7 @@
 ok=0
 echo "Start testing ..."
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-daal4py_dir="$( dirname "${script_dir}" )"
+daal4py_dir="$( script_dir )"
 echo "daal4py_dir=$daal4py_dir"
 
 python -c "import daal4py"
