@@ -26,11 +26,11 @@ python -c "import daal4py"
 ok=$(($ok + $?))
 
 if [[ ! $NO_DIST ]]; then
-    mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py
+    mpirun -n 4 python -m unittest discover -v -s ${daal4py_dir}/tests -p spmd*.py
     ok=$(($ok + $?))
 fi
 
-python -m unittest discover -v -s tests -p test*.py
+python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
 ok=$(($ok + $?))
 
 pytest --pyargs ${daal4py_dir}/daal4py/sklearn/
