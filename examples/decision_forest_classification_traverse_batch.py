@@ -19,7 +19,7 @@
 import math
 import daal4py as d4p
 
-from decision_forest_classification_batch import main as df_classification
+from decision_forest_classification_default_dense_batch import main as df_classification
 
 
 def printTree(nodes, values):

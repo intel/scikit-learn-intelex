@@ -19,7 +19,7 @@
 import math
 import daal4py as d4p
 
-from decision_forest_regression_batch import main as df_regression
+from decision_forest_regression_default_dense_batch import main as df_regression
 
 
 def printTree(nodes, values):
