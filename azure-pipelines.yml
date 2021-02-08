@@ -1,0 +1,26 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- dev/coverity
+
+pool:
+- task: synopsys-coverity@1
+  inputs:
+    coverityService: 'coverity-connect'
+    projectName: 'daal4py'
+    streamName: 'daal4py'
+    coverityBuildDirectory: '$(Build.Repository.LocalPath)'
+    buildCommand: 
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
