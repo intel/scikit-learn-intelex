@@ -42,10 +42,7 @@ return_code=$(($return_code + $?))
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI unittest discover testing ..."
-<<<<<<< HEAD
     mpirun --version
-=======
->>>>>>> echos
     mpirun -n 4 python -m unittest discover -v -s ${daal4py_dir}/tests -p spmd*.py
     return_code=$(($return_code + $?))
 fi
