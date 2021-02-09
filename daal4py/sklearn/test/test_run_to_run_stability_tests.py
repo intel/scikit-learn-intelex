@@ -56,6 +56,9 @@ def method_processing(X, clf, methods):
         elif i == 'predict_proba':
             res.append(clf.predict_proba(X))
             name.append(get_class_name(clf) + '.predict_proba(X)')
+        elif i == 'predict_log_proba':
+            res.append(clf.predict_log_proba(X))
+            name.append(get_class_name(clf) + '.predict_log_proba(X)')
         elif i == 'kneighbors':
             dist, idx = clf.kneighbors(X)
             res.append(dist)
@@ -255,29 +258,29 @@ MODELS_INFO = [
     {
         'model': RandomForestClassifier(random_state=0, oob_score=True,
                                         max_samples=0.5, max_features='sqrt'),
-        'methods': ['predict', 'predict_proba'],
+        'methods': ['predict', 'predict_proba', 'predict_log_proba'],
         'dataset': 'classifier',
     },
     {
         'model': LogisticRegression(random_state=0, solver="newton-cg", max_iter=1000),
-        'methods': ['predict', 'predict_proba'],
+        'methods': ['predict', 'predict_proba', 'predict_log_proba'],
         'dataset': 'classifier',
     },
     {
         'model': LogisticRegression(random_state=0, solver="lbfgs", max_iter=1000),
-        'methods': ['predict', 'predict_proba'],
+        'methods': ['predict', 'predict_proba', 'predict_log_proba'],
         'dataset': 'classifier',
     },
     {
         'model': LogisticRegressionCV(random_state=0, solver="newton-cg",
                                       n_jobs=-1, max_iter=1000),
-        'methods': ['predict', 'predict_proba'],
+        'methods': ['predict', 'predict_proba', 'predict_log_proba'],
         'dataset': 'classifier',
     },
     {
         'model': LogisticRegressionCV(random_state=0, solver="lbfgs",
                                       n_jobs=-1, max_iter=1000),
-        'methods': ['predict', 'predict_proba'],
+        'methods': ['predict', 'predict_proba', 'predict_log_proba'],
         'dataset': 'classifier',
     },
     {
@@ -317,7 +320,13 @@ TO_SKIP = [
 
 
 @pytest.mark.parametrize('model_head', MODELS_INFO)
-def test_models(model_head):
+@pytest.mark.parametrize('method',
+                         ['predict', 'predict_proba', 'predict_log_proba', 'kneighbors',
+                          'fit_predict', 'fit_transform', 'transform', 'get_covariance',
+                          'get_precision', 'score_samples'])
+def test_models(model_head, method):
+    if method not in model_head['methods']:
+        pytest.skip("No need to test", allow_module_level=False)
     stable_algos = ['RandomForestClassifier', 'RandomForestRegressor',
                     'PCA', 'LinearRegression', 'Ridge']
     if get_class_name(model_head['model']) in stable_algos \
@@ -325,7 +334,7 @@ def test_models(model_head):
         TO_SKIP.remove(get_class_name(model_head['model']))
     if get_class_name(model_head['model']) in TO_SKIP:
         pytest.skip("Unstable", allow_module_level=False)
-    _run_test(model_head['model'], model_head['methods'], model_head['dataset'])
+    _run_test(model_head['model'], [method], model_head['dataset'])
 
 
 @pytest.mark.parametrize('features', range(5, 10))
