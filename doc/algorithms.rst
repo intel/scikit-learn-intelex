@@ -12,8 +12,10 @@ Parameters and semantics are described in |onedal-dg-classification-decision-for
 
 .. rubric:: Examples:
 
-- `Single-Process Decision Forest Classification
-  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_batch.py>`__
+- `Single-Process Decision Forest Classification Default Dense method
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_default_dense_batch.py>`__
+- `Single-Process Decision Forest Classification Histogram method
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_hist_batch.py>`__
 
 .. autoclass:: daal4py.decision_forest_classification_training
    :members: compute
@@ -256,8 +258,10 @@ Parameters and semantics are described in |onedal-dg-regression-decision-forest|
 
 .. rubric:: Examples:
 
-- `Single-Process Decision Forest Regression
-  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_batch.py>`__
+- `Single-Process Decision Forest Regression Default Dense method
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_default_dense_batch.py>`__
+- `Single-Process Decision Forest Regression Histogram method
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_hist_batch.py>`__
 
 .. autoclass:: daal4py.decision_forest_regression_training
    :members: compute

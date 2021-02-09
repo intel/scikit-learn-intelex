@@ -121,6 +121,10 @@ req_version['sycl/linear_regression_batch.py'] = \
 req_version['sycl/kmeans_batch.py'] = \
     (2021, 'P', 200)  # not equal results for host and gpu runs
 req_version['sycl/pca_transform_batch.py'] = (2021, 'P', 200)
+req_version['sycl/decision_forest_classification_hist_batch.py'] = (2021, 'P', 200)
+req_version['sycl/decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
+req_version['decision_forest_classification_hist_batch.py'] = (2021, 'P', 200)
+req_version['decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
 
 req_device = defaultdict(lambda: [])
 req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]

@@ -21,6 +21,7 @@ import warnings
 
 import daal4py
 from .._utils import (getFPType, get_patch_message)
+from daal4py.sklearn._utils import daal_check_version
 import logging
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
@@ -130,6 +131,20 @@ def _check_parameters(self):
         if self.max_leaf_nodes < 2:
             raise ValueError(("max_leaf_nodes {0} must be either None "
                               "or larger than 1").format(self.max_leaf_nodes))
+    if isinstance(self.maxBins, numbers.Integral):
+        if not 2 <= self.maxBins:
+            raise ValueError("maxBins must be at least 2, got %s"
+                             % self.maxBins)
+    else:
+        raise ValueError("maxBins must be integral number but was "
+                         "%r" % self.maxBins)
+    if isinstance(self.minBinSize, numbers.Integral):
+        if not 1 <= self.minBinSize:
+            raise ValueError("minBinSize must be at least 1, got %s"
+                             % self.minBinSize)
+    else:
+        raise ValueError("minBinSize must be integral number but was "
+                         "%r" % self.minBinSize)
 
 
 def _daal_fit_classifier(self, X, y, sample_weight=None):
@@ -171,7 +186,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     dfc_algorithm = daal4py.decision_forest_classification_training(
         nClasses=int(n_classes_),
         fptype=X_fptype,
-        method='defaultDense',
+        method='hist' if daal_check_version((2021, 'P', 200)) else 'defaultDense',
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap_
         if self.bootstrap is True else 1.,
@@ -196,7 +211,9 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
                                         self.min_samples_split * X.shape[0]))),
         minWeightFractionInLeafNode=self.min_weight_fraction_leaf,
         minImpurityDecreaseInSplitNode=self.min_impurity_decrease,
-        maxLeafNodes=0 if self.max_leaf_nodes is None else self.max_leaf_nodes
+        maxLeafNodes=0 if self.max_leaf_nodes is None else self.max_leaf_nodes,
+        maxBins=self.maxBins,
+        minBinSize=self.minBinSize
     )
     self._cached_estimators_ = None
     # compute
@@ -326,7 +343,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     # create algorithm
     dfr_algorithm = daal4py.decision_forest_regression_training(
         fptype=getFPType(X),
-        method='defaultDense',
+        method='hist' if daal_check_version((2021, 'P', 200)) else 'defaultDense',
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap if self.bootstrap is True else 1.,
         featuresPerNode=int(_featuresPerNode),
@@ -350,7 +367,9 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
                                         self.min_samples_split * X.shape[0]))),
         minWeightFractionInLeafNode=self.min_weight_fraction_leaf,
         minImpurityDecreaseInSplitNode=self.min_impurity_decrease,
-        maxLeafNodes=0 if self.max_leaf_nodes is None else self.max_leaf_nodes
+        maxLeafNodes=0 if self.max_leaf_nodes is None else self.max_leaf_nodes,
+        maxBins=self.maxBins,
+        minBinSize=self.minBinSize
     )
 
     self._cached_estimators_ = None
@@ -481,7 +500,9 @@ class RandomForestClassifier(RandomForestClassifier_original):
                  warm_start=False,
                  class_weight=None,
                  ccp_alpha=0.0,
-                 max_samples=None):
+                 max_samples=None,
+                 maxBins=256,
+                 minBinSize=1):
         super(RandomForestClassifier, self).__init__(
             n_estimators=n_estimators,
             criterion=criterion,
@@ -503,6 +524,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
             ccp_alpha=ccp_alpha,
             max_samples=max_samples
         )
+        self.maxBins = maxBins
+        self.minBinSize = minBinSize
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -700,7 +723,9 @@ class RandomForestRegressor(RandomForestRegressor_original):
                  verbose=0,
                  warm_start=False,
                  ccp_alpha=0.0,
-                 max_samples=None):
+                 max_samples=None,
+                 maxBins=256,
+                 minBinSize=1):
         super(RandomForestRegressor, self).__init__(
             n_estimators=n_estimators,
             criterion=criterion,
@@ -721,6 +746,8 @@ class RandomForestRegressor(RandomForestRegressor_original):
             ccp_alpha=ccp_alpha,
             max_samples=max_samples
         )
+        self.maxBins = maxBins
+        self.minBinSize = minBinSize
 
     def fit(self, X, y, sample_weight=None):
         """

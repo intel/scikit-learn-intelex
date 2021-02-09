@@ -177,10 +177,14 @@ gen_examples = [
     ('cholesky_batch', 'cholesky_batch.csv', 'choleskyFactor'),
     ('covariance_batch', 'covariance.csv', 'covariance'),
     ('covariance_streaming', 'covariance.csv', 'covariance'),
-    ('decision_forest_classification_batch', None, lambda r: r[1].prediction,
-     (2019, 'P', 1)),
-    ('decision_forest_regression_batch', 'decision_forest_regression_batch.csv',
-     lambda r: r[1].prediction, (2019, 1)),
+    ('decision_forest_classification_default_dense_batch',
+     None, lambda r: r[1].prediction),
+    ('decision_forest_classification_hist_batch',
+     None, lambda r: r[1].prediction, (2021, 'P', 200)),
+    ('decision_forest_regression_default_dense_batch',
+     'decision_forest_regression_batch.csv', lambda r: r[1].prediction),
+    ('decision_forest_regression_hist_batch',
+     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2021, 'P', 200)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv',
      lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv',
@@ -277,7 +281,8 @@ class TestExCSRMatrix(Base, unittest.TestCase):
         if any(ex.__name__.startswith(x) for x in ['adaboost',
                                                    'brownboost',
                                                    'stump_classification',
-                                                   'gbt_cls_model_create']):
+                                                   'gbt_cls_model_create',
+                                                   'decision_forest']):
             self.skipTest("not supporting CSR")
         method = \
             'singlePassCSR' if any(x in ex.__name__

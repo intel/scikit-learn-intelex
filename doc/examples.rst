@@ -41,8 +41,10 @@ Correlation and Variance-Covariance Matrices
 
 Decision Forest Classification
 
-- `Single-Process Decision Forest Classification
-  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_batch.py>`_
+- `Single-Process Decision Forest Classification Default Dense method
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_default_dense_batch.py>`_
+- `Single-Process Decision Forest Classification Histogram method
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_classification_hist_batch.py>`_
 
 Decision Tree Classification
 
@@ -79,8 +81,10 @@ Logistic Regression
 
 Decision Forest Regression
 
-- `Single-Process Decision Forest Regression
-  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_batch.py>`_
+- `Single-Process Decision Forest Regression Default Dense method
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_default_dense_batch.py>`_
+- `Single-Process Decision Forest Regression Histogram method
+  <https://github.com/IntelPython/daal4py/blob/master/examples/decision_forest_regression_hist_batch.py>`_
 
 - `Single-Process Decision Tree Regression
   <https://github.com/IntelPython/daal4py/blob/master/examples/decision_tree_regression_batch.py>`_
