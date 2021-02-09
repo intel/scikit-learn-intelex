@@ -36,6 +36,9 @@ fi
 echo "Start testing ..."
 return_code=0
 
+echo "Start testing ..."
+return_code=0
+
 python -c "import daal4py"
 return_code=$(($return_code + $?))
 
