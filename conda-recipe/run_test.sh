@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #*******************************************************************************
 # Copyright 2014-2021 Intel Corporation
 # All Rights Reserved.
@@ -18,29 +17,34 @@
 # limitations under the License.
 #*******************************************************************************
 
-ok=0
-echo "Start testing ..."
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-daal4py_dir=${script_dir}
+daal4py_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+while ! [[ -d $daal4py_dir/daal4py/ ]] || ! [[ -d $daal4py_dir/tests/ ]] || ! [[ -d $daal4py_dir/examples/ ]]; do
+    daal4py_dir="$( dirname "${daal4py_dir}" )"
+done
+
 echo "daal4py_dir=$daal4py_dir"
 
+echo "Start testing ..."
+return_code=0
+
 python -c "import daal4py"
-ok=$(($ok + $?))
+return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI unittest discover testing ..."
     mpirun --version
     mpirun -n 4 python -m unittest discover -v -s ${daal4py_dir}/tests -p spmd*.py
-    ok=$(($ok + $?))
+    return_code=$(($return_code + $?))
 fi
 
 echo "Unittest discover testing ..."
 python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
-ok=$(($ok + $?))
+return_code=$(($return_code + $?))
 
 echo "Pytest running ..."
 pytest --pyargs ${daal4py_dir}/daal4py/sklearn/
-ok=$(($ok + $?))
+return_code=$(($return_code + $?))
 
-exit $ok
+exit $return_code
