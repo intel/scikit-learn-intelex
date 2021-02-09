@@ -190,13 +190,26 @@ class PCA(PCA_original):
         shape_good_for_daal = X.shape[1] / X.shape[0] < 2
 
         if self._fit_svd_solver == 'auto':
-            if max(X.shape) <= 500 or n_components == 'mle':
+            if n_components == 'mle':
                 self._fit_svd_solver = 'full'
-            elif n_components >= 1 and \
-                    n_components < (.1 if shape_good_for_daal else .8) * min(X.shape):
-                self._fit_svd_solver = 'randomized'
             else:
-                self._fit_svd_solver = 'full'
+                n, p, k = X.shape[0], X.shape[1], n_components
+                # These coefficients are result of training of Logistic Regression
+                # (max_iter=10000, solver="liblinear", fit_intercept=False)
+                # on different datasets and number of components. X is a dataset with
+                # npk, np^2, and n^2 columns. And y is speedup of patched scikit-learn's
+                # full PCA against stock scikit-learn's randomized PCA.
+                regression_coefs = np.array([
+                    [9.779873e-11, n * p * k],
+                    [-1.122062e-11, n * p * p],
+                    [1.127905e-09, n ** 2],
+                ])
+
+                if n_components >= 1 \
+                        and np.dot(regression_coefs[:, 0], regression_coefs[:, 1]) <= 0:
+                    self._fit_svd_solver = 'randomized'
+                else:
+                    self._fit_svd_solver = 'full'
 
         if not shape_good_for_daal or self._fit_svd_solver != 'full':
             if sklearn_check_version('0.23'):
