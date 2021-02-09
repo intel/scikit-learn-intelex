@@ -18,12 +18,20 @@
 #*******************************************************************************
 
 daal4py_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-while ! [[ -d $daal4py_dir/daal4py/ ]] || ! [[ -d $daal4py_dir/tests/ ]] || ! [[ -d $daal4py_dir/examples/ ]]; do
+count=3
+while [[ count -ne 0 ]]; do
+    if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/tests/ && -d $daal4py_dir/examples/ ]]; then
+        break
+    fi
     daal4py_dir="$( dirname "${daal4py_dir}" )"
+    count=$(($count - 1))
 done
 
 echo "daal4py_dir=$daal4py_dir"
+if [[ count -eq 0 ]]; then
+    echo "run_test.sh must be in daal4py repository"
+    exit 1
+fi
 
 echo "Start testing ..."
 return_code=0
