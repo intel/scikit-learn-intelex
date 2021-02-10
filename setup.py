@@ -399,7 +399,7 @@ with open('requirements.txt') as f:
 # daal setup
 setup(name="daal4py",
       description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
-      long_description=long_description,
+      #long_description=long_description,
       license="Intel Simplified Software License",
       author="Intel Corporation",
       version=d4p_version,
