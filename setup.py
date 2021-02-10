@@ -384,8 +384,8 @@ project_urls = {
     'Source Code': 'https://github.com/IntelPython/daal4py'
 }
 
-with open('README.md') as f:
-    long_description = f.read()
+#with open('README.md') as f:
+#    long_description = f.read()
 
 install_requires = []
 with open('requirements.txt') as f:
