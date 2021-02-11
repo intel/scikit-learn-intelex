@@ -12,10 +12,10 @@ set "BUILD_ARGS="
 IF DEFINED DPCPPROOT (
     echo "Sourcing DPCPPROOT"
     call "%DPCPPROOT%\env\vars.bat"
-    set "CC=dpcpp"
-    set "CXX=dpcpp"
-    dpcpp --version
-    SET "BUILD_ARGS=--compiler dpcpp"
+    set "CC=clang++"
+    set "CXX=clang++"
+    clang++ --version
+    SET "BUILD_ARGS=--compiler clang++"
 )
 
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
