@@ -391,7 +391,7 @@ install_requires = []
 with open('requirements.txt') as f:
     install_requires.extend(f.read().splitlines())
     if IS_MAC:
-        for i, r in enumerate(install_requires):
+        for r in install_requires:
             if "dpcpp_cpp_rt" in r:
                 install_requires.remove(r)
                 break
