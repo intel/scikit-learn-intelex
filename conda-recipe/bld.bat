@@ -15,7 +15,7 @@ IF DEFINED DPCPPROOT (
     set "CC=clang-cl"
     set "CXX=clang-cl"
     clang-cl --version
-    SET "BUILD_ARGS=--compiler clang++"
+    SET "BUILD_ARGS=--compiler clang-cl"
 )
 
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
