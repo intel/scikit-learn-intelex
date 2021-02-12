@@ -400,6 +400,7 @@ with open('requirements.txt') as f:
 setup(name="daal4py",
       description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
       long_description=long_description,
+      long_description_content_type="text/markdown",
       license="Apache-2.0",
       author="Intel Corporation",
       version=d4p_version,
