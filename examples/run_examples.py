@@ -62,7 +62,7 @@ availabe_devices = []
 try:
     from daal4py.oneapi import sycl_context
     sycl_extention_available = True
-except:
+except ModuleNotFoundError:
     sycl_extention_available = False
 print('Sycl extensions available: {}'.format(sycl_extention_available))
 
@@ -71,7 +71,7 @@ if sycl_extention_available:
         with sycl_context('gpu'):
             gpu_available = True
             availabe_devices.append("gpu")
-    except:
+    except RuntimeError:
         gpu_available = False
     availabe_devices.append("host")
     availabe_devices.append("cpu")
@@ -80,12 +80,12 @@ if sycl_extention_available:
     try:
         with sycl_context('cpu'):
             cpu_available = True
-    except:
+    except RuntimeError:
         cpu_available = False
     try:
         with sycl_context('host'):
             host_available = True
-    except:
+    except RuntimeError:
         host_available = False
     print('Sycl gpu device: {}'.format(gpu_available))
     print('Sycl cpu device: {}'.format(cpu_available))
