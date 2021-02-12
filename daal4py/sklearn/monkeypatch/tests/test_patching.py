@@ -65,7 +65,7 @@ def get_result_log():
 
     mas = []
     result = {}
-    for i in process.decode().split('\n'):
+    for i in process.stdout.split('\n'):
         if not i.startswith('INFO') and len(mas) != 0:
             run_parse(mas, result)
             mas.clear()
