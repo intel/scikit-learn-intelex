@@ -54,7 +54,7 @@ elif sys.platform in ['win32', 'cygwin']:
         # noinspection PyUnresolvedReferences
         import dpcppcompiler
         sys.modules["distutils.dpcppcompiler"] = sys.modules["dpcppcompiler"]
-        distutils.ccompiler.compiler_class["dpcpp"] = (
+        distutils.ccompiler.compiler_class["clang++"] = (
             "dpcppcompiler", "DPCPPCompiler", "Support of DPCPP compiler"
         )
 else:
