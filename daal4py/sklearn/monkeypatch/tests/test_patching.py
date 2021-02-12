@@ -52,16 +52,15 @@ def run_parse(mas, result):
 def get_result_log():
     os.environ['IDP_SKLEARN_VERBOSE'] = 'INFO'
     absolute_path = str(pathlib.Path(__file__).parent.absolute())
-    process = subprocess.run(
+    process = subprocess.check_output(
         [
             sys.executable,
             absolute_path + '/utils/_launch_algorithms.py'
-        ],
-        capture_output=True, text=True
+        ]
     )
     mas = []
     result = {}
-    for i in process.stdout.split('\n'):
+    for i in process.decode().split('\n'):
         if not i.startswith('INFO') and len(mas) != 0:
             run_parse(mas, result)
             mas.clear()
