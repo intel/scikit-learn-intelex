@@ -54,7 +54,7 @@ elif sys.platform in ['win32', 'cygwin']:
         # noinspection PyUnresolvedReferences
         import dpcppcompiler
         sys.modules["distutils.dpcppcompiler"] = sys.modules["dpcppcompiler"]
-        distutils.ccompiler.compiler_class["clang++"] = (
+        distutils.ccompiler.compiler_class["clang-cl"] = (
             "dpcppcompiler", "DPCPPCompiler", "Support of DPCPP compiler"
         )
 else:
@@ -267,14 +267,14 @@ def getpyexts():
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
-    using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl', 'dpcpp', 'clang++']
+    using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl', 'dpcpp']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API',
            '-DD4P_VERSION="' + d4p_version + '"',
            '-DNPY_ALLOW_THREADS=1'] + get_type_defines()
     ela = []
 
     if using_intel and IS_WIN:
-        if os.environ.get('cc', '') == "dpcpp" or os.environ.get('cc', '') == "clang++":
+        if os.environ.get('cc', '') == "dpcpp" or os.environ.get('cc', '') == "clang-cl":
             eca.append("/EHsc")
         else:
             include_dir_plat.append(
