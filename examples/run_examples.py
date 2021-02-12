@@ -64,6 +64,7 @@ try:
     sycl_extention_available = True
 except:
     sycl_extention_available = False
+print('Sycl extensions available: {}'.format(sycl_extention_available))
 
 if sycl_extention_available:
     try:
@@ -86,11 +87,9 @@ if sycl_extention_available:
             host_available = True
     except:
         host_available = False
-
-print('Sycl extensions available: {}'.format(sycl_extention_available))
-print('Sycl gpu device: {}'.format(gpu_available))
-print('Sycl cpu device: {}'.format(cpu_available))
-print('Sycl host device: {}'.format(host_available))
+    print('Sycl gpu device: {}'.format(gpu_available))
+    print('Sycl cpu device: {}'.format(cpu_available))
+    print('Sycl host device: {}'.format(host_available))
 
 
 def check_version(rule, target):
