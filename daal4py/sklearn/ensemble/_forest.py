@@ -232,7 +232,8 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
 
 
 def _daal_predict_classifier(self, X):
-    X = self._validate_X_predict(X)
+    if not daal_check_version((2021, 'P', 200)):
+        X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfc_algorithm = daal4py.decision_forest_classification_prediction(
         nClasses=int(self.n_classes_),
@@ -248,7 +249,8 @@ def _daal_predict_classifier(self, X):
 
 
 def _daal_predict_proba(self, X):
-    X = self._validate_X_predict(X)
+    if not daal_check_version((2021, 'P', 200)):
+        X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfc_algorithm = daal4py.decision_forest_classification_prediction(
         nClasses=int(self.n_classes_),
@@ -442,7 +444,8 @@ def _fit_regressor(self, X, y, sample_weight=None):
 
 
 def _daal_predict_regressor(self, X):
-    X = self._validate_X_predict(X)
+    if not daal_check_version((2021, 'P', 200)):
+        X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)
     dfr_predictionResult = dfr_alg.compute(X, self.daal_model_)

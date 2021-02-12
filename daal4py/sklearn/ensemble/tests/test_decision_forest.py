@@ -29,13 +29,16 @@ from sklearn.ensemble \
     import RandomForestRegressor as ScikitRandomForestRegressor
 from daal4py.sklearn.ensemble \
     import RandomForestRegressor as DaalRandomForestRegressor
+from daal4py.sklearn._utils import daal_check_version
 
 N_TRIES = 10
-ACCURACY_RATIO = 0.7
-MSE_RATIO = 1.42
-LOG_LOSS_RATIO = 2.28
+ACCURACY_RATIO = 0.85 if daal_check_version((2021, 'P', 200)) else 0.7
+MSE_RATIO = 1.05 if daal_check_version((2021, 'P', 200)) else 1.42
+LOG_LOSS_RATIO = 1.55 if daal_check_version((2021, 'P', 200)) else 2.28
 ROC_AUC_RATIO = 0.978
 IRIS = load_iris()
+
+random.seed(777)
 CLASS_WEIGHTS_IRIS = [
     {0: 0, 1: 0, 2: 0},
     {0: 0, 1: 1, 2: 1},
@@ -133,6 +136,7 @@ def test_classifier_class_weight_iris(weight):
     _test_classifier_class_weight_iris(weight)
 
 
+np.random.seed(777)
 SAMPLE_WEIGHTS_IRIS = [
     (np.full_like(range(150), 0), 'Only 0'),
     (np.full_like(range(150), 1), 'Only 1'),
