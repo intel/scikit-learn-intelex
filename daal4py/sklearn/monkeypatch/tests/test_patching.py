@@ -52,12 +52,17 @@ def run_parse(mas, result):
 def get_result_log():
     os.environ['IDP_SKLEARN_VERBOSE'] = 'INFO'
     absolute_path = str(pathlib.Path(__file__).parent.absolute())
-    process = subprocess.check_output(
-        [
-            sys.executable,
-            absolute_path + '/utils/_launch_algorithms.py'
-        ]
-    )
+    try:
+        process = subprocess.check_output(
+            [
+                sys.executable,
+                absolute_path + '/utils/_launch_algorithms.py'
+            ]
+        )
+    except subprocess.CalledProcessError as e:
+        print(e)
+        exit(1)
+
     mas = []
     result = {}
     for i in process.decode().split('\n'):
