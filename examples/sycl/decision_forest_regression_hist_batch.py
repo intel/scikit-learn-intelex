@@ -105,7 +105,7 @@ def main(readcsv=read_csv):
     # Using of the classic way (computations on CPU)
     train_result, predict_result = compute(train_data, train_labels, predict_data)
     assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-    assert (np.square(predict_result.prediction - predict_labels).mean() < 18).any()
+    assert (np.square(predict_result.prediction - predict_labels).mean() < 19).any()
 
     train_data = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
