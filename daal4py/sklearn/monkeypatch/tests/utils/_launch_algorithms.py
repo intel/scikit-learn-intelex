@@ -87,8 +87,7 @@ def run_patch(model_info, dtype):
 def run_algotithms():
     for info in MODELS_INFO:
         for t in TYPES:
-            if get_class_name(info['model']) == 'LinearRegression' \
-                    and (t.__name__ == 'uint32' or t.__name__ == 'uint64'):
+            if get_class_name(info['model']) == 'LinearRegression':
                 continue
             run_patch(info, t)
 
