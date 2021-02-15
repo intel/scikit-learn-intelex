@@ -52,20 +52,16 @@ def run_parse(mas, result):
 def get_result_log():
     os.environ['IDP_SKLEARN_VERBOSE'] = 'INFO'
     absolute_path = str(pathlib.Path(__file__).parent.absolute())
-    try:
-        process = subprocess.check_output(
-            [
-                sys.executable,
-                absolute_path + '/utils/_launch_algorithms.py'
-            ]
-        )
-    except subprocess.CalledProcessError as e:
-        print(e)
-        exit(1)
-
+    process = subprocess.run(
+        [
+            sys.executable,
+            absolute_path + '/utils/_launch_algorithms.py'
+        ],
+        capture_output=True, text=True
+    )
     mas = []
     result = {}
-    for i in process.decode().split('\n'):
+    for i in process.stdout.split('\n'):
         if not i.startswith('INFO') and len(mas) != 0:
             run_parse(mas, result)
             mas.clear()
@@ -81,6 +77,7 @@ result_log = get_result_log()
 
 @pytest.mark.parametrize('configuration', result_log)
 def test_patching(configuration):
+    print(configuration, result_log[configuration])
     if 'OPT' in result_log[configuration]:
         return
     for skip in TO_SKIP:

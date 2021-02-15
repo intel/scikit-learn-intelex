@@ -61,7 +61,7 @@ test:
         - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
-        - pytest --pyargs daal4py/sklearn/
+        - pytest --pyargs daal4py/sklearn/ -s
         - python examples/run_examples.py
         - python -m daal4py examples/sycl/sklearn_sycl.py
 
