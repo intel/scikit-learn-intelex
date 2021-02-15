@@ -52,7 +52,7 @@ python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
 return_code=$(($return_code + $?))
 
 echo "Pytest running ..."
-pytest --pyargs ${daal4py_dir}/daal4py/sklearn/ -s
+pytest --pyargs ${daal4py_dir}/daal4py/sklearn/
 return_code=$(($return_code + $?))
 
 exit $return_code
