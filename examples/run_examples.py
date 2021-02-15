@@ -77,15 +77,8 @@ if sycl_extention_available:
     availabe_devices.append("cpu")
     #validate that host and cpu devices avaialbe for logging reasons. Examples and
     #vaidaton logic assumes that host and cpu devices are always available
-    try:
-        with sycl_context('cpu'):
-            cpu_available = True
-    except RuntimeError:
-        cpu_available = False
 
     print('Sycl gpu device: {}'.format(gpu_available))
-    print('Sycl cpu device: {}'.format(cpu_available))
-
 
 def check_version(rule, target):
     if not isinstance(rule[0], type(target)):
