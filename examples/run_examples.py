@@ -82,14 +82,9 @@ if sycl_extention_available:
             cpu_available = True
     except RuntimeError:
         cpu_available = False
-    try:
-        with sycl_context('host'):
-            host_available = True
-    except RuntimeError:
-        host_available = False
+
     print('Sycl gpu device: {}'.format(gpu_available))
     print('Sycl cpu device: {}'.format(cpu_available))
-    print('Sycl host device: {}'.format(host_available))
 
 
 def check_version(rule, target):
