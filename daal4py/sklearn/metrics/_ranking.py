@@ -113,12 +113,8 @@ def _daal_type_of_target(y):
 def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
                         max_fpr=None, multi_class="raise", labels=None):
     y_type = _daal_type_of_target(y_true)
-    if isinstance(y_true[0], str):
-        y_true = check_array(y_true, ensure_2d=False, dtype=None)
-        y_score = check_array(y_score, ensure_2d=False)
-    else:
-        y_true = check_array(y_true, ensure_2d=False, dtype=[np.float64, np.float32])
-        y_score = check_array(y_score, ensure_2d=False, dtype=[np.float64, np.float32])
+    y_true = check_array(y_true, ensure_2d=False, dtype=None)
+    y_score = check_array(y_score, ensure_2d=False)
 
     if y_type[0] == "multiclass" or \
             (y_type[0] == "binary" and y_score.ndim == 2 and y_score.shape[1] > 2):

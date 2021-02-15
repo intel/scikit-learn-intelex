@@ -100,7 +100,7 @@ def run_utils():
             _ = pairwise_distances(X.reshape(1, -1), metric=metric)
             logging.info('pairwise_distances')
     # roc_auc_score
-    for t in TYPES:
+    for t in [np.float32, np.float64]:
         a = [random.randint(0, 1) for i in range(1000)]
         b = [random.randint(0, 1) for i in range(1000)]
         a = np.array(a, dtype=t)
