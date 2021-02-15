@@ -62,18 +62,25 @@ availabe_devices = []
 try:
     from daal4py.oneapi import sycl_context
     sycl_extention_available = True
-except:
+except ModuleNotFoundError:
     sycl_extention_available = False
 
 if sycl_extention_available:
     try:
         with sycl_context('gpu'):
-            gpu_available = True
             availabe_devices.append("gpu")
-    except:
-        gpu_available = False
-    availabe_devices.append("host")
-    availabe_devices.append("cpu")
+    except RuntimeError:
+        pass
+    try:
+        with sycl_context('host'):
+            availabe_devices.append("host")
+    except RuntimeError:
+        pass
+    try:
+        with sycl_context('cpu'):
+            availabe_devices.append("cpu")
+    except RuntimeError:
+        pass
 
 
 def check_version(rule, target):
