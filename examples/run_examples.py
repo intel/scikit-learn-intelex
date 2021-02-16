@@ -21,16 +21,15 @@ import sys
 
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
+from os.path import join as jp
+from time import gmtime, strftime
+from collections import defaultdict
 
 print('Starting examples validation')
 # First item is major version - 2021,
 # second is minor+patch - 0110,
 # third item is status - B
 print('DAAL version:', get_daal_version())
-
-from os.path import join as jp
-from time import gmtime, strftime
-from collections import defaultdict
 
 exdir = os.path.dirname(os.path.realpath(__file__))
 
@@ -62,18 +61,22 @@ availabe_devices = []
 try:
     from daal4py.oneapi import sycl_context
     sycl_extention_available = True
-except:
+except ModuleNotFoundError:
     sycl_extention_available = False
+print('Sycl extensions available: {}'.format(sycl_extention_available))
 
 if sycl_extention_available:
     try:
         with sycl_context('gpu'):
             gpu_available = True
             availabe_devices.append("gpu")
-    except:
+    except RuntimeError:
         gpu_available = False
     availabe_devices.append("host")
     availabe_devices.append("cpu")
+    #validate that host and cpu devices avaialbe for logging reasons. Examples and
+    #vaidaton logic assumes that host and cpu devices are always available
+    print('Sycl gpu device: {}'.format(gpu_available))
 
 
 def check_version(rule, target):
