@@ -24,6 +24,8 @@ if [ -z "${DALROOT}" ]; then
 fi
 
 if [ "$(uname)" == "Darwin" ]; then
+    export CC=gcc
+    export CXX=g++
     # dead_strip_dylibs does not work with DAAL, which is underlinked by design
     export LDFLAGS="${LDFLAGS//-Wl,-dead_strip_dylibs}"
     export LDFLAGS_LD="${LDFLAGS_LD//-dead_strip_dylibs}"
