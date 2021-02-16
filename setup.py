@@ -307,7 +307,6 @@ def getpyexts():
         ela.append("-Wl,-rpath,{}".format(daal_lib_dir))
     elif IS_WIN:
         ela.append('-IGNORE:4197')
-
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x]
                             for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
