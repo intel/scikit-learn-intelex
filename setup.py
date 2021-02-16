@@ -134,9 +134,6 @@ d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
-if not no_dist and sys.version_info <= (3, 6):
-    print('distributed mode not supported for python version < 3.6\n')
-    no_dist = True
 no_stream = 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
@@ -144,22 +141,6 @@ dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
 dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
-#itac_root = os.environ['VT_ROOT']
-IS_WIN = False
-IS_MAC = False
-IS_LIN = False
-
-if 'linux' in sys.platform:
-    IS_LIN = True
-    lib_dir = jp(dal_root, 'lib', 'intel64')
-elif sys.platform == 'darwin':
-    IS_MAC = True
-    lib_dir = jp(dal_root, 'lib')
-elif sys.platform in ['win32', 'cygwin']:
-    IS_WIN = True
-    lib_dir = jp(dal_root, 'lib', 'intel64')
-else:
-    assert False, sys.platform + ' not supported'
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 DAAL_LIBDIRS = [daal_lib_dir]
@@ -303,11 +284,15 @@ def getpyexts():
     if IS_MAC:
         ela.append('-stdlib=libc++')
         ela.append("-Wl,-rpath,{}".format(daal_lib_dir))
+        ela.append("-Wl,-rpath,@loader_path/../..")
     elif IS_WIN:
         ela.append('-IGNORE:4197')
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x]
                             for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
+    if IS_LIN:
+        ela.append("-fPIC")
+        ela.append("-Wl,-rpath,$ORIGIN/../..")
 
     exts = cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
@@ -399,12 +384,29 @@ project_urls = {
     'Source Code': 'https://github.com/IntelPython/daal4py'
 }
 
+with open('README.md', 'r', encoding='utf8') as f:
+    long_description = f.read()
+
+install_requires = []
+with open('requirements.txt') as f:
+    install_requires.extend(f.read().splitlines())
+    if IS_MAC:
+        for r in install_requires:
+            if "dpcpp_cpp_rt" in r:
+                install_requires.remove(r)
+                break
+
 # daal setup
 setup(name="daal4py",
       description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
-      author="Intel",
+      long_description=long_description,
+      long_description_content_type="text/markdown",
+      license="Apache-2.0",
+      author="Intel Corporation",
       version=d4p_version,
       url='https://github.com/IntelPython/daal4py',
+      author_email="scripting@intel.com",
+      maintainer_email="onedal.maintainers@intel.com",
       project_urls=project_urls,
       classifiers=[
           'Development Status :: 5 - Production/Stable',
@@ -417,12 +419,22 @@ setup(name="daal4py",
           'Operating System :: Microsoft :: Windows',
           'Operating System :: POSIX :: Linux',
           'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
           'Topic :: Scientific/Engineering',
           'Topic :: System',
           'Topic :: Software Development',
       ],
-      setup_requires=['numpy>=1.14', 'cython', 'jinja2'],
-      install_requires=['numpy>=1.14', 'daal', 'dpcpp_cpp_rt'],
+      python_requires='>=3.6',
+      install_requires=install_requires,
+      keywords=[
+          'machine learning',
+          'scikit-learn',
+          'data science',
+          'data analytics'
+      ],
       packages=['daal4py',
                 'daal4py.oneapi',
                 'daal4py.sklearn',

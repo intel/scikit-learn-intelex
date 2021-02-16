@@ -1,0 +1,3 @@
+dpcpp_cpp_rt==2021.1.2
+daal==2021.1.2
+numpy>=1.15
