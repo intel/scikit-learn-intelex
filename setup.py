@@ -274,9 +274,7 @@ def getpyexts():
     ela = []
 
     if using_intel and IS_WIN:
-        if os.environ.get('cc', '') == "dpcpp" or \
-                os.environ.get('cc', '') == "clang++" or \
-                os.environ.get('cc', '') == "clang-cl":
+        if os.environ.get('cc', '') in ("dpcpp", "clang++", "clang-cl"):
             eca.append("/EHsc")
         else:
             include_dir_plat.append(
