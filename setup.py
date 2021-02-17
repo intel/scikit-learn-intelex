@@ -54,7 +54,7 @@ elif sys.platform in ['win32', 'cygwin']:
         # noinspection PyUnresolvedReferences
         import dpcppcompiler
         sys.modules["distutils.dpcppcompiler"] = sys.modules["dpcppcompiler"]
-        distutils.ccompiler.compiler_class["dpcpp"] = (
+        distutils.ccompiler.compiler_class["clang-cl"] = (
             "dpcppcompiler", "DPCPPCompiler", "Support of DPCPP compiler"
         )
 else:
@@ -255,7 +255,7 @@ def getpyexts():
     ela = []
 
     if using_intel and IS_WIN:
-        if os.environ.get('cc', '') == "dpcpp":
+        if os.environ.get('cc', '') in ("dpcpp", "clang++", "clang-cl"):
             eca.append("/EHsc")
         else:
             include_dir_plat.append(
@@ -307,7 +307,7 @@ def getpyexts():
                                 language='c++'),
                       ])
 
-    eca_dpcpp = eca.copy()
+    eca_dpcpp = eca.copy() + ['-fsycl']
 
     if dpcpp:
         ext = Extension('_oneapi',

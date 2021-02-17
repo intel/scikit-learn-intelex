@@ -28,4 +28,5 @@ cls = vars(_msvc_compiler_module)[_compiler_class]
 class DPCPPCompiler(cls):
     def initialize(self):
         super().initialize()
-        self.cc = "dpcpp.exe"
+        self.cc = "clang-cl.exe"
+        self.linker_so = "clang-cl.exe"
