@@ -50,10 +50,14 @@ class Test(unittest.TestCase):
         del knn, x_train, x_test, y_train, y_test
         mem_after, _ = tracemalloc.get_traced_memory()
         tracemalloc.stop()
+        mem_diff = mem_after - mem_before
 
         self.assertTrue(
-            mem_after - mem_before < 0.25 * data_memory_size,
-            'Size of extra allocated memory is greater than 25% of input data')
+            mem_diff < 0.25 * data_memory_size,
+            'Size of extra allocated memory is greater than 25% of input data:'
+            f'\n\tInput data size: {data_memory_size} bytes'
+            f'\n\tExtra allocated memory size: {mem_diff} bytes'
+            f' / {round((mem_diff) / data_memory_size * 100, 2)} %')
 
     def test_memory_leak_ndarray_c(self):
         self.kfold_function_template(lambda x, y: (x, y))
