@@ -65,25 +65,25 @@ conda install daal4py -c intel
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
 | :-----------------------| :------------: | :-------------:| :------------:| :------------:|
-|    **Linux**            |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU] |      [CPU, GPU]|
-|    **Windows**          |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU] |      [CPU, GPU]|
-|    **OsX**              |    [CPU]       |  [CPU]         |    [CPU]     |        ❌     |
+|    **Linux**            |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU]  |  [CPU, GPU]|  |
+|    **Windows**          |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU]  |  [CPU, GPU]|  |
+|    **OsX**              |    [CPU]       |  [CPU]         |    [CPU]      |    [CPU]      |
 
 #### 📦 Anaconda Cloud: Conda-Forge channel
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
 | :-----------------------| :------------: | :------------: | :------------:| :------------:|
-|    **Linux**            |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]    |
-|    **Windows**          |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]    |
-|    **OsX**              |   ❌          |     ❌         |     ❌       |      ❌      |
+|    **Linux**            |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
+|    **Windows**          |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
+|    **OsX**              |   ❌           |     ❌        |     ❌        |       ❌     |
 
 #### 📦 Anaconda Cloud: Intel channel
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
 | :-----------------------| :------------: | :-------------:| :------------:| :------------:|
-|    **Linux**            |   ❌         |     [CPU, GPU]   |     ❌      |      ❌      |
-|    **Windows**          |   ❌         |     [CPU, GPU]   |     ❌      |      ❌      |
-|    **OsX**              |   ❌         |     [CPU]        |     ❌      |      ❌      |
+|    **Linux**            |   ❌          |     [CPU, GPU]  |     ❌       |      ❌       |
+|    **Windows**          |   ❌          |     [CPU, GPU]  |     ❌       |      ❌       |
+|    **OsX**              |   ❌          |     [CPU]       |     ❌       |      ❌       |
 
 </details>
 
