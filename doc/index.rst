@@ -205,7 +205,7 @@ Supported configurations
      - ✔️
      - ✔️
      - ✔️
-     - ❌
+     - ✔️
 
 .. note::
     It supports Intel CPU and GPU except on OsX.
@@ -239,7 +239,7 @@ Supported configurations
      - ❌
 
 .. note::
-    It supports Intel CPU and GPU except on OsX.
+    It supports only Intel CPU.
     Recommended for conda users by default.
 
 **Anaconda Cloud: Intel channel**
