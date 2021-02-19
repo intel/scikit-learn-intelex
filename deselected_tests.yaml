@@ -193,6 +193,7 @@ reduced_tests:
   - feature_selection/tests/test_feature_select.py
   - feature_selection/tests/test_mutual_info.py
   - feature_selection/tests/test_sequential.py
+  - feature_selection/tests/test_from_model.py
 
   - manifold/tests/test_isomap.py
   - manifold/tests/test_locally_linear.py
