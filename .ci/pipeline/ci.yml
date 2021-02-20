@@ -3,6 +3,8 @@ variables:
     value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17453/w_BaseKit_p_2021.1.0.2664_offline.exe
   - name: WINDOWS_DPCPP_COMPONENTS
     value: intel.oneapi.win.dpcpp-compiler
+  - name: MACOSX_DEPLOYMENT_TARGET
+    value: '10.15'
   - name: python.version
     value: '3.7'
   - name: 'PYTHON'
