@@ -302,7 +302,9 @@ TO_SKIP = [
     'KNeighborsClassifier',  # problem with indeces in algorithm='brute'
     'NearestNeighbors',  # problem with indeces in algorithm='brute'
     'TSNE',  # Absolute diff is 1e-10, potential problem in KNN,
-             # will be fixed for next release
+             # will be fixed for next release. (UPD. KNN is fixed but there is a problem
+             # with stability of stock sklearn. It is already stable in master, so, we
+             # need to wait for the next sklearn release)
     'KMeans',  # Absolute diff is 1e-8
     'ElasticNet',  # Absolute diff is 1e-13
     'Lasso',  # Absolute diff is 1e-13
@@ -319,7 +321,8 @@ TO_SKIP = [
 @pytest.mark.parametrize('model_head', MODELS_INFO)
 def test_models(model_head):
     stable_algos = ['RandomForestClassifier', 'RandomForestRegressor',
-                    'PCA', 'LinearRegression', 'Ridge']
+                    'PCA', 'LinearRegression', 'Ridge', 'KNeighborsClassifier',
+                    'NearestNeighbors', 'KMeans']
     if get_class_name(model_head['model']) in stable_algos \
             and daal_check_version((2021, 'P', 200)):
         TO_SKIP.remove(get_class_name(model_head['model']))
