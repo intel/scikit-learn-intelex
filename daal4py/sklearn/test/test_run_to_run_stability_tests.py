@@ -56,6 +56,9 @@ def method_processing(X, clf, methods):
         elif i == 'predict_proba':
             res.append(clf.predict_proba(X))
             name.append(get_class_name(clf) + '.predict_proba(X)')
+        elif i == 'decision_function':
+            res.append(clf.decision_function(X))
+            name.append(get_class_name(clf) + '.decision_function(X)')
         elif i == 'kneighbors':
             dist, idx = clf.kneighbors(X)
             res.append(dist)
@@ -193,23 +196,23 @@ MODELS_INFO = [
         'dataset': 'blobs',
     },
     {
-        'model': SVC(random_state=0, probability=True, kernel='linear'),
-        'methods': ['predict', 'predict_proba'],
+        'model': SVC(kernel='linear'),
+        'methods': ['predict', 'decision_function'],
         'dataset': 'classifier',
     },
     {
-        'model': SVC(random_state=0, probability=True, kernel='rbf'),
-        'methods': ['predict', 'predict_proba'],
+        'model': SVC(kernel='rbf'),
+        'methods': ['predict', 'decision_function'],
         'dataset': 'classifier',
     },
     {
-        'model': SVC(random_state=0, probability=True, kernel='linear'),
-        'methods': ['predict', 'predict_proba'],
+        'model': SVC(kernel='linear'),
+        'methods': ['predict', 'decision_function'],
         'dataset': 'sparse',
     },
     {
-        'model': SVC(random_state=0, probability=True, kernel='rbf'),
-        'methods': ['predict', 'predict_proba'],
+        'model': SVC(kernel='rbf'),
+        'methods': ['predict', 'decision_function'],
         'dataset': 'sparse',
     },
     {
