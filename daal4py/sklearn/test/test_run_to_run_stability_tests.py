@@ -325,7 +325,10 @@ def test_models(model_head):
                     'NearestNeighbors', 'KMeans']
     if get_class_name(model_head['model']) in stable_algos \
             and daal_check_version((2021, 'P', 200)):
-        TO_SKIP.remove(get_class_name(model_head['model']))
+        try:
+            TO_SKIP.remove(get_class_name(model_head['model']))
+        except ValueError:
+            pass
     if get_class_name(model_head['model']) in TO_SKIP:
         pytest.skip("Unstable", allow_module_level=False)
     _run_test(model_head['model'], model_head['methods'], model_head['dataset'])
@@ -339,7 +342,7 @@ def test_train_test_split(features):
     baseline_X_train, baseline_X_test, baseline_y_train, baseline_y_test = \
         train_test_split(X, y, test_size=0.33, random_state=0)
     baseline = [baseline_X_train, baseline_X_test, baseline_y_train, baseline_y_test]
-    for i in range(10):
+    for _ in range(10):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,
                                                             random_state=0)
         res = [X_train, X_test, y_train, y_test]
@@ -353,7 +356,7 @@ def test_pairwise_distances(metric):
     X = np.random.rand(1000)
     X = np.array(X, dtype=np.float64)
     baseline = pairwise_distances(X.reshape(1, -1), metric=metric)
-    for i in range(5):
+    for _ in range(5):
         res = pairwise_distances(X.reshape(1, -1), metric=metric)
         for a, b in zip(res, baseline):
             np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0,
@@ -365,7 +368,7 @@ def test_roc_auc(array_size):
     a = [random.randint(0, 1) for i in range(array_size)]
     b = [random.randint(0, 1) for i in range(array_size)]
     baseline = roc_auc_score(a, b)
-    for i in range(5):
+    for _ in range(5):
         res = roc_auc_score(a, b)
         np.testing.assert_allclose(baseline, res, rtol=0.0, atol=0.0,
                                    err_msg=str("roc_auc is incorrect"))
