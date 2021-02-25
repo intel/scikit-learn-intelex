@@ -523,8 +523,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 warm_start=warm_start,
                 class_weight=class_weight
             )
-            self.ccp_alpha=ccp_alpha
-            self.max_samples=max_samples
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
         else:
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
@@ -547,7 +547,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 ccp_alpha=ccp_alpha,
                 max_samples=max_samples
             )
-            
+
         self.maxBins = maxBins
         self.minBinSize = minBinSize
 
@@ -769,29 +769,29 @@ class RandomForestRegressor(RandomForestRegressor_original):
                 verbose=verbose,
                 warm_start=warm_start
             )
-            self.ccp_alpha=ccp_alpha
-            self.max_samples=max_samples
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
         else:
             super(RandomForestRegressor, self).__init__(
-            n_estimators=n_estimators,
-            criterion=criterion,
-            max_depth=max_depth,
-            min_samples_split=min_samples_split,
-            min_samples_leaf=min_samples_leaf,
-            min_weight_fraction_leaf=min_weight_fraction_leaf,
-            max_features=max_features,
-            max_leaf_nodes=max_leaf_nodes,
-            min_impurity_decrease=min_impurity_decrease,
-            min_impurity_split=min_impurity_split,
-            bootstrap=bootstrap,
-            oob_score=oob_score,
-            n_jobs=n_jobs,
-            random_state=random_state,
-            verbose=verbose,
-            warm_start=warm_start,
-            ccp_alpha=ccp_alpha,
-            max_samples=max_samples
-        )
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                min_impurity_split=min_impurity_split,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                ccp_alpha=ccp_alpha,
+                max_samples=max_samples
+            )
         self.maxBins = maxBins
         self.minBinSize = minBinSize
 
