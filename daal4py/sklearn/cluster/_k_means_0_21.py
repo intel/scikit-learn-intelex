@@ -32,26 +32,6 @@ from .._utils import getFPType, get_patch_message, daal_check_version
 import logging
 
 
-def _daal_mean_var(X):
-    fpt = getFPType(X)
-    try:
-        alg = daal4py.low_order_moments(
-            fptype=fpt,
-            method='defaultDense',
-            estimatesToCompute='estimatesAll')
-    except AttributeError:
-        return np.var(X, axis=0).mean()
-    ssc = alg.compute(X).sumSquaresCentered
-    ssc = ssc.reshape((-1, 1))
-    alg = daal4py.low_order_moments(
-        fptype=fpt,
-        method='defaultDense',
-        estimatesToCompute='estimatesAll')
-    ssc_total_res = alg.compute(ssc)
-    mean_var = ssc_total_res.sum / X.size
-    return mean_var[0, 0]
-
-
 def _tolerance(X, rtol):
     """Compute absolute tolerance from the relative tolerance"""
     if rtol == 0.0:
@@ -60,7 +40,7 @@ def _tolerance(X, rtol):
         variances = mean_variance_axis(X, axis=0)[1]
         mean_var = np.mean(variances)
     else:
-        mean_var = _daal_mean_var(X)
+        mean_var = np.var(X, axis=0).mean()
     return mean_var * rtol
 
 
