@@ -40,8 +40,8 @@ deselected_tests:
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies >=0.20.3
   - cluster/tests/test_k_means.py::test_relocated_clusters
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters
-  - cluster/tests/test_k_means.py::test_iter_attribute <=0.21.3
-  
+  - cluster/tests/test_k_means.py::test_iter_attribute <0.22
+
   # oneDAL does not check convergence for tol == 0.0 for ease of benchmarking
   - cluster/tests/test_k_means.py::test_kmeans_convergence
   - cluster/tests/test_k_means.py::test_kmeans_verbose
@@ -63,9 +63,9 @@ deselected_tests:
   - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight >=0.22.1
 
   # Depreceted case from 0.21
-  - ensemble/tests/test_forest.py::test_min_impurity_splitstart <=0.21.3
-  - ensemble/tests/test_forest.py::test_nestimators_future_warning <=0.21.3
-  - ensemble/tests/test_voting.py::test_set_estimator_none <=0.21.3
+  - ensemble/tests/test_forest.py::test_min_impurity_splitstart <0.22
+  - ensemble/tests/test_forest.py::test_nestimators_future_warning <0.22
+  - ensemble/tests/test_voting.py::test_set_estimator_none <0.22
 
   #
   - tests/test_pipeline.py::test_pipeline_memory
