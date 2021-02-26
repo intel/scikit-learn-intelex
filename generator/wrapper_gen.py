@@ -83,11 +83,6 @@ except ImportError:
     class pdSeries:
         pass
 
-if "modin" in sys.modules:
-    from modin import pandas as mdpd
-    mdDataFrame = mdpd.DataFrame
-    mdSeries = mdpd.Series
-
 npc.import_array()
 
 hpat_spec = []
@@ -189,14 +184,15 @@ def get_data(x):
             x = x.to_numpy()
         else:
             x = [xi.to_numpy() for _, xi in x.items()]
-            
+
     elif isinstance(x, pdSeries):
         x = x.to_numpy().reshape(-1, 1)
 
     elif "modin" in sys.modules:
-        if isinstance(x, mdDataFrame):
+        from modin import pandas as mdpd
+        if isinstance(x, mdpd.DataFrame):
             x = x.to_numpy()
-        elif isinstance(x, mdSeries):
+        elif isinstance(x, mdpd.Series):
             x = x.to_numpy().reshape(-1, 1)
     return x
 
