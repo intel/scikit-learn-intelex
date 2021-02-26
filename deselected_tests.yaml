@@ -96,11 +96,6 @@ deselected_tests:
   # Looks like we need to align tree traversal. This problem will be fixed
   - ensemble/tests/test_forest.py::test_min_samples_leaf
 
-  # Out of bag score worse than scikit-learn
-  # This problem will be fixed
-  - ensemble/tests/test_forest.py::test_warm_start_oob
-  - ensemble/tests/test_forest.py::test_oob_score_regressors
-
   # Our threads are used internally and are not explicitly specified
   - ensemble/tests/test_forest.py::test_backend_respected
 

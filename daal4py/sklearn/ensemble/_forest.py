@@ -224,9 +224,9 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     self.daal_model_ = model
 
     # compute oob_score_
-    if self.oob_score:
-        self.estimators_ = self._estimators_
-        self._set_oob_score(X, y)
+    #if self.oob_score:
+    #    self.estimators_ = self._estimators_
+    #    self._set_oob_score(X, y)
 
     return self
 
@@ -274,7 +274,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         sample_weight = check_sample_weight(sample_weight, X)
 
     daal_ready = self.warm_start is False and self.criterion == "gini" and \
-        self.ccp_alpha == 0.0 and not sp.issparse(X)
+        self.ccp_alpha == 0.0 and not sp.issparse(X) and self.oob_score is False
 
     if daal_ready:
         _supported_dtypes_ = [np.float32, np.float64]
@@ -383,9 +383,9 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     self.daal_model_ = model
 
     # compute oob_score_
-    if self.oob_score:
-        self.estimators_ = self._estimators_
-        self._set_oob_score(X, y)
+    #if self.oob_score:
+    #    self.estimators_ = self._estimators_
+    #    self._set_oob_score(X, y)
 
     return self
 
@@ -401,7 +401,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
 
     daal_ready = self.warm_start is False and \
         self.criterion == "mse" and self.ccp_alpha == 0.0 and \
-        not sp.issparse(X)
+        not sp.issparse(X) and self.oob_score is False
 
     if daal_ready:
         _supported_dtypes_ = [np.double, np.single]
@@ -643,20 +643,27 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
-        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'],
-                        dtype=[np.float64, np.float32])
+        # Temporary solution
+        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
 
-        if not hasattr(self, 'daal_model_') or \
-                sp.issparse(X) or self.n_outputs_ != 1 or \
-                not daal_check_version((2021, 'P', 200)):
-            logging.info(
-                "sklearn.ensemble.RandomForestClassifier."
-                "predict_proba: " + get_patch_message("sklearn"))
-            return super(RandomForestClassifier, self).predict_proba(X)
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
-            "predict_proba: " + get_patch_message("daal"))
-        return _daal_predict_proba(self, X)
+            "predict_proba: " + get_patch_message("sklearn"))
+        return super(RandomForestClassifier, self).predict_proba(X)
+
+        #X = check_array(X, accept_sparse=['csr', 'csc', 'coo'],
+        #                dtype=[np.float64, np.float32])
+        #if not hasattr(self, 'daal_model_') or \
+        #        sp.issparse(X) or self.n_outputs_ != 1 or \
+        #        not daal_check_version((2021, 'P', 200)):
+        #    logging.info(
+        #        "sklearn.ensemble.RandomForestClassifier."
+        #        "predict_proba: " + get_patch_message("sklearn"))
+        #    return super(RandomForestClassifier, self).predict_proba(X)
+        #logging.info(
+        #    "sklearn.ensemble.RandomForestClassifier."
+        #    "predict_proba: " + get_patch_message("daal"))
+        #return _daal_predict_proba(self, X)
 
     @property
     def _estimators_(self):
