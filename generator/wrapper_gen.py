@@ -62,6 +62,8 @@ cython_header = '''
 # Import the Python-level symbols of numpy
 import numpy as np
 
+import sys
+
 # Import the C-level symbols of numpy
 cimport numpy as npc
 # import std::string support
@@ -79,16 +81,6 @@ except ImportError:
     class pdDataFrame:
         pass
     class pdSeries:
-        pass
-
-try:
-    from modin import pandas
-    mdDataFrame = pandas.DataFrame
-    mdSeries = pandas.Series
-except ImportError:
-    class mdDataFrame:
-        pass
-    class mdSeries:
         pass
 
 npc.import_array()
@@ -192,12 +184,16 @@ def get_data(x):
             x = x.to_numpy()
         else:
             x = [xi.to_numpy() for _, xi in x.items()]
-    elif isinstance(x, mdDataFrame):
-        x = x.to_numpy()
+
     elif isinstance(x, pdSeries):
         x = x.to_numpy().reshape(-1, 1)
-    elif isinstance(x, mdSeries):
-        x = x.to_numpy().reshape(-1, 1)
+
+    elif "modin" in sys.modules:
+        from modin import pandas as mdpd
+        if isinstance(x, mdpd.DataFrame):
+            x = x.to_numpy()
+        elif isinstance(x, mdpd.Series):
+            x = x.to_numpy().reshape(-1, 1)
     return x
 
 
@@ -261,7 +257,6 @@ def daal_generate_shuffled_indices(idx, random_state):
     c_generate_shuffled_indices(data_or_file(<PyObject*>idx),
                                 data_or_file(<PyObject*>random_state))
 
-import sys
 def _execute_with_context(func):
     def exec_func(*args, **keyArgs):
         # we check is DPPY imported or not
