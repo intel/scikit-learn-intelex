@@ -63,7 +63,7 @@ deselected_tests:
   - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight >=0.22.1
 
   # Depreceted case from 0.21
-  - ensemble/tests/test_forest.py::test_min_impurity_splitstart <0.22
+  - ensemble/tests/test_forest.py::test_min_impurity_split <0.22
   - ensemble/tests/test_forest.py::test_nestimators_future_warning <0.22
   - ensemble/tests/test_voting.py::test_set_estimator_none <0.22
 
@@ -166,7 +166,7 @@ deselected_tests:
   # Stability issue with max absolute difference: 0.00015992. Remove in the next release.
   - decomposition/tests/test_pca.py::test_pca_dtype_preservation
   - decomposition/tests/test_pca.py::test_pca_n_components_mostly_explained_variance_ratio
-  - decomposition/tests/test_pca.py::test_svd_solver_autostart <0.22
+  - decomposition/tests/test_pca.py::test_svd_solver_auto <0.22
 
   # Scikit-learn logistic regression predict depends from decision_function while d4p is not.
   # Assertion error in check_estimator(PoorScoreLogisticRegression())
