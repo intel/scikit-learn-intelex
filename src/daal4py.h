@@ -213,6 +213,11 @@ void * get_nt_data_ptr(const daal::data_management::NumericTablePtr * ptr)
 
 extern int64_t string2enum(const std::string& str, str2i_map_t & strmap);
 
+static std::string to_std_string(PyObject * o)
+{
+    return PyUnicode_AsUTF8(o);
+}
+
 inline static const double get_nan64()
 {
     return std::numeric_limits<double>::quiet_NaN();
