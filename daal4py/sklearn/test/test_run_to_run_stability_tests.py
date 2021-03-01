@@ -326,7 +326,7 @@ TO_SKIP = [
 def test_models(model_head):
     stable_algos = ['RandomForestClassifier', 'RandomForestRegressor',
                     'PCA', 'LinearRegression', 'Ridge', 'KNeighborsClassifier',
-                    'NearestNeighbors', 'KMeans']
+                    'NearestNeighbors', 'KMeans', 'ElasticNet', 'Lasso']
     if get_class_name(model_head['model']) in stable_algos \
             and daal_check_version((2021, 'P', 200)):
         try:
