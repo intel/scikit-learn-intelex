@@ -318,7 +318,6 @@ TO_SKIP = [
     'RandomForestRegressor',  # will be fixed for next release
     'LinearRegression',  # Absolute diff is 1e-12, will be fixed for next release
     'Ridge',  # Absolute diff is 1e-12, will be fixed for next release
-    'SVC',  # Absolute diff is 1e-9, will be fixed for next release for predict
 ]
 
 
