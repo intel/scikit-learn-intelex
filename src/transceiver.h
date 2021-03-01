@@ -152,8 +152,8 @@ class transceiver_impl : public transceiver_iface
 {
 public:
     transceiver_impl()
-        : m_me(-1),
-	  m_initialized(false),
+        : m_initialized(false),
+      m_me(-1),
 	  m_nMembers(0)
     {}
 
