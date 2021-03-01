@@ -82,7 +82,7 @@ void rawp_free_cap(PyObject * cap)
     void * rp = PyCapsule_GetPointer(cap, NULL);
     if (rp)
     {
-        delete[] rp;
+        delete rp;
         rp = NULL;
     }
 }
@@ -235,6 +235,8 @@ PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
     case daal::data_management::data_feature_utils::DAAL_INT64_U:
         if ((res = _make_nda_from_homogen<uint64_t, NPY_UINT64>(ptr)) != NULL) return res;
         if ((res = _make_nda_from_csr<uint64_t, NPY_UINT64>(ptr)) != NULL) return res;
+        break;
+    default:
         break;
     }
     // Falling back to using block-desriptors and converting to double

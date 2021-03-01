@@ -153,8 +153,8 @@ class transceiver_impl : public transceiver_iface
 public:
     transceiver_impl()
         : m_me(-1),
-	  m_nMembers(0),
-	  m_initialized(false)
+	  m_initialized(false),
+	  m_nMembers(0)
     {}
 
     // implementations/derived classes must call this in their init()

@@ -90,9 +90,9 @@
     };
 
 template<typename T> struct npy_type;
-template<> struct npy_type<double> { static constexpr char *value = "f8"; };
-template<> struct npy_type<float>  { static constexpr char *value = "f4"; };
-template<> struct npy_type<int>    { static constexpr char *value = "i4"; };
+template<> struct npy_type<double> { static constexpr char *value = (char *)"f8"; };
+template<> struct npy_type<float>  { static constexpr char *value = (char *)"f4"; };
+template<> struct npy_type<int>    { static constexpr char *value = (char *)"i4"; };
 
 
 // For wrapping a non-contiguous, homogen numpy array
@@ -454,7 +454,7 @@ public:
     }
 
     /** \private */
-    daal::services::Status serializeImpl(daal::data_management::InputDataArchive *archive)
+    daal::services::Status serializeImpl(daal::data_management::InputDataArchive *archive) override
     {
         auto __state = PyGILState_Ensure();
         // To make our lives easier, we first create a contiguous array
@@ -488,7 +488,7 @@ public:
     }
 
     /** \private */
-    daal::services::Status deserializeImpl(const daal::data_management::OutputDataArchive *archive)
+    daal::services::Status deserializeImpl(const daal::data_management::OutputDataArchive *archive) override
     {
         auto __state = PyGILState_Ensure();
         // First deserialize the type descriptor in string representation...
