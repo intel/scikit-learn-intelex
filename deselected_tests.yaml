@@ -12,9 +12,9 @@ deselected_tests:
 
   # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
   # See: https://github.com/scikit-learn/scikit-learn/issues/12738
-  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel >=0.23.2
+  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel >=0.23
   - svm/tests/test_svm.py::test_precomputed
-  - svm/tests/test_sparse.py::test_svc >=0.23.2
+  - svm/tests/test_sparse.py::test_svc >=0.23
   - svm/tests/test_sparse.py::test_sparse_realdata
   - svm/tests/test_sparse.py::test_svc_iris
 
@@ -44,7 +44,7 @@ deselected_tests:
   # unweighted do. Since convergence is not accomplished (comment in te test
   # suggests that), coefficients are slightly different, resulting in 1 prediction
   # disagreement.
-  - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight >=0.22,<=0.23
+  - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight >=0.22,<0.24
 
   # Depreceted case from 0.21
   - ensemble/tests/test_forest.py::test_min_impurity_split <0.22
@@ -57,7 +57,7 @@ deselected_tests:
 
   # Insufficient accuracy of objective function in Elastic Net in case warm_start
   # https://github.com/oneapi-src/oneDAL/issues/495
-  - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement >=0.22,<=0.23
+  - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement >=0.22,<0.24
 
   # oneDAL doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
