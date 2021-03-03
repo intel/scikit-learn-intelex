@@ -95,17 +95,22 @@ If building in High Sierra or higher, one may have to run into C++ build errors 
 
 ### Building daal4py
 Requires Intel(R) oneAPI Data Analytics Library and Intel(R) MPI Library being properly set up, meaning you have to set DALROOT and MPIROOT variables.
-```bash
-cd <checkout-dir>
-python setup.py build_ext
-```
 
-### Installing daal4py
-Requires Intel(R) oneAPI Data Analytics Library and Intel(R) MPI Library being properly set up, meaning you have to set DALROOT and MPIROOT variables.
+For install everything from build directory
+
 ```bash
 cd <checkout-dir>
 python setup.py install --single-version-externally-managed --record=record.txt
 ```
+
+For install package in development mode
+
+```bash
+cd <checkout-dir>
+python setup.py develop --no-deps
+```
+
+⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that release packages are not downloads after installation of daal4py
 
 ## Building documentation for daal4py
 ### Prerequisites for creating documentation
