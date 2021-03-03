@@ -308,6 +308,7 @@ def getpyexts():
                       ])
 
     eca_dpcpp = eca.copy() + ['-fsycl']
+    ela_dpcpp = ela.copy() + ['-fsycl']
 
     if dpcpp:
         ext = Extension('_oneapi',
@@ -315,7 +316,7 @@ def getpyexts():
                         depends=['src/oneapi/oneapi.h', ],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca_dpcpp,
-                        extra_link_args=ela,
+                        extra_link_args=ela_dpcpp,
                         libraries=libraries_plat + DPCPP_LIBS,
                         library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
                         language='c++')
@@ -329,7 +330,7 @@ def getpyexts():
                         depends=['src/dpctl_interop/daal_context_service.h', ],
                         include_dirs=include_dir_plat + DPCTL_INCDIRS,
                         extra_compile_args=eca_dpcpp,
-                        extra_link_args=ela,
+                        extra_link_args=ela_dpcpp,
                         libraries=libraries_plat + DPCPP_LIBS + DPCTL_LIBS,
                         library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS + DPCTL_LIBDIRS,
                         language='c++')
