@@ -114,12 +114,11 @@ def main(readcsv=read_csv, method='randomDense'):
     if gpu_available:
         with gpu_context():
             sycl_data = sycl_buffer(data)
-            _ = compute(sycl_data, nClusters, maxIter, method)
-        # TODO: investigate why results_classic and result_gpu differ
-        # assert np.allclose(result_classic.centroids, result_gpu.centroids)
-        # assert np.allclose(result_classic.assignments, result_gpu.assignments)
-        # assert np.isclose(result_classic.objectiveFunction,
-        #                   result_gpu.objectiveFunction)
+            result_gpu = compute(sycl_data, nClusters, maxIter, method)
+        assert np.allclose(result_classic.centroids, result_gpu.centroids)
+        assert np.allclose(result_classic.assignments, result_gpu.assignments)
+        assert np.isclose(result_classic.objectiveFunction,
+                          result_gpu.objectiveFunction)
 
     # It is possible to specify to make the computations on CPU
     with cpu_context():
