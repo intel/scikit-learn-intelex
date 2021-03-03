@@ -25,9 +25,10 @@ from libcpp cimport bool
 cdef extern from "oneapi/oneapi.h":
     cdef cppclass PySyclExecutionContext:
         PySyclExecutionContext(const std_string & dev) except +
-    void * tosycl(void *, int, int*)
-    void * todaalnt(void*, int, int*)
-    void del_scl_buffer(void *, int)
+    void * to_usm(void *, int, int*)
+    void * to_daal_usm_nt(void*, int, int*)
+    void * to_daal_host_nt(void*, int, int*)
+    void delete_usm_pointer(void *, int)
 
     std_string to_std_string(PyObject * o) except +
 
@@ -56,15 +57,21 @@ def _initialize_tls():
     _tls._in_sycl_ctxt = False
     _tls.initialized = True
 
-def _set_in_sycl_ctxt(value):
+def _set_in_sycl_ctxt(dev=None):
     if not _is_tls_initialized():
         _initialize_tls()
-    _tls._in_sycl_ctxt = value
+    _tls._in_sycl_ctxt = dev is not None
+    _tls.device_name = dev
 
 def _get_in_sycl_ctxt():
     if not _is_tls_initialized():
         _initialize_tls()
     return _tls._in_sycl_ctxt
+
+def _get_device_name_sycl_ctxt():
+    if not _is_tls_initialized():
+        _initialize_tls()
+    return _tls.device_name
 
 def is_in_sycl_ctxt():
     return _get_in_sycl_ctxt()
@@ -73,16 +80,16 @@ def is_in_sycl_ctxt():
 from contextlib import contextmanager
 
 @contextmanager
-def sycl_context(dev='default'):
+def sycl_context(dev='host'):
     # Code to acquire resource
     ctxt = sycl_execution_context(dev)
-    _set_in_sycl_ctxt(True)
+    _set_in_sycl_ctxt(dev)
     try:
         yield ctxt
     finally:
         # Code to release resource
         del ctxt
-        _set_in_sycl_ctxt(False)
+        _set_in_sycl_ctxt(None)
 
 
 cimport numpy as np
@@ -92,7 +99,7 @@ from cpython.pycapsule cimport PyCapsule_New
 cdef class sycl_buffer:
     'Sycl buffer for DAAL. A generic implementation needs to do much more.'
 
-    cdef readonly long long sycl_buffer
+    cdef readonly long long usm_pointer
     cdef int typ
     cdef int shape[2]
     cdef object _ary
@@ -104,28 +111,34 @@ cdef class sycl_buffer:
             assert ary.flags['C_CONTIGUOUS'] and ary.ndim == 2
             self.__inilz__(0, np.PyArray_TYPE(ary), ary.shape[0], ary.shape[1])
 
-    cpdef __inilz__(self, long long b, int t, int d1, int d2):
+    cpdef __inilz__(self, long long usm, int t, int d1, int d2):
         self.typ = t
         self.shape[0] = d1
         self.shape[1] = d2
-        if b:
-            self.sycl_buffer = b
+        if usm:
+            self.usm_pointer = usm
         else:
-            self.sycl_buffer = <long long>tosycl(np.PyArray_DATA(self._ary), self.typ, self.shape)
+            self.usm_pointer = 0
 
     def __dealloc__(self):
-        del_scl_buffer(<void*>self.sycl_buffer, self.typ)
+        delete_usm_pointer(<void*>self.usm_pointer, self.typ)
 
     # we need to consider how to make this usable by numba/HPAT without objmode
     def __2daalnt__(self):
-        return PyCapsule_New(todaalnt(<void*>self.sycl_buffer, self.typ, self.shape), NULL, NULL)
+        if _get_device_name_sycl_ctxt() == 'gpu':
+            if self.usm_pointer == 0:
+                assert self._ary is not None
+                self.usm_pointer = <long long>to_usm(np.PyArray_DATA(self._ary), self.typ, self.shape)
+            return PyCapsule_New(to_daal_usm_nt(<void*>self.usm_pointer, self.typ, self.shape), NULL, NULL)
+        else:
+            return PyCapsule_New(to_daal_host_nt(np.PyArray_DATA(self._ary), self.typ, self.shape), NULL, NULL)
 
 cdef api object make_py_from_sycltable(void * ptr, int typ, int d1, int d2):
     if not _get_in_sycl_ctxt():
         return None
-    cdef void * buff = c_make_py_from_sycltable(ptr, typ)
-    if buff:
+    cdef void * usm_ptr = c_make_py_from_sycltable(ptr, typ)
+    if usm_ptr:
         res = sycl_buffer.__new__(sycl_buffer)
-        res.__inilz__(<long long>buff, typ, d1, d2)
+        res.__inilz__(<long long>usm_ptr, typ, d1, d2)
         return res
     return None
