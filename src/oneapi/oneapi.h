@@ -68,6 +68,7 @@ static std::string to_std_string(PyObject * o)
     return PyUnicode_AsUTF8(o);
 }
 
+#ifdef INTEL_DAAL_VERSION >= 20210200
 inline const sycl::queue& get_current_queue()
 {
     auto& ctx = daal::services::Environment::getInstance()->getDefaultExecutionContext();
@@ -122,17 +123,6 @@ inline daal::services::SharedPtr<T>* to_usm(T * ptr, int * shape)
     });
 }
 
-static void * to_usm(void * ptr, int typ, int * shape)
-{
-    switch (typ)
-    {
-    case NPY_DOUBLE: return to_usm(reinterpret_cast<double *>(ptr), shape); break;
-    case NPY_FLOAT: return to_usm(reinterpret_cast<float *>(ptr), shape); break;
-    case NPY_INT: return to_usm(reinterpret_cast<int *>(ptr), shape); break;
-    default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
-    }
-}
-
 template <typename T>
 inline void del_usm(void * ptr)
 {
@@ -140,34 +130,86 @@ inline void del_usm(void * ptr)
     sh_ptr->reset();
     delete sh_ptr;
 }
+#endif
 
-static void delete_usm_pointer(void * ptr, int typ)
+// take a raw array and convert to sycl buffer
+template <typename T>
+inline sycl::buffer<T>* to_sycl_buffer(T * ptr, int * shape)
+{
+    return new sycl::buffer<T>(ptr, sycl::range<1>(shape[0]*shape[1]), { sycl::property::buffer::use_host_ptr() });
+}
+
+template <typename T>
+inline void* to_device(T * ptr, int * shape)
+{
+    #ifdef INTEL_DAAL_VERSION >= 20210200
+        return to_usm(ptr, shape);
+    #else
+        return to_sycl_buffer(ptr, shape);
+    #endif
+}
+
+static void * to_device(void * ptr, int typ, int * shape)
+{
+    switch (typ)
+    {
+    case NPY_DOUBLE: return to_device(reinterpret_cast<double *>(ptr), shape); break;
+    case NPY_FLOAT: return to_device(reinterpret_cast<float *>(ptr), shape); break;
+    case NPY_INT: return to_device(reinterpret_cast<int *>(ptr), shape); break;
+    default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
+    }
+}
+
+template <typename T>
+inline void del_sycl_buffer(void * ptr)
+{
+    auto* bf = reinterpret_cast<sycl::buffer<T>*>(ptr);
+    delete bf;
+}
+
+template <typename T>
+inline void delete_device_data(void * ptr)
+{
+    #ifdef INTEL_DAAL_VERSION >= 20210200
+        del_usm<T>(ptr);
+    #else
+        del_sycl_buffer<T>(ptr);
+    #endif
+}
+
+static void delete_device_data(void * ptr, int typ)
 {
     if (ptr == nullptr)
         return;
 
     switch (typ)
     {
-    case NPY_DOUBLE: del_usm<double>(ptr); break;
-    case NPY_FLOAT: del_usm<float>(ptr); break;
-    case NPY_INT: del_usm<int>(ptr); break;
+    case NPY_DOUBLE: delete_device_data<double>(ptr); break;
+    case NPY_FLOAT: delete_device_data<float>(ptr); break;
+    case NPY_INT: delete_device_data<int>(ptr); break;
     default: throw std::invalid_argument("invalid array type (must be double, float or int)");
     }
 }
 
 // take a sycl buffer and convert ti oneDAL NT
-template <typename T, bool is_usm_ptr>
+template <typename T, bool is_device_data>
 inline daal::data_management::NumericTablePtr * to_daal_nt(void * ptr, int * shape)
 {
-    // ptr is SharedPtr<T> in case of USM pointer
+    // ptr is SharedPtr<T>* in case of USM pointer
     // or just T* in case of host data
+    // or sycl::buffer<T>* for previous oneDAL versions
 
-    if constexpr(is_usm_ptr)
+    if constexpr(is_device_data)
     {
         typedef daal::data_management::SyclHomogenNumericTable<T> TBL_T;
+#ifdef INTEL_DAAL_VERSION >= 20210200
         auto* usm_ptr = reinterpret_cast<daal::services::SharedPtr<T>*>(ptr);
         // we need to return a pointer to safely cross language boundaries
         return new daal::data_management::NumericTablePtr(TBL_T::create(*usm_ptr, shape[1], shape[0], get_current_queue()));
+#else
+        auto* buffer = reinterpret_cast<sycl::buffer<T>*>(ptr);
+        return new daal::data_management::NumericTablePtr(TBL_T::create(*buffer, shape[1], shape[0]));
+#endif
     }
     else
     {
@@ -178,19 +220,19 @@ inline daal::data_management::NumericTablePtr * to_daal_nt(void * ptr, int * sha
     }
 }
 
-template <bool is_usm_ptr>
+template <bool is_device_data>
 inline void * to_daal_nt(void * ptr, int typ, int * shape)
 {
     switch (typ)
     {
-    case NPY_DOUBLE: return to_daal_nt<double, is_usm_ptr>(ptr, shape); break;
-    case NPY_FLOAT: return to_daal_nt<float, is_usm_ptr>(ptr, shape); break;
-    case NPY_INT: return to_daal_nt<int, is_usm_ptr>(ptr, shape); break;
+    case NPY_DOUBLE: return to_daal_nt<double, is_device_data>(ptr, shape); break;
+    case NPY_FLOAT: return to_daal_nt<float, is_device_data>(ptr, shape); break;
+    case NPY_INT: return to_daal_nt<int, is_device_data>(ptr, shape); break;
     default: throw std::invalid_argument("invalid input array type (must be double, float or int)");
     }
 }
 
-static void * to_daal_usm_nt(void * ptr, int typ, int * shape)
+static void * to_daal_sycl_nt(void * ptr, int typ, int * shape)
 {
     return to_daal_nt<true>(ptr, typ, shape);
 }
@@ -200,20 +242,27 @@ static void * to_daal_host_nt(void * ptr, int typ, int * shape)
     return to_daal_nt<false>(ptr, typ, shape);
 }
 
-// return a usm pointer from a SyclHomogenNumericTable
+// return a device data from a SyclHomogenNumericTable
 template <typename T>
-inline daal::services::SharedPtr<T> * fromdaalnt(daal::data_management::NumericTablePtr * ptr)
+inline void * fromdaalnt(daal::data_management::NumericTablePtr * ptr)
 {
     auto data = dynamic_cast<daal::data_management::SyclHomogenNumericTable<T> *>((*ptr).get());
     if (data)
     {
-        auto queue = get_current_queue();
         daal::data_management::BlockDescriptor<T> block;
         data->getBlockOfRows(0, data->getNumberOfRows(), daal::data_management::readOnly, block);
         auto daalBuffer = block.getBuffer();
-        auto usmPointer = new daal::services::SharedPtr<T>(daalBuffer.toUSM(queue, daal::data_management::readOnly));
+
+#ifdef INTEL_DAAL_VERSION >= 20210200
+        auto queue = get_current_queue();
+        auto* usmPointer = new daal::services::SharedPtr<T>(daalBuffer.toUSM(queue, daal::data_management::readOnly));
         data->releaseBlockOfRows(block);
         return usmPointer;
+#else
+        auto* syclBuffer = new sycl::buffer<T>(daalBuffer.toSycl());
+        data->releaseBlockOfRows(block);
+        return syclBuffer;
+#endif
     }
     return NULL;
 }

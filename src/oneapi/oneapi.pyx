@@ -25,10 +25,10 @@ from libcpp cimport bool
 cdef extern from "oneapi/oneapi.h":
     cdef cppclass PySyclExecutionContext:
         PySyclExecutionContext(const std_string & dev) except +
-    void * to_usm(void *, int, int*)
-    void * to_daal_usm_nt(void*, int, int*)
+    void * to_device(void *, int, int*)
+    void * to_daal_sycl_nt(void*, int, int*)
     void * to_daal_host_nt(void*, int, int*)
-    void delete_usm_pointer(void *, int)
+    void delete_device_data(void *, int)
 
     std_string to_std_string(PyObject * o) except +
 
@@ -99,7 +99,7 @@ from cpython.pycapsule cimport PyCapsule_New
 cdef class sycl_buffer:
     'Sycl buffer for DAAL. A generic implementation needs to do much more.'
 
-    cdef readonly long long usm_pointer
+    cdef readonly long long device_data
     cdef int typ
     cdef int shape[2]
     cdef object _ary
@@ -111,34 +111,30 @@ cdef class sycl_buffer:
             assert ary.flags['C_CONTIGUOUS'] and ary.ndim == 2
             self.__inilz__(0, np.PyArray_TYPE(ary), ary.shape[0], ary.shape[1])
 
-    cpdef __inilz__(self, long long usm, int t, int d1, int d2):
+    cpdef __inilz__(self, long long device_data, int t, int d1, int d2):
         self.typ = t
         self.shape[0] = d1
         self.shape[1] = d2
-        if usm:
-            self.usm_pointer = usm
-        else:
-            self.usm_pointer = 0
+        self.device_data = device_data
 
     def __dealloc__(self):
-        delete_usm_pointer(<void*>self.usm_pointer, self.typ)
+        delete_device_data(<void*>self.device_data, self.typ)
 
-    # we need to consider how to make this usable by numba/HPAT without objmode
     def __2daalnt__(self):
         if _get_device_name_sycl_ctxt() == 'gpu':
-            if self.usm_pointer == 0:
+            if self.device_data == 0:
                 assert self._ary is not None
-                self.usm_pointer = <long long>to_usm(np.PyArray_DATA(self._ary), self.typ, self.shape)
-            return PyCapsule_New(to_daal_usm_nt(<void*>self.usm_pointer, self.typ, self.shape), NULL, NULL)
+                self.device_data = <long long>to_device(np.PyArray_DATA(self._ary), self.typ, self.shape)
+            return PyCapsule_New(to_daal_sycl_nt(<void*>self.device_data, self.typ, self.shape), NULL, NULL)
         else:
             return PyCapsule_New(to_daal_host_nt(np.PyArray_DATA(self._ary), self.typ, self.shape), NULL, NULL)
 
 cdef api object make_py_from_sycltable(void * ptr, int typ, int d1, int d2):
     if not _get_in_sycl_ctxt():
         return None
-    cdef void * usm_ptr = c_make_py_from_sycltable(ptr, typ)
-    if usm_ptr:
+    cdef void * device_data = c_make_py_from_sycltable(ptr, typ)
+    if device_data:
         res = sycl_buffer.__new__(sycl_buffer)
-        res.__inilz__(<long long>usm_ptr, typ, d1, d2)
+        res.__inilz__(<long long>device_data, typ, d1, d2)
         return res
     return None
