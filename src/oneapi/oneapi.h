@@ -68,7 +68,7 @@ static std::string to_std_string(PyObject * o)
     return PyUnicode_AsUTF8(o);
 }
 
-#ifdef INTEL_DAAL_VERSION >= 20210200
+#if INTEL_DAAL_VERSION >= 20210200
 inline const sycl::queue& get_current_queue()
 {
     auto& ctx = daal::services::Environment::getInstance()->getDefaultExecutionContext();
@@ -142,7 +142,7 @@ inline sycl::buffer<T>* to_sycl_buffer(T * ptr, int * shape)
 template <typename T>
 inline void* to_device(T * ptr, int * shape)
 {
-    #ifdef INTEL_DAAL_VERSION >= 20210200
+    #if INTEL_DAAL_VERSION >= 20210200
         return to_usm(ptr, shape);
     #else
         return to_sycl_buffer(ptr, shape);
@@ -170,7 +170,7 @@ inline void del_sycl_buffer(void * ptr)
 template <typename T>
 inline void delete_device_data(void * ptr)
 {
-    #ifdef INTEL_DAAL_VERSION >= 20210200
+    #if INTEL_DAAL_VERSION >= 20210200
         del_usm<T>(ptr);
     #else
         del_sycl_buffer<T>(ptr);
@@ -202,7 +202,7 @@ inline daal::data_management::NumericTablePtr * to_daal_nt(void * ptr, int * sha
     if constexpr(is_device_data)
     {
         typedef daal::data_management::SyclHomogenNumericTable<T> TBL_T;
-#ifdef INTEL_DAAL_VERSION >= 20210200
+#if INTEL_DAAL_VERSION >= 20210200
         auto* usm_ptr = reinterpret_cast<daal::services::SharedPtr<T>*>(ptr);
         // we need to return a pointer to safely cross language boundaries
         return new daal::data_management::NumericTablePtr(TBL_T::create(*usm_ptr, shape[1], shape[0], get_current_queue()));
@@ -253,7 +253,7 @@ inline void * fromdaalnt(daal::data_management::NumericTablePtr * ptr)
         data->getBlockOfRows(0, data->getNumberOfRows(), daal::data_management::readOnly, block);
         auto daalBuffer = block.getBuffer();
 
-#ifdef INTEL_DAAL_VERSION >= 20210200
+#if INTEL_DAAL_VERSION >= 20210200
         auto queue = get_current_queue();
         auto* usmPointer = new daal::services::SharedPtr<T>(daalBuffer.toUSM(queue, daal::data_management::readOnly));
         data->releaseBlockOfRows(block);
