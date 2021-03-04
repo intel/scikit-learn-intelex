@@ -29,4 +29,5 @@ class DPCPPCompiler(cls):
     def initialize(self):
         super().initialize()
         self.cc = "clang-cl.exe"
+        self.cxx = "clang-cl.exe"
         self.linker_so = "clang-cl.exe"
