@@ -22,6 +22,9 @@ deselected_tests:
   # Such a oneDAL does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05
   - ensemble/tests/test_bagging.py::test_sparse_classification
 
+  # Bitwise comparison of probabilities using a print.
+  - metrics/tests/test_classification.py >=0.22,<0.24
+
   # Max absolute difference: 0.04 for rocauc, and 0.01 for precision_recall
   - metrics/tests/test_ranking.py::test_roc_curve_hard >=0.23,<0.24
 
@@ -83,7 +86,7 @@ deselected_tests:
   # Comparison of tree forest will be failed
   - ensemble/tests/test_forest.py::test_warm_start_clear[RandomForestRegressor]
   - ensemble/tests/test_forest.py::test_warm_start_clear[RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier] !=0.22,!=0.22.1,!=0.22.2
+  - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
   - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
   - tests/test_common.py::test_estimators
   - tests/test_multioutput.py::test_multi_output_classification
@@ -94,7 +97,7 @@ deselected_tests:
   # The bugs are fixed in 2021.2 release
   - ensemble/tests/test_forest.py::test_memory_layout >=0.24
   - ensemble/tests/test_forest.py::test_regression >=0.24 # pass for defaultDence method only
-  - ensemble/tests/test_forest.py::test_boston <=0.23
+  - ensemble/tests/test_forest.py::test_boston <0.24
   - ensemble/tests/test_stacking.py::test_stacking_cv_influence >=0.22
   - utils/tests/test_estimator_checks.py::test_check_estimator_clones
 
@@ -102,7 +105,7 @@ deselected_tests:
   - tests/test_common.py::test_check_n_features_in_after_fitting >=0.24
 
   # module name should starts with 'sklearn.metrics' but we have 'daal4py.sklearn.metrics'
-  - metrics/tests/test_score_objects.py::test_scoring_is_not_metric !=0.23,!=0.23.1,!=0.23.2
+  - metrics/tests/test_score_objects.py::test_scoring_is_not_metric
 
   # Stability issue with max absolute difference: 4.33846826e-08/1.17613697e-11. Remove in next release
   - ensemble/tests/test_bagging.py::test_estimators_samples_deterministic >=0.24
