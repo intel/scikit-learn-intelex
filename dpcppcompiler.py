@@ -30,4 +30,5 @@ class DPCPPCompiler(cls):
         super().initialize()
         self.cc = "clang-cl.exe"
         self.cxx = "clang-cl.exe"
+        self.linker = "clang-cl.exe"
         self.linker_so = "clang-cl.exe"
