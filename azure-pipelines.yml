@@ -7,20 +7,23 @@ trigger:
 - dev/coverity
 
 pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: |
+    cd $(Agent.BuildDirectory)
+    curl -s -L --user admin:$(COVERITY_AUTHKEY) -o license.dat $(COVERITY_URL)/downloadFile.htm?fn=license.dat
+    curl -s -L --user admin:$(COVERITY_AUTHKEY) $(COVERITY_URL)/downloadFile.htm?fn=cov-analysis-linux64-2020.09.tar.gz | tar -xvzf -
+    mv cov-analysis-linux64-2020.09 cov-analysis
+    cp license.dat ./cov-analysis/bin
+  condition: ne(variables.CACHE_RESTORED, 'true')
+  displayName: 'Install Coverity tool'
+
 - task: synopsys-coverity@1
   inputs:
     coverityService: 'coverity-connect'
     projectName: 'daal4py'
     streamName: 'daal4py'
     coverityBuildDirectory: '$(Build.Repository.LocalPath)'
-    buildCommand: 
-  vmImage: 'ubuntu-latest'
-
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    buildCommand: --no-command --fs-capture-search .
+  displayName: 'Coverity scan'
