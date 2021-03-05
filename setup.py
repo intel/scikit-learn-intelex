@@ -18,8 +18,13 @@
 # System imports
 import os
 import sys
+import sysconfig
 import time
+import subprocess
 from setuptools import setup, Extension
+import setuptools.command.install as orig_install
+import setuptools.command.develop as orig_develop
+import distutils.command.build as orig_build
 from os.path import join as jp
 from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
@@ -243,7 +248,7 @@ def get_type_defines():
     return ["-D{}={}".format(d, DAAL_DEFAULT_TYPE) for d in daal_type_defines]
 
 
-def getpyexts():
+def get_build_options():
     include_dir_plat = [os.path.abspath('./src'), dal_root + '/include', ]
     # FIXME it is a wrong place for this dependency
     if not no_dist:
@@ -293,7 +298,10 @@ def getpyexts():
     if IS_LIN:
         ela.append("-fPIC")
         ela.append("-Wl,-rpath,$ORIGIN/../..")
+    return eca, ela, include_dir_plat, libraries_plat
 
+def getpyexts():
+    eca, ela, include_dir_plat, libraries_plat = get_build_options()
     exts = cythonize([Extension('_daal4py',
                                 [os.path.abspath('src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
@@ -308,17 +316,16 @@ def getpyexts():
                       ])
 
     eca_dpcpp = eca.copy() + ['-fsycl']
-    ela_dpcpp = ela.copy() + ['-fsycl']
+    ela_dpcpp = ela.copy()
 
     if dpcpp:
         ext = Extension('_oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
-                        depends=['src/oneapi/oneapi.h', ],
+                        depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h' ],
                         include_dirs=include_dir_plat + [np.get_include()],
-                        extra_compile_args=eca_dpcpp,
-                        extra_link_args=ela_dpcpp,
-                        libraries=libraries_plat + DPCPP_LIBS,
-                        library_dirs=DAAL_LIBDIRS + DPCPP_LIBDIRS,
+                        extra_compile_args=eca,
+                        extra_link_args=ela,
+                        libraries=['_oneapi_backend'],
                         language='c++')
         exts.extend(cythonize(ext))
     if dpctl:
@@ -397,6 +404,60 @@ with open('requirements.txt') as f:
                 install_requires.remove(r)
                 break
 
+def distutils_dir_name(dname):
+    """Returns the name of a distutils build directory"""
+    f = "{dirname}.{platform}-{version[0]}.{version[1]}"
+    return f.format(dirname=dname,
+                    platform=sysconfig.get_platform(),
+                    version=sys.version_info)
+
+def build_oneapi_backend():
+    eca, ela, include_dir_plat, libraries_plat = get_build_options()
+    libraries = libraries_plat + ['openCL', 'onedal_sycl']
+    if IS_WIN:
+        eca += ['/EHsc']
+        ela += ['/MD']
+        lib_prefix = ''
+        lib_suffix = '.lib'
+        additional_linker_opts = ['/link', '/DLL', '/OUT:_oneapi_backend.dll']
+    else:
+        eca += ['-fPIC']
+        lib_suffix = ''
+        lib_prefix = '-l'
+        additional_linker_opts = ['-o lib_oneapi.so']
+    libraries = [ f'{lib_prefix}{str(item)}{lib_suffix}' for item in libraries ]
+
+    d4p_dir = os.getcwd()
+    src_dir = os.path.join(d4p_dir, "src/oneapi")
+    #build_dir = os.path.join(d4p_dir, 'build')
+    #lib_build_dir = os.path.join(build_dir, distutils_dir_name('lib'))
+
+    cmd = ['dpcpp'] + eca + ela + [f'{src_dir}/oneapi_backend.cpp'] + libraries + additional_linker_opts
+    subprocess.check_call(cmd)
+    #subprocess.check_call(f'mv _oneapi_backend.* {lib_build_dir}')
+
+
+
+class install(orig_install.install):
+    def run(self):
+        if dpcpp:
+            build_oneapi_backend()
+        return super().run()
+
+
+class develop(orig_develop.develop):
+    def run(self):
+        if dpcpp:
+            build_oneapi_backend()
+        return super().run()
+
+
+class build(orig_build.build):
+    def run(self):
+        if dpcpp:
+            build_oneapi_backend()
+        return super().run()
+
 # daal setup
 setup(name="daal4py",
       description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
@@ -409,6 +470,7 @@ setup(name="daal4py",
       author_email="scripting@intel.com",
       maintainer_email="onedal.maintainers@intel.com",
       project_urls=project_urls,
+      cmdclass={ 'install': install, 'develop': develop, 'build': build },
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
