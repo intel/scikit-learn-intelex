@@ -25,12 +25,12 @@ static_assert(false, "DAAL_SYCL_INTERFACE not defined")
 #endif
 
 #ifdef _WIN32
-#define ONEAPI_EXPORT __declspec(dllexport)
+#define _ONEAPI_BACKEND_EXPORT __declspec(dllexport)
 #else
-#define ONEAPI_EXPORT
+#define _ONEAPI_BACKEND_EXPORT
 #endif
 
-class ONEAPI_EXPORT PySyclExecutionContext
+class _ONEAPI_BACKEND_EXPORT PySyclExecutionContext
 {
 public:
     // Construct from given device provided as string
@@ -42,17 +42,17 @@ private:
 };
 
 template <typename T>
-ONEAPI_EXPORT void* to_device(T * ptr, int * shape);
+_ONEAPI_BACKEND_EXPORT void* to_device(T * ptr, int * shape);
 
 template <typename T>
-ONEAPI_EXPORT void delete_device_data(void * ptr);
+_ONEAPI_BACKEND_EXPORT void delete_device_data(void * ptr);
 
 // take a sycl buffer and convert ti oneDAL NT
 template <typename T, bool is_device_data>
-ONEAPI_EXPORT daal::data_management::NumericTablePtr * to_daal_nt(void * ptr, int * shape);
+_ONEAPI_BACKEND_EXPORT daal::data_management::NumericTablePtr * to_daal_nt(void * ptr, int * shape);
 
 // return a device data from a SyclHomogenNumericTable
 template <typename T>
-ONEAPI_EXPORT void * fromdaalnt(daal::data_management::NumericTablePtr * ptr);
+_ONEAPI_BACKEND_EXPORT void * fromdaalnt(daal::data_management::NumericTablePtr * ptr);
 
 #endif // __ONEAPI_BACKEND_H_INCLUDED__
