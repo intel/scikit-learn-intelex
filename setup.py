@@ -325,7 +325,9 @@ def getpyexts():
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca,
                         extra_link_args=ela,
-                        libraries=['_oneapi_backend'],
+                        libraries=['oneapi_backend'],
+                        library_dirs=['daal4py/oneapi'],
+                        runtime_library_dirs=["$ORIGIN/daal4py/oneapi"],
                         language='c++')
         exts.extend(cythonize(ext))
     if dpctl:
@@ -412,29 +414,41 @@ def distutils_dir_name(dname):
                     version=sys.version_info)
 
 def build_oneapi_backend():
+    import shutil
+
     eca, ela, include_dir_plat, libraries_plat = get_build_options()
-    libraries = libraries_plat + ['openCL', 'onedal_sycl']
+    libraries = libraries_plat + ['OpenCL', 'onedal_sycl']
     if IS_WIN:
         eca += ['/EHsc']
         ela += ['/MD']
         lib_prefix = ''
         lib_suffix = '.lib'
-        additional_linker_opts = ['/link', '/DLL', '/OUT:_oneapi_backend.dll']
+        libname = 'oneapi_backend.dll'
+        additional_linker_opts = ['/link', '/DLL', f'/OUT:{libname}']
     else:
         eca += ['-fPIC']
+        ela += ['-shared']
         lib_suffix = ''
         lib_prefix = '-l'
-        additional_linker_opts = ['-o lib_oneapi.so']
+        libname = 'liboneapi_backend.so'
+        additional_linker_opts = ['-o', libname]
     libraries = [ f'{lib_prefix}{str(item)}{lib_suffix}' for item in libraries ]
 
     d4p_dir = os.getcwd()
     src_dir = os.path.join(d4p_dir, "src/oneapi")
-    #build_dir = os.path.join(d4p_dir, 'build')
-    #lib_build_dir = os.path.join(build_dir, distutils_dir_name('lib'))
+    build_dir = os.path.join(d4p_dir, "build_backend")
+
+    if os.path.exists(build_dir):
+        shutil.rmtree(build_dir)
+    os.mkdir(build_dir)
+    os.chdir(build_dir)
 
     cmd = ['dpcpp'] + eca + ela + [f'{src_dir}/oneapi_backend.cpp'] + libraries + additional_linker_opts
+    print(subprocess.list2cmdline(cmd))
     subprocess.check_call(cmd)
-    #subprocess.check_call(f'mv _oneapi_backend.* {lib_build_dir}')
+
+    shutil.copy(libname, os.path.join(d4p_dir, "daal4py/oneapi"))
+    os.chdir(d4p_dir)
 
 
 
@@ -513,5 +527,6 @@ setup(name="daal4py",
                 'daal4py.sklearn.utils',
                 'daal4py.sklearn.model_selection',
                 ],
+      package_data={'daal4py.oneapi': ['liboneapi_backend.so', 'oneapi_backend.lib', 'oneapi_backend.dll']},
       ext_modules=getpyexts()
       )
