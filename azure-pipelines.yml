@@ -12,10 +12,9 @@ pool:
 steps:
 - script: |
     cd $(Agent.BuildDirectory)
-    curl -s -L --user admin:$(COVERITY_AUTHKEY) -o license.dat $(COVERITY_URL)/downloadFile.htm?fn=license.dat
-    curl -s -L --user admin:$(COVERITY_AUTHKEY) $(COVERITY_URL)/downloadFile.htm?fn=cov-analysis-linux64-2020.09.tar.gz | tar -xvzf -
-    mv cov-analysis-linux64-2020.09 cov-analysis
-    cp license.dat ./cov-analysis/bin
+    wget https://scan.coverity.com/download/linux64 --post-data "token=$(COVERITY_AUTHKEY)&project=daal4py" -O coverity_tool.tgz
+    tar -xzvf coverity_tool.tgz
+    mv cov-analysis-linux64* cov-analysis
   condition: ne(variables.CACHE_RESTORED, 'true')
   displayName: 'Install Coverity tool'
 
