@@ -300,6 +300,7 @@ def get_build_options():
         ela.append("-Wl,-rpath,$ORIGIN/../..")
     return eca, ela, include_dir_plat, libraries_plat
 
+
 def getpyexts():
     eca, ela, include_dir_plat, libraries_plat = get_build_options()
     exts = cythonize([Extension('_daal4py',
@@ -326,7 +327,7 @@ def getpyexts():
 
         ext = Extension('_oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
-                        depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h' ],
+                        depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca_dpcpp,
                         extra_link_args=ela,
@@ -411,6 +412,7 @@ with open('requirements.txt') as f:
                 install_requires.remove(r)
                 break
 
+
 def distutils_dir_name(dname):
     """Returns the name of a distutils build directory"""
     f = "{dirname}.{platform}-{version[0]}.{version[1]}"
@@ -418,13 +420,14 @@ def distutils_dir_name(dname):
                     platform=sysconfig.get_platform(),
                     version=sys.version_info)
 
+
 def build_oneapi_backend():
     import shutil
 
     eca, ela, include_dir_plat, libraries_plat = get_build_options()
     libraries = libraries_plat + ['OpenCL', 'onedal_sycl']
-    include_dir_plat = [ '-I' + incdir for incdir in include_dir_plat ]
-    library_dir_plat = [ '-L' + libdir for libdir in DAAL_LIBDIRS ]
+    include_dir_plat = ['-I' + incdir for incdir in include_dir_plat]
+    library_dir_plat = ['-L' + libdir for libdir in DAAL_LIBDIRS]
     if IS_WIN:
         eca += ['/EHsc']
         ela += ['/MD']
@@ -439,7 +442,7 @@ def build_oneapi_backend():
         lib_prefix = '-l'
         libname = 'liboneapi_backend.so'
         additional_linker_opts = ['-o', libname]
-    libraries = [ f'{lib_prefix}{str(item)}{lib_suffix}' for item in libraries ]
+    libraries = [f'{lib_prefix}{str(item)}{lib_suffix}' for item in libraries]
 
     d4p_dir = os.getcwd()
     src_dir = os.path.join(d4p_dir, "src/oneapi")
@@ -461,9 +464,9 @@ def build_oneapi_backend():
 
     shutil.copy(libname, os.path.join(d4p_dir, "daal4py/oneapi"))
     if IS_WIN:
-        shutil.copy(libname.replace('.dll','.lib'), os.path.join(d4p_dir, "daal4py/oneapi"))
+        shutil.copy(libname.replace('.dll', '.lib'),
+                    os.path.join(d4p_dir, "daal4py/oneapi"))
     os.chdir(d4p_dir)
-
 
 
 class install(orig_install.install):
@@ -486,6 +489,7 @@ class build(orig_build.build):
             build_oneapi_backend()
         return super().run()
 
+
 # daal setup
 setup(name="daal4py",
       description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
@@ -498,7 +502,7 @@ setup(name="daal4py",
       author_email="scripting@intel.com",
       maintainer_email="onedal.maintainers@intel.com",
       project_urls=project_urls,
-      cmdclass={ 'install': install, 'develop': develop, 'build': build },
+      cmdclass={'install': install, 'develop': develop, 'build': build},
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
@@ -541,6 +545,10 @@ setup(name="daal4py",
                 'daal4py.sklearn.utils',
                 'daal4py.sklearn.model_selection',
                 ],
-      package_data={'daal4py.oneapi': ['liboneapi_backend.so', 'oneapi_backend.lib', 'oneapi_backend.dll']},
+      package_data={'daal4py.oneapi': ['liboneapi_backend.so',
+                                       'oneapi_backend.lib',
+                                       'oneapi_backend.dll'
+                                       ]
+                    },
       ext_modules=getpyexts()
       )
