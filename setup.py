@@ -323,7 +323,7 @@ def getpyexts():
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
                         depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h' ],
                         include_dirs=include_dir_plat + [np.get_include()],
-                        extra_compile_args=eca,
+                        extra_compile_args=eca_dpcpp,
                         extra_link_args=ela,
                         libraries=['oneapi_backend'],
                         library_dirs=['daal4py/oneapi'],
@@ -418,6 +418,8 @@ def build_oneapi_backend():
 
     eca, ela, include_dir_plat, libraries_plat = get_build_options()
     libraries = libraries_plat + ['OpenCL', 'onedal_sycl']
+    include_dir_plat = [ '-I' + incdir for incdir in include_dir_plat ]
+    library_dir_plat = [ '-L' + libdir for libdir in DAAL_LIBDIRS ]
     if IS_WIN:
         eca += ['/EHsc']
         ela += ['/MD']
@@ -443,7 +445,12 @@ def build_oneapi_backend():
     os.mkdir(build_dir)
     os.chdir(build_dir)
 
-    cmd = ['dpcpp'] + eca + ela + [f'{src_dir}/oneapi_backend.cpp'] + libraries + additional_linker_opts
+    cmd = ['dpcpp'] + \
+        include_dir_plat + eca + \
+        library_dir_plat + ela + \
+        [f'{src_dir}/oneapi_backend.cpp'] + \
+        libraries + additional_linker_opts
+
     print(subprocess.list2cmdline(cmd))
     subprocess.check_call(cmd)
 
