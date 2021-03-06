@@ -319,6 +319,11 @@ def getpyexts():
     ela_dpcpp = ela.copy()
 
     if dpcpp:
+        if IS_LIN or IS_MAC:
+            runtime_library_dirs = ["$ORIGIN/daal4py/oneapi"]
+        elif IS_WIN:
+            runtime_library_dirs = []
+
         ext = Extension('_oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
                         depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h' ],
@@ -327,7 +332,7 @@ def getpyexts():
                         extra_link_args=ela,
                         libraries=['oneapi_backend'],
                         library_dirs=['daal4py/oneapi'],
-                        runtime_library_dirs=["$ORIGIN/daal4py/oneapi"],
+                        runtime_library_dirs=runtime_library_dirs,
                         language='c++')
         exts.extend(cythonize(ext))
     if dpctl:
@@ -455,6 +460,8 @@ def build_oneapi_backend():
     subprocess.check_call(cmd)
 
     shutil.copy(libname, os.path.join(d4p_dir, "daal4py/oneapi"))
+    if IS_WIN:
+        shutil.copy(libname.replace('.dll','.lib'), os.path.join(d4p_dir, "daal4py/oneapi"))
     os.chdir(d4p_dir)
 
 
