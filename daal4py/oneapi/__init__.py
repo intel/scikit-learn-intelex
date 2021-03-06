@@ -15,4 +15,16 @@
 # limitations under the License.
 #===============================================================================
 
+import platform
+if "Windows" in platform.system():
+    import os
+    import sys
+    import site
+    path_to_env = site.getsitepackages()[0]
+    path_to_libs = os.path.join(path_to_env, "Lib", "site-packages", "daal4py", "oneapi")
+    print('libs:', path_to_libs)
+    if sys.version_info.minor >= 8:
+        os.add_dll_directory(path_to_libs)
+    os.environ['PATH'] += os.pathsep + path_to_libs
+
 from _oneapi import sycl_context, sycl_buffer, is_in_sycl_ctxt
