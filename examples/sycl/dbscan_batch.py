@@ -118,8 +118,7 @@ def main(readcsv=read_csv, method='defaultDense'):
                                result_gpu.coreObservations)
 
     with cpu_context():
-        # TODO: investigate hangs with data as sycl_buffer
-        sycl_data = data
+        sycl_data = sycl_buffer(data)
         result_cpu = compute(sycl_data, minObservations, epsilon)
         assert np.allclose(result_classic.nClusters, result_cpu.nClusters)
         assert np.allclose(result_classic.assignments, result_cpu.assignments)
