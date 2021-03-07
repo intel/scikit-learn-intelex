@@ -15,4 +15,15 @@
 # limitations under the License.
 #===============================================================================
 
+import platform
+if "Windows" in platform.system():
+    import os
+    import sys
+    import site
+    current_path = os.path.dirname(__file__)
+
+    if sys.version_info.minor >= 8:
+        os.add_dll_directory(current_path)
+    os.environ['PATH'] += os.pathsep + current_path
+
 from _oneapi import sycl_context, sycl_buffer, is_in_sycl_ctxt
