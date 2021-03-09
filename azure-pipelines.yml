@@ -23,7 +23,7 @@ steps:
 
 - task: synopsys-coverity@1
   inputs:
-    coverityService: 'coverity-connect'
+    coverityService: 'coverity-connection'
     projectName: 'daal4py'
     streamName: 'daal4py'
     coverityBuildDirectory: '$(Build.Repository.LocalPath)'
