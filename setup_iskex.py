@@ -18,24 +18,9 @@
 # System imports
 import os
 import sys
-import sysconfig
 import time
-import subprocess
-from setuptools import setup, Extension
-import setuptools.command.install as orig_install
-import setuptools.command.develop as orig_develop
-import distutils.command.build as orig_build
+from setuptools import setup
 from os.path import join as jp
-from distutils.sysconfig import get_config_vars
-from Cython.Build import cythonize
-import glob
-import numpy as np
-import distutils.ccompiler
-
-try:
-    from ctypes.utils import find_library
-except ImportError:
-    from ctypes.util import find_library
 
 IS_WIN = False
 IS_MAC = False

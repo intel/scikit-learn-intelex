@@ -15,10 +15,10 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn import enable as patch_sklearn_orig
-from daal4py.sklearn import disable as unpatch_sklearn_orig
-from daal4py.sklearn import _patch_names as sklearn_patch_names_orig
-from daal4py.sklearn import _get_map_of_algorithms as sklearn_patch_map_orig
+from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
+from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
+from daal4py.sklearn import sklearn_patch_names as sklearn_patch_names_orig
+from daal4py.sklearn import sklearn_patch_map as sklearn_patch_map_orig
 
 def patch_sklearn(name=None, verbose=True):
     patch_sklearn_orig(name, verbose)
