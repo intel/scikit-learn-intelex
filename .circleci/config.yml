@@ -22,6 +22,12 @@ jobs:
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
             python setup.py install --single-version-externally-managed --record=record.txt
+      - run:
+          name: Building iskex
+          command: |
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            python setup_iskex.py install --single-version-externally-managed --record=record1.txt
 
       - run:
           name: Testing sklearn patches
@@ -32,9 +38,18 @@ jobs:
             conda activate bld
             pip install -q scikit-learn
             conda list
-            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_daal4py.tar.bz2 daal4py
+      - run:
+          name: Testing sklearn patches with iskex
+          no_output_timeout: 20m
+          command: |
+            export PATH=~/miniconda/bin:$PATH
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            conda list
+            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_iskex.tar.bz2 iskex
       - store_artifacts:
-          path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+          path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_daal4py.tar.bz2 /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_iskex.tar.bz2
 
   build_master:
     docker:
