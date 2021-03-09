@@ -5,6 +5,8 @@
 
 variables:
   COVERITY_TOOL_HOME: $(Agent.BuildDirectory)/cov-analysis
+  D4P_VERSION: 2021.2
+  DESCRIPTION: Test
 
 trigger:
 - dev/coverity
@@ -20,12 +22,25 @@ steps:
     mv cov-analysis-linux64* cov-analysis
   condition: ne(variables.CACHE_RESTORED, 'true')
   displayName: 'Install Coverity tool'
-
-- task: synopsys-coverity@1
-  inputs:
-    coverityService: 'coverity-connection'
-    projectName: 'daal4py'
-    streamName: 'daal4py'
-    coverityBuildDirectory: '$(Build.Repository.LocalPath)'
-    buildCommand: --no-command --fs-capture-search .
-  displayName: 'Coverity scan'
+- script: |
+    # $(COVERITY_TOOL_HOME)/bin/cov-configure --python
+    cd $(Build.Repository.LocalPath)
+    $(COVERITY_TOOL_HOME)/bin/cov-build --dir cov-int --no-command --fs-capture-search .
+    zip -r daal4py.zip cov-int
+  displayName: 'Perform Coverity scan'
+- script: |
+    curl --form token=$(COVERITY_AUTHKEY) \
+      --form email=$(COVERITY_AUTHLOGIN) \
+      --form file=@$(Build.Repository.LocalPath)/daal4py.zip \
+      --form version="$(D4P_VERSION)" \
+      --form description="$(DESCRIPTION)" \
+      $(COVERITY_URL)
+  displayName: 'Upload results of Coverity scan'
+# - task: synopsys-coverity@1
+#   inputs:
+#     coverityService: 'coverity-connection'
+#     projectName: 'daal4py'
+#     streamName: 'daal4py'
+#     coverityBuildDirectory: '$(Build.Repository.LocalPath)'
+#     buildCommand: --no-command --fs-capture-search .
+#   displayName: 'Coverity scan'
