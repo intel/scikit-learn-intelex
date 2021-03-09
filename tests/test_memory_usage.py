@@ -27,18 +27,15 @@ import pandas as pd
 import numpy as np
 
 
-class TrainTestSplitFakeEstimator:
+class TrainTestSplitEstimator:
     def __init__(self):
         pass
 
     def fit(self, x, y):
         _daal_train_test_split(x, y)
 
-    def predict(self, x):
-        pass
 
-
-class AssertAllFiniteFakeEstimator:
+class AssertAllFiniteEstimator:
     def __init__(self):
         pass
 
@@ -46,23 +43,25 @@ class AssertAllFiniteFakeEstimator:
         _daal_assert_all_finite(x)
         _daal_assert_all_finite(y)
 
-    def predict(self, x):
-        pass
-
 
 ESTIMATORS = [
-    TrainTestSplitFakeEstimator,
-    AssertAllFiniteFakeEstimator
+    TrainTestSplitEstimator,
+    AssertAllFiniteEstimator
 ]
 
-# add all daa4lpy estimators enabled in patching
+BANNED_ESTIMATORS = [
+    'TSNE'  # too slow for using in testing on applicable data sizes
+]
+
+# add all daa4lpy estimators enabled in patching (except banned)
 patched_estimators = _get_map_of_algorithms().values()
 for listing in patched_estimators:
-    estimator = listing[0][0][2]
+    estimator, name = listing[0][0][2], listing[0][0][1]
     if not isinstance(estimator, types.FunctionType):
-        if isinstance(estimator(), BaseEstimator):
-            if hasattr(estimator, 'fit'):
-                ESTIMATORS.append(estimator)
+        if name not in BANNED_ESTIMATORS:
+            if isinstance(estimator(), BaseEstimator):
+                if hasattr(estimator, 'fit'):
+                    ESTIMATORS.append(estimator)
 
 
 def ndarray_c(x, y):
@@ -87,13 +86,6 @@ DATA_TRANSFORMS = [
     dataframe_c,
     dataframe_f
 ]
-
-
-def gen_reg_data():
-    data, label = make_regression(
-        n_samples=2000, n_features=50, random_state=777)
-    return data, label, \
-        data.size * data.dtype.itemsize + label.size * label.dtype.itemsize
 
 
 def gen_clsf_data():
