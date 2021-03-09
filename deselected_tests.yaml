@@ -12,9 +12,9 @@ deselected_tests:
 
   # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
   # See: https://github.com/scikit-learn/scikit-learn/issues/12738
-  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
+  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel >=0.23
   - svm/tests/test_svm.py::test_precomputed
-  - svm/tests/test_sparse.py::test_svc
+  - svm/tests/test_sparse.py::test_svc >=0.23
   - svm/tests/test_sparse.py::test_sparse_realdata
   - svm/tests/test_sparse.py::test_svc_iris
 
@@ -23,97 +23,71 @@ deselected_tests:
   - ensemble/tests/test_bagging.py::test_sparse_classification
 
   # Bitwise comparison of probabilities using a print.
-  - metrics/tests/test_classification.py
+  - metrics/tests/test_classification.py >=0.22,<0.24
 
   # Max absolute difference: 0.04 for rocauc, and 0.01 for precision_recall
-  - metrics/tests/test_ranking.py::test_roc_curve_hard
-  - metrics/tests/test_ranking.py::test_precision_recall_curve
-
-  - model_selection/tests/test_search.py::test_search_cv_results_rank_tie_breaking
-
-  # test_k_means_fit_predict is known to sporadically fail for float32 inputs in multithreaded runs
-  # See: https://github.com/IntelPython/daal4py/issues/25
-  - cluster/tests/test_k_means.py::test_k_means_fit_predict
+  - metrics/tests/test_ranking.py::test_roc_curve_hard >=0.23,<0.24
 
   # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
   # See https://github.com/IntelPython/daal4py/issues/69
-  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies >=0.20.3
-  - cluster/tests/test_k_means.py::test_relocated_clusters
-  - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters
+  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1]
+  - cluster/tests/test_k_means.py::test_relocated_clusters >=0.23,<0.24
+  - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters >=0.24
   - cluster/tests/test_k_means.py::test_iter_attribute <0.22
 
   # oneDAL does not check convergence for tol == 0.0 for ease of benchmarking
-  - cluster/tests/test_k_means.py::test_kmeans_convergence
-  - cluster/tests/test_k_means.py::test_kmeans_verbose
+  - cluster/tests/test_k_means.py::test_kmeans_convergence >=0.23
+  - cluster/tests/test_k_means.py::test_kmeans_verbose >=0.23
 
   # For Newton-CG solver, solution computed in float32 disagrees with that of float64 a little more than
   # the test expects, see https://github.com/scikit-learn/scikit-learn/pull/13645
   - linear_model/tests/test_logistic.py::test_dtype_match
 
-  # _hist_gradient_boosting tests (added in 0.21.0) times out in CircleCI
-  - ensemble/_hist_gradient_boosting/tests/test_gradient_boosting.py
-
-  # https://github.com/scikit-learn/scikit-learn/pull/15857
-  - ensemble/tests/test_stacking.py::test_stacking_cv_influence >=0.22
-
   # This fails on certain platforms. Weighted data do not go through DAAL,
   # unweighted do. Since convergence is not accomplished (comment in te test
   # suggests that), coefficients are slightly different, resulting in 1 prediction
   # disagreement.
-  - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight >=0.22.1
+  - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight >=0.22
 
   # Depreceted case from 0.21
   - ensemble/tests/test_forest.py::test_min_impurity_split <0.22
   - ensemble/tests/test_forest.py::test_nestimators_future_warning <0.22
   - ensemble/tests/test_voting.py::test_set_estimator_none <0.22
 
-  #
-  - tests/test_pipeline.py::test_pipeline_memory
-
-  # docstrings do not document daal_model_ attribute set by fit for
-  # LinearRegression, Ridge and SVC
-  - tests/test_docstring_parameters.py::test_fit_docstring_attributes
-
   # Insufficient accuracy of "coefs" and "intercept" in Elastic Net for multi-target problem
   # https://github.com/oneapi-src/oneDAL/issues/494
-  - linear_model/tests/test_coordinate_descent.py::test_enet_multitarget >=0.21
+  - linear_model/tests/test_coordinate_descent.py::test_enet_multitarget >=0.22
 
   # Insufficient accuracy of objective function in Elastic Net in case warm_start
   # https://github.com/oneapi-src/oneDAL/issues/495
-  - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement >=0.21
+  - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement >=0.22,<0.24
 
   # oneDAL doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
 
-  # We have difference (Max absolute difference: 1.97215226e-31) in computing of log_proba with np.log(y_proba)
-  # Looks like using IDP NumPy is the cause for the failure due to use of more aggressive compiler optimization when compile NumPy UFunc loops
-  - neural_network/tests/test_mlp.py::test_predict_proba_multilabel
-
   # On small datasets, the regression coefficients for multi-target problem differ from scikit-learn. Coefficients matches for first label only.
   # For big data the coefficients are close.
   # See: https://github.com/IntelPython/daal4py/issues/275
-  - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties
-
-  # Different number of iterations because of instability of kmeans
-  # https://github.com/IntelPython/daal4py/issues/277
-  - cluster/tests/test_k_means.py::test_kmeans_elkan_results
+  - cluster/tests/test_k_means.py::test_kmeans_elkan_results >=0.24
+  - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties >=0.24
 
   # Different interpretation of trees compared to scikit-learn
   # Looks like we need to align tree traversal. This problem will be fixed
-  - ensemble/tests/test_forest.py::test_min_samples_leaf
+  - ensemble/tests/test_forest.py::test_min_samples_leaf[RandomForestClassifier]
 
   # Our threads are used internally and are not explicitly specified
   - ensemble/tests/test_forest.py::test_backend_respected
 
   # We do not support accessing trees through the result variable
   - ensemble/tests/test_forest.py::test_warm_start
-  - inspection/tests/test_partial_dependence.py::test_recursion_decision_tree_vs_forest_and_gbdt
+  - inspection/tests/test_partial_dependence.py::test_recursion_decision_tree_vs_forest_and_gbdt[0] >=0.23
 
   # Our implementation builds different trees compared to skikit-learn
   # Comparison of tree forest will be failed
-  - ensemble/tests/test_forest.py::test_warm_start_clear
-  - ensemble/tests/test_forest.py::test_class_weights
-  - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature
+  - ensemble/tests/test_forest.py::test_warm_start_clear[RandomForestRegressor]
+  - ensemble/tests/test_forest.py::test_warm_start_clear[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
+  - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
   - tests/test_common.py::test_estimators
   - tests/test_multioutput.py::test_multi_output_classification
 
@@ -121,34 +95,23 @@ deselected_tests:
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
   # The bugs are fixed in 2021.2 release
-  - ensemble/tests/test_forest.py::test_memory_layout
-  - ensemble/tests/test_forest.py::test_regression # pass for defaultDence method only
-  - ensemble/tests/test_forest.py::test_boston
-  - ensemble/tests/test_stacking.py::test_stacking_cv_influence
+  - ensemble/tests/test_forest.py::test_memory_layout >=0.24
+  - ensemble/tests/test_forest.py::test_regression >=0.24 # pass for defaultDence method only
+  - ensemble/tests/test_forest.py::test_boston <0.24
+  - ensemble/tests/test_stacking.py::test_stacking_cv_influence >=0.22
   - utils/tests/test_estimator_checks.py::test_check_estimator_clones
-  - tests/test_multioutput.py::test_classifier_chain_tuple_order
-
-  # The bugs are fixed. Remove these tests from deselected after the gold release
-  - ensemble/tests/test_bagging.py::test_classification
-  - neighbors/tests/test_neighbors.py::test_kneighbors_classifier
-  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
-  - semi_supervised/tests/test_label_propagation.py::test_predict_sparse_callable_kernel
 
   # daal4py is throwing the exception from the library. Will be fixed.
-  - tests/test_common.py::test_check_n_features_in_after_fitting
+  - tests/test_common.py::test_check_n_features_in_after_fitting >=0.24
 
   # module name should starts with 'sklearn.metrics' but we have 'daal4py.sklearn.metrics'
   - metrics/tests/test_score_objects.py::test_scoring_is_not_metric
 
   # Stability issue with max absolute difference: 4.33846826e-08/1.17613697e-11. Remove in next release
-  - inspection/tests/test_partial_dependence.py::test_partial_dependence_dataframe[features-integer-None-estimator-brute]
-  - inspection/tests/test_partial_dependence.py::test_partial_dependence_dataframe[features-string-None-estimator-brute]
-  - ensemble/tests/test_bagging.py::test_estimators_samples_deterministic
-  - ensemble/tests/test_voting.py::test_set_estimator_none <0.22
+  - ensemble/tests/test_bagging.py::test_estimators_samples_deterministic >=0.24
 
   # Data for the tests is generated by using SVC. And it's not equal to stock sklearn
-  - metrics/tests/test_ranking.py::test_roc_curve_hard < 0.22
-  - metrics/tests/test_ranking.py::test_precision_recall_curve < 0.22
+  - metrics/tests/test_ranking.py::test_precision_recall_curve >=0.23,<0.24
 
   # Some values in PCA.components_ (in the last component) aren't equal (0.6 on average for absolute error in this test)
   # because of different implementations of PCA. Also, results are not stable.
@@ -156,7 +119,7 @@ deselected_tests:
 
   # The test fails because of changing of 'auto' strategy in PCA to improve performance.
   # 'randomized' PCA expected, but 'full' is given.
-  - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
+  - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized] >0.21
 
   # Stability issue with max absolute difference: 0.00015992. Remove in the next release.
   - decomposition/tests/test_pca.py::test_pca_dtype_preservation
@@ -165,7 +128,7 @@ deselected_tests:
 
   # Scikit-learn logistic regression predict depends from decision_function while d4p is not.
   # Assertion error in check_estimator(PoorScoreLogisticRegression())
-  - utils/tests/test_estimator_checks.py::test_check_estimator
+  - utils/tests/test_estimator_checks.py::test_check_estimator >=0.24
 
   # Need to fix for next release
   - metrics/tests/test_ranking.py::test_auc_score_non_binary_class <0.22
