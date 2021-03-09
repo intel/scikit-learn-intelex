@@ -47,11 +47,11 @@ project_urls = {
     'Source Code': 'https://github.com/IntelPython/daal4py'
 }
 
-with open('README.md', 'r', encoding='utf8') as f:
+with open('iskex/README.md', 'r', encoding='utf8') as f:
     long_description = f.read()
 
 install_requires = []
-with open('requirements.txt') as f:
+with open('requirements-iskex.txt') as f:
     install_requires.extend(f.read().splitlines())
     if IS_MAC:
         for r in install_requires:
@@ -61,7 +61,7 @@ with open('requirements.txt') as f:
 
 # iskex setup
 setup(name="iskex",
-      description="Intel(R) Extension for scikit-learn with helps Intel(R) oneAPI Data Analytics Library",
+      description="Extension for scikit-learn with helps Intel(R) oneAPI Data Analytics Library",
       long_description=long_description,
       long_description_content_type="text/markdown",
       license="Apache-2.0",
@@ -99,25 +99,4 @@ setup(name="iskex",
           'data analytics'
       ],
       packages=['iskex'],
-#      packages=['daal4py',
-#                'daal4py.oneapi',
-#                'daal4py.sklearn',
-#                'daal4py.sklearn.cluster',
-#                'daal4py.sklearn.decomposition',
-#                'daal4py.sklearn.ensemble',
-#                'daal4py.sklearn.linear_model',
-#                'daal4py.sklearn.manifold',
-#                'daal4py.sklearn.metrics',
-#                'daal4py.sklearn.neighbors',
-#                'daal4py.sklearn.monkeypatch',
-#                'daal4py.sklearn.svm',
-#                'daal4py.sklearn.utils',
-#                'daal4py.sklearn.model_selection',
-#                ],
-#      package_data={'daal4py.oneapi': ['liboneapi_backend.so',
-#                                       'oneapi_backend.lib',
-#                                       'oneapi_backend.dll'
-#                                       ]
-#                    },
-#      ext_modules=getpyexts()
       )
