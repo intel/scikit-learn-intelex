@@ -22,24 +22,8 @@ import time
 from setuptools import setup
 from os.path import join as jp
 
-IS_WIN = False
-IS_MAC = False
-IS_LIN = False
-
-if 'linux' in sys.platform:
-    IS_LIN = True
-elif sys.platform == 'darwin':
-    IS_MAC = True
-elif sys.platform in ['win32', 'cygwin']:
-    IS_WIN = True
-else:
-    assert False, sys.platform + ' not supported'
-
-
 iskex_version = (os.environ['ISKEX_VERSION'] if 'ISKEX_VERSION' in os.environ
                else time.strftime('2021.%Y%m%d.%H%M%S'))
-
-trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 
 project_urls = {
     'Bug Tracker': 'https://github.com/IntelPython/daal4py/issues',
@@ -53,11 +37,6 @@ with open('iskex/README.md', 'r', encoding='utf8') as f:
 install_requires = []
 with open('requirements-iskex.txt') as f:
     install_requires.extend(f.read().splitlines())
-    if IS_MAC:
-        for r in install_requires:
-            if "dpcpp_cpp_rt" in r:
-                install_requires.remove(r)
-                break
 
 # iskex setup
 setup(name="iskex",

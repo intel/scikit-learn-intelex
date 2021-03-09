@@ -7,7 +7,7 @@
 
 Intel(R) Extension for scikit-learn extending scikit-learn beyond by providing drop-in paching.  Acceleration is achieved through the use of the library Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
 
-Running full scikit-learn test suite with daal4py optimization patches:
+Running full scikit-learn test suite with iskex optimization patches:
 
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch

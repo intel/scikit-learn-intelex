@@ -1,4 +1,1 @@
-dpcpp_cpp_rt==2021.1.2
-daal==2021.1.2
 daal4py==2021.1
-numpy>=1.15
