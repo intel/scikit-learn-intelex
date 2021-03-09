@@ -23,7 +23,7 @@ def _main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        prog="python -m daal4py.sklearn_patches",
+        prog="python -m iskex",
         description="""
             Run your Python script with Intel(R) Extension for
             scikit-learn, optimizing solvers of
