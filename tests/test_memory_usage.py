@@ -65,7 +65,7 @@ for listing in patched_estimators:
 
 
 def ndarray_c(x, y):
-    return x, y
+    return np.ascontiguousarray(x), y
 
 
 def ndarray_f(x, y):
