@@ -20,14 +20,18 @@ from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
 from daal4py.sklearn import sklearn_patch_names as sklearn_patch_names_orig
 from daal4py.sklearn import sklearn_patch_map as sklearn_patch_map_orig
 
+
 def patch_sklearn(name=None, verbose=True):
-    patch_sklearn_orig(name, verbose)
+    patch_sklearn_orig(name, verbose, deprecation=False)
+
 
 def unpatch_sklearn(name=None):
     unpatch_sklearn_orig(name)
 
+
 def sklearn_patch_names():
     sklearn_patch_names_orig()
+
 
 def sklearn_patch_map():
     sklearn_patch_map_orig()

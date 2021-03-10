@@ -44,6 +44,7 @@ import sys
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 from functools import lru_cache
+from warnings import warn
 
 import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
@@ -136,7 +137,7 @@ def do_unpatch(name):
         raise ValueError("Has no patch for: " + name)
 
 
-def enable(name=None, verbose=True):
+def enable(name=None, verbose=True, deprecation=True):
     if LooseVersion(sklearn_version) < LooseVersion("0.21.0"):
         raise NotImplementedError(
             "daal4py patches apply for scikit-learn >= 0.21.0 only ...")
@@ -145,6 +146,9 @@ def enable(name=None, verbose=True):
     else:
         for key in _get_map_of_algorithms():
             do_patch(key)
+    if deprecation:
+        warn('daal4py patching will be deprecated in the future, use iskex module instead', 
+             DeprecationWarning, stacklevel=2)
     if verbose and sys.stderr is not None:
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "

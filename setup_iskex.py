@@ -23,7 +23,7 @@ from setuptools import setup
 from os.path import join as jp
 
 iskex_version = (os.environ['ISKEX_VERSION'] if 'ISKEX_VERSION' in os.environ
-               else time.strftime('2021.%Y%m%d.%H%M%S'))
+                 else time.strftime('2021.%Y%m%d.%H%M%S'))
 
 project_urls = {
     'Bug Tracker': 'https://github.com/IntelPython/daal4py/issues',
@@ -40,7 +40,8 @@ with open('requirements-iskex.txt') as f:
 
 # iskex setup
 setup(name="iskex",
-      description="Extension for scikit-learn with helps Intel(R) oneAPI Data Analytics Library",
+      description="Extension for scikit-learn with helps \
+            Intel(R) oneAPI Data Analytics Library",
       long_description=long_description,
       long_description_content_type="text/markdown",
       license="Apache-2.0",
