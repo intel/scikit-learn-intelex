@@ -147,7 +147,8 @@ def enable(name=None, verbose=True, deprecation=True):
             do_patch(key)
     if deprecation and sys.stderr is not None:
         sys.stderr.write(
-            "daal4py patching will be deprecated in the future, use iskex module instead\n")
+            "daal4py patching will be deprecated in the future, "
+            "use iskex module instead\n")
     if verbose and sys.stderr is not None:
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
