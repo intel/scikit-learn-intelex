@@ -112,6 +112,12 @@ def _kfold_function_template(estimator, data_transform_function):
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
         alg = estimator()
         alg.fit(x_train, y_train)
+        if hasattr(alg, 'predict'):
+            alg.predict(x_test)
+        elif hasattr(alg, 'transform'):
+            alg.transform(x_test)
+        elif hasattr(alg, 'kneighbors'):
+            alg.kneighbors(x_test)
     del alg, x_train, x_test, y_train, y_test
     mem_after, _ = tracemalloc.get_traced_memory()
     tracemalloc.stop()
