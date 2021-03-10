@@ -44,7 +44,6 @@ import sys
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 from functools import lru_cache
-from warnings import warn
 
 import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
@@ -146,9 +145,9 @@ def enable(name=None, verbose=True, deprecation=True):
     else:
         for key in _get_map_of_algorithms():
             do_patch(key)
-    if deprecation:
-        warn('daal4py patching will be deprecated in the future, use iskex module instead', 
-             DeprecationWarning, stacklevel=2)
+    if deprecation and sys.stderr is not None:
+        sys.stderr.write(
+            "daal4py patching will be deprecated in the future, use iskex module instead\n")
     if verbose and sys.stderr is not None:
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "

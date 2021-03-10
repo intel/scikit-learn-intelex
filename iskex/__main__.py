@@ -16,7 +16,7 @@
 #===============================================================================
 
 import sys
-from daal4py.sklearn import patch_sklearn
+from iskex import patch_sklearn
 
 
 def _main():
