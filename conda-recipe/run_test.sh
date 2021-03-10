@@ -53,7 +53,6 @@ return_code=$(($return_code + $?))
 
 echo "Pytest running ..."
 pytest --pyargs ${daal4py_dir}/daal4py/sklearn/
-pytest --pyargs ${daal4py_dir}/tests/
 return_code=$(($return_code + $?))
 
 exit $return_code
