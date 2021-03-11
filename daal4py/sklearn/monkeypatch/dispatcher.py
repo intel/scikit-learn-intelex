@@ -48,6 +48,7 @@ from functools import lru_cache
 import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
+from warnings import warn
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     import sklearn.linear_model._logistic as logistic_module
@@ -145,10 +146,16 @@ def enable(name=None, verbose=True, deprecation=True):
     else:
         for key in _get_map_of_algorithms():
             do_patch(key)
-    if deprecation and sys.stderr is not None:
-        sys.stderr.write(
-            "daal4py patching will be deprecated in the future, "
-            "use iskex module instead\n")
+    if deprecation:
+        warn("Scikit-learn patching with daal4py is deprecated "
+            "and will be removed in the future.\n"
+            "Please, use Intel(R) Extension for Scikit-learn module instead "
+            "(pip install intel-sklearn-extension)\n"
+            "To enable patching, please, use one of options:\n"
+            "1) python -m iskex <your_script>\n"
+            "2) from iskex import patch_sklearn\n"
+            "   patch_sklearn()", 
+             FutureWarning, stacklevel=2)
     if verbose and sys.stderr is not None:
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
