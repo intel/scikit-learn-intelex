@@ -148,13 +148,13 @@ def enable(name=None, verbose=True, deprecation=True):
             do_patch(key)
     if deprecation:
         warn("Scikit-learn patching with daal4py is deprecated "
-            "and will be removed in the future.\n"
-            "Please, use Intel(R) Extension for Scikit-learn module instead "
-            "(pip install intel-sklearn-extension)\n"
-            "To enable patching, please, use one of options:\n"
-            "1) python -m iskex <your_script>\n"
-            "2) from iskex import patch_sklearn\n"
-            "   patch_sklearn()", 
+             "and will be removed in the future.\n"
+             "Please, use Intel(R) Extension for Scikit-learn module instead "
+             "(pip install intel-sklearn-extension)\n"
+             "To enable patching, please, use one of options:\n"
+             "1) python -m iskex <your_script>\n"
+             "2) from iskex import patch_sklearn\n"
+             "   patch_sklearn()", 
              FutureWarning, stacklevel=2)
     if verbose and sys.stderr is not None:
         sys.stderr.write(
