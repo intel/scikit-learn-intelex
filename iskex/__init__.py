@@ -24,3 +24,18 @@ __all__ = [
     "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
     "sklearn_patch_map",
 ]
+
+import logging
+import warnings
+import os
+import sys
+logLevel = os.environ.get("SKLEARN_EXTENSION_VERBOSE")
+try:
+    if logLevel is not None:
+        logging.basicConfig(
+            stream=sys.stdout,
+            format='%(levelname)s: %(message)s', level=logLevel.upper())
+except:
+    warnings.warn('Unknown level "{}" for logging.\n'
+                  'Please, use one of "CRITICAL", "ERROR", '
+                  '"WARNING", "INFO", "DEBUG".'.format(logLevel))
