@@ -99,6 +99,7 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_regression >=0.24 # pass for defaultDence method only
   - ensemble/tests/test_forest.py::test_boston <0.24
   - ensemble/tests/test_stacking.py::test_stacking_cv_influence >=0.22
+  - ensemble/tests/test_bagging.py::test_estimators_samples_deterministic
   - utils/tests/test_estimator_checks.py::test_check_estimator_clones
 
   # daal4py is throwing the exception from the library. Will be fixed.
