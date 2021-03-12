@@ -90,6 +90,7 @@ deselected_tests:
   - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
   - tests/test_common.py::test_estimators
   - tests/test_multioutput.py::test_multi_output_classification
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order
 
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
