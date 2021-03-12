@@ -134,6 +134,7 @@ deselected_tests:
   - metrics/tests/test_ranking.py::test_auc_score_non_binary_class <0.22
   - neighbors/tests/test_neighbors.py::test_n_neighbors_datatype <0.22
   - svm/tests/test_svm.py::test_sample_weights <0.22
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order
 
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
