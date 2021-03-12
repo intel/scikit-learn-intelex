@@ -1,0 +1,27 @@
+variables:
+  COVERITY_TOOL_HOME: $(Agent.BuildDirectory)/cov-analysis
+  DESCRIPTION: Nightly
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: |
+    cd $(Agent.BuildDirectory)
+    wget https://scan.coverity.com/download/linux64 --post-data "token=$(COVERITY_AUTHKEY)&project=daal4py" -O coverity_tool.tgz
+    tar -xzvf coverity_tool.tgz
+    mv cov-analysis-linux64* cov-analysis
+  condition: ne(variables.CACHE_RESTORED, 'true')
+  displayName: 'Install Coverity tool'
+- script: |
+    cd $(Build.Repository.LocalPath)
+    $(COVERITY_TOOL_HOME)/bin/cov-build --dir cov-int --no-command --fs-capture-search .
+    zip -r daal4py.zip cov-int
+  displayName: 'Perform Coverity scan'
+- script: |
+    curl --form token=$(COVERITY_AUTHKEY) \
+      --form email=$(COVERITY_AUTHLOGIN) \
+      --form file=@$(Build.Repository.LocalPath)/daal4py.zip \
+      --form description="$(DESCRIPTION)" \
+      $(COVERITY_URL)
+  displayName: 'Upload results of Coverity scan'
