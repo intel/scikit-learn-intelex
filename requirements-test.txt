@@ -1,5 +1,4 @@
 pytest
 scikit-learn
 pandas
-lightgbm
 xgboost
