@@ -86,24 +86,24 @@ MODELS_INFO = [
         'dataset': 'classifier',
     },
     {
-        'model': RandomForestClassifier(),
+        'model': RandomForestClassifier(n_estimators=10),
         'methods': ['predict', 'predict_proba', 'predict_log_proba', 'score'],
         'dataset': 'classifier',
     },
     {
-        'model': LogisticRegression(max_iter=1000, multi_class='multinomial'),
+        'model': LogisticRegression(max_iter=100, multi_class='multinomial'),
         'methods': ['decision_function', 'predict', 'predict_proba',
                     'predict_log_proba', 'score'],
         'dataset': 'classifier',
     },
     {
-        'model': LogisticRegressionCV(max_iter=1000),
+        'model': LogisticRegressionCV(max_iter=100),
         'methods': ['decision_function', 'predict', 'predict_proba',
                     'predict_log_proba', 'score'],
         'dataset': 'classifier',
     },
     {
-        'model': RandomForestRegressor(),
+        'model': RandomForestRegressor(n_estimators=10),
         'methods': ['predict', 'score'],
         'dataset': 'regression',
     },
