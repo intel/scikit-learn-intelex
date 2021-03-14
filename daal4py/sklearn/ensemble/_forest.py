@@ -453,7 +453,7 @@ def _daal_predict_regressor(self, X):
     if not daal_check_version((2021, 'P', 200)):
         X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
-    dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)    
+    dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)
     dfr_predictionResult = dfr_alg.compute(X, self.daal_model_)
 
     pred = dfr_predictionResult.prediction
