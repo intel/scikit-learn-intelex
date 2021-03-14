@@ -449,7 +449,8 @@ def _daal_predict_regressor(self, X):
     if X.shape[1] != self.n_features_in_:
         raise ValueError(
             (f'X has {X.shape[1]} features, '
-             f'but RandomForestRegressor is expecting {self.n_features_in_} features as input'))
+             f'but RandomForestRegressor is expecting '
+             f'{self.n_features_in_} features as input'))
     if not daal_check_version((2021, 'P', 200)):
         X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
@@ -618,7 +619,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
         if X.shape[1] != self.n_features_in_:
             raise ValueError(
                 (f'X has {X.shape[1]} features, '
-                 f'but RandomForestClassifier is expecting {self.n_features_in_} features as input'))
+                 f'but RandomForestClassifier is expecting '
+                 f'{self.n_features_in_} features as input'))
         if not hasattr(self, 'daal_model_') or \
                 sp.issparse(X) or self.n_outputs_ != 1:
             logging.info(

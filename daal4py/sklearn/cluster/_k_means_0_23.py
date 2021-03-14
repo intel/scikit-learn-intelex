@@ -315,9 +315,9 @@ def _daal4py_check_test_data(self, X):
     X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
                     accept_large_sparse=False)
     if self.n_features_in_ != X.shape[1]:
-            raise ValueError(
-                (f'X has {X.shape[1]} features, '
-                 f'but Kmeans is expecting {self.n_features_in_} features as input'))
+        raise ValueError(
+            (f'X has {X.shape[1]} features, '
+             f'but Kmeans is expecting {self.n_features_in_} features as input'))
     return X
 
 

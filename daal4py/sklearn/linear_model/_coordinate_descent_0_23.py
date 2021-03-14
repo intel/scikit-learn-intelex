@@ -212,7 +212,8 @@ def _daal4py_predict_enet(self, X):
     )
     if self.n_features_in_ != X.shape[1]:
         raise ValueError((f'X has {X.shape[1]} features, '
-                          f'but ElasticNet is expecting {self.n_features_in_} features as input'))
+                          f'but ElasticNet is expecting '
+                          f'{self.n_features_in_} features as input'))
     elastic_net_res = elastic_net_palg.compute(X, self.daal_model_)
 
     res = elastic_net_res.prediction
@@ -365,7 +366,8 @@ def _daal4py_predict_lasso(self, X):
     )
     if self.n_features_in_ != X.shape[1]:
         raise ValueError((f'X has {X.shape[1]} features, '
-                          f'but Lasso is expecting {self.n_features_in_} features as input'))
+                          f'but Lasso is expecting '
+                          f'{self.n_features_in_} features as input'))
     lasso_res = lasso_palg.compute(X, self.daal_model_)
 
     res = lasso_res.prediction
@@ -438,7 +440,7 @@ class ElasticNet(ElasticNet_original):
                 "fit: " + get_patch_message("sklearn"))
             if hasattr(self, 'daal_model_'):
                 del self.daal_model_
-            res_new = super(ElasticNet,self).fit(
+            res_new = super(ElasticNet, self).fit(
                 X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
@@ -471,7 +473,7 @@ class ElasticNet(ElasticNet_original):
             logging.info(
                 "sklearn.linear_model.ElasticNet."
                 "fit: " + get_patch_message("sklearn_after_daal"))
-            res_new = super(ElasticNet,self).fit(
+            res_new = super(ElasticNet, self).fit(
                 X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
