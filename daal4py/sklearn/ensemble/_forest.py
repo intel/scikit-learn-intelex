@@ -240,7 +240,6 @@ def _daal_predict_classifier(self, X):
         fptype=X_fptype,
         resultsToEvaluate="computeClassLabels"
     )
-    
     dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
 
     pred = dfc_predictionResult.prediction
@@ -454,8 +453,7 @@ def _daal_predict_regressor(self, X):
     if not daal_check_version((2021, 'P', 200)):
         X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
-    dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)
-    
+    dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)    
     dfr_predictionResult = dfr_alg.compute(X, self.daal_model_)
 
     pred = dfr_predictionResult.prediction
@@ -616,6 +614,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             X, accept_sparse=[
                 'csr', 'csc', 'coo'], dtype=[
                 np.float64, np.float32])
+
         if X.shape[1] != self.n_features_in_:
             raise ValueError(
                 (f'X has {X.shape[1]} features, '

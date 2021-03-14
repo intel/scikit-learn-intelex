@@ -50,8 +50,6 @@ def daal4py_classifier_predict(estimator, X, base_predict):
     if n_features and shape and len(shape) > 1 and shape[1] != n_features:
         raise ValueError((f'X has {X.shape[1]} features, '
                           f'but KNNClassifier is expecting {n_features} features as input'))
-        # raise ValueError(
-        #     'Got Input data shape {} is inconsistent with the trained model'.format(X.shape))
 
     try:
         fptype = getFPType(X)

@@ -94,7 +94,8 @@ def _daal4py_predict(self, X):
     if X.shape[1] != self.n_features_in_:
         raise ValueError(
             (f'X has {X.shape[1]} features, '
-             f'but kneighbors is expecting {self.n_features_in_} features as input'))
+             f'but LinearRegression is expecting '
+             f'{self.n_features_in_} features as input'))
     lr_res = lr_pred.compute(X, self.daal_model_)
     res = lr_res.prediction
     if res.shape[1] == 1 and self.coef_.ndim == 1:
