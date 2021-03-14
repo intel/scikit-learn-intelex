@@ -240,6 +240,7 @@ def _daal_predict_classifier(self, X):
         fptype=X_fptype,
         resultsToEvaluate="computeClassLabels"
     )
+    
     dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
 
     pred = dfc_predictionResult.prediction
@@ -303,6 +304,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
             "fit: " + get_patch_message("daal"))
+        self.n_features_in_ = X.shape[1]
         _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
 
         if not hasattr(self, "estimators_"):
@@ -320,6 +322,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
 
 
 def _daal_fit_regressor(self, X, y, sample_weight=None):
+    self.n_features_in_ = X.shape[1]
     self.n_features_ = X.shape[1]
     rs_ = check_random_state(self.random_state)
 
@@ -444,10 +447,15 @@ def _fit_regressor(self, X, y, sample_weight=None):
 
 
 def _daal_predict_regressor(self, X):
+    if X.shape[1] != self.n_features_in_:
+        raise ValueError(
+            (f'X has {X.shape[1]} features, '
+             f'but RandomForestRegressor is expecting {self.n_features_in_} features as input'))
     if not daal_check_version((2021, 'P', 200)):
         X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)
+    
     dfr_predictionResult = dfr_alg.compute(X, self.daal_model_)
 
     pred = dfr_predictionResult.prediction
@@ -608,7 +616,10 @@ class RandomForestClassifier(RandomForestClassifier_original):
             X, accept_sparse=[
                 'csr', 'csc', 'coo'], dtype=[
                 np.float64, np.float32])
-
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                (f'X has {X.shape[1]} features, '
+                 f'but RandomForestClassifier is expecting {self.n_features_in_} features as input'))
         if not hasattr(self, 'daal_model_') or \
                 sp.issparse(X) or self.n_outputs_ != 1:
             logging.info(

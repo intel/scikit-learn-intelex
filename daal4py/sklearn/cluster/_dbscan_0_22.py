@@ -247,6 +247,7 @@ class DBSCAN(DBSCAN_original):
             self.core_sample_indices_ = core_ind
             self.labels_ = assignments
             self.components_ = np.take(X, core_ind, axis=0)
+            self.n_features_in_ = X.shape[1]
             return self
         logging.info(
             "sklearn.cluster.DBSCAN."

@@ -298,6 +298,7 @@ def _fit(self, X, y=None, sample_weight=None):
             "sklearn.cluster.KMeans."
             "fit: " + get_patch_message("daal"))
         X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
+        self.n_features_in_ = X.shape[1]
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_fit(
                 X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
@@ -313,13 +314,10 @@ def _fit(self, X, y=None, sample_weight=None):
 def _daal4py_check_test_data(self, X):
     X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
                     accept_large_sparse=False)
-    n_samples, n_features = X.shape
-    expected_n_features = self.cluster_centers_.shape[1]
-    if not n_features == expected_n_features:
-        raise ValueError(
-            f"Incorrect number of features. Got {n_features} features, "
-            f"expected {expected_n_features}.")
-
+    if self.n_features_in_ != X.shape[1]:
+            raise ValueError(
+                (f'X has {X.shape[1]} features, '
+                 f'but Kmeans is expecting {self.n_features_in_} features as input'))
     return X
 
 

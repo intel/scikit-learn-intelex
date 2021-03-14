@@ -1007,8 +1007,9 @@ def daal4py_predict(self, X, resultsToEvaluate):
             "predict: " + get_patch_message("daal"))
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
-            raise ValueError((f'X has {X.shape[1]} features, '
-                              f'but expecting {n_features} features per sample'))
+            raise ValueError(
+                (f'X has {X.shape[1]} features, '
+                 f'but LogisticRegression is expecting {n_features} features as input'))
         builder = d4p.logistic_regression_model_builder(X.shape[1], len(self.classes_))
         builder.set_beta(self.coef_, self.intercept_)
         predict = d4p.logistic_regression_prediction(

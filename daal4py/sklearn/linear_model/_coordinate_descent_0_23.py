@@ -71,6 +71,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     # only for dual_gap computation, it is not required for Intel(R) oneAPI
     # Data Analytics Library
     self._X = X
+    self.n_features_in_ = X.shape[1]
     self._y = y
 
     penalty_L1 = np.asarray(self.alpha * self.l1_ratio, dtype=X.dtype)
@@ -209,6 +210,9 @@ def _daal4py_predict_enet(self, X):
         fptype=_fptype,
         method='defaultDense'
     )
+    if self.n_features_in_ != X.shape[1]:
+        raise ValueError((f'X has {X.shape[1]} features, '
+                          f'but ElasticNet is expecting {self.n_features_in_} features as input'))
     elastic_net_res = elastic_net_palg.compute(X, self.daal_model_)
 
     res = elastic_net_res.prediction
@@ -229,6 +233,8 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     # only for dual_gap computation, it is not required for Intel(R) oneAPI
     # Data Analytics Library
     self._X = X
+    # self.set_params('n_features_in_', X.shape[1])
+    self.n_features_in_ = X.shape[1]
     self._y = y
 
     #normalizing and centering
@@ -358,6 +364,9 @@ def _daal4py_predict_lasso(self, X):
         fptype=_fptype,
         method='defaultDense'
     )
+    if self.n_features_in_ != X.shape[1]:
+        raise ValueError((f'X has {X.shape[1]} features, '
+                          f'but Lasso is expecting {self.n_features_in_} features as input'))
     lasso_res = lasso_palg.compute(X, self.daal_model_)
 
     res = lasso_res.prediction
@@ -430,13 +439,8 @@ class ElasticNet(ElasticNet_original):
                 "fit: " + get_patch_message("sklearn"))
             if hasattr(self, 'daal_model_'):
                 del self.daal_model_
-            res_new = super(
-                ElasticNet,
-                self).fit(
-                X,
-                y,
-                sample_weight=sample_weight,
-                check_input=check_input)
+            res_new = super(ElasticNet,self).fit(
+                X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
 
@@ -468,13 +472,8 @@ class ElasticNet(ElasticNet_original):
             logging.info(
                 "sklearn.linear_model.ElasticNet."
                 "fit: " + get_patch_message("sklearn_after_daal"))
-            res_new = super(
-                ElasticNet,
-                self).fit(
-                X,
-                y,
-                sample_weight=sample_weight,
-                check_input=check_input)
+            res_new = super(ElasticNet,self).fit(
+                X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
         return res
