@@ -233,7 +233,6 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     # only for dual_gap computation, it is not required for Intel(R) oneAPI
     # Data Analytics Library
     self._X = X
-    # self.set_params('n_features_in_', X.shape[1])
     self.n_features_in_ = X.shape[1]
     self._y = y
 
@@ -650,13 +649,8 @@ class Lasso(ElasticNet):
             logging.info(
                 "sklearn.linear_model.Lasso."
                 "fit: " + get_patch_message("sklearn"))
-            res_new = super(
-                ElasticNet,
-                self).fit(
-                X,
-                y,
-                sample_weight=sample_weight,
-                check_input=check_input)
+            res_new = super(ElasticNet, self).fit(
+                X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
         self.n_iter_ = None
@@ -678,13 +672,8 @@ class Lasso(ElasticNet):
             logging.info(
                 "sklearn.linear_model.Lasso."
                 "fit: " + get_patch_message("sklearn_after_daal"))
-            res_new = super(
-                ElasticNet,
-                self).fit(
-                X,
-                y,
-                sample_weight=sample_weight,
-                check_input=check_input)
+            res_new = super(ElasticNet, self).fit(
+                X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
         return res

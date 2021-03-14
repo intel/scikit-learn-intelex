@@ -265,7 +265,6 @@ class PCA(PCA_original):
                 (f'X has {X.shape[1]} features, '
                  f'but PCA is expecting {self.n_features_} features as input'))
 
-
         tr_res = daal4py.pca_transform(
             fptype=fpType
         ).compute(X, self.components_, tr_data)
