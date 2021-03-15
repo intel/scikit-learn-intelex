@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 #===============================================================================
-# Copyright 2014-2021 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import time
 from setuptools import setup
 from os.path import join as jp
 
-iskex_version = (os.environ['ISKEX_VERSION'] if 'ISKEX_VERSION' in os.environ
+sklearnex_version = (os.environ['SKLEARNEX_VERSION'] if 'SKLEARNEX_VERSION' in os.environ
                  else time.strftime('2021.%Y%m%d.%H%M%S'))
 
 project_urls = {
@@ -31,22 +31,22 @@ project_urls = {
     'Source Code': 'https://github.com/IntelPython/daal4py'
 }
 
-with open('iskex/README.md', 'r', encoding='utf8') as f:
+with open('README.md', 'r', encoding='utf8') as f:
     long_description = f.read()
 
 install_requires = []
-with open('requirements-iskex.txt') as f:
+with open('requirements-sklearnex.txt') as f:
     install_requires.extend(f.read().splitlines())
 
-# iskex setup
-setup(name="iskex",
+# sklearnex setup
+setup(name="sklearn-intelex",
       description="Extension for scikit-learn with helps \
             Intel(R) oneAPI Data Analytics Library",
       long_description=long_description,
       long_description_content_type="text/markdown",
       license="Apache-2.0",
       author="Intel Corporation",
-      version=iskex_version,
+      version=sklearnex_version,
       url='https://github.com/IntelPython/daal4py',
       author_email="scripting@intel.com",
       maintainer_email="onedal.maintainers@intel.com",
@@ -78,5 +78,5 @@ setup(name="iskex",
           'data science',
           'data analytics'
       ],
-      packages=['iskex'],
+      packages=['sklearnex'],
       )

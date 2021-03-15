@@ -51,6 +51,18 @@ try:
         logging.basicConfig(
             stream=sys.stdout,
             format='%(levelname)s: %(message)s', level=logLevel.upper())
+        warnings.warn("IDP_SKLEARN_VERBOSE fuctionality is deprecated "
+                      "and will be removed in the future.\n"
+                      "Please, use SKLEARN_EXTENSION_VERBOSE variable in "
+                      "Intel(R) Extension for Scikit-learn module instead "
+                      "(pip install intel-sklearn-extension)\n"
+                      "To enable patching, please, use one of options:\n"
+                      "1) python -m iskex <your_script>\n"
+                      "2) from iskex import patch_sklearn\n"
+                      "   patch_sklearn()\n"
+                      "To enable verbose mode, use:\n"
+                      "SKLEARN_EXTENSION_VERBOSE=INFO",
+                      FutureWarning)
 except:
     warnings.warn('Unknown level "{}" for logging.\n'
                   'Please, use one of "CRITICAL", "ERROR", '

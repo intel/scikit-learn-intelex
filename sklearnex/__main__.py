@@ -16,14 +16,14 @@
 #===============================================================================
 
 import sys
-from iskex import patch_sklearn
+from sklearnex import patch_sklearn
 
 
 def _main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        prog="python -m iskex",
+        prog="python -m sklearnex",
         description="""
             Run your Python script with Intel(R) Extension for
             scikit-learn, optimizing solvers of

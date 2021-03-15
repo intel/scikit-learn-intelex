@@ -15,4 +15,4 @@ src/oneapi/oneapi.cpp
 .vscode
 
 # ISKEX files
-iskex.egg-info
+sklearn_intelex.egg-info
