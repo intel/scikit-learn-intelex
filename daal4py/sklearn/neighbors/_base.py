@@ -113,8 +113,8 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None,
     n_features = getattr(estimator, 'n_features_in_', None)
     shape = getattr(X, 'shape', None)
     if n_features and shape and len(shape) > 1 and shape[1] != n_features:
-        raise ValueError(
-            'Input data shape {} is inconsistent with the trained model'.format(X.shape))
+        raise ValueError((f'X has {X.shape[1]} features, '
+                          f'but kneighbors is expecting {n_features} features as input'))
 
     if sklearn_check_version("0.22"):
         check_is_fitted(estimator)

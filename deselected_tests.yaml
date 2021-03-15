@@ -103,10 +103,9 @@ deselected_tests:
   - ensemble/tests/test_bagging.py::test_estimators_samples_deterministic
   - utils/tests/test_estimator_checks.py::test_check_estimator_clones
 
-  # daal4py is throwing the exception from the library. Will be fixed.
-  - tests/test_common.py::test_check_n_features_in_after_fitting >=0.24
-
-  # module name should starts with 'sklearn.metrics' but we have 'daal4py.sklearn.metrics'
+  # module name should starts with 'sklearn.' but we have 'daal4py.sklearn.'
+  - tests/test_common.py::test_check_n_features_in_after_fitting[LogisticRegression()] >=0.24
+  - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()] >=0.24
   - metrics/tests/test_score_objects.py::test_scoring_is_not_metric
 
   # Stability issue with max absolute difference: 4.33846826e-08/1.17613697e-11. Remove in next release

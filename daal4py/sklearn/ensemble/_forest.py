@@ -152,6 +152,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     y, expanded_class_weight = self._validate_y_class_weight(y)
     n_classes_ = self.n_classes_[0]
     self.n_features_ = X.shape[1]
+    self.n_features_in_ = X.shape[1]
 
     if expanded_class_weight is not None:
         if sample_weight is not None:
@@ -240,6 +241,11 @@ def _daal_predict_classifier(self, X):
         fptype=X_fptype,
         resultsToEvaluate="computeClassLabels"
     )
+    if X.shape[1] != self.n_features_in_:
+        raise ValueError(
+            (f'X has {X.shape[1]} features, '
+             f'but RandomForestClassifier is expecting '
+             f'{self.n_features_in_} features as input'))
     dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
 
     pred = dfc_predictionResult.prediction
@@ -320,6 +326,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
 
 
 def _daal_fit_regressor(self, X, y, sample_weight=None):
+    self.n_features_in_ = X.shape[1]
     self.n_features_ = X.shape[1]
     rs_ = check_random_state(self.random_state)
 
@@ -444,6 +451,11 @@ def _fit_regressor(self, X, y, sample_weight=None):
 
 
 def _daal_predict_regressor(self, X):
+    if X.shape[1] != self.n_features_in_:
+        raise ValueError(
+            (f'X has {X.shape[1]} features, '
+             f'but RandomForestRegressor is expecting '
+             f'{self.n_features_in_} features as input'))
     if not daal_check_version((2021, 'P', 200)):
         X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
@@ -645,7 +657,12 @@ class RandomForestClassifier(RandomForestClassifier_original):
         """
         # Temporary solution
         X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
-
+        if hasattr(self, 'n_features_in_'):
+            if X.shape[1] != self.n_features_in_:
+                raise ValueError(
+                    (f'X has {X.shape[1]} features, '
+                     f'but RandomForestClassifier is expecting '
+                     f'{self.n_features_in_} features as input'))
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
             "predict_proba: " + get_patch_message("sklearn"))

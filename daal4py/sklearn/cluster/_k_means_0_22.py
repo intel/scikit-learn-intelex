@@ -253,6 +253,7 @@ def _fit(self, X, y=None, sample_weight=None):
             "sklearn.cluster.KMeans."
             "fit: " + get_patch_message("daal"))
         X = check_array(X, dtype=[np.float64, np.float32])
+        self.n_features_in_ = X.shape[1]
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_fit(
                 X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
