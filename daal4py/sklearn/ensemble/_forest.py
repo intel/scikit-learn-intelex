@@ -657,7 +657,11 @@ class RandomForestClassifier(RandomForestClassifier_original):
         """
         # Temporary solution
         X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
-
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                (f'X has {X.shape[1]} features, '
+                f'but RandomForestClassifier is expecting '
+                f'{self.n_features_in_} features as input'))
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
             "predict_proba: " + get_patch_message("sklearn"))

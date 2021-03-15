@@ -103,7 +103,6 @@ deselected_tests:
 
   # module name should starts with 'sklearn.' but we have 'daal4py.sklearn.'
   - tests/test_common.py::test_check_n_features_in_after_fitting[LogisticRegression()] >=0.24
-  - tests/test_common.py::test_check_n_features_in_after_fitting[RandomForestClassifier()] >=0.24
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()] >=0.24
   - metrics/tests/test_score_objects.py::test_scoring_is_not_metric
 
