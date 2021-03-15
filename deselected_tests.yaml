@@ -19,7 +19,7 @@ deselected_tests:
   - svm/tests/test_sparse.py::test_svc_iris
 
   # Compare Comparison of the result of a 1-in-1 decision function for SVC algorithm between dense and sparse input
-  # Such a oneDAL does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05
+  # Such a oneAPI Data Analytics Library (oneDAL) does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05
   - ensemble/tests/test_bagging.py::test_sparse_classification
 
   # Bitwise comparison of probabilities using a print.
@@ -35,7 +35,7 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters >=0.24
   - cluster/tests/test_k_means.py::test_iter_attribute <0.22
 
-  # oneDAL does not check convergence for tol == 0.0 for ease of benchmarking
+  # oneAPI Data Analytics Library (oneDAL) does not check convergence for tol == 0.0 for ease of benchmarking
   - cluster/tests/test_k_means.py::test_kmeans_convergence >=0.23
   - cluster/tests/test_k_means.py::test_kmeans_verbose >=0.23
 
@@ -62,7 +62,7 @@ deselected_tests:
   # https://github.com/oneapi-src/oneDAL/issues/495
   - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement >=0.22,<0.24
 
-  # oneDAL doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
+  # oneAPI Data Analytics Library (oneDAL) doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
 
   # On small datasets, the regression coefficients for multi-target problem differ from scikit-learn. Coefficients matches for first label only.
