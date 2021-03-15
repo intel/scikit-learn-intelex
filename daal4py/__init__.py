@@ -63,7 +63,7 @@ try:
                       "To enable verbose mode, use:\n"
                       "SKLEARN_EXTENSION_VERBOSE=INFO",
                       FutureWarning)
-except:
+except Exception:
     warnings.warn('Unknown level "{}" for logging.\n'
                   'Please, use one of "CRITICAL", "ERROR", '
                   '"WARNING", "INFO", "DEBUG".'.format(logLevel))

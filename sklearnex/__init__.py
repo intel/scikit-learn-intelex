@@ -18,11 +18,9 @@
 from .dispatcher import patch_sklearn
 from .dispatcher import unpatch_sklearn
 from .dispatcher import sklearn_patch_names
-from .dispatcher import sklearn_patch_map
 
 __all__ = [
     "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
-    "sklearn_patch_map",
 ]
 
 import logging
@@ -35,7 +33,7 @@ try:
         logging.basicConfig(
             stream=sys.stdout,
             format='%(levelname)s: %(message)s', level=logLevel.upper())
-except:
+except Exception:
     warnings.warn('Unknown level "{}" for logging.\n'
                   'Please, use one of "CRITICAL", "ERROR", '
                   '"WARNING", "INFO", "DEBUG".'.format(logLevel))
