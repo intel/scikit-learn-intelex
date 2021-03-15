@@ -303,7 +303,6 @@ def _fit_classifier(self, X, y, sample_weight=None):
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
             "fit: " + get_patch_message("daal"))
-        self.n_features_in_ = X.shape[1]
         _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
 
         if not hasattr(self, "estimators_"):
@@ -616,11 +615,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 'csr', 'csc', 'coo'], dtype=[
                 np.float64, np.float32])
 
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError(
-                (f'X has {X.shape[1]} features, '
-                 f'but RandomForestClassifier is expecting '
-                 f'{self.n_features_in_} features as input'))
         if not hasattr(self, 'daal_model_') or \
                 sp.issparse(X) or self.n_outputs_ != 1:
             logging.info(
