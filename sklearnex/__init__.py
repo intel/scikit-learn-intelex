@@ -17,10 +17,10 @@
 
 from .dispatcher import patch_sklearn
 from .dispatcher import unpatch_sklearn
-from .dispatcher import sklearn_patch_names
+from .dispatcher import get_patch_names
 
 __all__ = [
-    "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
+    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
 ]
 
 from ._utils import set_sklearn_ex_verbose

@@ -17,7 +17,7 @@
 
 from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
 from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
-from daal4py.sklearn import sklearn_patch_names as sklearn_patch_names_orig
+from daal4py.sklearn import sklearn_patch_names as get_patch_names_orig
 
 
 def patch_sklearn(name=None, verbose=True):
@@ -29,4 +29,4 @@ def unpatch_sklearn(name=None):
 
 
 def get_patch_names():
-    sklearn_patch_names_orig()
+    return get_patch_names_orig()
