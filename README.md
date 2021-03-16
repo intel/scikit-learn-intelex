@@ -1,4 +1,4 @@
-# sklearn-intelex - Extension for scikit-learn with helps Intel(R) oneAPI Data Analytics Library
+# scikit-learn-intelex - Extension for scikit-learn with helps Intel(R) oneAPI Data Analytics Library
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/21716/badge.svg)](https://scan.coverity.com/projects/daal4py)
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/IntelPython/daal4py/discussions)
@@ -42,23 +42,23 @@ Report issues, ask questions, and provide suggestions using:
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
 
 # 🛠 Installation
-sklearn-intelex is available at the [Python Package Index](https://pypi.org/project/daal4py/),
+scikit-learn-intelex is available at the [Python Package Index](https://pypi.org/project/daal4py/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal4py)
 and in [Intel channel](https://anaconda.org/intel/daal4py).
 
 ```bash
 # PyPi
-pip install sklearn-intelex
+pip install scikit-learn-intelex
 ```
 
 ```bash
 # Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
-conda install sklearn-intelex -c conda-forge
+conda install scikit-learn-intelex -c conda-forge
 ```
 
 ```bash
 # Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python)
-conda install sklearn-intelex -c intel
+conda install scikit-learn-intelex -c intel
 ```
 
 <details><summary>[Click to expand] ℹ️ Supported configurations </summary>
@@ -97,7 +97,7 @@ Accelerate scikit-learn with the core functionality of daal4py without changing 
 Intel CPU optimizations patching
 ```py
 import numpy as np
-from daal4py.sklearn import patch_sklearn
+from sklearnex import patch_sklearn
 patch_sklearn()
 
 from sklearn.cluster import DBSCAN
@@ -110,7 +110,7 @@ clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 Intel CPU/GPU optimizations patching
 ```py
 import numpy as np
-from daal4py.sklearn import patch_sklearn
+from sklearnex import patch_sklearn
 from daal4py.oneapi import sycl_context
 patch_sklearn()
 

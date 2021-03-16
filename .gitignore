@@ -14,5 +14,5 @@ src/oneapi/oneapi.cpp
 # IDE properties
 .vscode
 
-# ISKEX files
+# sklearnex files
 sklearn_intelex.egg-info

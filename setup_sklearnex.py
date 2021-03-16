@@ -23,7 +23,7 @@ from setuptools import setup
 from os.path import join as jp
 
 sklearnex_version = (os.environ['SKLEARNEX_VERSION'] if 'SKLEARNEX_VERSION' in os.environ
-                 else time.strftime('2021.%Y%m%d.%H%M%S'))
+                     else time.strftime('2021.%Y%m%d.%H%M%S'))
 
 project_urls = {
     'Bug Tracker': 'https://github.com/IntelPython/daal4py/issues',
@@ -39,7 +39,7 @@ with open('requirements-sklearnex.txt') as f:
     install_requires.extend(f.read().splitlines())
 
 # sklearnex setup
-setup(name="sklearn-intelex",
+setup(name="scikit-learn-intelex",
       description="Extension for scikit-learn with helps \
             Intel(R) oneAPI Data Analytics Library",
       long_description=long_description,
