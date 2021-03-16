@@ -7,14 +7,14 @@
 
 Intel(R) Extension for scikit-learn extending scikit-learn beyond by providing drop-in paching.  Acceleration is achieved through the use of the library Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
 
-Running full scikit-learn test suite with daal4py optimization patches:
+Running full scikit-learn test suite with scikit-learn-intelex optimization patches:
 
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
 
 ## 👀 Follow us on Medium
 
-We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis the help of daal4py. Here are our latest blogs:
+We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis the help of scikit-learn-intelex. Here are our latest blogs:
 
 - [Intel Gives Scikit-Learn the Performance Boost Data Scientists Need](https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18)
 - [From Hours to Minutes: 600x Faster SVM](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)
@@ -116,7 +116,7 @@ with sycl_context("gpu"):
 
 scikit-learn-intelex patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, scikit-learn-intelex fallbacks into stock Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/IntelPython/daal4py/issues).
 
-⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of scikit-learn-intelex-2021.1 supports scikit-learn 0.21.X,
+⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of scikit-learn-intelex-2021.2 supports scikit-learn 0.21.X,
 0.22.X, 0.23.X and 0.24.X.
 
 <details><summary>[Click to expand] 🔥 Applying the scikit-learn-intelex patch will impact the following existing scikit-learn algorithms: </summary>

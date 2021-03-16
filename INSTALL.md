@@ -1,11 +1,8 @@
 # Building from sources
 scikit-learn-intelex is easily built from sources with the majority of the necessary prerequisites available on conda. The instructions below detail how to gather the prerequisites, set your build environment, and finally build and install the completed package. scikit-learn-intelex can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if needed.
 
-
 ### Prerequisites
 * Python version >= 3.6
-
-### Setting up a build environment
 
 ### Configuring the build with environment variables
 * SKLEARNEX_VERSION: sets package version
@@ -42,6 +39,7 @@ python setup.py develop
 ### Prerequisites for creating documentation
 * sphinx
 * sphinx_rtd_theme
+* daal4py
 
 ### Building documentation
 1. Install daal4py into your python environment

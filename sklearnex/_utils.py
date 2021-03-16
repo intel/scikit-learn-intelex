@@ -15,18 +15,18 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
-from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
-from daal4py.sklearn import sklearn_patch_names as sklearn_patch_names_orig
-
-
-def patch_sklearn(name=None, verbose=True):
-    patch_sklearn_orig(name, verbose, deprecation=False)
-
-
-def unpatch_sklearn(name=None):
-    unpatch_sklearn_orig(name)
-
-
-def get_patch_names():
-    sklearn_patch_names_orig()
+def set_sklearn_ex_verbose():
+    import logging
+    import warnings
+    import os
+    import sys
+    logLevel = os.environ.get("SKLEARNEX_VERBOSE")
+    try:
+        if logLevel is not None:
+            logging.basicConfig(
+                stream=sys.stdout,
+                format='%(levelname)s: %(message)s', level=logLevel.upper())
+    except Exception:
+        warnings.warn('Unknown level "{}" for logging.\n'
+                      'Please, use one of "CRITICAL", "ERROR", '
+                      '"WARNING", "INFO", "DEBUG".'.format(logLevel))

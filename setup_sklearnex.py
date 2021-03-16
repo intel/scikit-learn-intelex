@@ -68,7 +68,7 @@ setup(name="scikit-learn-intelex",
           "Topic :: Software Development",
       ],
       python_requires=">=3.6",
-      install_requires="daal4py==2021.1",
+      install_requires=["daal4py>=2021.1"],
       keywords=[
           "machine learning",
           "scikit-learn",
