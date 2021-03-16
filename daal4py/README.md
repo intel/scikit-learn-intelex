@@ -26,7 +26,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 ## 🔗 Important links
 - [Documentation](https://intelpython.github.io/daal4py/)
 - [scikit-learn API and patching](https://intelpython.github.io/daal4py/sklearn.html#sklearn)
-- [Building from Sources](https://github.com/IntelPython/daal4py/blob/master/INSTALL.md)
+- [Building from Sources](https://github.com/IntelPython/daal4py/blob/master/daal4y/INSTALL.md)
 - [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
 
 ## 💬 Support
@@ -87,7 +87,7 @@ conda install daal4py -c intel
 
 </details>
 
-You can [build daal4py from sources](https://github.com/IntelPython/daal4py/blob/master/INSTALL.md) as well.
+You can [build daal4py from sources](https://github.com/IntelPython/daal4py/blob/master/daal4py/INSTALL.md) as well.
 
 # ⚡️ Get Started
 Accelerate scikit-learn with the core functionality of daal4py without changing the code.

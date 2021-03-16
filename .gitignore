@@ -15,4 +15,4 @@ src/oneapi/oneapi.cpp
 .vscode
 
 # sklearnex files
-sklearn_intelex.egg-info
+scikit-learn-intelex.egg-info

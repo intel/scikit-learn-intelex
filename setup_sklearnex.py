@@ -22,16 +22,16 @@ import time
 from setuptools import setup
 from os.path import join as jp
 
-sklearnex_version = (os.environ['SKLEARNEX_VERSION'] if 'SKLEARNEX_VERSION' in os.environ
-                     else time.strftime('2021.%Y%m%d.%H%M%S'))
+sklearnex_version = (os.environ["SKLEARNEX_VERSION"] if "SKLEARNEX_VERSION" in os.environ
+                     else time.strftime("2021.%Y%m%d.%H%M%S"))
 
 project_urls = {
-    'Bug Tracker': 'https://github.com/IntelPython/daal4py/issues',
-    'Documentation': 'https://intelpython.github.io/daal4py/',
-    'Source Code': 'https://github.com/IntelPython/daal4py'
+    "Bug Tracker": "https://github.com/IntelPython/daal4py/issues",
+    "Documentation": "https://intelpython.github.io/daal4py/",
+    "Source Code": "https://github.com/IntelPython/daal4py"
 }
 
-with open('README.md', 'r', encoding='utf8') as f:
+with open("README.md", "r", encoding="utf8") as f:
     long_description = f.read()
 
 
