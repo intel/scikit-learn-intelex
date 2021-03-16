@@ -27,7 +27,7 @@ import logging
 import warnings
 import os
 import sys
-logLevel = os.environ.get("SKLEARN_EXTENSION_VERBOSE")
+logLevel = os.environ.get("SKLEARNEX_VERBOSE")
 try:
     if logLevel is not None:
         logging.basicConfig(

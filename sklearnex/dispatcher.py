@@ -21,7 +21,7 @@ from daal4py.sklearn import sklearn_patch_names as sklearn_patch_names_orig
 
 
 def patch_sklearn(name=None, verbose=True):
-    patch_sklearn_orig(name, verbose, deprecation=False)
+    patch_sklearn_orig(name, verbose, deprecation=False, skl_verbose=False)
 
 
 def unpatch_sklearn(name=None):

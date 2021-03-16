@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn._utils import daal_check_version
+from daal4py.sklearn._utils import daal_check_version, set_idp_sklearn_verbose
 from ..neighbors import KNeighborsRegressor as KNeighborsRegressor_daal4py
 from ..neighbors import NearestNeighbors as NearestNeighbors_daal4py
 from ..neighbors import KNeighborsClassifier as KNeighborsClassifier_daal4py
@@ -137,7 +137,7 @@ def do_unpatch(name):
         raise ValueError("Has no patch for: " + name)
 
 
-def enable(name=None, verbose=True, deprecation=True):
+def enable(name=None, verbose=True, deprecation=True, skl_verbose=True):
     if LooseVersion(sklearn_version) < LooseVersion("0.21.0"):
         raise NotImplementedError(
             "daal4py patches apply for scikit-learn >= 0.21.0 only ...")
@@ -146,14 +146,15 @@ def enable(name=None, verbose=True, deprecation=True):
     else:
         for key in _get_map_of_algorithms():
             do_patch(key)
+    set_idp_sklearn_verbose(skl_verbose)
     if deprecation:
         warn("Scikit-learn patching with daal4py is deprecated "
              "and will be removed in the future.\n"
              "Please, use Intel(R) Extension for Scikit-learn module instead "
-             "(pip install intel-sklearn-extension)\n"
+             "(pip install scikit-learn-intelex)\n"
              "To enable patching, please, use one of options:\n"
-             "1) python -m iskex <your_script>\n"
-             "2) from iskex import patch_sklearn\n"
+             "1) python -m sklearnex <your_script>\n"
+             "2) from sklearnex import patch_sklearn\n"
              "   patch_sklearn()",
              FutureWarning, stacklevel=2)
     if verbose and sys.stderr is not None:
