@@ -36,6 +36,7 @@ jobs:
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
+            pip install -q scikit-learn
             conda list
             source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_sklearnex.tar.bz2 sklearnex skex
       - store_artifacts:

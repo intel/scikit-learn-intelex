@@ -137,7 +137,7 @@ def do_unpatch(name):
         raise ValueError("Has no patch for: " + name)
 
 
-def enable(name=None, verbose=True, deprecation=True, skl_verbose=True):
+def enable(name=None, verbose=True, deprecation=True):
     if LooseVersion(sklearn_version) < LooseVersion("0.21.0"):
         raise NotImplementedError(
             "daal4py patches apply for scikit-learn >= 0.21.0 only ...")
@@ -146,7 +146,7 @@ def enable(name=None, verbose=True, deprecation=True, skl_verbose=True):
     else:
         for key in _get_map_of_algorithms():
             do_patch(key)
-    set_idp_sklearn_verbose(skl_verbose)
+    set_idp_sklearn_verbose(deprecation)
     if deprecation:
         warn("Scikit-learn patching with daal4py is deprecated "
              "and will be removed in the future.\n"
