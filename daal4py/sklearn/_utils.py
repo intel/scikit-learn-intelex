@@ -38,7 +38,7 @@ def set_idp_sklearn_verbose(deprecation=True):
                               "Please, use SKLEARNEX_VERBOSE variable in "
                               "Intel(R) Extension for Scikit-learn module instead",
                               FutureWarning, stacklevel=2)
-    except:
+    except Exception:
         warnings.warn('Unknown level "{}" for logging.\n'
                       'Please, use one of "CRITICAL", "ERROR", '
                       '"WARNING", "INFO", "DEBUG".'.format(logLevel))
