@@ -126,7 +126,10 @@ algorithms:
      - pairwise_distance
      - With metric=``cosine`` and ``correlation``.
      - Only dense data is supported.
-
+   * - Other
+     - roc_auc_score
+     - Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported..
+     - No limitations.
 
 Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
@@ -140,7 +143,7 @@ introspection. This assures scikit-learn API compatibility of all
 
 .. note::
     daal4py supports optimizations for the last four versions of scikit-learn.
-    The latest release of daal4py-2021.1 supports scikit-learn 0.21.X, 0.22.X, 0.23.X and 0.24.X.
+    The latest release of daal4py-2021.2 supports scikit-learn 0.21.X, 0.22.X, 0.23.X and 0.24.X.
 
 .. _sklearn_verbose:
 
@@ -197,8 +200,6 @@ Currently, these include:
 14. ``daal4py.sklearn.linear_model.LogisticRegression``
 15. ``daal4py.sklearn.linear_model.ElasticNet``
 16. ``daal4py.sklearn.linear_model.Lasso``
-17. ``daal4py.sklearn.model_selection._daal_train_test_split``
-18. ``daal4py.sklearn.metrics._daal_roc_auc_score``
 
 These classes are always available, whether the scikit-learn itself has been
 patched, or not. For example::
