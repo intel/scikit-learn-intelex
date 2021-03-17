@@ -311,8 +311,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
             "fit: " + get_patch_message("daal"))
         _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
 
-        if not hasattr(self, "estimators_"):
-            self.estimators_ = self._estimators_
+        self.estimators_ = self._estimators_
 
         # Decapsulate classes_ attributes
         self.n_classes_ = self.n_classes_[0]
@@ -440,8 +439,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
             "fit: " + get_patch_message("daal"))
         _daal_fit_regressor(self, X, y, sample_weight=sample_weight)
 
-        if not hasattr(self, "estimators_"):
-            self.estimators_ = self._estimators_
+        self.estimators_ = self._estimators_
         return self
     logging.info(
         "sklearn.ensemble.RandomForestRegressor."
