@@ -21,7 +21,7 @@ from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
 
-def set_idp_sklearn_verbose(deprecation=True):
+def set_idp_sklearn_verbose():
     import logging
     import warnings
     import os
@@ -32,12 +32,11 @@ def set_idp_sklearn_verbose(deprecation=True):
             logging.basicConfig(
                 stream=sys.stdout,
                 format='%(levelname)s: %(message)s', level=logLevel.upper())
-            if deprecation:
-                warnings.warn("IDP_SKLEARN_VERBOSE fuctionality is deprecated "
-                              "and will be removed in the future.\n"
-                              "Please, use SKLEARN_EXTENSION_VERBOSE variable in "
-                              "Intel(R) Extension for Scikit-learn module instead",
-                              FutureWarning, stacklevel=2)
+            warnings.warn("IDP_SKLEARN_VERBOSE fuctionality is deprecated "
+                          "and will be removed in the future.\n"
+                          "Please, use SKLEARN_EXTENSION_VERBOSE variable in "
+                          "Intel(R) Extension for Scikit-learn module instead",
+                          FutureWarning, stacklevel=2)
     except Exception:
         warnings.warn('Unknown level "{}" for logging.\n'
                       'Please, use one of "CRITICAL", "ERROR", '

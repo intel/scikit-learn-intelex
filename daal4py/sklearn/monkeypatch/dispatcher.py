@@ -146,8 +146,8 @@ def enable(name=None, verbose=True, deprecation=True):
     else:
         for key in _get_map_of_algorithms():
             do_patch(key)
-    set_idp_sklearn_verbose(deprecation)
     if deprecation:
+        set_idp_sklearn_verbose()
         warn("Scikit-learn patching with daal4py is deprecated "
              "and will be removed in the future.\n"
              "Please, use Intel(R) Extension for Scikit-learn module instead "
