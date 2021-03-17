@@ -1,5 +1,5 @@
 # Building from sources
-scikit-learn-intelex is easily built from sources with the majority of the necessary prerequisites available on conda. The instructions below detail how to gather the prerequisites, set your build environment, and finally build and install the completed package. scikit-learn-intelex can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if needed.
+scikit-learn-intelex is easily built from sources with the majority of the necessary prerequisites available on conda or pip. The instructions below detail how to gather the prerequisites, and finally build and install the completed package. scikit-learn-intelex can be built for all three major platforms (Windows, Linux, macOS).
 
 ### Prerequisites
 * Python version >= 3.6

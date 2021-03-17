@@ -151,8 +151,8 @@ Scenarios that are only available in the `master` branch (not released yet):
 ## 📜 scikit-learn verbose
 
 To find out which implementation of the algorithm is currently used (scikit-learn-intelex or stock Scikit-learn), set the environment variable:
-- On Linux and Mac OS: `export SKLEARNEX_VERBOSE=INFO`
-- On Windows: `set SKLEARNEX_VERBOSE=INFO`
+- On Linux and Mac OS: `export SKLEARN_EXTENSION_VERBOSE=INFO`
+- On Windows: `set SKLEARN_EXTENSION_VERBOSE=INFO`
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used:
 - `INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver`
