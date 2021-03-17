@@ -88,7 +88,6 @@ deselected_tests:
   - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_methods_subset_invariance]
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order
@@ -203,3 +202,6 @@ reduced_tests:
   - inspection/
   - neural_network/
   - preprocessing/
+
+public:
+  - tests/test_common.py::test_estimators
