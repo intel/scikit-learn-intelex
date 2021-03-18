@@ -21,6 +21,28 @@ from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 
 
+def set_idp_sklearn_verbose():
+    import logging
+    import warnings
+    import os
+    import sys
+    logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
+    try:
+        if logLevel is not None:
+            logging.basicConfig(
+                stream=sys.stdout,
+                format='%(levelname)s: %(message)s', level=logLevel.upper())
+            warnings.warn("IDP_SKLEARN_VERBOSE fuctionality is deprecated "
+                          "and will be removed in the future.\n"
+                          "Please, use SKLEARN_EXTENSION_VERBOSE variable in "
+                          "Intel(R) Extension for Scikit-learn module instead",
+                          FutureWarning, stacklevel=2)
+    except Exception:
+        warnings.warn('Unknown level "{}" for logging.\n'
+                      'Please, use one of "CRITICAL", "ERROR", '
+                      '"WARNING", "INFO", "DEBUG".'.format(logLevel))
+
+
 def daal_check_version(rule):
     # First item is major version - 2021,
     # second is minor+patch - 0110,
