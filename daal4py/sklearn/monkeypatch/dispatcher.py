@@ -49,6 +49,9 @@ import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
 
+import logging
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.WARNING)
+
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     import sklearn.linear_model._logistic as logistic_module
     _patched_log_reg_path_func_name = '_logistic_regression_path'
@@ -149,6 +152,7 @@ def enable(name=None, verbose=True):
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
             "https://intelpython.github.io/daal4py/sklearn.html\n")
+        logging.warning('Please, do re import of all imported scikit-learn modules after patch_sklearn()')
 
 
 def disable(name=None):
@@ -158,6 +162,10 @@ def disable(name=None):
         for key in _get_map_of_algorithms():
             do_unpatch(key)
         _get_map_of_algorithms.cache_clear()
+        sys.stderr.write(
+            "Intel(R) oneAPI Data Analytics Library solvers for sklearn disabled: "
+            "https://intelpython.github.io/daal4py/sklearn.html\n")
+        logging.warning('Please, do re import of all imported scikit-learn modules after unpatch_sklearn()')
 
 
 def _patch_names():
