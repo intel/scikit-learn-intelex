@@ -3,6 +3,7 @@
 *.egg
 *.pyc
 build
+dist
 daal4py.egg-info
 **/__pycache__
 
@@ -12,3 +13,6 @@ src/oneapi/oneapi.cpp
 
 # IDE properties
 .vscode
+
+# sklearnex files
+scikit_learn_intelex.egg-info
