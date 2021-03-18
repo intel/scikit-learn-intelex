@@ -168,18 +168,18 @@ def enable(name=None, verbose=True, deprecation=True):
                         'after patch_sklearn()')
 
 
-def disable(name=None):
+def disable(name=None, verbose=True):
     if name is not None:
         do_unpatch(name)
     else:
         for key in _get_map_of_algorithms():
             do_unpatch(key)
         _get_map_of_algorithms.cache_clear()
+    if verbose and sys.stderr is not None:
         sys.stderr.write(
-            "Intel(R) oneAPI Data Analytics Library solvers for sklearn disabled: "
-            "https://intelpython.github.io/daal4py/sklearn.html\n")
-    logging.warning('Please, do re-import of imported scikit-learn modules '
-                    'after unpatch_sklearn()')
+            "Intel(R) oneAPI Data Analytics Library solvers for sklearn disabled\n")
+        logging.warning('Please, do re-import of imported scikit-learn modules '
+                        'after unpatch_sklearn()')
 
 
 def _patch_names():
