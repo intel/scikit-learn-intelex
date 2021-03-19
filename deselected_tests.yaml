@@ -85,12 +85,10 @@ deselected_tests:
   # Our implementation builds different trees compared to skikit-learn
   # Comparison of tree forest will be failed
   - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
-  - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
-  - tests/test_common.py::test_estimators
-  # Exact failed tests in ::test_estimators. Deselecting in progress
-  # - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
-  # - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
-  # - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)]
+  - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23 
+  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
+  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order
 
@@ -106,10 +104,8 @@ deselected_tests:
   - utils/tests/test_estimator_checks.py::test_check_estimator_clones
 
   # module name should starts with 'sklearn.' but we have 'daal4py.sklearn.'
-  - tests/test_common.py::test_check_n_features_in_after_fitting
-  # Exact failed tests in ::test_check_n_features_in_after_fitting. Deselecting in progress
-  # - tests/test_common.py::test_check_n_features_in_after_fitting[LogisticRegression()] >=0.24
-  # - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()] >=0.24
+  - tests/test_common.py::test_check_n_features_in_after_fitting[LogisticRegression()] >=0.24
+  - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()] >=0.24
   - metrics/tests/test_score_objects.py::test_scoring_is_not_metric
 
   # Stability issue with max absolute difference: 4.33846826e-08/1.17613697e-11. Remove in next release
