@@ -8,21 +8,21 @@ scikit-learn-intelex is easily built from sources with the majority of the neces
 * SKLEARNEX_VERSION: sets package version
 
 ### Building scikit-learn-intelex
-For install scikit-learn-intelex
+To install scikit-learn-intelex
 
 ```bash
 cd <checkout-dir>
 python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
 ```
 
-For install package in development mode
+To install the package in the development mode:
 
 ```bash
 cd <checkout-dir>
 python setup.py develop --no-deps
 ```
 
-For install scikit-learn-intelex without main daal4py dependency
+To install scikit-learn-intelex without the dependency on daal4py:
 
 ```bash
 cd <checkout-dir>
@@ -33,7 +33,7 @@ cd <checkout-dir>
 python setup.py develop
 ```
 
-⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that release daal4py are not downloads after installation of scikit-learn-intelex
+⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that daal4py is not downloaded after installation of scikit-learn-intelex
 
 ## Building documentation for scikit-learn-intelex
 ### Prerequisites for creating documentation

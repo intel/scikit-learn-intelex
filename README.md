@@ -4,7 +4,7 @@
 [![PyPI Version](https://img.shields.io/pypi/v/daal4py)](https://pypi.org/project/daal4py/)
 
 
-Intel(R) Extension for scikit-learn extending scikit-learn beyond by providing drop-in paching.  Acceleration is achieved through the use of the library Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
+Intel(R) Extension for scikit-learn* speeds up scikit-learn beyond by providing drop-in patching.  Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
 
 Running full scikit-learn test suite with scikit-learn-intelex optimization patches:
 
