@@ -155,8 +155,9 @@ def enable(name=None, verbose=True, deprecation=True):
                                "(pip install scikit-learn-intelex).\n"
                                "To enable patching, please use one of the "
                                "following options:\n"
-                               "1) python -m sklearnex <your_script>\n"
-                               "2) Enable patching from your script:"
+                               "1) From the command line:\n"
+                               "    python -m sklearnex <your_script>\n"
+                               "2) From your script:\n"
                                "    from sklearnex import patch_sklearn\n"
                                "    patch_sklearn()",
                                FutureWarning, "dispatcher.py", 151)
