@@ -153,11 +153,10 @@ class TSNE(BaseTSNE):
                       .format(n_neighbors))
 
             # Find the nearest neighbors for every point
-            knn = NearestNeighbors(
-                algorithm='auto',
-                n_jobs=self.n_jobs if sklearn_check_version('0.22') else None,
-                n_neighbors=n_neighbors,
-                metric=self.metric)
+            knn = NearestNeighbors(algorithm='auto',
+                                   n_jobs=self.n_jobs,
+                                   n_neighbors=n_neighbors,
+                                   metric=self.metric)
             t0 = time()
             knn.fit(X)
             duration = time() - t0
