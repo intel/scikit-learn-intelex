@@ -31,7 +31,6 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 ## 💬 Support
 
 Report issues, ask questions, and provide suggestions using:
-1111
 
 - [GitHub Issues](https://github.com/IntelPython/daal4py/issues)
 - [GitHub Discussions](https://github.com/IntelPython/daal4py/discussions)
