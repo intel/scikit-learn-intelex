@@ -96,6 +96,23 @@ deselected_tests:
   - tests/test_common.py::test_estimators[KMeans-check_transformer_n_iter0] <0.22
   - tests/test_common.py::test_estimators[KMeans-check_transformer_n_iter1] <0.22
   - tests/test_common.py::test_estimators[KMeans-check_non_transformer_estimators_n_iter0] <0.22
+  - tests/test_common.py::test_estimators[KMeans-check_non_transformer_estimators_n_iter1] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_estimators_dtypes0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_fit_score_takes_y0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_estimators_fit_returns_self0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_estimators_fit_returns_self(readonly_memmap=True)0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_dtype_object0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_pipeline_consistency0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_estimators_nan_inf0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_estimators_overwrite_params0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_estimator_sparse_data0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_estimators_pickle0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_fit2d_predict1d0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_methods_subset_invariance0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_fit2d_1feature0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_dict_unchanged0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_dont_overwrite_parameters0] <0.22
+  - tests/test_common.py::test_estimators[TSNE-check_fit_idempotent0] <0.22
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order
 
