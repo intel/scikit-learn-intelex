@@ -32,9 +32,9 @@ def set_idp_sklearn_verbose():
             logging.basicConfig(
                 stream=sys.stdout,
                 format='%(levelname)s: %(message)s', level=logLevel.upper())
-            warnings.warn("IDP_SKLEARN_VERBOSE fuctionality is deprecated "
+            warnings.warn("\nIDP_SKLEARN_VERBOSE fuctionality is deprecated "
                           "and will be removed in the future.\n"
-                          "Please, use SKLEARN_EXTENSION_VERBOSE variable in "
+                          "Please, use SKLEARNEX_VERBOSE variable in "
                           "Intel(R) Extension for Scikit-learn module instead",
                           FutureWarning, stacklevel=2)
     except Exception:
