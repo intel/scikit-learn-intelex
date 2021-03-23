@@ -93,6 +93,7 @@ deselected_tests:
   - tests/test_common.py::test_estimators[RandomForestClassifier-check_classifiers_train(readonly_memmap=True)0] <0.22
   - tests/test_common.py::test_estimators[RandomForestClassifier-check_classifiers_train(readonly_memmap=True)1] <0.22
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)]
+  - tests/test_common.py::SVC()-check_sample_weights_invariance(kind=ones) >=0.24
   - tests/test_common.py::test_estimators[KMeans-check_transformer_n_iter0] <0.22
   - tests/test_common.py::test_estimators[KMeans-check_transformer_n_iter1] <0.22
   - tests/test_common.py::test_estimators[KMeans-check_non_transformer_estimators_n_iter0] <0.22
