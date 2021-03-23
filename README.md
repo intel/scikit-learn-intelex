@@ -1,19 +1,18 @@
-# scikit-learn-intelex - Extension for scikit-learn with helps Intel(R) oneAPI Data Analytics Library
+# Intel(R) Extension for Scikit-learn*
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/IntelPython/daal4py/discussions)
 [![PyPI Version](https://img.shields.io/pypi/v/daal4py)](https://pypi.org/project/daal4py/)
 
 
-Intel(R) Extension for scikit-learn* speeds up scikit-learn beyond by providing drop-in patching.  Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
+Intel(R) Extension for Scikit-learn speeds up scikit-learn beyond  by providing drop-in patching. Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library ([oneDAL](https://github.com/oneapi-src/oneDAL)) that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
 
-Running full scikit-learn test suite with scikit-learn-intelex optimization patches:
+Running full scikit-learn test suite with Intel(R) Extension for Scikit-learn optimization patches:
 
 - [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
-- [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
 
 ## 👀 Follow us on Medium
 
-We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis the help of scikit-learn-intelex. Here are our latest blogs:
+We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis the help of Intel(R) Extension for Scikit-learn. Here are our latest blogs:
 
 - [From Hours to Minutes: 600x Faster SVM](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)
 - [Improve the Performance of XGBoost and LightGBM Inference](https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e)
@@ -39,16 +38,16 @@ Report issues, ask questions, and provide suggestions using:
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
 
 # 🛠 Installation
-scikit-learn-intelex is available at the [Python Package Index](https://pypi.org/project/daal4py/),
+Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/daal4py/),
 and in [Intel channel](https://anaconda.org/intel/daal4py).
 
 ```bash
-# PyPi
-pip install scikit-learn-intelex
+# PyPi (recommended by default)
+pip install scikit-learn-intelex 
 ```
 
 ```bash
-# Anaconda Cloud from Intel channel
+# Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python users)
 conda install scikit-learn-intelex -c intel
 ```
 
@@ -72,10 +71,9 @@ conda install scikit-learn-intelex -c intel
 
 </details>
 
-You can [build scikit-learn-intelex from sources](https://github.com/IntelPython/daal4py/blob/master/INSTALL.md) as well.
+You can [build the package from sources](https://github.com/IntelPython/daal4py/blob/master/INSTALL.md) as well.
 
 # ⚡️ Get Started
-Accelerate scikit-learn with the core functionality of scikit-learn-intelex without changing the code.
 
 Intel CPU optimizations patching
 ```py
@@ -90,7 +88,7 @@ X = np.array([[1., 2.], [2., 2.], [2., 3.],
 clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 ```
 
-Intel CPU/GPU optimizations patching
+Intel GPU optimizations patching
 ```py
 import numpy as np
 from sklearnex import patch_sklearn
@@ -107,17 +105,14 @@ with sycl_context("gpu"):
 
 # 🚀 Scikit-learn patching
 
-| *Speedups of scikit-learn-intelex-powered Scikit-learn over the original Scikit-learn* |
+| Speedups of Intel(R) Extension for Scikit-learn over the original Scikit-learn |
 |:--:|
 | ![](https://github.com/IntelPython/daal4py/blob/master/doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
 | *Technical details: float type: float64; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10)* |
 
-scikit-learn-intelex patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, scikit-learn-intelex fallbacks into stock Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/IntelPython/daal4py/issues).
+Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/IntelPython/daal4py/issues).
 
-⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of scikit-learn-intelex-2021.2 supports scikit-learn 0.21.X,
-0.22.X, 0.23.X and 0.24.X.
-
-<details><summary>[Click to expand] 🔥 Applying the scikit-learn-intelex patch will impact the following existing scikit-learn algorithms: </summary>
+<details><summary>[Click to expand] 🔥 Applying the patching will impact the following existing scikit-learn algorithms: </summary>
 
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
@@ -139,20 +134,18 @@ scikit-learn-intelex patching affects performance of specific Scikit-learn funct
 |Other|**train_test_split**|All parameters are supported. | Only dense data is supported.|
 ||**assert_all_finite**|All parameters are supported. | Only dense data is supported. |
 ||**pairwise_distance**|With `metric`='cosine' and 'correlation'.| Only dense data is supported. |
-
-Scenarios that are only available in the `master` branch (not released yet):
-
-|Task|Functionality|Parameters support|Data support|
-|:---|:------------|:-----------------|:-----------|
-|Other|**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
+||**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
 
  </details>
 
-## 📜 scikit-learn verbose
+⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.2 supports scikit-learn 0.21.X,
+0.22.X, 0.23.X and 0.24.X.
 
-To find out which implementation of the algorithm is currently used (scikit-learn-intelex or stock Scikit-learn), set the environment variable:
-- On Linux and Mac OS: `export SKLEARN_EXTENSION_VERBOSE=INFO`
-- On Windows: `set SKLEARN_EXTENSION_VERBOSE=INFO`
+## 📜 Intel(R) Extension for Scikit-learn verbose
+
+To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), set the environment variable:
+- On Linux and Mac OS: `export SKLEARNEX_VERBOSE=INFO`
+- On Windows: `set SKLEARNEX_VERBOSE=INFO`
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used:
 - `INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver`
