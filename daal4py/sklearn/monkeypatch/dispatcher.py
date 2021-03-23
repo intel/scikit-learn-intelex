@@ -177,7 +177,7 @@ def disable(name=None, verbose=True):
         _get_map_of_algorithms.cache_clear()
     if verbose and sys.stderr is not None:
         sys.stderr.write(
-            "Intel(R) oneAPI Data Analytics Library solvers for sklearn disabled\n")
+            "Intel(R) oneAPI Data Analytics Library solvers for scikit-learn are disabled\n")
         logging.warning('Reimport previously imported scikit-learn modules '
                         'after unpatch_sklearn()')
 
