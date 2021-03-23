@@ -32,11 +32,6 @@ def set_idp_sklearn_verbose():
             logging.basicConfig(
                 stream=sys.stdout,
                 format='%(levelname)s: %(message)s', level=logLevel.upper())
-            warnings.warn_explicit("\nIDP_SKLEARN_VERBOSE functionality is deprecated "
-                                   "and will be removed in the future.\n"
-                                   "Use SKLEARNEX_VERBOSE variable in "
-                                   "Intel(R) Extension for Scikit-learn* module instead.",
-                                   FutureWarning, "dispatcher.py", 150)
     except Exception:
         warnings.warn('Unknown level "{}" for logging.\n'
                       'Please, use one of "CRITICAL", "ERROR", '
