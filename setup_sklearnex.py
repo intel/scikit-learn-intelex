@@ -26,9 +26,9 @@ sklearnex_version = (os.environ["SKLEARNEX_VERSION"] if "SKLEARNEX_VERSION" in o
                      else time.strftime("2021.%Y%m%d.%H%M%S"))
 
 project_urls = {
-    "Bug Tracker": "https://github.com/IntelPython/daal4py/issues",
-    "Documentation": "https://intelpython.github.io/daal4py/",
-    "Source Code": "https://github.com/IntelPython/daal4py"
+    "Bug Tracker": "https://github.com/intel/scikit-learn-intelex/issues",
+    "Documentation": "https://intel.github.io/scikit-learn-intelex/",
+    "Source Code": "https://github.com/intel/scikit-learn-intelex"
 }
 
 with open("README.md", "r", encoding="utf8") as f:
@@ -37,8 +37,11 @@ with open("README.md", "r", encoding="utf8") as f:
 
 # sklearnex setup
 setup(name="scikit-learn-intelex",
-      description="Extension for scikit-learn with helps \
-            Intel(R) oneAPI Data Analytics Library",
+      description="Intel(R) Extension for Scikit-learn* speeds up scikit-learn beyond by "
+                  "providing drop-in patching. Acceleration is achieved through the use "
+                  "of the Intel(R) oneAPI Data Analytics Library (oneDAL) that allows "
+                  "for fast usage of the framework suited for Data Scientists or "
+                  "Machine Learning users.",
       long_description=long_description,
       long_description_content_type="text/markdown",
       license="Apache-2.0",
