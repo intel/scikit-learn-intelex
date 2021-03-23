@@ -40,8 +40,8 @@ on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal
 and in [Intel channel](https://anaconda.org/intel/daal4py).
 
 ```bash
-# PyPi
-pip install daal4py (recommended for PyPI users)
+# PyPI (recommended by default)
+pip install daal4py
 ```
 
 ```bash
