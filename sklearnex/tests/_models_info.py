@@ -61,11 +61,6 @@ MODELS_INFO = [
         'dataset': 'classifier',
     },
     {
-        'model': TSNE(),
-        'methods': ['fit_transform'],
-        'dataset': 'classifier',
-    },
-    {
         'model': KMeans(),
         'methods': ['fit_predict', 'fit_transform', 'transform', 'predict', 'score'],
         'dataset': 'blobs',

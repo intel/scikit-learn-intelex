@@ -50,7 +50,7 @@ def run_parse(mas, result):
 
 
 def get_result_log():
-    os.environ['IDP_SKLEARN_VERBOSE'] = 'INFO'
+    os.environ['SKLEARNEX_VERBOSE'] = 'INFO'
     absolute_path = str(pathlib.Path(__file__).parent.absolute())
     try:
         process = subprocess.check_output(
@@ -72,7 +72,7 @@ def get_result_log():
             mas.append(i.strip())
         else:
             mas.append(i.strip())
-    del os.environ['IDP_SKLEARN_VERBOSE']
+    del os.environ['SKLEARNEX_VERBOSE']
     return result
 
 
