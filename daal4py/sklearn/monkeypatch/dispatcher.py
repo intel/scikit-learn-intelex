@@ -167,8 +167,8 @@ def enable(name=None, verbose=True, deprecation=True):
             "https://intelpython.github.io/daal4py/sklearn.html\n")
     if verbose and not deprecation and sys.stderr is not None:
         sys.stderr.write(
-            "Intel(R) Extension for Scikit-learn* solvers enabled: "
-            "https://github.com/intel/scikit-learn-intelex\n")
+            "Intel(R) Extension for Scikit-learn* enabled "
+            "(https://github.com/intel/scikit-learn-intelex)\n")
 
 
 def disable(name=None):
