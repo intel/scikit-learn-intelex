@@ -1,5 +1,5 @@
 # Building from sources
-scikit-learn-intelex is easily built from sources with the majority of the necessary prerequisites available on conda or pip. The instructions below detail how to gather the prerequisites, and finally build and install the completed package. scikit-learn-intelex can be built for all three major platforms (Windows, Linux, macOS).
+Intel(R) Extension for Scikit-learn is easily built from sources with the majority of the necessary prerequisites available on conda or pip. The instructions below detail how to gather the prerequisites, and finally build and install the completed package. The package can be built for all three major platforms (Windows, Linux, macOS).
 
 ### Prerequisites
 * Python version >= 3.6
@@ -7,8 +7,8 @@ scikit-learn-intelex is easily built from sources with the majority of the neces
 ### Configuring the build with environment variables
 * SKLEARNEX_VERSION: sets package version
 
-### Building scikit-learn-intelex
-To install scikit-learn-intelex
+### Building Intel(R) Extension for Scikit-learn
+To install the package:
 
 ```bash
 cd <checkout-dir>
@@ -33,9 +33,9 @@ cd <checkout-dir>
 python setup.py develop
 ```
 
-⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that daal4py is not downloaded after installation of scikit-learn-intelex
+⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
 
-## Building documentation for scikit-learn-intelex
+## Building documentation for Intel(R) Extension for Scikit-learn
 ### Prerequisites for creating documentation
 * sphinx
 * sphinx_rtd_theme
