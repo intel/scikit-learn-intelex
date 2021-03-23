@@ -164,7 +164,7 @@ def enable(name=None, verbose=True, deprecation=True):
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
             "https://intelpython.github.io/daal4py/sklearn.html\n")
-        logging.warning('Please, do re-import of imported scikit-learn modules '
+        logging.warning('Reimport previously imported scikit-learn modules '
                         'after patch_sklearn()')
 
 
