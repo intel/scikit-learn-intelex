@@ -6,9 +6,7 @@ Intel(R) Extension for Scikit-learn speeds up scikit-learn beyond  by providing 
 
 ⚠️Intel(R) Extension for Scikit-learn contains scikit-learn patching functionality originally available in [**daal4py**](/daal4py) package. All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only. Please use the package instead of daal4py.
 
-Running full scikit-learn test suite with Intel(R) Extension for Scikit-learn optimization patches:
-
-[![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
+Running full the latest scikit-learn test suite with Intel(R) Extension for Scikit-learn: [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py)
 
 ## 👀 Follow us on Medium
 
