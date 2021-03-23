@@ -87,4 +87,4 @@ You can [build daal4py from sources](https://github.com/IntelPython/daal4py/blob
 
 # 🚀 Scikit-learn patching
 
-Scikit-learn patching functionality in daal4py was deprecated and moved to separate package - Intel(R) Extension for Scikit-learn. All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only. Please use the package instead of daal4py for the Scikit-learn acceleration.
+Scikit-learn patching functionality in daal4py was deprecated and moved to a separate package - Intel(R) Extension for Scikit-learn*. All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only. Please use the package instead of daal4py for the Scikit-learn acceleration.
