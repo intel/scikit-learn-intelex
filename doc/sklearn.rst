@@ -47,7 +47,7 @@ It is possible to undo the patch with::
 
     daal4py.sklearn.unpatch_sklearn()
 
-After unpatch_sklearn(), you need to re-import the scikit-learn modules.
+After applying ``unpatch_sklearn()``, reimport the scikit-learn modules.
 
 .. _sklearn_algorithms:
 
