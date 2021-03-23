@@ -48,7 +48,7 @@ from functools import lru_cache
 import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
-from warnings import warn
+import warnings
 
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.WARNING)
@@ -151,21 +151,29 @@ def enable(name=None, verbose=True, deprecation=True):
             do_patch(key)
     if deprecation:
         set_idp_sklearn_verbose()
-        warn("Scikit-learn patching with daal4py is deprecated "
-             "and will be removed in the future.\n"
-             "Please, use Intel(R) Extension for Scikit-learn module instead "
-             "(pip install scikit-learn-intelex)\n"
-             "To enable patching, please, use one of options:\n"
-             "1) python -m sklearnex <your_script>\n"
-             "2) from sklearnex import patch_sklearn\n"
-             "   patch_sklearn()",
-             FutureWarning, stacklevel=2)
-    if verbose and sys.stderr is not None:
+        warnings.warn_explicit("\nScikit-learn patching with daal4py is deprecated "
+                               "and will be removed in the future.\n"
+                               "Use Intel(R) Extension "
+                               "for Scikit-learn* module instead "
+                               "(pip install scikit-learn-intelex).\n"
+                               "To enable patching, please use one of the "
+                               "following options:\n"
+                               "1) From the command line:\n"
+                               "    python -m sklearnex <your_script>\n"
+                               "2) From your script:\n"
+                               "    from sklearnex import patch_sklearn\n"
+                               "    patch_sklearn()",
+                               FutureWarning, "dispatcher.py", 151)
+    logging.warning('Reimport previously imported scikit-learn modules '
+                    'after patch_sklearn()')
+    if verbose and deprecation and sys.stderr is not None:
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
             "https://intelpython.github.io/daal4py/sklearn.html\n")
-        logging.warning('Reimport previously imported scikit-learn modules '
-                        'after patch_sklearn()')
+    if verbose and not deprecation and sys.stderr is not None:
+        sys.stderr.write(
+            "Intel(R) Extension for Scikit-learn* enabled "
+            "(https://github.com/intel/scikit-learn-intelex)\n")
 
 
 def disable(name=None, verbose=True):

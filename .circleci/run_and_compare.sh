@@ -5,7 +5,7 @@ PACKAGE=$3
 OUT_FILE=$4
 cd $DAAL4PY_ROOT/.circleci
 touch ~/$OUT_FILE.out
-export DESELECTED_TESTS=$(python deselect_tests.py ../deselected_tests.yaml --absolute --reduced)
+export DESELECTED_TESTS=$(python deselect_tests.py ../deselected_tests.yaml --absolute --reduced --public)
 echo "-m ${PACKAGE} -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
 cd && ((python -m ${PACKAGE} -m pytest ${DESELECTED_TESTS} -ra --disable-warnings --pyargs sklearn | tee ~/${OUT_FILE}.out) || true)
 # extract status strings
