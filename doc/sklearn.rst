@@ -41,7 +41,7 @@ Patches can also be enabled programmatically::
     daal4py.sklearn.patch_sklearn()
 
 If some modules from scikit-learn were imported before patch_sklearn(),
-then you need to re-import these modules after patch_sklearn().
+you have to reimport these modules again after enabling the patches.
 
 It is possible to undo the patch with::
 
