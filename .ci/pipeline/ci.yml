@@ -89,6 +89,15 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      pip install daal numpy
+      pip install -r requirements-test.txt
+      conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
+      python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
+      cd ..
+      pytest s/sklearnex/tests/
     displayName: conda build
 
 - job: MacOS
