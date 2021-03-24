@@ -15,12 +15,9 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
-from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
-from daal4py.sklearn import sklearn_patch_names as get_patch_names_orig
-
 
 def patch_sklearn(name=None, verbose=True):
+    from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
     try:
         patch_sklearn_orig(name, verbose, deprecation=False)
     except Exception:
@@ -28,8 +25,10 @@ def patch_sklearn(name=None, verbose=True):
 
 
 def unpatch_sklearn(name=None):
+    from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
     unpatch_sklearn_orig(name)
 
 
 def get_patch_names():
+    from daal4py.sklearn import sklearn_patch_names as get_patch_names_orig
     return get_patch_names_orig()
