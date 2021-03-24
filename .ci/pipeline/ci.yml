@@ -95,7 +95,10 @@ jobs:
       pip install -r requirements-test.txt
       conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
-      cd .. ; pytest daal4py/sklearnex/tests/
+      ls -la
+      cd ..
+      ls -la
+      pytest daal4py/sklearnex/tests/
     displayName: conda build
 
 - job: MacOS
