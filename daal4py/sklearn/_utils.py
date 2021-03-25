@@ -14,6 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
+import sys
 import numpy as np
 
 from daal4py import _get__daal_link_version__ as dv
@@ -78,7 +79,13 @@ def make2d(X):
 
 def get_patch_message(s):
     if s == "daal":
-        message = "uses Intel(R) oneAPI Data Analytics Library solver"
+        dev = None
+        if 'daal4py.oneapi' in sys.modules:
+            from daal4py.oneapi import _get_device_name_sycl_ctxt
+            dev = _get_device_name_sycl_ctxt()
+        if dev is None:
+            dev = "host"
+        message = f"uses Intel(R) oneAPI Data Analytics Library solver on {dev}"
     elif s == "sklearn":
         message = "uses original Scikit-learn solver"
     elif s == "sklearn_after_daal":

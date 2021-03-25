@@ -28,7 +28,6 @@ PySyclExecutionContext::PySyclExecutionContext(const std::string & dev) : m_ctxt
     {
         throw std::runtime_error(std::string("Device is not supported: ") + dev);
     }
-    daal::services::Environment::getInstance()->setDefaultExecutionContext(*m_ctxt);
 }
 
 PySyclExecutionContext::~PySyclExecutionContext()
@@ -36,6 +35,11 @@ PySyclExecutionContext::~PySyclExecutionContext()
     daal::services::Environment::getInstance()->setDefaultExecutionContext(daal::services::CpuExecutionContext());
     delete m_ctxt;
     m_ctxt = NULL;
+}
+
+void PySyclExecutionContext::apply()
+{
+    daal::services::Environment::getInstance()->setDefaultExecutionContext(*m_ctxt);
 }
 
 #if INTEL_DAAL_VERSION >= 20210200

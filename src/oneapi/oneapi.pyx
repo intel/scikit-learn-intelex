@@ -25,6 +25,7 @@ from libcpp cimport bool
 cdef extern from "oneapi/oneapi.h":
     cdef cppclass PySyclExecutionContext:
         PySyclExecutionContext(const std_string & dev) except +
+        void apply() except +
     void * to_device(void *, int, int*)
     void * to_daal_sycl_nt(void*, int, int*)
     void * to_daal_host_nt(void*, int, int*)
@@ -38,12 +39,20 @@ cdef extern from "oneapi/oneapi.h":
 
 cdef class sycl_execution_context:
     cdef PySyclExecutionContext * c_ptr
+    cdef object dev
 
     def __cinit__(self, dev):
+        self.dev = dev
         self.c_ptr = new PySyclExecutionContext(to_std_string(<PyObject *>dev))
 
     def __dealloc__(self):
         del self.c_ptr
+
+    def apply(self):
+        self.c_ptr.apply()
+
+    def get_device_name(self):
+        return self.dev
 
 
 # thread-local storage
@@ -56,22 +65,41 @@ def _is_tls_initialized():
 def _initialize_tls():
     _tls._in_sycl_ctxt = False
     _tls.initialized = True
+    _tls.ctxt = None
+    _tls.params = dict()
 
-def _set_in_sycl_ctxt(dev=None):
+def _set_in_sycl_ctxt(ctxt, **kwargs):
     if not _is_tls_initialized():
         _initialize_tls()
-    _tls._in_sycl_ctxt = dev is not None
-    _tls.device_name = dev
+    _tls._in_sycl_ctxt = ctxt is not None
+    _tls.ctxt = ctxt
+    _tls.params = kwargs
+
+    if ctxt is not None:
+        ctxt.apply()
 
 def _get_in_sycl_ctxt():
     if not _is_tls_initialized():
         _initialize_tls()
     return _tls._in_sycl_ctxt
 
+def _get_sycl_ctxt():
+    if not _is_tls_initialized():
+        _initialize_tls()
+    return _tls.ctxt
+
 def _get_device_name_sycl_ctxt():
     if not _is_tls_initialized():
         _initialize_tls()
-    return _tls.device_name
+    if _tls.ctxt is None:
+        return None
+    else:
+        return _tls.ctxt.get_device_name()
+
+def _get_sycl_ctxt_params():
+    if not _is_tls_initialized():
+        _initialize_tls()
+    return _tls.params
 
 def is_in_sycl_ctxt():
     return _get_in_sycl_ctxt()
@@ -80,16 +108,18 @@ def is_in_sycl_ctxt():
 from contextlib import contextmanager
 
 @contextmanager
-def sycl_context(dev='host'):
+def sycl_context(dev='host', host_offload_on_fail=False):
     # Code to acquire resource
+    prev_ctxt = _get_sycl_ctxt()
+    prev_params = _get_sycl_ctxt_params()
     ctxt = sycl_execution_context(dev)
-    _set_in_sycl_ctxt(dev)
+    _set_in_sycl_ctxt(ctxt, host_offload_on_fail=host_offload_on_fail)
     try:
         yield ctxt
     finally:
         # Code to release resource
+        _set_in_sycl_ctxt(prev_ctxt, **prev_params)
         del ctxt
-        _set_in_sycl_ctxt(None)
 
 
 cimport numpy as np

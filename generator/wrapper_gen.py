@@ -273,6 +273,26 @@ def _execute_with_context(func):
                 reset_daal_context()
 
                 return res
+        elif 'daal4py.oneapi' in sys.modules:
+            import daal4py.oneapi as d4p_oneapi
+            if d4p_oneapi._get_device_name_sycl_ctxt() == 'gpu' and \
+               d4p_oneapi._get_sycl_ctxt_params()['host_offload_on_fail']:
+                import logging
+                try:
+                    res = func(*args, **keyArgs)
+                    logging.info(f"{func.__qualname__.split('.')[0]} successfully run on gpu")
+                    return res
+                except RuntimeError as e:
+                    logging.info(f"{func.__qualname__.split('.')[0]} failed to run on gpu. Fallback to host")
+                    gpu_ctx = d4p_oneapi._get_sycl_ctxt()
+                    host_ctx = d4p_oneapi.sycl_execution_context('host')
+                    host_ctx.apply()
+
+                    res = func(*args, **keyArgs)
+
+                    del host_ctx
+                    gpu_ctx.apply()
+                    return res
 
         return func(*args, **keyArgs)
     return exec_func
