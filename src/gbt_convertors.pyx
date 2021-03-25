@@ -62,45 +62,53 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
         if iterations_counter == n_iterations:
             iterations_counter = 0
             class_label += 1
-        struct = tree["tree_structure"]
+        tree_struct = tree["tree_structure"]
 
         # root is leaf
-        if "leaf_value" in struct:
-            mb.add_leaf(tree_id=tree_id, response=struct["leaf_value"])
+        if "leaf_value" in tree_struct:
+            mb.add_leaf(tree_id=tree_id, response=tree_struct["leaf_value"])
             continue
 
         # add root
+        feat_val = tree_struct["threshold"]
+        if isinstance(feat_val, str):
+            raise NotImplementedError(
+                "Categorical features are not supported in daal4py Gradient Boosting Trees")
         parent_id = mb.add_split(
-            tree_id=tree_id, feature_index=struct["split_feature"],
-            feature_value=struct["threshold"])
+            tree_id=tree_id, feature_index=tree_struct["split_feature"],
+            feature_value=feat_val)
 
         # create stack
-        node_stack: List[Node] = [Node(struct["left_child"], parent_id, 0),
-                                  Node(struct["right_child"], parent_id, 1)]
+        node_stack: List[Node] = [Node(tree_struct["left_child"], parent_id, 0),
+                                  Node(tree_struct["right_child"], parent_id, 1)]
 
         # dfs through it
         while node_stack:
-            struct = node_stack[-1].tree
+            tree_struct = node_stack[-1].tree
             parent_id = node_stack[-1].parent_id
             position = node_stack[-1].position
             node_stack.pop()
 
             # current node is leaf
-            if "leaf_index" in struct:
+            if "leaf_index" in tree_struct:
                 mb.add_leaf(
-                    tree_id=tree_id, response=struct["leaf_value"],
+                    tree_id=tree_id, response=tree_struct["leaf_value"],
                     parent_id=parent_id, position=position)
                 continue
 
             # current node is split
+            feat_val = tree_struct["threshold"]
+            if isinstance(feat_val, str):
+                raise NotImplementedError(
+                    "Categorical features are not supported in daal4py Gradient Boosting Trees")
             parent_id = mb.add_split(
-                tree_id=tree_id, feature_index=struct["split_feature"],
-                feature_value=struct["threshold"],
+                tree_id=tree_id, feature_index=tree_struct["split_feature"],
+                feature_value=feat_val,
                 parent_id=parent_id, position=position)
 
             # append children
-            node_stack.append(Node(struct["left_child"], parent_id, 0))
-            node_stack.append(Node(struct["right_child"], parent_id, 1))
+            node_stack.append(Node(tree_struct["left_child"], parent_id, 0))
+            node_stack.append(Node(tree_struct["right_child"], parent_id, 1))
 
     return mb.model()
 
@@ -199,9 +207,9 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             elif mis_idx == no_idx:
                 mis_eq_yes = False
             else:
-                raise TypeError("Missing values are not supported in daa4py Gradient Boosting Trees")
+                raise TypeError("Missing values are not supported in daal4py Gradient Boosting Trees")
         elif mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
-            raise TypeError("Missing values are not supported in daa4py Gradient Boosting Trees")
+            raise TypeError("Missing values are not supported in daal4py Gradient Boosting Trees")
         node_queue: Deque[Node] = deque()
         node_queue.append(
             Node(
@@ -244,7 +252,7 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             no_idx = sub_tree[sub_tree.find("no=") + 3:sub_tree.find(",missing")]
             mis_idx = sub_tree[sub_tree.find("missing=") + 8:sub_tree.find("\n")]
             if mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
-                raise TypeError("Missing values are not supported in daa4py Gradient Boosting Trees")
+                raise TypeError("Missing values are not supported in daal4py Gradient Boosting Trees")
             node_queue.append(
                 Node(
                     sub_tree
