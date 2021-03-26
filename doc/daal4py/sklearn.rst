@@ -8,6 +8,14 @@ Python interface to efficient Intel(R) oneAPI Data Analytics Library provided by
 to create scikit-learn compatible estimators, transformers, clusterers, etc. powered by oneDAL which
 are nearly as efficient as native programs.
 
+Deprecation Notice
+-------------------------------
+
+Scikit-learn patching functionality in daal4py was deprecated and moved to a separate
+package - [Intel(R) Extension for Scikit-learn*](https://github.com/intel/scikit-learn-intelex).
+All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only.
+Please use the package instead of daal4py for the Scikit-learn acceleration.
+
 .. _sklearn_patches:
 
 oneDAL accelerated scikit-learn

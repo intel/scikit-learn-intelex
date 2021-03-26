@@ -7,10 +7,7 @@ Contents
    :maxdepth: 2
    :caption: Contents:
 
-   About daal4py <index>
-   Data <data>
+   About Intel(R) Extension for Scikit-learn* <index>
    Supported Algorithms <algorithms>
-   Distribution <scaling>
-   Streaming <streaming>
-   Examples <examples>
-   Scikit-Learn API <sklearn>
+   Supported OS and Pythons <channels>
+   sklearnex Verbose <verbose>
