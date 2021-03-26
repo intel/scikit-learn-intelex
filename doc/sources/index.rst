@@ -18,7 +18,7 @@ Intel(R) Extension for Scikit-learn* dynamically patches scikit-learn estimators
 as the underlying solver, while getting the same solution faster.
 
 - It is possible to enable those patches without editing the code of a scikit-learn application by
-using the following commandline flag::
+  using the following commandline flag::
 
     python -m sklearnex my_application.py
 
