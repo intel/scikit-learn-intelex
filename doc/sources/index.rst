@@ -71,8 +71,6 @@ Here are our latest blogs:
 
 Important links
 --------------------
-- [Documentation](https://intel.github.io/scikit-learn-intelex/)
-- [scikit-learn API and patching](https://intel.github.io/scikit-learn-intelex/)
 - [Building from Sources](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)
 - [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
 

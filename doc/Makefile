@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = scikit-learn-intelex
-SOURCEDIR     = .
+SOURCEDIR     = sources
 BUILDDIR      = _build
 
 # Put it first so that "make" without argument is like "make help".
