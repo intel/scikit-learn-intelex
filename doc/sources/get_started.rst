@@ -1,8 +1,8 @@
-.. _verbose:
+.. _get_started:
 
-#############################
+############################################
 Getting Intel(R) Extension for Scikit-learn*
-#############################
+############################################
 
 Intel(R) Extension for Scikit-learn* is available at the `Python Package Index <https://pypi.org/project/scikit-learn-intelex/>`_,
 and in `Intel channel <https://anaconda.org/intel/scikit-learn-intelex>`_.

@@ -27,6 +27,7 @@ using the following commandline flag::
     from sklearnex import patch_sklearn
     patch_sklearn()
 
+
 For example::
 
     from sklearnex import patch_sklearn

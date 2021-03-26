@@ -1,7 +1,7 @@
 .. _contents:
 
 ########
-Contents
+Intel(R) Extension for Scikit-learn*
 ########
 .. toctree::
    :maxdepth: 2
@@ -11,3 +11,4 @@ Contents
    Supported Algorithms <algorithms>
    Get started <get_started>
    sklearnex Verbose <verbose>
+   GPU support <gpu>

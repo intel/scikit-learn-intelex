@@ -1,8 +1,8 @@
 .. _verbose:
 
-#############################
+############################################
 Intel(R) Extension for Scikit-learn* verbose
-#############################
+############################################
 
 To find out which implementation of the algorithm is currently used,
 set the environment variable.

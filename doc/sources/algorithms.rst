@@ -1,6 +1,6 @@
-##########
-Supperted algorithms
-##########
+####################
+Supported algorithms
+####################
 
 .. _sklearn_algorithms:
 
