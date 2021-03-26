@@ -1,23 +1,17 @@
-# daal4py - A Convenient Python API to the Intel(R) oneAPI Data Analytics Library
+# Intel(R) Extension for Scikit-learn*
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/21716/badge.svg)](https://scan.coverity.com/projects/daal4py)
-[![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/IntelPython/daal4py/discussions)
-[![PyPI Version](https://img.shields.io/pypi/v/daal4py)](https://pypi.org/project/daal4py/)
-[![Conda Version](https://img.shields.io/conda/vn/conda-forge/daal4py)](https://anaconda.org/conda-forge/daal4py)
+[![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/intel/scikit-learn-intelex/discussions)
 
+Intel(R) Extension for Scikit-learn speeds up scikit-learn beyond  by providing drop-in patching. Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library ([oneDAL](https://github.com/oneapi-src/oneDAL)) that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
 
-A simplified API to Intel(R) oneAPI Data Analytics Library that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.  Built to help provide an abstraction to Intel(R) oneAPI Data Analytics Library for either direct usage or integration into one's own framework and extending this beyond by providing drop-in paching for scikit-learn.
+⚠️Intel(R) Extension for Scikit-learn contains scikit-learn patching functionality originally available in [**daal4py**](/daal4py) package. All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only. Please use the package instead of daal4py.
 
-Running full scikit-learn test suite with daal4py optimization patches:
-
-- [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py) when applied to scikit-learn from PyPi
-- [![CircleCI](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py/tree/test-sklearn-master) when applied to build from master branch
+Running full the latest scikit-learn test suite with Intel(R) Extension for Scikit-learn: [![CircleCI](https://circleci.com/gh/intel/scikit-learn-intelex.svg?style=svg)](https://circleci.com/gh/intel/scikit-learn-intelex)
 
 ## 👀 Follow us on Medium
 
-We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis the help of daal4py. Here are our latest blogs:
+We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis the help of Intel(R) Extension for Scikit-learn. Here are our latest blogs:
 
-- [Intel Gives Scikit-Learn the Performance Boost Data Scientists Need](https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18)
 - [From Hours to Minutes: 600x Faster SVM](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)
 - [Improve the Performance of XGBoost and LightGBM Inference](https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e)
 - [Accelerate Kaggle Challenges Using Intel AI Analytics Toolkit](https://medium.com/intel-analytics-software/accelerate-kaggle-challenges-using-intel-ai-analytics-toolkit-beb148f66d5a)
@@ -26,39 +20,33 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 - [Accelerate K-Means Clustering](https://medium.com/intel-analytics-software/accelerate-k-means-clustering-6385088788a1)
 
 ## 🔗 Important links
-- [Documentation](https://intelpython.github.io/daal4py/)
-- [scikit-learn API and patching](https://intelpython.github.io/daal4py/sklearn.html#sklearn)
-- [Building from Sources](https://github.com/IntelPython/daal4py/blob/master/INSTALL.md)
+- [Documentation](https://intel.github.io/scikit-learn-intelex/)
+- [scikit-learn API and patching](https://intel.github.io/scikit-learn-intelex/)
+- [Building from Sources](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)
 - [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
 
 ## 💬 Support
 
 Report issues, ask questions, and provide suggestions using:
 
-- [GitHub Issues](https://github.com/IntelPython/daal4py/issues)
-- [GitHub Discussions](https://github.com/IntelPython/daal4py/discussions)
+- [GitHub Issues](https://github.com/intel/scikit-learn-intelex/issues)
+- [GitHub Discussions](https://github.com/intel/scikit-learn-intelex/discussions)
 - [Forum](https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python)
 
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
 
 # 🛠 Installation
-daal4py is available at the [Python Package Index](https://pypi.org/project/daal4py/),
-on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/daal4py)
-and in [Intel channel](https://anaconda.org/intel/daal4py).
+Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
+and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex).
 
 ```bash
-# PyPi
-pip install daal4py
+# PyPi (recommended by default)
+pip install scikit-learn-intelex 
 ```
 
 ```bash
-# Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
-conda install daal4py -c conda-forge
-```
-
-```bash
-# Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python)
-conda install daal4py -c intel
+# Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python users)
+conda install scikit-learn-intelex -c intel
 ```
 
 <details><summary>[Click to expand] ℹ️ Supported configurations </summary>
@@ -71,14 +59,6 @@ conda install daal4py -c intel
 |    **Windows**          |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU]  |  [CPU, GPU]|  |
 |    **OsX**              |    [CPU]       |  [CPU]         |    [CPU]      |    [CPU]      |
 
-#### 📦 Anaconda Cloud: Conda-Forge channel
-
-| OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
-| :-----------------------| :------------: | :------------: | :------------:| :------------:|
-|    **Linux**            |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
-|    **Windows**          |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
-|    **OsX**              |   ❌           |     ❌        |     ❌        |       ❌     |
-
 #### 📦 Anaconda Cloud: Intel channel
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
@@ -89,15 +69,14 @@ conda install daal4py -c intel
 
 </details>
 
-You can [build daal4py from sources](https://github.com/IntelPython/daal4py/blob/master/INSTALL.md) as well.
+You can [build the package from sources](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md) as well.
 
 # ⚡️ Get Started
-Accelerate scikit-learn with the core functionality of daal4py without changing the code.
 
 Intel CPU optimizations patching
 ```py
 import numpy as np
-from daal4py.sklearn import patch_sklearn
+from sklearnex import patch_sklearn
 patch_sklearn()
 
 from sklearn.cluster import DBSCAN
@@ -107,10 +86,10 @@ X = np.array([[1., 2.], [2., 2.], [2., 3.],
 clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 ```
 
-Intel CPU/GPU optimizations patching
+Intel GPU optimizations patching
 ```py
 import numpy as np
-from daal4py.sklearn import patch_sklearn
+from sklearnex import patch_sklearn
 from daal4py.oneapi import sycl_context
 patch_sklearn()
 
@@ -124,17 +103,14 @@ with sycl_context("gpu"):
 
 # 🚀 Scikit-learn patching
 
-| *Speedups of daal4py-powered Scikit-learn over the original Scikit-learn* |
+| Speedups of Intel(R) Extension for Scikit-learn over the original Scikit-learn |
 |:--:|
-| ![](https://github.com/IntelPython/daal4py/blob/master/doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
+| ![](https://github.com/intel/scikit-learn-intelex/blob/master/doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
 | *Technical details: float type: float64; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10)* |
 
-daal4py patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, daal4py fallbacks into stock Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/IntelPython/daal4py/issues).
+Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
 
-⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of daal4py-2021.1 supports scikit-learn 0.21.X,
-0.22.X, 0.23.X and 0.24.X.
-
-<details><summary>[Click to expand] 🔥 Applying the daal4py patch will impact the following existing scikit-learn algorithms: </summary>
+<details><summary>[Click to expand] 🔥 Applying the patching will impact the following existing scikit-learn algorithms: </summary>
 
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
@@ -156,23 +132,21 @@ daal4py patching affects performance of specific Scikit-learn functionality list
 |Other|**train_test_split**|All parameters are supported. | Only dense data is supported.|
 ||**assert_all_finite**|All parameters are supported. | Only dense data is supported. |
 ||**pairwise_distance**|With `metric`='cosine' and 'correlation'.| Only dense data is supported. |
-
-Scenarios that are only available in the `master` branch (not released yet):
-
-|Task|Functionality|Parameters support|Data support|
-|:---|:------------|:-----------------|:-----------|
-|Other|**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
+||**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
 
  </details>
 
-## 📜 scikit-learn verbose
+⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.2 supports scikit-learn 0.21.X,
+0.22.X, 0.23.X and 0.24.X.
 
-To find out which implementation of the algorithm is currently used (daal4py or stock Scikit-learn), set the environment variable:
-- On Linux and Mac OS: `export IDP_SKLEARN_VERBOSE=INFO`
-- On Windows: `set IDP_SKLEARN_VERBOSE=INFO`
+## 📜 Intel(R) Extension for Scikit-learn verbose
+
+To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), set the environment variable:
+- On Linux and Mac OS: `export SKLEARNEX_VERBOSE=INFO`
+- On Windows: `set SKLEARNEX_VERBOSE=INFO`
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used:
 - `INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver`
 - `INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver`
 
-[Read more in the documentation](https://intelpython.github.io/daal4py/sklearn.html#scikit-learn-verbose).
+[Read more in the documentation](https://intel.github.io/scikit-learn-intelex/).
