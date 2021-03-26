@@ -14,7 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-import sys
 import numpy as np
 
 from daal4py import _get__daal_link_version__ as dv
@@ -95,6 +94,7 @@ def make2d(X):
 
 
 def get_patch_message(s):
+    import sys
     if s == "daal":
         dev = None
         if 'daal4py.oneapi' in sys.modules:
