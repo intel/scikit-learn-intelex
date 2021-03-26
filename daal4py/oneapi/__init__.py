@@ -27,3 +27,4 @@ if "Windows" in platform.system():
     os.environ['PATH'] += os.pathsep + current_path
 
 from _oneapi import *
+from _oneapi import _get_sycl_ctxt, _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
