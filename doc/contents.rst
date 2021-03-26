@@ -9,5 +9,5 @@ Contents
 
    About Intel(R) Extension for Scikit-learn* <index>
    Supported Algorithms <algorithms>
-   Supported OS and Pythons <channels>
+   Get started <get_started>
    sklearnex Verbose <verbose>
