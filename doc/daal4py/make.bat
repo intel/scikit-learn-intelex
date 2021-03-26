@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=scikit-learn-intelex
+set SPHINXPROJ=daal4py
 
 if "%1" == "" goto help
 

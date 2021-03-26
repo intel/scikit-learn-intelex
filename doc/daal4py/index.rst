@@ -1,7 +1,7 @@
 .. _index:
 
 #####################################################
-Intel(R) Extension for Scikit-learn*
+Fast, Scalable and Easy Machine Learning With DAAL4PY
 #####################################################
 Daal4py makes your Machine Learning algorithms in Python lightning fast and easy to use. It provides
 highly configurable Machine Learning kernels, some of which support streaming input data and/or can

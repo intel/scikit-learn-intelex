@@ -19,14 +19,14 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Intel(R) Extension for Scikit-learn*'
+project = 'daal4py'
 copyright = '2021, Intel'
 author = 'Intel'
 
 # The short X.Y version
 version = '2021'
 # The full version, including alpha/beta/rc tags
-release = '2021.2'
+release = '2021.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -123,7 +123,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'sklearnexdoc'
+htmlhelp_basename = 'daal4pydoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -150,7 +150,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'scikit-learn-intelex.tex', 'Intel(R) Extension for Scikit-learn* Documentation',
+    (master_doc, 'daal4py.tex', 'daal4py Documentation',
      'Intel', 'manual'),
 ]
 
@@ -160,7 +160,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'scikit-learn-intelex', 'Intel(R) Extension for Scikit-learn* Documentation',
+    (master_doc, 'daal4py', 'daal4py Documentation',
      [author], 1)
 ]
 
@@ -171,8 +171,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'scikit-learn-intelex', 'Intel(R) Extension for Scikit-learn* Documentation',
-     author, 'scikit-learn-intelex', 'One line description of project.',
+    (master_doc, 'daal4py', 'daal4py Documentation',
+     author, 'daal4py', 'One line description of project.',
      'Miscellaneous'),
 ]
 
