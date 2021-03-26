@@ -1,8 +1,8 @@
 .. _contents:
 
-########
+####################################
 Intel(R) Extension for Scikit-learn*
-########
+####################################
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
