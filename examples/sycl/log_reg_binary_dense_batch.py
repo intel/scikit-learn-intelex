@@ -135,6 +135,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     assert result_classic.prediction.shape == (predict_data.shape[0],
                                                train_labels.shape[1])
 
+    # TODO: When LogisticRegression run2run instability will be fixed remove atol
     assert np.allclose(result_classic.prediction, result_cpu.prediction, atol=1e-5)
 
     return (train_result, result_classic, predict_labels)
