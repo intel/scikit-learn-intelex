@@ -4,7 +4,7 @@ Supported algorithms
 
 .. _sklearn_algorithms:
 
-Applying the monkey patch will impact the following existing scikit-learn
+Applying Intel(R) Extension for Scikit-learn* will impact the following existing scikit-learn
 algorithms:
 
 .. list-table::

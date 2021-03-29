@@ -59,28 +59,28 @@ You can find the :ref:`full patching map here <sklearn_algorithms>`.
 
 Follow us on Medium
 --------------------
-We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning)
+We publish blogs on Medium, so `follow us <https://medium.com/intel-analytics-software/tagged/machine-learning>`_
 to learn tips and tricks for more efficient data analysis the help of Intel(R) Extension for Scikit-learn.
 Here are our latest blogs:
 
-- [From Hours to Minutes: 600x Faster SVM](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)
-- [Improve the Performance of XGBoost and LightGBM Inference](https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e)
-- [Accelerate Kaggle Challenges Using Intel AI Analytics Toolkit](https://medium.com/intel-analytics-software/accelerate-kaggle-challenges-using-intel-ai-analytics-toolkit-beb148f66d5a)
-- [Accelerate Your scikit-learn Applications](https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e)
-- [Accelerate Linear Models for Machine Learning](https://medium.com/intel-analytics-software/accelerating-linear-models-for-machine-learning-5a75ff50a0fe)
-- [Accelerate K-Means Clustering](https://medium.com/intel-analytics-software/accelerate-k-means-clustering-6385088788a1)
+- `From Hours to Minutes: 600x Faster SVM <https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae>`_,
+- `Improve the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>`_,
+- `Accelerate Kaggle Challenges Using Intel AI Analytics Toolkit <https://medium.com/intel-analytics-software/accelerate-kaggle-challenges-using-intel-ai-analytics-toolkit-beb148f66d5a>`_,
+- `Accelerate Your scikit-learn Applications <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>`_,
+- `Accelerate Linear Models for Machine Learning <https://medium.com/intel-analytics-software/accelerating-linear-models-for-machine-learning-5a75ff50a0fe>`_,
+- `Accelerate K-Means Clustering <https://medium.com/intel-analytics-software/accelerate-k-means-clustering-6385088788a1>`_.
 
 Important links
 --------------------
-- [Building from Sources](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)
-- [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
+- `Building from Sources <https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md>`_,
+- `About Intel(R) oneAPI Data Analytics Library <https://github.com/oneapi-src/oneDAL>`_.
 
 Support
 --------------------
 Report issues, ask questions, and provide suggestions using:
 
-- [GitHub Issues](https://github.com/intel/scikit-learn-intelex/issues)
-- [GitHub Discussions](https://github.com/intel/scikit-learn-intelex/discussions)
-- [Forum](https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python)
+- `GitHub Issues <https://github.com/intel/scikit-learn-intelex/issues>`_,
+- `GitHub Discussions <https://github.com/intel/scikit-learn-intelex/discussions>`_,
+- `Forum <https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python>`_.
 
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
