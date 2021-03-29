@@ -50,6 +50,9 @@ import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
 import warnings
 
+import logging
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.WARNING)
+
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     import sklearn.linear_model._logistic as logistic_module
     _patched_log_reg_path_func_name = '_logistic_regression_path'
@@ -161,6 +164,8 @@ def enable(name=None, verbose=True, deprecation=True):
                                "    from sklearnex import patch_sklearn\n"
                                "    patch_sklearn()",
                                FutureWarning, "dispatcher.py", 151)
+    logging.warning('Reimport previously imported scikit-learn modules '
+                    'after patch_sklearn()')
     if verbose and deprecation and sys.stderr is not None:
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
@@ -171,13 +176,18 @@ def enable(name=None, verbose=True, deprecation=True):
             "(https://github.com/intel/scikit-learn-intelex)\n")
 
 
-def disable(name=None):
+def disable(name=None, verbose=True):
     if name is not None:
         do_unpatch(name)
     else:
         for key in _get_map_of_algorithms():
             do_unpatch(key)
         _get_map_of_algorithms.cache_clear()
+    if verbose and sys.stderr is not None:
+        sys.stderr.write(
+            "Intel(R) oneAPI Data Analytics Library solvers for scikit-learn are disabled\n")
+        logging.warning('Reimport previously imported scikit-learn modules '
+                        'after unpatch_sklearn()')
 
 
 def _patch_names():
