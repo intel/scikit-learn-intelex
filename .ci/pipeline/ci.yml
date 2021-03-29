@@ -57,6 +57,8 @@ jobs:
       make html
     displayName: 'Build scikit-learn-intelex documentation'
   - script: |
+      mkdir $(Build.ArtifactStagingDirectory)/html/daal4py
+      mkdir $(Build.ArtifactStagingDirectory)/html/sklearnex
       cp -R doc/daal4py/_build $(Build.ArtifactStagingDirectory)/html/daal4py
       cp -R doc/_build $(Build.ArtifactStagingDirectory)/html/sklearnex
     displayName: 'Copy build'
