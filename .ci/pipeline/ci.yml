@@ -59,13 +59,13 @@ jobs:
   - script: |
       mkdir $(Build.ArtifactStagingDirectory)/html/daal4py
       mkdir $(Build.ArtifactStagingDirectory)/html/sklearnex
-      cp -R doc/daal4py/_build $(Build.ArtifactStagingDirectory)/html/daal4py
-      cp -R doc/_build $(Build.ArtifactStagingDirectory)/html/sklearnex
+      cp -R doc/daal4py/_build $(Build.ArtifactStagingDirectory)/html_daal4py
+      cp -R doc/_build $(Build.ArtifactStagingDirectory)/html_sklearnex
     displayName: 'Copy build'
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'documentation'
-      targetPath: '$(Build.ArtifactStagingDirectory)/html'
+      targetPath: '$(Build.ArtifactStagingDirectory)/'
 
 - job: Linux_DPCPP
   pool:
