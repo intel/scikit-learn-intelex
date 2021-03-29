@@ -12,7 +12,7 @@ Deprecation Notice
 -------------------------------
 
 Scikit-learn patching functionality in daal4py was deprecated and moved to a separate
-package - [Intel(R) Extension for Scikit-learn*](https://github.com/intel/scikit-learn-intelex).
+package - `Intel(R) Extension for Scikit-learn* <https://github.com/intel/scikit-learn-intelex>`_.
 All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only.
 Please use the package instead of daal4py for the Scikit-learn acceleration.
 
