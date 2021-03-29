@@ -26,7 +26,7 @@ author = 'Intel'
 # The short X.Y version
 version = '2021'
 # The full version, including alpha/beta/rc tags
-release = '2021.2'
+release = '2021.2.1'
 
 
 # -- General configuration ---------------------------------------------------

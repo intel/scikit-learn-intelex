@@ -119,16 +119,25 @@ Or in the development mode::
     cd <checkout-dir>
     python setup_sklearnex.py develop --no-deps
 
+.. note::
+    The **develop** mode will not install the package but it will create a ``.egg-link`` in the deployment directory
+    back to the project source code directory. That way you can edit the source code and see the changes directly
+    without having to reinstall every time that you make a little change
 
 ⚠️ Keys ``--single-version-externally-managed`` and ``--no-deps`` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
 
+.. note::
+    --single-version-externally-managed is an option used for Python packages instructing the setuptools module
+    to create a Python package which can be easily managed by the host's package manager if needed
+
 **Building documentation for Intel(R) Extension for Scikit-learn**
-**Prerequisites for creating documentation**
+
+Prerequisites for creating documentation
 
 - sphinx
 - sphinx_rtd_theme
 
-**Building documentation**
+Building documentation
 
 1. ```cd doc && make html```
 2. The documentation will be in ```doc/_build/html```
