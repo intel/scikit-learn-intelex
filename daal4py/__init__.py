@@ -40,18 +40,3 @@ except ImportError as e:
             s + '\n\nActivating your conda environment or sourcing mpivars.'
             '[c]sh/psxevars.[c]sh may solve the issue.\n')
     raise
-
-import logging
-import warnings
-import os
-import sys
-logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
-try:
-    if logLevel is not None:
-        logging.basicConfig(
-            stream=sys.stdout,
-            format='%(levelname)s: %(message)s', level=logLevel.upper())
-except:
-    warnings.warn('Unknown level "{}" for logging.\n'
-                  'Please, use one of "CRITICAL", "ERROR", '
-                  '"WARNING", "INFO", "DEBUG".'.format(logLevel))

@@ -152,6 +152,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     y, expanded_class_weight = self._validate_y_class_weight(y)
     n_classes_ = self.n_classes_[0]
     self.n_features_ = X.shape[1]
+    self.n_features_in_ = X.shape[1]
 
     if expanded_class_weight is not None:
         if sample_weight is not None:
@@ -224,9 +225,9 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     self.daal_model_ = model
 
     # compute oob_score_
-    if self.oob_score:
-        self.estimators_ = self._estimators_
-        self._set_oob_score(X, y)
+    #if self.oob_score:
+    #    self.estimators_ = self._estimators_
+    #    self._set_oob_score(X, y)
 
     return self
 
@@ -240,6 +241,11 @@ def _daal_predict_classifier(self, X):
         fptype=X_fptype,
         resultsToEvaluate="computeClassLabels"
     )
+    if X.shape[1] != self.n_features_in_:
+        raise ValueError(
+            (f'X has {X.shape[1]} features, '
+             f'but RandomForestClassifier is expecting '
+             f'{self.n_features_in_} features as input'))
     dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
 
     pred = dfc_predictionResult.prediction
@@ -274,7 +280,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         sample_weight = check_sample_weight(sample_weight, X)
 
     daal_ready = self.warm_start is False and self.criterion == "gini" and \
-        self.ccp_alpha == 0.0 and not sp.issparse(X)
+        self.ccp_alpha == 0.0 and not sp.issparse(X) and self.oob_score is False
 
     if daal_ready:
         _supported_dtypes_ = [np.float32, np.float64]
@@ -305,8 +311,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
             "fit: " + get_patch_message("daal"))
         _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
 
-        if not hasattr(self, "estimators_"):
-            self.estimators_ = self._estimators_
+        self.estimators_ = self._estimators_
 
         # Decapsulate classes_ attributes
         self.n_classes_ = self.n_classes_[0]
@@ -320,6 +325,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
 
 
 def _daal_fit_regressor(self, X, y, sample_weight=None):
+    self.n_features_in_ = X.shape[1]
     self.n_features_ = X.shape[1]
     rs_ = check_random_state(self.random_state)
 
@@ -383,9 +389,9 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     self.daal_model_ = model
 
     # compute oob_score_
-    if self.oob_score:
-        self.estimators_ = self._estimators_
-        self._set_oob_score(X, y)
+    #if self.oob_score:
+    #    self.estimators_ = self._estimators_
+    #    self._set_oob_score(X, y)
 
     return self
 
@@ -401,7 +407,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
 
     daal_ready = self.warm_start is False and \
         self.criterion == "mse" and self.ccp_alpha == 0.0 and \
-        not sp.issparse(X)
+        not sp.issparse(X) and self.oob_score is False
 
     if daal_ready:
         _supported_dtypes_ = [np.double, np.single]
@@ -433,8 +439,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
             "fit: " + get_patch_message("daal"))
         _daal_fit_regressor(self, X, y, sample_weight=sample_weight)
 
-        if not hasattr(self, "estimators_"):
-            self.estimators_ = self._estimators_
+        self.estimators_ = self._estimators_
         return self
     logging.info(
         "sklearn.ensemble.RandomForestRegressor."
@@ -444,6 +449,11 @@ def _fit_regressor(self, X, y, sample_weight=None):
 
 
 def _daal_predict_regressor(self, X):
+    if X.shape[1] != self.n_features_in_:
+        raise ValueError(
+            (f'X has {X.shape[1]} features, '
+             f'but RandomForestRegressor is expecting '
+             f'{self.n_features_in_} features as input'))
     if not daal_check_version((2021, 'P', 200)):
         X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
@@ -645,22 +655,30 @@ class RandomForestClassifier(RandomForestClassifier_original):
         """
         # Temporary solution
         X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
+        if hasattr(self, 'n_features_in_'):
+            if X.shape[1] != self.n_features_in_:
+                raise ValueError(
+                    (f'X has {X.shape[1]} features, '
+                     f'but RandomForestClassifier is expecting '
+                     f'{self.n_features_in_} features as input'))
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
             "predict_proba: " + get_patch_message("sklearn"))
         return super(RandomForestClassifier, self).predict_proba(X)
 
-        # if (not hasattr(self, 'daal_model_') or
-        #        sp.issparse(X) or self.n_outputs_ != 1 or
-        #        not (X.dtype == np.float64 or X.dtype == np.float32)):
+        #X = check_array(X, accept_sparse=['csr', 'csc', 'coo'],
+        #                dtype=[np.float64, np.float32])
+        #if not hasattr(self, 'daal_model_') or \
+        #        sp.issparse(X) or self.n_outputs_ != 1 or \
+        #        not daal_check_version((2021, 'P', 200)):
         #    logging.info(
         #        "sklearn.ensemble.RandomForestClassifier."
         #        "predict_proba: " + get_patch_message("sklearn"))
         #    return super(RandomForestClassifier, self).predict_proba(X)
-        # logging.info(
-        #     "sklearn.ensemble.RandomForestClassifier."
-        #     "predict_proba: " + get_patch_message("daal"))
-        # return _daal_predict_proba(self, X)
+        #logging.info(
+        #    "sklearn.ensemble.RandomForestClassifier."
+        #    "predict_proba: " + get_patch_message("daal"))
+        #return _daal_predict_proba(self, X)
 
     @property
     def _estimators_(self):

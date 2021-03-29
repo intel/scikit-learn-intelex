@@ -69,6 +69,10 @@ def _daal4py_predict(self, X):
         fptype=_fptype,
         method='defaultDense'
     )
+    if self.n_features_in_ != X.shape[1]:
+        raise ValueError(
+            (f'X has {X.shape[1]} features, '
+             f'but Ridge is expecting {self.n_features_in_} features as input'))
     ridge_res = ridge_palg.compute(X, self.daal_model_)
 
     res = ridge_res.prediction
@@ -98,6 +102,7 @@ def _fit_ridge(self, X, y, sample_weight=None):
     """
     X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=[np.float64, np.float32],
                      multi_output=True, y_numeric=True)
+    self.n_features_in_ = X.shape[1]
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = True if X.shape[0] >= X.shape[1] else False
     if not self.solver == 'auto' or \

@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn._utils import daal_check_version
+from daal4py.sklearn._utils import daal_check_version, set_idp_sklearn_verbose
 from ..neighbors import KNeighborsRegressor as KNeighborsRegressor_daal4py
 from ..neighbors import NearestNeighbors as NearestNeighbors_daal4py
 from ..neighbors import KNeighborsClassifier as KNeighborsClassifier_daal4py
@@ -48,6 +48,7 @@ from functools import lru_cache
 import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
+import warnings
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     import sklearn.linear_model._logistic as logistic_module
@@ -136,7 +137,7 @@ def do_unpatch(name):
         raise ValueError("Has no patch for: " + name)
 
 
-def enable(name=None, verbose=True):
+def enable(name=None, verbose=True, deprecation=True):
     if LooseVersion(sklearn_version) < LooseVersion("0.21.0"):
         raise NotImplementedError(
             "daal4py patches apply for scikit-learn >= 0.21.0 only ...")
@@ -145,10 +146,29 @@ def enable(name=None, verbose=True):
     else:
         for key in _get_map_of_algorithms():
             do_patch(key)
-    if verbose and sys.stderr is not None:
+    if deprecation:
+        set_idp_sklearn_verbose()
+        warnings.warn_explicit("\nScikit-learn patching with daal4py is deprecated "
+                               "and will be removed in the future.\n"
+                               "Use Intel(R) Extension "
+                               "for Scikit-learn* module instead "
+                               "(pip install scikit-learn-intelex).\n"
+                               "To enable patching, please use one of the "
+                               "following options:\n"
+                               "1) From the command line:\n"
+                               "    python -m sklearnex <your_script>\n"
+                               "2) From your script:\n"
+                               "    from sklearnex import patch_sklearn\n"
+                               "    patch_sklearn()",
+                               FutureWarning, "dispatcher.py", 151)
+    if verbose and deprecation and sys.stderr is not None:
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
             "https://intelpython.github.io/daal4py/sklearn.html\n")
+    if verbose and not deprecation and sys.stderr is not None:
+        sys.stderr.write(
+            "Intel(R) Extension for Scikit-learn* enabled "
+            "(https://github.com/intel/scikit-learn-intelex)\n")
 
 
 def disable(name=None):

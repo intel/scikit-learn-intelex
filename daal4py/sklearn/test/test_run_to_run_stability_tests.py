@@ -318,7 +318,6 @@ TO_SKIP = [
     'RandomForestRegressor',  # will be fixed for next release
     'LinearRegression',  # Absolute diff is 1e-12, will be fixed for next release
     'Ridge',  # Absolute diff is 1e-12, will be fixed for next release
-    'SVC',  # Absolute diff is 1e-9, will be fixed for next release for predict
 ]
 
 
@@ -326,7 +325,7 @@ TO_SKIP = [
 def test_models(model_head):
     stable_algos = ['RandomForestClassifier', 'RandomForestRegressor',
                     'PCA', 'LinearRegression', 'Ridge', 'KNeighborsClassifier',
-                    'NearestNeighbors', 'KMeans']
+                    'NearestNeighbors', 'KMeans', 'ElasticNet', 'Lasso']
     if get_class_name(model_head['model']) in stable_algos \
             and daal_check_version((2021, 'P', 200)):
         try:

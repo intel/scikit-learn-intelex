@@ -262,9 +262,8 @@ class PCA(PCA_original):
 
         if X.shape[1] != self.n_features_:
             raise ValueError(
-                "The number of features of the input data, {}, is not "
-                "equal to the number of features of the training data, {}".format(
-                    X.shape[1], self.n_features_))
+                (f'X has {X.shape[1]} features, '
+                 f'but PCA is expecting {self.n_features_} features as input'))
 
         tr_res = daal4py.pca_transform(
             fptype=fpType

@@ -91,12 +91,12 @@ def _daal4py_predict(self, X):
         fptype=_fptype,
         method='defaultDense'
     )
-    try:
-        lr_res = lr_pred.compute(X, self.daal_model_)
-    except RuntimeError:
+    if X.shape[1] != self.n_features_in_:
         raise ValueError(
-            'Input data shape {} is inconsistent with the trained model'.format(X.shape))
-
+            (f'X has {X.shape[1]} features, '
+             f'but LinearRegression is expecting '
+             f'{self.n_features_in_} features as input'))
+    lr_res = lr_pred.compute(X, self.daal_model_)
     res = lr_res.prediction
     if res.shape[1] == 1 and self.coef_.ndim == 1:
         res = np.ravel(res)
