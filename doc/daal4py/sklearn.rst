@@ -134,6 +134,10 @@ algorithms:
      - pairwise_distance
      - With metric=``cosine`` and ``correlation``.
      - Only dense data is supported.
+   * - Other
+     - roc_auc_score
+     - Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported..
+     - No limitations.
 
 
 Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
