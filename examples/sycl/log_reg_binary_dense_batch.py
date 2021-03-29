@@ -135,7 +135,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     assert result_classic.prediction.shape == (predict_data.shape[0],
                                                train_labels.shape[1])
 
-    assert np.allclose(result_classic.prediction, result_cpu.prediction)
+    assert np.allclose(result_classic.prediction, result_cpu.prediction, atol=1e-5)
 
     return (train_result, result_classic, predict_labels)
 
