@@ -50,12 +50,12 @@ To undo the patch Scikit-learn with::
 
     sklearnex.unpatch_sklearn()
 
-Intel (R) Extension for Scikit-learn * does not patch all scikit-learn algorithms and parameters.
+Intel (R) Extension for Scikit-learn* does not patch all scikit-learn algorithms and parameters.
 You can find the :ref:`full patching map here <sklearn_algorithms>`.
 
 .. note::
     Intel(R) Extension for Scikit-learn* supports optimizations for the last four versions of scikit-learn.
-    The latest release of scikit-learn-intelex-2021.2.1 supports scikit-learn 0.21.X, 0.22.X, 0.23.X and 0.24.X.
+    The latest release of scikit-learn-intelex-2021.2.X supports scikit-learn 0.21.X, 0.22.X, 0.23.X and 0.24.X.
 
 Follow us on Medium
 --------------------
@@ -63,6 +63,7 @@ We publish blogs on Medium, so `follow us <https://medium.com/intel-analytics-so
 to learn tips and tricks for more efficient data analysis the help of Intel(R) Extension for Scikit-learn.
 Here are our latest blogs:
 
+- `Intel Gives Scikit-Learn the Performance Boost Data Scientists Need` <https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18>`_,
 - `From Hours to Minutes: 600x Faster SVM <https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae>`_,
 - `Improve the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>`_,
 - `Accelerate Kaggle Challenges Using Intel AI Analytics Toolkit <https://medium.com/intel-analytics-software/accelerate-kaggle-challenges-using-intel-ai-analytics-toolkit-beb148f66d5a>`_,

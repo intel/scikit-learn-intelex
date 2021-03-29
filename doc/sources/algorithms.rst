@@ -90,7 +90,5 @@ Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
 <https://github.com/intel/scikit-learn-intelex/blob/master/deselected_tests.yaml>`__.
 
-In particular the tests execute `check_estimator
-<https://scikit-learn.org/stable/modules/generated/sklearn.utils.estimator_checks.check_estimator.html>`__
-on all added and monkey-patched classes, which are discovered by means of
-introspection.
+Running full the latest scikit-learn test suite with Intel(R) Extension for Scikit-learn*: `**CircleCI**
+<https://circleci.com/gh/intel/scikit-learn-intelex>`_.

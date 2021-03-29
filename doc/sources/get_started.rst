@@ -67,19 +67,19 @@ Supported configurations
      - Python 3.8
      - Python 3.9
    * - Linux
-     - ❌
      - ✔️
-     - ❌
+     - ✔️
+     - ✔️
      - ❌
    * - Windows
-     - ❌
      - ✔️
-     - ❌
+     - ✔️
+     - ✔️
      - ❌
    * - OsX
-     - ❌
      - ✔️
-     - ❌
+     - ✔️
+     - ✔️
      - ❌
 
 .. note::

@@ -8,7 +8,7 @@ Intel(R) Extension for Scikit-learn*
    :caption: Contents:
 
    About Intel(R) Extension for Scikit-learn* <index>
-   Supported Algorithms <algorithms>
    Get started <get_started>
-   sklearnex Verbose <verbose>
+   Supported Algorithms <algorithms>
+   Intel(R) Extension for Scikit-learn* Verbose <verbose>
    GPU support <gpu>
