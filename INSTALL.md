@@ -12,25 +12,25 @@ To install the package:
 
 ```bash
 cd <checkout-dir>
-python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+python setup_sklearnex.py install
 ```
 
 To install the package in the development mode:
 
 ```bash
 cd <checkout-dir>
-python setup.py develop --no-deps
+python setup_sklearnex.py develop
 ```
 
 To install scikit-learn-intelex without the dependency on daal4py:
 
 ```bash
 cd <checkout-dir>
-python setup_sklearnex.py install
+python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
 ```
 ```bash
 cd <checkout-dir>
-python setup.py develop
+python setup.py develop --no-deps
 ```
 
 ⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
@@ -39,9 +39,7 @@ python setup.py develop
 ### Prerequisites for creating documentation
 * sphinx
 * sphinx_rtd_theme
-* daal4py
 
 ### Building documentation
-1. Install daal4py into your python environment
-2. ```cd doc && make html```
-3. The documentation will be in ```doc/_build/html```
+1. ```cd doc && make html```
+2. The documentation will be in ```doc/_build/html```

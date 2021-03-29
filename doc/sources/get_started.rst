@@ -89,14 +89,16 @@ Supported configurations
 Building from Sources
 ---------------------
 
-**Prerequisites**
-* Python version >= 3.6
+**Prerequisites**::
+
+    Python version >= 3.6
 
 **Configuring the build with environment variables**::
 
     SKLEARNEX_VERSION: sets package version
 
 **Building Intel(R) Extension for Scikit-learn**
+
 To install the package::
 
     cd <checkout-dir>
@@ -112,18 +114,21 @@ To install scikit-learn-intelex without the dependency on daal4py::
     cd <checkout-dir>
     python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
 
+Or in the development mode::
 
     cd <checkout-dir>
-    python setup.py develop --no-deps
+    python setup_sklearnex.py develop --no-deps
 
 
-⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
+⚠️ Keys ``--single-version-externally-managed`` and ``--no-deps`` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
 
 **Building documentation for Intel(R) Extension for Scikit-learn**
 **Prerequisites for creating documentation**
+
 - sphinx
 - sphinx_rtd_theme
 
 **Building documentation**
+
 1. ```cd doc && make html```
 2. The documentation will be in ```doc/_build/html```
