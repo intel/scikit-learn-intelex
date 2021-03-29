@@ -30,7 +30,7 @@ python setup_sklearnex.py install --single-version-externally-managed --record=r
 ```
 ```bash
 cd <checkout-dir>
-python setup.py develop --no-deps
+python setup_sklearnex.py develop --no-deps
 ```
 
 ⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
