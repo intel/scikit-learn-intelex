@@ -3,14 +3,14 @@
 #####################################################
 Intel(R) Extension for Scikit-learn*
 #####################################################
-Intel(R) Extension for Scikit-learn speeds up scikit-learn beyond by providing drop-in patching.
+Intel(R) Extension for Scikit-learn speeds up scikit-learn by providing drop-in patching.
 Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL)
 that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
 
 Designed for Data Scientists and Framework Designers
 ----------------------------------------------------
-Intel(R) Extension for Scikit-learn* was created to give data scientists the easiest way to get performance, 
-when using familiar Scikit-learn package.
+Intel(R) Extension for Scikit-learn* was created to give data scientists the easiest way to get a better performance
+while using the familiar scikit-learn package.
 
 Usage
 --------------------

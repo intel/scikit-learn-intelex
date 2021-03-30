@@ -122,7 +122,7 @@ To install scikit-learn-intelex without the dependency on daal4py in the develop
 .. note::
     The ``develop`` mode will not install the package but it will create a ``.egg-link`` in the deployment directory
     back to the project source code directory. That way you can edit the source code and see the changes
-    without having to reinstall package every time you make a small change.
+    without having to reinstall the package every time you make a small change.
 
 ⚠️ Keys ``--single-version-externally-managed`` and ``--no-deps`` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
 

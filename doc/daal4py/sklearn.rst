@@ -136,7 +136,7 @@ algorithms:
      - Only dense data is supported.
    * - Other
      - roc_auc_score
-     - Parameters ``average``, ``sample_weight``, ``max_fpr`` and ``multi_class`` are not supported..
+     - Parameters ``average``, ``sample_weight``, ``max_fpr`` and ``multi_class`` are not supported.
      - No limitations.
 
 

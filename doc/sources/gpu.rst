@@ -5,7 +5,7 @@ oneAPI and GPU support in Intel(R) Extension for Scikit-learn*
 ##############################################################
 
 daal4py is installed with Intel(R) Extension for Scikit-learn* and provides support of oneAPI concepts, such as context and queues, which means that
-algorithms can be executed on different devices, GPUs in particular. This is implemented via 'with sycl_context("xpu")'
+algorithms can be executed on different devices, GPUs in particular. This is implemented via ``with sycl_context("xpu")``
 blocks that redirect execution to a device of the selected type: GPU, CPU, or host.
 Same approach is implemented for Intel(R) Extension for Scikit-learn*, so scikit-learn programs can be
 executed on GPU devices as well.
