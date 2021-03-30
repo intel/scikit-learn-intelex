@@ -1,16 +1,14 @@
 .. _contents:
 
-########
-Contents
-########
+####################################
+Intel(R) Extension for Scikit-learn*
+####################################
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   About daal4py <index>
-   Data <data>
+   About Intel(R) Extension for Scikit-learn* <index>
+   Get started <get_started>
    Supported Algorithms <algorithms>
-   Distribution <scaling>
-   Streaming <streaming>
-   Examples <examples>
-   Scikit-Learn API <sklearn>
+   Intel(R) Extension for Scikit-learn* Verbose <verbose>
+   GPU support <gpu>
