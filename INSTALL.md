@@ -35,6 +35,13 @@ python setup_sklearnex.py develop --no-deps
 
 ⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
 
+⚠️ The `develop` mode will not install the package but it will create a `.egg-link` in the deployment directory 
+back to the project source code directory. That way you can edit the source code and see the changes 
+without having to reinstall package every time you make a small change.
+
+⚠️ `--single-version-externally-managed` is an option used for Python packages instructing the setuptools module 
+to create a Python package that can be easily managed by the package manager on the host.
+
 ## Building documentation for Intel(R) Extension for Scikit-learn
 ### Prerequisites for creating documentation
 * sphinx

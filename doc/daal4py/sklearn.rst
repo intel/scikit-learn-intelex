@@ -12,9 +12,9 @@ Deprecation Notice
 -------------------------------
 
 Scikit-learn patching functionality in daal4py was deprecated and moved to a separate
-package - `Intel(R) Extension for Scikit-learn* <https://github.com/intel/scikit-learn-intelex>`_.
-All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only.
-Please use the package instead of daal4py for the Scikit-learn acceleration.
+package, `Intel(R) Extension for Scikit-learn* <https://github.com/intel/scikit-learn-intelex>`_.
+All future patches will be available only in Intel(R) Extension for Scikit-learn*.
+Please use the scikit-learn-intelex package instead of daal4py for the scikit-learn acceleration.
 
 .. _sklearn_patches:
 
@@ -136,7 +136,7 @@ algorithms:
      - Only dense data is supported.
    * - Other
      - roc_auc_score
-     - Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported..
+     - Parameters ``average``, ``sample_weight``, ``max_fpr`` and ``multi_class`` are not supported..
      - No limitations.
 
 

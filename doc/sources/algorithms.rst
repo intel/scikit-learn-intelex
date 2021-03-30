@@ -86,7 +86,7 @@ algorithms:
      - Only dense data is supported.
    * - Other
      - roc_auc_score
-     - Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported..
+     - Parameters ``average``, ``sample_weight``, ``max_fpr`` and ``multi_class`` are not supported..
      - No limitations.
 
 
@@ -94,5 +94,5 @@ Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
 <https://github.com/intel/scikit-learn-intelex/blob/master/deselected_tests.yaml>`__.
 
-Running full the latest scikit-learn test suite with Intel(R) Extension for Scikit-learn*: `**CircleCI**
+Full latest Scikit-learn test suite results with Intel(R) Extension for Scikit-learn*: `CircleCI
 <https://circleci.com/gh/intel/scikit-learn-intelex>`_.

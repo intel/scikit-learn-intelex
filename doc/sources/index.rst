@@ -63,7 +63,7 @@ We publish blogs on Medium, so `follow us <https://medium.com/intel-analytics-so
 to learn tips and tricks for more efficient data analysis the help of Intel(R) Extension for Scikit-learn.
 Here are our latest blogs:
 
-- `Intel Gives Scikit-Learn the Performance Boost Data Scientists Need` <https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18>`_,
+- `Intel Gives Scikit-Learn the Performance Boost Data Scientists Need <https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18>`_,
 - `From Hours to Minutes: 600x Faster SVM <https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae>`_,
 - `Improve the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>`_,
 - `Accelerate Kaggle Challenges Using Intel AI Analytics Toolkit <https://medium.com/intel-analytics-software/accelerate-kaggle-challenges-using-intel-ai-analytics-toolkit-beb148f66d5a>`_,

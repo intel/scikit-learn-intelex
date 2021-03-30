@@ -175,7 +175,10 @@ man_pages = [
 texinfo_documents = [
     (master_doc, 'scikit-learn-intelex',
      'Intel(R) Extension for Scikit-learn* Documentation',
-     author, 'scikit-learn-intelex', 'One line description of project.',
+     author,
+     'scikit-learn-intelex',
+     'Intel(R) Extension for Scikit-learn speeds up scikit-learn '
+     'beyond by providing drop-in patching.',
      'Miscellaneous'),
 ]
 

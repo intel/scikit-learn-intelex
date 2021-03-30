@@ -114,21 +114,21 @@ To install scikit-learn-intelex without the dependency on daal4py::
     cd <checkout-dir>
     python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
 
-Or in the development mode::
+To install scikit-learn-intelex without the dependency on daal4py in the development mode::
 
     cd <checkout-dir>
     python setup_sklearnex.py develop --no-deps
 
 .. note::
-    The **develop** mode will not install the package but it will create a ``.egg-link`` in the deployment directory
-    back to the project source code directory. That way you can edit the source code and see the changes directly
-    without having to reinstall every time that you make a little change
+    The ``develop`` mode will not install the package but it will create a ``.egg-link`` in the deployment directory
+    back to the project source code directory. That way you can edit the source code and see the changes
+    without having to reinstall package every time you make a small change.
 
 ⚠️ Keys ``--single-version-externally-managed`` and ``--no-deps`` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
 
 .. note::
-    --single-version-externally-managed is an option used for Python packages instructing the setuptools module
-    to create a Python package which can be easily managed by the host's package manager if needed
+    ``--single-version-externally-managed`` is an option used for Python packages instructing the setuptools module
+    to create a Python package that can be easily managed by the package manager on the host
 
 **Building documentation for Intel(R) Extension for Scikit-learn**
 
