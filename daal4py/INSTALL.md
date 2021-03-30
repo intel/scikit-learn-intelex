@@ -119,5 +119,5 @@ python setup.py develop --no-deps
 
 ### Building documentation
 1. Install daal4py into your python environment
-2. ```cd doc && make html```
-3. The documentation will be in ```doc/_build/html```
+2. ```cd doc/daal4py && make html```
+3. The documentation will be in ```doc/daal4py/_build/html```
