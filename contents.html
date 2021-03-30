@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Contents &mdash; daal4py 2021.1 documentation</title>
+  <title>Intel(R) Extension for Scikit-learn* &mdash; Intel(R) Extension for Scikit-learn* 2021.2.1 documentation</title>
   
 
   
@@ -33,13 +33,14 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Fast, Scalable and Easy Machine Learning With DAAL4PY" href="index.html" /> 
+    <link rel="next" title="Intel(R) Extension for Scikit-learn*" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -53,7 +54,7 @@
           
 
           
-            <a href="#" class="icon icon-home"> daal4py
+            <a href="#" class="icon icon-home"> Intel(R) Extension for Scikit-learn*
           
 
           
@@ -90,13 +91,11 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="index.html">About daal4py</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">About Intel(R) Extension for Scikit-learn*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaling.html">Distribution</a></li>
-<li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sklearn.html">Scikit-Learn API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="verbose.html">Intel(R) Extension for Scikit-learn* Verbose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gpu.html">GPU support</a></li>
 </ul>
 
             
@@ -112,7 +111,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">daal4py</a>
+          <a href="#">Intel(R) Extension for Scikit-learn*</a>
         
       </nav>
 
@@ -145,7 +144,7 @@
     
       <li><a href="#" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Contents</li>
+      <li>Intel(R) Extension for Scikit-learn*</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -164,75 +163,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="contents">
-<span id="id1"></span><h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="intel-r-extension-for-scikit-learn">
+<span id="contents"></span><h1>Intel(R) Extension for Scikit-learn*<a class="headerlink" href="#intel-r-extension-for-scikit-learn" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="index.html">About daal4py</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">About Intel(R) Extension for Scikit-learn*</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="index.html#designed-for-data-scientists-and-framework-designers">Designed for Data Scientists and Framework Designers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#api-design-and-usage">API Design and usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#oneapi-and-gpu-support-in-daal4py">oneAPI and GPU support in daal4py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#daal4py-s-design">Daal4py’s Design</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#built-for-performance">Built for Performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#getting-daal4py">Getting daal4py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#supported-configurations">Supported configurations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#scikit-learn-api-and-patching">Scikit-Learn API and patching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#follow-us-on-medium">Follow us on Medium</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#important-links">Important links</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#support">Support</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data.html#numpy-arrays">Numpy Arrays</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#pandas-dataframes">Pandas DataFrames</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#scipy-sparse-csr-matrix">SciPy Sparse CSR Matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#csv-files">CSV Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#installation-from-distribution-channels">Installation from distribution channels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#supported-configurations">Supported configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#building-from-sources">Building from Sources</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#classification">Classification</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#regression">Regression</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#principal-component-analysis-pca">Principal Component Analysis (PCA)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#k-means-clustering">K-Means Clustering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#density-based-spatial-clustering-of-applications-with-noise">Density-Based Spatial Clustering of Applications with Noise</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#outlier-detection">Outlier Detection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#optimization-solvers">Optimization Solvers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#distances">Distances</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#expectation-maximization-em">Expectation-Maximization (EM)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#qr-decomposition">QR Decomposition</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#normalization">Normalization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#random-number-engines">Random Number Engines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#distributions">Distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#association-rules">Association Rules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#cholesky-decomposition">Cholesky Decomposition</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#correlation-and-variance-covariance-matrices">Correlation and Variance-Covariance Matrices</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#implicit-alternating-least-squares-implicit-als">Implicit Alternating Least Squares (implicit ALS)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#moments-of-low-order">Moments of Low Order</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#quantiles">Quantiles</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#singular-value-decomposition-svd">Singular Value Decomposition (SVD)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#sorting">Sorting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="algorithms.html#trees">Trees</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="scaling.html">Distribution</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#it-s-easy">It’s Easy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="streaming.html#supported-algorithms-and-examples">Supported Algorithms and Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#data-science-examples">Data Science examples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#general-usage">General usage</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="sklearn.html">Scikit-Learn API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sklearn.html#onedal-accelerated-scikit-learn">oneDAL accelerated scikit-learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sklearn.html#scikit-learn-verbose">scikit-learn verbose</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sklearn.html#scikit-learn-api">scikit-learn API</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="verbose.html">Intel(R) Extension for Scikit-learn* Verbose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gpu.html">GPU support</a></li>
 </ul>
 </div>
 </div>
@@ -243,7 +195,7 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="index.html" class="btn btn-neutral float-right" title="Fast, Scalable and Easy Machine Learning With DAAL4PY" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-right" title="Intel(R) Extension for Scikit-learn*" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

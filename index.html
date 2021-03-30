@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Fast, Scalable and Easy Machine Learning With DAAL4PY &mdash; daal4py 2021.1 documentation</title>
+  <title>Intel(R) Extension for Scikit-learn* &mdash; Intel(R) Extension for Scikit-learn* 2021.2.1 documentation</title>
   
 
   
@@ -33,14 +33,15 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Input Data" href="data.html" />
-    <link rel="prev" title="Contents" href="contents.html" /> 
+    <link rel="next" title="Getting Intel(R) Extension for Scikit-learn*" href="get_started.html" />
+    <link rel="prev" title="Intel(R) Extension for Scikit-learn*" href="contents.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -54,7 +55,7 @@
           
 
           
-            <a href="contents.html" class="icon icon-home"> daal4py
+            <a href="contents.html" class="icon icon-home"> Intel(R) Extension for Scikit-learn*
           
 
           
@@ -91,24 +92,18 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">About daal4py</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">About Intel(R) Extension for Scikit-learn*</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#designed-for-data-scientists-and-framework-designers">Designed for Data Scientists and Framework Designers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#api-design-and-usage">API Design and usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#oneapi-and-gpu-support-in-daal4py">oneAPI and GPU support in daal4py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#daal4py-s-design">Daal4py’s Design</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#built-for-performance">Built for Performance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#getting-daal4py">Getting daal4py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#supported-configurations">Supported configurations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scikit-learn-api-and-patching">Scikit-Learn API and patching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#follow-us-on-medium">Follow us on Medium</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#important-links">Important links</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#support">Support</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scaling.html">Distribution</a></li>
-<li class="toctree-l1"><a class="reference internal" href="streaming.html">Streaming</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sklearn.html">Scikit-Learn API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="verbose.html">Intel(R) Extension for Scikit-learn* Verbose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gpu.html">GPU support</a></li>
 </ul>
 
             
@@ -124,7 +119,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="contents.html">daal4py</a>
+          <a href="contents.html">Intel(R) Extension for Scikit-learn*</a>
         
       </nav>
 
@@ -157,7 +152,7 @@
     
       <li><a href="contents.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Fast, Scalable and Easy Machine Learning With DAAL4PY</li>
+      <li>Intel(R) Extension for Scikit-learn*</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -176,338 +171,94 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="fast-scalable-and-easy-machine-learning-with-daal4py">
-<span id="index"></span><h1>Fast, Scalable and Easy Machine Learning With DAAL4PY<a class="headerlink" href="#fast-scalable-and-easy-machine-learning-with-daal4py" title="Permalink to this headline">¶</a></h1>
-<p>Daal4py makes your Machine Learning algorithms in Python lightning fast and easy to use. It provides
-highly configurable Machine Learning kernels, some of which support streaming input data and/or can
-be easily and efficiently scaled out to clusters of workstations.  Internally it uses Intel(R)
-oneAPI Data Analytics Library to deliver the best performance.</p>
+  <div class="section" id="intel-r-extension-for-scikit-learn">
+<span id="index"></span><h1>Intel(R) Extension for Scikit-learn*<a class="headerlink" href="#intel-r-extension-for-scikit-learn" title="Permalink to this headline">¶</a></h1>
+<p>Intel(R) Extension for Scikit-learn speeds up scikit-learn by providing drop-in patching.
+Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL)
+that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.</p>
 <div class="section" id="designed-for-data-scientists-and-framework-designers">
 <h2>Designed for Data Scientists and Framework Designers<a class="headerlink" href="#designed-for-data-scientists-and-framework-designers" title="Permalink to this headline">¶</a></h2>
-<p>daal4py was created to give data scientists the easiest way to utilize Intel(R) oneAPI Data Analytics
-Library powerful machine learning building blocks directly in a high-productivity manner. A
-simplified API gives high-level abstractions to the user with minimal boilerplate, allowing for
-quick to write and easy to maintain code when utilizing Jupyter Notebooks. For scaling capabilities,
-daal4py also provides the ability to do distributed machine learning, giving a quick way to scale
-out. Its streaming mode provides a flexible mechanism for processing large amounts of data and/or
-non-contiguous input data.</p>
-<p>For framework designers, daal4py has been fashioned to be built under other frameworks from both an
-API and feature perspective.  The machine learning models split the training and inference classes,
-allowing the model to be exported and serialized if desired.  This design also gives the flexibility
-to work directly with the model and associated primitives, allowing one to customize the behavior of
-the model itself. The daal4py package can be built with customized algorithm loadouts, allowing for
-a smaller footprint of dependencies when necessary.</p>
+<p>Intel(R) Extension for Scikit-learn* was created to give data scientists the easiest way to get a better performance
+while using the familiar scikit-learn package.</p>
 </div>
-<div class="section" id="api-design-and-usage">
-<h2>API Design and usage<a class="headerlink" href="#api-design-and-usage" title="Permalink to this headline">¶</a></h2>
-<p>As an example of the type of API that would be used in a data science context,
-the linear regression workflow is showcased below:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">daal4py</span> <span class="k">as</span> <span class="nn">d4p</span>
-<span class="c1"># train, test, and target are Pandas dataframes</span>
-
-<span class="n">d4p_lm</span> <span class="o">=</span> <span class="n">d4p</span><span class="o">.</span><span class="n">linear_regression_training</span><span class="p">(</span><span class="n">interceptFlag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">lm_trained</span> <span class="o">=</span> <span class="n">d4p_lm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-<span class="n">lm_predictor_component</span> <span class="o">=</span> <span class="n">d4p</span><span class="o">.</span><span class="n">linear_regression_prediction</span><span class="p">()</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">lm_predictor_component</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">lm_trained</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Intel(R) Extension for Scikit-learn* dynamically patches scikit-learn estimators to use Intel(R) oneAPI Data Analytics Library
+as the underlying solver, while getting the same solution faster.</p>
+<ul>
+<li><p>It is possible to enable those patches without editing the code of a scikit-learn application by
+using the following commandline flag:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">sklearnex</span> <span class="n">my_application</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>In the example above, it can be seen that model is divided into training and
-prediction.  This gives flexibility when writing custom grid searches and custom
-functions that modify model behavior or use it as a parameter. Daal4py also
-allows for direct usage of NumPy arrays and pandas DataFrames instead of oneDAL
-NumericTables, which allow for better integration with the pandas/NumPy/SciPy stack.</p>
-<p>Daal4py machine learning algorithms are constructed with a rich set of
-parameters. Assuming we want to find the initial set of centroids for kmeans,
-we first create an algorithm and configure it for 10 clusters using the ‘PlusPlus’ method:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kmi</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">)</span>
+</li>
+<li><p>Or from your script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
+<span class="n">patch_sklearn</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Assuming we have all our data in a CSV file we can now call it:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">kmi</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s1">&#39;data.csv&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Our result will hold the computed centroids in the ‘centroids’ attribute:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">centroids</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The full example could look like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="kn">import</span> <span class="n">kmeans_init</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="s1">&#39;data.csv&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">centroids</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>One can even <a class="reference internal" href="scaling.html#distributed"><span class="std std-ref">run this on a cluster</span></a> by simply
-adding initializing/finalizing the network and adding a keyword-parameter:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="kn">import</span> <span class="n">daalinit</span><span class="p">,</span> <span class="n">daalfini</span><span class="p">,</span> <span class="n">kmeans_init</span>
-<span class="n">daalinit</span><span class="p">()</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">kmeans_init</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plusPlusDense&quot;</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">my_file</span><span class="p">)</span>
-<span class="n">daalfini</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Last but not least, daal4py allows <a class="reference internal" href="streaming.html#streaming"><span class="std std-ref">getting input data from streams</span></a>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py</span> <span class="kn">import</span> <span class="n">svd</span>
-<span class="n">algo</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">streaming</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">stream_or_filelist</span><span class="p">:</span>
-    <span class="n">algo</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">algo</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="oneapi-and-gpu-support-in-daal4py">
-<h2>oneAPI and GPU support in daal4py<a class="headerlink" href="#oneapi-and-gpu-support-in-daal4py" title="Permalink to this headline">¶</a></h2>
-<p>daal4py provides support of oneAPI concepts such as context and queues, which means that
-algorithms can be executed on different devices, GPUs in particular. This is implemented via ‘with sycl_context(“xpu”)’
-blocks that redirect execution to a device of the selected type: GPU, CPU, or host.
-Same approach is implemented for scikit-learn patching, so scikit-learn programs can be
-executed on GPU devices as well.</p>
-<p>To patch your code with Intel CPU/GPU optimizations:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">daal4py.sklearn</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
-<span class="kn">from</span> <span class="nn">daal4py.oneapi</span> <span class="kn">import</span> <span class="n">sycl_context</span>
+</li>
+</ul>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
 <span class="n">patch_sklearn</span><span class="p">()</span>
 
-<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">DBSCAN</span>
-
-<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">],</span>
-            <span class="p">[</span><span class="mf">8.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">],</span> <span class="p">[</span><span class="mf">8.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">],</span> <span class="p">[</span><span class="mf">25.</span><span class="p">,</span> <span class="mf">80.</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">sycl_context</span><span class="p">(</span><span class="s2">&quot;gpu&quot;</span><span class="p">):</span>
-   <span class="n">clustering</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+<span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kmeans.labels_ = </span><span class="si">{</span><span class="n">kmeans</span><span class="o">.</span><span class="n">labels_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pred = </span><span class="si">{</span><span class="n">pred</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kmeans.cluster_centers_ = </span><span class="si">{</span><span class="n">kmeans</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For execution on GPU, DPC++ compiler runtime and driver are required. Refer to <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html">DPC++ system
-requirements</a> for details.</p>
-<p>DPC++ compiler runtime can be installed either from PyPI or Anaconda:</p>
-<ul>
-<li><p>Install from PyPI:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">dpcpp</span><span class="o">-</span><span class="n">cpp</span><span class="o">-</span><span class="n">rt</span>
+<p>In the example above, you can see that the use of the original Scikit-learn
+has not changed. This behavior is achieved through drop-in patching.</p>
+<p>To undo the patch Scikit-learn with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sklearnex</span><span class="o">.</span><span class="n">unpatch_sklearn</span><span class="p">()</span>
 </pre></div>
 </div>
-</li>
-<li><p>Install from Anaconda:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">dpcpp_cpp_rt</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span>
-</pre></div>
+<p>Intel (R) Extension for Scikit-learn* does not patch all scikit-learn algorithms and parameters.
+You can find the <a class="reference internal" href="algorithms.html#sklearn-algorithms"><span class="std std-ref">full patching map here</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Intel(R) Extension for Scikit-learn* supports optimizations for the last four versions of scikit-learn.
+The latest release of scikit-learn-intelex-2021.2.X supports scikit-learn 0.21.X, 0.22.X, 0.23.X and 0.24.X.</p>
 </div>
-</li>
+</div>
+<div class="section" id="follow-us-on-medium">
+<h2>Follow us on Medium<a class="headerlink" href="#follow-us-on-medium" title="Permalink to this headline">¶</a></h2>
+<p>We publish blogs on Medium, so <a class="reference external" href="https://medium.com/intel-analytics-software/tagged/machine-learning">follow us</a>
+to learn tips and tricks for more efficient data analysis the help of Intel(R) Extension for Scikit-learn.
+Here are our latest blogs:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18">Intel Gives Scikit-Learn the Performance Boost Data Scientists Need</a>,</p></li>
+<li><p><a class="reference external" href="https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae">From Hours to Minutes: 600x Faster SVM</a>,</p></li>
+<li><p><a class="reference external" href="https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e">Improve the Performance of XGBoost and LightGBM Inference</a>,</p></li>
+<li><p><a class="reference external" href="https://medium.com/intel-analytics-software/accelerate-kaggle-challenges-using-intel-ai-analytics-toolkit-beb148f66d5a">Accelerate Kaggle Challenges Using Intel AI Analytics Toolkit</a>,</p></li>
+<li><p><a class="reference external" href="https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e">Accelerate Your scikit-learn Applications</a>,</p></li>
+<li><p><a class="reference external" href="https://medium.com/intel-analytics-software/accelerating-linear-models-for-machine-learning-5a75ff50a0fe">Accelerate Linear Models for Machine Learning</a>,</p></li>
+<li><p><a class="reference external" href="https://medium.com/intel-analytics-software/accelerate-k-means-clustering-6385088788a1">Accelerate K-Means Clustering</a>.</p></li>
 </ul>
 </div>
-<div class="section" id="daal4py-s-design">
-<h2>Daal4py’s Design<a class="headerlink" href="#daal4py-s-design" title="Permalink to this headline">¶</a></h2>
-<p>The design of daal4py utilizes several different technologies to deliver Intel(R) oneAPI Data
-Analytics Library performance in a flexible design to Data Scientists and Framework designers. The
-package uses Jinja templates to generate Cython-wrapped oneDAL C++ headers, with Cython as a bridge
-between the generated oneDAL code and the Python layer. This design allows for quicker development
-cycles and acts as a reference design to those looking to tailor their build of daal4py. Cython
-also allows for good Python behavior, both for compatibility to different frameworks and for
-pickling and serialization.</p>
-</div>
-<div class="section" id="built-for-performance">
-<h2>Built for Performance<a class="headerlink" href="#built-for-performance" title="Permalink to this headline">¶</a></h2>
-<p>Besides superior (e.g. close to native C++ Intel(R) oneAPI Data Analytics Library) performance on a
-single node, the distribution mechanics of daal4py provides excellent strong and weak scaling. It
-nicely handles distributing a fixed input size on increasing clusters sizes (strong scaling: orange)
-which addresses possible response time requirements. It also scales with growing input size (weak
-scaling: yellow) which is needed if the data no longer fits into memory of a single node.</p>
-<div class="figure align-default" id="id1">
-<img alt="_images/d4p-linreg-scale.jpg" src="_images/d4p-linreg-scale.jpg" />
-<p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed linear regression
-of 2.15 TB of data in 1.18 seconds and 68.66 GB of data in less than
-48 milliseconds.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
-<div class="figure align-default" id="id2">
-<img alt="_images/d4p-kmeans-scale.jpg" src="_images/d4p-kmeans-scale.jpg" />
-<p class="caption"><span class="caption-text">On a 32-node cluster (1280 cores) daal4py computed K-Means (10
-clusters) of 1.12 TB of data in 107.4 seconds and 35.76 GB of data
-in 4.8 seconds.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
-<p>Configuration: Intel(R) Xeon(R) Gold 6148 CPU &#64; 2.40GHz, EIST/Turbo on 2
-sockets, 20 cores per socket, 192 GB RAM, 16 nodes connected with Infiniband,
-Oracle Linux Server release 7.4, using 64-bit floating point numbers</p>
-</div>
-<div class="section" id="getting-daal4py">
-<h2>Getting daal4py<a class="headerlink" href="#getting-daal4py" title="Permalink to this headline">¶</a></h2>
-<p>daal4py is available at the <a class="reference external" href="https://pypi.org/project/daal4py/">Python Package Index</a>,
-on Anaconda Cloud in <a class="reference external" href="https://anaconda.org/conda-forge/daal4py">Conda Forge channel</a>
-and in <a class="reference external" href="https://anaconda.org/intel/daal4py">Intel channel</a>.
-Sources and build instructions are available in
-<a class="reference external" href="https://github.com/IntelPython/daal4py">daal4py repository</a>.</p>
-<ul>
-<li><p>Install from PyPI:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">daal4py</span>
-</pre></div>
-</div>
-</li>
-<li><p>Install from Anaconda Cloud: Conda-Forge channel:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">сonda</span> <span class="n">install</span> <span class="n">daal4py</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
-</pre></div>
-</div>
-</li>
-<li><p>Install from Anaconda Cloud: Intel channel:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">daal4py</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span>
-</pre></div>
-</div>
-</li>
+<div class="section" id="important-links">
+<h2>Important links<a class="headerlink" href="#important-links" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md">Building from Sources</a>,</p></li>
+<li><p><a class="reference external" href="https://github.com/oneapi-src/oneDAL">About Intel(R) oneAPI Data Analytics Library</a>.</p></li>
 </ul>
-<p>We recommend to use <strong>PyPi</strong>. If you are using Intel® Distribution for Python,
-we recommend using <strong>Anaconda Cloud: Intel channel</strong>.
-In other cases, use <strong>Anaconda Cloud: conda-forge channel</strong>.</p>
 </div>
-<div class="section" id="supported-configurations">
-<h2>Supported configurations<a class="headerlink" href="#supported-configurations" title="Permalink to this headline">¶</a></h2>
-<p><strong>PyPi channel</strong></p>
-<table class="colwidths-given docutils align-left">
-<colgroup>
-<col style="width: 44%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
-<th class="head"><p>Python 3.6</p></th>
-<th class="head"><p>Python 3.7</p></th>
-<th class="head"><p>Python 3.8</p></th>
-<th class="head"><p>Python 3.9</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Linux</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-</tr>
-<tr class="row-odd"><td><p>Windows</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-</tr>
-<tr class="row-even"><td><p>OsX</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>❌</p></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It supports Intel CPU and GPU except on OsX.</p>
-</div>
-<p><strong>Anaconda Cloud: Conda-Forge channel</strong></p>
-<table class="colwidths-given docutils align-left">
-<colgroup>
-<col style="width: 44%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
-<th class="head"><p>Python 3.6</p></th>
-<th class="head"><p>Python 3.7</p></th>
-<th class="head"><p>Python 3.8</p></th>
-<th class="head"><p>Python 3.9</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Linux</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-</tr>
-<tr class="row-odd"><td><p>Windows</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-</tr>
-<tr class="row-even"><td><p>OsX</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It supports Intel CPU and GPU except on OsX.
-Recommended for conda users by default.</p>
-</div>
-<p><strong>Anaconda Cloud: Intel channel</strong></p>
-<table class="colwidths-given docutils align-left">
-<colgroup>
-<col style="width: 44%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-<col style="width: 14%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
-<th class="head"><p>Python 3.6</p></th>
-<th class="head"><p>Python 3.7</p></th>
-<th class="head"><p>Python 3.8</p></th>
-<th class="head"><p>Python 3.9</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Linux</p></td>
-<td><p>❌</p></td>
-<td><p>✔️</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-odd"><td><p>Windows</p></td>
-<td><p>❌</p></td>
-<td><p>✔️</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-<tr class="row-even"><td><p>OsX</p></td>
-<td><p>❌</p></td>
-<td><p>✔️</p></td>
-<td><p>❌</p></td>
-<td><p>❌</p></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It supports Intel CPU and GPU except on OsX.
-Recommended for conda users who use other components from Intel(R) Distribution for Python.</p>
-</div>
-</div>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>All algorithms in daal4py work the same way:</p>
-<ol class="arabic simple">
-<li><p>Instantiate and parameterize</p></li>
-<li><p>Run/compute on input data</p></li>
-</ol>
-<p>The below tables list the accepted arguments. Those with no default (None) are
-required arguments. All other arguments with defaults are optional and can be
-provided as keyword arguments (like <code class="docutils literal notranslate"><span class="pre">optarg=77</span></code>).  Each algorithm returns a
-class-like object with properties as its result.</p>
-<p>For algorithms with training and prediction, simply extract the <code class="docutils literal notranslate"><span class="pre">model</span></code>
-property from the result returned by the training and pass it in as the (second)
-input argument.</p>
-<p>Note that all input objects and the result/model properties are native types,
-e.g. standard types (integer, float, Numpy arrays, Pandas DataFrames,
-…). Additionally, if you provide the name of a csv-file as an input argument
-daal4py will work on the entire file content.</p>
-</div>
-<div class="section" id="scikit-learn-api-and-patching">
-<h2>Scikit-Learn API and patching<a class="headerlink" href="#scikit-learn-api-and-patching" title="Permalink to this headline">¶</a></h2>
-<p>daal4py exposes some oneDAL solvers using a scikit-learn compatible API.</p>
-<p>daal4py can furthermore monkey-patch the <code class="docutils literal notranslate"><span class="pre">sklearn</span></code> package to use the DAAL
-solvers as drop-in replacement without any code change.</p>
-<p>Please refer to the section on <a class="reference internal" href="sklearn.html#sklearn"><span class="std std-ref">scikit-learn API and patching</span></a>
-for more details.</p>
+<div class="section" id="support">
+<h2>Support<a class="headerlink" href="#support" title="Permalink to this headline">¶</a></h2>
+<p>Report issues, ask questions, and provide suggestions using:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/intel/scikit-learn-intelex/issues">GitHub Issues</a>,</p></li>
+<li><p><a class="reference external" href="https://github.com/intel/scikit-learn-intelex/discussions">GitHub Discussions</a>,</p></li>
+<li><p><a class="reference external" href="https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python">Forum</a>.</p></li>
+</ul>
+<p>You may reach out to project maintainers privately at <a class="reference external" href="mailto:onedal&#46;maintainers&#37;&#52;&#48;intel&#46;com">onedal<span>&#46;</span>maintainers<span>&#64;</span>intel<span>&#46;</span>com</a></p>
 </div>
 </div>
 
@@ -517,8 +268,8 @@ for more details.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="data.html" class="btn btn-neutral float-right" title="Input Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="contents.html" class="btn btn-neutral float-left" title="Contents" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="get_started.html" class="btn btn-neutral float-right" title="Getting Intel(R) Extension for Scikit-learn*" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="contents.html" class="btn btn-neutral float-left" title="Intel(R) Extension for Scikit-learn*" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
