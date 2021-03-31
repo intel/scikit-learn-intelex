@@ -107,6 +107,8 @@ def get_patch_message(s):
             else:
                 raise ValueError(f"Unexpected device name {dev}."
                                  " Supported types are host, cpu and gpu")
+        else:
+            message += 'CPU'
 
     elif s == "sklearn":
         message = "fallback to original Scikit-learn"
