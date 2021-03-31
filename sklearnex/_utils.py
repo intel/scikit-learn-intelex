@@ -25,7 +25,7 @@ def set_sklearn_ex_verbose():
         if logLevel is not None:
             logging.basicConfig(
                 stream=sys.stdout,
-                format='%(levelname)s: %(message)s', level=logLevel.upper())
+                format='SKLEARNEX %(levelname)s: %(message)s', level=logLevel.upper())
     except Exception:
         warnings.warn('Unknown level "{}" for logging.\n'
                       'Please, use one of "CRITICAL", "ERROR", '
