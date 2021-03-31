@@ -129,7 +129,7 @@ Intel(R) Extension for Scikit-learn patching affects performance of specific Sci
 ||**DBSCAN**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2, `algorithm` =  `ball_tree` or `kd_tree`. | Only dense data is supported. |
 |Dimensionality reduction|**PCA**|All parameters except `svd_solver` != 'full'. | No limitations. |
 || **TSNE**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
-|Unsupervised|**NearestNeighbors**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` = 2. | Sparse data is not supported. |
+|Unsupervised|**NearestNeighbors**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
 |Other|**train_test_split**|All parameters are supported. | Only dense data is supported.|
 ||**assert_all_finite**|All parameters are supported. | Only dense data is supported. |
 ||**pairwise_distance**|With `metric`='cosine' and 'correlation'.| Only dense data is supported. |
