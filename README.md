@@ -126,7 +126,7 @@ Intel(R) Extension for Scikit-learn patching affects performance of specific Sci
 ||**ElasticNet**|All parameters except `sample_weight` != None. | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
 ||**Lasso**|All parameters except `sample_weight` != None. | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
 |Clustering|**KMeans**|All parameters except `precompute_distances` and `sample_weight` != None. | No limitations. |
-||**DBSCAN**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2, `algorithm` =  `ball_tree` or `kd_tree`. | Only dense data is supported. |
+||**DBSCAN**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2, `algorithm` != `brute` or `auto` . | Only dense data is supported. |
 |Dimensionality reduction|**PCA**|All parameters except `svd_solver` != 'full'. | No limitations. |
 || **TSNE**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
 |Unsupervised|**NearestNeighbors**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
