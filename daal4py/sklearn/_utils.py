@@ -100,13 +100,13 @@ def get_patch_message(s):
         if 'daal4py.oneapi' in sys.modules:
             from daal4py.oneapi import _get_device_name_sycl_ctxt
             dev = _get_device_name_sycl_ctxt()
-            if dev == 'cpu' or dev =='host':
+            if dev == 'cpu' or dev == 'host':
                 message += 'CPU'
             elif dev == 'gpu':
                 message += 'GPU'
             else:
                 raise ValueError(f"Unexpected device name {dev}."
-                                  " Supported types are host, cpu and gpu")
+                                 " Supported types are host, cpu and gpu")
 
     elif s == "sklearn":
         message = "fallback to original Scikit-learn"
