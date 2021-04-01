@@ -42,7 +42,7 @@ and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex).
 
 ```bash
 # PyPi (recommended by default)
-pip install scikit-learn-intelex 
+pip install scikit-learn-intelex
 ```
 
 ```bash
@@ -147,7 +147,7 @@ To find out which implementation of the algorithm is currently used (Intel(R) Ex
 - On Windows: `set SKLEARNEX_VERBOSE=INFO`
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used:
-- `INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver`
-- `INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver`
+- `SKLEARNEX INFO: sklearn.cluster.DBSCAN.fit: running accelerated version on CPU`
+- `SKLEARNEX INFO: sklearn.cluster.DBSCAN.fit: fallback to original Scikit-learn`
 
 [Read more in the documentation](https://intel.github.io/scikit-learn-intelex/).
