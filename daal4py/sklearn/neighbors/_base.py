@@ -93,12 +93,15 @@ def daal4py_fit(estimator, X, fptype):
         'k': estimator.n_neighbors,
         'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
         'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
-        'resultsToEvaluate': 'none' if estimator._y is None else 'computeClassLabels'
+        'resultsToEvaluate': 'none' if getattr(estimator, '_y', None) is None else 'computeClassLabels'
     }
     if hasattr(estimator, 'classes_'):
         params['nClasses'] = len(estimator.classes_)
 
-    labels = None if estimator._y is None else estimator._y.reshape(-1, 1)
+    if getattr(estimator, '_y', None) is None:
+        labels = None
+    else:
+        labels = estimator._y.reshape(-1, 1)
 
     method = parse_auto_method(
         estimator, estimator.algorithm,
@@ -167,7 +170,7 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None,
         'k': n_neighbors,
         'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
         'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
-        'resultsToEvaluate': 'none' if estimator._y is None else 'computeClassLabels'
+        'resultsToEvaluate': 'none' if getattr(estimator, '_y', None) is None else 'computeClassLabels'
     }
     if hasattr(estimator, 'classes_'):
         params['nClasses'] = len(estimator.classes_)
@@ -323,7 +326,6 @@ class NeighborsBase(BaseNeighborsBase):
             if not X_incorrect_type:
                 X, _ = validate_data(
                     self, X, accept_sparse='csr', dtype=[np.float64, np.float32])
-            self._y = None
 
         if not X_incorrect_type:
             self.n_samples_fit_ = X.shape[0]
