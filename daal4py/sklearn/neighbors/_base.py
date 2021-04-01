@@ -415,7 +415,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             if daal_model is not None or getattr(self, '_tree', 0) is None and \
                     self._fit_method == 'kd_tree':
                 if sklearn_check_version("0.24"):
-                    BaseNeighborsBase._fit(self, self._fit_X, self._y)
+                    BaseNeighborsBase._fit(self, self._fit_X, getattr(self, '_y', None))
                 else:
                     BaseNeighborsBase._fit(self, self._fit_X)
             result = super(KNeighborsMixin, self).kneighbors(
@@ -432,7 +432,7 @@ class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
         if daal_model is not None or getattr(self, '_tree', 0) is None and \
                 self._fit_method == 'kd_tree':
             if sklearn_check_version("0.24"):
-                BaseNeighborsBase._fit(self, self._fit_X, self._y)
+                BaseNeighborsBase._fit(self, self._fit_X, getattr(self, '_y', None))
             else:
                 BaseNeighborsBase._fit(self, self._fit_X)
         if sklearn_check_version("0.22"):
