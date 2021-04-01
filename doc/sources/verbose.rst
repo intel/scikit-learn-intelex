@@ -21,8 +21,8 @@ These print statements are only available for :ref:`scikit-learn algorithms with
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used::
 
-    INFO: sklearn.cluster.DBSCAN.fit: uses Intel(R) oneAPI Data Analytics Library solver
+    SKLEARNEX INFO: sklearn.cluster.DBSCAN.fit: running accelerated version on CPU
 
 ::
 
-    INFO: sklearn.cluster.DBSCAN.fit: uses original Scikit-learn solver
+    SKLEARNEX INFO: sklearn.cluster.DBSCAN.fit: fallback to original Scikit-learn

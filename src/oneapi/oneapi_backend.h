@@ -37,6 +37,8 @@ public:
     PySyclExecutionContext(const std::string & dev);
     ~PySyclExecutionContext();
 
+    void apply();
+
 private:
     daal::services::SyclExecutionContext * m_ctxt;
 };

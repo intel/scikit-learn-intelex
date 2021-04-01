@@ -27,10 +27,10 @@ def get_branch(s):
     if len(s) == 0:
         return 'NO INFO'
     for i in s:
-        if 'uses original Scikit-learn solver,' in i:
+        if 'failed to run accelerated version, fallback to original Scikit-learn' in i:
             return 'was in OPT, but go in Scikit'
     for i in s:
-        if 'uses Intel(R) oneAPI Data Analytics Library solver' in i:
+        if 'running accelerated version' in i:
             return 'OPT'
     return 'Scikit'
 
@@ -38,9 +38,9 @@ def get_branch(s):
 def run_parse(mas, result):
     name, dtype = mas[0].split()
     temp = []
-    INFO_POS = 6
+    INFO_POS = 16
     for i in range(1, len(mas)):
-        mas[i] = mas[i][INFO_POS:]  # remove 'INFO: '
+        mas[i] = mas[i][INFO_POS:]  # remove 'SKLEARNEX INFO: '
         if not mas[i].startswith('sklearn'):
             ind = name + ' ' + dtype + ' ' + mas[i]
             result[ind] = get_branch(temp)
@@ -66,7 +66,7 @@ def get_result_log():
     mas = []
     result = {}
     for i in process.decode().split('\n'):
-        if not i.startswith('INFO') and len(mas) != 0:
+        if not i.startswith('SKLEARNEX INFO') and len(mas) != 0:
             run_parse(mas, result)
             mas.clear()
             mas.append(i.strip())

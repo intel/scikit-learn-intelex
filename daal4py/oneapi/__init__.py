@@ -26,4 +26,5 @@ if "Windows" in platform.system():
         os.add_dll_directory(current_path)
     os.environ['PATH'] += os.pathsep + current_path
 
-from _oneapi import sycl_context, sycl_buffer, is_in_sycl_ctxt
+from _oneapi import *
+from _oneapi import _get_sycl_ctxt, _get_device_name_sycl_ctxt, _get_sycl_ctxt_params

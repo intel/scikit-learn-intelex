@@ -27,10 +27,10 @@ def get_branch(s):
     if len(s) == 0:
         return 'NO INFO'
     for i in s:
-        if 'uses original Scikit-learn solver,' in i:
+        if 'failed to run accelerated version, fallback to original Scikit-learn' in i:
             return 'was in OPT, but go in Scikit'
     for i in s:
-        if 'uses Intel(R) oneAPI Data Analytics Library solver' in i:
+        if 'running accelerated version' in i:
             return 'OPT'
     return 'Scikit'
 

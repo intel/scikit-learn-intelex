@@ -94,13 +94,26 @@ def make2d(X):
 
 
 def get_patch_message(s):
+    import sys
     if s == "daal":
-        message = "uses Intel(R) oneAPI Data Analytics Library solver"
+        message = "running accelerated version on "
+        if 'daal4py.oneapi' in sys.modules:
+            from daal4py.oneapi import _get_device_name_sycl_ctxt
+            dev = _get_device_name_sycl_ctxt()
+            if dev == 'cpu' or dev == 'host':
+                message += 'CPU'
+            elif dev == 'gpu':
+                message += 'GPU'
+            else:
+                raise ValueError(f"Unexpected device name {dev}."
+                                 " Supported types are host, cpu and gpu")
+        else:
+            message += 'CPU'
+
     elif s == "sklearn":
-        message = "uses original Scikit-learn solver"
+        message = "fallback to original Scikit-learn"
     elif s == "sklearn_after_daal":
-        message = "uses original Scikit-learn solver, " + \
-            "because the task was not solved with Intel(R) oneAPI Data Analytics Library"
+        message = "failed to run accelerated version, fallback to original Scikit-learn"
     else:
         raise ValueError(
             f"Invalid input - expected one of 'daal','sklearn',"
