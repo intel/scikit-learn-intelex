@@ -1,4 +1,4 @@
 Cython==0.29.22
 Jinja2==2.11.3
-numpy==1.20.1
+numpy==1.20.2
 clang-format==9.0.0

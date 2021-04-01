@@ -47,16 +47,25 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      cd doc/daal4py
+      make html
+    displayName: 'Build daal4py documentation'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
       cd doc
       make html
-    displayName: 'Build documentation'
+    displayName: 'Build scikit-learn-intelex documentation'
   - script: |
-      cp -R doc/_build $(Build.ArtifactStagingDirectory)/html
+      mkdir $(Build.ArtifactStagingDirectory)/html/daal4py
+      mkdir $(Build.ArtifactStagingDirectory)/html/sklearnex
+      cp -R doc/daal4py/_build $(Build.ArtifactStagingDirectory)/html_daal4py
+      cp -R doc/_build $(Build.ArtifactStagingDirectory)/html_sklearnex
     displayName: 'Copy build'
   - task: PublishPipelineArtifact@0
     inputs:
-      artifactName: 'daal4py-documentation'
-      targetPath: '$(Build.ArtifactStagingDirectory)/html'
+      artifactName: 'documentation'
+      targetPath: '$(Build.ArtifactStagingDirectory)/'
 
 - job: Linux_DPCPP
   pool:

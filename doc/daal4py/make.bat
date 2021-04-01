@@ -7,9 +7,9 @@ REM Command file for Sphinx documentation
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
 )
-set SOURCEDIR=sources
+set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=scikit-learn-intelex
+set SPHINXPROJ=daal4py
 
 if "%1" == "" goto help
 
