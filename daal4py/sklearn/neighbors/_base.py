@@ -93,12 +93,16 @@ def daal4py_fit(estimator, X, fptype):
         'k': estimator.n_neighbors,
         'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
         'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
-        'resultsToEvaluate': 'none' if estimator._y is None else 'computeClassLabels'
+        'resultsToEvaluate': 'none' if getattr(estimator, '_y', None) is None
+        else 'computeClassLabels'
     }
     if hasattr(estimator, 'classes_'):
         params['nClasses'] = len(estimator.classes_)
 
-    labels = None if estimator._y is None else estimator._y.reshape(-1, 1)
+    if getattr(estimator, '_y', None) is None:
+        labels = None
+    else:
+        labels = estimator._y.reshape(-1, 1)
 
     method = parse_auto_method(
         estimator, estimator.algorithm,
@@ -167,7 +171,8 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None,
         'k': n_neighbors,
         'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
         'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
-        'resultsToEvaluate': 'none' if estimator._y is None else 'computeClassLabels'
+        'resultsToEvaluate': 'none' if getattr(estimator, '_y', None) is None
+        else 'computeClassLabels'
     }
     if hasattr(estimator, 'classes_'):
         params['nClasses'] = len(estimator.classes_)
@@ -323,7 +328,6 @@ class NeighborsBase(BaseNeighborsBase):
             if not X_incorrect_type:
                 X, _ = validate_data(
                     self, X, accept_sparse='csr', dtype=[np.float64, np.float32])
-            self._y = None
 
         if not X_incorrect_type:
             self.n_samples_fit_ = X.shape[0]
@@ -411,7 +415,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
             if daal_model is not None or getattr(self, '_tree', 0) is None and \
                     self._fit_method == 'kd_tree':
                 if sklearn_check_version("0.24"):
-                    BaseNeighborsBase._fit(self, self._fit_X, self._y)
+                    BaseNeighborsBase._fit(self, self._fit_X, getattr(self, '_y', None))
                 else:
                     BaseNeighborsBase._fit(self, self._fit_X)
             result = super(KNeighborsMixin, self).kneighbors(
@@ -428,7 +432,7 @@ class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
         if daal_model is not None or getattr(self, '_tree', 0) is None and \
                 self._fit_method == 'kd_tree':
             if sklearn_check_version("0.24"):
-                BaseNeighborsBase._fit(self, self._fit_X, self._y)
+                BaseNeighborsBase._fit(self, self._fit_X, getattr(self, '_y', None))
             else:
                 BaseNeighborsBase._fit(self, self._fit_X)
         if sklearn_check_version("0.22"):
