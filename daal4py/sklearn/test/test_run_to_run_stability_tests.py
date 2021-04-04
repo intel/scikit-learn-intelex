@@ -302,32 +302,20 @@ MODELS_INFO = [
 ]
 
 TO_SKIP = [
-    'KNeighborsClassifier',  # problem with indeces in algorithm='brute'
-    'NearestNeighbors',  # problem with indeces in algorithm='brute'
     'TSNE',  # Absolute diff is 1e-10, potential problem in KNN,
              # will be fixed for next release. (UPD. KNN is fixed but there is a problem
              # with stability of stock sklearn. It is already stable in master, so, we
              # need to wait for the next sklearn release)
-    'KMeans',  # Absolute diff is 1e-8
-    'ElasticNet',  # Absolute diff is 1e-13
-    'Lasso',  # Absolute diff is 1e-13
-    'PCA',  # Absolute diff is 1e-15
     'LogisticRegression',  # Absolute diff is 1e-8, will be fixed for next release
     'LogisticRegressionCV',  # Absolute diff is 1e-10, will be fixed for next release
-    'RandomForestClassifier',  # will be fixed for next release
-    'RandomForestRegressor',  # will be fixed for next release
-    'LinearRegression',  # Absolute diff is 1e-12, will be fixed for next release
-    'Ridge',  # Absolute diff is 1e-12, will be fixed for next release
 ]
 
 
 @pytest.mark.parametrize('model_head', MODELS_INFO)
 def test_models(model_head):
-    stable_algos = ['RandomForestClassifier', 'RandomForestRegressor',
-                    'PCA', 'LinearRegression', 'Ridge', 'KNeighborsClassifier',
-                    'NearestNeighbors', 'KMeans', 'ElasticNet', 'Lasso']
+    stable_algos = []
     if get_class_name(model_head['model']) in stable_algos \
-            and daal_check_version((2021, 'P', 200)):
+            and daal_check_version((2021, 'P', 300)):
         try:
             TO_SKIP.remove(get_class_name(model_head['model']))
         except ValueError:
