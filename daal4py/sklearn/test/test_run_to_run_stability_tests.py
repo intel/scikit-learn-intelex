@@ -302,6 +302,10 @@ MODELS_INFO = [
 ]
 
 TO_SKIP = [
+    'TSNE',  # Absolute diff is 1e-10, potential problem in KNN,
+             # will be fixed for next release. (UPD. KNN is fixed but there is a problem
+             # with stability of stock sklearn. It is already stable in master, so, we
+             # need to wait for the next sklearn release)
     'LogisticRegression',  # Absolute diff is 1e-8, will be fixed for next release
     'LogisticRegressionCV',  # Absolute diff is 1e-10, will be fixed for next release
 ]
