@@ -4,13 +4,16 @@
 Intel(R) Extension for Scikit-learn*
 #####################################################
 Intel(R) Extension for Scikit-learn speeds up scikit-learn by providing drop-in patching.
-Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL)
+Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library
+(`oneDAL <https://github.com/oneapi-src/oneDAL>`_)
 that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
 
 Designed for Data Scientists and Framework Designers
 ----------------------------------------------------
 Intel(R) Extension for Scikit-learn* was created to give data scientists the easiest way to get a better performance
 while using the familiar scikit-learn package.
+
+Intel(R) Extension for Scikit-learn* depends on Intel(R) daal4py. You can learn more in `daal4py documentation <https://intelpython.github.io/daal4py>`_.
 
 Usage
 --------------------
@@ -75,6 +78,7 @@ Important links
 --------------------
 - `Building from Sources <https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md>`_,
 - `About Intel(R) oneAPI Data Analytics Library <https://github.com/oneapi-src/oneDAL>`_.
+- `About Intel(R) daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_.
 
 Support
 --------------------
@@ -85,3 +89,8 @@ Report issues, ask questions, and provide suggestions using:
 - `Forum <https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python>`_.
 
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
+
+Intel(R) oneAPI Base Toolkit
+----------------------------
+Intel(R) Extension for Scikit-learn* is part of the Intel(R) oneAPI Base Toolkit.
+You can find out more on the `official website <https://software.intel.com/content/www/us/en/develop/tools/oneapi/base-toolkit.html>`_.
