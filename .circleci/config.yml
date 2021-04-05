@@ -23,6 +23,12 @@ jobs:
             export NO_DIST=1
             python setup.py install --single-version-externally-managed --record=record.txt
       - run:
+          name: Building sklearnex
+          command: |
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
+      - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
           command: |
@@ -31,9 +37,9 @@ jobs:
             conda activate bld
             pip install -q scikit-learn
             conda list
-            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_sklearnex.tar.bz2 sklearnex skex
       - store_artifacts:
-          path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs.tar.bz2
+          path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_sklearnex.tar.bz2
 
   build_master:
     docker:
@@ -63,6 +69,12 @@ jobs:
             export NO_DIST=1
             python setup.py install --single-version-externally-managed --record=record.txt
       - run:
+          name: Building sklearnex
+          command: |
+            . ~/miniconda/etc/profile.d/conda.sh
+            conda activate bld
+            python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
+      - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
           command: |
@@ -73,9 +85,9 @@ jobs:
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
             conda list
-            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_master_pytest_logs_sklearnex.tar.bz2 sklearnex skex
       - store_artifacts:
-          path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
+          path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs_sklearnex.tar.bz2
 
 
 workflows:
