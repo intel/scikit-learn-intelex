@@ -8,6 +8,14 @@ Python interface to efficient Intel(R) oneAPI Data Analytics Library provided by
 to create scikit-learn compatible estimators, transformers, clusterers, etc. powered by oneDAL which
 are nearly as efficient as native programs.
 
+Deprecation Notice
+-------------------------------
+
+Scikit-learn patching functionality in daal4py was deprecated and moved to a separate
+package, `Intel(R) Extension for Scikit-learn* <https://github.com/intel/scikit-learn-intelex>`_.
+All future patches will be available only in Intel(R) Extension for Scikit-learn*.
+Please use the scikit-learn-intelex package instead of daal4py for the scikit-learn acceleration.
+
 .. _sklearn_patches:
 
 oneDAL accelerated scikit-learn
@@ -126,6 +134,10 @@ algorithms:
      - pairwise_distance
      - With metric=``cosine`` and ``correlation``.
      - Only dense data is supported.
+   * - Other
+     - roc_auc_score
+     - Parameters ``average``, ``sample_weight``, ``max_fpr`` and ``multi_class`` are not supported.
+     - No limitations.
 
 
 Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
