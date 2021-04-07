@@ -1,6 +1,5 @@
 Cython==0.29.22
 Jinja2==2.11.3
-numpy==1.19.2
 numpy==1.19 ; python_version < '3.9'
 numpy==1.19.2 ; python_version >= '3.9'
 clang-tools
