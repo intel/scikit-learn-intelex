@@ -89,8 +89,3 @@ Report issues, ask questions, and provide suggestions using:
 - `Forum <https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python>`_.
 
 You may reach out to project maintainers privately at onedal.maintainers@intel.com
-
-Intel(R) oneAPI Base Toolkit
-----------------------------
-Intel(R) Extension for Scikit-learn* is part of the Intel(R) oneAPI Base Toolkit.
-You can find out more on the `official website <https://software.intel.com/content/www/us/en/develop/tools/oneapi/base-toolkit.html>`_.
