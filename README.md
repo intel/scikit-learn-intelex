@@ -4,7 +4,8 @@
 
 Intel(R) Extension for Scikit-learn speeds up scikit-learn beyond  by providing drop-in patching. Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library ([oneDAL](https://github.com/oneapi-src/oneDAL)) that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
 
-⚠️Intel(R) Extension for Scikit-learn contains scikit-learn patching functionality originally available in [**daal4py**](/daal4py) package. All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only. Please use the package instead of daal4py.
+⚠️Intel(R) Extension for Scikit-learn contains scikit-learn patching functionality originally available in [**daal4py**](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py) package. All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only. Please use the package instead of daal4py.
+You can learn more about daal4py in [daal4py documentation](https://intelpython.github.io/daal4py).
 
 Running full the latest scikit-learn test suite with Intel(R) Extension for Scikit-learn: [![CircleCI](https://circleci.com/gh/intel/scikit-learn-intelex.svg?style=svg)](https://circleci.com/gh/intel/scikit-learn-intelex)
 
@@ -25,6 +26,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 - [scikit-learn API and patching](https://intel.github.io/scikit-learn-intelex/)
 - [Building from Sources](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)
 - [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
+- [About Intel(R) daal4py](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py)
 
 ## 💬 Support
 
