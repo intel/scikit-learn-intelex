@@ -26,7 +26,7 @@ algorithms:
      - Multi-output, sparse data and out-of-bag score are not supported.
    * - Classification
      - KNeighborsClassifier
-     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` = 2.
+     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` != 2.
      - Multi-output and sparse data is not supported.
    * - Classification
      - LogisticRegression
@@ -38,7 +38,7 @@ algorithms:
      - Multi-output, sparse data and out-of-bag score are not supported.
    * - Regression
      - KNeighborsRegressor
-     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` = 2.
+     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` != 2.
      - Multi-output and sparse data is not supported.
    * - Regression
      - LinearRegression
@@ -62,15 +62,19 @@ algorithms:
      - No limitations.
    * - Clustering
      - DBSCAN
-     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` = 2.
+     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` != 2, `algorithm` != `brute` or `auto`.
      - Only dense data is supported.
    * - Dimensionality reduction
      - PCA
      - All parameters except ``svd_solver`` != 'full'.
      - Sparse data is not supported.
+   * - Dimensionality reduction
+     - TSNE
+     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` != 2.
+     - Sparse data is not supported.
    * - Unsupervised
      - NearestNeighbors
-     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` = 2.
+     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` != 2.
      - Sparse data is not supported.
    * - Other
      - train_test_split
