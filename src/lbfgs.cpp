@@ -1,3 +1,18 @@
+/*******************************************************************************
+* Copyright 2014-2021 Intel Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
 
 #if 0
 // custom distribution class for logistic regression
@@ -20,7 +35,7 @@ public:
 
         LBFGSState(size_t table_size, size_t n_features, size_t _index_start=0)
             : m(table_size),
-              mc(0),      
+              mc(0),
               p(n_features),
               index_start(_index_start)
         {
@@ -34,7 +49,7 @@ public:
     //FIXME
     static void apply_initial_Hessian(T H0, S q)
     {
-#if 0
+    #if 0
         if isinstance(H0, np.ndarray):
             if H0.ndim == 2:
                 r = np.dot(H0, q)
@@ -46,12 +61,12 @@ public:
             r = H0 * q
         else:
             raise ValueError("Unexpected input H0")
-#endif // 0
+    #endif // 0
                 return r;
     }
-    
-    # TODO: implement ability to specify initial approximation to a Hessian, i.e. solve B.r = q
-    #       say for a sparse, or tridiagonal array
+
+    #TODO : implement ability to specify initial approximation to a Hessian, i.e.solve B.r = q
+    #say for a sparse, or tridiagonal array
 
     // FIXME
     static void two_loop_recursion(std::vector<fptype> grad,
@@ -65,13 +80,13 @@ public:
         /*
         Computes H.grad, where H is stored per L_BFGS scheme,
         in vector rho, matrices s and y of outer dimensions m each.
-    
+
         0 <= index start < table_size corresponds to position of the
         most recent vectore, and cyclic indexing is used.
-    
+
         That is y[(index_start + i) % table_size] corresponds to `y_{k-1-i}` in
         the algorithm
-    
+
         m - the number of actual data points stored in s, y and rho.
         */
         std::vector<fptype> q(grad);
@@ -85,17 +100,17 @@ public:
             np.multiply(alpha[i], y[i], out=buf)
             q -= buf
                 }
-    
+
         r = apply_initial_Hessian(H0, q)
-    
+
         for(size_t j=0; j<m; ++j) {
             i = (m - 1 - j + index_start) % table_size  # k - m + j == k - 1 - (m - 1 - j)
             beta = rho[i] * np.dot(y[i], r)
             np.multiply(alpha[i] - beta, s[i], out=buf)
             r += buf
         return r
-    
-    
+
+
     def compute_H_naive(grad, H0, m, index_start, rho, s, y):
             // Same as above, but straight-forward
         p = grad.shape[0]
@@ -110,8 +125,8 @@ public:
             H = np.dot(Vk.T, H).dot(Vk)
             H += rho[i] * np.kron(s[i], s[i]).reshape((p,p))
         return np.dot(H, grad)
-    
-    
+
+
     def choose_H0(s, y, m, index_start):
         if m > 0:
             i = index_start
@@ -119,12 +134,12 @@ public:
             return np.dot(s[i], yi) / np.dot(yi, yi)
         else:
             return 1.0
-    
-    
+
+
     def line_search(x, fv, fg, dx, func, args):
                 /*
                   Find step-length satisfying strong Wolfe's condition.
-    
+
         Input:
             x  : function argument
             fv : function value f(x)
@@ -132,7 +147,7 @@ public:
             dx : proposed change of argument
           func : function to evaluate f and f'
           args : additional arguments to pass to func
-    
+
         Output:
             stepLength : multiple of dx by which to move the argument
                 */
@@ -143,7 +158,7 @@ public:
         xn = x.copy()
         it = 0
         while stepLength > 0.0:
-            # can use axpy ?
+    #can use axpy ?
             np.multiply(stepLength, dx, out=xn)
             xn += x
             fv_new, fg_new = func(xn, *args)
@@ -154,8 +169,8 @@ public:
             stepLength *= 0.5 + 0.4 / it # 0.9, 0.7, 0.63, 0.6, ...
         assert stepLength > 0
         return stepLength # , fv_new, fg_new
-    
-    
+
+
     def deterministic_l_bfgs(func, x0, args=(), tol = 1e-8, l_bfgs_state=None, max_iters=100):
             /*
         Returns: (x_opt, f_val, f_grad, it, l_bfgs_state)
@@ -164,19 +179,19 @@ public:
         xc = np.asarray(x0)
         xn = np.empty_like(xc)
         p = x0.shape[0]
-    
+
         if not isinstance(l_bfgs_state, LBFGSState):
             l_bfgs_state = LBFGSState(10, p,
-                                      dtype = x0.dtype, 
+                                      dtype = x0.dtype,
                                       index_start=0)
-    
+
         m = l_bfgs_state.m
         mc = l_bfgs_state.mc
         index_start = l_bfgs_state.index_start
         s = l_bfgs_state.s
         y = l_bfgs_state.y
         rho = l_bfgs_state.rho
-    
+
         in_convergence_basin = False
         f_val, f_grad = func(xc, *args)
         it = 0
@@ -217,14 +232,14 @@ public:
             f_val = f_val_next
             xc = xn
             it += 1
-    
+
         l_bfgs_state.m = m
         l_bfgs_state.mc = mc
         l_bfgs_state.index_start = index_start
         l_bfgs_state.s = s
         l_bfgs_state.y = y
         l_bfgs_state.rho = rho
-    
+
         return (xc, f_val, f_grad, it, l_bfgs_state)
 
 #endif // 0
