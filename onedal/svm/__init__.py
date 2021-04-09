@@ -14,6 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-from .svm import SVC, SVR
+from .svm import SVC, SVR, SVMtype
 
-__all__ = ['SVC', 'SVR']
+__all__ = ['SVC', 'SVR', 'SVMtype']

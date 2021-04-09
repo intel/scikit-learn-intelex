@@ -20,8 +20,16 @@ from .validation import (
     _check_X_y,
     _check_array,
     _get_sample_weight,
-    _check_is_fitted
+    _check_is_fitted,
+    _check_classification_targets,
+    _type_of_target,
+    _is_integral_float,
+    _is_multilabel,
+    _check_n_features,
+    _num_features
 )
 
 __all__ = ['_column_or_1d', '_validate_targets', '_check_X_y',
-           '_check_array', '_get_sample_weight', '_check_is_fitted']
+           '_check_array', '_get_sample_weight', '_check_is_fitted',
+           '_check_classification_targets', '_type_of_target', '_is_integral_float',
+           '_is_multilabel', '_check_n_features', '_num_features']

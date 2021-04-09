@@ -16,6 +16,7 @@
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from abc import ABCMeta, abstractmethod
+from enum import Enum
 
 import numpy as np
 from scipy import sparse as sp
@@ -25,7 +26,8 @@ from onedal.common import (
     _check_array,
     _get_sample_weight,
     _check_is_fitted,
-    _column_or_1d
+    _column_or_1d,
+    _check_n_features
 )
 
 try:
@@ -46,12 +48,17 @@ except ImportError:
     )
 
 
+class SVMtype(Enum):
+    c_svc = 0
+    epsilon_svr = 1
+
+
 class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, C, epsilon, kernel='rbf', *, degree, gamma,
                  coef0, tol, shrinking, cache_size, max_iter, tau,
                  class_weight, decision_function_shape,
-                 break_ties, algorithm, **kwargs):
+                 break_ties, algorithm, svm_type=None, **kwargs):
 
         self.C = C
         self.epsilon = epsilon
@@ -68,6 +75,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self.decision_function_shape = decision_function_shape
         self.break_ties = break_ties
         self.algorithm = algorithm
+        self.svm_type = svm_type
 
     def _compute_gamma_sigma(self, gamma, X):
         if isinstance(gamma, str):
@@ -92,7 +100,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     def _validate_targets(self, y, dtype):
         self.class_weight_ = None
         self.classes_ = None
-        return _column_or_1d(y).astype(dtype, copy=False)
+        return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
     def _get_onedal_params(self):
         max_iter = 10000 if self.max_iter == -1 else self.max_iter
@@ -105,6 +113,13 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                            shift=self.coef0, degree=self.degree, tau=self.tau)
 
     def _fit(self, X, y, sample_weight, Computer):
+        if hasattr(self, 'decision_function_shape'):
+            if self.decision_function_shape not in ('ovr', 'ovo', None):
+                raise ValueError(
+                    f"decision_function_shape must be either 'ovr' or 'ovo', "
+                    f"got {self.decision_function_shape}."
+                )
+
         if y is None:
             if self._get_tags()['requires_y']:
                 raise ValueError(
@@ -116,7 +131,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             X, y, dtype=[np.float64, np.float32], force_all_finite=True)
         y = self._validate_targets(y, X.dtype)
         sample_weight = _get_sample_weight(
-            X, y, sample_weight, self.class_weight_, self.classes_)
+            X, y, sample_weight, self.class_weight_, self.classes_, self.svm_type)
 
         self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
         c_svm = Computer(self._get_onedal_params())
@@ -124,8 +139,14 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self.dual_coef_ = c_svm.get_coeffs().T
         self.support_vectors_ = c_svm.get_support_vectors()
         self.intercept_ = c_svm.get_biases().ravel()
-        self.support_ = c_svm.get_support_indices().ravel()
+        self.support_ = c_svm.get_support_indices().ravel().astype('int')
         self.n_features_in_ = X.shape[1]
+        self.shape_fit_ = X.shape
+
+        if getattr(self, 'classes_', None) is not None:
+            self._n_support = np.array([
+                np.sum(y[self.support_] == label) for label in self.classes_])
+        self._gamma = self._scale_
 
         self._onedal_model = c_svm.get_model()
         return self
@@ -142,9 +163,10 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         else:
             X = _check_array(
                 X, dtype=[np.float64, np.float32], force_all_finite=True)
+            _check_n_features(self, X, False)
             c_svm = Computer(self._get_onedal_params())
 
-            if self._onedal_model:
+            if hasattr(self, '_onedal_model'):
                 c_svm.infer(X, self._onedal_model)
             else:
                 c_svm.infer_builder(X, self.support_vectors_,
@@ -152,21 +174,43 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             y = c_svm.get_labels()
         return y
 
+    def _ovr_decision_function(self, predictions, confidences, n_classes):
+        n_samples = predictions.shape[0]
+        votes = np.zeros((n_samples, n_classes))
+        sum_of_confidences = np.zeros((n_samples, n_classes))
+
+        k = 0
+        for i in range(n_classes):
+            for j in range(i + 1, n_classes):
+                sum_of_confidences[:, i] -= confidences[:, k]
+                sum_of_confidences[:, j] += confidences[:, k]
+                votes[predictions[:, k] == 0, i] += 1
+                votes[predictions[:, k] == 1, j] += 1
+                k += 1
+
+        transformed_confidences = \
+            sum_of_confidences / (3 * (np.abs(sum_of_confidences) + 1))
+        return votes + transformed_confidences
+
     def _decision_function(self, X):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=True)
+        _check_n_features(self, X, False)
         c_svm = PyClassificationSvmInfer(self._get_onedal_params())
-        if self._onedal_model:
+        if hasattr(self, '_onedal_model'):
             c_svm.infer(X, self._onedal_model)
         else:
             c_svm.infer_builder(X, self.support_vectors_,
                                 self.dual_coef_.T, self.intercept_)
         decision_function = c_svm.get_decision_function()
         if len(self.classes_) == 2:
-            return decision_function.ravel()
-        else:
-            return decision_function
+            decision_function = decision_function.ravel()
+
+        if self.decision_function_shape == 'ovr' and len(self.classes_) > 2:
+            decision_function = self._ovr_decision_function(
+                decision_function < 0, -decision_function, len(self.classes_))
+        return decision_function
 
 
 class SVR(RegressorMixin, BaseSVM):
@@ -185,6 +229,7 @@ class SVR(RegressorMixin, BaseSVM):
                          max_iter=max_iter, tau=tau, class_weight=None,
                          decision_function_shape=None,
                          break_ties=False, algorithm=algorithm)
+        self.svm_type = SVMtype.epsilon_svr
 
     def fit(self, X, y, sample_weight=None):
         return super()._fit(X, y, sample_weight, PyRegressionSvmTrain)
@@ -210,6 +255,7 @@ class SVC(ClassifierMixin, BaseSVM):
                          max_iter=max_iter, tau=tau, class_weight=class_weight,
                          decision_function_shape=decision_function_shape,
                          break_ties=break_ties, algorithm=algorithm)
+        self.svm_type = SVMtype.c_svc
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -223,7 +269,7 @@ class SVC(ClassifierMixin, BaseSVM):
         y = super()._predict(X, PyClassificationSvmInfer)
         if len(self.classes_) == 2:
             y = y.ravel()
-        return self.classes_.take(np.asarray(y, dtype=np.intp))
+        return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
     def decision_function(self, X):
         return super()._decision_function(X)

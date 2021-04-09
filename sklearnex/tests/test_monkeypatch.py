@@ -15,7 +15,14 @@
 #===============================================================================
 
 import sklearnex
-from daal4py.sklearn import sklearn_patch_map
+from sklearnex import d4p_patch_map, sklearnex_patch_map
+
+
+def sklearn_patch_map():
+    patch_map = dict()
+    patch_map.update(d4p_patch_map())
+    patch_map.update(sklearnex_patch_map())
+    return patch_map
 
 
 def test_monkey_patching():
@@ -35,7 +42,8 @@ def test_monkey_patching():
         n = _classes[i][1]
 
         class_module = getattr(p, n).__module__
-        assert class_module.startswith('daal4py'), \
+        assert \
+            class_module.startswith('daal4py') or class_module.startswith('sklearnex'), \
             "Patching has completed with error."
 
     for i, _ in enumerate(_tokens):
@@ -69,7 +77,8 @@ def test_monkey_patching():
         sklearnex.patch_sklearn(t)
 
         class_module = getattr(p, n).__module__
-        assert class_module.startswith('daal4py'), \
+        assert \
+            class_module.startswith('daal4py') or class_module.startswith('sklearnex'), \
             "Patching has completed with error."
 
     sklearnex.unpatch_sklearn()

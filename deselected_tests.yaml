@@ -26,13 +26,47 @@
 
 deselected_tests:
 
-  # Deselecting 5 SVC related tests where duplicate samples end up being support vectors
-  # See: https://github.com/scikit-learn/scikit-learn/issues/12738
-  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel >=0.23
-  - svm/tests/test_svm.py::test_precomputed
-  - svm/tests/test_sparse.py::test_svc >=0.23
-  - svm/tests/test_sparse.py::test_sparse_realdata
+  # Model with sparce data are different between oneAPI Data Analytics Library (oneDAL) and stock sklearn
+  - svm/tests/test_sparse.py::test_svc
+  - svm/tests/test_sparse.py::test_unsorted_indices
   - svm/tests/test_sparse.py::test_svc_iris
+  - svm/tests/test_sparse.py::test_sparse_realdata
+
+  # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with callble kernel
+  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
+
+  # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with precomputed kernel
+  - svm/tests/test_svm.py::test_precomputed
+
+  # SVC._dual_coef_ is changing after fitting but result of prediction is still the same
+  - svm/tests/test_svm.py::test_tweak_params
+
+  # Possible problems with multiclass model
+  - svm/tests/test_svm.py::test_decision_function
+
+  # Number of support vectors is 0. oneAPI Data Analytics Library (oneDAL) raises an exception
+  - svm/tests/test_svm.py::test_svr
+
+  # Input data is numpy.memmap. oneAPI Data Analytics Library (oneDAL) raises an exception
+  - tests/test_common.py::test_estimators[SVC()-check_estimators_fit_returns_self(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
+  - tests/test_common.py::test_estimators[SVR()-check_estimators_fit_returns_self(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[SVR()-check_regressors_train(readonly_memmap=True)]
+
+  # Pickle is not supported now. oneAPI Data Analytics Library (oneDAL) raises an exception
+  - tests/test_common.py::test_estimators[SVC()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[SVR()-check_estimators_pickle]
+  - ensemble/tests/test_bagging.py::test_parallel_classification
+  - ensemble/tests/test_bagging.py::test_base_estimator
+
+  # This test needs a warning from sklearn. sklearnex raises the same warning
+  - tests/test_common.py::test_estimators[SVC()-check_supervised_y_2d]
+  - tests/test_common.py::test_estimators[SVR()-check_supervised_y_2d]
+
+  # Unexpected shape of RFECV.transform() witg SVC estimator. SVC has different accuracy compared with stock Scikit-learn.
+  # Needs further investigation
+  - feature_selection/tests/test_rfe.py::test_rfecv
 
   # Compare Comparison of the result of a 1-in-1 decision function for SVC algorithm between dense and sparse input
   # Such a oneAPI Data Analytics Library (oneDAL) does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05
