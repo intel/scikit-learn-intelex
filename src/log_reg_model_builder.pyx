@@ -14,9 +14,9 @@
 # limitations under the License.
 #===============================================================================
 
-# We expose DAAL's directly through Cython
+# We expose oneDAL's directly through Cython
 # The model builder object is retrieved through calling model_builder.
-# We will extend this once we know how other model builders will work in DAAL
+# We will extend this once we know how other model builders will work in oneDAL
 
 import numpy
 cimport numpy
@@ -46,7 +46,7 @@ cdef class logistic_regression_model_builder:
     def set_beta(self, beta, intercept):
         '''
         Concatenate beta and intercept, convert to daal4py model
-        
+
         :param beta: beta from scikit-learn model
         :param intercept: intercept from scikit-learn model
         '''
