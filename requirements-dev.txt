@@ -1,4 +1,4 @@
 Cython==0.29.22
 Jinja2==2.11.3
-numpy==1.20.2
-clang-format==9.0.0
+numpy==1.19.2 ; python_version <= '3.8'
+numpy==1.19.3 ; python_version >= '3.9'
