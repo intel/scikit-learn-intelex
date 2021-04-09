@@ -327,8 +327,7 @@ def getpyexts():
     ext = Extension('_daal4py',
                     [os.path.abspath('src/daal4py.cpp'),
                      os.path.abspath('build/daal4py_cpp.cpp'),
-                     os.path.abspath('build/daal4py_cy.pyx')]
-                    + DIST_CPPS,
+                     os.path.abspath('build/daal4py_cy.pyx')] + DIST_CPPS,
                     depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
                     include_dirs=include_dir_plat + [np.get_include()],
                     extra_compile_args=eca,
@@ -358,11 +357,11 @@ def getpyexts():
             exts.extend(cythonize(ext))
         ext = Extension('_oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
-                        depends=['src/oneapi/oneapi.h', 'src/oneapi/dpc_backend.h'],
+                        depends=['src/oneapi/oneapi.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca,
                         extra_link_args=ela,
-                        libraries=['dpc_backend'],
+                        libraries=['oneapi_backend'],
                         library_dirs=['daal4py/oneapi'],
                         runtime_library_dirs=runtime_library_dirs,
                         language='c++')

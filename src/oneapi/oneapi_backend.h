@@ -17,17 +17,12 @@
 #ifndef __ONEAPI_BACKEND_H_INCLUDED__
 #define __ONEAPI_BACKEND_H_INCLUDED__
 
-#include "daal_sycl.h"
-#ifndef DAAL_SYCL_INTERFACE
-    #include <type_traits>
-    #include <memory>
-static_assert(false, "DAAL_SYCL_INTERFACE not defined")
-#endif
+#include "daal.h"
 
 #ifdef _WIN32
-#define _ONEAPI_BACKEND_EXPORT __declspec(dllexport)
+    #define _ONEAPI_BACKEND_EXPORT __declspec(dllexport)
 #else
-#define _ONEAPI_BACKEND_EXPORT
+    #define _ONEAPI_BACKEND_EXPORT
 #endif
 
 class _ONEAPI_BACKEND_EXPORT PySyclExecutionContext
@@ -40,11 +35,11 @@ public:
     void apply();
 
 private:
-    daal::services::SyclExecutionContext * m_ctxt;
+    daal::services::internal::ExecutionContext * m_ctxt;
 };
 
 template <typename T>
-_ONEAPI_BACKEND_EXPORT void* to_device(T * ptr, int * shape);
+_ONEAPI_BACKEND_EXPORT void * to_device(T * ptr, int * shape);
 
 template <typename T>
 _ONEAPI_BACKEND_EXPORT void delete_device_data(void * ptr);
