@@ -341,8 +341,10 @@ def getpyexts():
     if dpcpp:
         if IS_LIN or IS_MAC:
             runtime_library_dirs = ["$ORIGIN/onedal"]
+            runtime_oneapi_dirs = ["$ORIGIN/daal4py/oneapi"]
         elif IS_WIN:
             runtime_library_dirs = []
+            runtime_oneapi_dirs = []
 
         ext = Extension('_onedal4py_dpc',
                         sources=[main_dpc_pyx],
@@ -365,7 +367,7 @@ def getpyexts():
                         extra_link_args=ela,
                         libraries=['oneapi_backend'],
                         library_dirs=['daal4py/oneapi'],
-                        runtime_library_dirs=["$ORIGIN/daal4py/oneapi"],
+                        runtime_library_dirs=runtime_oneapi_dirs,
                         language='c++')
 
         exts.extend(cythonize(ext))
