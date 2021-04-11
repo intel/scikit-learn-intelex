@@ -26,7 +26,6 @@ try:
         PyPolyKernelParams,
         PyPolyKernelCompute,
     )
-    raise ImportError
 except ImportError:
     from _onedal4py_host import (
         PyLinearKernelParams,

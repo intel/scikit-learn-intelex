@@ -237,7 +237,7 @@ def get_build_options():
             jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
         eca += ['-std=c++17', '-w', '/MD']
     elif not using_intel and IS_WIN:
-        eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/MD']
+        eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/MT', '/std:c++17']
     else:
         eca += ['-std=c++17', '-w', ]  # '-D_GLIBCXX_USE_CXX11_ABI=0']
 
@@ -353,7 +353,9 @@ def getpyexts():
                         library_dirs=['onedal'],
                         runtime_library_dirs=runtime_library_dirs,
                         language='c++')
-        if ONEDAL_VERSION >= ONEDAL_2021_3:
+        # dpcpp compiler on windouws support only MD key. oneDAL building with MT.
+        # delete when oneDAL move to MD key
+        if ONEDAL_VERSION >= ONEDAL_2021_3 and not IS_WIN:
             exts.extend(cythonize(ext))
         ext = Extension('_oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
@@ -363,7 +365,7 @@ def getpyexts():
                         extra_link_args=ela,
                         libraries=['oneapi_backend'],
                         library_dirs=['daal4py/oneapi'],
-                        runtime_library_dirs=runtime_library_dirs,
+                        runtime_library_dirs=["$ORIGIN/daal4py/oneapi"],
                         language='c++')
 
         exts.extend(cythonize(ext))
@@ -478,7 +480,9 @@ class install(orig_install.install):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            # dpcpp compiler on windouws support only MD key. oneDAL building with MT.
+            # delete when oneDAL move to MD key
+            if ONEDAL_VERSION >= ONEDAL_2021_3 and not IS_WIN:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -487,7 +491,9 @@ class develop(orig_develop.develop):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            # dpcpp compiler on windouws support only MD key. oneDAL building with MT.
+            # delete when oneDAL move to MD key
+            if ONEDAL_VERSION >= ONEDAL_2021_3 and not IS_WIN:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -496,7 +502,9 @@ class build(orig_build.build):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            # dpcpp compiler on windouws support only MD key. oneDAL building with MT.
+            # delete when oneDAL move to MD key
+            if ONEDAL_VERSION >= ONEDAL_2021_3 and not IS_WIN:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
