@@ -297,7 +297,7 @@ def getpyexts():
     ext = Extension('_onedal4py_host',
                     sources=[main_host_pyx] + cpp_files,
                     include_dirs=include_dir_plat + [np.get_include()],
-                    extra_compile_args=eca + ['\MT'],
+                    extra_compile_args=eca + ['/MT'],
                     extra_link_args=ela,
                     define_macros=[
                         ('NPY_NO_DEPRECATED_API',
@@ -323,7 +323,7 @@ def getpyexts():
                     libraries=libraries_plat,
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
-    exts.extend(cythonize(ext))
+    # exts.extend(cythonize(ext))
 
     if dpcpp:
         if IS_LIN or IS_MAC:
@@ -354,7 +354,7 @@ def getpyexts():
                         extra_link_args=ela,
                         define_macros=[
                             ('NPY_NO_DEPRECATED_API',
-                            'NPY_1_7_API_VERSION')
+                             'NPY_1_7_API_VERSION')
                         ],
                         libraries=['oneapi_backend'] + libraries_plat,
                         library_dirs=['daal4py/oneapi'] + ONEDAL_LIBDIRS,
@@ -409,7 +409,7 @@ def gen_pyx(odir):
                 no_dist=no_dist, no_stream=no_stream)
 
 
-gen_pyx(os.path.abspath('./build'))
+# gen_pyx(os.path.abspath('./build'))
 
 
 def build_oneapi_backend():
