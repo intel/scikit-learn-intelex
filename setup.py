@@ -323,7 +323,7 @@ def getpyexts():
                     libraries=libraries_plat,
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
-    # exts.extend(cythonize(ext))
+    exts.extend(cythonize(ext))
 
     if dpcpp:
         if IS_LIN or IS_MAC:
@@ -409,7 +409,7 @@ def gen_pyx(odir):
                 no_dist=no_dist, no_stream=no_stream)
 
 
-# gen_pyx(os.path.abspath('./build'))
+gen_pyx(os.path.abspath('./build'))
 
 
 def build_oneapi_backend():
