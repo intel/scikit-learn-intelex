@@ -2,4 +2,4 @@ Cython==0.29.22
 Jinja2==2.11.3
 numpy==1.19.2 ; python_version <= '3.8'
 numpy==1.19.3 ; python_version >= '3.9'
-dpctl==0.6.1 ; python_version == '3.7'
+dpctl==0.6.1 ; python_version == '3.7' and sys_platform != "darwin"
