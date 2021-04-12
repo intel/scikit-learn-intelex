@@ -177,19 +177,6 @@ else:
         MPI_LIBS = ['mpi']
     MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
 
-if dpcpp:
-    DPCPP_CFLAGS = ['-D_DPCPP_ -fno-builtin-memset' '-fsycl']
-    DPCPP_LIBS = ['OpenCL', 'sycl', 'onedal_sycl']
-    if IS_LIN:
-        DPCPP_LIBDIRS = [jp(dpcpp_root, 'linux', 'lib')]
-    elif IS_WIN:
-        DPCPP_LIBDIRS = [jp(dpcpp_root, 'windows', 'lib')]
-
-else:
-    DPCPP_CFLAGS = []
-    DPCPP_LIBS = []
-    DPCPP_LIBDIRS = []
-
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
@@ -237,7 +224,7 @@ def get_build_options():
             jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
         eca += ['-std=c++17', '-w', '/MD']
     elif not using_intel and IS_WIN:
-        eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/MT', '/std:c++17']
+        eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/std:c++17']
     else:
         eca += ['-std=c++17', '-w', ]  # '-D_GLIBCXX_USE_CXX11_ABI=0']
 
@@ -310,7 +297,7 @@ def getpyexts():
     ext = Extension('_onedal4py_host',
                     sources=[main_host_pyx] + cpp_files,
                     include_dirs=include_dir_plat + [np.get_include()],
-                    extra_compile_args=eca,
+                    extra_compile_args=eca + ['\MT'],
                     extra_link_args=ela,
                     define_macros=[
                         ('NPY_NO_DEPRECATED_API',
@@ -361,12 +348,16 @@ def getpyexts():
             exts.extend(cythonize(ext))
         ext = Extension('_oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
-                        depends=['src/oneapi/oneapi.h'],
+                        depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca,
                         extra_link_args=ela,
-                        libraries=['oneapi_backend'],
-                        library_dirs=['daal4py/oneapi'],
+                        define_macros=[
+                            ('NPY_NO_DEPRECATED_API',
+                            'NPY_1_7_API_VERSION')
+                        ],
+                        libraries=['oneapi_backend'] + libraries_plat,
+                        library_dirs=['daal4py/oneapi'] + ONEDAL_LIBDIRS,
                         runtime_library_dirs=runtime_oneapi_dirs,
                         language='c++')
 
