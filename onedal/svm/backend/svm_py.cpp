@@ -137,6 +137,7 @@ Result compute_impl(svm_params & params, data_type data_type_input, Args &&... a
 
     else
     {
+        printf("Method: %s; Kernel: %s\n", params.method.c_str(), params.kernel.c_str());
         throw std::invalid_argument("No correct parameters for onedal descriptor");
     }
 }
@@ -248,9 +249,9 @@ PyObject * svm_infer<Task>::get_decision_function()
     return _table_to_numpy(infer_result_.get_decision_function());
 }
 
-template class svm_train<svm::task::classification>;
-template class svm_infer<svm::task::classification>;
-template class svm_train<svm::task::regression>;
-template class svm_infer<svm::task::regression>;
+template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::classification>;
+template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::classification>;
+template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::regression>;
+template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::regression>;
 
 } // namespace oneapi::dal::python

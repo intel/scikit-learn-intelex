@@ -57,7 +57,8 @@ def custom_build_cmake_clib():
 
     cmake_generator = "-GNinja" if IS_WIN else ""
     python_include = get_python_inc()
-    python_lib = get_config_var('LIBDEST') if IS_WIN else get_config_var('LIBDIR')
+    win_python_path_lib = os.path.abspath(os.path.join(get_config_var('LIBDEST'), "..", "libs"))
+    python_lib = win_python_path_lib if IS_WIN else get_config_var('LIBDIR')
     numpy_include = np.get_include()
 
     cmake_args = [

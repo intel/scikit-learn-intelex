@@ -30,7 +30,7 @@ if(WIN32)
     set(CMAKE_C_COMPILER "clang-cl")
     message(STATUS "Resetting CXX compiler to: " ${CMAKE_CXX_COMPILER})
     message(STATUS "Resetting C compiler to: " ${CMAKE_C_COMPILER})
-    set(WARNING_FLAGS "-Winit-self -Wmissing-declarations -Wno-null-conversion")
+    set(WARNING_FLAGS "-Winit-self -Wmissing-declarations -Wno-null-conversion -Wno-unknown-pragmas -Wno-unused-const-variable")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} -Qstd=c++17 /EHsc /MD")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG")
@@ -97,12 +97,22 @@ target_link_libraries(${TARGET}
     PRIVATE ${PYTHON_LIBRARY}
 )
 
-# TODO: Get from findOneDAL
-set(ONEDAL_LIBRARIES "onedal_core")
-list(APPEND ONEDAL_LIBRARIES "onedal_thread")
-list(APPEND ONEDAL_LIBRARIES "onedal_dpc")
-target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
+target_link_directories(${TARGET}
+    PRIVATE ${PYTHON_LIBRARY}
+)
 
+# TODO: Get from findOneDAL
+if(WIN32)
+    set(ONEDAL_LIBRARIES "onedal_core_dll")
+    list(APPEND ONEDAL_LIBRARIES "onedal_dpc_dll")
+    target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
+
+else()
+    set(ONEDAL_LIBRARIES "onedal_core")
+    list(APPEND ONEDAL_LIBRARIES "onedal_thread")
+    list(APPEND ONEDAL_LIBRARIES "onedal_dpc")
+    target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
+endif()
 
 if(DPCTL_ENABLE)
     target_include_directories(${TARGET} PUBLIC ${DPCTL_INCLUDE_DIR})
@@ -120,4 +130,6 @@ endif()
 install(
   TARGETS ${TARGET}
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}
 )

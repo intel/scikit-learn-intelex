@@ -18,7 +18,11 @@
 
 #ifdef _WIN32
     #define NOMINMAX
+    #define ONEDAL_BACKEND_EXPORT __declspec(dllexport)
+#else
+    #define ONEDAL_BACKEND_EXPORT
 #endif
+
 #include <string>
 #include <cinttypes>
 #include "oneapi/dal/common.hpp"

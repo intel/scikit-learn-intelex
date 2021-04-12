@@ -208,6 +208,21 @@ def get_daal_type_defines():
     return [(d, 'double') for d in daal_type_defines]
 
 
+def get_libs(iface='daal'):
+    lib_suffix = get_lib_suffix()
+
+    if IS_WIN:
+        major_version = get_win_major_version()
+        libraries_plat = [f'{lib_suffix}_core_dll{major_version}']
+        onedal_lib =  [f'onedal_dll{major_version}']
+    else:
+        libraries_plat = [f'{lib_suffix}_core', f'{lib_suffix}_thread']
+        onedal_lib =  [f'onedal']
+    if iface == 'onedal':
+        libraries_plat += onedal_lib
+    return libraries_plat
+
+
 def get_build_options():
     include_dir_plat = [os.path.abspath(
         './src'), os.path.abspath('./onedal'), dal_root + '/include', ]
@@ -232,14 +247,6 @@ def get_build_options():
     eca += get_sdl_cflags()
     ela += get_sdl_ldflags()
 
-    lib_suffix = get_lib_suffix()
-
-    if IS_WIN:
-        major_version = get_win_major_version()
-        libraries_plat = [f'{lib_suffix}_core_dll{major_version}']
-    else:
-        libraries_plat = [f'{lib_suffix}_core', f'{lib_suffix}_thread']
-
     if IS_MAC:
         eca.append('-stdlib=libc++')
         ela.append('-stdlib=libc++')
@@ -253,7 +260,7 @@ def get_build_options():
     if IS_LIN:
         ela.append("-fPIC")
         ela.append("-Wl,-rpath,$ORIGIN/../..")
-    return eca, ela, include_dir_plat, libraries_plat
+    return eca, ela, include_dir_plat
 
 
 def get_sources_onedal():
@@ -287,28 +294,24 @@ def get_sources_onedal():
 
 
 def getpyexts():
-    eca, ela, include_dir_plat, libraries_plat = get_build_options()
-
-    onedal_libraries = libraries_plat.copy()
-    onedal_libraries.extend(['onedal'])
+    eca, ela, include_dir_plat = get_build_options()
+    onedal_libraries_plat = get_libs("onedal")
+    libraries_plat = get_libs("daal")
     cpp_files, main_host_pyx, main_dpc_pyx = get_sources_onedal()
 
     exts = []
 
-    onedal_eca = eca.copy()
-    if IS_WIN:
-        onedal_eca = onedal_eca + ['/MT']
     ext = Extension('_onedal4py_host',
                     sources=[main_host_pyx] + cpp_files,
                     include_dirs=include_dir_plat + [np.get_include()],
-                    extra_compile_args=onedal_eca,
+                    extra_compile_args=eca,
                     extra_link_args=ela,
                     define_macros=[
                         ('NPY_NO_DEPRECATED_API',
                          'NPY_1_7_API_VERSION'),
                         ('ONEDAL_VERSION', ONEDAL_VERSION),
                     ],
-                    libraries=onedal_libraries,
+                    libraries=onedal_libraries_plat,
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
 
@@ -327,7 +330,7 @@ def getpyexts():
                     libraries=libraries_plat,
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
-    exts.extend(cythonize(ext))
+    # exts.extend(cythonize(ext))
 
     if dpcpp:
         if IS_LIN or IS_MAC:
@@ -339,16 +342,19 @@ def getpyexts():
 
         ext = Extension('_onedal4py_dpc',
                         sources=[main_dpc_pyx],
-                        include_dirs=include_dir_plat,
+                        include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca,
-                        extra_link_args=eca,
-                        libraries=['dpc_backend'],
-                        library_dirs=['onedal'],
+                        extra_link_args=ela,
+                        define_macros=[
+                            ('NPY_NO_DEPRECATED_API',
+                             'NPY_1_7_API_VERSION')
+                        ],
+                        libraries=['dpc_backend'] + onedal_libraries_plat,
+                        library_dirs=['onedal'] + ONEDAL_LIBDIRS,
                         runtime_library_dirs=runtime_library_dirs,
                         language='c++')
-        # dpcpp compiler on windouws support only MD key. oneDAL building with MT.
-        # delete when oneDAL move to MD key
-        if ONEDAL_VERSION >= ONEDAL_2021_3 and not IS_WIN:
+
+        if ONEDAL_VERSION >= ONEDAL_2021_3:
             exts.extend(cythonize(ext))
         ext = Extension('_oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
@@ -413,14 +419,15 @@ def gen_pyx(odir):
                 no_dist=no_dist, no_stream=no_stream)
 
 
-gen_pyx(os.path.abspath('./build'))
+# gen_pyx(os.path.abspath('./build'))
 
 
 def build_oneapi_backend():
     import shutil
     import subprocess
 
-    eca, ela, include_dir_plat, libraries_plat = get_build_options()
+    eca, ela, include_dir_plat = get_build_options()
+    libraries_plat = get_libs('daal')
     libraries = libraries_plat + ['OpenCL', 'onedal_sycl']
     include_dir_plat = ['-I' + incdir for incdir in include_dir_plat]
     library_dir_plat = ['-L' + libdir for libdir in ONEDAL_LIBDIRS]
@@ -476,10 +483,8 @@ def distutils_dir_name(dname):
 class install(orig_install.install):
     def run(self):
         if dpcpp:
-            build_oneapi_backend()
-            # dpcpp compiler on windouws support only MD key. oneDAL building with MT.
-            # delete when oneDAL move to MD key
-            if ONEDAL_VERSION >= ONEDAL_2021_3 and not IS_WIN:
+            # build_oneapi_backend()
+            if ONEDAL_VERSION >= ONEDAL_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -487,10 +492,8 @@ class install(orig_install.install):
 class develop(orig_develop.develop):
     def run(self):
         if dpcpp:
-            build_oneapi_backend()
-            # dpcpp compiler on windouws support only MD key. oneDAL building with MT.
-            # delete when oneDAL move to MD key
-            if ONEDAL_VERSION >= ONEDAL_2021_3 and not IS_WIN:
+            # build_oneapi_backend()
+            if ONEDAL_VERSION >= ONEDAL_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -498,10 +501,8 @@ class develop(orig_develop.develop):
 class build(orig_build.build):
     def run(self):
         if dpcpp:
-            build_oneapi_backend()
-            # dpcpp compiler on windouws support only MD key. oneDAL building with MT.
-            # delete when oneDAL move to MD key
-            if ONEDAL_VERSION >= ONEDAL_2021_3 and not IS_WIN:
+            # build_oneapi_backend()
+            if ONEDAL_VERSION >= ONEDAL_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 

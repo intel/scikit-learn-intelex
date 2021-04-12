@@ -16,10 +16,6 @@
 
 #pragma once
 
-#ifdef _WIN32
-    #define NOMINMAX
-#endif
-
 #ifndef ONEDAL_DATA_PARALLEL
     #define NO_IMPORT_ARRAY
 #endif
@@ -30,13 +26,15 @@
 #include <limits>
 #include <string>
 
+#include "utils.h"
+
 #include <numpy/arrayobject.h>
 #include "oneapi/dal/table/common.hpp"
 
 namespace oneapi::dal::python
 {
-oneapi::dal::table _input_to_onedal_table(PyObject * nda);
+ONEDAL_BACKEND_EXPORT oneapi::dal::table _input_to_onedal_table(PyObject * nda);
 
-PyObject * _table_to_numpy(const oneapi::dal::table & input);
+ONEDAL_BACKEND_EXPORT PyObject * _table_to_numpy(const oneapi::dal::table & input);
 
 } // namespace oneapi::dal::python

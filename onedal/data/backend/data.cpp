@@ -56,14 +56,11 @@ const static int numpy_initialized = init_numpy();
 class NumpyDeleter
 {
 public:
-    NumpyDeleter(PyArrayObject * a) : _ndarray(a) {}
+    NumpyDeleter(PyArrayObject * a) {}
 
     void operator()(const void * ptr) {}
 
     NumpyDeleter & operator=(const NumpyDeleter &) = delete;
-
-private:
-    PyArrayObject * _ndarray;
 };
 
 template <typename T, typename ConstDeleter>
