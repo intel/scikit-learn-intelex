@@ -90,6 +90,7 @@ target_include_directories(${TARGET}
 target_compile_definitions(${TARGET}
     PUBLIC "ONEDAL_DATA_PARALLEL"
     PUBLIC "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
+    PUBLIC "__ONEDAL_ENABLE_DLL_EXPORT__"
 )
 
 target_link_libraries(${TARGET}

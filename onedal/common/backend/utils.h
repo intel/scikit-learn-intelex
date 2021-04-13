@@ -16,8 +16,6 @@
 
 #pragma once
 
-#define __ONEDAL_ENABLE_DLL_EXPORT__
-
 #include "oneapi/dal/common.hpp"
 #include <numpy/arrayobject.h>
 #include <string>
