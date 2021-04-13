@@ -99,10 +99,11 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         max_iter = 10000 if self.max_iter == -1 else self.max_iter
         class_count = 0 if self.classes_ is None else len(self.classes_)
         return PySvmParams(method=self.algorithm, kernel=self.kernel,
-                   c=self.C, epsilon=self.epsilon, class_count=class_count,
-                   accuracy_threshold=self.tol, max_iteration_count=max_iter,
-                   scale=self._scale_, sigma=self._sigma_, shift=self.coef0,
-                   degree=self.degree, tau=self.tau)
+                           c=self.C, epsilon=self.epsilon,
+                           class_count=class_count, accuracy_threshold=self.tol,
+                           max_iteration_count=max_iter,
+                           scale=self._scale_, sigma=self._sigma_,
+                           shift=self.coef0, degree=self.degree, tau=self.tau)
 
     def _fit(self, X, y, sample_weight, Computer):
         if y is None:
