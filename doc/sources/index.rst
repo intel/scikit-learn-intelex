@@ -76,9 +76,10 @@ Here are our latest blogs:
 
 Important links
 --------------------
-- `Building from Sources <https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md>`_,
-- `About Intel(R) oneAPI Data Analytics Library <https://github.com/oneapi-src/oneDAL>`_.
-- `About Intel(R) daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_.
+- `Benchmark code <https://github.com/IntelPython/scikit-learn_bench>`_
+- `Building from Sources <https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md>`_
+- `About Intel(R) oneAPI Data Analytics Library <https://github.com/oneapi-src/oneDAL>`_
+- `About Intel(R) daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_
 
 Support
 --------------------

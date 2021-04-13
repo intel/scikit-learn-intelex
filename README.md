@@ -23,6 +23,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 ## 🔗 Important links
 - [Documentation](https://intel.github.io/scikit-learn-intelex/)
 - [scikit-learn API and patching](https://intel.github.io/scikit-learn-intelex/)
+- [Benchmark code](https://github.com/IntelPython/scikit-learn_bench)
 - [Building from Sources](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)
 - [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
 - [About Intel(R) daal4py](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py)
@@ -108,7 +109,7 @@ with sycl_context("gpu"):
 | Speedups of Intel(R) Extension for Scikit-learn over the original Scikit-learn |
 |:--:|
 | ![](https://github.com/intel/scikit-learn-intelex/blob/master/doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
-| *Technical details: float type: float64; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10)* |
+| *Technical details: float type: float64; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10), [benchmark code](https://github.com/IntelPython/scikit-learn_bench)* |
 
 Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
 
