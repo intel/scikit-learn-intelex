@@ -27,15 +27,15 @@
 #include <string>
 
 #include "common/backend/utils.h"
-#include "data/backend/utils.h"
+#include "backend/data/utils.h"
 
 #include <numpy/arrayobject.h>
 #include "oneapi/dal/table/common.hpp"
 
 namespace oneapi::dal::python
 {
-ONEDAL_BACKEND_EXPORT oneapi::dal::table input_to_onedal_table(PyObject * nda);
+ONEDAL_EXPORT oneapi::dal::table input_to_onedal_table(PyObject * nda);
 
-ONEDAL_BACKEND_EXPORT PyObject * table_to_numpy(const oneapi::dal::table & input);
+ONEDAL_EXPORT PyObject * table_to_numpy(const oneapi::dal::table & input);
 
 } // namespace oneapi::dal::python

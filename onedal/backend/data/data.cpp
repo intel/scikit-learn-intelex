@@ -17,7 +17,7 @@
 #include <cstdint>
 #include <cstring>
 #include <Python.h>
-#include "data/backend/data.h"
+#include "backend/data/data.h"
 
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/row_accessor.hpp"

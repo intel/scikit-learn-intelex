@@ -16,7 +16,7 @@
 
 from libcpp.string cimport string as std_string
 
-cdef extern from "data/backend/utils.h":
+cdef extern from "common/backend/utils.h" namespace "oneapi::dal::python":
     cdef std_string to_std_string(PyObject * o) except +
 
 cdef extern from "oneapi/dal/algo/svm.hpp" namespace "oneapi::dal::svm::task":

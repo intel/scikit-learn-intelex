@@ -18,8 +18,7 @@
 
 #define NO_IMPORT_ARRAY
 
-#include "data/backend/data.h"
-#include "data/backend/utils.h"
+#include "backend/data/data.h"
 
 #include "oneapi/dal/algo/linear_kernel.hpp"
 #include "oneapi/dal/algo/rbf_kernel.hpp"
@@ -27,14 +26,13 @@
 
 namespace oneapi::dal::python
 {
-struct ONEDAL_BACKEND_EXPORT linear_kernel_params
+struct ONEDAL_EXPORT linear_kernel_params
 {
     double scale;
     double shift;
 };
 
-// clas <algorithm>_<act>
-class ONEDAL_BACKEND_EXPORT linear_kernel_compute
+class ONEDAL_EXPORT linear_kernel_compute
 {
 public:
     // from descriptor
@@ -54,13 +52,12 @@ private:
     static const auto get_descriptor(linear_kernel_params & params, data_type data_type_input);
 };
 
-struct ONEDAL_BACKEND_EXPORT rbf_kernel_params
+struct ONEDAL_EXPORT rbf_kernel_params
 {
     double sigma;
 };
 
-// clas <algorithm>_<act>
-class ONEDAL_BACKEND_EXPORT rbf_kernel_compute
+class ONEDAL_EXPORT rbf_kernel_compute
 {
 public:
     // from descriptor
@@ -77,15 +74,14 @@ private:
     rbf_kernel::compute_result<> compute_result_;
 };
 
-struct ONEDAL_BACKEND_EXPORT polynomial_kernel_params
+struct ONEDAL_EXPORT polynomial_kernel_params
 {
     double scale;
     double shift;
     double degree;
 };
 
-// clas <algorithm>_<act>
-class ONEDAL_BACKEND_EXPORT polynomial_kernel_compute
+class ONEDAL_EXPORT polynomial_kernel_compute
 {
 public:
     // from descriptor

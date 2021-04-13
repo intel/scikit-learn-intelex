@@ -16,16 +16,9 @@
 
 #pragma once
 
-#include <string>
 #include <cinttypes>
-#include "oneapi/dal/common.hpp"
 
 #include <numpy/arrayobject.h>
-
-static std::string to_std_string(PyObject * o)
-{
-    return PyUnicode_AsUTF8(o);
-}
 
 #define SET_NPY_FEATURE(_T, _FUNCT, _EXCEPTION) \
     switch (_T)                                 \

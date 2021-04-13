@@ -16,36 +16,41 @@
 
 #pragma once
 
+#define __ONEDAL_ENABLE_DLL_EXPORT__
+
+#include "oneapi/dal/common.hpp"
 #include <numpy/arrayobject.h>
+#include <string>
 
 #define ONEDAL_2021_3_VERSION (2021 * 10000 + 3 * 100)
 
-#ifdef _WIN32
-    #define NOMINMAX
-    #define ONEDAL_BACKEND_EXPORT __declspec(dllexport)
-#else
-    #define ONEDAL_BACKEND_EXPORT
-#endif
-
 namespace oneapi::dal::python
 {
+static std::string to_std_string(PyObject * o)
+{
+    return PyUnicode_AsUTF8(o);
+}
+
 class thread_allow
 {
 public:
     thread_allow() { allow(); }
+
     ~thread_allow() { disallow(); }
-    void allow() { _save = PyEval_SaveThread(); }
+
+private:
+    void allow() { save_ = PyEval_SaveThread(); }
+
     void disallow()
     {
-        if (_save)
+        if (save_)
         {
-            PyEval_RestoreThread(_save);
-            _save = NULL;
+            PyEval_RestoreThread(save_);
+            save_ = NULL;
         }
     }
 
-private:
-    PyThreadState * _save;
+    PyThreadState * save_;
 };
 
 } // namespace oneapi::dal::python
