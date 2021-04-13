@@ -16,8 +16,16 @@
 
 #pragma once
 
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
+
+#define ONEDAL_2021_3_VERSION (2021 * 10000 + 3 * 100)
+
+#ifdef _WIN32
+    #define NOMINMAX
+    #define ONEDAL_BACKEND_EXPORT __declspec(dllexport)
+#else
+    #define ONEDAL_BACKEND_EXPORT
+#endif
 
 namespace oneapi::dal::python
 {

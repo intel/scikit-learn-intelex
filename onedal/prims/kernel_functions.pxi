@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 cdef extern from "prims/backend/kernel_functions_py.h" namespace "oneapi::dal::python":
-    ctypedef struct linear_kernel_params:
+    cdef cppclass linear_kernel_params:
         double scale
         double shift
 
@@ -24,7 +24,7 @@ cdef extern from "prims/backend/kernel_functions_py.h" namespace "oneapi::dal::p
         void compute(PyObject * x, PyObject * y) except +
         PyObject * get_values() except +
 
-    ctypedef struct rbf_kernel_params:
+    cdef cppclass rbf_kernel_params:
         double sigma
 
     cdef cppclass rbf_kernel_compute:
@@ -32,7 +32,7 @@ cdef extern from "prims/backend/kernel_functions_py.h" namespace "oneapi::dal::p
         void compute(PyObject * x, PyObject * y) except +
         PyObject * get_values() except +
 
-    ctypedef struct polynomial_kernel_params:
+    cdef cppclass polynomial_kernel_params:
         double scale
         double shift
         double degree

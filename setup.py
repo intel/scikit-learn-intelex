@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# ===============================================================================
+#===============================================================================
 # Copyright 2014-2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # System imports
 import os
@@ -60,62 +60,6 @@ else:
 
 ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
-
-
-def get_lib_suffix():
-
-    def walk_ld_library_path():
-        if IS_WIN:
-            ld_library_path = os.environ.get('LIBRARY_LIB')
-            if ld_library_path is None:
-                ld_library_path = f"{os.environ.get('CONDA_PREFIX')}/Library/lib"
-        else:
-            ld_library_path = os.environ.get('LD_LIBRARY_PATH', None)
-
-        if ld_library_path is None:
-            return None
-
-        libs = []
-        if IS_WIN:
-            ld_library_path = ld_library_path.split(';')
-        else:
-            ld_library_path = ld_library_path.split(':')
-        while '' in ld_library_path:
-            ld_library_path.remove('')
-        for lib_path in ld_library_path:
-            for _, _, new_files in os.walk(lib_path):
-                libs += new_files
-
-        for lib in libs:
-            if 'onedal_core' in lib:
-                return 'onedal'
-            if 'daal_core' in lib:
-                return 'daal'
-        return None
-
-    def walk_libdir():
-        global lib_dir
-
-        for _, _, libs in os.walk(lib_dir):
-            for lib in libs:
-                if 'onedal_core' in lib:
-                    return 'onedal'
-                if 'daal_core' in lib:
-                    return 'daal'
-        return None
-
-    ld_lib_path_suffix = walk_ld_library_path()
-    lib_dir_suffix = walk_libdir()
-    if find_library('onedal_core') is not None or \
-       ld_lib_path_suffix == 'onedal' or \
-            lib_dir_suffix == 'onedal':
-        return 'onedal'
-    if find_library('daal_core') is not None or \
-       ld_lib_path_suffix == 'daal' or \
-            lib_dir_suffix == 'daal':
-        return 'daal'
-
-    raise ImportError('Unable to import oneDAL or oneDAL lib')
 
 
 def get_win_major_version():
@@ -209,15 +153,13 @@ def get_daal_type_defines():
 
 
 def get_libs(iface='daal'):
-    lib_suffix = get_lib_suffix()
-
     if IS_WIN:
         major_version = get_win_major_version()
-        libraries_plat = [f'{lib_suffix}_core_dll{major_version}']
-        onedal_lib =  [f'onedal_dll{major_version}']
+        libraries_plat = [f'onedal_core_dll{major_version}']
+        onedal_lib = [f'onedal_dll{major_version}']
     else:
-        libraries_plat = [f'{lib_suffix}_core', f'{lib_suffix}_thread']
-        onedal_lib =  [f'onedal']
+        libraries_plat = [f'onedal_core', f'onedal_thread']
+        onedal_lib = ['onedal']
     if iface == 'onedal':
         libraries_plat += onedal_lib
     return libraries_plat
@@ -349,8 +291,8 @@ def getpyexts():
                             ('NPY_NO_DEPRECATED_API',
                              'NPY_1_7_API_VERSION')
                         ],
-                        libraries=['dpc_backend'] + onedal_libraries_plat,
-                        library_dirs=['onedal'] + ONEDAL_LIBDIRS,
+                        libraries=['dpc_backend'],
+                        library_dirs=['onedal'],
                         runtime_library_dirs=runtime_library_dirs,
                         language='c++')
 
@@ -370,7 +312,6 @@ def getpyexts():
                         library_dirs=['daal4py/oneapi'] + ONEDAL_LIBDIRS,
                         runtime_library_dirs=runtime_oneapi_dirs,
                         language='c++')
-
         exts.extend(cythonize(ext))
 
     if not no_dist:

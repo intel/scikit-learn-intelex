@@ -15,12 +15,9 @@
 # ===============================================================================
 
 from cpython.ref cimport PyObject
-from libcpp cimport bool
-import cython
 
 include "kernel_functions.pxi"
 
-@cython.auto_pickle(True)
 cdef class PyLinearKernelParams:
     cdef linear_kernel_params pt
 
@@ -60,7 +57,6 @@ cdef class PyLinearKernelCompute:
     def get_values(self):
         return <object>self.thisptr.get_values()
 
-@cython.auto_pickle(True)
 cdef class PyRbfKernelParams:
     cdef rbf_kernel_params pt
 
@@ -91,9 +87,6 @@ cdef class PyRbfKernelCompute:
     def get_values(self):
         return <object>self.thisptr.get_values()
 
-# IF ONEDAL_VERSION >= ONEDAL_2021_3_VERSION:
-
-@cython.auto_pickle(True)
 cdef class PyPolyKernelParams:
     cdef polynomial_kernel_params pt
 

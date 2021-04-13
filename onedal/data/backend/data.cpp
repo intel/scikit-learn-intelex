@@ -18,7 +18,6 @@
 #include <cstring>
 #include <Python.h>
 #include "data/backend/data.h"
-#include "data/backend/utils.h"
 
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/row_accessor.hpp"
@@ -56,11 +55,14 @@ const static int numpy_initialized = init_numpy();
 class NumpyDeleter
 {
 public:
-    NumpyDeleter(PyArrayObject * a) {}
+    NumpyDeleter(PyArrayObject * a) : _ndarray(a) {}
 
     void operator()(const void * ptr) {}
 
     NumpyDeleter & operator=(const NumpyDeleter &) = delete;
+
+private:
+    PyArrayObject * _ndarray;
 };
 
 template <typename T, typename ConstDeleter>

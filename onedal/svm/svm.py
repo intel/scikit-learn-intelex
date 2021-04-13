@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from abc import ABCMeta, abstractmethod
@@ -37,7 +37,6 @@ try:
         PyClassificationSvmTrain,
         PyClassificationSvmInfer
     )
-    # raise ImportError
 except ImportError:
     from _onedal4py_host import (
         PySvmParams,
@@ -96,6 +95,15 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self.classes_ = None
         return _column_or_1d(y).astype(dtype, copy=False)
 
+    def _get_onedal_params(self):
+        max_iter = 10000 if self.max_iter == -1 else self.max_iter
+        class_count = 0 if self.classes_ is None else len(self.classes_)
+        return PySvmParams(method=self.algorithm, kernel=self.kernel,
+                   c=self.C, epsilon=self.epsilon, class_count=class_count,
+                   accuracy_threshold=self.tol, max_iteration_count=max_iter,
+                   scale=self._scale_, sigma=self._sigma_, shift=self.coef0,
+                   degree=self.degree, tau=self.tau)
+
     def _fit(self, X, y, sample_weight, Computer):
         if y is None:
             if self._get_tags()['requires_y']:
@@ -110,18 +118,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         sample_weight = _get_sample_weight(
             X, y, sample_weight, self.class_weight_, self.classes_)
 
-        class_count = 0 if self.classes_ is None else len(self.classes_)
-        scale, sigma = self._compute_gamma_sigma(self.gamma, X)
-        max_iter = 10000 if self.max_iter == -1 else self.max_iter
-
-        self._onedal_params = PySvmParams(method=self.algorithm, kernel=self.kernel,
-                                          c=self.C, epsilon=self.epsilon,
-                                          class_count=class_count,
-                                          accuracy_threshold=self.tol,
-                                          max_iteration_count=max_iter, scale=scale,
-                                          sigma=sigma, shift=self.coef0,
-                                          degree=self.degree, tau=self.tau)
-        c_svm = Computer(self._onedal_params)
+        self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
+        c_svm = Computer(self._get_onedal_params())
         c_svm.train(X, y, sample_weight)
 
         self.dual_coef_ = c_svm.get_coeffs().T
@@ -145,7 +143,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         else:
             X = _check_array(
                 X, dtype=[np.float64, np.float32], force_all_finite=True)
-            c_svm = Computer(self._onedal_params)
+            c_svm = Computer(self._get_onedal_params())
 
             if self._onedal_model:
                 c_svm.infer(X, self._onedal_model)
@@ -159,7 +157,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=True)
-        c_svm = PyClassificationSvmInfer(self._onedal_params)
+        c_svm = PyClassificationSvmInfer(self._get_onedal_params())
         if self._onedal_model:
             c_svm.infer(X, self._onedal_model)
         else:

@@ -1,3 +1,6 @@
+# distutils: language = c++
+# cython: c_string_encoding=ascii, language_level=3
+
 # ===============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -22,8 +25,6 @@ cimport numpy as npc
 
 include "svm.pxi"
 
-
-@cython.auto_pickle(True)
 cdef class PySvmParams:
     cdef svm_params pt
 
@@ -45,10 +46,10 @@ cdef class PySvmParams:
 
 
 cdef class PyClassificationSvmModel:
-    cdef model[classification] * thisptr
+    cdef svm_model[classification] * thisptr
 
     def __cinit__(self):
-        self.thisptr = new model[classification]()
+        self.thisptr = new svm_model[classification]()
 
     def __dealloc__(self):
         del self.thisptr
@@ -115,13 +116,12 @@ cdef class PyClassificationSvmInfer:
     def get_decision_function(self):
         return < object > self.thisptr.get_decision_function()
 
-# IF ONEDAL_VERSION >= ONEDAL_2021_3_VERSION:
 
 cdef class PyRegressionSvmModel:
-    cdef model[regression] * thisptr
+    cdef svm_model[regression] * thisptr
 
     def __cinit__(self):
-        self.thisptr = new model[regression]()
+        self.thisptr = new svm_model[regression]()
 
     def __dealloc__(self):
         del self.thisptr

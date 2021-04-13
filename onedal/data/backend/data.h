@@ -26,7 +26,8 @@
 #include <limits>
 #include <string>
 
-#include "utils.h"
+#include "common/backend/utils.h"
+#include "data/backend/utils.h"
 
 #include <numpy/arrayobject.h>
 #include "oneapi/dal/table/common.hpp"

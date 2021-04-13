@@ -14,10 +14,10 @@
 # limitations under the License.
 # ===============================================================================
 
-from libcpp.string cimport string
+from libcpp.string cimport string as std_string
 
 cdef extern from "data/backend/utils.h":
-    cdef string to_std_string(PyObject * o) except +
+    cdef std_string to_std_string(PyObject * o) except +
 
 cdef extern from "oneapi/dal/algo/svm.hpp" namespace "oneapi::dal::svm::task":
     cdef cppclass classification:
@@ -25,15 +25,10 @@ cdef extern from "oneapi/dal/algo/svm.hpp" namespace "oneapi::dal::svm::task":
     cdef cppclass regression:
         pass
 
-
-cdef extern from "oneapi/dal/algo/svm.hpp" namespace "oneapi::dal::svm":
-    cdef cppclass model[task_t]:
-        pass
-
 cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
-    ctypedef struct svm_params:
-        string method
-        string kernel
+    cdef cppclass svm_params:
+        std_string method
+        std_string kernel
         int class_count
         double c
         double epsilon
@@ -47,6 +42,9 @@ cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
         int degree
         double sigma
 
+    cdef cppclass svm_model[task_t]:
+        svm_model() except +
+
     cdef cppclass svm_train[task_t]:
         svm_train(svm_params *) except +
         void train(PyObject * data, PyObject * labels, PyObject * weights) except +
@@ -55,12 +53,11 @@ cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
         PyObject * get_support_indices() except +
         PyObject * get_coeffs() except +
         PyObject * get_biases() except +
-        model[task_t] get_model() except +
+        svm_model[task_t] get_model() except +
 
     cdef cppclass svm_infer[task_t]:
         svm_infer(svm_params *) except +
         void infer(PyObject * data, PyObject * support_vectors, PyObject * coeffs, PyObject * biases) except +
-        void infer(PyObject * data, model[task_t] * model) except +
+        void infer(PyObject * data, svm_model[task_t] * model) except +
         PyObject * get_labels() except +
         PyObject * get_decision_function() except +
-

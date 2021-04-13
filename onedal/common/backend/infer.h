@@ -44,7 +44,7 @@ auto infer(Args &&... args)
         throw std::runtime_error("Cannot set daal context: Pointer to queue object is NULL");
     }
 #elif defined(ONEDAL_DATA_PARALLEL)
-    cl::sycl::queue sycl_queue;
+    cl::sycl::queue sycl_queue(sycl::host_selector {});
     return dal::infer(sycl_queue, std::forward<Args>(args)...);
 #else
     return dal::infer(std::forward<Args>(args)...);

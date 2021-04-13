@@ -16,6 +16,7 @@
 #===============================================================================
 
 import os
+from os.path import join as jp
 import sys
 import numpy as np
 import pathlib
@@ -37,7 +38,7 @@ elif sys.platform in ['win32', 'cygwin']:
 try:
     import dpctl
     _dpctrl_include_dir = str(os.path.abspath(dpctl.get_include()))
-    _dpctrl_library_dir = str(os.path.abspath(os.path.join(dpctl.get_include(), "..")))
+    _dpctrl_library_dir = str(os.path.abspath(jp(dpctl.get_include(), "..")))
     _dpctrl_exists = "ON"
 except ImportError:
     _dpctrl_include_dir = ""
@@ -46,19 +47,19 @@ except ImportError:
 
 
 def custom_build_cmake_clib():
-    root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+    root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")
 
-    builder_directory = os.path.join(root_dir, "scripts")
-    abs_build_temp_path = os.path.join(root_dir, "build", "backend")
-    install_directory = os.path.join(root_dir, "onedal")
+    builder_directory = jp(root_dir, "scripts")
+    abs_build_temp_path = jp(root_dir, "build", "backend")
+    install_directory = jp(root_dir, "onedal")
     log.info(f"Builder directory: {builder_directory}")
     log.info(f"Install directory: {install_directory}")
 
     cmake_generator = "-GNinja" if IS_WIN else ""
     python_include = get_python_inc()
-    win_python_path_lib = os.path.abspath(os.path.join(get_config_var('LIBDEST'), "..", "libs"))
-    python_lib = win_python_path_lib if IS_WIN else get_config_var('LIBDIR')
+    win_python_path_lib = os.path.abspath(jp(get_config_var('LIBDEST'), "..", "libs"))
+    python_library_dir = win_python_path_lib if IS_WIN else get_config_var('LIBDIR')
     numpy_include = np.get_include()
 
     cmake_args = [
@@ -73,7 +74,7 @@ def custom_build_cmake_clib():
         "-DDPCTL_LIB_DIR=" + _dpctrl_library_dir,
         "-DPYTHON_INCLUDE_DIR=" + python_include,
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
-        "-DPYTHON_LIBRARY=" + python_lib
+        "-DPYTHON_LIBRARY_DIR=" + python_library_dir
     ]
 
     import multiprocessing

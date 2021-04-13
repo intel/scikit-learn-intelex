@@ -16,20 +16,11 @@
 
 #pragma once
 
-#ifdef _WIN32
-    #define NOMINMAX
-    #define ONEDAL_BACKEND_EXPORT __declspec(dllexport)
-#else
-    #define ONEDAL_BACKEND_EXPORT
-#endif
-
 #include <string>
 #include <cinttypes>
 #include "oneapi/dal/common.hpp"
 
 #include <numpy/arrayobject.h>
-
-#define ONEDAL_2021_3_VERSION (2021 * 10000 + 3 * 100)
 
 static std::string to_std_string(PyObject * o)
 {
