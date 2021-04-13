@@ -34,8 +34,8 @@
 
 namespace oneapi::dal::python
 {
-ONEDAL_BACKEND_EXPORT oneapi::dal::table _input_to_onedal_table(PyObject * nda);
+ONEDAL_BACKEND_EXPORT oneapi::dal::table input_to_onedal_table(PyObject * nda);
 
-ONEDAL_BACKEND_EXPORT PyObject * _table_to_numpy(const oneapi::dal::table & input);
+ONEDAL_BACKEND_EXPORT PyObject * table_to_numpy(const oneapi::dal::table & input);
 
 } // namespace oneapi::dal::python

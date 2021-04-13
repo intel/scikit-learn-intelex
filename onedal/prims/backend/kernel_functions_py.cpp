@@ -87,8 +87,8 @@ linear_kernel_compute::linear_kernel_compute(linear_kernel_params * params) : pa
 void linear_kernel_compute::compute(PyObject * x, PyObject * y)
 {
     thread_allow _allow;
-    auto x_table    = _input_to_onedal_table(x);
-    auto y_table    = _input_to_onedal_table(y);
+    auto x_table    = input_to_onedal_table(x);
+    auto y_table    = input_to_onedal_table(y);
     auto data_type  = x_table.get_metadata().get_data_type(0);
     compute_result_ = linear_compute_impl(params_, data_type, x_table, y_table);
 }
@@ -96,7 +96,7 @@ void linear_kernel_compute::compute(PyObject * x, PyObject * y)
 // attributes from compute_result
 PyObject * linear_kernel_compute::get_values()
 {
-    return _table_to_numpy(compute_result_.get_values());
+    return table_to_numpy(compute_result_.get_values());
 }
 
 rbf_kernel_compute::rbf_kernel_compute(rbf_kernel_params * params) : params_(*params) {}
@@ -105,8 +105,8 @@ rbf_kernel_compute::rbf_kernel_compute(rbf_kernel_params * params) : params_(*pa
 void rbf_kernel_compute::compute(PyObject * x, PyObject * y)
 {
     thread_allow _allow;
-    auto x_table    = _input_to_onedal_table(x);
-    auto y_table    = _input_to_onedal_table(y);
+    auto x_table    = input_to_onedal_table(x);
+    auto y_table    = input_to_onedal_table(y);
     auto data_type  = x_table.get_metadata().get_data_type(0);
     compute_result_ = rbf_compute_impl(params_, data_type, x_table, y_table);
 }
@@ -114,7 +114,7 @@ void rbf_kernel_compute::compute(PyObject * x, PyObject * y)
 // attributes from compute_result
 PyObject * rbf_kernel_compute::get_values()
 {
-    return _table_to_numpy(compute_result_.get_values());
+    return table_to_numpy(compute_result_.get_values());
 }
 
 polynomial_kernel_compute::polynomial_kernel_compute(polynomial_kernel_params * params) : params_(*params) {}
@@ -123,8 +123,8 @@ polynomial_kernel_compute::polynomial_kernel_compute(polynomial_kernel_params * 
 void polynomial_kernel_compute::compute(PyObject * x, PyObject * y)
 {
     thread_allow _allow;
-    auto x_table    = _input_to_onedal_table(x);
-    auto y_table    = _input_to_onedal_table(y);
+    auto x_table    = input_to_onedal_table(x);
+    auto y_table    = input_to_onedal_table(y);
     auto data_type  = x_table.get_metadata().get_data_type(0);
     compute_result_ = polynomial_compute_impl(params_, data_type, x_table, y_table);
 }
@@ -132,7 +132,7 @@ void polynomial_kernel_compute::compute(PyObject * x, PyObject * y)
 // attributes from compute_result
 PyObject * polynomial_kernel_compute::get_values()
 {
-    return _table_to_numpy(compute_result_.get_values());
+    return table_to_numpy(compute_result_.get_values());
 }
 
 } // namespace oneapi::dal::python

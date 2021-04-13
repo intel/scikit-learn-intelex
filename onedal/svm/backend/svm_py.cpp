@@ -165,9 +165,9 @@ template <typename Task>
 void svm_train<Task>::train(PyObject * data, PyObject * labels, PyObject * weights)
 {
     thread_allow _allow;
-    auto data_table    = _input_to_onedal_table(data);
-    auto labels_table  = _input_to_onedal_table(labels);
-    auto weights_table = _input_to_onedal_table(weights);
+    auto data_table    = input_to_onedal_table(data);
+    auto labels_table  = input_to_onedal_table(labels);
+    auto weights_table = input_to_onedal_table(weights);
     auto data_type     = data_table.get_metadata().get_data_type(0);
     train_result_      = compute_impl<decltype(train_result_)>(params_, data_type, data_table, labels_table, weights_table);
 }
@@ -183,28 +183,28 @@ int svm_train<Task>::get_support_vector_count()
 template <typename Task>
 PyObject * svm_train<Task>::get_support_vectors()
 {
-    return _table_to_numpy(train_result_.get_support_vectors());
+    return table_to_numpy(train_result_.get_support_vectors());
 }
 
 // attributes from train_result
 template <typename Task>
 PyObject * svm_train<Task>::get_support_indices()
 {
-    return _table_to_numpy(train_result_.get_support_indices());
+    return table_to_numpy(train_result_.get_support_indices());
 }
 
 // attributes from train_result
 template <typename Task>
 PyObject * svm_train<Task>::get_coeffs()
 {
-    return _table_to_numpy(train_result_.get_coeffs());
+    return table_to_numpy(train_result_.get_coeffs());
 }
 
 // attributes from train_result
 template <typename Task>
 PyObject * svm_train<Task>::get_biases()
 {
-    return _table_to_numpy(train_result_.get_biases());
+    return table_to_numpy(train_result_.get_biases());
 }
 
 // attributes from train_result
@@ -224,10 +224,10 @@ template <typename Task>
 void svm_infer<Task>::infer(PyObject * data, PyObject * support_vectors, PyObject * coeffs, PyObject * biases)
 {
     thread_allow _allow;
-    auto data_table            = _input_to_onedal_table(data);
-    auto support_vectors_table = _input_to_onedal_table(support_vectors);
-    auto coeffs_table          = _input_to_onedal_table(coeffs);
-    auto biases_table          = _input_to_onedal_table(biases);
+    auto data_table            = input_to_onedal_table(data);
+    auto support_vectors_table = input_to_onedal_table(support_vectors);
+    auto coeffs_table          = input_to_onedal_table(coeffs);
+    auto biases_table          = input_to_onedal_table(biases);
 
     auto data_type = data_table.get_metadata().get_data_type(0);
     auto model     = svm::model<Task> {}.set_support_vectors(support_vectors_table).set_coeffs(coeffs_table).set_biases(biases_table);
@@ -243,7 +243,7 @@ template <typename Task>
 void svm_infer<Task>::infer(PyObject * data, svm_model<Task> * model)
 {
     thread_allow _allow;
-    auto data_table = _input_to_onedal_table(data);
+    auto data_table = input_to_onedal_table(data);
     auto data_type  = data_table.get_metadata().get_data_type(0);
     infer_result_   = compute_impl<decltype(infer_result_)>(params_, data_type, model->get_onedal_model(), data_table);
 }
@@ -252,14 +252,14 @@ void svm_infer<Task>::infer(PyObject * data, svm_model<Task> * model)
 template <typename Task>
 PyObject * svm_infer<Task>::get_labels()
 {
-    return _table_to_numpy(infer_result_.get_labels());
+    return table_to_numpy(infer_result_.get_labels());
 }
 
 // attributes from infer_result
 template <typename Task>
 PyObject * svm_infer<Task>::get_decision_function()
 {
-    return _table_to_numpy(infer_result_.get_decision_function());
+    return table_to_numpy(infer_result_.get_decision_function());
 }
 
 template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::classification>;

@@ -52,17 +52,17 @@ int init_numpy()
 const static int numpy_initialized = init_numpy();
 #endif
 
-class NumpyDeleter
+class numpy_deleter
 {
 public:
-    NumpyDeleter(PyArrayObject * a) : _ndarray(a) {}
+    numpy_deleter(PyArrayObject * a) : ndarray_(a) {}
 
     void operator()(const void * ptr) {}
 
-    NumpyDeleter & operator=(const NumpyDeleter &) = delete;
+    numpy_deleter & operator=(const numpy_deleter &) = delete;
 
 private:
-    PyArrayObject * _ndarray;
+    PyArrayObject * ndarray_;
 };
 
 template <typename T, typename ConstDeleter>
@@ -88,21 +88,16 @@ inline dal::homogen_table make_homogen(PyArrayObject * array)
         column_count = static_cast<size_t>(array_size(array, 1));
     }
     const auto layout = array_is_behaved_F(array) ? dal::data_layout::column_major : dal::data_layout::row_major;
-    auto res_table    = create_homogen_table(data_pointer, row_count, column_count, layout, NumpyDeleter(array));
+    auto res_table    = create_homogen_table(data_pointer, row_count, column_count, layout, numpy_deleter(array));
     // we need it increment the ref-count if we use the input array in-place
     // if we copied/converted it we already own our own reference
     if (reinterpret_cast<PyArrayObject *>(data_pointer) == array) Py_INCREF(array);
     return res_table;
 }
 
-dal::table _input_to_onedal_table(PyObject * obj)
+dal::table input_to_onedal_table(PyObject * obj)
 {
     dal::table res;
-    if (PyErr_Occurred())
-    {
-        PyErr_Print();
-        PyErr_Clear();
-    }
     if (obj == nullptr || obj == Py_None)
     {
         return res;
@@ -118,35 +113,35 @@ dal::table _input_to_onedal_table(PyObject * obj)
         }
         else
         {
-            throw std::invalid_argument("[_input_to_onedal_table] Numpy input Could not convert Python object to onedal table.");
+            throw std::invalid_argument("[input_to_onedal_table] Numpy input Could not convert Python object to onedal table.");
         }
     }
     else
     {
-        throw std::invalid_argument("[_input_to_onedal_table] Not avalible input format for convert Python object to onedal table.");
+        throw std::invalid_argument("[input_to_onedal_table] Not avalible input format for convert Python object to onedal table.");
     }
     return res;
 }
 
-class VSP
+class vsp
 {
 public:
     // we need a virtual destructor
-    virtual ~VSP() {};
+    virtual ~vsp() {};
 };
 
 // typed virtual shared pointer, for simplicity we make it a oneDAL shared pointer
 template <typename T>
-class TVSP : public VSP, public dal::array<T>
+class tvsp : public vsp, public dal::array<T>
 {
 public:
-    TVSP(const dal::array<T> & org) : dal::array<T>(org) {}
-    virtual ~TVSP() {};
+    tvsp(const dal::array<T> & org) : dal::array<T>(org) {}
+    virtual ~tvsp() {};
 };
 
 void onedal_free_cap(PyObject * cap)
 {
-    VSP * stored_array = static_cast<VSP *>(PyCapsule_GetPointer(cap, NULL));
+    vsp * stored_array = static_cast<vsp *>(PyCapsule_GetPointer(cap, NULL));
     if (stored_array)
     {
         delete stored_array;
@@ -161,13 +156,13 @@ static PyObject * convert_array_to_numpy(dal::array<CType> & array, std::int64_t
     PyObject * obj = PyArray_SimpleNewFromData(2, dims, NpType, static_cast<void *>(array.get_mutable_data()));
     if (!obj) throw std::invalid_argument("Conversion to numpy array failed");
 
-    void * opaque_value = static_cast<void *>(new TVSP<CType>(array));
+    void * opaque_value = static_cast<void *>(new tvsp<CType>(array));
     PyObject * cap      = PyCapsule_New(opaque_value, NULL, onedal_free_cap);
     PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), cap);
     return obj;
 }
 
-PyObject * _table_to_numpy(const dal::table & input)
+PyObject * table_to_numpy(const dal::table & input)
 {
     PyObject * res = nullptr;
     if (!input.has_data())
