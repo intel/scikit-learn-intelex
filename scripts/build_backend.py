@@ -19,7 +19,6 @@ import os
 from os.path import join as jp
 import sys
 import numpy as np
-import pathlib
 import subprocess
 from distutils import log
 from distutils.sysconfig import get_python_inc, get_config_var
