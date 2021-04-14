@@ -181,7 +181,7 @@ else:
     MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
 
 #Level Zero workaround for oneDAL Beta06
-from generator.parse import parse_version
+from scripts.generator.parse import parse_version
 
 header_path = os.path.join(dal_root, 'include', 'services', 'library_version_info.h')
 
@@ -373,7 +373,7 @@ for key, value in get_config_vars().items():
 
 
 def gen_pyx(odir):
-    gtr_files = glob.glob(jp(os.path.abspath('generator'), '*')) + ['./setup.py']
+    gtr_files = glob.glob(jp(os.path.abspath('scripts/generator'), '*')) + ['./setup.py']
     src_files = [os.path.abspath('build/daal4py_cpp.h'),
                  os.path.abspath('build/daal4py_cpp.cpp'),
                  os.path.abspath('build/daal4py_cy.pyx')]
@@ -385,11 +385,13 @@ def gen_pyx(odir):
                   'Skipping code generation')
             return
 
-    from generator.gen_daal4py import gen_daal4py
+    from scripts.generator.gen_daal4py import gen_daal4py
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
-    gen_daal4py(dal_root, odir, d4p_version, no_dist=no_dist, no_stream=no_stream)
+
+    source_dir = os.path.abspath('daal4py')
+    gen_daal4py(dal_root, odir, source_dir, d4p_version, no_dist=no_dist, no_stream=no_stream)
 
 
 gen_pyx(os.path.abspath('./build'))

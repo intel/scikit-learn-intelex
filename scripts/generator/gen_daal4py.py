@@ -1032,8 +1032,13 @@ class cython_interface(object):
 ###############################################################################
 ###############################################################################
 
-def gen_daal4py(daalroot, outdir, version, warn_all=False,
+def gen_daal4py(daalroot, outdir, source_dir, version, warn_all=False,
                 no_dist=False, no_stream=False):
+
+    from shutil import copyfile
+    copyfile(jp(os.path.dirname(os.path.realpath(__file__)),
+                '_clang-format'), jp(outdir, '_clang-format'))
+
     global no_warn
     if warn_all:
         no_warn = {}
@@ -1045,7 +1050,9 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False,
     head_path = jp("build", "include")
     algo_path = jp(head_path, "algorithms")
     rmtree(head_path, ignore_errors=True)
-    copytree(orig_path, head_path)
+    copytree(jp(orig_path, 'algorithms'), algo_path)
+    copytree(jp(orig_path, 'services'), jp(head_path, 'services'))
+
     for (dirpath, dirnames, filenames) in os.walk(algo_path):
         for filename in filenames:
             call([shutil.which("clang-format"), "-i", jp(dirpath, filename)])
@@ -1059,7 +1066,7 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False,
         f.write(cpp_h)
     with open(jp(outdir, 'daal4py_cpp.cpp'), 'w') as f:
         f.write(cpp_cpp)
-    with open(jp('src', 'gettree.pyx'), 'r') as f:
+    with open(jp(source_dir, 'src', 'gettree.pyx'), 'r') as f:
         pyx_gettree = f.read()
 
     pyx_gbt_model_builder = ''
@@ -1068,16 +1075,16 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False,
     pyx_gettree = ''
     if 'algorithms::gbt::classification' in iface.namespace_dict and 'ModelBuilder' in \
             iface.namespace_dict['algorithms::gbt::classification'].classes:
-        with open(jp('src', 'gbt_model_builder.pyx'), 'r') as f:
+        with open(jp(source_dir, 'src', 'gbt_model_builder.pyx'), 'r') as f:
             pyx_gbt_model_builder = f.read()
-        with open(jp('src', 'gbt_convertors.pyx'), 'r') as f:
+        with open(jp(source_dir, 'src', 'gbt_convertors.pyx'), 'r') as f:
             pyx_gbt_generators = f.read()
     if 'algorithms::logistic_regression' in iface.namespace_dict and 'ModelBuilder' in \
             iface.namespace_dict['algorithms::logistic_regression'].classes:
-        with open(jp('src', 'log_reg_model_builder.pyx'), 'r') as f:
+        with open(jp(source_dir, 'src', 'log_reg_model_builder.pyx'), 'r') as f:
             pyx_log_reg_model_builder = f.read()
     if 'algorithms::tree_utils' in iface.namespace_dict:
-        with open(jp('src', 'gettree.pyx'), 'r') as f:
+        with open(jp(source_dir, 'src', 'gettree.pyx'), 'r') as f:
             pyx_gettree = f.read()
 
     with open(jp(outdir, 'daal4py_cy.pyx'), 'w') as f:
