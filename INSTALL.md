@@ -22,7 +22,7 @@ cd <checkout-dir>
 python setup_sklearnex.py develop
 ```
 
-To install scikit-learn-intelex without the dependency on daal4py:
+To install scikit-learn-intelex without the download dependency of daal4py:
 
 ```bash
 cd <checkout-dir>
