@@ -32,6 +32,10 @@ Sources and build instructions are available in
 
      pip install scikit-learn-intelex
 
+- Install from Anaconda Cloud: Conda-Forge channel::
+
+     сonda install scikit-learn-intelex -c conda-forge
+
 - Install from Anaconda Cloud: Intel channel::
 
     conda install scikit-learn-intelex -c intel
@@ -69,6 +73,38 @@ Supported configurations
 
 .. note::
     It supports Intel CPU and GPU except on OsX.
+
+**Anaconda Cloud: Conda-Forge channel**
+
+.. list-table::
+   :widths: 25 8 8 8 8
+   :header-rows: 1
+   :align: left
+
+   * - OS / Python version
+     - Python 3.6
+     - Python 3.7
+     - Python 3.8
+     - Python 3.9
+   * - Linux
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - Windows
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+   * - OsX
+     - ✔️
+     - ✔️
+     - ✔️
+     - ✔️
+
+.. note::
+    It supports only Intel CPU.
+    Recommended for conda users by default.
 
 **Anaconda Cloud: Intel channel**
 
@@ -125,12 +161,12 @@ To install the package in the development mode::
     cd <checkout-dir>
     python setup.py develop
 
-To install scikit-learn-intelex without the dependency on daal4py::
+To install scikit-learn-intelex without the download dependency of daal4py::
 
     cd <checkout-dir>
     python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
 
-To install scikit-learn-intelex without the dependency on daal4py in the development mode::
+To install scikit-learn-intelex without the download dependency of daal4py in the development mode::
 
     cd <checkout-dir>
     python setup_sklearnex.py develop --no-deps
