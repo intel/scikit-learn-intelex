@@ -83,9 +83,9 @@ conda install scikit-learn-intelex -c intel
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
 | :-----------------------| :------------: | :-------------:| :------------:| :------------:|
-|    **Linux**            |   ❌          |     [CPU, GPU]  |     ❌       |      ❌       |
-|    **Windows**          |   ❌          |     [CPU, GPU]  |     ❌       |      ❌       |
-|    **OsX**              |   ❌          |     [CPU]       |     ❌       |      ❌       |
+|    **Linux**            |   [CPU, GPU]   |     [CPU, GPU]  |  [CPU, GPU]  |      ❌       |
+|    **Windows**          |   [CPU, GPU]   |     [CPU, GPU]  |  [CPU, GPU]  |      ❌       |
+|    **OsX**              |   [CPU]        |     [CPU]       |   [CPU]      |      ❌       |
 
 </details>
 
