@@ -15,16 +15,16 @@
 # limitations under the License.
 #===============================================================================
 
-from .dispatcher import patch_sklearn
-from .dispatcher import unpatch_sklearn
-from .dispatcher import get_patch_names
+from .linear import LinearRegression
+from .logistic_path import logistic_regression_path, LogisticRegression
+from .ridge import Ridge
+from .coordinate_descent import ElasticNet, Lasso
 
 __all__ = [
-    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "cluster", "decomposition", "ensemble", "linear_model",
-    "manifold", "neighbors", "svm", "metrics",
+    'Ridge',
+    'LinearRegression',
+    'LogisticRegression',
+    'logistic_regression_path',
+    'ElasticNet',
+    'Lasso'
 ]
-
-from ._utils import set_sklearn_ex_verbose
-
-set_sklearn_ex_verbose()

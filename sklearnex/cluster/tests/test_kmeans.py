@@ -15,16 +15,15 @@
 # limitations under the License.
 #===============================================================================
 
-from .dispatcher import patch_sklearn
-from .dispatcher import unpatch_sklearn
-from .dispatcher import get_patch_names
+import numpy as np
+from numpy.testing import assert_allclose
 
-__all__ = [
-    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "cluster", "decomposition", "ensemble", "linear_model",
-    "manifold", "neighbors", "svm", "metrics",
-]
+def test_sklearnex_import():
+    from sklearnex.cluster import KMeans
+    X = np.array([[1, 2], [1, 4], [1, 0],
+                  [10, 2], [10, 4], [10, 0]])
+    kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
 
-from ._utils import set_sklearn_ex_verbose
-
-set_sklearn_ex_verbose()
+    result = kmeans.predict([[0, 0], [12, 3]])
+    expected = np.array([1, 0], dtype=np.int32)
+    assert_allclose(expected, result)

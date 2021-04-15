@@ -15,16 +15,13 @@
 # limitations under the License.
 #===============================================================================
 
-from .dispatcher import patch_sklearn
-from .dispatcher import unpatch_sklearn
-from .dispatcher import get_patch_names
+import numpy as np
+from numpy.testing import assert_allclose
+from sklearn.datasets import make_classification
 
-__all__ = [
-    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "cluster", "decomposition", "ensemble", "linear_model",
-    "manifold", "neighbors", "svm", "metrics",
-]
-
-from ._utils import set_sklearn_ex_verbose
-
-set_sklearn_ex_verbose()
+def test_sklearnex_import():
+    from sklearnex.ensemble import RandomForestClassifier
+    X, y = make_classification(n_samples=1000, n_features=4,
+        n_informative=2, n_redundant=0, random_state=0, shuffle=False)
+    rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
+    assert_allclose([1], rf.predict([[0, 0, 0, 0]]))

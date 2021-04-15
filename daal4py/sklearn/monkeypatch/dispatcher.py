@@ -88,6 +88,11 @@ def _get_map_of_algorithms():
         'svm': [[(svm_module, 'SVC', SVC_daal4py), None]],
         'logistic': [[(logistic_module, _patched_log_reg_path_func_name,
                        daal_optimized_logistic_path), None]],
+        'log_reg': [[(linear_model_module, 'LogisticRegression',
+                    LogisticRegression_daal4py), None]],
+        # Bug with unpath for patch many classes
+        # [(logistic_module, _patched_log_reg_path_func_name,
+        #  daal_optimized_logistic_path), None]],
         'knn_classifier': [[(neighbors_module, 'KNeighborsClassifier',
                              KNeighborsClassifier_daal4py), None]],
         'nearest_neighbors': [[(neighbors_module, 'NearestNeighbors',
@@ -102,15 +107,19 @@ def _get_map_of_algorithms():
                                _daal_train_test_split), None]],
         'fin_check': [[(validation, '_assert_all_finite',
                         _daal_assert_all_finite), None]],
+        'roc_auc_score': [[(metrics, 'roc_auc_score',
+                        _daal_roc_auc_score), None]],
         'tsne': [[(manifold_module, 'TSNE', TSNE_daal4py), None]],
     }
-    if daal_check_version((2021, 'P', 100)):
-        mapping['log_reg'] = \
-            [[(linear_model_module, 'LogisticRegression',
-               LogisticRegression_daal4py), None]]
-    if daal_check_version((2021, 'P', 200)):
-        mapping['roc_auc_score'] = \
-            [[(metrics, 'roc_auc_score', _daal_roc_auc_score), None]]
+
+    # don't passed patching tests
+    # mapping['linearregression'] = mapping['linear']
+    # mapping['logisticregression'] = mapping['log_reg']
+    # mapping['kneighborsclassifier'] = mapping['knn_classifier']
+    # mapping['nearestneighbors'] = mapping['nearest_neighbors']
+    # mapping['kneighborsregressor'] = mapping['knn_regressor']
+    # mapping['randomforestclassifier'] = mapping['random_forest_classifier']
+    # mapping['randomforestregressor'] = mapping['random_forest_regressor']
     return mapping
 
 
@@ -165,10 +174,6 @@ def enable(name=None, verbose=True, deprecation=True):
         sys.stderr.write(
             "Intel(R) oneAPI Data Analytics Library solvers for sklearn enabled: "
             "https://intelpython.github.io/daal4py/sklearn.html\n")
-    if verbose and not deprecation and sys.stderr is not None:
-        sys.stderr.write(
-            "Intel(R) Extension for Scikit-learn* enabled "
-            "(https://github.com/intel/scikit-learn-intelex)\n")
 
 
 def disable(name=None):
