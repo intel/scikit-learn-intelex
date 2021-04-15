@@ -413,6 +413,7 @@ gpu:
   - tests/test_common.py::test_estimators[RFE(estimator=LogisticRegression(C=1))-check_classifiers_classes]
   - tests/test_common.py::test_estimators[RFE(estimator=LogisticRegression(C=1))-check_decision_proba_consistency]
   - tests/test_common.py::test_estimators[RFECV(estimator=LogisticRegression(C=1))-check_classifiers_classes]
+  - tests/test_common.py::test_estimators[RFECV(estimator=LogisticRegression(C=1))-check_decision_proba_consistency]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_class_weight_classifiers]
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_pandas_series]
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_not_an_array]
