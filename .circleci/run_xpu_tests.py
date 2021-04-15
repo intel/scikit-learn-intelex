@@ -13,9 +13,5 @@ if __name__ == '__main__':
 
     with get_context(args.device):
         pytest.main(os.environ['DESELECTED_TESTS'].split() +
-                    ["-s", "-ra", "--disable-warnings",
-                    "--deselect",
-                    "ensemble/tests/test_weight_boosting.py",
-                    "--deselect",
-                    "svm/tests/test_sparse.py",
+                    ["-ra", "--disable-warnings",
                     "--pyargs", "sklearn"])

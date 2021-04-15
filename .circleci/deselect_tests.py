@@ -53,6 +53,7 @@ if __name__ == '__main__':
     argParser.add_argument('--absolute', action='store_true')
     argParser.add_argument('--reduced', action='store_true')
     argParser.add_argument('--public', action='store_true')
+    argParser.add_argument('--gpu', action='store_true')
     args = argParser.parse_args()
 
     fn = args.conf_file[0]
@@ -78,6 +79,10 @@ if __name__ == '__main__':
             filtered_deselection.extend(
                 [filter_by_version(test_name, sklearn_version)
                  for test_name in dt.get('public', [])])
+        if args.gpu:
+            filtered_deselection.extend(
+                [filter_by_version(test_name, sklearn_version)
+                 for test_name in dt.get('gpu', [])])
         pytest_switches = ["--deselect " + base_dir + test_name
                            for test_name in filtered_deselection if test_name]
         print(" ".join(pytest_switches))
