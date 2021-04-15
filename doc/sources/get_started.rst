@@ -166,7 +166,7 @@ To install scikit-learn-intelex without downloading daal4py::
     cd <checkout-dir>
     python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
 
-To install scikit-learn-intelex without the download dependency of daal4py in the development mode::
+To install scikit-learn-intelex without downloading daal4py in the development mode::
 
     cd <checkout-dir>
     python setup_sklearnex.py develop --no-deps
