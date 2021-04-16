@@ -15,9 +15,22 @@ if __name__ == '__main__':
         '-d', '--device',
         type=str,
         help='device name',
-        choices=['host', 'cpu', 'gpu'])
+        choices=['host', 'cpu', 'gpu']
+    )
+    parser.add_argument(
+        '--deselect',
+        help='The list of deselect commands passed directly to pytest',
+        action='append',
+        required=True
+    )
     args = parser.parse_args()
 
+    deselected_tests = [
+        element for test in args.deselect
+        for element in ('--deselect', test)
+    ]
+
     with get_context(args.device):
-        pytest.main(os.environ['DESELECTED_TESTS'].split() + [
-            "-ra", "--disable-warnings", "--pyargs", "sklearn"])
+        pytest.main(
+            ["-ra", "--disable-warnings", "--pyargs", "sklearn"] + deselected_tests
+        )
