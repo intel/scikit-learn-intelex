@@ -12,6 +12,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Script to run scikit-learn tests with device context manager')
     parser.add_argument(
+        '-q', '--quiet',
+        help='make pytest less verbose',
+        action='store_false')
+    parser.add_argument(
         '-d', '--device',
         type=str,
         help='device name',
@@ -30,7 +34,14 @@ if __name__ == '__main__':
         for element in ('--deselect', test)
     ]
 
+    pytest_params = [
+        "-ra", "--disable-warnings"
+    ]
+
+    if not args.quiet:
+        pytest_params.append("-q")
+
     with get_context(args.device):
         pytest.main(
-            ["-ra", "--disable-warnings", "--pyargs", "sklearn"] + deselected_tests
+            pytest_params + ["--pyargs", "sklearn"] + deselected_tests
         )
