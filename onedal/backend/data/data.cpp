@@ -14,8 +14,6 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <cstdint>
-#include <cstring>
 #include <Python.h>
 #include "backend/data/data.h"
 
