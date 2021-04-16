@@ -19,7 +19,6 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 from scipy import sparse as sp
-from importlib import import_module
 from onedal.common import (
     _validate_targets,
     _check_X_y,

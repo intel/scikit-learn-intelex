@@ -262,11 +262,11 @@ PyObject * svm_infer<Task>::get_decision_function()
     return table_to_numpy(infer_result_.get_decision_function());
 }
 
-template class ONEDAL_EXPORT svm_model<svm::task::classification>;
-template class ONEDAL_EXPORT svm_train<svm::task::classification>;
-template class ONEDAL_EXPORT svm_infer<svm::task::classification>;
-template class ONEDAL_EXPORT svm_model<svm::task::regression>;
-template class ONEDAL_EXPORT svm_train<svm::task::regression>;
-template class ONEDAL_EXPORT svm_infer<svm::task::regression>;
+template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::classification>;
+template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::classification>;
+template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::classification>;
+template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::regression>;
+template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::regression>;
+template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::regression>;
 
 } // namespace oneapi::dal::python

@@ -26,13 +26,13 @@
 
 namespace oneapi::dal::python
 {
-struct ONEDAL_EXPORT linear_kernel_params
+struct ONEDAL_BACKEND_EXPORT linear_kernel_params
 {
     double scale;
     double shift;
 };
 
-class ONEDAL_EXPORT linear_kernel_compute
+class ONEDAL_BACKEND_EXPORT linear_kernel_compute
 {
 public:
     // from descriptor
@@ -52,12 +52,12 @@ private:
     static const auto get_descriptor(linear_kernel_params & params, data_type data_type_input);
 };
 
-struct ONEDAL_EXPORT rbf_kernel_params
+struct ONEDAL_BACKEND_EXPORT rbf_kernel_params
 {
     double sigma;
 };
 
-class ONEDAL_EXPORT rbf_kernel_compute
+class ONEDAL_BACKEND_EXPORT rbf_kernel_compute
 {
 public:
     // from descriptor
@@ -74,14 +74,14 @@ private:
     rbf_kernel::compute_result<> compute_result_;
 };
 
-struct ONEDAL_EXPORT polynomial_kernel_params
+struct ONEDAL_BACKEND_EXPORT polynomial_kernel_params
 {
     double scale;
     double shift;
     double degree;
 };
 
-class ONEDAL_EXPORT polynomial_kernel_compute
+class ONEDAL_BACKEND_EXPORT polynomial_kernel_compute
 {
 public:
     // from descriptor

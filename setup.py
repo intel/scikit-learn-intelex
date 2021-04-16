@@ -252,7 +252,6 @@ def getpyexts():
                         ('NPY_NO_DEPRECATED_API',
                          'NPY_1_7_API_VERSION'),
                         ('ONEDAL_VERSION', ONEDAL_VERSION),
-                        ('__ONEDAL_ENABLE_DLL_EXPORT__', None),
                     ],
                     libraries=onedal_libraries_plat,
                     library_dirs=ONEDAL_LIBDIRS,
@@ -291,7 +290,6 @@ def getpyexts():
                         define_macros=[
                             ('NPY_NO_DEPRECATED_API',
                              'NPY_1_7_API_VERSION'),
-                            ('__ONEDAL_ENABLE_DLL_EXPORT__', None),
                         ],
                         libraries=['dpc_backend'],
                         library_dirs=['onedal'],

@@ -16,9 +16,14 @@
 
 #pragma once
 
-#include "oneapi/dal/common.hpp"
 #include <numpy/arrayobject.h>
 #include <string>
+
+#if defined(_WIN32) || defined(_WIN64)
+    #define ONEDAL_BACKEND_EXPORT __declspec(dllexport)
+#else
+    #define ONEDAL_BACKEND_EXPORT
+#endif
 
 #define ONEDAL_2021_3_VERSION (2021 * 10000 + 3 * 100)
 
