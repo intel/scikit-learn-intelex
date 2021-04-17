@@ -1,6 +1,9 @@
 # Intel(R) Extension for Scikit-learn*
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/21716/badge.svg)](https://scan.coverity.com/projects/daal4py)
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/intel/scikit-learn-intelex/discussions)
+[![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-learn-intelex)](https://anaconda.org/conda-forge/scikit-learn-intelex)
 
 Intel(R) Extension for Scikit-learn speeds up scikit-learn beyond  by providing drop-in patching. Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library ([oneDAL](https://github.com/oneapi-src/oneDAL)) that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
 
@@ -41,11 +44,16 @@ You may reach out to project maintainers privately at onedal.maintainers@intel.c
 
 # 🛠 Installation
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
-and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex).
+on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex).
 
 ```bash
 # PyPi (recommended by default)
 pip install scikit-learn-intelex
+```
+
+```bash
+# Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
+conda install scikit-learn-intelex -c conda-forge
 ```
 
 ```bash
@@ -59,17 +67,25 @@ conda install scikit-learn-intelex -c intel
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
 | :-----------------------| :------------: | :-------------:| :------------:| :------------:|
-|    **Linux**            |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU]  |  [CPU, GPU]|  |
-|    **Windows**          |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU]  |  [CPU, GPU]|  |
-|    **OsX**              |    [CPU]       |  [CPU]         |    [CPU]      |    [CPU]      |
+|    **Linux**            |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU]  |     ❌       |
+|    **Windows**          |    [CPU, GPU]  |  [CPU, GPU]    |   [CPU, GPU]  |     ❌       |
+|    **OsX**              |    [CPU]       |  [CPU]         |    [CPU]      |     ❌       |
+
+#### 📦 Anaconda Cloud: Conda-Forge channel
+
+| OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
+| :-----------------------| :------------: | :------------: | :------------:| :------------:|
+|    **Linux**            |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
+|    **Windows**          |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
+|    **OsX**              |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
 
 #### 📦 Anaconda Cloud: Intel channel
 
 | OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
 | :-----------------------| :------------: | :-------------:| :------------:| :------------:|
-|    **Linux**            |   ❌          |     [CPU, GPU]  |     ❌       |      ❌       |
-|    **Windows**          |   ❌          |     [CPU, GPU]  |     ❌       |      ❌       |
-|    **OsX**              |   ❌          |     [CPU]       |     ❌       |      ❌       |
+|    **Linux**            |   [CPU, GPU]   |     [CPU, GPU]  |  [CPU, GPU]  |      ❌       |
+|    **Windows**          |   [CPU, GPU]   |     [CPU, GPU]  |  [CPU, GPU]  |      ❌       |
+|    **OsX**              |   [CPU]        |     [CPU]       |   [CPU]      |      ❌       |
 
 </details>
 
@@ -140,7 +156,7 @@ Intel(R) Extension for Scikit-learn patching affects performance of specific Sci
 
  </details>
 
-⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.2 supports scikit-learn 0.21.X,
+⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.2.X supports scikit-learn 0.21.X,
 0.22.X, 0.23.X and 0.24.X.
 
 ## 📜 Intel(R) Extension for Scikit-learn verbose
