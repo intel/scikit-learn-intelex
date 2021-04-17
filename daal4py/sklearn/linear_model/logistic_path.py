@@ -593,13 +593,13 @@ def daal4py_predict(self, X, resultsToEvaluate):
 
 if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
     def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
-                                  max_iter=100, tol=1e-4, verbose=0,
-                                  solver='lbfgs', coef=None,
-                                  class_weight=None, dual=False, penalty='l2',
-                                  intercept_scaling=1., multi_class='auto',
-                                  random_state=None, check_input=True,
-                                  max_squared_sum=None, sample_weight=None,
-                                  l1_ratio=None):
+                                 max_iter=100, tol=1e-4, verbose=0,
+                                 solver='lbfgs', coef=None,
+                                 class_weight=None, dual=False, penalty='l2',
+                                 intercept_scaling=1., multi_class='auto',
+                                 random_state=None, check_input=True,
+                                 max_squared_sum=None, sample_weight=None,
+                                 l1_ratio=None):
         return __logistic_regression_path(X, y, pos_class=pos_class,
                                           Cs=Cs, fit_intercept=fit_intercept,
                                           max_iter=max_iter, tol=tol, verbose=verbose,
@@ -637,7 +637,8 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
             self.l1_ratio = l1_ratio
 
         def fit(self, X, y, sample_weight=None):
-            which, what, replacer = logistic_module, '_logistic_regression_path', logistic_regression_path
+            which, what = logistic_module, '_logistic_regression_path'
+            replacer = logistic_regression_path
             descriptor = getattr(which, what, None)
             setattr(which, what, replacer)
             clf = super().fit(X, y, sample_weight)
@@ -656,13 +657,13 @@ if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
 
 else:
     def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
-                                  max_iter=100, tol=1e-4, verbose=0,
-                                  solver='lbfgs', coef=None,
-                                  class_weight=None, dual=False, penalty='l2',
-                                  intercept_scaling=1., multi_class='auto',
-                                  random_state=None, check_input=True,
-                                  max_squared_sum=None, sample_weight=None,
-                                  l1_ratio=None):
+                                 max_iter=100, tol=1e-4, verbose=0,
+                                 solver='lbfgs', coef=None,
+                                 class_weight=None, dual=False, penalty='l2',
+                                 intercept_scaling=1., multi_class='auto',
+                                 random_state=None, check_input=True,
+                                 max_squared_sum=None, sample_weight=None,
+                                 l1_ratio=None):
         return __logistic_regression_path(X, y, pos_class=pos_class,
                                           Cs=Cs, fit_intercept=fit_intercept,
                                           max_iter=max_iter, tol=tol, verbose=verbose,
@@ -701,7 +702,8 @@ else:
             self.l1_ratio = l1_ratio
 
         def fit(self, X, y, sample_weight=None):
-            which, what, replacer = logistic_module, '_logistic_regression_path', logistic_regression_path
+            which, what = logistic_module, '_logistic_regression_path'
+            replacer = logistic_regression_path
             descriptor = getattr(which, what, None)
             setattr(which, what, replacer)
             clf = super().fit(X, y, sample_weight)
