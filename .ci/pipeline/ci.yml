@@ -176,7 +176,7 @@ jobs:
     displayName: oneAPI environment
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c intel python=$(python.version) dal-devel
+  - script: conda create -q -y -n CB -c intel python=$(python.version) dal-devel impi-devel
     displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
@@ -186,6 +186,8 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
+      set DALROOT=%PREFIX%
+      set MPIROOT=%PREFIX%
       call scripts/bld.bat
     displayName: 'Build daal4py'
   - script: |

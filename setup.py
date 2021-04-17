@@ -164,7 +164,7 @@ if no_dist:
     MPI_CPPS = []
 else:
     DIST_CFLAGS = ['-D_DIST_', ]
-    DIST_CPPS = ['src/transceiver.cpp']
+    DIST_CPPS = ['daal4py/src/transceiver.cpp']
     MPI_INCDIRS = [jp(mpi_root, 'include')]
     MPI_LIBDIRS = [jp(mpi_root, 'lib')]
     MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
@@ -178,7 +178,7 @@ else:
         assert MPI_LIBS, "Couldn't find MPI library"
     else:
         MPI_LIBS = ['mpi']
-    MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
+    MPI_CPPS = ['daal4py/src/mpi/mpi_transceiver.cpp']
 
 #Level Zero workaround for oneDAL Beta06
 from scripts.generator.parse import parse_version
@@ -327,7 +327,8 @@ def getpyexts():
 
         ext = Extension('_oneapi',
                         [os.path.abspath('daal4py/src/oneapi/oneapi.pyx'), ],
-                        depends=['daal4py/src/oneapi/oneapi.h', 'daal4py/src/oneapi/oneapi_backend.h'],
+                        depends=['daal4py/src/oneapi/oneapi.h',
+                                 'daal4py/src/oneapi/oneapi_backend.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca_dpcpp,
                         extra_link_args=ela,
@@ -337,11 +338,12 @@ def getpyexts():
                         language='c++')
         exts.extend(cythonize(ext))
     if dpctl:
+        dpctl_sources = [
+            os.path.abspath('daal4py/src/dpctl_interop/dpctl_interop.pyx'),
+            os.path.abspath('daal4py/src/dpctl_interop/daal_context_service.cpp'),
+        ],
         ext = Extension('_dpctl_interop',
-                        [
-                            os.path.abspath('daal4py/src/dpctl_interop/dpctl_interop.pyx'),
-                            os.path.abspath('daal4py/src/dpctl_interop/daal_context_service.cpp'),
-                        ],
+                        dpctl_sources,
                         depends=['daal4py/src/dpctl_interop/daal_context_service.h', ],
                         include_dirs=include_dir_plat + DPCTL_INCDIRS,
                         extra_compile_args=eca_dpcpp,
@@ -391,7 +393,8 @@ def gen_pyx(odir):
         os.mkdir(odir)
 
     source_dir = os.path.abspath('daal4py')
-    gen_daal4py(dal_root, odir, source_dir, d4p_version, no_dist=no_dist, no_stream=no_stream)
+    gen_daal4py(dal_root, odir, source_dir, d4p_version,
+                no_dist=no_dist, no_stream=no_stream)
 
 
 gen_pyx(os.path.abspath('./build'))
