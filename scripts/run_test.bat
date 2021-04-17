@@ -15,26 +15,38 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 rem ============================================================================
 
-set DAAL4PY_VERSION=%PKG_VERSION%
-set MPIROOT=%PREFIX%\Library
-
-IF DEFINED DPCPPROOT (
-    echo "Sourcing DPCPPROOT"
-    call "%DPCPPROOT%\env\vars.bat"
-    set "CC=dpcpp"
-    set "CXX=dpcpp"
-    dpcpp --version
+python -m unittest discover -v -s daal4py\daal4py\tests -p test*.py
+set errorcode=!errorlevel!
+if !errorcode! NEQ 0 (
+    echo DAAL4PY TEST FAILED
+    exit /b 1
 )
-
-IF DEFINED DAALROOT (set DALROOT=%DAALROOT%)
-
-IF DEFINED DALROOT (
-    echo "Sourcing DALROOT"
-    call "%DALROOT%\env\vars.bat"
-    echo "Finish sourcing DALROOT"
+pytest --pyargs daal4py\daal4py\sklearn\
+set errorcode=!errorlevel!
+if !errorcode! NEQ 0 (
+    echo DAAL4PY TEST FAILED
+    exit /b 1
 )
-
-IF DEFINED TBBROOT (
-    echo "Sourcing TBBROOT"
-    call "%TBBROOT%\env\vars.bat"
+if "%NO_DIST%" EQU "" (
+    python -m daal4py daal4py\examples\run_examples.py
+) else (
+    python -m daal4py daal4py\examples\run_examples.py nodist
 )
+set errorcode=!errorlevel!
+if !errorcode! NEQ 0 (
+    echo DAAL4PY TEST FAILED
+    exit /b 1
+)
+python -m daal4py daal4py\examples\sycl\sklearn_sycl.py
+set errorcode=!errorlevel!
+if !errorcode! NEQ 0 (
+    echo DAAL4PY TEST FAILED
+    exit /b 1
+)
+pytest --pyargs daal4py\sklearnex\tests\
+set errorcode=!errorlevel!
+if !errorcode! NEQ 0 (
+    echo SKLEARNEX TEST FAILED
+    exit /b 1
+)
+echo DAAL4PY TEST PASSED

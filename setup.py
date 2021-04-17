@@ -249,7 +249,7 @@ def get_type_defines():
 
 
 def get_build_options():
-    include_dir_plat = [os.path.abspath('./src'), dal_root + '/include', ]
+    include_dir_plat = [os.path.abspath('./daal4py/src'), dal_root + '/include', ]
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
@@ -304,7 +304,7 @@ def get_build_options():
 def getpyexts():
     eca, ela, include_dir_plat, libraries_plat = get_build_options()
     exts = cythonize([Extension('_daal4py',
-                                [os.path.abspath('src/daal4py.cpp'),
+                                [os.path.abspath('daal4py/src/daal4py.cpp'),
                                  os.path.abspath('build/daal4py_cpp.cpp'),
                                  os.path.abspath('build/daal4py_cy.pyx')] + DIST_CPPS,
                                 depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
@@ -326,8 +326,8 @@ def getpyexts():
             runtime_library_dirs = []
 
         ext = Extension('_oneapi',
-                        [os.path.abspath('src/oneapi/oneapi.pyx'), ],
-                        depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
+                        [os.path.abspath('daal4py/src/oneapi/oneapi.pyx'), ],
+                        depends=['daal4py/src/oneapi/oneapi.h', 'daal4py/src/oneapi/oneapi_backend.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca_dpcpp,
                         extra_link_args=ela,
@@ -339,10 +339,10 @@ def getpyexts():
     if dpctl:
         ext = Extension('_dpctl_interop',
                         [
-                            os.path.abspath('src/dpctl_interop/dpctl_interop.pyx'),
-                            os.path.abspath('src/dpctl_interop/daal_context_service.cpp'),
+                            os.path.abspath('daal4py/src/dpctl_interop/dpctl_interop.pyx'),
+                            os.path.abspath('daal4py/src/dpctl_interop/daal_context_service.cpp'),
                         ],
-                        depends=['src/dpctl_interop/daal_context_service.h', ],
+                        depends=['daal4py/src/dpctl_interop/daal_context_service.h', ],
                         include_dirs=include_dir_plat + DPCTL_INCDIRS,
                         extra_compile_args=eca_dpcpp,
                         extra_link_args=ela_dpcpp,
@@ -354,7 +354,7 @@ def getpyexts():
     if not no_dist:
         ext = Extension('mpi_transceiver',
                         MPI_CPPS,
-                        depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
+                        depends=glob.glob(jp(os.path.abspath('daal4py/src'), '*.h')),
                         include_dirs=include_dir_plat + [np.get_include()] + MPI_INCDIRS,
                         extra_compile_args=eca,
                         extra_link_args=ela + ["-Wl,-rpath,{}".format(x)
@@ -447,7 +447,7 @@ def build_oneapi_backend():
     libraries = [f'{lib_prefix}{str(item)}{lib_suffix}' for item in libraries]
 
     d4p_dir = os.getcwd()
-    src_dir = os.path.join(d4p_dir, "src/oneapi")
+    src_dir = os.path.join(d4p_dir, "daal4py/src/oneapi")
     build_dir = os.path.join(d4p_dir, "build_backend")
 
     if os.path.exists(build_dir):

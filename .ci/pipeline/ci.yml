@@ -22,7 +22,7 @@ variables:
   - name: MACOSX_DEPLOYMENT_TARGET
     value: '10.15'
   - name: python.version
-    value: '3.7'
+    value: '3.8'
   - name: 'PYTHON'
     value: python
   - name: 'ARGS'
@@ -45,20 +45,20 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       pip install -r requirements-dev.txt
-      pip install -r requirements-doc.txt
       pip install -r requirements-test.txt
+      pip install -r doc/requirements.txt
       pip install xgboost lightgbm
     displayName: 'Install requirements'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       export DALROOT=$CONDA_PREFIX
-      ./conda-recipe/build.sh
+      ./scripts/build.sh
     displayName: 'Build daal4py'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      ./conda-recipe/run_test.sh
+      ./scripts/run_test.sh
     displayName: Testing
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -107,23 +107,31 @@ jobs:
     displayName: 'apt-get'
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge python=$(python.version) conda-build=3.21.1 conda-verify
-    displayName: Create Anaconda environment
-  - script: |
-      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
+      conda create -q -y -n CB -c intel python=$(python.version) dal-devel impi-devel
+    displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      pip install daal numpy
+      pip install -r requirements-dev.txt
       pip install -r requirements-test.txt
-      conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
-      python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
-      cd ..
-      pytest s/sklearnex/tests/
-    displayName: conda build
+      pip install xgboost lightgbm
+    displayName: 'Install requirements'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      export DALROOT=$CONDA_PREFIX
+      ./scripts/build.sh
+    displayName: 'Build daal4py'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      ./scripts/run_test.sh
+    displayName: Testing
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      cd examples && python run_examples.py
+    displayName: Examples
 
 - job: MacOS
   pool:
@@ -135,17 +143,22 @@ jobs:
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
       conda create -n CB python=$(python.version)
-      conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn mpich
-      conda install -n CB -q --override-channels -c intel dal dal-include
+      conda install -n CB -q clang-tools mpich
+      conda install -n CB -q --override-channels -c intel dal-devel
     displayName: Create Anaconda environment
   - script: |
       source activate CB
-      export DALROOT=$CONDA_PREFIX
-      ./conda-recipe/build.sh
-    displayName: Conda build
+      pip install -r requirements-dev.txt
+      pip install -r requirements-test.txt
+    displayName: 'Install requirements'
   - script: |
       source activate CB
-      ./conda-recipe/run_test.sh
+      export DALROOT=$CONDA_PREFIX
+      ./scripts/build.sh
+    displayName: 'Build daal4py'
+  - script: |
+      source activate CB
+      ./scripts/run_test.sh
     displayName: Testing
   - script: |
       source activate CB
@@ -163,23 +176,28 @@ jobs:
     displayName: oneAPI environment
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB python=$(python.version) conda-build conda-verify
-    displayName: Create Anaconda environment
+  - script: conda create -q -y -n CB -c intel python=$(python.version) dal-devel
+    displayName: 'Create Anaconda environment'
+  - script: |
+      call activate CB
+      pip install -r requirements-dev.txt
+      pip install -r requirements-test.txt
+    displayName: 'Install requirements'
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      conda build --override-channels -c intel -c conda-forge --numpy=1.19 --output-folder=. conda-recipe
-    displayName: conda build
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
-      Contents: 'daal4py*'
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'daal4py win'
-      targetPath: '$(Build.ArtifactStagingDirectory)/'
-    condition: always()
+      call scripts/bld.bat
+    displayName: 'Build daal4py'
+  - script: |
+      call activate CB
+      call scripts/run_test.bat
+    displayName: Testing
+  - script: |
+      source activate CB
+      python examples/run_examples.py
+    displayName: Examples
+
+
 - job: PEP8
   pool:
     vmImage: 'ubuntu-20.04'
