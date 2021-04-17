@@ -17,13 +17,22 @@
 
 import numpy as np
 from numpy.testing import assert_allclose
-from sklearn.datasets import make_regression
+from sklearn.datasets import load_breast_cancer
 
-def test_sklearnex_import():
-    from sklearnex.linear_model import Ridge
-    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-    y = np.dot(X, np.array([1, 2])) + 3
-    ridgereg = Ridge().fit(X, y)
-    assert 'daal4py' in ridgereg.__module__
-    assert_allclose(ridgereg.intercept_, 4.5)
-    assert_allclose(ridgereg.coef_, [0.8, 1.4])
+
+def test_sklearnex_import_roc_auc():
+    from sklearnex.metrics import roc_auc_score
+    from sklearnex.linear_model import LogisticRegression
+    X, y = load_breast_cancer(return_X_y=True)
+    clf = LogisticRegression(random_state=0).fit(X, y)
+    res = roc_auc_score(y, clf.decision_function(X))
+    assert_allclose(res, 0.99, atol=1e-2)
+
+
+def test_sklearnex_import_pairwise_distances():
+    from sklearnex.metrics import pairwise_distances
+    rng = np.random.RandomState(0)
+    x = np.abs(rng.rand(4), dtype=np.float64)
+    x = np.vstack([x, x])
+    res = pairwise_distances(x, metric='cosine')
+    assert_allclose(res, [[0., 0.], [0., 0.]], atol=1e-2)

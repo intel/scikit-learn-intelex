@@ -18,11 +18,13 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
-def test_sklearnex_import():
-    from sklearnex.linear_model import Lasso
-    X = [[0,0], [1, 1], [2, 2]]
-    y = [0, 1, 2]
-    lasso = Lasso(alpha=0.1).fit(X, y)
-    assert 'daal4py' in lasso.__module__
-    assert_allclose(lasso.intercept_, 0.15)
-    assert_allclose(lasso.coef_, [0.85, 0.  ])
+
+def test_sklearnex_import_svc():
+    from sklearnex.svm import SVC
+    X = np.array([[-2, -1], [-1, -1], [-1, -2],
+                  [+1, +1], [+1, +2], [+2, +1]])
+    y = np.array([1, 1, 1, 2, 2, 2])
+    svc = SVC(kernel='linear').fit(X, y)
+    assert 'daal4py' in svc.__module__
+    assert_allclose(svc.dual_coef_, [[-0.25, .25]])
+    assert_allclose(svc.support_, [1, 3])

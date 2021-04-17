@@ -16,8 +16,15 @@
 #===============================================================================
 
 import sys
+from distutils.version import LooseVersion
+
 
 def patch_sklearn(name=None, verbose=True):
+    from sklearn import __version__ as sklearn_version
+    if LooseVersion(sklearn_version) < LooseVersion("0.22.0"):
+        raise NotImplementedError("Intel(R) Extension for Scikit-learn* patches apply "
+                                  "for scikit-learn >= 0.22.0 only ...")
+
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
     if isinstance(name, list):
         for algorithm in name:
@@ -38,6 +45,7 @@ def unpatch_sklearn(name=None):
             unpatch_sklearn_orig(name)
     else:
         unpatch_sklearn_orig(name)
+
 
 def get_patch_names():
     from daal4py.sklearn import sklearn_patch_names as get_patch_names_orig

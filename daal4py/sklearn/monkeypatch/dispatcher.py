@@ -24,6 +24,7 @@ from ..svm.svm import SVC as SVC_daal4py
 from ..ensemble._forest import RandomForestClassifier as RandomForestClassifier_daal4py
 from ..ensemble._forest import RandomForestRegressor as RandomForestRegressor_daal4py
 from ..metrics import _daal_roc_auc_score
+from ..metrics import daal_pairwise_distances
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
 from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
@@ -52,12 +53,6 @@ import sklearn.linear_model as linear_model_module
 import sklearn.manifold as manifold_module
 
 import warnings
-
-
-if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-    from ._pairwise_0_22 import daal_pairwise_distances
-else:
-    from ._pairwise_0_21 import daal_pairwise_distances
 
 
 @lru_cache(maxsize=None)
@@ -95,15 +90,6 @@ def _get_map_of_algorithms():
                         _daal_roc_auc_score), None]],
         'tsne': [[(manifold_module, 'TSNE', TSNE_daal4py), None]],
     }
-
-    # don't passed patching tests
-    # mapping['linearregression'] = mapping['linear']
-    # mapping['logisticregression'] = mapping['log_reg']
-    # mapping['kneighborsclassifier'] = mapping['knn_classifier']
-    # mapping['nearestneighbors'] = mapping['nearest_neighbors']
-    # mapping['kneighborsregressor'] = mapping['knn_regressor']
-    # mapping['randomforestclassifier'] = mapping['random_forest_classifier']
-    # mapping['randomforestregressor'] = mapping['random_forest_regressor']
     return mapping
 
 
@@ -131,9 +117,9 @@ def do_unpatch(name):
 
 
 def enable(name=None, verbose=True, deprecation=True):
-    if LooseVersion(sklearn_version) < LooseVersion("0.21.0"):
+    if LooseVersion(sklearn_version) < LooseVersion("0.22.0"):
         raise NotImplementedError(
-            "daal4py patches apply for scikit-learn >= 0.21.0 only ...")
+            "daal4py patches apply for scikit-learn >= 0.22.0 only ...")
     if name is not None:
         do_patch(name)
     else:

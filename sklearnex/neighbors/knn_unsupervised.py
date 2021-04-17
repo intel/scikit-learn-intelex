@@ -15,13 +15,4 @@
 # limitations under the License.
 #===============================================================================
 
-import numpy as np
-from numpy.testing import assert_allclose
-from sklearn.datasets import make_classification
-
-def test_sklearnex_import():
-    from sklearnex.ensemble import RandomForestClassifier
-    X, y = make_classification(n_samples=1000, n_features=4,
-        n_informative=2, n_redundant=0, random_state=0, shuffle=False)
-    rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
-    assert_allclose([1], rf.predict([[0, 0, 0, 0]]))
+from daal4py.sklearn.neighbors import NearestNeighbors

@@ -15,14 +15,4 @@
 # limitations under the License.
 #===============================================================================
 
-import numpy as np
-from numpy.testing import assert_allclose
-from sklearn.datasets import make_regression
-
-def test_sklearnex_import():
-    from sklearnex.linear_model import ElasticNet
-    X, y = make_regression(n_features=2, random_state=0)
-    elasticnet = ElasticNet(random_state=0).fit(X, y)
-    assert 'daal4py' in elasticnet.__module__
-    assert_allclose(elasticnet.intercept_, 1.451, atol=1e-3)
-    assert_allclose(elasticnet.coef_, [18.838, 64.559], atol=1e-3)
+from daal4py.sklearn.manifold import TSNE

@@ -18,8 +18,9 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
+
 def test_sklearnex_import():
     from sklearnex.decomposition import PCA
     X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1]])
     pca = PCA(n_components=2, svd_solver='full').fit(X)
-    result = pca.transform(X)
+    assert 'daal4py' in pca.__module__

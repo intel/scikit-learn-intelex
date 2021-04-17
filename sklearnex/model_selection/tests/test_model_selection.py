@@ -17,12 +17,16 @@
 
 import numpy as np
 from numpy.testing import assert_allclose
-from sklearn.datasets import load_iris
 
 
-def test_sklearnex_import():
-    from sklearnex.linear_model import LogisticRegression
-    X, y = load_iris(return_X_y=True)
-    logreg = LogisticRegression(random_state=0, max_iter=200).fit(X, y)
-    assert 'daal4py' in logreg.__module__
-    assert_allclose(logreg.score(X, y), 0.9733, atol=1e-3)
+def test_sklearnex_import_train_test_split():
+    from sklearnex.model_selection import train_test_split
+    X = np.arange(100).reshape((10, 10))
+    y = np.arange(10)
+
+    split = train_test_split(X, y, test_size=None, train_size=.5)
+    X_train, X_test, y_train, y_test = split
+    assert len(y_test) == len(y_train)
+
+    assert_allclose(X_train[:, 0], y_train * 10)
+    assert_allclose(X_test[:, 0], y_test * 10)

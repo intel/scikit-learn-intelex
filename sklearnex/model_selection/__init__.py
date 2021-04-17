@@ -15,14 +15,8 @@
 # limitations under the License.
 #===============================================================================
 
-import numpy as np
-from numpy.testing import assert_allclose
-from sklearn.datasets import load_iris
+from .split import train_test_split
 
-
-def test_sklearnex_import():
-    from sklearnex.linear_model import LogisticRegression
-    X, y = load_iris(return_X_y=True)
-    logreg = LogisticRegression(random_state=0, max_iter=200).fit(X, y)
-    assert 'daal4py' in logreg.__module__
-    assert_allclose(logreg.score(X, y), 0.9733, atol=1e-3)
+__all__ = [
+    'train_test_split',
+]
