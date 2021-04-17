@@ -30,16 +30,13 @@ from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
 from ..linear_model.coordinate_descent import ElasticNet as ElasticNet_daal4py
 from ..linear_model.linear import LinearRegression as LinearRegression_daal4py
 from ..linear_model.ridge import Ridge as Ridge_daal4py
+from ..linear_model.logistic_path import LogisticRegression as LogisticRegression_daal4py
+from ..linear_model.logistic_path import logistic_regression_path as daal_optimized_logistic_path
 from ..decomposition._pca import PCA as PCA_daal4py
 from ..manifold import TSNE as TSNE_daal4py
-from ..linear_model.logistic_path import LogisticRegression as LogisticRegression_daal4py
 from sklearn import model_selection
 from sklearn import metrics
 from sklearn.utils import validation
-import sklearn.neighbors as neighbors_module
-import sklearn.decomposition as decomposition_module
-import sklearn.linear_model as linear_model_module
-import sklearn.manifold as manifold_module
 import sys
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
@@ -48,23 +45,13 @@ from functools import lru_cache
 import sklearn.cluster as cluster_module
 import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
-import warnings
+import sklearn.linear_model._logistic as logistic_module
+import sklearn.neighbors as neighbors_module
+import sklearn.decomposition as decomposition_module
+import sklearn.linear_model as linear_model_module
+import sklearn.manifold as manifold_module
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-    import sklearn.linear_model._logistic as logistic_module
-    _patched_log_reg_path_func_name = '_logistic_regression_path'
-    from ..linear_model._logistic_path_0_22 import _logistic_regression_path as \
-        daal_optimized_logistic_path
-else:
-    import sklearn.linear_model.logistic as logistic_module
-    if LooseVersion(sklearn_version) >= LooseVersion("0.21.0"):
-        _patched_log_reg_path_func_name = '_logistic_regression_path'
-        from ..linear_model._logistic_path_0_21 import _logistic_regression_path as \
-            daal_optimized_logistic_path
-    else:
-        _patched_log_reg_path_func_name = 'logistic_regression_path'
-        from ..linear_model._logistic_path_0_21 import logistic_regression_path as \
-            daal_optimized_logistic_path
+import warnings
 
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
@@ -86,13 +73,10 @@ def _get_map_of_algorithms():
         'elasticnet': [[(linear_model_module, 'ElasticNet', ElasticNet_daal4py), None]],
         'lasso': [[(linear_model_module, 'Lasso', Lasso_daal4py), None]],
         'svm': [[(svm_module, 'SVC', SVC_daal4py), None]],
-        'logistic': [[(logistic_module, _patched_log_reg_path_func_name,
+        'logistic': [[(logistic_module, '_logistic_regression_path',
                        daal_optimized_logistic_path), None]],
         'log_reg': [[(linear_model_module, 'LogisticRegression',
                     LogisticRegression_daal4py), None]],
-        # Bug with unpath for patch many classes
-        # [(logistic_module, _patched_log_reg_path_func_name,
-        #  daal_optimized_logistic_path), None]],
         'knn_classifier': [[(neighbors_module, 'KNeighborsClassifier',
                              KNeighborsClassifier_daal4py), None]],
         'nearest_neighbors': [[(neighbors_module, 'NearestNeighbors',

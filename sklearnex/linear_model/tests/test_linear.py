@@ -15,4 +15,15 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.linear_model import LinearRegression
+import numpy as np
+from numpy.testing import assert_allclose
+from sklearn.datasets import make_regression
+
+def test_sklearnex_import():
+    from sklearnex.linear_model import LinearRegression
+    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
+    y = np.dot(X, np.array([1, 2])) + 3
+    linreg = LinearRegression().fit(X, y)
+    assert 'daal4py' in linreg.__module__
+    assert_allclose(linreg.intercept_, 3.)
+    assert_allclose(linreg.coef_, [1., 2.])

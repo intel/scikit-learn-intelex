@@ -15,4 +15,15 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.linear_model import LinearRegression
+import numpy as np
+from numpy.testing import assert_allclose
+from sklearn.datasets import make_regression
+
+def test_sklearnex_import():
+    from sklearnex.linear_model import Ridge
+    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
+    y = np.dot(X, np.array([1, 2])) + 3
+    ridgereg = Ridge().fit(X, y)
+    assert 'daal4py' in ridgereg.__module__
+    assert_allclose(ridgereg.intercept_, 4.5)
+    assert_allclose(ridgereg.coef_, [0.8, 1.4])

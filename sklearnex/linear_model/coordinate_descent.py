@@ -15,4 +15,4 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.linear_model import ElasticNet, Lasso
+from daal4py.sklearn.linear_model import ElasticNet, Lasso

@@ -15,4 +15,14 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.linear_model import LinearRegression
+import numpy as np
+from numpy.testing import assert_allclose
+
+def test_sklearnex_import():
+    from sklearnex.linear_model import Lasso
+    X = [[0,0], [1, 1], [2, 2]]
+    y = [0, 1, 2]
+    lasso = Lasso(alpha=0.1).fit(X, y)
+    assert 'daal4py' in lasso.__module__
+    assert_allclose(lasso.intercept_, 0.15)
+    assert_allclose(lasso.coef_, [0.85, 0.  ])
