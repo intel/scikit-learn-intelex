@@ -167,7 +167,7 @@ class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 
     if sklearn_check_version('1.0'):
-        def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
+        def __init__(self, alpha=1.0, fit_intercept=True, normalize='deprecated',
                      copy_X=True, max_iter=None, tol=1e-3, solver="auto",
                      random_state=None):
             self.alpha = alpha
@@ -179,7 +179,7 @@ class Ridge(Ridge_original, _BaseRidge):
             self.solver = solver
             self.random_state = random_state
     else:
-        def __init__(self, alpha=1.0, fit_intercept=True, normalize='deprecated',
+        def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
                      copy_X=True, max_iter=None, tol=1e-3, solver="auto",
                      random_state=None):
             self.alpha = alpha
