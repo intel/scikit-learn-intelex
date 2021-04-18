@@ -16,22 +16,34 @@
 
 from sklearn.linear_model import LinearRegression as LinearRegression_original
 
-from .._utils import get_patch_message
-
+from .._utils import get_patch_message, sklearn_check_version
 from ._linear_0_23 import (_fit_linear, _predict_linear)
 import logging
-
 
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 
-    def __init__(self, fit_intercept=True, normalize=False, copy_X=True,
-                 n_jobs=None, positive=False):
-        super(LinearRegression, self).__init__(
-            fit_intercept=fit_intercept, normalize=normalize,
-            copy_X=copy_X, n_jobs=n_jobs, positive=positive)
+    if sklearn_check_version('1.0'):
+        def __init__(self, fit_intercept=True, normalize='deprecated', copy_X=True,
+                     n_jobs=None, positive=False):
+            super(LinearRegression, self).__init__(
+                fit_intercept=fit_intercept, normalize=normalize,
+                copy_X=copy_X, n_jobs=n_jobs, positive=positive)
+    else:
+        def __init__(self, fit_intercept=True, normalize=False, copy_X=True,
+                     n_jobs=None, positive=False):
+            super(LinearRegression, self).__init__(
+                fit_intercept=fit_intercept, normalize=normalize,
+                copy_X=copy_X, n_jobs=n_jobs, positive=positive)
 
     def fit(self, X, y, sample_weight=None):
+        if sklearn_check_version('1.0'):
+            from sklearn.linear_model._base import _deprecate_normalize
+            self.normalize = _deprecate_normalize(
+                self.normalize, default=False,
+                estimator_name=self.__class__.__name__
+            )
+
         if self.positive is True:
             logging.info(
                 "sklearn.linar_model.LinearRegression."
