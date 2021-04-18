@@ -180,8 +180,8 @@ class Ridge(Ridge_original, _BaseRidge):
             self.random_state = random_state
     else:
         def __init__(self, alpha=1.0, fit_intercept=True, normalize='deprecated',
-                 copy_X=True, max_iter=None, tol=1e-3, solver="auto",
-                 random_state=None):
+                     copy_X=True, max_iter=None, tol=1e-3, solver="auto",
+                     random_state=None):
             self.alpha = alpha
             self.fit_intercept = fit_intercept
             self.normalize = normalize
@@ -190,7 +190,6 @@ class Ridge(Ridge_original, _BaseRidge):
             self.tol = tol
             self.solver = solver
             self.random_state = random_state
-
 
     def fit(self, X, y, sample_weight=None):
         return _fit_ridge(self, X, y, sample_weight=sample_weight)

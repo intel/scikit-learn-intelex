@@ -152,6 +152,8 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     y, expanded_class_weight = self._validate_y_class_weight(y)
     n_classes_ = self.n_classes_[0]
     self.n_features_in_ = X.shape[1]
+    if not sklearn_check_version('1.0'):
+        self.n_features_ = self.n_features_in_
 
     if expanded_class_weight is not None:
         if sample_weight is not None:
@@ -325,6 +327,9 @@ def _fit_classifier(self, X, y, sample_weight=None):
 
 def _daal_fit_regressor(self, X, y, sample_weight=None):
     self.n_features_in_ = X.shape[1]
+    if not sklearn_check_version('1.0'):
+        self.n_features_ = self.n_features_in_
+
     rs_ = check_random_state(self.random_state)
 
     if not self.bootstrap and self.oob_score:
@@ -402,7 +407,6 @@ def _fit_regressor(self, X, y, sample_weight=None):
     _check_parameters(self)
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
-
 
     if (sklearn_check_version('1.0') and self.criterion == "mse"):
         warnings.warn(
@@ -695,10 +699,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
         @property
         def n_features_(self):
             return self.n_features_in_
-    else:
-        @property
-        def n_features_(self):
-            return self.n_features_in_
 
     @property
     def _estimators_(self):
@@ -906,10 +906,6 @@ class RandomForestRegressor(RandomForestRegressor_original):
             "Attribute n_features_ was deprecated in version 1.0 and will be "
             "removed in 1.2. Use 'n_features_in_' instead."
         )
-        @property
-        def n_features_(self):
-            return self.n_features_in_
-    else:
         @property
         def n_features_(self):
             return self.n_features_in_

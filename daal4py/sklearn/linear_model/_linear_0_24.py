@@ -20,6 +20,7 @@ from .._utils import get_patch_message, sklearn_check_version
 from ._linear_0_23 import (_fit_linear, _predict_linear)
 import logging
 
+
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 
