@@ -733,7 +733,10 @@ class RandomForestClassifier(RandomForestClassifier_original):
             est_i = clone(est)
             est_i.set_params(
                 random_state=random_state_checked.randint(np.iinfo(np.int32).max))
-            est_i.n_features_in_ = self.n_features_in_
+            if sklearn_check_version('1.0'):
+                est_i.n_features_in_ = self.n_features_in_
+            else:
+                est_i.n_features_ = self.n_features_in_
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = classes_
             est_i.n_classes_ = n_classes_
@@ -940,7 +943,10 @@ class RandomForestRegressor(RandomForestRegressor_original):
             est_i = clone(est)
             est_i.set_params(
                 random_state=random_state_checked.randint(np.iinfo(np.int32).max))
-            est_i.n_features_in_ = self.n_features_in_
+            if sklearn_check_version('1.0'):
+                est_i.n_features_in_ = self.n_features_in_
+            else:
+                est_i.n_features_ = self.n_features_in_
             est_i.n_outputs_ = self.n_outputs_
 
             tree_i_state_class = daal4py.getTreeState(self.daal_model_, i)
