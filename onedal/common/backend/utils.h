@@ -20,40 +20,41 @@
 #include <string>
 
 #if defined(_WIN32) || defined(_WIN64)
-    #define ONEDAL_BACKEND_EXPORT __declspec(dllexport)
+#define ONEDAL_BACKEND_EXPORT __declspec(dllexport)
 #else
-    #define ONEDAL_BACKEND_EXPORT
+#define ONEDAL_BACKEND_EXPORT
 #endif
 
 #define ONEDAL_2021_3_VERSION (2021 * 10000 + 3 * 100)
 
-namespace oneapi::dal::python
-{
-static std::string to_std_string(PyObject * o)
-{
+namespace oneapi::dal::python {
+static std::string to_std_string(PyObject* o) {
     return PyUnicode_AsUTF8(o);
 }
 
-class thread_allow
-{
+class thread_allow {
 public:
-    thread_allow() { allow(); }
+    thread_allow() {
+        allow();
+    }
 
-    ~thread_allow() { disallow(); }
+    ~thread_allow() {
+        disallow();
+    }
 
 private:
-    void allow() { save_ = PyEval_SaveThread(); }
+    void allow() {
+        save_ = PyEval_SaveThread();
+    }
 
-    void disallow()
-    {
-        if (save_)
-        {
+    void disallow() {
+        if (save_) {
             PyEval_RestoreThread(save_);
             save_ = NULL;
         }
     }
 
-    PyThreadState * save_;
+    PyThreadState* save_;
 };
 
 } // namespace oneapi::dal::python

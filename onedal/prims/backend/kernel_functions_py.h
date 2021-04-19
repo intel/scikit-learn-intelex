@@ -24,74 +24,67 @@
 #include "oneapi/dal/algo/rbf_kernel.hpp"
 #include "oneapi/dal/algo/polynomial_kernel.hpp"
 
-namespace oneapi::dal::python
-{
-struct ONEDAL_BACKEND_EXPORT linear_kernel_params
-{
+namespace oneapi::dal::python {
+struct ONEDAL_BACKEND_EXPORT linear_kernel_params {
     double scale;
     double shift;
 };
 
-class ONEDAL_BACKEND_EXPORT linear_kernel_compute
-{
+class ONEDAL_BACKEND_EXPORT linear_kernel_compute {
 public:
     // from descriptor
-    linear_kernel_compute(linear_kernel_params * params);
+    linear_kernel_compute(linear_kernel_params* params);
 
     // attributes from compute_input
-    void compute(PyObject * x, PyObject * y);
+    void compute(PyObject* x, PyObject* y);
 
     // attributes from compute_result
-    PyObject * get_values();
+    PyObject* get_values();
 
 private:
     linear_kernel_params params_;
     linear_kernel::compute_result<> compute_result_;
 
 private:
-    static const auto get_descriptor(linear_kernel_params & params, data_type data_type_input);
+    static const auto get_descriptor(linear_kernel_params& params, data_type data_type_input);
 };
 
-struct ONEDAL_BACKEND_EXPORT rbf_kernel_params
-{
+struct ONEDAL_BACKEND_EXPORT rbf_kernel_params {
     double sigma;
 };
 
-class ONEDAL_BACKEND_EXPORT rbf_kernel_compute
-{
+class ONEDAL_BACKEND_EXPORT rbf_kernel_compute {
 public:
     // from descriptor
-    rbf_kernel_compute(rbf_kernel_params * params);
+    rbf_kernel_compute(rbf_kernel_params* params);
 
     // attributes from compute_input
-    void compute(PyObject * x, PyObject * y);
+    void compute(PyObject* x, PyObject* y);
 
     // attributes from compute_result
-    PyObject * get_values();
+    PyObject* get_values();
 
 private:
     rbf_kernel_params params_;
     rbf_kernel::compute_result<> compute_result_;
 };
 
-struct ONEDAL_BACKEND_EXPORT polynomial_kernel_params
-{
+struct ONEDAL_BACKEND_EXPORT polynomial_kernel_params {
     double scale;
     double shift;
     double degree;
 };
 
-class ONEDAL_BACKEND_EXPORT polynomial_kernel_compute
-{
+class ONEDAL_BACKEND_EXPORT polynomial_kernel_compute {
 public:
     // from descriptor
-    polynomial_kernel_compute(polynomial_kernel_params * params);
+    polynomial_kernel_compute(polynomial_kernel_params* params);
 
     // attributes from compute_input
-    void compute(PyObject * x, PyObject * y);
+    void compute(PyObject* x, PyObject* y);
 
     // attributes from compute_result
-    PyObject * get_values();
+    PyObject* get_values();
 
 private:
     polynomial_kernel_params params_;

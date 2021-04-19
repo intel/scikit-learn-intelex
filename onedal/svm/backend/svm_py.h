@@ -21,10 +21,8 @@
 #include "oneapi/dal/algo/svm.hpp"
 #include "backend/data/data.h"
 
-namespace oneapi::dal::python
-{
-struct svm_params
-{
+namespace oneapi::dal::python {
+struct svm_params {
     std::string kernel;
     std::string method;
     double c;
@@ -42,28 +40,26 @@ struct svm_params
 };
 
 template <typename Task>
-class svm_model
-{
+class svm_model {
 public:
     svm_model();
 
-    svm_model(const svm::model<Task> & model);
+    svm_model(const svm::model<Task>& model);
 
-    svm::model<Task> & get_onedal_model();
+    svm::model<Task>& get_onedal_model();
 
 private:
     svm::model<Task> model_;
 };
 
 template <typename Task>
-class svm_train
-{
+class svm_train {
 public:
     // from descriptor
-    svm_train(svm_params * params);
+    svm_train(svm_params* params);
 
     // attributes from train_input
-    void train(PyObject * data, PyObject * labels, PyObject * weights);
+    void train(PyObject* data, PyObject* labels, PyObject* weights);
 
     // attributes from train_result
     svm_model<Task> get_model();
@@ -72,16 +68,16 @@ public:
     int get_support_vector_count();
 
     // attributes from train_result
-    PyObject * get_support_vectors();
+    PyObject* get_support_vectors();
 
     // attributes from train_result
-    PyObject * get_support_indices();
+    PyObject* get_support_indices();
 
     // attributes from train_result
-    PyObject * get_coeffs();
+    PyObject* get_coeffs();
 
     // attributes from train_result
-    PyObject * get_biases();
+    PyObject* get_biases();
 
 private:
     svm_params params_;
@@ -89,23 +85,22 @@ private:
 };
 
 template <typename Task>
-class svm_infer
-{
+class svm_infer {
 public:
     // from descriptor
-    svm_infer(svm_params * params);
+    svm_infer(svm_params* params);
 
     // attributes from infer_input.hpp expect model
-    void infer(PyObject * data, svm_model<Task> * model);
+    void infer(PyObject* data, svm_model<Task>* model);
 
     // attributes from infer_input.hpp expect model
-    void infer(PyObject * data, PyObject * support_vectors, PyObject * coeffs, PyObject * biases);
+    void infer(PyObject* data, PyObject* support_vectors, PyObject* coeffs, PyObject* biases);
 
     // attributes from infer_result
-    PyObject * get_labels();
+    PyObject* get_labels();
 
     // attributes from infer_result
-    PyObject * get_decision_function();
+    PyObject* get_decision_function();
 
 private:
     svm_params params_;

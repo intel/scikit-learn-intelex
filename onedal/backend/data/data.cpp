@@ -21,28 +21,27 @@
 #include "oneapi/dal/table/row_accessor.hpp"
 
 #ifdef ONEDAL_DATA_PARALLEL
-    #include <CL/sycl.hpp>
+#include <CL/sycl.hpp>
 #endif
 
 #ifdef DPCTL_ENABLE
-    #include "dpctl_sycl_types.h"
-    #include "dpctl_sycl_queue_manager.h"
+#include "dpctl_sycl_types.h"
+#include "dpctl_sycl_queue_manager.h"
 #endif
 
-namespace oneapi::dal::python
-{
-#define is_array(a)           ((a) && PyArray_Check(a))
-#define array_type(a)         PyArray_TYPE((PyArrayObject *)a)
-#define array_is_behaved(a)   (PyArray_ISCARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
-#define array_is_behaved_F(a) (PyArray_ISFARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
-#define array_is_native(a)    (PyArray_ISNOTSWAPPED((PyArrayObject *)a))
-#define array_numdims(a)      PyArray_NDIM((PyArrayObject *)a)
-#define array_data(a)         PyArray_DATA((PyArrayObject *)a)
-#define array_size(a, i)      PyArray_DIM((PyArrayObject *)a, i)
+namespace oneapi::dal::python {
+#define is_array(a)         ((a) && PyArray_Check(a))
+#define array_type(a)       PyArray_TYPE((PyArrayObject *)a)
+#define array_is_behaved(a) (PyArray_ISCARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
+#define array_is_behaved_F(a) \
+    (PyArray_ISFARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
+#define array_is_native(a) (PyArray_ISNOTSWAPPED((PyArrayObject *)a))
+#define array_numdims(a)   PyArray_NDIM((PyArrayObject *)a)
+#define array_data(a)      PyArray_DATA((PyArrayObject *)a)
+#define array_size(a, i)   PyArray_DIM((PyArrayObject *)a, i)
 
 #ifdef ONEDAL_DATA_PARALLEL
-int init_numpy()
-{
+int init_numpy() {
     import_array();
     return 0;
 }
@@ -50,145 +49,142 @@ int init_numpy()
 const static int numpy_initialized = init_numpy();
 #endif
 
-class numpy_deleter
-{
+class numpy_deleter {
 public:
-    numpy_deleter(PyArrayObject * a) : ndarray_(a) {}
+    numpy_deleter(PyArrayObject *a) : ndarray_(a) {}
 
-    void operator()(const void * ptr) {}
+    void operator()(const void *ptr) {}
 
-    numpy_deleter & operator=(const numpy_deleter &) = delete;
+    numpy_deleter &operator=(const numpy_deleter &) = delete;
 
 private:
-    PyArrayObject * ndarray_;
+    PyArrayObject *ndarray_;
 };
 
 template <typename T, typename ConstDeleter>
-inline dal::homogen_table create_homogen_table(const T * data_pointer, const std::size_t row_count, const std::size_t column_count,
-                                               const dal::data_layout layout, ConstDeleter && data_deleter)
-{
+inline dal::homogen_table create_homogen_table(const T *data_pointer,
+                                               const std::size_t row_count,
+                                               const std::size_t column_count,
+                                               const dal::data_layout layout,
+                                               ConstDeleter &&data_deleter) {
     return dal::homogen_table(data_pointer, row_count, column_count, data_deleter, layout);
 }
 
 template <typename T>
-inline dal::homogen_table make_homogen(PyArrayObject * array)
-{
+inline dal::homogen_table make_homogen(PyArrayObject *array) {
     size_t column_count = 1;
 
-    if (array_numdims(array) > 2)
-    {
+    if (array_numdims(array) > 2) {
         throw std::runtime_error("Input array has wrong dimensionality (must be 2d).");
     }
-    T * data_pointer       = reinterpret_cast<T *>(array_data(array));
+    T *data_pointer = reinterpret_cast<T *>(array_data(array));
     const size_t row_count = static_cast<size_t>(array_size(array, 0));
-    if (array_numdims(array) == 2)
-    {
+    if (array_numdims(array) == 2) {
         column_count = static_cast<size_t>(array_size(array, 1));
     }
-    const auto layout = array_is_behaved_F(array) ? dal::data_layout::column_major : dal::data_layout::row_major;
-    auto res_table    = create_homogen_table(data_pointer, row_count, column_count, layout, numpy_deleter(array));
+    const auto layout =
+        array_is_behaved_F(array) ? dal::data_layout::column_major : dal::data_layout::row_major;
+    auto res_table =
+        create_homogen_table(data_pointer, row_count, column_count, layout, numpy_deleter(array));
     // we need it increment the ref-count if we use the input array in-place
     // if we copied/converted it we already own our own reference
-    if (reinterpret_cast<PyArrayObject *>(data_pointer) == array) Py_INCREF(array);
+    if (reinterpret_cast<PyArrayObject *>(data_pointer) == array)
+        Py_INCREF(array);
     return res_table;
 }
 
-dal::table input_to_onedal_table(PyObject * obj)
-{
+dal::table input_to_onedal_table(PyObject *obj) {
     dal::table res;
-    if (obj == nullptr || obj == Py_None)
-    {
+    if (obj == nullptr || obj == Py_None) {
         return res;
     }
-    if (is_array(obj))
-    {
-        PyArrayObject * ary = reinterpret_cast<PyArrayObject *>(obj);
-        if (array_is_behaved(ary) || array_is_behaved_F(ary))
-        {
+    if (is_array(obj)) {
+        PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
+        if (array_is_behaved(ary) || array_is_behaved_F(ary)) {
 #define MAKE_HOMOGEN_TABLE(CType) res = make_homogen<CType>(ary);
-            SET_NPY_FEATURE(PyArray_DESCR(ary)->type, MAKE_HOMOGEN_TABLE, throw std::invalid_argument("Found unsupported array type"));
+            SET_NPY_FEATURE(PyArray_DESCR(ary)->type,
+                            MAKE_HOMOGEN_TABLE,
+                            throw std::invalid_argument("Found unsupported array type"));
 #undef MAKE_HOMOGEN_TABLE
         }
-        else
-        {
-            throw std::invalid_argument("[input_to_onedal_table] Numpy input Could not convert Python object to onedal table.");
+        else {
+            throw std::invalid_argument(
+                "[input_to_onedal_table] Numpy input Could not convert Python object to onedal table.");
         }
     }
-    else
-    {
-        throw std::invalid_argument("[input_to_onedal_table] Not avalible input format for convert Python object to onedal table.");
+    else {
+        throw std::invalid_argument(
+            "[input_to_onedal_table] Not avalible input format for convert Python object to onedal table.");
     }
     return res;
 }
 
-class vsp
-{
+class vsp {
 public:
     // we need a virtual destructor
-    virtual ~vsp() {};
+    virtual ~vsp(){};
 };
 
 // typed virtual shared pointer, for simplicity we make it a oneDAL shared pointer
 template <typename T>
-class tvsp : public vsp, public dal::array<T>
-{
+class tvsp : public vsp, public dal::array<T> {
 public:
-    tvsp(const dal::array<T> & org) : dal::array<T>(org) {}
-    virtual ~tvsp() {};
+    tvsp(const dal::array<T> &org) : dal::array<T>(org) {}
+    virtual ~tvsp(){};
 };
 
-void onedal_free_cap(PyObject * cap)
-{
-    vsp * stored_array = static_cast<vsp *>(PyCapsule_GetPointer(cap, NULL));
-    if (stored_array)
-    {
+void onedal_free_cap(PyObject *cap) {
+    vsp *stored_array = static_cast<vsp *>(PyCapsule_GetPointer(cap, NULL));
+    if (stored_array) {
         delete stored_array;
     }
 }
 
 template <typename CType, int NpType>
-static PyObject * convert_array_to_numpy(dal::array<CType> & array, std::int64_t row_count, std::int64_t column_count)
-{
+static PyObject *convert_array_to_numpy(dal::array<CType> &array,
+                                        std::int64_t row_count,
+                                        std::int64_t column_count) {
     npy_intp dims[2] = { static_cast<npy_intp>(row_count), static_cast<npy_intp>(column_count) };
     array.need_mutable_data();
-    PyObject * obj = PyArray_SimpleNewFromData(2, dims, NpType, static_cast<void *>(array.get_mutable_data()));
-    if (!obj) throw std::invalid_argument("Conversion to numpy array failed");
+    PyObject *obj =
+        PyArray_SimpleNewFromData(2, dims, NpType, static_cast<void *>(array.get_mutable_data()));
+    if (!obj)
+        throw std::invalid_argument("Conversion to numpy array failed");
 
-    void * opaque_value = static_cast<void *>(new tvsp<CType>(array));
-    PyObject * cap      = PyCapsule_New(opaque_value, NULL, onedal_free_cap);
+    void *opaque_value = static_cast<void *>(new tvsp<CType>(array));
+    PyObject *cap = PyCapsule_New(opaque_value, NULL, onedal_free_cap);
     PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), cap);
     return obj;
 }
 
-PyObject * table_to_numpy(const dal::table & input)
-{
-    PyObject * res = nullptr;
-    if (!input.has_data())
-    {
+PyObject *table_to_numpy(const dal::table &input) {
+    PyObject *res = nullptr;
+    if (!input.has_data()) {
         throw std::invalid_argument("Empty data");
     }
-    if (input.get_kind() == dal::homogen_table::kind())
-    {
-        const auto & homogen_res = static_cast<const dal::homogen_table &>(input);
-        if (homogen_res.get_data_layout() == dal::data_layout::row_major)
-        {
+    if (input.get_kind() == dal::homogen_table::kind()) {
+        const auto &homogen_res = static_cast<const dal::homogen_table &>(input);
+        if (homogen_res.get_data_layout() == dal::data_layout::row_major) {
             const dal::data_type dtype = homogen_res.get_metadata().get_data_type(0);
 
-#define MAKE_NYMPY_FROM_HOMOGEN(CType, NpType)                                                                                \
-    {                                                                                                                         \
-        auto rows = dal::row_accessor<const CType> { homogen_res }.pull();                                                    \
-        res       = convert_array_to_numpy<CType, NpType>(rows, homogen_res.get_row_count(), homogen_res.get_column_count()); \
+#define MAKE_NYMPY_FROM_HOMOGEN(CType, NpType)                                       \
+    {                                                                                \
+        auto rows = dal::row_accessor<const CType>{ homogen_res }.pull();            \
+        res = convert_array_to_numpy<CType, NpType>(rows,                            \
+                                                    homogen_res.get_row_count(),     \
+                                                    homogen_res.get_column_count()); \
     }
-            SET_CTYPE_NPY_FROM_DAL_TYPE(dtype, MAKE_NYMPY_FROM_HOMOGEN, throw std::invalid_argument("Not avalible to convert a numpy"));
+            SET_CTYPE_NPY_FROM_DAL_TYPE(
+                dtype,
+                MAKE_NYMPY_FROM_HOMOGEN,
+                throw std::invalid_argument("Not avalible to convert a numpy"));
 #undef MAKE_NYMPY_FROM_HOMOGEN
         }
-        else
-        {
+        else {
             throw std::invalid_argument("oneDAL have don't table row major format");
         }
     }
-    else
-    {
+    else {
         throw std::invalid_argument("oneDAL table not homogen format have");
     }
     return res;

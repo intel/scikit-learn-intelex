@@ -21,64 +21,53 @@
 #include <numpy/arrayobject.h>
 
 #define SET_NPY_FEATURE(_T, _FUNCT, _EXCEPTION) \
-    switch (_T)                                 \
-    {                                           \
-    case NPY_DOUBLE:                            \
-    case NPY_CDOUBLE:                           \
-    case NPY_DOUBLELTR:                         \
-    case NPY_CDOUBLELTR:                        \
-    {                                           \
-        _FUNCT(double);                         \
-        break;                                  \
-    }                                           \
-    case NPY_FLOAT:                             \
-    case NPY_CFLOAT:                            \
-    case NPY_FLOATLTR:                          \
-    case NPY_CFLOATLTR:                         \
-    {                                           \
-        _FUNCT(float);                          \
-        break;                                  \
-    }                                           \
-    case NPY_INT32:                             \
-    {                                           \
-        _FUNCT(std::int32_t);                   \
-        break;                                  \
-    }                                           \
-    case NPY_UINT32:                            \
-    {                                           \
-        _FUNCT(std::uint32_t);                  \
-        break;                                  \
-    }                                           \
-    case NPY_INT64:                             \
-    {                                           \
-        _FUNCT(std::int64_t);                   \
-        break;                                  \
-    }                                           \
-    case NPY_UINT64:                            \
-    {                                           \
-        _FUNCT(std::uint64_t);                  \
-        break;                                  \
-    }                                           \
-    default: _EXCEPTION;                        \
+    switch (_T) {                               \
+        case NPY_DOUBLE:                        \
+        case NPY_CDOUBLE:                       \
+        case NPY_DOUBLELTR:                     \
+        case NPY_CDOUBLELTR: {                  \
+            _FUNCT(double);                     \
+            break;                              \
+        }                                       \
+        case NPY_FLOAT:                         \
+        case NPY_CFLOAT:                        \
+        case NPY_FLOATLTR:                      \
+        case NPY_CFLOATLTR: {                   \
+            _FUNCT(float);                      \
+            break;                              \
+        }                                       \
+        case NPY_INT32: {                       \
+            _FUNCT(std::int32_t);               \
+            break;                              \
+        }                                       \
+        case NPY_UINT32: {                      \
+            _FUNCT(std::uint32_t);              \
+            break;                              \
+        }                                       \
+        case NPY_INT64: {                       \
+            _FUNCT(std::int64_t);               \
+            break;                              \
+        }                                       \
+        case NPY_UINT64: {                      \
+            _FUNCT(std::uint64_t);              \
+            break;                              \
+        }                                       \
+        default: _EXCEPTION;                    \
     };
 
 #define SET_CTYPE_NPY_FROM_DAL_TYPE(_T, _FUNCT, _EXCEPTION) \
-    switch (_T)                                             \
-    {                                                       \
-    case dal::data_type::float32:                           \
-    {                                                       \
-        _FUNCT(float, NPY_FLOAT32);                         \
-        break;                                              \
-    }                                                       \
-    case dal::data_type::float64:                           \
-    {                                                       \
-        _FUNCT(double, NPY_FLOAT64);                        \
-        break;                                              \
-    }                                                       \
-    case dal::data_type::int32:                             \
-    {                                                       \
-        _FUNCT(std::int32_t, NPY_INT32);                    \
-        break;                                              \
-    }                                                       \
-    default: _EXCEPTION;                                    \
+    switch (_T) {                                           \
+        case dal::data_type::float32: {                     \
+            _FUNCT(float, NPY_FLOAT32);                     \
+            break;                                          \
+        }                                                   \
+        case dal::data_type::float64: {                     \
+            _FUNCT(double, NPY_FLOAT64);                    \
+            break;                                          \
+        }                                                   \
+        case dal::data_type::int32: {                       \
+            _FUNCT(std::int32_t, NPY_INT32);                \
+            break;                                          \
+        }                                                   \
+        default: _EXCEPTION;                                \
     };
