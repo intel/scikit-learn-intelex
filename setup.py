@@ -209,15 +209,9 @@ def get_sources_onedal():
     from distutils.dir_util import create_tree
     from distutils.file_util import copy_file
 
-    # TODO Choose custom algorithm
-    import re
-    filter_rule = re.compile(r'.*')
     cpp_files = glob.glob("onedal/**/**/*.cpp")
     pyx_files = glob.glob("onedal/**/*.pyx")
     pxi_files = glob.glob("onedal/**/*.pxi")
-    cpp_files = [s for s in cpp_files if filter_rule.match(s)]
-    pyx_files = [s for s in pyx_files if filter_rule.match(s)]
-    pxi_files = [s for s in pxi_files if filter_rule.match(s)]
 
     create_tree('build', pyx_files)
     for f in pyx_files:
