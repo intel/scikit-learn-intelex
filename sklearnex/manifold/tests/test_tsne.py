@@ -15,16 +15,12 @@
 # limitations under the License.
 #===============================================================================
 
-from .dispatcher import patch_sklearn
-from .dispatcher import unpatch_sklearn
-from .dispatcher import get_patch_names
+import numpy as np
+from numpy.testing import assert_allclose
 
-__all__ = [
-    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "cluster", "decomposition", "ensemble", "linear_model",
-    "manifold", "neighbors", "svm", "metrics",
-]
 
-from ._utils import set_sklearn_ex_verbose
-
-set_sklearn_ex_verbose()
+def test_sklearnex_import():
+    from sklearnex.manifold import TSNE
+    X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    tsne = TSNE(n_components=2).fit(X)
+    assert 'daal4py' in tsne.__module__

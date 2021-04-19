@@ -22,12 +22,10 @@ def test_monkey_patching():
     _tokens = sklearnex.get_patch_names()
     _values = sklearn_patch_map().values()
     _classes = list()
-    for v in _values:
-        _classes.append(v[0][0])
 
-    assert len(_tokens) == len(_classes)
-    assert isinstance(_tokens, list) and len(_tokens) > 0, \
-        "Internal Error: list of patched names has unexcepable format."
+    for v in _values:
+        for c in v:
+            _classes.append(c[0])
 
     sklearnex.patch_sklearn()
 
@@ -41,7 +39,6 @@ def test_monkey_patching():
             "Patching has completed with error."
 
         sklearnex.unpatch_sklearn(t)
-        print(p, n)
         class_module = getattr(p, n).__module__
         assert class_module.startswith('sklearn'), \
             "Unpatching has completed with error."

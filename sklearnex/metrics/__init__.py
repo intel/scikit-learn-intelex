@@ -15,16 +15,10 @@
 # limitations under the License.
 #===============================================================================
 
-from .dispatcher import patch_sklearn
-from .dispatcher import unpatch_sklearn
-from .dispatcher import get_patch_names
+from .ranking import roc_auc_score
+from .pairwise import pairwise_distances
 
 __all__ = [
-    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "cluster", "decomposition", "ensemble", "linear_model",
-    "manifold", "neighbors", "svm", "metrics",
+    'roc_auc_score',
+    'pairwise_distances',
 ]
-
-from ._utils import set_sklearn_ex_verbose
-
-set_sklearn_ex_verbose()
