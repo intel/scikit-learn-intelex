@@ -15,7 +15,6 @@
 # limitations under the License.
 #===============================================================================
 
-import sklearnex
 import numpy as np
 from numpy.testing import assert_allclose
 
@@ -29,16 +28,3 @@ def test_sklearnex_import_svc():
     assert 'daal4py' in svc.__module__
     assert_allclose(svc.dual_coef_, [[-0.25, .25]])
     assert_allclose(svc.support_, [1, 3])
-
-
-def test_patch_for_svc_by_name():
-    sklearnex.patch_sklearn('SVC')
-    from sklearn.svm import SVC
-    assert SVC.__module__.startswith('daal4py'), \
-        "Patching has completed with error."
-    sklearnex.unpatch_sklearn('SVC')
-    assert SVC.__module__.startswith('daal4py'), \
-        "Patching has completed with error."
-    from sklearn.svm import SVC
-    assert SVC.__module__.startswith('sklearn'), \
-        "Patching has completed with error."
