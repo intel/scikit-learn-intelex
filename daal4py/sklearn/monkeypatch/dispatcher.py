@@ -91,6 +91,13 @@ def _get_map_of_algorithms():
                            _daal_roc_auc_score), None]],
         'tsne': [[(manifold_module, 'TSNE', TSNE_daal4py), None]],
     }
+    mapping['svc'] = mapping['svm']
+    mapping['logisticregression'] = mapping['log_reg']
+    mapping['kneighborsclassifier'] = mapping['knn_classifier']
+    mapping['nearestneighbors'] = mapping['nearest_neighbors']
+    mapping['kneighborsregressor'] = mapping['knn_regressor']
+    mapping['randomrorestclassifier'] = mapping['random_forest_classifier']
+    mapping['randomforestregressor'] = mapping['random_forest_regressor']
     return mapping
 
 
