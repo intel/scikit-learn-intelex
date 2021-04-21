@@ -24,17 +24,15 @@ if __name__ == '__main__':
     parser.add_argument(
         '--deselect',
         help='The list of deselect commands passed directly to pytest',
-        action='append'
+        action='append',
+        required=True
     )
     args = parser.parse_args()
 
-    if args.deselect:
-        deselected_tests = [
-            element for test in args.deselect
-            for element in ('--deselect', test)
-        ]
-    else:
-        deselected_tests = os.environ.get('DESELECTED_TESTS', '').split(' ')
+    deselected_tests = [
+        element for test in args.deselect
+        for element in ('--deselect', test)
+    ]
 
     pytest_params = [
         "-ra", "--disable-warnings"
