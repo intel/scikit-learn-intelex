@@ -1,3 +1,19 @@
+.. ******************************************************************************
+.. * Copyright 2020-2021 Intel Corporation
+.. *
+.. * Licensed under the Apache License, Version 2.0 (the "License");
+.. * you may not use this file except in compliance with the License.
+.. * You may obtain a copy of the License at
+.. *
+.. *     http://www.apache.org/licenses/LICENSE-2.0
+.. *
+.. * Unless required by applicable law or agreed to in writing, software
+.. * distributed under the License is distributed on an "AS IS" BASIS,
+.. * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.. * See the License for the specific language governing permissions and
+.. * limitations under the License.
+.. *******************************************************************************/
+
 .. _index:
 
 #####################################################
@@ -76,9 +92,10 @@ Here are our latest blogs:
 
 Important links
 --------------------
-- `Building from Sources <https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md>`_,
-- `About Intel(R) oneAPI Data Analytics Library <https://github.com/oneapi-src/oneDAL>`_.
-- `About Intel(R) daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_.
+- `Benchmark code <https://github.com/IntelPython/scikit-learn_bench>`_
+- `Building from Sources <https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md>`_
+- `About Intel(R) oneAPI Data Analytics Library <https://github.com/oneapi-src/oneDAL>`_
+- `About Intel(R) daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_
 
 Support
 --------------------
