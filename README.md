@@ -5,9 +5,9 @@
 [![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-learn-intelex)](https://anaconda.org/conda-forge/scikit-learn-intelex)
 
-Intel(R) Extension for Scikit-learn speeds up scikit-learn beyond by providing drop-in patching. Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library ([oneDAL](https://github.com/oneapi-src/oneDAL)) that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
+Intel(R) Extension for Scikit-learn speeds up scikit-learn by providing drop-in patching. The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library ([oneDAL](https://github.com/oneapi-src/oneDAL)). Patching scikit-learn makes it a well-suited machine learning framework for dealing with real-life problems.
 
-⚠️Intel(R) Extension for Scikit-learn contains scikit-learn patching functionality originally available in [**daal4py**](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py) package. All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only. Please use the package instead of daal4py.
+⚠️Intel(R) Extension for Scikit-learn contains scikit-learn patching functionality that was originally available in [**daal4py**](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py) package. All future updates for the patches will be available only in Intel(R) Extension for Scikit-learn. We recommend you to use scikit-learn-intelex package instead of daal4py.
 You can learn more about daal4py in [daal4py documentation](https://intelpython.github.io/daal4py).
 
 Running full the latest scikit-learn test suite with Intel(R) Extension for Scikit-learn: [![CircleCI](https://circleci.com/gh/intel/scikit-learn-intelex.svg?style=svg)](https://circleci.com/gh/intel/scikit-learn-intelex)
