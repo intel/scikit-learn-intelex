@@ -15,5 +15,6 @@
 #===============================================================================
 
 from ._ranking import _daal_roc_auc_score
+from ._pairwise import daal_pairwise_distances
 
-__all__ = ['_daal_roc_auc_score']
+__all__ = ['_daal_roc_auc_score', 'daal_pairwise_distances']

@@ -39,8 +39,12 @@ def test_monkey_patching():
         assert class_module.startswith('daal4py'), \
             "Patching has completed with error."
 
+    for i, _ in enumerate(_tokens):
+        t = _tokens[i]
+        p = _classes[i][0]
+        n = _classes[i][1]
+
         daal4py.sklearn.unpatch_sklearn(t)
-        print(p, n)
         class_module = getattr(p, n).__module__
         assert class_module.startswith('sklearn'), \
             "Unpatching has completed with error."
@@ -55,6 +59,11 @@ def test_monkey_patching():
         class_module = getattr(p, n).__module__
         assert class_module.startswith('sklearn'), \
             "Unpatching has completed with error."
+
+    for i, _ in enumerate(_tokens):
+        t = _tokens[i]
+        p = _classes[i][0]
+        n = _classes[i][1]
 
         daal4py.sklearn.patch_sklearn(t)
 

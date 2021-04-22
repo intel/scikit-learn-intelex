@@ -15,16 +15,8 @@
 # limitations under the License.
 #===============================================================================
 
-from .dispatcher import patch_sklearn
-from .dispatcher import unpatch_sklearn
-from .dispatcher import get_patch_names
+from .split import train_test_split
 
 __all__ = [
-    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "cluster", "decomposition", "ensemble", "linear_model",
-    "manifold", "neighbors", "svm", "metrics",
+    'train_test_split',
 ]
-
-from ._utils import set_sklearn_ex_verbose
-
-set_sklearn_ex_verbose()

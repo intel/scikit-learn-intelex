@@ -15,16 +15,18 @@
 # limitations under the License.
 #===============================================================================
 
-from .dispatcher import patch_sklearn
-from .dispatcher import unpatch_sklearn
-from .dispatcher import get_patch_names
+import numpy as np
+from numpy.testing import assert_allclose
 
-__all__ = [
-    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "cluster", "decomposition", "ensemble", "linear_model",
-    "manifold", "neighbors", "svm", "metrics",
-]
 
-from ._utils import set_sklearn_ex_verbose
+def test_sklearnex_import_train_test_split():
+    from sklearnex.model_selection import train_test_split
+    X = np.arange(100).reshape((10, 10))
+    y = np.arange(10)
 
-set_sklearn_ex_verbose()
+    split = train_test_split(X, y, test_size=None, train_size=.5)
+    X_train, X_test, y_train, y_test = split
+    assert len(y_test) == len(y_train)
+
+    assert_allclose(X_train[:, 0], y_train * 10)
+    assert_allclose(X_test[:, 0], y_test * 10)
