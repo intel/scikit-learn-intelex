@@ -262,3 +262,211 @@ reduced_tests:
 
 public:
   - tests/test_common.py::test_estimators
+
+
+  # --------------------------------------------------------
+  # The following tests currently fail with GPU offload
+gpu:
+
+  # Segfaults
+  - ensemble/tests/test_weight_boosting.py
+  - svm/tests/test_sparse.py
+
+  # Fails
+  - cluster/tests/test_dbscan.py::test_weighted_dbscan
+
+  - ensemble/tests/test_bagging.py::test_gridsearch
+  - ensemble/tests/test_bagging.py::test_estimators_samples
+  - ensemble/tests/test_common.py::test_ensemble_heterogeneous_estimators_behavior
+  - ensemble/tests/test_forest.py::test_min_samples_split[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_min_weight_fraction_leaf
+  - ensemble/tests/test_voting.py::test_parallel_fit
+  - ensemble/tests/test_voting.py::test_sample_weight
+
+  - feature_selection/tests/test_rfe.py::test_number_of_subsets_of_features
+
+  - linear_model/tests/test_coordinate_descent.py::test_model_pipeline_same_as_normalize_true
+  - linear_model/tests/test_logistic.py::test_predict_3_classes
+  - linear_model/tests/test_logistic.py::test_logistic_cv_sparse
+  - linear_model/tests/test_logistic.py::test_ovr_multinomial_iris
+  - linear_model/tests/test_logistic.py::test_logistic_regression_multinomial
+
+  - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately
+  - manifold/tests/test_t_sne.py::test_uniform_grid
+  - manifold/tests/test_t_sne.py::test_tsne_different_square_distances
+
+  - metrics/tests/test_classification.py::test_precision_recall_f1_score_binary
+  - metrics/tests/test_classification.py::test_precision_recall_fscore_support_errors
+  - metrics/tests/test_classification.py::test_confusion_matrix_binary
+  - metrics/tests/test_classification.py::test_multilabel_confusion_matrix_binary
+  - metrics/tests/test_ranking.py::test_roc_curve
+  - metrics/tests/test_ranking.py::test_roc_returns_consistency
+  - metrics/tests/test_ranking.py::test_roc_curve_confidence
+  - metrics/tests/test_ranking.py::test_roc_curve_hard
+  - metrics/tests/test_ranking.py::test_precision_recall_curve
+  - metrics/tests/test_ranking.py::test_score_scale_invariance
+  - metrics/tests/test_ranking.py::test_partial_roc_auc_score
+  - metrics/tests/test_score_objects.py::test_average_precision_pos_label
+
+  - mixture/tests/test_bayesian_mixture.py::test_bayesian_mixture_weights_prior_initialisation
+  - mixture/tests/test_bayesian_mixture.py::test_bayesian_mixture_mean_prior_initialisation
+  - mixture/tests/test_bayesian_mixture.py::test_bayesian_mixture_precisions_prior_initialisation
+  - mixture/tests/test_bayesian_mixture.py::test_bayesian_mixture_weights
+  - mixture/tests/test_bayesian_mixture.py::test_monotonic_likelihood
+  - mixture/tests/test_bayesian_mixture.py::test_compare_covar_type
+  - mixture/tests/test_bayesian_mixture.py::test_check_covariance_precision
+  - mixture/tests/test_bayesian_mixture.py::test_invariant_translation
+  - mixture/tests/test_bayesian_mixture.py::test_bayesian_mixture_fit_predict
+  - mixture/tests/test_bayesian_mixture.py::test_bayesian_mixture_fit_predict_n_init
+  - mixture/tests/test_bayesian_mixture.py::test_bayesian_mixture_predict_predict_proba
+  - mixture/tests/test_gaussian_mixture.py::test_check_weights
+  - mixture/tests/test_gaussian_mixture.py::test_check_means
+  - mixture/tests/test_gaussian_mixture.py::test_check_precisions
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_estimate_log_prob_resp
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_predict_predict_proba
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_fit_predict
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_fit_predict_n_init
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_fit
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_fit_best_params
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_fit_convergence_warning
+  - mixture/tests/test_gaussian_mixture.py::test_multiple_init
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_n_parameters
+  - mixture/tests/test_gaussian_mixture.py::test_bic_1d_1component
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_aic_bic
+  - mixture/tests/test_gaussian_mixture.py::test_gaussian_mixture_verbose
+  - mixture/tests/test_gaussian_mixture.py::test_warm_start
+  - mixture/tests/test_gaussian_mixture.py::test_convergence_detected_with_warm_start
+  - mixture/tests/test_gaussian_mixture.py::test_score
+  - mixture/tests/test_gaussian_mixture.py::test_score_samples
+  - mixture/tests/test_gaussian_mixture.py::test_monotonic_likelihood
+  - mixture/tests/test_gaussian_mixture.py::test_regularisation
+  - mixture/tests/test_gaussian_mixture.py::test_property
+  - mixture/tests/test_gaussian_mixture.py::test_sample
+  - mixture/tests/test_gaussian_mixture.py::test_init
+  - mixture/tests/test_mixture.py::test_gaussian_mixture_n_iter
+
+  - model_selection/tests/test_search.py::test_grid_search_one_grid_point
+  - model_selection/tests/test_search.py::test_search_default_iid
+  - model_selection/tests/test_search.py::test_random_search_cv_results_multimetric
+  - model_selection/tests/test_search.py::test_predict_proba_disabled
+
+  - model_selection/tests/test_validation.py::test_cross_val_predict_sparse_prediction
+  - model_selection/tests/test_validation.py::test_fit_and_score_verbosity
+
+  - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors
+
+  - neighbors/tests/test_neighbors.py::test_kneighbors_classifier
+  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
+  - neighbors/tests/test_neighbors.py::test_neighbors_metrics
+
+  - semi_supervised/tests/test_self_training.py::test_early_stopping
+
+  - svm/tests/test_svm.py::test_libsvm_parameters
+  - svm/tests/test_svm.py::test_tweak_params
+  - svm/tests/test_svm.py::test_decision_function
+  - svm/tests/test_svm.py::test_weight
+  - svm/tests/test_svm.py::test_svm_classifier_sided_sample_weight[estimator0]
+  - svm/tests/test_svm.py::test_svm_equivalence_sample_weight_C
+  - svm/tests/test_svm.py::test_negative_weights_svc_leave_two_labels
+  - svm/tests/test_svm.py::test_negative_weight_equal_coeffs
+  - svm/tests/test_svm.py::test_bad_input
+  - svm/tests/test_svm.py::test_unicode_kernel
+  - svm/tests/test_svm.py::test_consistent_proba
+  - svm/tests/test_svm.py::test_decision_function_shape_two_class
+  - svm/tests/test_svm.py::test_gamma_auto
+  - svm/tests/test_svm.py::test_gamma_scale
+  - svm/tests/test_svm.py::test_custom_kernel_not_array_input[SVC]
+
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_dtypes]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_score_takes_y]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_fit_returns_self]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_fit_returns_self(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_dtype_object]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_pipeline_consistency]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_nan_inf]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_overwrite_params]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_methods_sample_order_invariance]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit2d_1feature]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_dict_unchanged]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_dont_overwrite_parameters]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_n_features_in]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit2d_predict1d]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_dtypes]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_fit_score_takes_y]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_fit_returns_self]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_fit_returns_self(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_dtype_object]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_pipeline_consistency]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_nan_inf]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_overwrite_params]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_methods_sample_order_invariance]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_fit2d_1feature]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_dict_unchanged]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_dont_overwrite_parameters]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_n_features_in]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_fit2d_predict1d]
+  - tests/test_common.py::test_estimators[KMeans()-check_clustering]
+  - tests/test_common.py::test_estimators[KMeans()-check_clustering(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[LogisticRegression()-check_sample_weights_invariance(kind=ones)]
+  - tests/test_common.py::test_estimators[LogisticRegression()-check_sample_weights_invariance(kind=zeros)]
+  - tests/test_common.py::test_estimators[LogisticRegression()-check_classifiers_classes]
+  - tests/test_common.py::test_estimators[LogisticRegression()-check_decision_proba_consistency]
+  - tests/test_common.py::test_estimators[OneVsOneClassifier(estimator=LogisticRegression(C=1))-check_methods_sample_order_invariance]
+  - tests/test_common.py::test_estimators[OneVsOneClassifier(estimator=LogisticRegression(C=1))-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[OneVsRestClassifier(estimator=LogisticRegression(C=1))-check_classifier_multioutput]
+  - tests/test_common.py::test_estimators[OneVsRestClassifier(estimator=LogisticRegression(C=1))-check_classifiers_train]
+  - tests/test_common.py::test_estimators[OneVsRestClassifier(estimator=LogisticRegression(C=1))-check_classifiers_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[OneVsRestClassifier(estimator=LogisticRegression(C=1))-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
+  - tests/test_common.py::test_estimators[OneVsRestClassifier(estimator=LogisticRegression(C=1))-check_decision_proba_consistency]
+  - tests/test_common.py::test_estimators[OneVsRestClassifier(estimator=LogisticRegression(C=1))-check_methods_sample_order_invariance]
+  - tests/test_common.py::test_estimators[OneVsRestClassifier(estimator=LogisticRegression(C=1))-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[RFE(estimator=LogisticRegression(C=1))-check_classifiers_classes]
+  - tests/test_common.py::test_estimators[RFE(estimator=LogisticRegression(C=1))-check_decision_proba_consistency]
+  - tests/test_common.py::test_estimators[RFECV(estimator=LogisticRegression(C=1))-check_classifiers_classes]
+  - tests/test_common.py::test_estimators[RFECV(estimator=LogisticRegression(C=1))-check_decision_proba_consistency]
+  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_class_weight_classifiers]
+  - tests/test_common.py::test_estimators[SVC()-check_sample_weights_pandas_series]
+  - tests/test_common.py::test_estimators[SVC()-check_sample_weights_not_an_array]
+  - tests/test_common.py::test_estimators[SVC()-check_sample_weights_shape]
+  - tests/test_common.py::test_estimators[SVC()-check_pipeline_consistency]
+  - tests/test_common.py::test_estimators[SVC()-check_estimators_nan_inf]
+  - tests/test_common.py::test_estimators[SVC()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[SVC()-check_classifier_data_not_an_array]
+  - tests/test_common.py::test_estimators[SVC()-check_classifiers_classes]
+  - tests/test_common.py::test_estimators[SVC()-check_classifiers_train]
+  - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
+  - tests/test_common.py::test_estimators[SVC()-check_class_weight_classifiers]
+  - tests/test_common.py::test_estimators[SVC()-check_fit2d_1feature]
+  - tests/test_common.py::test_estimators[SVC()-check_dict_unchanged]
+  - tests/test_common.py::test_estimators[SVC()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[SVC()-check_n_features_in]
+  - tests/test_common.py::test_estimators[SelfTrainingClassifier(base_estimator=LogisticRegression(C=1))-check_classifiers_classes]
+  - tests/test_common.py::test_estimators[SelfTrainingClassifier(base_estimator=LogisticRegression(C=1))-check_decision_proba_consistency]
+  - tests/test_common.py::test_estimators[StackingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])-check_sample_weights_invariance(kind=ones)]
+  - tests/test_common.py::test_estimators[StackingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])-check_sample_weights_invariance(kind=zeros)]
+  - tests/test_common.py::test_estimators[TSNE()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[TSNE()-check_n_features_in]
+  - tests/test_common.py::test_search_cv[RandomizedSearchCV(estimator=LogisticRegression(),param_distributions={'C':[0.1,1.0]})-check_classifiers_classes]
+  - tests/test_common.py::test_search_cv[RandomizedSearchCV(estimator=LogisticRegression(),param_distributions={'C':[0.1,1.0]})-check_decision_proba_consistency]
+  - tests/test_common.py::test_search_cv[RandomizedSearchCV(error_score='raise',estimator=Pipeline(steps=[('pca',PCA()),('logisticregression',LogisticRegression())]),param_distributions={'logisticregression__C':[0.1,1.0]})-check_decision_proba_consistency]
+  - tests/test_common.py::test_check_n_features_in_after_fitting[TSNE()]
+
+  - tests/test_multiclass.py::test_ovr_fit_predict_sparse
+  - tests/test_multiclass.py::test_ovr_binary
+  - tests/test_multiclass.py::test_ovr_fit_predict_svc
+  - tests/test_multiclass.py::test_ovr_multilabel_predict_proba
+  - tests/test_multiclass.py::test_ovr_multilabel_decision_function
+  - tests/test_multiclass.py::test_ovr_single_label_decision_function
+  - tests/test_multiclass.py::test_ovr_coef_
+  - tests/test_multiclass.py::test_ovr_deprecated_coef_intercept
+  - tests/test_multiclass.py::test_pairwise_cross_val_score
+
+  - tests/test_multioutput.py::test_multiclass_multioutput_estimator_predict_proba
+  - tests/test_multioutput.py::test_classifier_chain_fit_and_predict_with_sparse_data

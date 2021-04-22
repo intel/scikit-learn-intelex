@@ -289,12 +289,12 @@ def _execute_with_context(func):
                     logging.info(f"{classname} failed to run on gpu. Fallback to host")
                     gpu_ctx = d4p_oneapi._get_sycl_ctxt()
                     host_ctx = d4p_oneapi.sycl_execution_context('host')
-                    host_ctx.apply()
-
-                    res = func(*args, **keyArgs)
-
-                    del host_ctx
-                    gpu_ctx.apply()
+                    try:
+                        host_ctx.apply()
+                        res = func(*args, **keyArgs)
+                    finally:
+                        del host_ctx
+                        gpu_ctx.apply()
                     return res
 
         return func(*args, **keyArgs)
