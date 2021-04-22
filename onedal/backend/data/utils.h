@@ -58,15 +58,15 @@
 #define SET_CTYPE_NPY_FROM_DAL_TYPE(_T, _FUNCT, _EXCEPTION) \
     switch (_T) {                                           \
         case dal::data_type::float32: {                     \
-            _FUNCT(float, NPY_FLOAT32);                     \
+            _FUNCT(NPY_FLOAT32);                            \
             break;                                          \
         }                                                   \
         case dal::data_type::float64: {                     \
-            _FUNCT(double, NPY_FLOAT64);                    \
+            _FUNCT(NPY_FLOAT64);                            \
             break;                                          \
         }                                                   \
         case dal::data_type::int32: {                       \
-            _FUNCT(std::int32_t, NPY_INT32);                \
+            _FUNCT(NPY_INT32);                              \
             break;                                          \
         }                                                   \
         default: _EXCEPTION;                                \

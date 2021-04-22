@@ -19,6 +19,7 @@
 
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/row_accessor.hpp"
+#include "oneapi/dal/table/detail/homogen_utils.hpp"
 
 #ifdef ONEDAL_DATA_PARALLEL
 #include <CL/sycl.hpp>
@@ -140,8 +141,8 @@ void onedal_free_cap(PyObject *cap) {
     }
 }
 
-template <typename CType, int NpType>
-static PyObject *convert_array_to_numpy(dal::array<CType> &array,
+template <int NpType>
+static PyObject *convert_array_to_numpy(dal::array<byte_t> &array,
                                         std::int64_t row_count,
                                         std::int64_t column_count) {
     npy_intp dims[2] = { static_cast<npy_intp>(row_count), static_cast<npy_intp>(column_count) };
@@ -151,7 +152,7 @@ static PyObject *convert_array_to_numpy(dal::array<CType> &array,
     if (!obj)
         throw std::invalid_argument("Conversion to numpy array failed");
 
-    void *opaque_value = static_cast<void *>(new tvsp<CType>(array));
+    void *opaque_value = static_cast<void *>(new tvsp<byte_t>(array));
     PyObject *cap = PyCapsule_New(opaque_value, NULL, onedal_free_cap);
     PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), cap);
     return obj;
@@ -167,12 +168,12 @@ PyObject *table_to_numpy(const dal::table &input) {
         if (homogen_res.get_data_layout() == dal::data_layout::row_major) {
             const dal::data_type dtype = homogen_res.get_metadata().get_data_type(0);
 
-#define MAKE_NYMPY_FROM_HOMOGEN(CType, NpType)                                       \
-    {                                                                                \
-        auto rows = dal::row_accessor<const CType>{ homogen_res }.pull();            \
-        res = convert_array_to_numpy<CType, NpType>(rows,                            \
-                                                    homogen_res.get_row_count(),     \
-                                                    homogen_res.get_column_count()); \
+#define MAKE_NYMPY_FROM_HOMOGEN(NpType)                                       \
+    {                                                                         \
+        auto bytes_array = dal::detail::get_original_data(homogen_res);       \
+        res = convert_array_to_numpy<NpType>(bytes_array,                     \
+                                             homogen_res.get_row_count(),     \
+                                             homogen_res.get_column_count()); \
     }
             SET_CTYPE_NPY_FROM_DAL_TYPE(
                 dtype,
