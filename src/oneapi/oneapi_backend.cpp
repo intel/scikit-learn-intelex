@@ -53,13 +53,13 @@ void PySyclExecutionContext::apply()
 #if INTEL_DAAL_VERSION >= 20210200
 inline const sycl::queue & get_current_queue()
 {
-    auto & ctx      = daal::services::Environment::getInstance()->getDefaultExecutionContext();
-    auto * sycl_ctx = dynamic_cast<daal::services::internal::sycl::SyclExecutionContextImpl *>(&ctx);
-    if (!sycl_ctx)
+    auto & ctx     = daal::services::Environment::getInstance()->getDefaultExecutionContext();
+    auto * syclCtx = dynamic_cast<daal::services::internal::sycl::SyclExecutionContextImpl *>(&ctx);
+    if (!syclCtx)
     {
         throw std::domain_error("Cannot get current queue outside sycl_context");
     }
-    return sycl_ctx->getQueue();
+    return syclCtx->getQueue();
 }
 
 // take a raw array and convert to usm pointer
