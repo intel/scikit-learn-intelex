@@ -66,17 +66,8 @@ private:
     PyArrayObject *ndarray_;
 };
 
-template <typename T, typename ConstDeleter>
-inline dal::homogen_table create_homogen_table(const T *data_pointer,
-                                               const std::size_t row_count,
-                                               const std::size_t column_count,
-                                               const dal::data_layout layout,
-                                               ConstDeleter &&data_deleter) {
-    return dal::homogen_table(data_pointer, row_count, column_count, data_deleter, layout);
-}
-
 template <typename T>
-inline dal::homogen_table make_homogen_from_numpy(PyArrayObject *array) {
+inline dal::homogen_table convert_from_numpy_to_homogen(PyArrayObject *array) {
     std::int64_t column_count = 1;
 
     if (array_numdims(array) > 2) {
@@ -108,7 +99,7 @@ dal::table convert_from_numpy_to_table(PyObject *obj) {
     if (is_array(obj)) {
         PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
         if (array_is_behaved(ary) || array_is_behaved_F(ary)) {
-#define MAKE_HOMOGEN_TABLE(CType) res = make_homogen_from_numpy<CType>(ary);
+#define MAKE_HOMOGEN_TABLE(CType) res = convert_from_numpy_to_homogen<CType>(ary);
             SET_NPY_FEATURE(PyArray_DESCR(ary)->type,
                             MAKE_HOMOGEN_TABLE,
                             throw std::invalid_argument("Found unsupported array type"));
