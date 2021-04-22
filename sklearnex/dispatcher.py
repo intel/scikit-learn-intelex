@@ -42,7 +42,7 @@ def unpatch_sklearn(name=None):
     from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
     if isinstance(name, list):
         for algorithm in name:
-            unpatch_sklearn_orig(name)
+            unpatch_sklearn_orig(algorithm)
     else:
         unpatch_sklearn_orig(name)
 
