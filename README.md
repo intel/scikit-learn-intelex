@@ -125,7 +125,7 @@ with sycl_context("gpu"):
 
 | Speedups of Intel(R) Extension for Scikit-learn over the original Scikit-learn |
 |:--:|
-| ![](https://raw.githubusercontent.com/PetrovKP/scikit-learn-intelex/master/doc/scikit-learn-acceration.png) |
+| ![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/scikit-learn-acceration.png) |
 | *Technical details: float type: float64; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10), [benchmark code](https://github.com/IntelPython/scikit-learn_bench)* |
 
 Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
