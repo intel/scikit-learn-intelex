@@ -77,20 +77,22 @@ inline dal::homogen_table create_homogen_table(const T *data_pointer,
 
 template <typename T>
 inline dal::homogen_table make_homogen_from_numpy(PyArrayObject *array) {
-    size_t column_count = 1;
+    std::int64_t column_count = 1;
 
     if (array_numdims(array) > 2) {
         throw std::runtime_error("Input array has wrong dimensionality (must be 2d).");
     }
     T *data_pointer = reinterpret_cast<T *>(array_data(array));
-    const size_t row_count = static_cast<size_t>(array_size(array, 0));
+    // TODO: check safe cast from int to std::int64_t
+    const std::int64_t row_count = static_cast<std::int64_t>(array_size(array, 0));
     if (array_numdims(array) == 2) {
-        column_count = static_cast<size_t>(array_size(array, 1));
+        // TODO: check safe cast from int to std::int64_t
+        column_count = static_cast<std::int64_t>(array_size(array, 1));
     }
     const auto layout =
         array_is_behaved_F(array) ? dal::data_layout::column_major : dal::data_layout::row_major;
     auto res_table =
-        create_homogen_table(data_pointer, row_count, column_count, layout, numpy_deleter(array));
+        dal::homogen_table(data_pointer, row_count, column_count, numpy_deleter(array), layout);
     // we need it increment the ref-count if we use the input array in-place
     // if we copied/converted it we already own our own reference
     if (reinterpret_cast<PyArrayObject *>(data_pointer) == array)
