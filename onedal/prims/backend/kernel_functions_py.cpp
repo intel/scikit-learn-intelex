@@ -97,15 +97,15 @@ linear_kernel_compute::linear_kernel_compute(linear_kernel_params *params) : par
 // attributes from compute_input
 void linear_kernel_compute::compute(PyObject *x, PyObject *y) {
     thread_state_releaser _allow;
-    auto x_table = convert_from_numpy_to_table(x);
-    auto y_table = convert_from_numpy_to_table(y);
+    auto x_table = convert_to_table(x);
+    auto y_table = convert_to_table(y);
     auto data_type = x_table.get_metadata().get_data_type(0);
     compute_result_ = linear_compute_impl(params_, data_type, x_table, y_table);
 }
 
 // attributes from compute_result
 PyObject *linear_kernel_compute::get_values() {
-    return convert_from_table_to_numpy(compute_result_.get_values());
+    return convert_to_numpy(compute_result_.get_values());
 }
 
 rbf_kernel_compute::rbf_kernel_compute(rbf_kernel_params *params) : params_(*params) {}
@@ -113,15 +113,15 @@ rbf_kernel_compute::rbf_kernel_compute(rbf_kernel_params *params) : params_(*par
 // attributes from compute_input
 void rbf_kernel_compute::compute(PyObject *x, PyObject *y) {
     thread_state_releaser _allow;
-    auto x_table = convert_from_numpy_to_table(x);
-    auto y_table = convert_from_numpy_to_table(y);
+    auto x_table = convert_to_table(x);
+    auto y_table = convert_to_table(y);
     auto data_type = x_table.get_metadata().get_data_type(0);
     compute_result_ = rbf_compute_impl(params_, data_type, x_table, y_table);
 }
 
 // attributes from compute_result
 PyObject *rbf_kernel_compute::get_values() {
-    return convert_from_table_to_numpy(compute_result_.get_values());
+    return convert_to_numpy(compute_result_.get_values());
 }
 
 polynomial_kernel_compute::polynomial_kernel_compute(polynomial_kernel_params *params)
@@ -130,15 +130,15 @@ polynomial_kernel_compute::polynomial_kernel_compute(polynomial_kernel_params *p
 // attributes from compute_input
 void polynomial_kernel_compute::compute(PyObject *x, PyObject *y) {
     thread_state_releaser _allow;
-    auto x_table = convert_from_numpy_to_table(x);
-    auto y_table = convert_from_numpy_to_table(y);
+    auto x_table = convert_to_table(x);
+    auto y_table = convert_to_table(y);
     auto data_type = x_table.get_metadata().get_data_type(0);
     compute_result_ = polynomial_compute_impl(params_, data_type, x_table, y_table);
 }
 
 // attributes from compute_result
 PyObject *polynomial_kernel_compute::get_values() {
-    return convert_from_table_to_numpy(compute_result_.get_values());
+    return convert_to_numpy(compute_result_.get_values());
 }
 
 } // namespace oneapi::dal::python

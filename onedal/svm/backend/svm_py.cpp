@@ -191,9 +191,9 @@ svm_train<Task>::svm_train(svm_params *params) : params_(*params) {}
 template <typename Task>
 void svm_train<Task>::train(PyObject *data, PyObject *labels, PyObject *weights) {
     thread_state_releaser _allow;
-    auto data_table = convert_from_numpy_to_table(data);
-    auto labels_table = convert_from_numpy_to_table(labels);
-    auto weights_table = convert_from_numpy_to_table(weights);
+    auto data_table = convert_to_table(data);
+    auto labels_table = convert_to_table(labels);
+    auto weights_table = convert_to_table(weights);
     auto data_type = data_table.get_metadata().get_data_type(0);
     train_result_ = compute_impl<decltype(train_result_)>(params_,
                                                           data_type,
@@ -211,25 +211,25 @@ int svm_train<Task>::get_support_vector_count() {
 // attributes from train_result
 template <typename Task>
 PyObject *svm_train<Task>::get_support_vectors() {
-    return convert_from_table_to_numpy(train_result_.get_support_vectors());
+    return convert_to_numpy(train_result_.get_support_vectors());
 }
 
 // attributes from train_result
 template <typename Task>
 PyObject *svm_train<Task>::get_support_indices() {
-    return convert_from_table_to_numpy(train_result_.get_support_indices());
+    return convert_to_numpy(train_result_.get_support_indices());
 }
 
 // attributes from train_result
 template <typename Task>
 PyObject *svm_train<Task>::get_coeffs() {
-    return convert_from_table_to_numpy(train_result_.get_coeffs());
+    return convert_to_numpy(train_result_.get_coeffs());
 }
 
 // attributes from train_result
 template <typename Task>
 PyObject *svm_train<Task>::get_biases() {
-    return convert_from_table_to_numpy(train_result_.get_biases());
+    return convert_to_numpy(train_result_.get_biases());
 }
 
 // attributes from train_result
@@ -249,10 +249,10 @@ void svm_infer<Task>::infer(PyObject *data,
                             PyObject *coeffs,
                             PyObject *biases) {
     thread_state_releaser _allow;
-    auto data_table = convert_from_numpy_to_table(data);
-    auto support_vectors_table = convert_from_numpy_to_table(support_vectors);
-    auto coeffs_table = convert_from_numpy_to_table(coeffs);
-    auto biases_table = convert_from_numpy_to_table(biases);
+    auto data_table = convert_to_table(data);
+    auto support_vectors_table = convert_to_table(support_vectors);
+    auto coeffs_table = convert_to_table(coeffs);
+    auto biases_table = convert_to_table(biases);
 
     auto data_type = data_table.get_metadata().get_data_type(0);
     auto model = svm::model<Task>{}
@@ -269,7 +269,7 @@ void svm_infer<Task>::infer(PyObject *data,
 template <typename Task>
 void svm_infer<Task>::infer(PyObject *data, svm_model<Task> *model) {
     thread_state_releaser _allow;
-    auto data_table = convert_from_numpy_to_table(data);
+    auto data_table = convert_to_table(data);
     auto data_type = data_table.get_metadata().get_data_type(0);
     infer_result_ = compute_impl<decltype(infer_result_)>(params_,
                                                           data_type,
@@ -280,13 +280,13 @@ void svm_infer<Task>::infer(PyObject *data, svm_model<Task> *model) {
 // attributes from infer_result
 template <typename Task>
 PyObject *svm_infer<Task>::get_labels() {
-    return convert_from_table_to_numpy(infer_result_.get_labels());
+    return convert_to_numpy(infer_result_.get_labels());
 }
 
 // attributes from infer_result
 template <typename Task>
 PyObject *svm_infer<Task>::get_decision_function() {
-    return convert_from_table_to_numpy(infer_result_.get_decision_function());
+    return convert_to_numpy(infer_result_.get_decision_function());
 }
 
 template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::classification>;

@@ -27,8 +27,8 @@
 #include "oneapi/dal/table/common.hpp"
 
 namespace oneapi::dal::python {
-ONEDAL_BACKEND_EXPORT oneapi::dal::table convert_from_numpy_to_table(PyObject* nda);
+ONEDAL_BACKEND_EXPORT oneapi::dal::table convert_to_table(PyObject* nda);
 
-ONEDAL_BACKEND_EXPORT PyObject* convert_from_table_to_numpy(const oneapi::dal::table& input);
+ONEDAL_BACKEND_EXPORT PyObject* convert_to_numpy(const oneapi::dal::table& input);
 
 } // namespace oneapi::dal::python
