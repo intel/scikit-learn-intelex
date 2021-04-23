@@ -96,7 +96,7 @@ linear_kernel_compute::linear_kernel_compute(linear_kernel_params *params) : par
 
 // attributes from compute_input
 void linear_kernel_compute::compute(PyObject *x, PyObject *y) {
-    thread_allow _allow;
+    thread_state_releaser _allow;
     auto x_table = convert_from_numpy_to_table(x);
     auto y_table = convert_from_numpy_to_table(y);
     auto data_type = x_table.get_metadata().get_data_type(0);
@@ -112,7 +112,7 @@ rbf_kernel_compute::rbf_kernel_compute(rbf_kernel_params *params) : params_(*par
 
 // attributes from compute_input
 void rbf_kernel_compute::compute(PyObject *x, PyObject *y) {
-    thread_allow _allow;
+    thread_state_releaser _allow;
     auto x_table = convert_from_numpy_to_table(x);
     auto y_table = convert_from_numpy_to_table(y);
     auto data_type = x_table.get_metadata().get_data_type(0);
@@ -129,7 +129,7 @@ polynomial_kernel_compute::polynomial_kernel_compute(polynomial_kernel_params *p
 
 // attributes from compute_input
 void polynomial_kernel_compute::compute(PyObject *x, PyObject *y) {
-    thread_allow _allow;
+    thread_state_releaser _allow;
     auto x_table = convert_from_numpy_to_table(x);
     auto y_table = convert_from_numpy_to_table(y);
     auto data_type = x_table.get_metadata().get_data_type(0);

@@ -190,7 +190,7 @@ svm_train<Task>::svm_train(svm_params *params) : params_(*params) {}
 // attributes from train_input
 template <typename Task>
 void svm_train<Task>::train(PyObject *data, PyObject *labels, PyObject *weights) {
-    thread_allow _allow;
+    thread_state_releaser _allow;
     auto data_table = convert_from_numpy_to_table(data);
     auto labels_table = convert_from_numpy_to_table(labels);
     auto weights_table = convert_from_numpy_to_table(weights);
@@ -248,7 +248,7 @@ void svm_infer<Task>::infer(PyObject *data,
                             PyObject *support_vectors,
                             PyObject *coeffs,
                             PyObject *biases) {
-    thread_allow _allow;
+    thread_state_releaser _allow;
     auto data_table = convert_from_numpy_to_table(data);
     auto support_vectors_table = convert_from_numpy_to_table(support_vectors);
     auto coeffs_table = convert_from_numpy_to_table(coeffs);
@@ -268,7 +268,7 @@ void svm_infer<Task>::infer(PyObject *data,
 // attributes from infer_input.hpp expect model
 template <typename Task>
 void svm_infer<Task>::infer(PyObject *data, svm_model<Task> *model) {
-    thread_allow _allow;
+    thread_state_releaser _allow;
     auto data_table = convert_from_numpy_to_table(data);
     auto data_type = data_table.get_metadata().get_data_type(0);
     infer_result_ = compute_impl<decltype(infer_result_)>(params_,

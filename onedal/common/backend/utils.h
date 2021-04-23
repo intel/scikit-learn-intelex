@@ -32,13 +32,13 @@ static std::string to_std_string(PyObject* o) {
     return PyUnicode_AsUTF8(o);
 }
 
-class thread_allow {
+class thread_state_releaser {
 public:
-    thread_allow() {
+    thread_state_releaser() {
         allow();
     }
 
-    ~thread_allow() {
+    ~thread_state_releaser() {
         disallow();
     }
 

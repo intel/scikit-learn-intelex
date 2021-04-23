@@ -54,18 +54,6 @@ int init_numpy() {
 const static int numpy_initialized = init_numpy();
 #endif
 
-class numpy_deleter {
-public:
-    numpy_deleter(PyArrayObject *a) : ndarray_(a) {}
-
-    void operator()(const void *ptr) {}
-
-    numpy_deleter &operator=(const numpy_deleter &) = delete;
-
-private:
-    PyArrayObject *ndarray_;
-};
-
 template <typename T>
 inline dal::homogen_table convert_from_numpy_to_homogen(PyArrayObject *array) {
     std::int64_t column_count = 1;
@@ -82,8 +70,11 @@ inline dal::homogen_table convert_from_numpy_to_homogen(PyArrayObject *array) {
     }
     const auto layout =
         array_is_behaved_F(array) ? dal::data_layout::column_major : dal::data_layout::row_major;
-    auto res_table =
-        dal::homogen_table(data_pointer, row_count, column_count, numpy_deleter(array), layout);
+    auto res_table = dal::homogen_table(data_pointer,
+                                        row_count,
+                                        column_count,
+                                        dal::detail::empty_delete<const T>(),
+                                        layout);
     // we need it increment the ref-count if we use the input array in-place
     // if we copied/converted it we already own our own reference
     if (reinterpret_cast<PyArrayObject *>(data_pointer) == array)
