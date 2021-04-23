@@ -17,20 +17,20 @@
 #include "dpctl_interop/daal_context_service.h"
 
 #include "daal_sycl.h"
-#include "dppl_sycl_types.h"
-#include "dppl_sycl_queue_manager.h"
+#include "dpctl_sycl_types.h"
+#include "dpctl_sycl_queue_manager.h"
 
 #ifndef DAAL_SYCL_INTERFACE
 #include <type_traits>
 static_assert(false, "DAAL_SYCL_INTERFACE not defined")
 #endif
 
-void _dppl_set_current_queue_to_daal_context()
+void _dpctl_set_current_queue_to_daal_context()
 {
-    auto dppl_queue = DPPLQueueMgr_GetCurrentQueue();
-    if(dppl_queue != NULL)
+    auto dpctl_queue = DPCTLQueueMgr_GetCurrentQueue();
+    if(dpctl_queue != NULL)
     {
-        cl::sycl::queue * sycl_queue = reinterpret_cast<cl::sycl::queue*>(dppl_queue);
+        cl::sycl::queue * sycl_queue = reinterpret_cast<cl::sycl::queue*>(dpctl_queue);
 
         daal::services::SyclExecutionContext ctx (*sycl_queue);
         daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
@@ -41,7 +41,7 @@ void _dppl_set_current_queue_to_daal_context()
     }
 }
 
-void _dppl_reset_daal_context()
+void _dpctl_reset_daal_context()
 {
     daal::services::CpuExecutionContext ctx;
     daal::services::Environment::getInstance()->setDefaultExecutionContext(ctx);
