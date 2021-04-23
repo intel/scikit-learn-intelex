@@ -37,7 +37,8 @@ with open("README.md", "r", encoding="utf8") as f:
 
 # sklearnex setup
 setup(name="scikit-learn-intelex",
-      description="Intel(R) Extension for Scikit-learn is a seamless way to speed up your Scikit-learn application.",
+      description="Intel(R) Extension for Scikit-learn is a "
+                  "seamless way to speed up your Scikit-learn application.",
       long_description=long_description,
       long_description_content_type="text/markdown",
       license="Apache-2.0",
