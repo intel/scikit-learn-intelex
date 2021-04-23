@@ -19,7 +19,7 @@
 #####################################################
 Intel(R) Extension for Scikit-learn*
 #####################################################
-Intel(R) Extension for Scikit-learn - seamless way to speed up your Scikit-learn application. 
+Intel(R) Extension for Scikit-learn is a seamless way to speed up your Scikit-learn application. 
 The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library
 (`oneDAL <https://github.com/oneapi-src/oneDAL>`_). Patching scikit-learn makes it a
 well-suited machine learning framework for dealing with real-life problems.
