@@ -109,6 +109,7 @@ dal::table convert_to_table(PyObject *obj) {
 }
 
 void free_capsule(PyObject *cap) {
+    // TODO: check safe cast
     dal::base *stored_array = static_cast<dal::base *>(PyCapsule_GetPointer(cap, NULL));
     if (stored_array) {
         delete stored_array;
