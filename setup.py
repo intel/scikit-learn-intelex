@@ -42,7 +42,6 @@ IS_MAC = False
 IS_LIN = False
 
 dal_root = os.environ.get('DALROOT')
-
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
 
@@ -58,10 +57,8 @@ elif sys.platform in ['win32', 'cygwin']:
 else:
     assert False, sys.platform + ' not supported'
 
-ONEDAL_VERSION = get_onedal_version(dal_root)
-ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
-
-
+onedal_version = get_onedal_version(dal_root)
+onedal_2021_3 = 2021 * 10000 + 3 * 100
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
                else time.strftime('2021.%Y%m%d.%H%M%S'))
 
@@ -108,6 +105,18 @@ else:
     else:
         MPI_LIBS = ['mpi']
     MPI_CPPS = ['daal4py/src/mpi/mpi_transceiver.cpp']
+
+
+def get_win_major_version():
+    lib_name = find_library('onedal_core')
+    if lib_name is None:
+        return ''
+    version = lib_name.split('\\')[-1].split('.')[1]
+    try:
+        version = '.' + str(int(version))
+    except ValueError:
+        version = ''
+    return version
 
 
 def get_sdl_cflags():
@@ -236,14 +245,14 @@ def getpyexts():
                     define_macros=[
                         ('NPY_NO_DEPRECATED_API',
                          'NPY_1_7_API_VERSION'),
-                        ('ONEDAL_VERSION', ONEDAL_VERSION),
+                        ('onedal_version', onedal_version),
                     ],
                     libraries=onedal_libraries_plat,
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
 
-    if ONEDAL_VERSION >= ONEDAL_2021_3:
-        exts.extend(cythonize(ext, compile_time_env={'ONEDAL_VERSION': ONEDAL_VERSION}))
+    if onedal_version >= onedal_2021_3:
+        exts.extend(cythonize(ext, compile_time_env={'onedal_version': onedal_version}))
 
     ext = Extension('_daal4py',
                     [os.path.abspath('daal4py/src/daal4py.cpp'),
@@ -281,7 +290,7 @@ def getpyexts():
                         runtime_library_dirs=runtime_library_dirs,
                         language='c++')
 
-        if ONEDAL_VERSION >= ONEDAL_2021_3:
+        if onedal_version >= onedal_2021_3:
             exts.extend(cythonize(ext))
         ext = Extension('_oneapi',
                         [os.path.abspath('daal4py/src/oneapi/oneapi.pyx'), ],
@@ -412,7 +421,7 @@ class install(orig_install.install):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if onedal_version >= onedal_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -421,7 +430,7 @@ class develop(orig_develop.develop):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if onedal_version >= onedal_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -430,7 +439,7 @@ class build(orig_build.build):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if onedal_version >= onedal_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
