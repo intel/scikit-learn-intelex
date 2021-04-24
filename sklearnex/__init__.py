@@ -21,6 +21,8 @@ from .dispatcher import get_patch_names
 
 __all__ = [
     "patch_sklearn", "unpatch_sklearn", "get_patch_names",
+    "cluster", "decomposition", "ensemble", "linear_model",
+    "manifold", "neighbors", "svm", "metrics",
 ]
 
 from ._utils import set_sklearn_ex_verbose

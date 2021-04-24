@@ -37,11 +37,8 @@ with open("README.md", "r", encoding="utf8") as f:
 
 # sklearnex setup
 setup(name="scikit-learn-intelex",
-      description="Intel(R) Extension for Scikit-learn* speeds up scikit-learn beyond by "
-                  "providing drop-in patching. Acceleration is achieved through the use "
-                  "of the Intel(R) oneAPI Data Analytics Library (oneDAL) that allows "
-                  "for fast usage of the framework suited for Data Scientists or "
-                  "Machine Learning users.",
+      description="Intel(R) Extension for Scikit-learn is a "
+                  "seamless way to speed up your Scikit-learn application.",
       long_description=long_description,
       long_description_content_type="text/markdown",
       license="Apache-2.0",
@@ -78,5 +75,16 @@ setup(name="scikit-learn-intelex",
           "data science",
           "data analytics",
       ],
-      packages=["sklearnex"],
+      packages=[
+          "sklearnex",
+          'sklearnex.cluster',
+          'sklearnex.decomposition',
+          'sklearnex.ensemble',
+          'sklearnex.linear_model',
+          'sklearnex.manifold',
+          'sklearnex.metrics',
+          'sklearnex.model_selection',
+          'sklearnex.neighbors',
+          'sklearnex.svm',
+      ],
       )

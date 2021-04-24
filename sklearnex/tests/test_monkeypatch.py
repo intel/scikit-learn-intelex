@@ -22,12 +22,10 @@ def test_monkey_patching():
     _tokens = sklearnex.get_patch_names()
     _values = sklearn_patch_map().values()
     _classes = list()
-    for v in _values:
-        _classes.append(v[0][0])
 
-    assert len(_tokens) == len(_classes)
-    assert isinstance(_tokens, list) and len(_tokens) > 0, \
-        "Internal Error: list of patched names has unexcepable format."
+    for v in _values:
+        for c in v:
+            _classes.append(c[0])
 
     sklearnex.patch_sklearn()
 
@@ -40,8 +38,12 @@ def test_monkey_patching():
         assert class_module.startswith('daal4py'), \
             "Patching has completed with error."
 
+    for i, _ in enumerate(_tokens):
+        t = _tokens[i]
+        p = _classes[i][0]
+        n = _classes[i][1]
+
         sklearnex.unpatch_sklearn(t)
-        print(p, n)
         class_module = getattr(p, n).__module__
         assert class_module.startswith('sklearn'), \
             "Unpatching has completed with error."
@@ -57,6 +59,13 @@ def test_monkey_patching():
         assert class_module.startswith('sklearn'), \
             "Unpatching has completed with error."
 
+    sklearnex.unpatch_sklearn()
+
+    for i, _ in enumerate(_tokens):
+        t = _tokens[i]
+        p = _classes[i][0]
+        n = _classes[i][1]
+
         sklearnex.patch_sklearn(t)
 
         class_module = getattr(p, n).__module__
@@ -64,3 +73,61 @@ def test_monkey_patching():
             "Patching has completed with error."
 
     sklearnex.unpatch_sklearn()
+
+
+def test_patch_by_list_simple():
+    sklearnex.patch_sklearn(["LogisticRegression"])
+
+    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.neighbors import KNeighborsRegressor
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.svm import SVC
+
+    assert RandomForestRegressor.__module__.startswith('sklearn')
+    assert KNeighborsRegressor.__module__.startswith('sklearn')
+    assert LogisticRegression.__module__.startswith('daal4py')
+    assert SVC.__module__.startswith('sklearn')
+
+    sklearnex.unpatch_sklearn()
+
+
+def test_patch_by_list_many_estimators():
+    sklearnex.patch_sklearn(["LogisticRegression", "SVC"])
+
+    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.neighbors import KNeighborsRegressor
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.svm import SVC
+
+    assert RandomForestRegressor.__module__.startswith('sklearn')
+    assert KNeighborsRegressor.__module__.startswith('sklearn')
+    assert LogisticRegression.__module__.startswith('daal4py')
+    assert SVC.__module__.startswith('daal4py')
+
+    sklearnex.unpatch_sklearn()
+
+
+def test_unpatch_by_list_many_estimators():
+    sklearnex.patch_sklearn()
+
+    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.neighbors import KNeighborsRegressor
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.svm import SVC
+
+    assert RandomForestRegressor.__module__.startswith('daal4py')
+    assert KNeighborsRegressor.__module__.startswith('daal4py')
+    assert LogisticRegression.__module__.startswith('daal4py')
+    assert SVC.__module__.startswith('daal4py')
+
+    sklearnex.unpatch_sklearn(["KNeighborsRegressor", "RandomForestRegressor"])
+
+    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.neighbors import KNeighborsRegressor
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.svm import SVC
+
+    assert RandomForestRegressor.__module__.startswith('sklearn')
+    assert KNeighborsRegressor.__module__.startswith('sklearn')
+    assert LogisticRegression.__module__.startswith('daal4py')
+    assert SVC.__module__.startswith('daal4py')

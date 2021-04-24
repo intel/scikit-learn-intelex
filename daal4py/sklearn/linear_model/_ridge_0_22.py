@@ -21,7 +21,7 @@ from sklearn.linear_model._ridge import _BaseRidge
 from sklearn.linear_model._ridge import Ridge as Ridge_original
 
 import daal4py
-from .._utils import (make2d, getFPType, get_patch_message)
+from .._utils import make2d, getFPType, get_patch_message, sklearn_check_version
 import logging
 
 
@@ -100,6 +100,13 @@ def _fit_ridge(self, X, y, sample_weight=None):
     -------
     self : returns an instance of self.
     """
+    if sklearn_check_version('1.0'):
+        from sklearn.linear_model._base import _deprecate_normalize
+        self.normalize = _deprecate_normalize(
+            self.normalize, default=False,
+            estimator_name=self.__class__.__name__
+        )
+
     X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=[np.float64, np.float32],
                      multi_output=True, y_numeric=True)
     self.n_features_in_ = X.shape[1]
@@ -159,17 +166,30 @@ def _predict_ridge(self, X):
 class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 
-    def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
-                 copy_X=True, max_iter=None, tol=1e-3, solver="auto",
-                 random_state=None):
-        self.alpha = alpha
-        self.fit_intercept = fit_intercept
-        self.normalize = normalize
-        self.copy_X = copy_X
-        self.max_iter = max_iter
-        self.tol = tol
-        self.solver = solver
-        self.random_state = random_state
+    if sklearn_check_version('1.0'):
+        def __init__(self, alpha=1.0, fit_intercept=True, normalize='deprecated',
+                     copy_X=True, max_iter=None, tol=1e-3, solver="auto",
+                     random_state=None):
+            self.alpha = alpha
+            self.fit_intercept = fit_intercept
+            self.normalize = normalize
+            self.copy_X = copy_X
+            self.max_iter = max_iter
+            self.tol = tol
+            self.solver = solver
+            self.random_state = random_state
+    else:
+        def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
+                     copy_X=True, max_iter=None, tol=1e-3, solver="auto",
+                     random_state=None):
+            self.alpha = alpha
+            self.fit_intercept = fit_intercept
+            self.normalize = normalize
+            self.copy_X = copy_X
+            self.max_iter = max_iter
+            self.tol = tol
+            self.solver = solver
+            self.random_state = random_state
 
     def fit(self, X, y, sample_weight=None):
         return _fit_ridge(self, X, y, sample_weight=sample_weight)

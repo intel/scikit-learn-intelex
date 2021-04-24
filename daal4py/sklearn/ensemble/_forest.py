@@ -28,7 +28,7 @@ from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
 from sklearn.tree._tree import Tree
 from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_original
 from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
-from sklearn.utils import (check_random_state, check_array)
+from sklearn.utils import (check_random_state, check_array, deprecated)
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
@@ -151,8 +151,9 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     y = check_array(y, ensure_2d=False, dtype=None)
     y, expanded_class_weight = self._validate_y_class_weight(y)
     n_classes_ = self.n_classes_[0]
-    self.n_features_ = X.shape[1]
     self.n_features_in_ = X.shape[1]
+    if not sklearn_check_version('1.0'):
+        self.n_features_ = self.n_features_in_
 
     if expanded_class_weight is not None:
         if sample_weight is not None:
@@ -326,7 +327,9 @@ def _fit_classifier(self, X, y, sample_weight=None):
 
 def _daal_fit_regressor(self, X, y, sample_weight=None):
     self.n_features_in_ = X.shape[1]
-    self.n_features_ = X.shape[1]
+    if not sklearn_check_version('1.0'):
+        self.n_features_ = self.n_features_in_
+
     rs_ = check_random_state(self.random_state)
 
     if not self.bootstrap and self.oob_score:
@@ -405,8 +408,16 @@ def _fit_regressor(self, X, y, sample_weight=None):
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
 
+    if (sklearn_check_version('1.0') and self.criterion == "mse"):
+        warnings.warn(
+            "Criterion 'mse' was deprecated in v1.0 and will be "
+            "removed in version 1.2. Use `criterion='squared_error'` "
+            "which is equivalent.",
+            FutureWarning
+        )
+
     daal_ready = self.warm_start is False and \
-        self.criterion == "mse" and self.ccp_alpha == 0.0 and \
+        self.criterion in ["mse", "squared_error"] and self.ccp_alpha == 0.0 and \
         not sp.issparse(X) and self.oob_score is False
 
     if daal_ready:
@@ -680,6 +691,15 @@ class RandomForestClassifier(RandomForestClassifier_original):
         #    "predict_proba: " + get_patch_message("daal"))
         #return _daal_predict_proba(self, X)
 
+    if sklearn_check_version('1.0'):
+        @deprecated(
+            "Attribute n_features_ was deprecated in version 1.0 and will be "
+            "removed in 1.2. Use 'n_features_in_' instead."
+        )
+        @property
+        def n_features_(self):
+            return self.n_features_in_
+
     @property
     def _estimators_(self):
         if hasattr(self, '_cached_estimators_'):
@@ -713,7 +733,10 @@ class RandomForestClassifier(RandomForestClassifier_original):
             est_i = clone(est)
             est_i.set_params(
                 random_state=random_state_checked.randint(np.iinfo(np.int32).max))
-            est_i.n_features_ = self.n_features_
+            if sklearn_check_version('1.0'):
+                est_i.n_features_in_ = self.n_features_in_
+            else:
+                est_i.n_features_ = self.n_features_in_
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = classes_
             est_i.n_classes_ = n_classes_
@@ -735,7 +758,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 'nodes': tree_i_state_class.node_ar,
                 'values': tree_i_state_class.value_ar}
             est_i.tree_ = Tree(
-                self.n_features_,
+                self.n_features_in_,
                 np.array(
                     [n_classes_],
                     dtype=np.intp),
@@ -881,6 +904,15 @@ class RandomForestRegressor(RandomForestRegressor_original):
             "predict: " + get_patch_message("daal"))
         return _daal_predict_regressor(self, X)
 
+    if sklearn_check_version('1.0'):
+        @deprecated(
+            "Attribute n_features_ was deprecated in version 1.0 and will be "
+            "removed in 1.2. Use 'n_features_in_' instead."
+        )
+        @property
+        def n_features_(self):
+            return self.n_features_in_
+
     @property
     def _estimators_(self):
         if hasattr(self, '_cached_estimators_'):
@@ -911,7 +943,10 @@ class RandomForestRegressor(RandomForestRegressor_original):
             est_i = clone(est)
             est_i.set_params(
                 random_state=random_state_checked.randint(np.iinfo(np.int32).max))
-            est_i.n_features_ = self.n_features_
+            if sklearn_check_version('1.0'):
+                est_i.n_features_in_ = self.n_features_in_
+            else:
+                est_i.n_features_ = self.n_features_in_
             est_i.n_outputs_ = self.n_outputs_
 
             tree_i_state_class = daal4py.getTreeState(self.daal_model_, i)
@@ -922,7 +957,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
                 'values': tree_i_state_class.value_ar}
 
             est_i.tree_ = Tree(
-                self.n_features_, np.array(
+                self.n_features_in_, np.array(
                     [1], dtype=np.intp), self.n_outputs_)
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
