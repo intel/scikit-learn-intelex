@@ -169,6 +169,9 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   steps:
+  - task: VSBuild@1
+    inputs:
+      vsVersion: 'latest'
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
   - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
@@ -197,14 +200,13 @@ jobs:
       python examples/run_examples.py
     displayName: Examples
 
-
 - job: PEP8
   pool:
     vmImage: 'ubuntu-20.04'
   steps:
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.7'
+      versionSpec: '$(python.version)'
       addToPath: true
   - script: |
       python -m pip install --upgrade pip setuptools
