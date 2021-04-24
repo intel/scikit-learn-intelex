@@ -5,9 +5,9 @@
 [![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-learn-intelex)](https://anaconda.org/conda-forge/scikit-learn-intelex)
 
-Intel(R) Extension for Scikit-learn speeds up scikit-learn beyond  by providing drop-in patching. Acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library ([oneDAL](https://github.com/oneapi-src/oneDAL)) that allows for fast usage of the framework suited for Data Scientists or Machine Learning users.
+Intel(R) Extension for Scikit-learn is a seamless way to speed up your Scikit-learn application. The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library ([oneDAL](https://github.com/oneapi-src/oneDAL)). Patching scikit-learn makes it a well-suited machine learning framework for dealing with real-life problems.
 
-⚠️Intel(R) Extension for Scikit-learn contains scikit-learn patching functionality originally available in [**daal4py**](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py) package. All future updates for the patching will be available in Intel(R) Extension for Scikit-learn only. Please use the package instead of daal4py.
+⚠️Intel(R) Extension for Scikit-learn contains scikit-learn patching functionality that was originally available in [**daal4py**](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py) package. All future updates for the patches will be available only in Intel(R) Extension for Scikit-learn. We recommend you to use scikit-learn-intelex package instead of daal4py.
 You can learn more about daal4py in [daal4py documentation](https://intelpython.github.io/daal4py).
 
 Running full the latest scikit-learn test suite with Intel(R) Extension for Scikit-learn: [![CircleCI](https://circleci.com/gh/IntelPython/daal4py.svg?style=svg)](https://circleci.com/gh/IntelPython/daal4py)
@@ -125,7 +125,7 @@ with sycl_context("gpu"):
 
 | Speedups of Intel(R) Extension for Scikit-learn over the original Scikit-learn |
 |:--:|
-| ![](https://github.com/intel/scikit-learn-intelex/blob/master/doc/IDP%20scikit-learn%20accelearation%20compared%20with%20stock%20scikit-learn.png) |
+| ![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/scikit-learn-acceration.png) |
 | *Technical details: float type: float64; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10), [benchmark code](https://github.com/IntelPython/scikit-learn_bench)* |
 
 Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
