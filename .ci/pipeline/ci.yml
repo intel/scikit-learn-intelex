@@ -169,9 +169,6 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   steps:
-  - task: VSBuild@1
-    inputs:
-      vsVersion: 'latest'
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
   - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
@@ -183,6 +180,7 @@ jobs:
     displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
+      pip install --upgrade setuptools
       pip install -r requirements-dev.txt
       pip install -r requirements-test.txt
     displayName: 'Install requirements'
