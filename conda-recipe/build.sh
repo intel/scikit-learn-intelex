@@ -24,9 +24,6 @@ fi
 # if dpc++ vars path is specified
 if [ ! -z "${DPCPPROOT}" ]; then
     source ${DPCPPROOT}/env/vars.sh
-    export CC=clang++
-    export CXX=clang++
-    clang++ --version
 fi
 
 # if DAALROOT not exists then provide PREFIX

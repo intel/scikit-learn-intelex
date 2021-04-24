@@ -6,6 +6,8 @@ build
 dist
 daal4py.egg-info
 **/__pycache__
+*.lib
+*.dll
 
 # Cython generated code
 src/oneapi/oneapi_api.h
