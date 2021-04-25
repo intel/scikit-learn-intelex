@@ -191,7 +191,6 @@ jobs:
     displayName: 'Build daal4py'
   - script: |
       call activate CB
-      cd ..
       call scripts/run_test.bat
     displayName: Testing
   - script: |
