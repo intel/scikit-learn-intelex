@@ -190,14 +190,14 @@ jobs:
       call scripts/bld.bat
     displayName: 'Build daal4py'
   - script: |
-      source activate CB
-      python examples/run_examples.py
-    displayName: Examples
-  - script: |
       call activate CB
       cd ..
       call scripts/run_test.bat
     displayName: Testing
+  - script: |
+      call activate CB
+      python examples/run_examples.py
+    displayName: Examples
 
 - job: PEP8
   pool:
