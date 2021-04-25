@@ -193,11 +193,6 @@ jobs:
       call activate CB
       call scripts/run_test.bat
     displayName: Testing
-  - script: |
-      cd ..
-      call activate CB
-      python scikit-learn-intelex/examples/run_examples.py
-    displayName: Examples
 
 - job: PEP8
   pool:
