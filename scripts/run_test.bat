@@ -16,22 +16,5 @@ rem limitations under the License.
 rem ============================================================================
 
 python -m unittest discover -v -s daal4py\tests -p test*.py
-set errorcode=!errorlevel!
-if !errorcode! NEQ 0 (
-    echo DAAL4PY TEST FAILED
-    exit /b 1
-)
 pytest --pyargs daal4py\sklearn\
-set errorcode=!errorlevel!
-if !errorcode! NEQ 0 (
-    echo DAAL4PY TEST FAILED
-    exit /b 1
-)
-
 pytest --pyargs sklearnex\tests\
-set errorcode=!errorlevel!
-if !errorcode! NEQ 0 (
-    echo SKLEARNEX TEST FAILED
-    exit /b 1
-)
-echo DAAL4PY TEST PASSED
