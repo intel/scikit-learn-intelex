@@ -188,14 +188,15 @@ jobs:
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
       call scripts/bld.bat
-    displayName: 'Build daal4py'
+    displayName: 'Build daal4py and sklearnex'
   - script: |
       call activate CB
       call scripts/run_test.bat
     displayName: Testing
   - script: |
+      cd ..
       call activate CB
-      python examples/run_examples.py
+      python scikit-learn-intelex/examples/run_examples.py
     displayName: Examples
 
 - job: PEP8
