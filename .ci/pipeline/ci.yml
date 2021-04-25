@@ -167,7 +167,7 @@ jobs:
 
 - job: Windows_DPCPP
   pool:
-    vmImage: 'vmImage: vs2017-win2016'
+    vmImage: 'vs2017-win2016'
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
