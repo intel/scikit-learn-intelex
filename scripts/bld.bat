@@ -29,7 +29,7 @@ IF DEFINED DPCPPROOT (
     call "%DPCPPROOT%\env\vars.bat"
 )
 
-set PATH=%PATH%;%CONDA_PREFIX%\Library\bin\libfabric
+set PATH=%CONDA_PREFIX%\Library\bin;%PATH%;%CONDA_PREFIX%\Library\bin\libfabric
 
 %PYTHON% setup.py build %BUILD_ARGS%
 IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
