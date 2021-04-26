@@ -32,7 +32,7 @@ if [ "${DAALROOT}" != "" ] && [ "${DALROOT}" == "" ] ; then
 fi
 
 if [ -z "${DALROOT}" ]; then
-    export DALROOT=${PREFIX}
+    export DALROOT=${CONDA_PREFIX}
 fi
 
 if [ "$(uname)" == "Darwin" ]; then
@@ -41,5 +41,5 @@ if [ "$(uname)" == "Darwin" ]; then
 fi
 
 export DAAL4PY_VERSION=$PKG_VERSION
-export MPIROOT=${PREFIX}
+export MPIROOT=${CONDA_PREFIX}
 ${PYTHON} setup.py install $ARGS
