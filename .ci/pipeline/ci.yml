@@ -114,11 +114,11 @@ jobs:
       conda activate CB
       pip install -r requirements-dev.txt
       pip install -r requirements-test.txt
-      pip install xgboost lightgbm
     displayName: 'Install requirements'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       export DALROOT=$CONDA_PREFIX
       ./scripts/build.sh
     displayName: 'Build daal4py'
@@ -167,7 +167,7 @@ jobs:
 
 - job: Windows_DPCPP
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
