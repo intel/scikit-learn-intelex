@@ -262,7 +262,9 @@ reduced_tests:
 
 public:
   - tests/test_common.py::test_estimators
-
+  # Failed in stock sklearn
+  - tests/test_common.py::test_not_symmetric_metric[precision_recall_curve]
+  - tests/test_common.py::test_binary_sample_weight_invariance[precision_recall_curve]
 
   # --------------------------------------------------------
   # The following tests currently fail with GPU offload
@@ -470,8 +472,3 @@ gpu:
 
   - tests/test_multioutput.py::test_multiclass_multioutput_estimator_predict_proba
   - tests/test_multioutput.py::test_classifier_chain_fit_and_predict_with_sparse_data
-
-  # Failed in stock sklearn
-  - tests/test_common.py::test_not_symmetric_metric[precision_recall_curve]
-  - tests/test_common.py::test_binary_sample_weight_invariance[precision_recall_curve]
-
