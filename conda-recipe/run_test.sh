@@ -49,8 +49,12 @@ echo "Unittest discover testing ..."
 python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
 return_code=$(($return_code + $?))
 
-echo "Pytest running ..."
+echo "Pytest of daal4py running ..."
 pytest --pyargs ${daal4py_dir}/daal4py/sklearn/
+return_code=$(($return_code + $?))
+
+echo "Pytest of sklearnex running ..."
+pytest --pyargs ${daal4py_dir}/sklearnex
 return_code=$(($return_code + $?))
 
 exit $return_code

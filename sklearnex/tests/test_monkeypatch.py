@@ -15,19 +15,10 @@
 #===============================================================================
 
 import sklearnex
-from sklearnex import d4p_patch_map, sklearnex_patch_map
-
-
-def sklearn_patch_map():
-    patch_map = dict()
-    patch_map.update(d4p_patch_map())
-    patch_map.update(sklearnex_patch_map())
-    return patch_map
-
 
 def test_monkey_patching():
     _tokens = sklearnex.get_patch_names()
-    _values = sklearn_patch_map().values()
+    _values = sklearnex.get_patch_map().values()
     _classes = list()
 
     for v in _values:
@@ -111,7 +102,7 @@ def test_patch_by_list_many_estimators():
     assert RandomForestRegressor.__module__.startswith('sklearn')
     assert KNeighborsRegressor.__module__.startswith('sklearn')
     assert LogisticRegression.__module__.startswith('daal4py')
-    assert SVC.__module__.startswith('daal4py')
+    assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')
 
     sklearnex.unpatch_sklearn()
 
@@ -127,7 +118,7 @@ def test_unpatch_by_list_many_estimators():
     assert RandomForestRegressor.__module__.startswith('daal4py')
     assert KNeighborsRegressor.__module__.startswith('daal4py')
     assert LogisticRegression.__module__.startswith('daal4py')
-    assert SVC.__module__.startswith('daal4py')
+    assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')
 
     sklearnex.unpatch_sklearn(["KNeighborsRegressor", "RandomForestRegressor"])
 
@@ -139,4 +130,4 @@ def test_unpatch_by_list_many_estimators():
     assert RandomForestRegressor.__module__.startswith('sklearn')
     assert KNeighborsRegressor.__module__.startswith('sklearn')
     assert LogisticRegression.__module__.startswith('daal4py')
-    assert SVC.__module__.startswith('daal4py')
+    assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')

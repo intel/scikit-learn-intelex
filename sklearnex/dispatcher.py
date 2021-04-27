@@ -31,25 +31,20 @@ import sklearn.svm as svm_module
 
 
 @lru_cache(maxsize=None)
-def _get_map_of_algorithms_sklearnex():
-    mapping = {}
+def get_patch_map():
+    from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
+    mapping = _get_map_of_algorithms().copy()
 
     if daal_check_version((2021, 'P', 300)):
+        mapping.pop('svm')
+        mapping.pop('svc')
         mapping['svr'] = [[(svm_module, 'SVR', SVR_sklearnex), None]]
         mapping['svc'] = [[(svm_module, 'SVC', SVC_sklearnex), None]]
-
     return mapping
 
 
-@lru_cache(maxsize=None)
-def _get_d4p_map_without_duplicates():
-    from daal4py.sklearn import sklearn_patch_map
-    sklearnex_classes = [c[0][0][1] for c in _get_map_of_algorithms_sklearnex().values()]
-    new_map = {}
-    for key, value in sklearn_patch_map().items():
-        if value[0][0][1] not in sklearnex_classes:
-            new_map.update({key: value})
-    return new_map
+def get_patch_names():
+    return list(get_patch_map().keys())
 
 
 def patch_sklearn(name=None, verbose=True):
@@ -62,14 +57,10 @@ def patch_sklearn(name=None, verbose=True):
     if isinstance(name, list):
         for algorithm in name:
             patch_sklearn_orig(algorithm, verbose=False, deprecation=False,
-                               get_map=_get_d4p_map_without_duplicates, d4p_only=False)
-            patch_sklearn_orig(algorithm, verbose=False, deprecation=False,
-                               get_map=_get_map_of_algorithms_sklearnex, d4p_only=False)
+                               get_map=get_patch_map)
     else:
         patch_sklearn_orig(name, verbose=False, deprecation=False,
-                           get_map=_get_d4p_map_without_duplicates, d4p_only=False)
-        patch_sklearn_orig(name, verbose=False, deprecation=False,
-                           get_map=_get_map_of_algorithms_sklearnex, d4p_only=False)
+                           get_map=get_patch_map)
 
     if verbose and sys.stderr is not None:
         sys.stderr.write(
@@ -81,17 +72,6 @@ def unpatch_sklearn(name=None):
     from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
     if isinstance(name, list):
         for algorithm in name:
-            unpatch_sklearn_orig(algorithm, get_map=_get_d4p_map_without_duplicates,
-                                 d4p_only=False)
-            unpatch_sklearn_orig(algorithm, get_map=_get_map_of_algorithms_sklearnex,
-                                 d4p_only=False)
+            unpatch_sklearn_orig(algorithm, get_map=get_patch_map)
     else:
-        unpatch_sklearn_orig(name, get_map=_get_d4p_map_without_duplicates,
-                             d4p_only=False)
-        unpatch_sklearn_orig(name, get_map=_get_map_of_algorithms_sklearnex,
-                             d4p_only=False)
-
-
-def get_patch_names():
-    return list(_get_d4p_map_without_duplicates().keys()) + \
-        list(_get_map_of_algorithms_sklearnex().keys())
+        unpatch_sklearn_orig(name, get_map=get_patch_map)

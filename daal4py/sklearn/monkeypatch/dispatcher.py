@@ -101,32 +101,7 @@ def _get_map_of_algorithms():
     return mapping
 
 
-def get_map_sklearnex():
-    try:
-        from sklearnex import get_patch_names
-        return get_patch_names()
-    except ModuleNotFoundError:
-        return []
-
-
-def _raise_if_not_patched(name, d4p_only):
-    d4p_algos = list(_get_map_of_algorithms().keys())
-    sklearnex_algos = get_map_sklearnex()
-    lname = name.lower()
-    name_in_d4p = lname in d4p_algos
-    name_in_sklearnex = lname in sklearnex_algos
-
-    if not name_in_d4p and name_in_sklearnex and d4p_only:
-        raise ValueError(f'daal4py doesn\'t patch {name}. Use Intel(R) Extension '
-                         'for Scikit-learn* module instead '
-                         '(pip install scikit-learn-intelex)')
-    if not name_in_d4p and not name_in_sklearnex:
-        raise ValueError(f'Has no patch for: {name}')
-
-
-def do_patch(name, get_map=_get_map_of_algorithms, d4p_only=True):
-    _raise_if_not_patched(name, d4p_only)
-
+def do_patch(name, get_map=_get_map_of_algorithms):
     lname = name.lower()
     if lname in get_map():
         for descriptor in get_map()[lname]:
@@ -134,30 +109,27 @@ def do_patch(name, get_map=_get_map_of_algorithms, d4p_only=True):
             if descriptor[1] is None:
                 descriptor[1] = getattr(which, what, None)
             setattr(which, what, replacer)
+    else:
+        raise ValueError("Has no patch for: " + name)
 
 
-def do_unpatch(name, get_map=_get_map_of_algorithms, d4p_only=True):
-    _raise_if_not_patched(name, d4p_only)
-
+def do_unpatch(name, get_map=_get_map_of_algorithms):
     lname = name.lower()
     if lname in get_map():
         for descriptor in get_map()[lname]:
             if descriptor[1] is not None:
                 which, what, _ = descriptor[0]
                 setattr(which, what, descriptor[1])
+    else:
+        raise ValueError("Has no patch for: " + name)
 
 
-def enable(name=None, verbose=True, deprecation=True, get_map=_get_map_of_algorithms,
-           d4p_only=True):
-    if LooseVersion(sklearn_version) < LooseVersion("0.22.0"):
-        module_name = 'daal4py' if d4p_only else 'sklearnex'
-        raise NotImplementedError(
-            f"{module_name} patches apply for scikit-learn >= 0.22.0 only ...")
+def enable(name=None, verbose=True, deprecation=True, get_map=_get_map_of_algorithms):
     if name is not None:
-        do_patch(name, get_map, d4p_only)
+        do_patch(name, get_map)
     else:
         for key in get_map():
-            do_patch(key, get_map, d4p_only)
+            do_patch(key, get_map)
     if deprecation:
         set_idp_sklearn_verbose()
         warnings.warn_explicit("\nScikit-learn patching with daal4py is deprecated "
@@ -179,12 +151,12 @@ def enable(name=None, verbose=True, deprecation=True, get_map=_get_map_of_algori
             "https://intelpython.github.io/daal4py/sklearn.html\n")
 
 
-def disable(name=None, get_map=_get_map_of_algorithms, d4p_only=True):
+def disable(name=None, get_map=_get_map_of_algorithms):
     if name is not None:
-        do_unpatch(name, get_map, d4p_only)
+        do_unpatch(name, get_map)
     else:
         for key in get_map():
-            do_unpatch(key, get_map, d4p_only)
+            do_unpatch(key, get_map)
         get_map.cache_clear()
 
 
