@@ -44,6 +44,7 @@ endif()
 
 project("dpcpp part python onedal"
     HOMEPAGE_URL https://github.com/oneapi-src/oneDAL
+    LANGUAGES CXX
 )
 
 set(PYTHON_ONEDAL "${CMAKE_CURRENT_SOURCE_DIR}/../onedal/")
