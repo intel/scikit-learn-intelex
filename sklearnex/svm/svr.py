@@ -35,42 +35,10 @@ class SVR(sklearn_SVR):
             epsilon=epsilon, shrinking=shrinking, cache_size=cache_size, verbose=verbose,
             max_iter=max_iter)
 
-    def _create_onedal_svr(self):
-        return onedal_SVR(C=self.C, epsilon=self.epsilon,
-                          kernel=self.kernel, degree=self.degree,
-                          gamma=self.gamma, coef0=self.coef0,
-                          tol=self.tol, shrinking=self.shrinking,
-                          cache_size=self.cache_size,
-                          max_iter=self.max_iter)
-
     def fit(self, X, y, sample_weight=None):
         if self.kernel in ['linear', 'rbf', 'poly'] and not sp.isspmatrix(X):
             logging.info("sklearn.svm.SVR.fit: " + get_patch_message("onedal"))
-
-            self._onedal_model = self._create_onedal_svr()
-            self._onedal_model.fit(X, y, sample_weight)
-
-            self.support_vectors_ = self._onedal_model.support_vectors_
-            self.n_features_in_ = self._onedal_model.n_features_in_
-            self.fit_status_ = 0
-            self.dual_coef_ = self._onedal_model.dual_coef_
-            self.shape_fit_ = self._onedal_model.shape_fit_
-            self.support_ = self._onedal_model.support_
-
-            self._intercept_ = self._onedal_model.intercept_
-            self._n_support = [self.support_vectors_.shape[0]]
-            self._sparse = False
-            self._gamma = self._onedal_model._gamma
-            self._probA = None
-            self._probB = None
-
-            self._dual_coef_ = property(get_dual_coef, set_dual_coef)
-            self.intercept_ = property(get_intercept, set_intercept)
-
-            self._is_in_fit = True
-            self._dual_coef_ = self.dual_coef_
-            self.intercept_ = self._intercept_
-            self._is_in_fit = False
+            self._onedal_fit(X, y, sample_weight)
         else:
             logging.info("sklearn.svm.SVR.fit: " + get_patch_message("sklearn"))
             sklearn_SVR.fit(self, X, y, sample_weight)
@@ -78,9 +46,50 @@ class SVR(sklearn_SVR):
         return self
 
     def predict(self, X):
-        if hasattr(self, '_onedal_model') and not sp.isspmatrix(X):
+        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
             logging.info("sklearn.svm.SVR.predict: " + get_patch_message("onedal"))
-            return self._onedal_model.predict(X)
+            return self._onedal_estimator.predict(X)
         else:
             logging.info("sklearn.svm.SVR.predict: " + get_patch_message("sklearn"))
             return sklearn_SVR.predict(self, X)
+
+    def _onedal_fit(self, X, y, sample_weight=None):
+        onedal_params = {
+            'C': self.C,
+            'epsilon': self.epsilon,
+            'kernel': self.kernel,
+            'degree': self.degree,
+            'gamma': self.gamma,
+            'coef0': self.coef0,
+            'tol': self.tol,
+            'shrinking': self.shrinking,
+            'cache_size': self.cache_size,
+            'max_iter': self.max_iter,
+        }
+
+        self._onedal_estimator = onedal_SVR(**onedal_params)
+        self._onedal_estimator.fit(X, y, sample_weight)
+        self._save_attributes()
+
+    def _save_attributes(self):
+        self.support_vectors_ = self._onedal_estimator.support_vectors_
+        self.n_features_in_ = self._onedal_estimator.n_features_in_
+        self.fit_status_ = 0
+        self.dual_coef_ = self._onedal_estimator.dual_coef_
+        self.shape_fit_ = self._onedal_estimator.shape_fit_
+        self.support_ = self._onedal_estimator.support_
+
+        self._intercept_ = self._onedal_estimator.intercept_
+        self._n_support = [self.support_vectors_.shape[0]]
+        self._sparse = False
+        self._gamma = self._onedal_estimator._gamma
+        self._probA = None
+        self._probB = None
+
+        self._dual_coef_ = property(get_dual_coef, set_dual_coef)
+        self.intercept_ = property(get_intercept, set_intercept)
+
+        self._is_in_fit = True
+        self._dual_coef_ = self.dual_coef_
+        self.intercept_ = self._intercept_
+        self._is_in_fit = False

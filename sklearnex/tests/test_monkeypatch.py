@@ -16,6 +16,7 @@
 
 import sklearnex
 
+
 def test_monkey_patching():
     _tokens = sklearnex.get_patch_names()
     _values = sklearnex.get_patch_map().values()

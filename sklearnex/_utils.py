@@ -58,3 +58,8 @@ def get_patch_message(s):
             f"Invalid input - expected one of 'onedal','sklearn',"
             f" 'sklearn_after_onedal', got {s}")
     return message
+
+
+def get_sklearnex_version(rule):
+    from daal4py.sklearn._utils import daal_check_version
+    return daal_check_version(rule)

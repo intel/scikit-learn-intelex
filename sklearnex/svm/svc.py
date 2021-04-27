@@ -47,13 +47,73 @@ class SVC(sklearn_SVC):
             decision_function_shape=decision_function_shape, break_ties=break_ties,
             random_state=random_state)
 
-    def _create_onedal_svc(self):
-        return onedal_SVC(
-            C=self.C, kernel=self.kernel, degree=self.degree, gamma=self.gamma,
-            coef0=self.coef0, tol=self.tol, shrinking=self.shrinking,
-            cache_size=self.cache_size, max_iter=self.max_iter,
-            class_weight=self.class_weight, break_ties=self.break_ties,
-            decision_function_shape=self.decision_function_shape)
+    def fit(self, X, y, sample_weight=None):
+        if self.kernel in ['linear', 'rbf', 'poly'] and not sp.isspmatrix(X):
+            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("onedal"))
+            self._onedal_fit(X, y, sample_weight)
+        else:
+            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
+            sklearn_SVC.fit(self, X, y, sample_weight)
+
+        return self
+
+    def predict(self, X):
+        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("onedal"))
+            return self._onedal_estimator.predict(X)
+        else:
+            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
+            return sklearn_SVC.predict(self, X)
+
+    def _predict_proba(self, X):
+        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+            logging.info("sklearn.svm.SVC._predict_proba: " + get_patch_message("onedal"))
+            if getattr(self, 'clf_prob', None) is None:
+                raise NotFittedError(
+                    "predict_proba is not available when fitted with probability=False")
+            return self.clf_prob.predict_proba(X)
+        else:
+            logging.info(
+                "sklearn.svm.SVC._predict_proba: " + get_patch_message("sklearn"))
+            return sklearn_SVC._predict_proba(self, X)
+
+    def decision_function(self, X):
+        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+            logging.info(
+                "sklearn.svm.SVC.decision_function: " + get_patch_message("onedal"))
+            return self._onedal_estimator.decision_function(X)
+        else:
+            logging.info(
+                "sklearn.svm.SVC.decision_function: " + get_patch_message("sklearn"))
+            return sklearn_SVC.decision_function(self, X)
+
+    def _onedal_fit(self, X, y, sample_weight=None):
+        onedal_params = {
+            'C': self.C,
+            'kernel': self.kernel,
+            'degree': self.degree,
+            'gamma': self.gamma,
+            'coef0': self.coef0,
+            'tol': self.tol,
+            'shrinking': self.shrinking,
+            'cache_size': self.cache_size,
+            'max_iter': self.max_iter,
+            'class_weight': self.class_weight,
+            'break_ties': self.break_ties,
+            'decision_function_shape': self.decision_function_shape,
+        }
+
+        self._onedal_estimator = onedal_SVC(**onedal_params)
+        self._onedal_estimator.fit(X, y, sample_weight)
+
+        if self.class_weight == 'balanced':
+            self.class_weight_ = self._compute_balanced_class_weight(y)
+        else:
+            self.class_weight_ = self._onedal_estimator.class_weight_
+
+        if self.probability:
+            self._fit_proba(X, y, sample_weight)
+        self._save_attributes()
 
     def _compute_balanced_class_weight(self, y):
         y_ = _column_or_1d(y)
@@ -67,102 +127,56 @@ class SVC(sklearn_SVC):
         recip_freq = len(y_) / (len(le.classes_) * np.bincount(y_ind).astype(np.float64))
         return recip_freq[le.transform(classes)]
 
-    def fit(self, X, y, sample_weight=None):
-        if self.kernel in ['linear', 'rbf', 'poly'] and not sp.isspmatrix(X):
-            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("onedal"))
-
-            self._onedal_model = self._create_onedal_svc()
-            self._onedal_model.fit(X, y, sample_weight)
-
-            if self.class_weight == 'balanced':
-                self.class_weight_ = self._compute_balanced_class_weight(y)
+    def _fit_proba(self, X, y, sample_weight=None):
+        params = self.get_params()
+        params["probability"] = False
+        params["decision_function_shape"] = 'ovr'
+        clf_base = SVC(**params)
+        try:
+            n_splits = 5
+            cv = StratifiedKFold(
+                n_splits=n_splits,
+                shuffle=True,
+                random_state=self.random_state)
+            if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+                self.clf_prob = CalibratedClassifierCV(
+                    clf_base, ensemble=False, cv=cv, method='sigmoid',
+                    n_jobs=n_splits)
             else:
-                self.class_weight_ = self._onedal_model.class_weight_
+                self.clf_prob = CalibratedClassifierCV(
+                    clf_base, cv=cv, method='sigmoid')
+            self.clf_prob.fit(X, y, sample_weight)
+        except ValueError:
+            clf_base = clf_base.fit(X, y, sample_weight)
+            self.clf_prob = CalibratedClassifierCV(
+                clf_base, cv="prefit", method='sigmoid')
+            self.clf_prob.fit(X, y, sample_weight)
 
-            self.support_vectors_ = self._onedal_model.support_vectors_
-            self.n_features_in_ = self._onedal_model.n_features_in_
-            self.fit_status_ = 0
-            self.dual_coef_ = self._onedal_model.dual_coef_
-            self.shape_fit_ = self._onedal_model.class_weight_
-            self.classes_ = self._onedal_model.classes_
-            self.support_ = self._onedal_model.support_
+    def _save_attributes(self):
+        self.support_vectors_ = self._onedal_estimator.support_vectors_
+        self.n_features_in_ = self._onedal_estimator.n_features_in_
+        self.fit_status_ = 0
+        self.dual_coef_ = self._onedal_estimator.dual_coef_
+        self.shape_fit_ = self._onedal_estimator.class_weight_
+        self.classes_ = self._onedal_estimator.classes_
+        self.support_ = self._onedal_estimator.support_
 
-            self._intercept_ = self._onedal_model.intercept_
-            self._n_support = self._onedal_model._n_support
-            self._sparse = False
-            self._gamma = self._onedal_model._gamma
-            if self.probability:
-                length = int(len(self.classes_) * (len(self.classes_) - 1) / 2)
-                self._probA = np.zeros(length)
-                self._probB = np.zeros(length)
-            else:
-                self._probA = np.empty(0)
-                self._probB = np.empty(0)
-
-            self._dual_coef_ = property(get_dual_coef, set_dual_coef)
-            self.intercept_ = property(get_intercept, set_intercept)
-
-            self._is_in_fit = True
-            self._dual_coef_ = self.dual_coef_
-            self.intercept_ = self._intercept_
-            self._is_in_fit = False
-
-            if self.probability:
-                params = self.get_params()
-                params["probability"] = False
-                params["decision_function_shape"] = 'ovr'
-                clf_base = SVC(**params)
-                try:
-                    n_splits = 5
-                    cv = StratifiedKFold(
-                        n_splits=n_splits,
-                        shuffle=True,
-                        random_state=self.random_state)
-                    if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
-                        self.clf_prob = CalibratedClassifierCV(
-                            clf_base, ensemble=False, cv=cv, method='sigmoid',
-                            n_jobs=n_splits)
-                    else:
-                        self.clf_prob = CalibratedClassifierCV(
-                            clf_base, cv=cv, method='sigmoid')
-                    self.clf_prob.fit(X, y, sample_weight)
-                except ValueError:
-                    clf_base = clf_base.fit(X, y, sample_weight)
-                    self.clf_prob = CalibratedClassifierCV(
-                        clf_base, cv="prefit", method='sigmoid')
-                    self.clf_prob.fit(X, y, sample_weight)
+        self._intercept_ = self._onedal_estimator.intercept_
+        self._n_support = self._onedal_estimator._n_support
+        self._sparse = False
+        self._gamma = self._onedal_estimator._gamma
+        if self.probability:
+            length = int(len(self.classes_) * (len(self.classes_) - 1) / 2)
+            self._probA = np.zeros(length)
+            self._probB = np.zeros(length)
         else:
-            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
-            sklearn_SVC.fit(self, X, y, sample_weight)
+            self._probA = np.empty(0)
+            self._probB = np.empty(0)
 
-        return self
+        self._dual_coef_ = property(get_dual_coef, set_dual_coef)
+        self.intercept_ = property(get_intercept, set_intercept)
 
-    def predict(self, X):
-        if hasattr(self, '_onedal_model') and not sp.isspmatrix(X):
-            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("onedal"))
-            return self._onedal_model.predict(X)
-        else:
-            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
-            return sklearn_SVC.predict(self, X)
-
-    def _predict_proba(self, X):
-        if hasattr(self, '_onedal_model') and not sp.isspmatrix(X):
-            logging.info("sklearn.svm.SVC._predict_proba: " + get_patch_message("onedal"))
-            if getattr(self, 'clf_prob', None) is None:
-                raise NotFittedError(
-                    "predict_proba is not available when fitted with probability=False")
-            return self.clf_prob.predict_proba(X)
-        else:
-            logging.info(
-                "sklearn.svm.SVC._predict_proba: " + get_patch_message("sklearn"))
-            return sklearn_SVC._predict_proba(self, X)
-
-    def decision_function(self, X):
-        if hasattr(self, '_onedal_model') and not sp.isspmatrix(X):
-            logging.info(
-                "sklearn.svm.SVC.decision_function: " + get_patch_message("onedal"))
-            return self._onedal_model.decision_function(X)
-        else:
-            logging.info(
-                "sklearn.svm.SVC.decision_function: " + get_patch_message("sklearn"))
-            return sklearn_SVC.decision_function(self, X)
+        self._is_in_fit = True
+        self._dual_coef_ = self.dual_coef_
+        self.intercept_ = self._intercept_
+        self._is_in_fit = False

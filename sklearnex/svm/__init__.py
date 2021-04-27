@@ -15,7 +15,12 @@
 # limitations under the License.
 #===============================================================================
 
-from .svr import SVR
-from .svc import SVC
 
-__all__ = ['SVR', 'SVC']
+from .._utils import get_sklearnex_version
+if get_sklearnex_version((2021, 'P', 300)):
+    from .svr import SVR
+    from .svc import SVC
+    __all__ = ['SVR', 'SVC']
+else:
+    from daal4py.sklearn.svm import SVC
+    __all__ = ['SVC']
