@@ -418,7 +418,7 @@ def distutils_dir_name(dname):
 class install(orig_install.install):
     def run(self):
         if dpcpp:
-            # build_oneapi_backend()
+            build_oneapi_backend()
             if ONEDAL_VERSION >= ONEDAL_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
@@ -427,7 +427,7 @@ class install(orig_install.install):
 class develop(orig_develop.develop):
     def run(self):
         if dpcpp:
-            # build_oneapi_backend()
+            build_oneapi_backend()
             if ONEDAL_VERSION >= ONEDAL_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
@@ -436,7 +436,7 @@ class develop(orig_develop.develop):
 class build(orig_build.build):
     def run(self):
         if dpcpp:
-            # build_oneapi_backend()
+            build_oneapi_backend()
             if ONEDAL_VERSION >= ONEDAL_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
