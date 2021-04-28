@@ -20,7 +20,7 @@ from enum import Enum
 
 import numpy as np
 from scipy import sparse as sp
-from onedal.common import (
+from ..common import (
     _validate_targets,
     _check_X_y,
     _check_array,

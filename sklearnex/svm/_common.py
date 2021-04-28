@@ -20,10 +20,10 @@ def get_dual_coef(self):
 
 def set_dual_coef(self, value):
     self.dual_coef_ = value
-    if hasattr(self, '_onedal_model'):
-        self._onedal_model.dual_coef_ = value
+    if hasattr(self, '_onedal_estimator'):
+        self._onedal_estimator.dual_coef_ = value
         if not self._is_in_fit:
-            del self._onedal_model._onedal_model
+            del self._onedal_estimator._onedal_model
 
 
 def get_intercept(self):
@@ -32,7 +32,7 @@ def get_intercept(self):
 
 def set_intercept(self, value):
     self._intercept_ = value
-    if hasattr(self, '_onedal_model'):
-        self._onedal_model.intercept_ = value
+    if hasattr(self, '_onedal_estimator'):
+        self._onedal_estimator.intercept_ = value
         if not self._is_in_fit:
-            del self._onedal_model._onedal_model
+            del self._onedal_estimator._onedal_model
