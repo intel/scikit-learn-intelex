@@ -26,13 +26,13 @@
 
 deselected_tests:
 
-  # Model with sparce data are different between oneAPI Data Analytics Library (oneDAL) and stock sklearn
+  # Model with sparse data are different between oneAPI Data Analytics Library (oneDAL) and stock sklearn
   - svm/tests/test_sparse.py::test_svc
   - svm/tests/test_sparse.py::test_unsorted_indices
   - svm/tests/test_sparse.py::test_svc_iris
   - svm/tests/test_sparse.py::test_sparse_realdata
 
-  # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with callble kernel
+  # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with callable kernel
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
 
   # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with precomputed kernel
