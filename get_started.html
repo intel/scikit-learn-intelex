@@ -33,7 +33,6 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -183,6 +182,11 @@ Sources and build instructions are available in
 </pre></div>
 </div>
 </li>
+<li><p>Install from Anaconda Cloud: Conda-Forge channel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">сonda</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+</pre></div>
+</div>
+</li>
 <li><p>Install from Anaconda Cloud: Intel channel:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span>
 </pre></div>
@@ -233,6 +237,49 @@ Sources and build instructions are available in
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>It supports Intel CPU and GPU except on OsX.</p>
+</div>
+<p><strong>Anaconda Cloud: Conda-Forge channel</strong></p>
+<table class="colwidths-given docutils align-left">
+<colgroup>
+<col style="width: 44%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
+<th class="head"><p>Python 3.6</p></th>
+<th class="head"><p>Python 3.7</p></th>
+<th class="head"><p>Python 3.8</p></th>
+<th class="head"><p>Python 3.9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Linux</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-odd"><td><p>Windows</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-even"><td><p>OsX</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It supports only Intel CPU.
+Recommended for conda users by default.</p>
 </div>
 <p><strong>Anaconda Cloud: Intel channel</strong></p>
 <table class="colwidths-given docutils align-left">
@@ -299,12 +346,12 @@ Recommended for conda users who use other components from Intel(R) Distribution 
 <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">develop</span>
 </pre></div>
 </div>
-<p>To install scikit-learn-intelex without the dependency on daal4py:</p>
+<p>To install scikit-learn-intelex without downloading daal4py:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">checkout</span><span class="o">-</span><span class="nb">dir</span><span class="o">&gt;</span>
 <span class="n">python</span> <span class="n">setup_sklearnex</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">single</span><span class="o">-</span><span class="n">version</span><span class="o">-</span><span class="n">externally</span><span class="o">-</span><span class="n">managed</span> <span class="o">--</span><span class="n">record</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
-<p>To install scikit-learn-intelex without the dependency on daal4py in the development mode:</p>
+<p>To install scikit-learn-intelex without downloading daal4py in the development mode:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">checkout</span><span class="o">-</span><span class="nb">dir</span><span class="o">&gt;</span>
 <span class="n">python</span> <span class="n">setup_sklearnex</span><span class="o">.</span><span class="n">py</span> <span class="n">develop</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span>
 </pre></div>
