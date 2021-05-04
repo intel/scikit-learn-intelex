@@ -36,6 +36,7 @@ try:
         PyClassificationSvmTrain,
         PyClassificationSvmInfer
     )
+    raise ImportError
 except ImportError:
     from _onedal4py_host import (
         PySvmParams,
@@ -113,7 +114,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 )
 
         X, y = _check_X_y(
-            X, y, dtype=[np.float64, np.float32], force_all_finite=True)
+            X, y, dtype=[np.float64, np.float32],
+            force_all_finite=True, accept_sparse='csr', accept_large_sparse=False)
         y = self._validate_targets(y, X.dtype)
         sample_weight = _get_sample_weight(
             X, y, sample_weight, self.class_weight_, self.classes_)
@@ -141,7 +143,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             y = np.argmax(self.decision_function(X), axis=1)
         else:
             X = _check_array(
-                X, dtype=[np.float64, np.float32], force_all_finite=True)
+                X, dtype=[np.float64, np.float32],
+                force_all_finite=True, accept_sparse='csr')
             c_svm = Computer(self._get_onedal_params())
 
             if self._onedal_model:
@@ -155,7 +158,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     def _decision_function(self, X):
         _check_is_fitted(self)
         X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=True)
+            X, dtype=[np.float64, np.float32],
+            force_all_finite=True, accept_sparse='csr')
         c_svm = PyClassificationSvmInfer(self._get_onedal_params())
         if self._onedal_model:
             c_svm.infer(X, self._onedal_model)
