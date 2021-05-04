@@ -244,7 +244,7 @@ def __logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
 
     if not daal_ready:
         sample_weight = _check_sample_weight(sample_weight, X,
-                                             dtype=X.dtype)
+                                             dtype=X.dtype, copy=True)
     # If class_weights is a dict (provided by the user), the weights
     # are assigned to the original labels. If it is "balanced", then
     # the class_weights are assigned after masking the labels with a OvR.
