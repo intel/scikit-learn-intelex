@@ -17,9 +17,8 @@
 import pytest
 import types
 import tracemalloc
-from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
-from daal4py.sklearn.model_selection import _daal_train_test_split
-from daal4py.sklearn.utils.validation import _daal_assert_all_finite
+from sklearnex import get_patch_map
+from sklearnex.model_selection import train_test_split
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.datasets import make_classification, make_regression
@@ -32,22 +31,13 @@ class TrainTestSplitEstimator:
         pass
 
     def fit(self, x, y):
-        _daal_train_test_split(x, y)
-
-
-class AssertAllFiniteEstimator:
-    def __init__(self):
-        pass
-
-    def fit(self, x, y):
-        _daal_assert_all_finite(x)
-        _daal_assert_all_finite(y)
+        train_test_split(x, y)
 
 
 ESTIMATORS = [
     TrainTestSplitEstimator,
-    AssertAllFiniteEstimator
 ]
+
 
 BANNED_ESTIMATORS = [
     'TSNE',  # too slow for using in testing on applicable data sizes
@@ -55,7 +45,7 @@ BANNED_ESTIMATORS = [
 ]
 
 # add all daa4lpy estimators enabled in patching (except banned)
-patched_estimators = _get_map_of_algorithms().values()
+patched_estimators = get_patch_map().values()
 for listing in patched_estimators:
     estimator, name = listing[0][0][2], listing[0][0][1]
     if not isinstance(estimator, types.FunctionType):

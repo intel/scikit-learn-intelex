@@ -30,3 +30,36 @@ def set_sklearn_ex_verbose():
         warnings.warn('Unknown level "{}" for logging.\n'
                       'Please, use one of "CRITICAL", "ERROR", '
                       '"WARNING", "INFO", "DEBUG".'.format(logLevel))
+
+
+def get_patch_message(s):
+    import sys
+    if s == "onedal":
+        message = "running accelerated version on "
+        if 'daal4py.oneapi' in sys.modules:
+            from daal4py.oneapi import _get_device_name_sycl_ctxt
+            dev = _get_device_name_sycl_ctxt()
+            if dev == 'cpu' or dev == 'host':
+                message += 'CPU'
+            elif dev == 'gpu':
+                message += 'GPU'
+            else:
+                raise ValueError(f"Unexpected device name {dev}."
+                                 " Supported types are host, cpu and gpu")
+        else:
+            message += 'CPU'
+
+    elif s == "sklearn":
+        message = "fallback to original Scikit-learn"
+    elif s == "sklearn_after_onedal":
+        message = "failed to run accelerated version, fallback to original Scikit-learn"
+    else:
+        raise ValueError(
+            f"Invalid input - expected one of 'onedal','sklearn',"
+            f" 'sklearn_after_onedal', got {s}")
+    return message
+
+
+def get_sklearnex_version(rule):
+    from daal4py.sklearn._utils import daal_check_version
+    return daal_check_version(rule)

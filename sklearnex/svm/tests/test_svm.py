@@ -25,6 +25,6 @@ def test_sklearnex_import_svc():
                   [+1, +1], [+1, +2], [+2, +1]])
     y = np.array([1, 1, 1, 2, 2, 2])
     svc = SVC(kernel='linear').fit(X, y)
-    assert 'daal4py' in svc.__module__
+    assert 'daal4py' in svc.__module__ or 'sklearnex' in svc.__module__
     assert_allclose(svc.dual_coef_, [[-0.25, .25]])
     assert_allclose(svc.support_, [1, 3])

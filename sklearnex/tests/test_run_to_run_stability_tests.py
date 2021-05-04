@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 import random
 
-from daal4py.sklearn import patch_sklearn
+from sklearnex import patch_sklearn
 patch_sklearn()
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -89,7 +89,6 @@ def method_processing(X, clf, methods):
 
 def func(X, Y, clf, methods):
     clf.fit(X, Y)
-
     res, name = method_processing(X, clf, methods)
 
     for i in clf.__dict__.keys():
@@ -192,29 +191,19 @@ MODELS_INFO = [
     },
     {
         'model': DBSCAN(algorithm="brute", n_jobs=-1),
-        'methods': ['fit_predict'],
+        'methods': [],
         'dataset': 'blobs',
     },
     {
-        'model': SVC(kernel='linear'),
-        'methods': ['predict', 'decision_function'],
-        'dataset': 'classifier',
-    },
-    {
         'model': SVC(kernel='rbf'),
         'methods': ['predict', 'decision_function'],
         'dataset': 'classifier',
     },
-    {
-        'model': SVC(kernel='linear'),
-        'methods': ['predict', 'decision_function'],
-        'dataset': 'sparse',
-    },
-    {
-        'model': SVC(kernel='rbf'),
-        'methods': ['predict', 'decision_function'],
-        'dataset': 'sparse',
-    },
+    # {
+    #     'model': SVC(kernel='rbf'),
+    #     'methods': ['predict', 'decision_function'],
+    #     'dataset': 'sparse',
+    # },
     {
         'model': TSNE(random_state=0),
         'methods': ['fit_transform'],
