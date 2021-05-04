@@ -40,7 +40,7 @@ class LinearRegression(LinearRegression_original):
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version('1.0'):
             from sklearn.linear_model._base import _deprecate_normalize
-            self.normalize = _deprecate_normalize(
+            self._normalize = _deprecate_normalize(
                 self.normalize, default=False,
                 estimator_name=self.__class__.__name__
             )
