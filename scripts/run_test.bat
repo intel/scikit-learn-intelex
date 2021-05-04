@@ -15,26 +15,6 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 rem ============================================================================
 
-set DAAL4PY_VERSION=%PKG_VERSION%
-set MPIROOT=%PREFIX%\Library
-
-IF DEFINED DPCPPROOT (
-    echo "Sourcing DPCPPROOT"
-    call "%DPCPPROOT%\env\vars.bat"
-    set "CC=dpcpp"
-    set "CXX=dpcpp"
-    dpcpp --version
-)
-
-IF DEFINED DAALROOT (set DALROOT=%DAALROOT%)
-
-IF DEFINED DALROOT (
-    echo "Sourcing DALROOT"
-    call "%DALROOT%\env\vars.bat"
-    echo "Finish sourcing DALROOT"
-)
-
-IF DEFINED TBBROOT (
-    echo "Sourcing TBBROOT"
-    call "%TBBROOT%\env\vars.bat"
-)
+python -m unittest discover -v -s daal4py\tests -p test*.py
+pytest --pyargs daal4py\sklearn\
+pytest --pyargs sklearnex\tests\

@@ -15,7 +15,7 @@
 # limitations under the License.
 #===============================================================================
 
-from generator.gen_daal4py import gen_daal4py
+from gen_daal4py import gen_daal4py
 
 if __name__ == "__main__":
     import argparse
@@ -36,8 +36,10 @@ if __name__ == "__main__":
                            help="DAAL root directory (reads include dir in there)")
     argParser.add_argument('--outdir', default='build',
                            help="Output directory to store wrapper files to")
+    argParser.add_argument('--sourcedir', default='.',
+                           help="Output directory to store wrapper files to")
     argParser.add_argument('--wall', default=False,
                            action='store_true', help="Emit all warnings")
 
     args = argParser.parse_args()
-    gen_daal4py(args.daalroot, args.outdir, "v_develop", args.wall)
+    gen_daal4py(args.daalroot, args.outdir, args.sourcedir, "v_develop", args.wall)

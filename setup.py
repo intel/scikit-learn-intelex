@@ -42,7 +42,6 @@ IS_MAC = False
 IS_LIN = False
 
 dal_root = os.environ.get('DALROOT')
-
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
 
@@ -58,22 +57,8 @@ elif sys.platform in ['win32', 'cygwin']:
 else:
     assert False, sys.platform + ' not supported'
 
-ONEDAL_VERSION = get_onedal_version(dal_root)
-ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
-
-
-def get_win_major_version():
-    lib_name = find_library('onedal_core')
-    if lib_name is None:
-        return ''
-    version = lib_name.split('\\')[-1].split('.')[1]
-    try:
-        version = '.' + str(int(version))
-    except ValueError:
-        version = ''
-    return version
-
-
+onedal_version = get_onedal_version(dal_root)
+onedal_2021_3 = 2021 * 10000 + 3 * 100
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
                else time.strftime('2021.%Y%m%d.%H%M%S'))
 
@@ -105,7 +90,7 @@ if no_dist:
     MPI_CPPS = []
 else:
     DIST_CFLAGS = ['-D_DIST_', ]
-    DIST_CPPS = ['src/transceiver.cpp']
+    DIST_CPPS = ['daal4py/src/transceiver.cpp']
     MPI_INCDIRS = [jp(mpi_root, 'include')]
     MPI_LIBDIRS = [jp(mpi_root, 'lib')]
     MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
@@ -119,7 +104,19 @@ else:
         assert MPI_LIBS, "Couldn't find MPI library"
     else:
         MPI_LIBS = ['mpi']
-    MPI_CPPS = ['src/mpi/mpi_transceiver.cpp']
+    MPI_CPPS = ['daal4py/src/mpi/mpi_transceiver.cpp']
+
+
+def get_win_major_version():
+    lib_name = find_library('onedal_core')
+    if lib_name is None:
+        return ''
+    version = lib_name.split('\\')[-1].split('.')[1]
+    try:
+        version = '.' + str(int(version))
+    except ValueError:
+        version = ''
+    return version
 
 
 def get_sdl_cflags():
@@ -166,8 +163,11 @@ def get_libs(iface='daal'):
 
 
 def get_build_options():
-    include_dir_plat = [os.path.abspath(
-        './src'), os.path.abspath('./onedal'), dal_root + '/include', ]
+    include_dir_plat = [
+        os.path.abspath('./daal4py/src'),
+        os.path.abspath('./onedal'),
+        dal_root + '/include'
+    ]
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
@@ -245,20 +245,20 @@ def getpyexts():
                     define_macros=[
                         ('NPY_NO_DEPRECATED_API',
                          'NPY_1_7_API_VERSION'),
-                        ('ONEDAL_VERSION', ONEDAL_VERSION),
+                        ('onedal_version', onedal_version),
                     ],
                     libraries=onedal_libraries_plat,
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
 
-    if ONEDAL_VERSION >= ONEDAL_2021_3:
-        exts.extend(cythonize(ext, compile_time_env={'ONEDAL_VERSION': ONEDAL_VERSION}))
+    if onedal_version >= onedal_2021_3:
+        exts.extend(cythonize(ext, compile_time_env={'onedal_version': onedal_version}))
 
     ext = Extension('_daal4py',
-                    [os.path.abspath('src/daal4py.cpp'),
+                    [os.path.abspath('daal4py/src/daal4py.cpp'),
                      os.path.abspath('build/daal4py_cpp.cpp'),
                      os.path.abspath('build/daal4py_cy.pyx')] + DIST_CPPS,
-                    depends=glob.glob(jp(os.path.abspath('src'), '*.h')),
+                    depends=glob.glob(jp(os.path.abspath('daal4py/src'), '*.h')),
                     include_dirs=include_dir_plat + [np.get_include()],
                     extra_compile_args=eca,
                     define_macros=get_daal_type_defines(),
@@ -290,11 +290,12 @@ def getpyexts():
                         runtime_library_dirs=runtime_library_dirs,
                         language='c++')
 
-        if ONEDAL_VERSION >= ONEDAL_2021_3:
+        if onedal_version >= onedal_2021_3:
             exts.extend(cythonize(ext))
         ext = Extension('_oneapi',
-                        [os.path.abspath('src/oneapi/oneapi.pyx'), ],
-                        depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
+                        [os.path.abspath('daal4py/src/oneapi/oneapi.pyx'), ],
+                        depends=['daal4py/src/oneapi/oneapi.h',
+                                 'daal4py/src/oneapi/oneapi_backend.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca,
                         extra_link_args=ela,
@@ -310,7 +311,7 @@ def getpyexts():
 
     if not no_dist:
         mpi_include_dir = include_dir_plat + [np.get_include()] + MPI_INCDIRS
-        mpi_depens = glob.glob(jp(os.path.abspath('src'), '*.h'))
+        mpi_depens = glob.glob(jp(os.path.abspath('daal4py/src'), '*.h'))
         mpi_extra_link = ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS]
         exts.append(Extension('mpi_transceiver',
                               MPI_CPPS,
@@ -333,8 +334,7 @@ for key, value in get_config_vars().items():
 
 
 def gen_pyx(odir):
-    gtr_files = glob.glob(
-        jp(os.path.abspath('generator'), '*')) + ['./setup.py']
+    gtr_files = glob.glob(jp(os.path.abspath('scripts/generator'), '*')) + ['./setup.py']
     src_files = [os.path.abspath('build/daal4py_cpp.h'),
                  os.path.abspath('build/daal4py_cpp.cpp'),
                  os.path.abspath('build/daal4py_cy.pyx')]
@@ -346,11 +346,13 @@ def gen_pyx(odir):
                   'Skipping code generation')
             return
 
-    from generator.gen_daal4py import gen_daal4py
+    from scripts.generator.gen_daal4py import gen_daal4py
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
-    gen_daal4py(dal_root, odir, d4p_version,
+
+    source_dir = os.path.abspath('daal4py')
+    gen_daal4py(dal_root, odir, source_dir, d4p_version,
                 no_dist=no_dist, no_stream=no_stream)
 
 
@@ -383,7 +385,7 @@ def build_oneapi_backend():
     libraries = [f'{lib_prefix}{str(item)}{lib_suffix}' for item in libraries]
 
     d4p_dir = os.getcwd()
-    src_dir = os.path.join(d4p_dir, "src/oneapi")
+    src_dir = os.path.join(d4p_dir, "daal4py/src/oneapi")
     build_dir = os.path.join(d4p_dir, "build_backend")
 
     if os.path.exists(build_dir):
@@ -419,7 +421,7 @@ class install(orig_install.install):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if onedal_version >= onedal_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -428,7 +430,7 @@ class develop(orig_develop.develop):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if onedal_version >= onedal_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -437,7 +439,7 @@ class build(orig_build.build):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if onedal_version >= onedal_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 

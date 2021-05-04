@@ -16,11 +16,11 @@ rem limitations under the License.
 rem ============================================================================
 
 set DAAL4PY_VERSION=%PKG_VERSION%
-set MPIROOT=%PREFIX%\Library
+set MPIROOT=%CONDA_PREFIX%\Library
 
 IF DEFINED DAALROOT (set DALROOT=%DAALROOT%)
 
-IF NOT DEFINED DALROOT (set DALROOT=%PREFIX%)
+IF NOT DEFINED DALROOT (set DALROOT=%CONDA_PREFIX%)
 
 set "BUILD_ARGS="
 
@@ -29,8 +29,9 @@ IF DEFINED DPCPPROOT (
     call "%DPCPPROOT%\env\vars.bat"
 )
 
-set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
+set PATH=%CONDA_PREFIX%\Library\bin;%PATH%;%CONDA_PREFIX%\Library\bin\libfabric
 
 %PYTHON% setup.py build %BUILD_ARGS%
 IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
 %PYTHON% setup.py install --single-version-externally-managed --record record.txt
+%PYTHON% setup_sklearnex.py install --single-version-externally-managed --record record.txt

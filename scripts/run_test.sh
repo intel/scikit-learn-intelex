@@ -18,7 +18,7 @@
 daal4py_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 count=3
 while [[ count -ne 0 ]]; do
-    if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/tests/ && -d $daal4py_dir/examples/ ]]; then
+    if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/daal4py/tests/ && -d $daal4py_dir/examples/ ]]; then
         break
     fi
     daal4py_dir="$( dirname "${daal4py_dir}" )"
@@ -41,12 +41,12 @@ echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI unittest discover testing ..."
     mpirun --version
-    mpirun -n 4 python -m unittest discover -v -s ${daal4py_dir}/tests -p spmd*.py
+    mpirun -n 4 python -m unittest discover -v -s ${daal4py_dir}/daal4py/tests -p spmd*.py
     return_code=$(($return_code + $?))
 fi
 
 echo "Unittest discover testing ..."
-python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
+python -m unittest discover -v -s ${daal4py_dir}/daal4py/tests -p test*.py
 return_code=$(($return_code + $?))
 
 echo "Pytest running ..."
