@@ -775,7 +775,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
 
     def __init__(self,
                  n_estimators=100, *,
-                 criterion="mse",
+                 criterion="squared_error" if sklearn_check_version('1.0') else "mse",
                  max_depth=None,
                  min_samples_split=2,
                  min_samples_leaf=1,
