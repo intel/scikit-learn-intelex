@@ -123,11 +123,13 @@ jobs:
       ./dev/build.sh
     displayName: 'Build daal4py'
   - script: |
+      . /opt/intel/oneapi/compiler/latest/env/vars.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       ./dev/run_test.sh
     displayName: Testing
   - script: |
+      . /opt/intel/oneapi/compiler/latest/env/vars.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd examples && python run_examples.py
