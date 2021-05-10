@@ -15,6 +15,7 @@
 #===============================================================================
 
 import numpy as np
+import numbers
 from scipy import sparse as sp
 
 from sklearn.utils import (check_random_state, check_array)
@@ -284,14 +285,15 @@ def _fit(self, X, y=None, sample_weight=None):
         raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
                          " {}".format(str(algorithm)))
 
-    daal_ready = True
-    if daal_ready:
-        X_len = _num_samples(X)
-        daal_ready = (self.n_clusters <= X_len)
-        if daal_ready and sample_weight is not None:
+    X_len = _num_samples(X)
+    daal_ready = self.n_clusters <= X_len
+    if daal_ready and sample_weight is not None:
+        if isinstance(sample_weight, numbers.Number):
+            sample_weight = np.full(X_len, sample_weight, dtype=np.float64)
+        else:
             sample_weight = np.asarray(sample_weight)
-            daal_ready = (sample_weight.shape == (X_len,)) and (
-                np.allclose(sample_weight, np.ones_like(sample_weight)))
+        daal_ready = (sample_weight.shape == (X_len,)) and (
+            np.allclose(sample_weight, np.ones_like(sample_weight)))
 
     if daal_ready:
         logging.info(

@@ -262,7 +262,9 @@ reduced_tests:
 
 public:
   - tests/test_common.py::test_estimators
-
+  # Failed in stock sklearn
+  - metrics/tests/test_common.py::test_not_symmetric_metric[precision_recall_curve]
+  - metrics/tests/test_common.py::test_binary_sample_weight_invariance[precision_recall_curve]
 
   # --------------------------------------------------------
   # The following tests currently fail with GPU offload
