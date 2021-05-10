@@ -53,12 +53,12 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       export DALROOT=$CONDA_PREFIX
-      ./scripts/build.sh
+      ./dev/build.sh
     displayName: 'Build daal4py'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      ./scripts/run_test.sh
+      ./dev/run_test.sh
     displayName: Testing
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -120,12 +120,12 @@ jobs:
       conda activate CB
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       export DALROOT=$CONDA_PREFIX
-      ./scripts/build.sh
+      ./dev/build.sh
     displayName: 'Build daal4py'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      ./scripts/run_test.sh
+      ./dev/run_test.sh
     displayName: Testing
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -154,11 +154,11 @@ jobs:
   - script: |
       source activate CB
       export DALROOT=$CONDA_PREFIX
-      ./scripts/build.sh
+      ./dev/build.sh
     displayName: 'Build daal4py'
   - script: |
       source activate CB
-      ./scripts/run_test.sh
+      ./dev/run_test.sh
     displayName: Testing
   - script: |
       source activate CB
@@ -187,11 +187,11 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      call scripts/bld.bat
+      call dev/bld.bat
     displayName: 'Build daal4py and sklearnex'
   - script: |
       call activate CB
-      call scripts/run_test.bat
+      call dev/run_test.bat
     displayName: Testing
 
 - job: PEP8

@@ -29,8 +29,8 @@ from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 import glob
 import numpy as np
-import scripts.build_backend as build_backend
-from scripts.version import get_onedal_version
+import dev.build_backend as build_backend
+from dev.version import get_onedal_version
 
 try:
     from ctypes.utils import find_library
@@ -334,7 +334,7 @@ for key, value in get_config_vars().items():
 
 
 def gen_pyx(odir):
-    gtr_files = glob.glob(jp(os.path.abspath('scripts/generator'), '*')) + ['./setup.py']
+    gtr_files = glob.glob(jp(os.path.abspath('daal4py/generator'), '*')) + ['./setup.py']
     src_files = [os.path.abspath('build/daal4py_cpp.h'),
                  os.path.abspath('build/daal4py_cpp.cpp'),
                  os.path.abspath('build/daal4py_cy.pyx')]
@@ -346,7 +346,7 @@ def gen_pyx(odir):
                   'Skipping code generation')
             return
 
-    from scripts.generator.gen_daal4py import gen_daal4py
+    from daal4py.generator.gen_daal4py import gen_daal4py
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
