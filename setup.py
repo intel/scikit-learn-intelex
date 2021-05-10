@@ -334,7 +334,7 @@ for key, value in get_config_vars().items():
 
 
 def gen_pyx(odir):
-    gtr_files = glob.glob(jp(os.path.abspath('daal4py/generator'), '*')) + ['./setup.py']
+    gtr_files = glob.glob(jp(os.path.abspath('dev/generator'), '*')) + ['./setup.py']
     src_files = [os.path.abspath('build/daal4py_cpp.h'),
                  os.path.abspath('build/daal4py_cpp.cpp'),
                  os.path.abspath('build/daal4py_cy.pyx')]
@@ -346,7 +346,7 @@ def gen_pyx(odir):
                   'Skipping code generation')
             return
 
-    from daal4py.generator.gen_daal4py import gen_daal4py
+    from dev.generator.gen_daal4py import gen_daal4py
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
