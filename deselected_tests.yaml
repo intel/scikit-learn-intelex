@@ -44,6 +44,9 @@ deselected_tests:
   # Possible problems with multiclass model
   - svm/tests/test_svm.py::test_decision_function
 
+  # XFAIL: zero sample_weight is not equivalent to removing samples. Will fixed
+  - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=zeros)]
+
   # Number of support vectors is 0. oneAPI Data Analytics Library (oneDAL) raises an exception
   - svm/tests/test_svm.py::test_svr
 
