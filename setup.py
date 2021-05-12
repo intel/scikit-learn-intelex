@@ -266,7 +266,7 @@ def getpyexts():
                     libraries=libraries_plat,
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
-    # exts.extend(cythonize(ext))
+    exts.extend(cythonize(ext))
 
     if dpcpp:
         if IS_LIN or IS_MAC:
@@ -290,8 +290,8 @@ def getpyexts():
                         runtime_library_dirs=runtime_library_dirs,
                         language='c++')
 
-        # if ONEDAL_VERSION >= ONEDAL_2021_3:
-            # exts.extend(cythonize(ext))
+        if ONEDAL_VERSION >= ONEDAL_2021_3:
+            exts.extend(cythonize(ext))
         ext = Extension('_oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
                         depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
@@ -306,7 +306,7 @@ def getpyexts():
                         library_dirs=['daal4py/oneapi'] + ONEDAL_LIBDIRS,
                         runtime_library_dirs=runtime_oneapi_dirs,
                         language='c++')
-        # exts.extend(cythonize(ext))
+        exts.extend(cythonize(ext))
 
     if not no_dist:
         mpi_include_dir = include_dir_plat + [np.get_include()] + MPI_INCDIRS
@@ -354,7 +354,7 @@ def gen_pyx(odir):
                 no_dist=no_dist, no_stream=no_stream)
 
 
-# gen_pyx(os.path.abspath('./build'))
+gen_pyx(os.path.abspath('./build'))
 
 
 def build_oneapi_backend():
@@ -418,7 +418,7 @@ def distutils_dir_name(dname):
 class install(orig_install.install):
     def run(self):
         if dpcpp:
-            # build_oneapi_backend()
+            build_oneapi_backend()
             if ONEDAL_VERSION >= ONEDAL_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
@@ -427,7 +427,7 @@ class install(orig_install.install):
 class develop(orig_develop.develop):
     def run(self):
         if dpcpp:
-            # build_oneapi_backend()
+            build_oneapi_backend()
             if ONEDAL_VERSION >= ONEDAL_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
@@ -436,7 +436,7 @@ class develop(orig_develop.develop):
 class build(orig_build.build):
     def run(self):
         if dpcpp:
-            # build_oneapi_backend()
+            build_oneapi_backend()
             if ONEDAL_VERSION >= ONEDAL_2021_3:
                 build_backend.custom_build_cmake_clib()
         return super().run()
