@@ -24,5 +24,9 @@ cimport numpy as npc
 
 npc.import_array()
 
+cdef extern from "common/backend/pickling.h" namespace "oneapi::dal::python":
+    cdef object serialize_si(void *) nogil
+    cdef T* deserialize_si[T](object) nogil
+
 include "svm/svm.pyx"
 include "prims/kernel_functions.pyx"

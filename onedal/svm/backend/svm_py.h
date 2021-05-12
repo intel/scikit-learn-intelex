@@ -40,19 +40,6 @@ struct svm_params {
 };
 
 template <typename Task>
-class svm_model {
-public:
-    svm_model();
-
-    svm_model(const svm::model<Task>& model);
-
-    svm::model<Task>& get_onedal_model();
-
-private:
-    svm::model<Task> model_;
-};
-
-template <typename Task>
 class svm_train {
 public:
     // from descriptor
@@ -62,7 +49,7 @@ public:
     void train(PyObject* data, PyObject* labels, PyObject* weights);
 
     // attributes from train_result
-    svm_model<Task> get_model();
+    svm::model<Task> get_model();
 
     // attributes from train_result
     int get_support_vector_count();
@@ -91,7 +78,7 @@ public:
     svm_infer(svm_params* params);
 
     // attributes from infer_input.hpp expect model
-    void infer(PyObject* data, svm_model<Task>* model);
+    void infer(PyObject* data, svm::model<Task>* model);
 
     // attributes from infer_input.hpp expect model
     void infer(PyObject* data, PyObject* support_vectors, PyObject* coeffs, PyObject* biases);

@@ -43,23 +43,25 @@ cdef class PySvmParams:
 
 
 cdef class PyClassificationSvmModel:
-    cdef svm_model[classification] * thisptr
+    cdef model[classification] * thisptr
 
     def __cinit__(self):
-        self.thisptr = new svm_model[classification]()
+        self.thisptr = new model[classification]()
 
     def __dealloc__(self):
         del self.thisptr
 
     def __setstate__(self, state):
-        # TODO: need serialize of models on c++ side
-        # if isinstance(state, bytes):
-        #    self.thisptr = svm_model[svm_model[classification]](state)
-        # else:
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if isinstance(state, bytes):
+           self.thisptr = deserialize_si[model[classification]](state)
+        else:
+           raise ValueError("Invalid state")
 
     def __getstate__(self):
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if self.thisptr == NULL:
+            raise ValueError("Pointer to svm model is NULL")
+        bytes = serialize_si(self.thisptr)
+        return bytes
 
 
 cdef class PyClassificationSvmTrain:
@@ -115,17 +117,17 @@ cdef class PyClassificationSvmInfer:
 
 
 cdef class PyRegressionSvmModel:
-    cdef svm_model[regression] * thisptr
+    cdef model[regression] * thisptr
 
     def __cinit__(self):
-        self.thisptr = new svm_model[regression]()
+        self.thisptr = new model[regression]()
 
     def __dealloc__(self):
         del self.thisptr
 
     def __setstate__(self, state):
         if isinstance(state, bytes):
-           self.thisptr = deserialize_si[svm_model[regression]](state)
+           self.thisptr = deserialize_si[model[regression]](state)
         else:
            raise ValueError("Invalid state")
 

@@ -172,17 +172,6 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
     }
 }
 
-template <typename Task>
-svm_model<Task>::svm_model() {}
-
-template <typename Task>
-svm_model<Task>::svm_model(const svm::model<Task> &model) : model_(model) {}
-
-template <typename Task>
-svm::model<Task> &svm_model<Task>::get_onedal_model() {
-    return model_;
-}
-
 // from descriptor
 template <typename Task>
 svm_train<Task>::svm_train(svm_params *params) : params_(*params) {}
@@ -234,8 +223,8 @@ PyObject *svm_train<Task>::get_biases() {
 
 // attributes from train_result
 template <typename Task>
-svm_model<Task> svm_train<Task>::get_model() {
-    return svm_model<Task>(train_result_.get_model());
+svm::model<Task> svm_train<Task>::get_model() {
+    return train_result_.get_model();
 }
 
 // from descriptor
@@ -267,14 +256,11 @@ void svm_infer<Task>::infer(PyObject *data,
 
 // attributes from infer_input.hpp expect model
 template <typename Task>
-void svm_infer<Task>::infer(PyObject *data, svm_model<Task> *model) {
+void svm_infer<Task>::infer(PyObject *data, svm::model<Task> *model) {
     thread_state_releaser _allow;
     auto data_table = convert_to_table(data);
     auto data_type = data_table.get_metadata().get_data_type(0);
-    infer_result_ = compute_impl<decltype(infer_result_)>(params_,
-                                                          data_type,
-                                                          model->get_onedal_model(),
-                                                          data_table);
+    infer_result_ = compute_impl<decltype(infer_result_)>(params_, data_type, *model, data_table);
 }
 
 // attributes from infer_result
@@ -292,10 +278,8 @@ PyObject *svm_infer<Task>::get_decision_function() {
     return nullptr;
 }
 
-template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::classification>;
 template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::classification>;
 template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::classification>;
-template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::regression>;
 template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::regression>;
 template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::regression>;
 
