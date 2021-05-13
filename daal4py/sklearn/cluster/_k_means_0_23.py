@@ -244,22 +244,22 @@ def _fit(self, X, y=None, sample_weight=None):
         if self.precompute_distances != 'deprecated':
             if sklearn_check_version('0.24'):
                 warnings.warn("'precompute_distances' was deprecated in version "
-                            "0.23 and will be removed in 1.0 (renaming of 0.25). It has no "
-                            "effect", FutureWarning)
+                              "0.23 and will be removed in 1.0 (renaming of 0.25)."
+                              " It has no effect", FutureWarning)
             elif sklearn_check_version('0.23'):
                 warnings.warn("'precompute_distances' was deprecated in version "
-                            "0.23 and will be removed in 0.25. It has no "
-                            "effect", FutureWarning)
+                              "0.23 and will be removed in 0.25. It has no "
+                              "effect", FutureWarning)
 
     self._n_threads = None
     if hasattr(self, 'n_jobs'):
         if self.n_jobs != 'deprecated':
             if sklearn_check_version('0.24'):
                 warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
-                            " removed in 1.0 (renaming of 0.25).", FutureWarning)
+                              " removed in 1.0 (renaming of 0.25).", FutureWarning)
             elif sklearn_check_version('0.23'):
                 warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
-                            " removed in 0.25.", FutureWarning)
+                              " removed in 0.25.", FutureWarning)
             self._n_threads = self.n_jobs
     self._n_threads = _openmp_effective_n_threads(self._n_threads)
 
@@ -370,8 +370,8 @@ class KMeans(KMeans_original):
     if sklearn_check_version('1.0'):
         @_deprecate_positional_args
         def __init__(self, n_clusters=8, *, init='k-means++', n_init=10,
-                    max_iter=300, tol=1e-4, verbose=0, random_state=None,
-                    copy_x=True, algorithm='auto'):
+                     max_iter=300, tol=1e-4, verbose=0, random_state=None,
+                     copy_x=True, algorithm='auto'):
 
             super(KMeans, self).__init__(
                 n_clusters=n_clusters, init=init, max_iter=max_iter,
@@ -381,9 +381,9 @@ class KMeans(KMeans_original):
     else:
         @_deprecate_positional_args
         def __init__(self, n_clusters=8, *, init='k-means++', n_init=10,
-                    max_iter=300, tol=1e-4, precompute_distances='deprecated',
-                    verbose=0, random_state=None, copy_x=True,
-                    n_jobs='deprecated', algorithm='auto'):
+                     max_iter=300, tol=1e-4, precompute_distances='deprecated',
+                     verbose=0, random_state=None, copy_x=True,
+                     n_jobs='deprecated', algorithm='auto'):
 
             super(KMeans, self).__init__(
                 n_clusters=n_clusters, init=init, max_iter=max_iter,
