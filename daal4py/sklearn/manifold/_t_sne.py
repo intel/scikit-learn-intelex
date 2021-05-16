@@ -40,10 +40,35 @@ class TSNE(BaseTSNE):
     def _fit(self, X, skip_num_points=0):
         """Private function to fit the model using X as training data."""
 
+        if isinstance(self.init, str) and self.init == 'warn':
+            warnings.warn("The default initialization in TSNE will change "
+                          "from 'random' to 'pca' in 1.2.", FutureWarning)
+            self._init = 'random'
+        else:
+            self._init = self.init
+
+        if isinstance(self._init, str) and self._init == 'pca' and issparse(X):
+            raise TypeError("PCA initialization is currently not suported "
+                            "with the sparse input matrix. Use "
+                            "init=\"random\" instead.")
+
         if self.method not in ['barnes_hut', 'exact']:
             raise ValueError("'method' must be 'barnes_hut' or 'exact'")
         if self.angle < 0.0 or self.angle > 1.0:
             raise ValueError("'angle' must be between 0.0 - 1.0")
+        if self.learning_rate == 'warn':
+            warnings.warn("The default learning rate in TSNE will change "
+                          "from 200.0 to 'auto' in 1.2.", FutureWarning)
+            self._learning_rate = 200.0
+        else:
+            self._learning_rate = self.learning_rate
+        if self._learning_rate == 'auto':
+            self._learning_rate = X.shape[0] / self.early_exaggeration / 4
+            self._learning_rate = np.maximum(self._learning_rate, 50)
+        else:
+            if not (self._learning_rate > 0):
+                raise ValueError("'learning_rate' must be a positive number "
+                                 "or 'auto'.")
 
         if hasattr(self, 'square_distances'):
             if self.square_distances not in [True, 'legacy']:
@@ -74,7 +99,7 @@ class TSNE(BaseTSNE):
                 X = check_array(X, accept_sparse=['csr', 'csc', 'coo'],
                                 dtype=[np.float32, np.float64])
         if self.metric == "precomputed":
-            if isinstance(self.init, str) and self.init == 'pca':
+            if isinstance(self._init, str) and self._init == 'pca':
                 raise ValueError("The parameter init=\"pca\" cannot be "
                                  "used with metric=\"precomputed\".")
             if X.shape[0] != X.shape[1]:
@@ -187,13 +212,17 @@ class TSNE(BaseTSNE):
             P = _joint_probabilities_nn(distances_nn, self.perplexity,
                                         self.verbose)
 
-        if isinstance(self.init, np.ndarray):
-            X_embedded = self.init
-        elif self.init == 'pca':
+        if isinstance(self._init, np.ndarray):
+            X_embedded = self._init
+        elif self._init == 'pca':
             pca = PCA(n_components=self.n_components, svd_solver='randomized',
                       random_state=random_state)
             X_embedded = pca.fit_transform(X).astype(np.float32, copy=False)
-        elif self.init == 'random':
+            warnings.warn("The PCA initialization in TSNE will change to "
+                          "have the standard deviation of PC1 equal to 1e-4 "
+                          "in 1.2. This will ensure better convergence.",
+                          FutureWarning)
+        elif self._init == 'random':
             # The embedding is initialized with iid samples from Gaussians with
             # standard deviation 1e-4.
             X_embedded = 1e-4 * random_state.randn(
