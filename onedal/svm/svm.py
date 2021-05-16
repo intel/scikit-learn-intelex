@@ -36,7 +36,6 @@ try:
         PyClassificationSvmTrain,
         PyClassificationSvmInfer
     )
-    raise ImportError
 except ImportError:
     from _onedal4py_host import (
         PySvmParams,
@@ -115,16 +114,22 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
         X, y = _check_X_y(
             X, y, dtype=[np.float64, np.float32],
-            force_all_finite=True, accept_sparse='csr', accept_large_sparse=False)
+            force_all_finite=True, accept_sparse='csr')
         y = self._validate_targets(y, X.dtype)
         sample_weight = _get_sample_weight(
             X, y, sample_weight, self.class_weight_, self.classes_)
 
         self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
         c_svm = Computer(self._get_onedal_params())
+        print(X.shape, y.shape)
         c_svm.train(X, y, sample_weight)
-        self.dual_coef_ = c_svm.get_coeffs().T
-        self.support_vectors_ = c_svm.get_support_vectors()
+
+        if sp.isspmatrix(X):
+            self.dual_coef_ = sp.csr_matrix(c_svm.get_coeffs().T)
+            self.support_vectors_ = sp.csr_matrix(c_svm.get_support_vectors())
+        else:
+            self.dual_coef_ = c_svm.get_coeffs().T
+            self.support_vectors_ = c_svm.get_support_vectors()
         self.intercept_ = c_svm.get_biases().ravel()
         self.support_ = c_svm.get_support_indices().ravel()
         self.n_features_in_ = X.shape[1]

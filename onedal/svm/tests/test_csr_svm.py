@@ -20,7 +20,7 @@ from scipy import sparse as sp
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
-from onedal.svm import SVC
+from onedal.svm import SVC, SVR
 
 from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
@@ -28,9 +28,16 @@ from sklearn import datasets, metrics
 from sklearn.metrics.pairwise import rbf_kernel
 from sklearn.datasets import make_classification, make_blobs
 from sklearn.model_selection import train_test_split
+from sklearn.base import clone as clone_estimator
 
 
-def check_svm_model_equal(dense_svm, sparse_svm, X_train, y_train, X_test):
+def is_classifier(estimator):
+    return getattr(estimator, "_estimator_type", None) == "classifier"
+
+
+def check_svm_model_equal(svm, X_train, y_train, X_test):
+    sparse_svm = clone_estimator(svm)
+    dense_svm = clone_estimator(svm)
     dense_svm.fit(X_train.toarray(), y_train)
     if sp.isspmatrix(X_test):
         X_test_dense = X_test.toarray()
@@ -38,7 +45,7 @@ def check_svm_model_equal(dense_svm, sparse_svm, X_train, y_train, X_test):
         X_test_dense = X_test
     sparse_svm.fit(X_train, y_train)
     assert sp.issparse(sparse_svm.support_vectors_)
-    # assert sp.issparse(sparse_svm.dual_coef_)
+    assert sp.issparse(sparse_svm.dual_coef_)
     assert_array_almost_equal(dense_svm.support_vectors_,
                               sparse_svm.support_vectors_.toarray())
     assert_array_almost_equal(dense_svm.dual_coef_,
@@ -46,22 +53,26 @@ def check_svm_model_equal(dense_svm, sparse_svm, X_train, y_train, X_test):
     assert_array_almost_equal(dense_svm.support_, sparse_svm.support_)
     assert_array_almost_equal(dense_svm.predict(X_test_dense),
                               sparse_svm.predict(X_test))
-    assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
-                              sparse_svm.decision_function(X_test))
-    assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
-                              sparse_svm.decision_function(X_test_dense))
 
-    assert_array_almost_equal(dense_svm.predict_proba(X_test_dense),
-                              sparse_svm.predict_proba(X_test), 4)
-    msg = "cannot use sparse input in 'SVC' trained on dense data"
-    if sp.isspmatrix(X_test):
-        assert_raise_message(ValueError, msg, dense_svm.predict, X_test)
+    if is_classifier(svm):
+      assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
+                                sparse_svm.decision_function(X_test))
+      assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
+                                sparse_svm.decision_function(X_test_dense))
+
+def _test_binary_dataset(kernel):
+    X, y = make_classification(n_samples=80, n_features=20, n_classes=2, random_state=0)
+    sparse_X = sp.csr_matrix(X)
+
+    dataset = sparse_X, y, sparse_X
+    clf = SVC(kernel=kernel)
+    check_svm_model_equal(clf, *dataset)
 
 
 # @pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
-@pytest.mark.parametrize('kernel', ['linear'])
-def test_iris(kernel):
-    _test_iris(kernel)
+@pytest.mark.parametrize('kernel', ['linear', 'rbf'])
+def test_binary_dataset(kernel):
+    _test_binary_dataset(kernel)
 
 
 def _test_iris(kernel):
@@ -70,15 +81,30 @@ def _test_iris(kernel):
     perm = rng.permutation(iris.target.size)
     iris.data = iris.data[perm]
     iris.target = iris.target[perm]
-    iris.data = sp.csr_matrix(iris.data)
+    sparse_iris_data = sp.csr_matrix(iris.data)
 
-    dataset = iris.data, iris.target, iris.data
+    dataset = sparse_iris_data, iris.target, sparse_iris_data
 
-    clf = SVC(kernel=kernel, probability=True,
-                  random_state=0, decision_function_shape='ovo')
-    sp_clf = SVC(kernel=kernel, probability=True,
-                     random_state=0, decision_function_shape='ovo')
-    check_svm_model_equal(clf, sp_clf, *dataset)
+    clf = SVC(kernel=kernel)
+    check_svm_model_equal(clf, *dataset)
 
 
 
+# @pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
+@pytest.mark.parametrize('kernel', ['linear', 'rbf'])
+def test_iris(kernel):
+    _test_iris(kernel)
+
+def _test_diabetes(kernel):
+    diabetes = datasets.load_diabetes()
+
+    sparse_diabetes_data = sp.csr_matrix(diabetes.data)
+    dataset = sparse_diabetes_data, diabetes.target, sparse_diabetes_data
+
+    clf = SVR(kernel=kernel, C=10.)
+    check_svm_model_equal(clf, *dataset)
+
+
+@pytest.mark.parametrize('kernel', ['linear', 'rbf'])
+def test_diabetes(kernel):
+    _test_diabetes(kernel)
