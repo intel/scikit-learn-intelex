@@ -48,6 +48,7 @@ public:
 
     PyObject* serialize();
     void deserialize(PyObject* py_bytes);
+
 private:
     svm::model<Task> model_;
 };
@@ -106,12 +107,5 @@ private:
     svm_params params_;
     svm::infer_result<Task> infer_result_;
 };
-
-// template <typename Task>
-// class svm_serializer {
-// public:
-//     static PyObject* serialize(svm::model<Task>* original);
-//     static svm::model<Task>* deserialize(PyObject* py_bytes);
-// };
 
 } // namespace oneapi::dal::python
