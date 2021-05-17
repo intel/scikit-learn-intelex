@@ -17,6 +17,7 @@
 #pragma once
 
 #include "oneapi/dal/detail/serialization.hpp"
+#include "oneapi/dal/detail/archives.hpp"
 #include "Python.h"
 
 namespace oneapi::dal::python {
@@ -25,9 +26,9 @@ template <typename T>
 PyObject* serialize_si(T* original) {
     detail::binary_output_archive archive;
     detail::serialize(*original, archive);
-    const byte_t* data = archive.get_data();
+    const auto data = archive.to_array();
     const Py_ssize_t buf_len = archive.get_size();
-    return PyBytes_FromStringAndSize(reinterpret_cast<const char*>(data), buf_len);
+    return PyBytes_FromStringAndSize(reinterpret_cast<const char*>(data.get_data()), buf_len);
 }
 
 template <typename T>
