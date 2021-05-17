@@ -55,8 +55,8 @@ def check_svm_model_equal(svm, X_train, y_train, X_test, decimal=6):
                               sparse_svm.predict(X_test))
 
     if is_classifier(svm):
-      assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
-                                sparse_svm.decision_function(X_test), decimal)
+        assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
+                                  sparse_svm.decision_function(X_test), decimal)
 
 
 def _test_binary_dataset(kernel):
@@ -93,6 +93,7 @@ def _test_iris(kernel):
 @pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
 def test_iris(kernel):
     _test_iris(kernel)
+
 
 def _test_diabetes(kernel):
     diabetes = datasets.load_diabetes()

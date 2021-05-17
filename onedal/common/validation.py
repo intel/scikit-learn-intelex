@@ -80,7 +80,6 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
                         order=order, copy=copy, force_all_finite=force_all_finite,
                         ensure_2d=ensure_2d, accept_large_sparse=accept_large_sparse)
 
-
     if sp.isspmatrix(array):
         return array
 
