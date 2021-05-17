@@ -19,12 +19,18 @@ import platform
 if "Windows" in platform.system():
     import os
     import sys
-    import site
+    import sysconfig
+
     current_path = os.path.dirname(__file__)
+
+    sitepackages_path = sysconfig.get_paths()['purelib']
+    installed_package_path = os.path.join(sitepackages_path, 'daal4py', 'oneapi')
 
     if sys.version_info.minor >= 8:
         os.add_dll_directory(current_path)
-    os.environ['PATH'] += os.pathsep + current_path
+        os.add_dll_directory(installed_package_path)
+    os.environ['PATH'] = current_path + os.pathsep + os.environ['PATH']
+    os.environ['PATH'] = installed_package_path + os.pathsep + os.environ['PATH']
 
 from _oneapi import *
 from _oneapi import _get_sycl_ctxt, _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
