@@ -35,7 +35,7 @@ def is_classifier(estimator):
     return getattr(estimator, "_estimator_type", None) == "classifier"
 
 
-def check_svm_model_equal(svm, X_train, y_train, X_test):
+def check_svm_model_equal(svm, X_train, y_train, X_test, decimal=6):
     sparse_svm = clone_estimator(svm)
     dense_svm = clone_estimator(svm)
     dense_svm.fit(X_train.toarray(), y_train)
@@ -47,18 +47,17 @@ def check_svm_model_equal(svm, X_train, y_train, X_test):
     assert sp.issparse(sparse_svm.support_vectors_)
     assert sp.issparse(sparse_svm.dual_coef_)
     assert_array_almost_equal(dense_svm.support_vectors_,
-                              sparse_svm.support_vectors_.toarray())
+                              sparse_svm.support_vectors_.toarray(), decimal)
     assert_array_almost_equal(dense_svm.dual_coef_,
-                              sparse_svm.dual_coef_.toarray())
+                              sparse_svm.dual_coef_.toarray(), decimal)
     assert_array_almost_equal(dense_svm.support_, sparse_svm.support_)
     assert_array_almost_equal(dense_svm.predict(X_test_dense),
                               sparse_svm.predict(X_test))
 
     if is_classifier(svm):
       assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
-                                sparse_svm.decision_function(X_test))
-      assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
-                                sparse_svm.decision_function(X_test_dense))
+                                sparse_svm.decision_function(X_test), decimal)
+
 
 def _test_binary_dataset(kernel):
     X, y = make_classification(n_samples=80, n_features=20, n_classes=2, random_state=0)
@@ -69,8 +68,7 @@ def _test_binary_dataset(kernel):
     check_svm_model_equal(clf, *dataset)
 
 
-# @pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
-@pytest.mark.parametrize('kernel', ['linear', 'rbf'])
+@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
 def test_binary_dataset(kernel):
     _test_binary_dataset(kernel)
 
@@ -86,12 +84,13 @@ def _test_iris(kernel):
     dataset = sparse_iris_data, iris.target, sparse_iris_data
 
     clf = SVC(kernel=kernel)
-    check_svm_model_equal(clf, *dataset)
+    # for polynomial kernel diff in third digit difference
+    # due to diff computation dense and sparce kernel functions
+    decimal = 2 if kernel == 'poly' else 6
+    check_svm_model_equal(clf, *dataset, decimal=decimal)
 
 
-
-# @pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
-@pytest.mark.parametrize('kernel', ['linear', 'rbf'])
+@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
 def test_iris(kernel):
     _test_iris(kernel)
 
@@ -101,10 +100,10 @@ def _test_diabetes(kernel):
     sparse_diabetes_data = sp.csr_matrix(diabetes.data)
     dataset = sparse_diabetes_data, diabetes.target, sparse_diabetes_data
 
-    clf = SVR(kernel=kernel, C=10.)
+    clf = SVR(kernel=kernel, C=0.1)
     check_svm_model_equal(clf, *dataset)
 
 
-@pytest.mark.parametrize('kernel', ['linear', 'rbf'])
+@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
 def test_diabetes(kernel):
     _test_diabetes(kernel)

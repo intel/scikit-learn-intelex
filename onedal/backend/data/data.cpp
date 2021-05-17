@@ -90,8 +90,6 @@ inline dal::detail::csr_table convert_to_csr_impl(PyObject *py_data,
                                                   PyObject *py_row_indices,
                                                   std::int64_t row_count,
                                                   std::int64_t column_count) {
-    printf("convert_to_csr_impl \n");
-
     PyArrayObject *np_data = reinterpret_cast<PyArrayObject *>(py_data);
     PyArrayObject *np_column_indices = reinterpret_cast<PyArrayObject *>(py_column_indices);
     PyArrayObject *np_row_indices = reinterpret_cast<PyArrayObject *>(py_row_indices);
@@ -116,10 +114,6 @@ inline dal::detail::csr_table convert_to_csr_impl(PyObject *py_data,
         column_indices_one_based_data[i] = column_indices_zero_based[i] + 1;
 
     const T *data_pointer = static_cast<T *>(array_data(np_data));
-    printf("convert_to_csr_impl start create csr_table; row_count : %lu; column_count: %lu\n",
-           row_count,
-           column_count);
-
     auto res_table = dal::detail::csr_table(
         data_pointer,
         column_indices_one_based_data,
@@ -129,9 +123,6 @@ inline dal::detail::csr_table convert_to_csr_impl(PyObject *py_data,
         dal::detail::empty_delete<const T>(),
         dal::detail::make_default_delete<const std::int64_t>(detail::default_host_policy{}),
         dal::detail::make_default_delete<const std::int64_t>(detail::default_host_policy{}));
-
-    printf("convert_to_csr_impl finish create csr_table\n");
-
     return res_table;
 }
 
@@ -201,9 +192,7 @@ dal::table convert_to_table(PyObject *obj) {
                         throw std::invalid_argument("Found unsupported data type in csr_matrix"));
 #undef MAKE_CSR_TABLE
     }
-
     else {
-        printf("NOOO %s\n", Py_TYPE(obj)->tp_name);
         throw std::invalid_argument(
             "[convert_to_table] Not avalible input format for convert Python object to onedal table.");
     }
