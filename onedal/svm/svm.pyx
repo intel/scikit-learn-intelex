@@ -43,24 +43,24 @@ cdef class PySvmParams:
 
 
 cdef class PyClassificationSvmModel:
-    cdef model[classification] * thisptr
+    cdef svm_model[classification] * thisptr
 
     def __cinit__(self):
-        self.thisptr = new model[classification]()
+        self.thisptr = new svm_model[classification]()
 
     def __dealloc__(self):
         del self.thisptr
 
     def __setstate__(self, state):
         if isinstance(state, bytes):
-           self.thisptr = deserialize_si[model[classification]](state)
+           self.thisptr.deserialize(state)
         else:
            raise ValueError("Invalid state")
 
     def __getstate__(self):
         if self.thisptr == NULL:
             raise ValueError("Pointer to svm model is NULL")
-        bytes = serialize_si(self.thisptr)
+        bytes = self.thisptr.serialize()
         return bytes
 
 
@@ -117,24 +117,24 @@ cdef class PyClassificationSvmInfer:
 
 
 cdef class PyRegressionSvmModel:
-    cdef model[regression] * thisptr
+    cdef svm_model[regression] * thisptr
 
     def __cinit__(self):
-        self.thisptr = new model[regression]()
+        self.thisptr = new svm_model[regression]()
 
     def __dealloc__(self):
         del self.thisptr
 
     def __setstate__(self, state):
         if isinstance(state, bytes):
-           self.thisptr = deserialize_si[model[regression]](state)
+           self.thisptr.deserialize(state)
         else:
            raise ValueError("Invalid state")
 
     def __getstate__(self):
         if self.thisptr == NULL:
             raise ValueError("Pointer to svm model is NULL")
-        bytes = serialize_si(self.thisptr)
+        bytes = self.thisptr.serialize()
         return bytes
 
 

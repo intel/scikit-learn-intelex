@@ -40,6 +40,19 @@ struct svm_params {
 };
 
 template <typename Task>
+class svm_model {
+public:
+    svm_model();
+    svm_model(const svm::model<Task>& model);
+    svm::model<Task>& get_onedal_model();
+
+    PyObject* serialize();
+    void deserialize(PyObject* py_bytes);
+private:
+    svm::model<Task> model_;
+};
+
+template <typename Task>
 class svm_train {
 public:
     // from descriptor
@@ -49,7 +62,7 @@ public:
     void train(PyObject* data, PyObject* labels, PyObject* weights);
 
     // attributes from train_result
-    svm::model<Task> get_model();
+    svm_model<Task> get_model();
 
     // attributes from train_result
     int get_support_vector_count();
@@ -78,7 +91,7 @@ public:
     svm_infer(svm_params* params);
 
     // attributes from infer_input.hpp expect model
-    void infer(PyObject* data, svm::model<Task>* model);
+    void infer(PyObject* data, svm_model<Task>* model);
 
     // attributes from infer_input.hpp expect model
     void infer(PyObject* data, PyObject* support_vectors, PyObject* coeffs, PyObject* biases);
@@ -93,5 +106,12 @@ private:
     svm_params params_;
     svm::infer_result<Task> infer_result_;
 };
+
+// template <typename Task>
+// class svm_serializer {
+// public:
+//     static PyObject* serialize(svm::model<Task>* original);
+//     static svm::model<Task>* deserialize(PyObject* py_bytes);
+// };
 
 } // namespace oneapi::dal::python

@@ -25,10 +25,6 @@ cdef extern from "oneapi/dal/algo/svm.hpp" namespace "oneapi::dal::svm::task":
     cdef cppclass regression:
         pass
 
-cdef extern from "oneapi/dal/algo/svm.hpp" namespace "oneapi::dal::svm":
-    cdef cppclass model[task_t]:
-        model() except +
-
 cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
     cdef cppclass svm_params:
         std_string method
@@ -46,6 +42,11 @@ cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
         int degree
         double sigma
 
+    cdef cppclass svm_model[task_t]:
+        svm_model() except +
+        object serialize() except +
+        void deserialize(object bytes) except +
+
     cdef cppclass svm_train[task_t]:
         svm_train(svm_params *) except +
         void train(PyObject * data, PyObject * labels, PyObject * weights) except +
@@ -54,11 +55,11 @@ cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
         PyObject * get_support_indices() except +
         PyObject * get_coeffs() except +
         PyObject * get_biases() except +
-        model[task_t] get_model() except +
+        svm_model[task_t] get_model() except +
 
     cdef cppclass svm_infer[task_t]:
         svm_infer(svm_params *) except +
         void infer(PyObject * data, PyObject * support_vectors, PyObject * coeffs, PyObject * biases) except +
-        void infer(PyObject * data, model[task_t] * model) except +
+        void infer(PyObject * data, svm_model[task_t] * model) except +
         PyObject * get_labels() except +
         PyObject * get_decision_function() except +

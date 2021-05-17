@@ -23,23 +23,23 @@
 namespace oneapi::dal::python {
 
 template <typename T>
-PyObject* serialize_si(T* original) {
+PyObject* serialize_si(T& original) {
     detail::binary_output_archive archive;
-    detail::serialize(*original, archive);
+    detail::serialize(original, archive);
     const auto data = archive.to_array();
     const Py_ssize_t buf_len = archive.get_size();
     return PyBytes_FromStringAndSize(reinterpret_cast<const char*>(data.get_data()), buf_len);
 }
 
 template <typename T>
-T* deserialize_si(PyObject* py_bytes) {
+T deserialize_si(PyObject* py_bytes) {
     T deserialized;
     char* buf;
     Py_ssize_t buf_len;
     PyBytes_AsStringAndSize(py_bytes, &buf, &buf_len);
     detail::binary_input_archive archive{ reinterpret_cast<byte_t*>(buf), buf_len };
     detail::deserialize(deserialized, archive);
-    return new T(deserialized);
+    return deserialized;
 }
 
 } // namespace oneapi::dal::python
