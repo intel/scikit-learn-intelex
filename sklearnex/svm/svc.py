@@ -33,6 +33,7 @@ from sklearn import __version__ as sklearn_version
 from onedal.svm import SVC as onedal_SVC
 from onedal.common.validation import _column_or_1d
 
+
 class SVC(sklearn_SVC):
     @_deprecate_positional_args
     def __init__(self, *, C=1.0, kernel='rbf', degree=3, gamma='scale',
