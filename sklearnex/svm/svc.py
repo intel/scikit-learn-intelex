@@ -49,11 +49,12 @@ class SVC(sklearn_SVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
+        # TODO: after enable gpu support in new API need to delete
         if 'daal4py.oneapi' in sys.modules:
             from daal4py.oneapi import _get_device_name_sycl_ctxt
             dev = _get_device_name_sycl_ctxt()
             if dev == 'gpu':
-                from daal4py.svm import SVC as daal4py_SVC
+                from daal4py.sklearn.svm import SVC as daal4py_SVC
                 self._daal4py_estimator = daal4py_SVC(**self.get_params())
                 self._daal4py_estimator.fit(X, y, sample_weight)
                 return self

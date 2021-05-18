@@ -44,9 +44,6 @@ deselected_tests:
   # Possible problems with multiclass model
   - svm/tests/test_svm.py::test_decision_function
 
-  # XFAIL: zero sample_weight is not equivalent to removing samples. Will fixed
-  - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=zeros)]
-
   # Number of support vectors is 0. oneAPI Data Analytics Library (oneDAL) raises an exception
   - svm/tests/test_svm.py::test_svr
 
@@ -98,11 +95,6 @@ deselected_tests:
   # disagreement.
   - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight >=0.22
 
-  # Depreceted case from 0.21
-  - ensemble/tests/test_forest.py::test_min_impurity_split <0.22
-  - ensemble/tests/test_forest.py::test_nestimators_future_warning <0.22
-  - ensemble/tests/test_voting.py::test_set_estimator_none <0.22
-
   # Insufficient accuracy of "coefs" and "intercept" in Elastic Net for multi-target problem
   # https://github.com/oneapi-src/oneDAL/issues/494
   - linear_model/tests/test_coordinate_descent.py::test_enet_multitarget >=0.22
@@ -136,50 +128,11 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
   - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
-  - tests/test_common.py::test_estimators[RandomForestClassifier-check_classifiers_train0] <0.22
-  - tests/test_common.py::test_estimators[RandomForestClassifier-check_classifiers_train1] <0.22
-  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[RandomForestClassifier-check_classifiers_train(readonly_memmap=True)0] <0.22
-  - tests/test_common.py::test_estimators[RandomForestClassifier-check_classifiers_train(readonly_memmap=True)1] <0.22
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=ones)] >=0.24
   - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance]
-  - tests/test_common.py::test_estimators[KMeans-check_transformer_n_iter0] <0.22
-  - tests/test_common.py::test_estimators[KMeans-check_transformer_n_iter1] <0.22
-  - tests/test_common.py::test_estimators[KMeans-check_non_transformer_estimators_n_iter0] <0.22
-  - tests/test_common.py::test_estimators[KMeans-check_non_transformer_estimators_n_iter1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_dtypes0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_dtypes1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_fit_score_takes_y0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_fit_score_takes_y1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_fit_returns_self0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_fit_returns_self1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_fit_returns_self(readonly_memmap=True)0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_fit_returns_self(readonly_memmap=True)1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_dtype_object0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_dtype_object1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_pipeline_consistency0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_pipeline_consistency1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_nan_inf0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_nan_inf1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_overwrite_params0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_overwrite_params1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimator_sparse_data0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimator_sparse_data1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_pickle0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_estimators_pickle1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_fit2d_predict1d0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_fit2d_predict1d1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_methods_subset_invariance0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_methods_subset_invariance1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_fit2d_1feature0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_fit2d_1feature1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_dict_unchanged0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_dict_unchanged1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_dont_overwrite_parameters0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_dont_overwrite_parameters1] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_fit_idempotent0] <0.22
-  - tests/test_common.py::test_estimators[TSNE-check_fit_idempotent1] <0.22
+  - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=zeros)]
+  - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=ones)]
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order
 
@@ -223,9 +176,6 @@ deselected_tests:
   - utils/tests/test_estimator_checks.py::test_check_estimator >=0.24
 
   # Need to fix for next release
-  - metrics/tests/test_ranking.py::test_auc_score_non_binary_class <0.22
-  - neighbors/tests/test_neighbors.py::test_n_neighbors_datatype <0.22
-  - svm/tests/test_svm.py::test_sample_weights <0.22
   - tests/test_multioutput.py::test_classifier_chain_tuple_order
 
   # --------------------------------------------------------
