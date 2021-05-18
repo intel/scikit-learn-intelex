@@ -56,6 +56,7 @@ deselected_tests:
   - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
   - tests/test_common.py::test_estimators[SVR()-check_estimators_fit_returns_self(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[SVR()-check_regressors_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[SVR()-check_regressors_train(readonly_memmap=True,X_dtype=float32)]
 
   # This test needs a warning from sklearn. sklearnex raises the same warning
   - tests/test_common.py::test_estimators[SVC()-check_supervised_y_2d]
@@ -411,6 +412,7 @@ gpu:
   - svm/tests/test_svm.py::test_gamma_auto
   - svm/tests/test_svm.py::test_gamma_scale
   - svm/tests/test_svm.py::test_custom_kernel_not_array_input[SVC]
+  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel >=0.23
 
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_dtypes]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_score_takes_y]
