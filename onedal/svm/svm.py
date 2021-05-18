@@ -121,7 +121,6 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
         self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
         c_svm = Computer(self._get_onedal_params())
-        print(X.shape, y.shape)
         c_svm.train(X, y, sample_weight)
 
         if sp.isspmatrix(X):
