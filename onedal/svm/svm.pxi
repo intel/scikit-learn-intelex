@@ -44,6 +44,8 @@ cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
 
     cdef cppclass svm_model[task_t]:
         svm_model() except +
+        object serialize() except +
+        void deserialize(object bytes) except +
 
     cdef cppclass svm_train[task_t]:
         svm_train(svm_params *) except +

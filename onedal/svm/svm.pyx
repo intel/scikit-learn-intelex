@@ -52,14 +52,16 @@ cdef class PyClassificationSvmModel:
         del self.thisptr
 
     def __setstate__(self, state):
-        # TODO: need serialize of models on c++ side
-        # if isinstance(state, bytes):
-        #    self.thisptr = svm_model[svm_model[classification]](state)
-        # else:
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if isinstance(state, bytes):
+           self.thisptr.deserialize(state)
+        else:
+           raise ValueError("Invalid state")
 
     def __getstate__(self):
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if self.thisptr == NULL:
+            raise ValueError("Pointer to svm model is NULL")
+        bytes = self.thisptr.serialize()
+        return bytes
 
 
 cdef class PyClassificationSvmTrain:
@@ -124,14 +126,16 @@ cdef class PyRegressionSvmModel:
         del self.thisptr
 
     def __setstate__(self, state):
-        # TODO: need serialize of models on c++ side
-        # if isinstance(state, bytes):
-        #    self.thisptr = svm_model[svm_model[regression]](state)
-        # else:
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if isinstance(state, bytes):
+           self.thisptr.deserialize(state)
+        else:
+           raise ValueError("Invalid state")
 
     def __getstate__(self):
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if self.thisptr == NULL:
+            raise ValueError("Pointer to svm model is NULL")
+        bytes = self.thisptr.serialize()
+        return bytes
 
 
 cdef class PyRegressionSvmTrain:
