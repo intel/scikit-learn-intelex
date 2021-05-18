@@ -15,6 +15,7 @@
 #===============================================================================
 
 import numpy as np
+import sys
 from scipy import sparse as sp
 import logging
 from distutils.version import LooseVersion
@@ -32,7 +33,6 @@ from sklearn import __version__ as sklearn_version
 from onedal.svm import SVC as onedal_SVC
 from onedal.common.validation import _column_or_1d
 
-
 class SVC(sklearn_SVC):
     @_deprecate_positional_args
     def __init__(self, *, C=1.0, kernel='rbf', degree=3, gamma='scale',
@@ -48,6 +48,15 @@ class SVC(sklearn_SVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
+        if 'daal4py.oneapi' in sys.modules:
+            from daal4py.oneapi import _get_device_name_sycl_ctxt
+            dev = _get_device_name_sycl_ctxt()
+            if dev == 'gpu':
+                from daal4py.svm import SVC as daal4py_SVC
+                self._daal4py_estimator = daal4py_SVC(**self.get_params())
+                self._daal4py_estimator.fit(X, y, sample_weight)
+                return self
+
         if self.kernel in ['linear', 'rbf', 'poly'] and not sp.isspmatrix(X):
             logging.info("sklearn.svm.SVC.fit: " + get_patch_message("onedal"))
             self._onedal_fit(X, y, sample_weight)
@@ -58,7 +67,9 @@ class SVC(sklearn_SVC):
         return self
 
     def predict(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_daal4py_estimator'):
+            return self._daal4py_estimator.predict(X)
+        elif hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
             logging.info("sklearn.svm.SVC.predict: " + get_patch_message("onedal"))
             return self._onedal_estimator.predict(X)
         else:
@@ -66,7 +77,9 @@ class SVC(sklearn_SVC):
             return sklearn_SVC.predict(self, X)
 
     def _predict_proba(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_daal4py_estimator'):
+            return self._daal4py_estimator.predict_proba(X)
+        elif hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
             logging.info("sklearn.svm.SVC._predict_proba: " + get_patch_message("onedal"))
             if getattr(self, 'clf_prob', None) is None:
                 raise NotFittedError(
@@ -78,7 +91,9 @@ class SVC(sklearn_SVC):
             return sklearn_SVC._predict_proba(self, X)
 
     def decision_function(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_daal4py_estimator'):
+            return self._daal4py_estimator.decision_function(X)
+        elif hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
             logging.info(
                 "sklearn.svm.SVC.decision_function: " + get_patch_message("onedal"))
             return self._onedal_estimator.decision_function(X)
