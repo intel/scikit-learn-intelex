@@ -286,7 +286,10 @@ PyObject *svm_infer<Task>::get_labels() {
 // attributes from infer_result
 template <typename Task>
 PyObject *svm_infer<Task>::get_decision_function() {
-    return convert_to_numpy(infer_result_.get_decision_function());
+    if constexpr (std::is_same_v<Task, svm::task::classification>) {
+        return convert_to_numpy(infer_result_.get_decision_function());
+    }
+    return nullptr;
 }
 
 template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::classification>;
