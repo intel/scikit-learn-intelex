@@ -32,10 +32,8 @@ deselected_tests:
   - svm/tests/test_sparse.py::test_svc_iris
   - svm/tests/test_sparse.py::test_sparse_realdata
 
-  # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with callable kernel
+  # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with custom and precompute kernel
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
-
-  # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with precomputed kernel
   - svm/tests/test_svm.py::test_precomputed
 
   # SVC._dual_coef_ is changing after fitting but result of prediction is still the same
@@ -128,8 +126,8 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
   - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
+  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)]
-  - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=ones)] >=0.24
   - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance]
   - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=ones)]
@@ -288,7 +286,6 @@ gpu:
   - metrics/tests/test_ranking.py::test_roc_curve
   - metrics/tests/test_ranking.py::test_roc_returns_consistency
   - metrics/tests/test_ranking.py::test_roc_curve_confidence
-  - metrics/tests/test_ranking.py::test_roc_curve_hard
   - metrics/tests/test_ranking.py::test_precision_recall_curve
   - metrics/tests/test_ranking.py::test_score_scale_invariance
   - metrics/tests/test_ranking.py::test_partial_roc_auc_score
@@ -348,8 +345,6 @@ gpu:
   - semi_supervised/tests/test_self_training.py::test_early_stopping
 
   - svm/tests/test_svm.py::test_libsvm_parameters
-  - svm/tests/test_svm.py::test_tweak_params
-  - svm/tests/test_svm.py::test_decision_function
   - svm/tests/test_svm.py::test_weight
   - svm/tests/test_svm.py::test_svm_classifier_sided_sample_weight[estimator0]
   - svm/tests/test_svm.py::test_svm_equivalence_sample_weight_C
@@ -362,7 +357,6 @@ gpu:
   - svm/tests/test_svm.py::test_gamma_auto
   - svm/tests/test_svm.py::test_gamma_scale
   - svm/tests/test_svm.py::test_custom_kernel_not_array_input[SVC]
-  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel >=0.23
 
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_dtypes]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_score_takes_y]
@@ -427,8 +421,6 @@ gpu:
   - tests/test_common.py::test_estimators[SVC()-check_classifier_data_not_an_array]
   - tests/test_common.py::test_estimators[SVC()-check_classifiers_classes]
   - tests/test_common.py::test_estimators[SVC()-check_classifiers_train]
-  - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
   - tests/test_common.py::test_estimators[SVC()-check_class_weight_classifiers]
   - tests/test_common.py::test_estimators[SVC()-check_fit2d_1feature]
   - tests/test_common.py::test_estimators[SVC()-check_dict_unchanged]
