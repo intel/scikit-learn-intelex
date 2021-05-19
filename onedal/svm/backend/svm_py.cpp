@@ -180,12 +180,12 @@ template <typename Task>
 svm_model<Task>::svm_model(const svm::model<Task> &model) : model_(model) {}
 
 template <typename Task>
-PyObject * svm_model<Task>::serialize() {
+PyObject *svm_model<Task>::serialize() {
     return serialize_si(model_);
 }
 
 template <typename Task>
-void svm_model<Task>::deserialize(PyObject* py_bytes) {
+void svm_model<Task>::deserialize(PyObject *py_bytes) {
     model_ = deserialize_si<svm::model<Task>>(py_bytes);
 }
 
@@ -201,7 +201,6 @@ svm_train<Task>::svm_train(svm_params *params) : params_(*params) {}
 // attributes from train_input
 template <typename Task>
 void svm_train<Task>::train(PyObject *data, PyObject *labels, PyObject *weights) {
-    thread_state_releaser _allow;
     auto data_table = convert_to_table(data);
     auto labels_table = convert_to_table(labels);
     auto weights_table = convert_to_table(weights);
@@ -259,7 +258,6 @@ void svm_infer<Task>::infer(PyObject *data,
                             PyObject *support_vectors,
                             PyObject *coeffs,
                             PyObject *biases) {
-    thread_state_releaser _allow;
     auto data_table = convert_to_table(data);
     auto support_vectors_table = convert_to_table(support_vectors);
     auto coeffs_table = convert_to_table(coeffs);
@@ -279,10 +277,12 @@ void svm_infer<Task>::infer(PyObject *data,
 // attributes from infer_input.hpp expect model
 template <typename Task>
 void svm_infer<Task>::infer(PyObject *data, svm_model<Task> *model) {
-    thread_state_releaser _allow;
     auto data_table = convert_to_table(data);
     auto data_type = data_table.get_metadata().get_data_type(0);
-    infer_result_ = compute_impl<decltype(infer_result_)>(params_, data_type, model->get_onedal_model(), data_table);
+    infer_result_ = compute_impl<decltype(infer_result_)>(params_,
+                                                          data_type,
+                                                          model->get_onedal_model(),
+                                                          data_table);
 }
 
 // attributes from infer_result
