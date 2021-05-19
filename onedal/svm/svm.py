@@ -138,7 +138,6 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
     @_reset_context
     def _fit(self, X, y, sample_weight, Computer):
-
         if hasattr(self, 'decision_function_shape'):
             if self.decision_function_shape not in ('ovr', 'ovo', None):
                 raise ValueError(
@@ -160,11 +159,13 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         sample_weight = _get_sample_weight(
             X, y, sample_weight, self.class_weight_, self.classes_, self.svm_type)
 
+        self._sparse = sp.isspmatrix(X)
+
         self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
         c_svm = Computer(self._get_onedal_params())
         c_svm.train(X, y, sample_weight)
 
-        if sp.isspmatrix(X):
+        if self._sparse:
             self.dual_coef_ = sp.csr_matrix(c_svm.get_coeffs().T)
             self.support_vectors_ = sp.csr_matrix(c_svm.get_support_vectors())
         else:
@@ -197,6 +198,17 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             X = _check_array(X, dtype=[np.float64, np.float32],
                 force_all_finite=True, accept_sparse='csr')
             _check_n_features(self, X, False)
+
+            if self._sparse and not sp.isspmatrix(X):
+                X = sp.csr_matrix(X)
+            if self._sparse:
+                X.sort_indices()
+
+            if sp.issparse(X) and not self._sparse and not callable(self.kernel):
+                raise ValueError(
+                    "cannot use sparse input in %r trained on dense data"
+                    % type(self).__name__)
+
             c_svm = Computer(self._get_onedal_params())
 
             if hasattr(self, '_onedal_model'):
@@ -231,6 +243,17 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         X = _check_array(X, dtype=[np.float64, np.float32],
                          force_all_finite=True, accept_sparse='csr')
         _check_n_features(self, X, False)
+
+        if self._sparse and not sp.isspmatrix(X):
+            X = sp.csr_matrix(X)
+        if self._sparse:
+            X.sort_indices()
+
+        if sp.issparse(X) and not self._sparse and not callable(self.kernel):
+            raise ValueError(
+                "cannot use sparse input in %r trained on dense data"
+                % type(self).__name__)
+
         c_svm = PyClassificationSvmInfer(self._get_onedal_params())
         if hasattr(self, '_onedal_model'):
             c_svm.infer(X, self._onedal_model)

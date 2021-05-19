@@ -58,6 +58,23 @@ def check_svm_model_equal(svm, X_train, y_train, X_test, decimal=6):
         assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
                                   sparse_svm.decision_function(X_test), decimal)
 
+def _test_simple_dataset(kernel):
+    X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
+    sparse_X = sp.lil_matrix(X)
+    Y = [1, 1, 1, 2, 2, 2]
+
+    X2 = np.array([[-1, -1], [2, 2], [3, 2]])
+    sparse_X2 = sp.dok_matrix(X2)
+
+    dataset = sparse_X, Y, sparse_X2
+    clf = SVC(kernel=kernel, gamma=1)
+    check_svm_model_equal(clf, *dataset)
+
+
+@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
+def test_simple_dataset(kernel):
+    _test_simple_dataset(kernel)
+
 
 def _test_binary_dataset(kernel):
     X, y = make_classification(n_samples=80, n_features=20, n_classes=2, random_state=0)
@@ -108,3 +125,29 @@ def _test_diabetes(kernel):
 @pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
 def test_diabetes(kernel):
     _test_diabetes(kernel)
+
+
+def test_sparse_realdata():
+    data = np.array([0.03771744, 0.1003567, 0.01174647, 0.027069])
+    indices = np.array([6, 5, 35, 31])
+    indptr = np.array(
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
+         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+         2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4])
+    X = sp.csr_matrix((data, indices, indptr))
+    y = np.array(
+        [1., 0., 2., 2., 1., 1., 1., 2., 2., 0., 1., 2., 2.,
+         0., 2., 0., 3., 0., 3., 0., 1., 1., 3., 2., 3., 2.,
+         0., 3., 1., 0., 2., 1., 2., 0., 1., 0., 2., 3., 1.,
+         3., 0., 1., 0., 0., 2., 0., 1., 2., 2., 2., 3., 2.,
+         0., 3., 2., 1., 2., 3., 2., 2., 0., 1., 0., 1., 2.,
+         3., 0., 0., 2., 2., 1., 3., 1., 1., 0., 1., 2., 1.,
+         1., 3.])
+
+    clf = SVC(kernel='linear').fit(X.toarray(), y)
+    sp_clf = SVC(kernel='linear').fit(X, y)
+    # sp_clf = SVC(kernel='linear').fit(sp.coo_matrix(X), y)
+
+    assert_array_equal(clf.support_vectors_, sp_clf.support_vectors_.toarray())
+    assert_array_equal(clf.dual_coef_, sp_clf.dual_coef_.toarray())

@@ -36,7 +36,7 @@ class SVR(sklearn_SVR):
             max_iter=max_iter)
 
     def fit(self, X, y, sample_weight=None):
-        if self.kernel in ['linear', 'rbf', 'poly'] and not sp.isspmatrix(X):
+        if self.kernel in ['linear', 'rbf', 'poly']:
             logging.info("sklearn.svm.SVR.fit: " + get_patch_message("onedal"))
             self._onedal_fit(X, y, sample_weight)
         else:
@@ -45,7 +45,7 @@ class SVR(sklearn_SVR):
         return self
 
     def predict(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_onedal_estimator'):
             logging.info("sklearn.svm.SVR.predict: " + get_patch_message("onedal"))
             return self._onedal_estimator.predict(X)
         else:
