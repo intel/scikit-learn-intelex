@@ -64,7 +64,7 @@ deselected_tests:
   # Compare Comparison of the result of a 1-in-1 decision function for SVC algorithm between dense and sparse input
   # Such a oneAPI Data Analytics Library (oneDAL) does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05
   - ensemble/tests/test_bagging.py::test_sparse_classification
-  - ensemble/tests/test_bagging.py::test_sparse_regression ==0.22
+  - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
 
   # Bitwise comparison of probabilities using a print.
   - metrics/tests/test_classification.py >=0.22,<0.24
