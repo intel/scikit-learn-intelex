@@ -128,9 +128,10 @@ deselected_tests:
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)]
+  - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=ones)]
   - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance]
   - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=zeros)]
-  - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=ones)]
+  - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=ones)]
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order
 

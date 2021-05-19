@@ -17,6 +17,7 @@
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from abc import ABCMeta, abstractmethod
 from enum import Enum
+import sys
 
 import numpy as np
 from scipy import sparse as sp
@@ -112,7 +113,32 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                            scale=self._scale_, sigma=self._sigma_,
                            shift=self.coef0, degree=self.degree, tau=self.tau)
 
+    def _reset_context(func):
+        def wrapper(*args, **kwargs):
+            if 'daal4py.oneapi' in sys.modules:
+                import daal4py.oneapi as d4p_oneapi
+                devname = d4p_oneapi._get_device_name_sycl_ctxt()
+                ctxparams = d4p_oneapi._get_sycl_ctxt_params()
+
+                if devname == 'gpu' and ctxparams.get('host_offload_on_fail', False):
+                    gpu_ctx = d4p_oneapi._get_sycl_ctxt()
+                    host_ctx = d4p_oneapi.sycl_execution_context('host')
+                    try:
+                        host_ctx.apply()
+                        res = func(*args, **kwargs)
+                    finally:
+                        del host_ctx
+                        gpu_ctx.apply()
+                    return res
+                else:
+                    return func(*args, **kwargs)
+            else:
+                return func(*args, **kwargs)
+        return wrapper
+
+    @_reset_context
     def _fit(self, X, y, sample_weight, Computer):
+
         if hasattr(self, 'decision_function_shape'):
             if self.decision_function_shape not in ('ovr', 'ovo', None):
                 raise ValueError(
@@ -151,6 +177,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self._onedal_model = c_svm.get_model()
         return self
 
+    @_reset_context
     def _predict(self, X, Computer):
         _check_is_fitted(self)
         if self.break_ties and self.decision_function_shape == 'ovo':
@@ -192,6 +219,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             sum_of_confidences / (3 * (np.abs(sum_of_confidences) + 1))
         return votes + transformed_confidences
 
+    @_reset_context
     def _decision_function(self, X):
         _check_is_fitted(self)
         X = _check_array(

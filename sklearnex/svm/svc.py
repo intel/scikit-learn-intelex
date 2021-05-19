@@ -49,15 +49,6 @@ class SVC(sklearn_SVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
-        # TODO: after enable gpu support in new API need to delete
-        if 'daal4py.oneapi' in sys.modules:
-            from daal4py.oneapi import _get_device_name_sycl_ctxt
-            dev = _get_device_name_sycl_ctxt()
-            if dev == 'gpu':
-                logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
-                sklearn_SVC.fit(self, X, y, sample_weight)
-                return self
-
         if self.kernel in ['linear', 'rbf', 'poly'] and not sp.isspmatrix(X):
             logging.info("sklearn.svm.SVC.fit: " + get_patch_message("onedal"))
             self._onedal_fit(X, y, sample_weight)

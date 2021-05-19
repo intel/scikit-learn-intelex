@@ -42,7 +42,6 @@ class SVR(sklearn_SVR):
         else:
             logging.info("sklearn.svm.SVR.fit: " + get_patch_message("sklearn"))
             sklearn_SVR.fit(self, X, y, sample_weight)
-
         return self
 
     def predict(self, X):
