@@ -16,7 +16,7 @@
 
 import pytest
 import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_allclose
+from numpy.testing import assert_array_almost_equal, assert_allclose, assert_array_equal
 from sklearn import datasets
 from sklearn.metrics.pairwise import rbf_kernel
 
@@ -57,7 +57,6 @@ def test_estimator():
         'check_regressors_int',  # very bad accuracy
         'check_estimators_unfitted',  # expected NotFittedError from sklearn
         'check_fit_idempotent',  # again run fit - error. need to fix
-        'check_estimators_pickle',  # NotImplementedError
     ], dummy)
     check_estimator(SVR())
     _restore_from_saved(md, saved)
@@ -234,3 +233,18 @@ def test_sided_sample_weight():
     clf.fit(X, Y, sample_weight=sample_weight)
     y_pred = clf.predict([[-1., 1.]])
     assert y_pred == pytest.approx(1.5)
+
+
+def test_pickle():
+    diabetes = datasets.load_diabetes()
+    clf = SVR(kernel='rbf', C=10.)
+    clf.fit(diabetes.data, diabetes.target)
+    expected = clf.predict(diabetes.data)
+
+    import pickle
+    dump = pickle.dumps(clf)
+    clf2 = pickle.loads(dump)
+
+    assert type(clf2) == clf.__class__
+    result = clf2.predict(diabetes.data)
+    assert_array_equal(expected, result)

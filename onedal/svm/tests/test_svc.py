@@ -53,7 +53,6 @@ def test_estimator():
     saved = _replace_and_save(md, [
         'check_sample_weights_invariance',  # Max absolute difference: 0.0008
         'check_estimators_fit_returns_self',  # ValueError: empty metadata
-        'check_estimators_pickle',  # NotImplementedError
         'check_classifiers_predictions',  # Cannot cast ufunc 'multiply'
         'check_classifiers_train',  # assert y_pred.shape == (n_samples,)
         'check_classifiers_regression_target',  # Did not raise ValueError
@@ -133,3 +132,17 @@ def test_decision_function_shape():
 
     # with pytest.raises(ValueError, match="must be either 'ovr' or 'ovo'"):
     #     SVC(decision_function_shape='bad').fit(X_train, y_train)
+
+
+def test_pickle():
+    iris = datasets.load_iris()
+    clf = SVC(kernel='linear').fit(iris.data, iris.target)
+    expected = clf.decision_function(iris.data)
+
+    import pickle
+    dump = pickle.dumps(clf)
+    clf2 = pickle.loads(dump)
+
+    assert type(clf2) == clf.__class__
+    result = clf2.decision_function(iris.data)
+    assert_array_equal(expected, result)

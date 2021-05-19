@@ -18,6 +18,7 @@
 #include "common/backend/utils.h"
 #include "common/backend/train.h"
 #include "common/backend/infer.h"
+#include "common/backend/pickling.h"
 
 namespace oneapi::dal::python {
 template <typename KernelDescriptor>
@@ -179,6 +180,16 @@ template <typename Task>
 svm_model<Task>::svm_model(const svm::model<Task> &model) : model_(model) {}
 
 template <typename Task>
+PyObject *svm_model<Task>::serialize() {
+    return serialize_si(model_);
+}
+
+template <typename Task>
+void svm_model<Task>::deserialize(PyObject *py_bytes) {
+    model_ = deserialize_si<svm::model<Task>>(py_bytes);
+}
+
+template <typename Task>
 svm::model<Task> &svm_model<Task>::get_onedal_model() {
     return model_;
 }
@@ -292,6 +303,7 @@ PyObject *svm_infer<Task>::get_decision_function() {
 template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::classification>;
 template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::classification>;
 template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::classification>;
+
 template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::regression>;
 template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::regression>;
 template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::regression>;

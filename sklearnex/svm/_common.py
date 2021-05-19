@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #===============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -15,12 +14,25 @@
 # limitations under the License.
 #===============================================================================
 
+def get_dual_coef(self):
+    return self.dual_coef_
 
-from .._utils import get_sklearnex_version
-if get_sklearnex_version((2021, 'P', 300)):
-    from .svr import SVR
-    from .svc import SVC
-    __all__ = ['SVR', 'SVC']
-else:
-    from daal4py.sklearn.svm import SVC
-    __all__ = ['SVC']
+
+def set_dual_coef(self, value):
+    self.dual_coef_ = value
+    if hasattr(self, '_onedal_estimator'):
+        self._onedal_estimator.dual_coef_ = value
+        if not self._is_in_fit:
+            del self._onedal_estimator._onedal_model
+
+
+def get_intercept(self):
+    return self._intercept_
+
+
+def set_intercept(self, value):
+    self._intercept_ = value
+    if hasattr(self, '_onedal_estimator'):
+        self._onedal_estimator.intercept_ = value
+        if not self._is_in_fit:
+            del self._onedal_estimator._onedal_model

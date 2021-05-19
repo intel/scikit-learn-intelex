@@ -194,7 +194,7 @@ dal::table convert_to_table(PyObject *obj) {
     }
     else {
         throw std::invalid_argument(
-            "[convert_to_table] Not avalible input format for convert Python object to onedal table.");
+            "[convert_to_table] Not available input format for convert Python object to onedal table.");
     }
     return res;
 }
