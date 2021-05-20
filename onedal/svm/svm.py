@@ -52,16 +52,19 @@ except ImportError:
 class SVMtype(Enum):
     c_svc = 0
     epsilon_svr = 1
+    nu_svc = 2
+    nu_svr = 3
 
 
 class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
-    def __init__(self, C, epsilon, kernel='rbf', *, degree, gamma,
+    def __init__(self, C, nu, epsilon, kernel='rbf', *, degree, gamma,
                  coef0, tol, shrinking, cache_size, max_iter, tau,
                  class_weight, decision_function_shape,
                  break_ties, algorithm, svm_type=None, **kwargs):
 
         self.C = C
+        self.nu = nu
         self.epsilon = epsilon
         self.kernel = kernel
         self.degree = degree
@@ -107,7 +110,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         max_iter = 10000 if self.max_iter == -1 else self.max_iter
         class_count = 0 if self.classes_ is None else len(self.classes_)
         return PySvmParams(method=self.algorithm, kernel=self.kernel,
-                           c=self.C, epsilon=self.epsilon,
+                           c=self.C, nu=self.nu, epsilon=self.epsilon,
                            class_count=class_count, accuracy_threshold=self.tol,
                            max_iteration_count=max_iter,
                            scale=self._scale_, sigma=self._sigma_,
@@ -282,7 +285,7 @@ class SVR(RegressorMixin, BaseSVM):
                  gamma='scale', coef0=0.0, tol=1e-3, shrinking=True,
                  cache_size=200.0, max_iter=-1, tau=1e-12,
                  algorithm='thunder', **kwargs):
-        super().__init__(C=C, epsilon=epsilon, kernel=kernel,
+        super().__init__(C=C, nu=0.5, epsilon=epsilon, kernel=kernel,
                          degree=degree, gamma=gamma,
                          coef0=coef0, tol=tol,
                          shrinking=shrinking, cache_size=cache_size,
@@ -309,13 +312,75 @@ class SVC(ClassifierMixin, BaseSVM):
                  max_iter=-1, tau=1e-12, class_weight=None,
                  decision_function_shape='ovr', break_ties=False,
                  algorithm='thunder', **kwargs):
-        super().__init__(C=C, epsilon=0.0, kernel=kernel, degree=degree,
+        super().__init__(C=C, nu=0.5, epsilon=0.0, kernel=kernel, degree=degree,
                          gamma=gamma, coef0=coef0, tol=tol,
                          shrinking=shrinking, cache_size=cache_size,
                          max_iter=max_iter, tau=tau, class_weight=class_weight,
                          decision_function_shape=decision_function_shape,
                          break_ties=break_ties, algorithm=algorithm)
         self.svm_type = SVMtype.c_svc
+
+    def _validate_targets(self, y, dtype):
+        y, self.class_weight_, self.classes_ = _validate_targets(
+            y, self.class_weight, dtype)
+        return y
+
+    def fit(self, X, y, sample_weight=None):
+        return super()._fit(X, y, sample_weight, PyClassificationSvmTrain)
+
+    def predict(self, X):
+        y = super()._predict(X, PyClassificationSvmInfer)
+        if len(self.classes_) == 2:
+            y = y.ravel()
+        return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
+
+    def decision_function(self, X):
+        return super()._decision_function(X)
+
+
+class NuSVR(RegressorMixin, BaseSVM):
+    """
+    Epsilon--Support Vector Regression.
+    """
+
+    def __init__(self, nu=0.5, C=1.0, kernel='rbf', *, degree=3,
+                 gamma='scale', coef0=0.0, tol=1e-3, shrinking=True,
+                 cache_size=200.0, max_iter=-1, tau=1e-12,
+                 algorithm='thunder', **kwargs):
+        super().__init__(C=C, nu=nu, epsilon=0.0, kernel=kernel,
+                         degree=degree, gamma=gamma,
+                         coef0=coef0, tol=tol,
+                         shrinking=shrinking, cache_size=cache_size,
+                         max_iter=max_iter, tau=tau, class_weight=None,
+                         decision_function_shape=None,
+                         break_ties=False, algorithm=algorithm)
+        self.svm_type = SVMtype.nu_svr
+
+    def fit(self, X, y, sample_weight=None):
+        return super()._fit(X, y, sample_weight, PyRegressionSvmTrain)
+
+    def predict(self, X):
+        y = super()._predict(X, PyRegressionSvmInfer)
+        return y.ravel()
+
+
+class NuSVC(ClassifierMixin, BaseSVM):
+    """
+    C-Support Vector Classification.
+    """
+
+    def __init__(self, nu=0.5, kernel='rbf', *, degree=3, gamma='scale',
+                 coef0=0.0, tol=1e-3, shrinking=True, cache_size=200.0,
+                 max_iter=-1, tau=1e-12, class_weight=None,
+                 decision_function_shape='ovr', break_ties=False,
+                 algorithm='thunder', **kwargs):
+        super().__init__(C=1.0, nu=nu, epsilon=0.0, kernel=kernel, degree=degree,
+                         gamma=gamma, coef0=coef0, tol=tol,
+                         shrinking=shrinking, cache_size=cache_size,
+                         max_iter=max_iter, tau=tau, class_weight=class_weight,
+                         decision_function_shape=decision_function_shape,
+                         break_ties=break_ties, algorithm=algorithm)
+        self.svm_type = SVMtype.nu_svc
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
