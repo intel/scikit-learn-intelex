@@ -39,7 +39,7 @@ KernelDescriptor get_kernel_params(const svm_params &params) {
 }
 
 template <typename Result, typename Descriptor, typename... Args>
-Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, Args &&... args) {
+Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, Args &&...args) {
     using Task = typename Result::task_t;
     descriptor.set_accuracy_threshold(params.accuracy_threshold)
         .set_max_iteration_count(params.max_iteration_count)
@@ -48,20 +48,16 @@ Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, 
         .set_shrinking(params.shrinking)
         .set_kernel(get_kernel_params<typename Descriptor::kernel_t>(params));
     if constexpr (std::is_same_v<Task, svm::task::classification>) {
-        descriptor.set_class_count(params.class_count)
-            .set_c(params.c);
+        descriptor.set_class_count(params.class_count).set_c(params.c);
     }
     else if constexpr (std::is_same_v<Task, svm::task::regression>) {
-        descriptor.set_epsilon(params.epsilon)
-            .set_c(params.c);
+        descriptor.set_epsilon(params.epsilon).set_c(params.c);
     }
     else if constexpr (std::is_same_v<Task, svm::task::nu_classification>) {
-        descriptor.set_class_count(params.class_count)
-            .set_nu(params.nu);
+        descriptor.set_class_count(params.class_count).set_nu(params.nu);
     }
     else if constexpr (std::is_same_v<Task, svm::task::nu_regression>) {
-        descriptor.set_nu(params.nu)
-            .set_c(params.c);
+        descriptor.set_nu(params.nu).set_c(params.c);
     }
     if constexpr (std::is_same_v<Result, typename svm::train_result<Task>>) {
         return python::train(descriptor, std::forward<Args>(args)...);
@@ -72,7 +68,7 @@ Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, 
 }
 
 template <typename Result, typename... Args>
-Result compute_impl(svm_params &params, data_type data_type_input, Args &&... args) {
+Result compute_impl(svm_params &params, data_type data_type_input, Args &&...args) {
     using Task = typename Result::task_t;
     if constexpr (std::is_same_v<Task, svm::task::classification>) {
         if (data_type_input == data_type::float32 && params.method == "smo" &&
