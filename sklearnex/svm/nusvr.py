@@ -17,7 +17,7 @@
 from scipy import sparse as sp
 import logging
 from .._utils import get_patch_message
-from ._common import get_dual_coef, set_dual_coef, get_intercept, set_intercept
+from ._common import BaseSVR
 
 from sklearn.svm import NuSVR as sklearn_NuSVR
 from sklearn.utils.validation import _deprecate_positional_args
@@ -25,7 +25,7 @@ from sklearn.utils.validation import _deprecate_positional_args
 from onedal.svm import NuSVR as onedal_NuSVR
 
 
-class NuSVR(sklearn_NuSVR):
+class NuSVR(sklearn_NuSVR, BaseSVR):
     @_deprecate_positional_args
     def __init__(self, *, kernel='rbf', degree=3, gamma='scale',
                  coef0=0.0, tol=1e-3, C=1.0, nu=0.5, shrinking=True,
@@ -69,26 +69,3 @@ class NuSVR(sklearn_NuSVR):
         self._onedal_estimator = onedal_NuSVR(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight)
         self._save_attributes()
-
-    def _save_attributes(self):
-        self.support_vectors_ = self._onedal_estimator.support_vectors_
-        self.n_features_in_ = self._onedal_estimator.n_features_in_
-        self.fit_status_ = 0
-        self.dual_coef_ = self._onedal_estimator.dual_coef_
-        self.shape_fit_ = self._onedal_estimator.shape_fit_
-        self.support_ = self._onedal_estimator.support_
-
-        self._intercept_ = self._onedal_estimator.intercept_
-        self._n_support = [self.support_vectors_.shape[0]]
-        self._sparse = False
-        self._gamma = self._onedal_estimator._gamma
-        self._probA = None
-        self._probB = None
-
-        self._dual_coef_ = property(get_dual_coef, set_dual_coef)
-        self.intercept_ = property(get_intercept, set_intercept)
-
-        self._is_in_fit = True
-        self._dual_coef_ = self.dual_coef_
-        self.intercept_ = self._intercept_
-        self._is_in_fit = False
