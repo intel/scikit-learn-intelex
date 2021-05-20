@@ -76,8 +76,9 @@ N_ESTIMATORS_IRIS = [
     8000,
 ]
 
+
 def _compare_with_sklearn_classifier_iris(n_estimators=100, class_weight=None,
-                                         sample_weight=None, description=""):
+                                          sample_weight=None, description=""):
     x_train, x_test, y_train, y_test = \
         train_test_split(IRIS.data, IRIS.target,
                          test_size=0.33, random_state=31)
@@ -100,7 +101,8 @@ def _compare_with_sklearn_classifier_iris(n_estimators=100, class_weight=None,
     scikit_accuracy = accuracy_score(scikit_predict, y_test)
     daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
     ratio = daal4py_accuracy / scikit_accuracy
-    reason = description + f"scikit_accuracy={scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}"
+    reason = description + \
+        f"scikit_accuracy={scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}"
     assert ratio >= ACCURACY_RATIO, reason
 
     # predict_proba
@@ -110,15 +112,18 @@ def _compare_with_sklearn_classifier_iris(n_estimators=100, class_weight=None,
     scikit_log_loss = log_loss(y_test, scikit_predict_proba)
     daal4py_log_loss = log_loss(y_test, daal4py_predict_proba)
     ratio = daal4py_log_loss / scikit_log_loss
-    reason = description + f"scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}"
+    reason = description +\
+        f"scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}"
     assert ratio <= LOG_LOSS_RATIO, reason
 
     # ROC AUC
     scikit_roc_auc = roc_auc_score(y_test, scikit_predict_proba, multi_class='ovr')
     daal4py_roc_auc = roc_auc_score(y_test, daal4py_predict_proba, multi_class='ovr')
     ratio = daal4py_roc_auc / scikit_roc_auc
-    reason = description + f"scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}"
+    reason = description + \
+        f"scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}"
     assert ratio >= ROC_AUC_RATIO, reason
+
 
 @pytest.mark.parametrize('class_weight', CLASS_WEIGHTS_IRIS)
 def test_classifier_class_weight_iris(class_weight):
@@ -126,6 +131,7 @@ def test_classifier_class_weight_iris(class_weight):
         class_weight=class_weight,
         description='Classifier class weight: '
     )
+
 
 @pytest.mark.parametrize('sample_weight', SAMPLE_WEIGHTS_IRIS)
 def test_classifier_sample_weight_iris(sample_weight):
@@ -135,6 +141,7 @@ def test_classifier_sample_weight_iris(sample_weight):
         description=f'Classifier sample_weight_type={description}: '
     )
 
+
 @pytest.mark.parametrize('n_estimators', N_ESTIMATORS_IRIS)
 def test_classifier_big_estimators_iris(n_estimators):
     _compare_with_sklearn_classifier_iris(
@@ -142,7 +149,9 @@ def test_classifier_big_estimators_iris(n_estimators):
         description=f'Classifier n_estimators={n_estimators}: '
     )
 
-def _compare_with_sklearn_mse_regressor_iris(n_estimators=100, sample_weight=None, description=""):
+
+def _compare_with_sklearn_mse_regressor_iris(n_estimators=100, sample_weight=None,
+                                             description=""):
     x_train, x_test, y_train, y_test = \
         train_test_split(IRIS.data, IRIS.target,
                          test_size=0.33, random_state=31)
@@ -176,6 +185,7 @@ def test_mse_regressor_sample_weight_iris(weight):
         sample_weight=sample_weight,
         description=f"Regression sample weights: sample_weight_type={description}: "
     )
+
 
 @pytest.mark.parametrize('n_estimators', N_ESTIMATORS_IRIS)
 def test_mse_regressor_big_estimators_iris(n_estimators):
