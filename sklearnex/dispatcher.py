@@ -25,6 +25,8 @@ from daal4py.sklearn._utils import daal_check_version
 if daal_check_version((2021, 'P', 300)):
     from .svm import SVR as SVR_sklearnex
     from .svm import SVC as SVC_sklearnex
+    from .svm import NuSVR as NuSVR_sklearnex
+    from .svm import NuSVC as NuSVC_sklearnex
 
 # Scikit-learn* modules
 import sklearn.svm as svm_module
@@ -40,6 +42,8 @@ def get_patch_map():
         mapping.pop('svc')
         mapping['svr'] = [[(svm_module, 'SVR', SVR_sklearnex), None]]
         mapping['svc'] = [[(svm_module, 'SVC', SVC_sklearnex), None]]
+        mapping['nusvr'] = [[(svm_module, 'NuSVR', NuSVR_sklearnex), None]]
+        mapping['nusvc'] = [[(svm_module, 'NuSVC', NuSVC_sklearnex), None]]
     return mapping
 
 
