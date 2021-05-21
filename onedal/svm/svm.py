@@ -152,16 +152,20 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     f"This {self.__class__.__name__} estimator "
                     f"requires y to be passed, but the target y is None."
                 )
-
         X, y = _check_X_y(
             X, y, dtype=[np.float64, np.float32], force_all_finite=True)
         y = self._validate_targets(y, X.dtype)
         sample_weight = _get_sample_weight(
             X, y, sample_weight, self.class_weight_, self.classes_, self.svm_type)
 
-        self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
+        if self.kernel == 'linear':
+            self._scale_, self._sigma_ = 1.0, 1.0
+        else:
+            self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
+
         c_svm = Computer(self._get_onedal_params())
         c_svm.train(X, y, sample_weight)
+
         self.dual_coef_ = c_svm.get_coeffs().T
         self.support_vectors_ = c_svm.get_support_vectors()
         self.intercept_ = c_svm.get_biases().ravel()
@@ -223,7 +227,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     def _decision_function(self, X):
         _check_is_fitted(self)
         X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=True)
+            X, dtype=[np.float64, np.float32], force_all_finite=False)
         _check_n_features(self, X, False)
         c_svm = PyClassificationSvmInfer(self._get_onedal_params())
         if hasattr(self, '_onedal_model'):
