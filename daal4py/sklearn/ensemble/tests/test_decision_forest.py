@@ -61,6 +61,7 @@ CLASS_WEIGHTS_IRIS = [
     'balanced',
 ]
 
+random.seed(777)
 SAMPLE_WEIGHTS_IRIS = [
     (np.full_like(range(100), 1), 'Only 1'),
     (np.full_like(range(100), 50), 'Only 50'),
@@ -69,7 +70,6 @@ SAMPLE_WEIGHTS_IRIS = [
     (np.random.poisson(lam=10, size=100), 'Poisson distribution'),
     (np.random.rayleigh(scale=1, size=100), 'Rayleigh distribution'),
 ]
-
 
 N_ESTIMATORS_IRIS = [
     1000,
