@@ -159,7 +159,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             X, y, sample_weight, self.class_weight_, self.classes_, self.svm_type)
 
         if self.kernel == 'linear':
-            self._scale_, self._sigma_ = 0.0, 1.0
+            self._scale_, self._sigma_ = 1.0, 1.0
+            self.coef0 = 0.0
         else:
             self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
 
