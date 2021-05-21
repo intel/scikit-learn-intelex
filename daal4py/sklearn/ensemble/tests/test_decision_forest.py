@@ -37,45 +37,6 @@ LOG_LOSS_RATIO = 1.55
 ROC_AUC_RATIO = 0.978
 IRIS = load_iris()
 
-random.seed(777)
-CLASS_WEIGHTS_IRIS = [
-    {0: 0, 1: 1, 2: 1},
-    {0: 1, 1: 2, 2: 3},
-    {0: 10, 1: 5, 2: 4},
-    {
-        0: random.uniform(1, 50),
-        1: random.uniform(1, 50),
-        2: random.uniform(1, 50),
-    },
-    {
-        0: random.uniform(1, 1000),
-        1: random.uniform(1, 1000),
-        2: random.uniform(1, 1000),
-    },
-    {
-        0: random.uniform(1, 10),
-        1: random.uniform(50, 100),
-        2: random.uniform(1, 100),
-    },
-    {0: 50, 1: 50, 2: 50},
-    'balanced',
-]
-
-random.seed(777)
-SAMPLE_WEIGHTS_IRIS = [
-    (np.full_like(range(100), 1), 'Only 1'),
-    (np.full_like(range(100), 50), 'Only 50'),
-    (np.random.rand(100), 'Uniform distribution'),
-    (np.random.normal(1000, 10, 100), 'Gaussian distribution'),
-    (np.random.poisson(lam=10, size=100), 'Poisson distribution'),
-    (np.random.rayleigh(scale=1, size=100), 'Rayleigh distribution'),
-]
-
-N_ESTIMATORS_IRIS = [
-    1000,
-    8000,
-]
-
 
 def _compare_with_sklearn_classifier_iris(n_estimators=100, class_weight=None,
                                           sample_weight=None, description=""):
@@ -125,12 +86,48 @@ def _compare_with_sklearn_classifier_iris(n_estimators=100, class_weight=None,
     assert ratio >= ROC_AUC_RATIO, reason
 
 
+random.seed(777)
+CLASS_WEIGHTS_IRIS = [
+    {0: 0, 1: 1, 2: 1},
+    {0: 1, 1: 2, 2: 3},
+    {0: 10, 1: 5, 2: 4},
+    {
+        0: random.uniform(1, 50),
+        1: random.uniform(1, 50),
+        2: random.uniform(1, 50),
+    },
+    {
+        0: random.uniform(1, 1000),
+        1: random.uniform(1, 1000),
+        2: random.uniform(1, 1000),
+    },
+    {
+        0: random.uniform(1, 10),
+        1: random.uniform(50, 100),
+        2: random.uniform(1, 100),
+    },
+    {0: 50, 1: 50, 2: 50},
+    'balanced',
+]
+
+
 @pytest.mark.parametrize('class_weight', CLASS_WEIGHTS_IRIS)
 def test_classifier_class_weight_iris(class_weight):
     _compare_with_sklearn_classifier_iris(
         class_weight=class_weight,
         description='Classifier class weight: '
     )
+
+
+random.seed(777)
+SAMPLE_WEIGHTS_IRIS = [
+    (np.full_like(range(100), 1), 'Only 1'),
+    (np.full_like(range(100), 50), 'Only 50'),
+    (np.random.rand(100), 'Uniform distribution'),
+    (np.random.normal(1000, 10, 100), 'Gaussian distribution'),
+    (np.random.poisson(lam=10, size=100), 'Poisson distribution'),
+    (np.random.rayleigh(scale=1, size=100), 'Rayleigh distribution'),
+]
 
 
 @pytest.mark.parametrize('sample_weight', SAMPLE_WEIGHTS_IRIS)
@@ -140,6 +137,12 @@ def test_classifier_sample_weight_iris(sample_weight):
         sample_weight=sample_weight,
         description=f'Classifier sample_weight_type={description}: '
     )
+
+
+N_ESTIMATORS_IRIS = [
+    1000,
+    8000,
+]
 
 
 @pytest.mark.parametrize('n_estimators', N_ESTIMATORS_IRIS)
