@@ -32,7 +32,7 @@ from daal4py.sklearn.ensemble \
 from daal4py.sklearn._utils import daal_check_version
 
 ACCURACY_RATIO = 0.85
-MSE_RATIO = 1.05
+MSE_RATIO = 1.07
 LOG_LOSS_RATIO = 1.55
 ROC_AUC_RATIO = 0.978
 IRIS = load_iris()
