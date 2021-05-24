@@ -120,8 +120,10 @@ def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=Fals
     y = _column_or_1d(y, warn=True)
     if y_numeric and y.dtype.kind == 'O':
         y = y.astype(np.float64)
-    # TODO: replace on daal4py
-    from sklearn.utils.validation import assert_all_finite
+    try:
+        from daal4py.utils.validation import _daal_assert_all_finite as assert_all_finite
+    except ImportError:
+        from sklearn.utils.validation import assert_all_finite
     assert_all_finite(y)
 
     lengths = [X.shape[0], y.shape[0]]

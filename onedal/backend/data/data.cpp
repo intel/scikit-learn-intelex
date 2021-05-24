@@ -98,8 +98,12 @@ inline dal::detail::csr_table convert_to_csr_impl(PyObject *py_data,
         static_cast<std::int64_t *>(array_data(np_row_indices));
     const std::int64_t row_indices_count = static_cast<std::int64_t>(array_size(np_row_indices, 0));
 
-    std::int64_t *row_indices_one_based_data =
-        detail::host_allocator<std::int64_t>().allocate(row_indices_count);
+    // std::int64_t *row_indices_one_based_data =
+    //     detail::host_allocator<std::int64_t>().allocate(row_indices_count);
+
+    auto row_indices_one_based = dal::array<std::int64_t>::empty(row_indices_count);
+    auto row_indices_one_based_data = row_indices_one_based.get_mutable_data();
+
     for (std::int64_t i = 0; i < row_indices_count; ++i)
         row_indices_one_based_data[i] = row_indices_zero_based[i] + 1;
 
@@ -108,21 +112,24 @@ inline dal::detail::csr_table convert_to_csr_impl(PyObject *py_data,
     const std::int64_t column_indices_count =
         static_cast<std::int64_t>(array_size(np_column_indices, 0));
 
-    std::int64_t *column_indices_one_based_data =
-        detail::host_allocator<std::int64_t>().allocate(column_indices_count);
+    // std::int64_t *column_indices_one_based_data =
+    //     detail::host_allocator<std::int64_t>().allocate(column_indices_count);
+
+    auto column_indices_one_based = dal::array<std::int64_t>::empty(column_indices_count);
+    auto column_indices_one_based_data = column_indices_one_based.get_mutable_data();
+
     for (std::int64_t i = 0; i < column_indices_count; ++i)
         column_indices_one_based_data[i] = column_indices_zero_based[i] + 1;
 
     const T *data_pointer = static_cast<T *>(array_data(np_data));
+    const std::int64_t data_count = static_cast<std::int64_t>(array_size(np_data, 0));
+
     auto res_table = dal::detail::csr_table(
-        data_pointer,
-        column_indices_one_based_data,
-        row_indices_one_based_data,
+        dal::array<T>(data_pointer, data_count, dal::detail::empty_delete<const T>()),
+        column_indices_one_based,
+        row_indices_one_based,
         row_count,
-        column_count,
-        dal::detail::empty_delete<const T>(),
-        dal::detail::make_default_delete<const std::int64_t>(detail::default_host_policy{}),
-        dal::detail::make_default_delete<const std::int64_t>(detail::default_host_policy{}));
+        column_count);
     return res_table;
 }
 
