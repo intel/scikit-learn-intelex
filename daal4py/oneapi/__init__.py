@@ -28,7 +28,8 @@ if "Windows" in platform.system():
 
     if sys.version_info.minor >= 8:
         os.add_dll_directory(current_path)
-        os.add_dll_directory(installed_package_path)
+        if os.path.exists(installed_package_path):
+            os.add_dll_directory(installed_package_path)
     os.environ['PATH'] = current_path + os.pathsep + os.environ['PATH']
     os.environ['PATH'] = installed_package_path + os.pathsep + os.environ['PATH']
 

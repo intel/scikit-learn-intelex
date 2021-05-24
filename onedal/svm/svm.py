@@ -151,7 +151,6 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     f"This {self.__class__.__name__} estimator "
                     f"requires y to be passed, but the target y is None."
                 )
-
         X, y = _check_X_y(
             X, y, dtype=[np.float64, np.float32],
             force_all_finite=True, accept_sparse='csr')
@@ -161,7 +160,12 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
         self._sparse = sp.isspmatrix(X)
 
-        self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
+        if self.kernel == 'linear':
+            self._scale_, self._sigma_ = 1.0, 1.0
+            self.coef0 = 0.0
+        else:
+            self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
+
         c_svm = Computer(self._get_onedal_params())
         c_svm.train(X, y, sample_weight)
 
@@ -171,6 +175,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         else:
             self.dual_coef_ = c_svm.get_coeffs().T
             self.support_vectors_ = c_svm.get_support_vectors()
+
         self.intercept_ = c_svm.get_biases().ravel()
         self.support_ = c_svm.get_support_indices().ravel().astype('int')
         self.n_features_in_ = X.shape[1]
@@ -241,7 +246,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     def _decision_function(self, X):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
-                         force_all_finite=True, accept_sparse='csr')
+                         force_all_finite=False, accept_sparse='csr')
         _check_n_features(self, X, False)
 
         if self._sparse and not sp.isspmatrix(X):
