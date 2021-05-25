@@ -47,7 +47,6 @@ if sklearn_check_version("0.24"):
                 algorithm=algorithm,
                 leaf_size=leaf_size, metric=metric, p=p,
                 metric_params=metric_params, n_jobs=n_jobs, **kwargs)
-            self.weights = _check_weights(weights)
 else:
     if sklearn_check_version("0.22"):
         from sklearn.neighbors._base import SupervisedFloatMixin as \
@@ -68,7 +67,6 @@ else:
                 algorithm=algorithm,
                 leaf_size=leaf_size, metric=metric, p=p,
                 metric_params=metric_params, n_jobs=n_jobs, **kwargs)
-            self.weights = _check_weights(weights)
 
 
 class KNeighborsRegressor(KNeighborsRegressor_):
@@ -82,7 +80,8 @@ class KNeighborsRegressor(KNeighborsRegressor_):
             algorithm=algorithm,
             leaf_size=leaf_size, metric=metric, p=p,
             metric_params=metric_params, n_jobs=n_jobs, **kwargs)
-        self.weights = _check_weights(weights)
+        self.weights = \
+            weights if sklearn_check_version("1.0") else _check_weights(weights)
 
     def _more_tags(self):
         return BaseKNeighborsRegressor._more_tags(self)

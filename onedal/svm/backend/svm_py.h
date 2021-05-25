@@ -43,10 +43,11 @@ template <typename Task>
 class svm_model {
 public:
     svm_model();
-
     svm_model(const svm::model<Task>& model);
-
     svm::model<Task>& get_onedal_model();
+
+    PyObject* serialize();
+    void deserialize(PyObject* py_bytes);
 
 private:
     svm::model<Task> model_;

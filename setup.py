@@ -518,6 +518,7 @@ setup(
         'onedal',
         'onedal.svm',
         'onedal.prims',
+        'onedal.common',
     ],
     package_data={
         'onedal': [
