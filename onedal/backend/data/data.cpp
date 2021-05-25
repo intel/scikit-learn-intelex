@@ -98,9 +98,6 @@ inline dal::detail::csr_table convert_to_csr_impl(PyObject *py_data,
         static_cast<std::int64_t *>(array_data(np_row_indices));
     const std::int64_t row_indices_count = static_cast<std::int64_t>(array_size(np_row_indices, 0));
 
-    // std::int64_t *row_indices_one_based_data =
-    //     detail::host_allocator<std::int64_t>().allocate(row_indices_count);
-
     auto row_indices_one_based = dal::array<std::int64_t>::empty(row_indices_count);
     auto row_indices_one_based_data = row_indices_one_based.get_mutable_data();
 
@@ -111,9 +108,6 @@ inline dal::detail::csr_table convert_to_csr_impl(PyObject *py_data,
         static_cast<std::int64_t *>(array_data(np_column_indices));
     const std::int64_t column_indices_count =
         static_cast<std::int64_t>(array_size(np_column_indices, 0));
-
-    // std::int64_t *column_indices_one_based_data =
-    //     detail::host_allocator<std::int64_t>().allocate(column_indices_count);
 
     auto column_indices_one_based = dal::array<std::int64_t>::empty(column_indices_count);
     auto column_indices_one_based_data = column_indices_one_based.get_mutable_data();
