@@ -37,7 +37,11 @@ try:
         PyRegressionSvmTrain,
         PyRegressionSvmInfer,
         PyClassificationSvmTrain,
-        PyClassificationSvmInfer
+        PyClassificationSvmInfer,
+        PyNuRegressionSvmTrain,
+        PyNuRegressionSvmInfer,
+        PyNuClassificationSvmTrain,
+        PyNuClassificationSvmInfer
     )
 except ImportError:
     from _onedal4py_host import (
@@ -45,7 +49,11 @@ except ImportError:
         PyRegressionSvmTrain,
         PyRegressionSvmInfer,
         PyClassificationSvmTrain,
-        PyClassificationSvmInfer
+        PyClassificationSvmInfer,
+        PyNuRegressionSvmTrain,
+        PyNuRegressionSvmInfer,
+        PyNuClassificationSvmTrain,
+        PyNuClassificationSvmInfer
     )
 
 
@@ -157,7 +165,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             force_all_finite=True, accept_sparse='csr')
         y = self._validate_targets(y, X.dtype)
         sample_weight = _get_sample_weight(
-            X, y, sample_weight, self.class_weight_, self.classes_, self.svm_type)
+            X, y, sample_weight, self.class_weight_, self.classes_, self.svm_type,
+            self.nu)
 
         self._sparse = sp.isspmatrix(X)
 
@@ -244,7 +253,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         return votes + transformed_confidences
 
     @_reset_context
-    def _decision_function(self, X):
+    def _decision_function(self, X, Computer):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
                          force_all_finite=False, accept_sparse='csr')
@@ -260,7 +269,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 "cannot use sparse input in %r trained on dense data"
                 % type(self).__name__)
 
-        c_svm = PyClassificationSvmInfer(self._get_onedal_params())
+        c_svm = Computer(self._get_onedal_params())
         if hasattr(self, '_onedal_model'):
             c_svm.infer(X, self._onedal_model)
         else:
@@ -335,12 +344,12 @@ class SVC(ClassifierMixin, BaseSVM):
         return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
     def decision_function(self, X):
-        return super()._decision_function(X)
+        return super()._decision_function(X, PyClassificationSvmInfer)
 
 
 class NuSVR(RegressorMixin, BaseSVM):
     """
-    Epsilon--Support Vector Regression.
+    Nu-Support Vector Regression.
     """
 
     def __init__(self, nu=0.5, C=1.0, kernel='rbf', *, degree=3,
@@ -357,16 +366,16 @@ class NuSVR(RegressorMixin, BaseSVM):
         self.svm_type = SVMtype.nu_svr
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, PyRegressionSvmTrain)
+        return super()._fit(X, y, sample_weight, PyNuRegressionSvmTrain)
 
     def predict(self, X):
-        y = super()._predict(X, PyRegressionSvmInfer)
+        y = super()._predict(X, PyNuRegressionSvmInfer)
         return y.ravel()
 
 
 class NuSVC(ClassifierMixin, BaseSVM):
     """
-    C-Support Vector Classification.
+    Nu-Support Vector Classification.
     """
 
     def __init__(self, nu=0.5, kernel='rbf', *, degree=3, gamma='scale',
@@ -388,13 +397,13 @@ class NuSVC(ClassifierMixin, BaseSVM):
         return y
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, PyClassificationSvmTrain)
+        return super()._fit(X, y, sample_weight, PyNuClassificationSvmTrain)
 
     def predict(self, X):
-        y = super()._predict(X, PyClassificationSvmInfer)
+        y = super()._predict(X, PyNuClassificationSvmInfer)
         if len(self.classes_) == 2:
             y = y.ravel()
         return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
     def decision_function(self, X):
-        return super()._decision_function(X)
+        return super()._decision_function(X, PyNuClassificationSvmInfer)

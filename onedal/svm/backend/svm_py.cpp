@@ -71,6 +71,10 @@ template <typename Result, typename... Args>
 Result compute_impl(svm_params &params, data_type data_type_input, Args &&...args) {
     using Task = typename Result::task_t;
     if constexpr (std::is_same_v<Task, svm::task::classification>) {
+    }
+    else if constexpr (std::is_same_v<Task, svm::task::nu_classification>) {
+    }
+    if constexpr (std::is_same_v<Task, svm::task::classification>) {
         if (data_type_input == data_type::float32 && params.method == "smo" &&
             params.kernel == "linear") {
             return compute_descriptor_impl<Result>(

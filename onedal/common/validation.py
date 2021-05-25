@@ -136,7 +136,9 @@ def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=Fals
     return X, y
 
 
-def _get_sample_weight(X, y, sample_weight, class_weight, classes, svm_type):
+def _get_sample_weight(X, y, sample_weight, class_weight, classes, svm_type, nu=0):
+
+    from onedal.svm import SVMtype
 
     n_samples = X.shape[0]
     dtype = X.dtype
@@ -173,11 +175,22 @@ def _get_sample_weight(X, y, sample_weight, class_weight, classes, svm_type):
         if sample_weight.shape != (n_samples,):
             raise ValueError("sample_weight.shape == {}, expected {}!"
                              .format(sample_weight.shape, (n_samples,)))
+
+    if svm_type == SVMtype.nu_svc:
+        weight_per_class = [np.sum(sample_weight[y == class_label])
+                            for class_label in np.unique(y)]
+
+        for i in range(len(weight_per_class)):
+            for j in range(i + 1, len(weight_per_class)):
+                if nu * (weight_per_class[i] + weight_per_class[j]) / 2 > \
+                        min(weight_per_class[i], weight_per_class[j]):
+                    raise ValueError('specified nu is infeasible')
+
     if np.all(sample_weight <= 0):
-        raise ValueError(
-            'Invalid input - all samples have zero or negative weights.')
+        err_msg = 'negative dimensions are not allowed' if svm_type == SVMtype.nu_svc \
+            else 'Invalid input - all samples have zero or negative weights.'
+        raise ValueError(err_msg)
     elif np.any(sample_weight <= 0):
-        from onedal.svm import SVMtype
         if svm_type == SVMtype.c_svc and \
                 len(np.unique(y[sample_weight > 0])) != len(classes):
             raise ValueError(
