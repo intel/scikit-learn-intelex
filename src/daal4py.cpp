@@ -824,6 +824,11 @@ extern "C"
         return 0;
 #endif
     }
+
+    void c_enable_thread_pinning(bool enabled)
+    {
+        daal::services::Environment::getInstance()->enableThreadPinning(enabled);
+    }
 } // extern "C"
 
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
