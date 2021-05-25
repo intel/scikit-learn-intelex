@@ -201,7 +201,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             y = np.argmax(self.decision_function(X), axis=1)
         else:
             X = _check_array(X, dtype=[np.float64, np.float32],
-                force_all_finite=True, accept_sparse='csr')
+                             force_all_finite=True, accept_sparse='csr')
             _check_n_features(self, X, False)
 
             if self._sparse and not sp.isspmatrix(X):

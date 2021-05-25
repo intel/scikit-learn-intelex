@@ -107,7 +107,8 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
 
 
 def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=False,
-               force_all_finite=True, ensure_2d=True, accept_large_sparse=True, y_numeric=False):
+               force_all_finite=True, ensure_2d=True,
+               accept_large_sparse=True, y_numeric=False):
     if y is None:
         raise ValueError("y cannot be None")
 

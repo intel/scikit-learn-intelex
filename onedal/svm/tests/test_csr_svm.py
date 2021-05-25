@@ -58,6 +58,7 @@ def check_svm_model_equal(svm, X_train, y_train, X_test, decimal=6):
         assert_array_almost_equal(dense_svm.decision_function(X_test_dense),
                                   sparse_svm.decision_function(X_test), decimal)
 
+
 def _test_simple_dataset(kernel):
     X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
     sparse_X = sp.lil_matrix(X)
