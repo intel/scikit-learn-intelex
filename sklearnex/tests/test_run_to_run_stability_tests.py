@@ -28,7 +28,7 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor, Nearest
 from sklearn.linear_model import LinearRegression, Ridge, ElasticNet, Lasso
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.decomposition import PCA
-from sklearn.svm import SVC
+from sklearn.svm import SVC, NuSVC, SVR, NuSVR
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 
@@ -205,6 +205,21 @@ MODELS_INFO = [
     #     'methods': ['predict', 'decision_function'],
     #     'dataset': 'sparse',
     # },
+    {
+        'model': NuSVC(kernel='rbf'),
+        'methods': ['predict', 'decision_function'],
+        'dataset': 'classifier',
+    },
+    {
+        'model': SVR(kernel='rbf'),
+        'methods': ['predict'],
+        'dataset': 'regression',
+    },
+    {
+        'model': NuSVR(kernel='rbf'),
+        'methods': ['predict'],
+        'dataset': 'regression',
+    },
     {
         'model': TSNE(random_state=0),
         'methods': ['fit_transform'],

@@ -22,9 +22,9 @@ from onedal.svm import SVC
 
 from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
-from sklearn import datasets, metrics
+from sklearn import datasets
 from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.datasets import make_classification, make_blobs
+from sklearn.datasets import make_blobs
 from sklearn.model_selection import train_test_split
 
 
