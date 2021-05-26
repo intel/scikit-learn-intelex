@@ -16,6 +16,8 @@
 
 #pragma once
 
+#define NO_IMPORT_ARRAY
+
 #ifdef ONEDAL_DATA_PARALLEL
 #include <CL/sycl.hpp>
 #endif
@@ -24,13 +26,14 @@
 #include "oneapi/dal/infer.hpp"
 #include "oneapi/dal/compute.hpp"
 
+#include "common/backend/utils.h"
 #include "common/backend/policy_impl.h"
 
 namespace oneapi::dal::python {
 
 #define FuncCaller(func_name) [](auto&&... args) { return func_name(std::forward<decltype(args)>(args)...); }
 
-class policy {
+class ONEDAL_BACKEND_EXPORT policy {
 public:
     policy(const std::string& device_name);
 

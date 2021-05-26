@@ -24,7 +24,7 @@
 
 namespace oneapi::dal::python {
 
-struct svm_params {
+struct ONEDAL_BACKEND_EXPORT svm_params {
     std::string kernel;
     std::string method;
     double c;
@@ -42,7 +42,7 @@ struct svm_params {
 };
 
 template <typename Task>
-class svm_model {
+class ONEDAL_BACKEND_EXPORT svm_model {
 public:
     svm_model();
     svm_model(const svm::model<Task>& model);
@@ -56,7 +56,7 @@ private:
 };
 
 template <typename Task>
-class svm_train {
+class ONEDAL_BACKEND_EXPORT svm_train {
 public:
     // from descriptor
     svm_train(svm_params* params);
@@ -88,7 +88,7 @@ private:
 };
 
 template <typename Task>
-class svm_infer {
+class ONEDAL_BACKEND_EXPORT svm_infer {
 public:
     // from descriptor
     svm_infer(svm_params* params);
