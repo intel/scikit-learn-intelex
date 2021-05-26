@@ -46,4 +46,7 @@ except ImportError:
         'You can download or upgrade with help command:\n'
         f'`pip install --upgrade dpcpp_cpp_rt>={major_version}.{minnor_version}.*` '
         'or '
-        f'`conda install -c intel dpcpp_cpp_rt>={major_version}.{minnor_version}.*`')
+        f'`conda install -c intel dpcpp_cpp_rt>={major_version}.{minnor_version}.*`'
+    )
+except:
+    raise
