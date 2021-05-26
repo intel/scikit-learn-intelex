@@ -40,5 +40,4 @@ except ImportError as e:
             s + '\n\nActivating your conda environment or sourcing mpivars.'
             '[c]sh/psxevars.[c]sh may solve the issue.\n')
 
-
     raise
