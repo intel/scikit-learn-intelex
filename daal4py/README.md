@@ -56,6 +56,32 @@ conda install daal4py -c conda-forge
 conda install daal4py -c intel
 ```
 
+⚠️ Note: *dpcpp and MPI support is optional dependency (required dependencies for dpcpp
+MPI support will not be downloaded). Need to manually install ***dpcpp_cpp_rt*** package
+for support dpcpp and ***impi_rt*** for support MPI.*
+
+<details><summary>[Click to expand] ℹ️ How to install dpcpp_cpp_rt and impi_rt packages </summary>
+
+```bash
+# PyPi for dpcpp
+pip install --upgrade dpcpp_cpp_rt
+```
+
+```bash
+# PyPi for MPI
+pip install --upgrade impi_rt
+```
+
+```bash
+# Anaconda Cloud for dpcpp
+conda install dpcpp_cpp_rt -c intel
+```
+
+```bash
+# Anaconda Cloud for MPI
+conda install impi_rt -c intel
+```
+
 <details><summary>[Click to expand] ℹ️ Supported configurations </summary>
 
 #### 📦 PyPi channel

@@ -92,6 +92,6 @@ def custom_build_cmake_clib():
         abs_build_temp_path,
     ]
 
-    subprocess.check_call(cmake_args, stderr=subprocess.STDOUT, shell=False)
-    subprocess.check_call(make_args, stderr=subprocess.STDOUT, shell=False)
-    subprocess.check_call(make_install_args, stderr=subprocess.STDOUT, shell=False)
+    subprocess.check_call(cmake_args)
+    subprocess.check_call(make_args)
+    subprocess.check_call(make_install_args)
