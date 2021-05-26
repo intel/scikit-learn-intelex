@@ -20,72 +20,84 @@
 
 namespace oneapi::dal::python {
 template <typename Descriptor, typename... Args>
-auto linear_compute_descriptor_impl(Descriptor descriptor,
+auto linear_compute_descriptor_impl(const policy* policy,
+                                    Descriptor descriptor,
                                     const linear_kernel_params &params,
                                     Args &&... args) {
     descriptor.set_scale(params.scale).set_shift(params.shift);
-    return python::compute(descriptor, std::forward<Args>(args)...);
+    return python::compute(policy, descriptor, std::forward<Args>(args)...);
 }
 
 template <typename Descriptor, typename... Args>
-auto rbf_compute_descriptor_impl(Descriptor descriptor,
+auto rbf_compute_descriptor_impl(const policy* policy,
+                                 Descriptor descriptor,
                                  const rbf_kernel_params &params,
                                  Args &&... args) {
     descriptor.set_sigma(params.sigma);
-    return python::compute(descriptor, std::forward<Args>(args)...);
+    return python::compute(policy, descriptor, std::forward<Args>(args)...);
 }
 
 template <typename Descriptor, typename... Args>
-auto polynomial_compute_descriptor_impl(Descriptor descriptor,
+auto polynomial_compute_descriptor_impl(const policy* policy,
+                                        Descriptor descriptor,
                                         const polynomial_kernel_params &params,
                                         Args &&... args) {
     descriptor.set_scale(params.scale).set_shift(params.shift).set_degree(params.degree);
-    return python::compute(descriptor, std::forward<Args>(args)...);
+    return python::compute(policy, descriptor, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-linear_kernel::compute_result<> linear_compute_impl(linear_kernel_params &params,
+linear_kernel::compute_result<> linear_compute_impl(const policy* policy,
+                                                    linear_kernel_params &params,
                                                     data_type data_type_input,
                                                     Args &&... args) {
     if (data_type_input == data_type::float32) {
-        return linear_compute_descriptor_impl(linear_kernel::descriptor<float>{},
+        return linear_compute_descriptor_impl(policy,
+                                              linear_kernel::descriptor<float>{},
                                               params,
                                               std::forward<Args>(args)...);
     }
     else {
-        return linear_compute_descriptor_impl(linear_kernel::descriptor<double>{},
+        return linear_compute_descriptor_impl(policy,
+                                              linear_kernel::descriptor<double>{},
                                               params,
                                               std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
-rbf_kernel::compute_result<> rbf_compute_impl(rbf_kernel_params &params,
+rbf_kernel::compute_result<> rbf_compute_impl(const policy* policy,
+                                              rbf_kernel_params &params,
                                               data_type data_type_input,
                                               Args &&... args) {
     if (data_type_input == data_type::float32) {
-        return rbf_compute_descriptor_impl(rbf_kernel::descriptor<float>{},
+        return rbf_compute_descriptor_impl(policy,
+                                           rbf_kernel::descriptor<float>{},
                                            params,
                                            std::forward<Args>(args)...);
     }
     else {
-        return rbf_compute_descriptor_impl(rbf_kernel::descriptor<double>{},
+        return rbf_compute_descriptor_impl(policy,
+                                           rbf_kernel::descriptor<double>{},
                                            params,
                                            std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
-polynomial_kernel::compute_result<> polynomial_compute_impl(polynomial_kernel_params &params,
+polynomial_kernel::compute_result<> polynomial_compute_impl(const policy* policy,
+                                                            polynomial_kernel_params &params,
                                                             data_type data_type_input,
                                                             Args &&... args) {
     if (data_type_input == data_type::float32) {
-        return polynomial_compute_descriptor_impl(polynomial_kernel::descriptor<float>{},
+        return polynomial_compute_descriptor_impl(policy,
+                                                  polynomial_kernel::descriptor<float>{},
                                                   params,
                                                   std::forward<Args>(args)...);
     }
     else {
-        return polynomial_compute_descriptor_impl(polynomial_kernel::descriptor<double>{},
+        return polynomial_compute_descriptor_impl(policy,
+                                                  polynomial_kernel::descriptor<double>{},
                                                   params,
                                                   std::forward<Args>(args)...);
     }
@@ -95,12 +107,12 @@ polynomial_kernel::compute_result<> polynomial_compute_impl(polynomial_kernel_pa
 linear_kernel_compute::linear_kernel_compute(linear_kernel_params *params) : params_(*params) {}
 
 // attributes from compute_input
-void linear_kernel_compute::compute(PyObject *x, PyObject *y) {
+void linear_kernel_compute::compute(const policy* policy, PyObject *x, PyObject *y) {
     thread_state_releaser _allow;
     auto x_table = convert_to_table(x);
     auto y_table = convert_to_table(y);
     auto data_type = x_table.get_metadata().get_data_type(0);
-    compute_result_ = linear_compute_impl(params_, data_type, x_table, y_table);
+    compute_result_ = linear_compute_impl(policy, params_, data_type, x_table, y_table);
 }
 
 // attributes from compute_result
@@ -111,12 +123,12 @@ PyObject *linear_kernel_compute::get_values() {
 rbf_kernel_compute::rbf_kernel_compute(rbf_kernel_params *params) : params_(*params) {}
 
 // attributes from compute_input
-void rbf_kernel_compute::compute(PyObject *x, PyObject *y) {
+void rbf_kernel_compute::compute(const policy* policy, PyObject *x, PyObject *y) {
     thread_state_releaser _allow;
     auto x_table = convert_to_table(x);
     auto y_table = convert_to_table(y);
     auto data_type = x_table.get_metadata().get_data_type(0);
-    compute_result_ = rbf_compute_impl(params_, data_type, x_table, y_table);
+    compute_result_ = rbf_compute_impl(policy, params_, data_type, x_table, y_table);
 }
 
 // attributes from compute_result
@@ -128,12 +140,12 @@ polynomial_kernel_compute::polynomial_kernel_compute(polynomial_kernel_params *p
         : params_(*params) {}
 
 // attributes from compute_input
-void polynomial_kernel_compute::compute(PyObject *x, PyObject *y) {
+void polynomial_kernel_compute::compute(const policy* policy, PyObject *x, PyObject *y) {
     thread_state_releaser _allow;
     auto x_table = convert_to_table(x);
     auto y_table = convert_to_table(y);
     auto data_type = x_table.get_metadata().get_data_type(0);
-    compute_result_ = polynomial_compute_impl(params_, data_type, x_table, y_table);
+    compute_result_ = polynomial_compute_impl(policy, params_, data_type, x_table, y_table);
 }
 
 // attributes from compute_result

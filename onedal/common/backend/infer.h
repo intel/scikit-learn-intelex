@@ -16,35 +16,14 @@
 
 #pragma once
 
-#include <numpy/arrayobject.h>
-
-#ifdef ONEDAL_DATA_PARALLEL
-#include <CL/sycl.hpp>
-#endif
-
-#ifdef DPCTL_ENABLE
-#include "dpctl_sycl_types.h"
-#include "dpctl_sycl_queue_manager.h"
-#endif
+#include "common/backend/policy.h"
 
 namespace oneapi::dal::python {
+
 template <typename... Args>
-auto infer(Args &&... args) {
-#if defined(DPCTL_ENABLE)
-    auto dpctl_queue = DPCTLQueueMgr_GetCurrentQueue();
-    if (dpctl_queue != NULL) {
-        cl::sycl::queue &sycl_queue = *reinterpret_cast<cl::sycl::queue *>(dpctl_queue);
-        return dal::infer(sycl_queue, std::forward<Args>(args)...);
-    }
-    else {
-        throw std::runtime_error("Cannot set daal context: Pointer to queue object is NULL");
-    }
-#elif defined(ONEDAL_DATA_PARALLEL)
-    cl::sycl::queue sycl_queue(sycl::host_selector{});
-    return dal::infer(sycl_queue, std::forward<Args>(args)...);
-#else
-    return dal::infer(std::forward<Args>(args)...);
-#endif
+auto infer(const policy* policy, Args &&... args) {
+    ONEDAL_ASSERT(policy, "policy object is null");
+    return policy->infer(std::forward<Args>(args)...);
 }
 
 } // namespace oneapi::dal::python

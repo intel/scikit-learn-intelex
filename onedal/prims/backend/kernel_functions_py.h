@@ -19,12 +19,14 @@
 #define NO_IMPORT_ARRAY
 
 #include "backend/data/data.h"
+#include "common/backend/policy.h"
 
 #include "oneapi/dal/algo/linear_kernel.hpp"
 #include "oneapi/dal/algo/rbf_kernel.hpp"
 #include "oneapi/dal/algo/polynomial_kernel.hpp"
 
 namespace oneapi::dal::python {
+
 struct ONEDAL_BACKEND_EXPORT linear_kernel_params {
     double scale;
     double shift;
@@ -36,7 +38,7 @@ public:
     linear_kernel_compute(linear_kernel_params* params);
 
     // attributes from compute_input
-    void compute(PyObject* x, PyObject* y);
+    void compute(const policy* policy, PyObject* x, PyObject* y);
 
     // attributes from compute_result
     PyObject* get_values();
@@ -59,7 +61,7 @@ public:
     rbf_kernel_compute(rbf_kernel_params* params);
 
     // attributes from compute_input
-    void compute(PyObject* x, PyObject* y);
+    void compute(const policy* policy, PyObject* x, PyObject* y);
 
     // attributes from compute_result
     PyObject* get_values();
@@ -81,7 +83,7 @@ public:
     polynomial_kernel_compute(polynomial_kernel_params* params);
 
     // attributes from compute_input
-    void compute(PyObject* x, PyObject* y);
+    void compute(const policy* policy, PyObject* x, PyObject* y);
 
     // attributes from compute_result
     PyObject* get_values();

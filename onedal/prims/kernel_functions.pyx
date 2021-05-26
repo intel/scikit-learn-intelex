@@ -51,8 +51,8 @@ cdef class PyLinearKernelCompute:
     def __dealloc__(self):
         del self.thisptr
 
-    def compute(self, x, y):
-        self.thisptr.compute(<PyObject *>x, <PyObject *>y)
+    def compute(self, PyPolicy p, x, y):
+        self.thisptr.compute(p.get_cref(), <PyObject *>x, <PyObject *>y)
 
     def get_values(self):
         return <object>self.thisptr.get_values()
@@ -81,8 +81,8 @@ cdef class PyRbfKernelCompute:
     def __dealloc__(self):
         del self.thisptr
 
-    def compute(self, x, y):
-        self.thisptr.compute(<PyObject *>x, <PyObject *>y)
+    def compute(self, PyPolicy p, x, y):
+        self.thisptr.compute(p.get_cref(), <PyObject *>x, <PyObject *>y)
 
     def get_values(self):
         return <object>self.thisptr.get_values()
@@ -105,8 +105,8 @@ cdef class PyPolyKernelCompute:
     def __dealloc__(self):
         del self.thisptr
 
-    def compute(self, x, y):
-        self.thisptr.compute(<PyObject *>x, <PyObject *>y)
+    def compute(self, PyPolicy p, x, y):
+        self.thisptr.compute(p.get_cref(), <PyObject *>x, <PyObject *>y)
 
     def get_values(self):
         return <object>self.thisptr.get_values()

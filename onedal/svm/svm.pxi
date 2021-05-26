@@ -49,7 +49,7 @@ cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
 
     cdef cppclass svm_train[task_t]:
         svm_train(svm_params *) except +
-        void train(PyObject * data, PyObject * labels, PyObject * weights) except +
+        void train(const policy* p, PyObject * data, PyObject * labels, PyObject * weights) except +
         int get_support_vector_count()  except +
         PyObject * get_support_vectors() except +
         PyObject * get_support_indices() except +
@@ -59,7 +59,7 @@ cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
 
     cdef cppclass svm_infer[task_t]:
         svm_infer(svm_params *) except +
-        void infer(PyObject * data, PyObject * support_vectors, PyObject * coeffs, PyObject * biases) except +
-        void infer(PyObject * data, svm_model[task_t] * model) except +
+        void infer(const policy* p, PyObject * data, PyObject * support_vectors, PyObject * coeffs, PyObject * biases) except +
+        void infer(const policy* p, PyObject * data, svm_model[task_t] * model) except +
         PyObject * get_labels() except +
         PyObject * get_decision_function() except +

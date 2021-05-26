@@ -39,7 +39,7 @@ KernelDescriptor get_kernel_params(const svm_params &params) {
 }
 
 template <typename Result, typename Descriptor, typename... Args>
-Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, Args &&... args) {
+Result compute_descriptor_impl(const policy* policy, Descriptor descriptor, const svm_params &params, Args &&... args) {
     using Task = typename Result::task_t;
     descriptor.set_c(params.c)
         .set_accuracy_threshold(params.accuracy_threshold)
@@ -55,20 +55,21 @@ Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, 
         descriptor.set_epsilon(params.epsilon);
     }
     if constexpr (std::is_same_v<Result, typename svm::train_result<Task>>) {
-        return python::train(descriptor, std::forward<Args>(args)...);
+        return python::train(policy, descriptor, std::forward<Args>(args)...);
     }
     else if constexpr (std::is_same_v<Result, typename svm::infer_result<Task>>) {
-        return python::infer(descriptor, std::forward<Args>(args)...);
+        return python::infer(policy, descriptor, std::forward<Args>(args)...);
     }
 }
 
 template <typename Result, typename... Args>
-Result compute_impl(svm_params &params, data_type data_type_input, Args &&... args) {
+Result compute_impl(const policy* policy, svm_params &params, data_type data_type_input, Args &&... args) {
     using Task = typename Result::task_t;
     if constexpr (std::is_same_v<Task, svm::task::classification>) {
         if (data_type_input == data_type::float32 && params.method == "smo" &&
             params.kernel == "linear") {
             return compute_descriptor_impl<Result>(
+                policy,
                 svm::descriptor<float, svm::method::smo, Task, linear_kernel::descriptor<float>>{},
                 params,
                 std::forward<Args>(args)...);
@@ -76,6 +77,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
         else if (data_type_input == data_type::float32 && params.method == "smo" &&
                  params.kernel == "rbf") {
             return compute_descriptor_impl<Result>(
+                policy,
                 svm::descriptor<float, svm::method::smo, Task, rbf_kernel::descriptor<float>>{},
                 params,
                 std::forward<Args>(args)...);
@@ -84,6 +86,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
         if (data_type_input == data_type::float32 && params.method == "smo" &&
             params.kernel == "poly") {
             return compute_descriptor_impl<Result>(
+                policy,
                 svm::descriptor<float,
                                 svm::method::smo,
                                 Task,
@@ -94,6 +97,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
         if (data_type_input == data_type::float64 && params.method == "smo" &&
             params.kernel == "linear") {
             return compute_descriptor_impl<Result>(
+                policy,
                 svm::
                     descriptor<double, svm::method::smo, Task, linear_kernel::descriptor<double>>{},
                 params,
@@ -102,6 +106,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
         else if (data_type_input == data_type::float64 && params.method == "smo" &&
                  params.kernel == "rbf") {
             return compute_descriptor_impl<Result>(
+                policy,
                 svm::descriptor<double, svm::method::smo, Task, rbf_kernel::descriptor<double>>{},
                 params,
                 std::forward<Args>(args)...);
@@ -109,6 +114,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
         else if (data_type_input == data_type::float64 && params.method == "smo" &&
                  params.kernel == "poly") {
             return compute_descriptor_impl<Result>(
+                policy,
                 svm::descriptor<double,
                                 svm::method::smo,
                                 Task,
@@ -121,6 +127,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
     if (data_type_input == data_type::float32 && params.method == "thunder" &&
         params.kernel == "linear") {
         return compute_descriptor_impl<Result>(
+            policy,
             svm::descriptor<float, svm::method::thunder, Task, linear_kernel::descriptor<float>>{},
             params,
             std::forward<Args>(args)...);
@@ -128,6 +135,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
     else if (data_type_input == data_type::float32 && params.method == "thunder" &&
              params.kernel == "rbf") {
         return compute_descriptor_impl<Result>(
+            policy,
             svm::descriptor<float, svm::method::thunder, Task, rbf_kernel::descriptor<float>>{},
             params,
             std::forward<Args>(args)...);
@@ -135,6 +143,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
     else if (data_type_input == data_type::float32 && params.method == "thunder" &&
              params.kernel == "poly") {
         return compute_descriptor_impl<Result>(
+            policy,
             svm::descriptor<float,
                             svm::method::thunder,
                             Task,
@@ -145,6 +154,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
     else if (data_type_input == data_type::float64 && params.method == "thunder" &&
              params.kernel == "linear") {
         return compute_descriptor_impl<Result>(
+            policy,
             svm::
                 descriptor<double, svm::method::thunder, Task, linear_kernel::descriptor<double>>{},
             params,
@@ -153,6 +163,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
     else if (data_type_input == data_type::float64 && params.method == "thunder" &&
              params.kernel == "rbf") {
         return compute_descriptor_impl<Result>(
+            policy,
             svm::descriptor<double, svm::method::thunder, Task, rbf_kernel::descriptor<double>>{},
             params,
             std::forward<Args>(args)...);
@@ -160,6 +171,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
     else if (data_type_input == data_type::float64 && params.method == "thunder" &&
              params.kernel == "poly") {
         return compute_descriptor_impl<Result>(
+            policy,
             svm::descriptor<double,
                             svm::method::thunder,
                             Task,
@@ -200,12 +212,13 @@ svm_train<Task>::svm_train(svm_params *params) : params_(*params) {}
 
 // attributes from train_input
 template <typename Task>
-void svm_train<Task>::train(PyObject *data, PyObject *labels, PyObject *weights) {
+void svm_train<Task>::train(const policy* policy, PyObject *data, PyObject *labels, PyObject *weights) {
     auto data_table = convert_to_table(data);
     auto labels_table = convert_to_table(labels);
     auto weights_table = convert_to_table(weights);
     auto data_type = data_table.get_metadata().get_data_type(0);
-    train_result_ = compute_impl<decltype(train_result_)>(params_,
+    train_result_ = compute_impl<decltype(train_result_)>(policy,
+                                                          params_,
                                                           data_type,
                                                           data_table,
                                                           labels_table,
@@ -254,7 +267,8 @@ svm_infer<Task>::svm_infer(svm_params *params) : params_(*params) {}
 
 // attributes from infer_input.hpp expect model
 template <typename Task>
-void svm_infer<Task>::infer(PyObject *data,
+void svm_infer<Task>::infer(const policy* policy,
+                            PyObject *data,
                             PyObject *support_vectors,
                             PyObject *coeffs,
                             PyObject *biases) {
@@ -271,15 +285,15 @@ void svm_infer<Task>::infer(PyObject *data,
     if constexpr (std::is_same_v<Task, svm::task::classification>) {
         model.set_first_class_label(0).set_second_class_label(1);
     }
-    infer_result_ = compute_impl<decltype(infer_result_)>(params_, data_type, model, data_table);
+    infer_result_ = compute_impl<decltype(infer_result_)>(policy, params_, data_type, model, data_table);
 }
 
 // attributes from infer_input.hpp expect model
 template <typename Task>
-void svm_infer<Task>::infer(PyObject *data, svm_model<Task> *model) {
+void svm_infer<Task>::infer(const policy* policy, PyObject *data, svm_model<Task> *model) {
     auto data_table = convert_to_table(data);
     auto data_type = data_table.get_metadata().get_data_type(0);
-    infer_result_ = compute_impl<decltype(infer_result_)>(params_,
+    infer_result_ = compute_impl<decltype(infer_result_)>(policy, params_,
                                                           data_type,
                                                           model->get_onedal_model(),
                                                           data_table);

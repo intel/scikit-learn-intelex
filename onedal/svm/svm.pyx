@@ -73,8 +73,8 @@ cdef class PyClassificationSvmTrain:
     def __dealloc__(self):
         del self.thisptr
 
-    def train(self, data, labels, weights):
-        self.thisptr.train( < PyObject * >data, < PyObject * >labels, < PyObject * >weights)
+    def train(self, PyPolicy p, data, labels, weights):
+        self.thisptr.train( p.get_cref(), < PyObject * >data, < PyObject * >labels, < PyObject * >weights)
 
     def get_support_vectors(self):
         return < object > self.thisptr.get_support_vectors()
@@ -103,11 +103,11 @@ cdef class PyClassificationSvmInfer:
     def __dealloc__(self):
         del self.thisptr
 
-    def infer(self, data, PyClassificationSvmModel model):
-        self.thisptr.infer( < PyObject * >data, model.thisptr)
+    def infer(self, PyPolicy p, data, PyClassificationSvmModel model):
+        self.thisptr.infer( p.get_cref(), < PyObject * >data, model.thisptr)
 
-    def infer_builder(self, data, support_vectors, coeffs, biases):
-        self.thisptr.infer( < PyObject * >data, < PyObject * >support_vectors, < PyObject * >coeffs, < PyObject * >biases)
+    def infer_builder(self, PyPolicy p, data, support_vectors, coeffs, biases):
+        self.thisptr.infer( p.get_cref(), < PyObject * >data, < PyObject * >support_vectors, < PyObject * >coeffs, < PyObject * >biases)
 
     def get_labels(self):
         return < object > self.thisptr.get_labels()
@@ -147,8 +147,8 @@ cdef class PyRegressionSvmTrain:
     def __dealloc__(self):
         del self.thisptr
 
-    def train(self, data, labels, weights):
-        self.thisptr.train( < PyObject * >data, < PyObject * >labels, < PyObject * >weights)
+    def train(self, PyPolicy p, data, labels, weights):
+        self.thisptr.train( p.get_cref(), < PyObject * >data, < PyObject * >labels, < PyObject * >weights)
 
     def get_support_vectors(self):
         return < object > self.thisptr.get_support_vectors()
@@ -177,11 +177,11 @@ cdef class PyRegressionSvmInfer:
     def __dealloc__(self):
         del self.thisptr
 
-    def infer(self, data, PyRegressionSvmModel model):
-        self.thisptr.infer( < PyObject * >data, model.thisptr)
+    def infer(self, PyPolicy p, data, PyRegressionSvmModel model):
+        self.thisptr.infer( p.get_cref(), < PyObject * >data, model.thisptr)
 
-    def infer_builder(self, data, support_vectors, coeffs, biases):
-        self.thisptr.infer( < PyObject * >data, < PyObject * >support_vectors, < PyObject * >coeffs, < PyObject * >biases)
+    def infer_builder(self, PyPolicy p, data, support_vectors, coeffs, biases):
+        self.thisptr.infer( p.get_cref(), < PyObject * >data, < PyObject * >support_vectors, < PyObject * >coeffs, < PyObject * >biases)
 
     def get_labels(self):
         return < object > self.thisptr.get_labels()

@@ -19,9 +19,11 @@
 #define NO_IMPORT_ARRAY
 
 #include "oneapi/dal/algo/svm.hpp"
+#include "common/backend/policy.h"
 #include "backend/data/data.h"
 
 namespace oneapi::dal::python {
+
 struct svm_params {
     std::string kernel;
     std::string method;
@@ -60,7 +62,7 @@ public:
     svm_train(svm_params* params);
 
     // attributes from train_input
-    void train(PyObject* data, PyObject* labels, PyObject* weights);
+    void train(const policy* p, PyObject* data, PyObject* labels, PyObject* weights);
 
     // attributes from train_result
     svm_model<Task> get_model();
@@ -92,10 +94,10 @@ public:
     svm_infer(svm_params* params);
 
     // attributes from infer_input.hpp expect model
-    void infer(PyObject* data, svm_model<Task>* model);
+    void infer(const policy* p, PyObject* data, svm_model<Task>* model);
 
     // attributes from infer_input.hpp expect model
-    void infer(PyObject* data, PyObject* support_vectors, PyObject* coeffs, PyObject* biases);
+    void infer(const policy* p, PyObject* data, PyObject* support_vectors, PyObject* coeffs, PyObject* biases);
 
     // attributes from infer_result
     PyObject* get_labels();

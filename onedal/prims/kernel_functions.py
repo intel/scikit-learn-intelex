@@ -15,7 +15,7 @@
 #===============================================================================
 
 import numpy as np
-from onedal.common import _check_array
+from onedal.common import _check_array, _get_current_policy
 
 try:
     from _onedal4py_dpc import (
@@ -69,7 +69,7 @@ def linear_kernel(X, Y=None, scale=1.0, shift=0.0):
 
     _onedal_params = PyLinearKernelParams(scale, shift)
     c_kernel = PyLinearKernelCompute(_onedal_params)
-    c_kernel.compute(X, Y)
+    c_kernel.compute(_get_current_policy(), X, Y)
     return c_kernel.get_values()
 
 
@@ -108,7 +108,7 @@ def rbf_kernel(X, Y=None, gamma=None):
     sigma = np.sqrt(0.5 / gamma)
     _onedal_params = PyRbfKernelParams(sigma=sigma)
     c_kernel = PyRbfKernelCompute(_onedal_params)
-    c_kernel.compute(X, Y)
+    c_kernel.compute(_get_current_policy(), X, Y)
     return c_kernel.get_values()
 
 
@@ -147,5 +147,5 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
     _onedal_params = PyPolyKernelParams(
         scale=gamma, shift=coef0, degree=degree)
     c_kernel = PyPolyKernelCompute(_onedal_params)
-    c_kernel.compute(X, Y)
+    c_kernel.compute(_get_current_policy(), X, Y)
     return c_kernel.get_values()

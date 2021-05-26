@@ -28,7 +28,8 @@ from ..common import (
     _get_sample_weight,
     _check_is_fitted,
     _column_or_1d,
-    _check_n_features
+    _check_n_features,
+    _get_current_policy
 )
 
 try:
@@ -165,7 +166,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
 
         c_svm = Computer(self._get_onedal_params())
-        c_svm.train(X, y, sample_weight)
+        c_svm.train(_get_current_policy(), X, y, sample_weight)
 
         self.dual_coef_ = c_svm.get_coeffs().T
         self.support_vectors_ = c_svm.get_support_vectors()
@@ -199,9 +200,10 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             c_svm = Computer(self._get_onedal_params())
 
             if hasattr(self, '_onedal_model'):
-                c_svm.infer(X, self._onedal_model)
+                c_svm.infer(_get_current_policy(), X, self._onedal_model)
             else:
-                c_svm.infer_builder(X, self.support_vectors_,
+                c_svm.infer_builder(_get_current_policy(),
+                                    X, self.support_vectors_,
                                     self.dual_coef_.T, self.intercept_)
             y = c_svm.get_labels()
         return y
@@ -232,9 +234,9 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         _check_n_features(self, X, False)
         c_svm = PyClassificationSvmInfer(self._get_onedal_params())
         if hasattr(self, '_onedal_model'):
-            c_svm.infer(X, self._onedal_model)
+            c_svm.infer(_get_current_policy(), X, self._onedal_model)
         else:
-            c_svm.infer_builder(X, self.support_vectors_,
+            c_svm.infer_builder(_get_current_policy(), X, self.support_vectors_,
                                 self.dual_coef_.T, self.intercept_)
         decision_function = c_svm.get_decision_function()
         if len(self.classes_) == 2:
