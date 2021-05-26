@@ -26,3 +26,4 @@ npc.import_array()
 
 include "svm/svm.pyx"
 include "prims/kernel_functions.pyx"
+include "common/policy.pyx"
