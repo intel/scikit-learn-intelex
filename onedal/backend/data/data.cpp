@@ -116,18 +116,45 @@ void free_capsule(PyObject *cap) {
     }
 }
 
+static dal::array<byte_t> transfer_to_host(const dal::array<byte_t>& array) {
+    #ifdef ONEDAL_DATA_PARALLEL
+    auto opt_queue = array.get_queue();
+    if (opt_queue.has_value()) {
+        auto device = opt_queue->get_device();
+        if (!device.is_cpu() && !device.is_host()) {
+            const auto* device_data = array.get_data();
+
+            auto memory_kind = sycl::get_pointer_type(device_data, opt_queue->get_context());
+            if (memory_kind == sycl::usm::alloc::unknown) {
+                throw std::runtime_error("[convert_to_numpy] Unknown memory type");
+            }
+            if (memory_kind == sycl::usm::alloc::device) {
+                auto host_array = dal::array<byte_t>::empty(array.get_count());
+                opt_queue->memcpy(host_array.get_mutable_data(), device_data, array.get_size());
+                return host_array;
+            }
+        }
+    }
+    #endif
+
+    return array;
+}
+
 template <int NpType>
-static PyObject *convert_to_numpy_impl(dal::array<byte_t> &array,
+static PyObject *convert_to_numpy_impl(const dal::array<byte_t> &array,
                                        std::int64_t row_count,
                                        std::int64_t column_count) {
     npy_intp dims[2] = { static_cast<npy_intp>(row_count), static_cast<npy_intp>(column_count) };
-    array.need_mutable_data();
+    auto host_array = transfer_to_host(array);
+    host_array.need_mutable_data();
+    auto* bytes = host_array.get_mutable_data();
+
     PyObject *obj =
-        PyArray_SimpleNewFromData(2, dims, NpType, static_cast<void *>(array.get_mutable_data()));
+        PyArray_SimpleNewFromData(2, dims, NpType, static_cast<void *>(bytes));
     if (!obj)
         throw std::invalid_argument("Conversion to numpy array failed");
 
-    void *opaque_value = static_cast<void *>(new dal::array<byte_t>(array));
+    void *opaque_value = static_cast<void *>(new dal::array<byte_t>(host_array));
     PyObject *cap = PyCapsule_New(opaque_value, NULL, free_capsule);
     PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), cap);
     return obj;
