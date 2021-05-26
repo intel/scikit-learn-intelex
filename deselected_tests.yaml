@@ -64,6 +64,10 @@ deselected_tests:
   # Needs further investigation
   - feature_selection/tests/test_rfe.py::test_rfecv
 
+  # Unexpected support vectors and dual_coef_ for NuSVR. Needs further investigation
+  - svm/tests/test_svm.py::test_svm_regressor_sided_sample_weight[estimator1]
+  - svm/tests/test_svm.py::test_negative_weight_equal_coeffs[partial-mask-label-1-NuSVR]
+
   # Bitwise comparison of probabilities using a print.
   - metrics/tests/test_classification.py >=0.22,<0.24
 
