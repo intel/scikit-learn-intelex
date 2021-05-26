@@ -23,6 +23,7 @@ except ImportError:
         PyPolicy
     )
 
+
 def _get_current_policy():
     import sys
     if 'daal4py.oneapi' in sys.modules:
