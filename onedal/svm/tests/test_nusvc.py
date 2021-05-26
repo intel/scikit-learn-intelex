@@ -125,7 +125,7 @@ def _test_cancer_rbf_compare_with_sklearn(nu, gamma):
 
     print(result, expected)
     assert result > 0.4
-    assert result > expected - 1e-5
+    assert abs(result - expected) < 1e-4
 
 
 @pytest.mark.parametrize('gamma', ['scale', 'auto'])
@@ -147,7 +147,7 @@ def _test_cancer_linear_compare_with_sklearn(nu):
 
     print(result, expected)
     assert result > 0.5
-    assert result > expected - 1e-3
+    assert abs(result - expected) < 1e-3
 
 
 @pytest.mark.parametrize('nu', [0.25, 0.5])
@@ -168,7 +168,7 @@ def _test_cancer_poly_compare_with_sklearn(params):
 
     print(result, expected)
     assert result > 0.5
-    assert result > expected - 1e-5
+    assert abs(result - expected) < 1e-4
 
 
 @pytest.mark.parametrize('params', [

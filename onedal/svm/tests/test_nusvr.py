@@ -111,7 +111,7 @@ def _test_boston_rbf_compare_with_sklearn(C, nu, gamma):
 
     print(result, expected)
     assert result > 0.4
-    assert result > expected - 1e-5
+    assert abs(result - expected) < 1e-4
 
 
 @pytest.mark.parametrize('gamma', ['scale', 'auto'])
@@ -134,7 +134,7 @@ def _test_boston_linear_compare_with_sklearn(C, nu):
 
     print(result, expected)
     assert result > 0.5
-    assert result > expected - 1e-3
+    assert abs(result - expected) < 1e-3
 
 
 @pytest.mark.parametrize('C', [0.001, 0.1])
@@ -156,7 +156,7 @@ def _test_boston_poly_compare_with_sklearn(params):
 
     print(result, expected)
     assert result > 0.5
-    assert result > expected - 1e-5
+    assert abs(result - expected) < 1e-4
 
 
 @pytest.mark.parametrize('params', [
