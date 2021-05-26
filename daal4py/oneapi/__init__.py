@@ -36,6 +36,8 @@ if "Windows" in platform.system():
 try:
     from _oneapi import *
     from _oneapi import _get_sycl_ctxt, _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
+except ModuleNotFoundError:
+    raise
 except ImportError:
     import daal4py
     version = daal4py._get__version__()[1:-1].split(', ')
@@ -48,5 +50,3 @@ except ImportError:
         'or '
         f'`conda install -c intel dpcpp_cpp_rt>={major_version}.{minnor_version}.*`'
     )
-except:
-    raise
