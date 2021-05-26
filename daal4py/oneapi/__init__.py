@@ -41,12 +41,12 @@ except ModuleNotFoundError:
 except ImportError:
     import daal4py
     version = daal4py._get__version__()[1:-1].split(', ')
-    major_version, minnor_version = version[0], version[1]
+    major_version, minor_version = version[0], version[1]
     raise ImportError(
-        f'dpcpp_cpp_rt >= {major_version}.{minnor_version} '
-        'needs to be installed or upgraded in order to use this module.\n'
-        'You can download or upgrade with help command:\n'
-        f'`pip install --upgrade dpcpp_cpp_rt>={major_version}.{minnor_version}.*` '
+        f'dpcpp_cpp_rt >= {major_version}.{minor_version} '
+        'has to be installed or upgraded to use this module.\n'
+        'You can download or upgrade it using the following commands:\n'
+        f'`pip install --upgrade dpcpp_cpp_rt>={major_version}.{minor_version}.*` '
         'or '
-        f'`conda install -c intel dpcpp_cpp_rt>={major_version}.{minnor_version}.*`'
+        f'`conda install -c intel dpcpp_cpp_rt>={major_version}.{minor_version}.*`'
     )

@@ -14,7 +14,7 @@ Running the latest scikit-learn test suite with Intel(R) Extension for Scikit-le
 
 ## 👀 Follow us on Medium
 
-We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn with the help of Intel(R) Extension for Scikit-learn. Here are our latest blogs:
+We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis with the help of Intel(R) Extension for Scikit-learn. Here are our latest blogs:
 
 - [Leverage Intel Optimizations in Scikit-Learn](https://medium.com/intel-analytics-software/leverage-intel-optimizations-in-scikit-learn-f562cb9d5544)
 - [Intel Gives Scikit-Learn the Performance Boost Data Scientists Need](https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18)
@@ -90,8 +90,8 @@ conda install scikit-learn-intelex -c intel
 
 </details>
 
-⚠️ Note: *dpcpp support is optional dependency (required dependencies for support dpcpp
-will not be downloaded). Need to manually install ***dpcpp_cpp_rt*** package*
+⚠️ Note. *GPU support is an optional. Required dependencies for GPU support
+will not be downloaded. You need to manually install ***dpcpp_cpp_rt*** package.*
 
 <details><summary>[Click to expand] ℹ️ How to install dpcpp_cpp_rt package </summary>
 
