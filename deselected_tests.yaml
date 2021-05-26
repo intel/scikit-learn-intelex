@@ -48,10 +48,17 @@ deselected_tests:
   - tests/test_common.py::test_estimators[SVR()-check_estimators_fit_returns_self(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[SVR()-check_regressors_train(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[SVR()-check_regressors_train(readonly_memmap=True,X_dtype=float32)]
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimators_fit_returns_self(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[NuSVC()-check_classifiers_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[NuSVC()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
+  - tests/test_common.py::test_estimators[NuSVR()-check_estimators_fit_returns_self(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[NuSVR()-check_regressors_train(readonly_memmap=True)]
 
   # This test needs a warning from sklearn. sklearnex raises the same warning
   - tests/test_common.py::test_estimators[SVC()-check_supervised_y_2d]
   - tests/test_common.py::test_estimators[SVR()-check_supervised_y_2d]
+  - tests/test_common.py::test_estimators[NuSVC()-check_supervised_y_2d]
+  - tests/test_common.py::test_estimators[NuSVR()-check_supervised_y_2d]
 
   # Unexpected shape of RFECV.transform() witg SVC estimator. SVC has different accuracy compared with stock Scikit-learn.
   # Needs further investigation
