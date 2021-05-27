@@ -33,5 +33,20 @@ if "Windows" in platform.system():
     os.environ['PATH'] = current_path + os.pathsep + os.environ['PATH']
     os.environ['PATH'] = installed_package_path + os.pathsep + os.environ['PATH']
 
-from _oneapi import *
-from _oneapi import _get_sycl_ctxt, _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
+try:
+    from _oneapi import *
+    from _oneapi import _get_sycl_ctxt, _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
+except ModuleNotFoundError:
+    raise
+except ImportError:
+    import daal4py
+    version = daal4py._get__version__()[1:-1].split(', ')
+    major_version, minor_version = version[0], version[1]
+    raise ImportError(
+        f'dpcpp_cpp_rt >= {major_version}.{minor_version} '
+        'has to be installed or upgraded to use this module.\n'
+        'You can download or upgrade it using the following commands:\n'
+        f'`pip install --upgrade dpcpp_cpp_rt>={major_version}.{minor_version}.*` '
+        'or '
+        f'`conda install -c intel dpcpp_cpp_rt>={major_version}.{minor_version}.*`'
+    )
