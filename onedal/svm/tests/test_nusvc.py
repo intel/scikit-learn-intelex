@@ -36,7 +36,7 @@ def _test_libsvm_parameters(array_constr, dtype):
     assert_array_almost_equal(
         clf.dual_coef_, [[-0.04761905, -0.0952381, 0.0952381, 0.04761905]])
     assert_array_equal(clf.support_, [0, 1, 3, 4])
-    assert_array_equal(clf.support_vectors_, (X[0], X[1], X[3], X[4]))
+    assert_array_equal(clf.support_vectors_, X[clf.support_])
     assert_array_equal(clf.intercept_, [0.])
     assert_array_equal(clf.predict(X), y)
 
@@ -123,7 +123,6 @@ def _test_cancer_rbf_compare_with_sklearn(nu, gamma):
     clf.fit(cancer.data, cancer.target)
     expected = clf.score(cancer.data, cancer.target)
 
-    print(result, expected)
     assert result > 0.4
     assert abs(result - expected) < 1e-4
 
@@ -145,7 +144,6 @@ def _test_cancer_linear_compare_with_sklearn(nu):
     clf.fit(cancer.data, cancer.target)
     expected = clf.score(cancer.data, cancer.target)
 
-    print(result, expected)
     assert result > 0.5
     assert abs(result - expected) < 1e-3
 
@@ -166,7 +164,6 @@ def _test_cancer_poly_compare_with_sklearn(params):
     clf.fit(cancer.data, cancer.target)
     expected = clf.score(cancer.data, cancer.target)
 
-    print(result, expected)
     assert result > 0.5
     assert abs(result - expected) < 1e-4
 
