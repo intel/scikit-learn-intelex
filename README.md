@@ -90,7 +90,7 @@ conda install scikit-learn-intelex -c intel
 
 </details>
 
-⚠️ Note. *GPU support is an optional. Required dependencies for GPU support
+⚠️ Note: *GPU support is an optional dependency. Required dependencies for GPU support
 will not be downloaded. You need to manually install ***dpcpp_cpp_rt*** package.*
 
 <details><summary>[Click to expand] ℹ️ How to install dpcpp_cpp_rt package </summary>
