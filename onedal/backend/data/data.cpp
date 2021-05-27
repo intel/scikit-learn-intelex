@@ -272,7 +272,7 @@ static PyObject *convert_to_py_from_csr_impl(const detail::csr_table &table) {
 PyObject *convert_to_numpy(const dal::table &input) {
     PyObject *res = nullptr;
     if (!input.has_data()) {
-        throw std::invalid_argument("Empty data");
+        throw std::invalid_argument("Empty data to output result from oneDAL");
     }
     if (input.get_kind() == dal::homogen_table::kind()) {
         const auto &homogen_input = static_cast<const dal::homogen_table &>(input);
@@ -293,7 +293,8 @@ PyObject *convert_to_numpy(const dal::table &input) {
 #undef MAKE_NYMPY_FROM_HOMOGEN
         }
         else {
-            throw std::invalid_argument("oneDAL have don't table row major format");
+            throw std::invalid_argument(
+                "Output oneDAL table doesn't have row major format for homogen table");
         }
     }
     else if (input.get_kind() == dal::detail::csr_table::kind()) {
@@ -308,7 +309,7 @@ PyObject *convert_to_numpy(const dal::table &input) {
 #undef MAKE_NYMPY_FROM_HOMOGEN
     }
     else {
-        throw std::invalid_argument("oneDAL table not homogen format have");
+        throw std::invalid_argument("Output oneDAL table doesn't have homogen or csr format");
     }
     return res;
 }
