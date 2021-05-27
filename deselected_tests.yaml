@@ -32,6 +32,7 @@ deselected_tests:
   - svm/tests/test_sparse.py::test_sparse_realdata
   # decision function different 1.83697605e-06
   - ensemble/tests/test_bagging.py::test_sparse_classification
+  - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
 
   # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with custom and precompute kernel
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
