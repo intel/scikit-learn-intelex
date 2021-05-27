@@ -138,7 +138,6 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
     @_reset_context
     def _fit(self, X, y, sample_weight, Computer):
-
         if hasattr(self, 'decision_function_shape'):
             if self.decision_function_shape not in ('ovr', 'ovo', None):
                 raise ValueError(
@@ -153,10 +152,13 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     f"requires y to be passed, but the target y is None."
                 )
         X, y = _check_X_y(
-            X, y, dtype=[np.float64, np.float32], force_all_finite=True)
+            X, y, dtype=[np.float64, np.float32],
+            force_all_finite=True, accept_sparse='csr')
         y = self._validate_targets(y, X.dtype)
         sample_weight = _get_sample_weight(
             X, y, sample_weight, self.class_weight_, self.classes_, self.svm_type)
+
+        self._sparse = sp.isspmatrix(X)
 
         if self.kernel == 'linear':
             self._scale_, self._sigma_ = 1.0, 1.0
@@ -167,8 +169,13 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         c_svm = Computer(self._get_onedal_params())
         c_svm.train(X, y, sample_weight)
 
-        self.dual_coef_ = c_svm.get_coeffs().T
-        self.support_vectors_ = c_svm.get_support_vectors()
+        if self._sparse:
+            self.dual_coef_ = sp.csr_matrix(c_svm.get_coeffs().T)
+            self.support_vectors_ = sp.csr_matrix(c_svm.get_support_vectors())
+        else:
+            self.dual_coef_ = c_svm.get_coeffs().T
+            self.support_vectors_ = c_svm.get_support_vectors()
+
         self.intercept_ = c_svm.get_biases().ravel()
         self.support_ = c_svm.get_support_indices().ravel().astype('int')
         self.n_features_in_ = X.shape[1]
@@ -193,9 +200,20 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 len(self.classes_) > 2:
             y = np.argmax(self.decision_function(X), axis=1)
         else:
-            X = _check_array(
-                X, dtype=[np.float64, np.float32], force_all_finite=True)
+            X = _check_array(X, dtype=[np.float64, np.float32],
+                             force_all_finite=True, accept_sparse='csr')
             _check_n_features(self, X, False)
+
+            if self._sparse and not sp.isspmatrix(X):
+                X = sp.csr_matrix(X)
+            if self._sparse:
+                X.sort_indices()
+
+            if sp.issparse(X) and not self._sparse and not callable(self.kernel):
+                raise ValueError(
+                    "cannot use sparse input in %r trained on dense data"
+                    % type(self).__name__)
+
             c_svm = Computer(self._get_onedal_params())
 
             if hasattr(self, '_onedal_model'):
@@ -227,9 +245,20 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     @_reset_context
     def _decision_function(self, X):
         _check_is_fitted(self)
-        X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=False)
+        X = _check_array(X, dtype=[np.float64, np.float32],
+                         force_all_finite=False, accept_sparse='csr')
         _check_n_features(self, X, False)
+
+        if self._sparse and not sp.isspmatrix(X):
+            X = sp.csr_matrix(X)
+        if self._sparse:
+            X.sort_indices()
+
+        if sp.issparse(X) and not self._sparse and not callable(self.kernel):
+            raise ValueError(
+                "cannot use sparse input in %r trained on dense data"
+                % type(self).__name__)
+
         c_svm = PyClassificationSvmInfer(self._get_onedal_params())
         if hasattr(self, '_onedal_model'):
             c_svm.infer(X, self._onedal_model)

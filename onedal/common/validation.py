@@ -15,6 +15,8 @@
 #===============================================================================
 
 import numpy as np
+from scipy import sparse as sp
+
 import numbers
 import warnings
 from scipy.sparse import issparse, dok_matrix, lil_matrix
@@ -86,12 +88,16 @@ def _validate_targets(y, class_weight, dtype):
 
 
 def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
-                 copy=False, force_all_finite=True, ensure_2d=True):
+                 copy=False, force_all_finite=True,
+                 ensure_2d=True, accept_large_sparse=True):
     # TODO
     from sklearn.utils.validation import check_array
     array = check_array(array=array, dtype=dtype, accept_sparse=accept_sparse,
                         order=order, copy=copy, force_all_finite=force_all_finite,
-                        ensure_2d=ensure_2d)
+                        ensure_2d=ensure_2d, accept_large_sparse=accept_large_sparse)
+
+    if sp.isspmatrix(array):
+        return array
 
     # TODO: If data is not contiguous copy to contiguous
     # Need implemeted numpy table in oneDAL
@@ -101,23 +107,27 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
 
 
 def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=False,
-               force_all_finite=True, ensure_2d=True, y_numeric=False):
+               force_all_finite=True, ensure_2d=True,
+               accept_large_sparse=True, y_numeric=False):
     if y is None:
         raise ValueError("y cannot be None")
 
     X = _check_array(X, accept_sparse=accept_sparse,
                      dtype=dtype, order=order, copy=copy,
                      force_all_finite=force_all_finite,
-                     ensure_2d=ensure_2d)
+                     ensure_2d=ensure_2d,
+                     accept_large_sparse=accept_large_sparse)
 
     y = _column_or_1d(y, warn=True)
     if y_numeric and y.dtype.kind == 'O':
         y = y.astype(np.float64)
-    # TODO: replace on daal4py
-    from sklearn.utils.validation import assert_all_finite
+    try:
+        from daal4py.utils.validation import _daal_assert_all_finite as assert_all_finite
+    except ImportError:
+        from sklearn.utils.validation import assert_all_finite
     assert_all_finite(y)
 
-    lengths = [len(X), len(y)]
+    lengths = [X.shape[0], y.shape[0]]
     uniques = np.unique(lengths)
     if len(uniques) > 1:
         raise ValueError("Found input variables with inconsistent numbers of"

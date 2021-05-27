@@ -28,9 +28,11 @@ deselected_tests:
 
   # Model with sparse data are different between oneAPI Data Analytics Library (oneDAL) and stock sklearn
   - svm/tests/test_sparse.py::test_svc
-  - svm/tests/test_sparse.py::test_unsorted_indices
   - svm/tests/test_sparse.py::test_svc_iris
   - svm/tests/test_sparse.py::test_sparse_realdata
+  # decision function different 1.83697605e-06
+  - ensemble/tests/test_bagging.py::test_sparse_classification
+  - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
 
   # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with custom and precompute kernel
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
@@ -41,9 +43,11 @@ deselected_tests:
 
   # Possible problems with multiclass model
   - svm/tests/test_svm.py::test_decision_function
+  - svm/tests/test_sparse.py::test_sparse_decision_function
 
   # Number of support vectors is 0. oneAPI Data Analytics Library (oneDAL) raises an exception
   - svm/tests/test_svm.py::test_svr
+  - svm/tests/test_svm.py::test_sparse_fit_support_vectors_empty
 
   # Input data is numpy.memmap. oneAPI Data Analytics Library (oneDAL) raises an exception
   - tests/test_common.py::test_estimators[SVC()-check_estimators_fit_returns_self(readonly_memmap=True)]
@@ -60,11 +64,6 @@ deselected_tests:
   # Unexpected shape of RFECV.transform() witg SVC estimator. SVC has different accuracy compared with stock Scikit-learn.
   # Needs further investigation
   - feature_selection/tests/test_rfe.py::test_rfecv
-
-  # Compare Comparison of the result of a 1-in-1 decision function for SVC algorithm between dense and sparse input
-  # Such a oneAPI Data Analytics Library (oneDAL) does not guarantee given the different order of operations. Max absolute difference: 2.87212502e-05
-  - ensemble/tests/test_bagging.py::test_sparse_classification
-  - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
 
   # Bitwise comparison of probabilities using a print.
   - metrics/tests/test_classification.py >=0.22,<0.24

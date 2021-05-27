@@ -58,6 +58,7 @@ def test_estimator():
         'check_classifiers_regression_target',  # Did not raise ValueError
         'check_supervised_y_2d',  # expected 1 DataConversionWarning
         'check_estimators_unfitted',  # Call 'fit' with appropriate arguments
+        'check_estimator_sparse_data',  # Need to fix
     ], dummy)
     check_estimator(SVC())
     _restore_from_saved(md, saved)

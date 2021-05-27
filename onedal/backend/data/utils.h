@@ -71,3 +71,20 @@
         }                                                   \
         default: _EXCEPTION;                                \
     };
+
+#define SET_CTYPES_NPY_FROM_DAL_TYPE(_T, _FUNCT, _EXCEPTION) \
+    switch (_T) {                                            \
+        case dal::data_type::float32: {                      \
+            _FUNCT(NPY_FLOAT32, float);                      \
+            break;                                           \
+        }                                                    \
+        case dal::data_type::float64: {                      \
+            _FUNCT(NPY_FLOAT64, double);                     \
+            break;                                           \
+        }                                                    \
+        case dal::data_type::int32: {                        \
+            _FUNCT(NPY_INT32, std::int32_t);                 \
+            break;                                           \
+        }                                                    \
+        default: _EXCEPTION;                                 \
+    };

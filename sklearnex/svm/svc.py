@@ -49,7 +49,7 @@ class SVC(sklearn_SVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
-        if self.kernel in ['linear', 'rbf', 'poly'] and not sp.isspmatrix(X):
+        if self.kernel in ['linear', 'rbf', 'poly']:
             logging.info("sklearn.svm.SVC.fit: " + get_patch_message("onedal"))
             self._onedal_fit(X, y, sample_weight)
         else:
@@ -59,7 +59,7 @@ class SVC(sklearn_SVC):
         return self
 
     def predict(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_onedal_estimator'):
             logging.info("sklearn.svm.SVC.predict: " + get_patch_message("onedal"))
             return self._onedal_estimator.predict(X)
         else:
@@ -67,7 +67,7 @@ class SVC(sklearn_SVC):
             return sklearn_SVC.predict(self, X)
 
     def _predict_proba(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_onedal_estimator'):
             logging.info("sklearn.svm.SVC._predict_proba: " + get_patch_message("onedal"))
             if getattr(self, 'clf_prob', None) is None:
                 raise NotFittedError(
@@ -79,7 +79,7 @@ class SVC(sklearn_SVC):
             return sklearn_SVC._predict_proba(self, X)
 
     def decision_function(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_onedal_estimator'):
             logging.info(
                 "sklearn.svm.SVC.decision_function: " + get_patch_message("onedal"))
             return self._onedal_estimator.decision_function(X)

@@ -136,7 +136,6 @@ def _test_diabetes_compare_with_sklearn(kernel):
     clf_sklearn.fit(diabetes.data, diabetes.target)
     expected = clf_sklearn.score(diabetes.data, diabetes.target)
 
-    print(result, expected)
     assert result > expected - 1e-5
     assert_allclose(clf_sklearn.intercept_, clf_onedal.intercept_, atol=1e-4)
     assert_allclose(clf_sklearn.support_vectors_.shape,
@@ -159,7 +158,6 @@ def _test_boston_rbf_compare_with_sklearn(C, gamma):
     clf.fit(diabetes.data, diabetes.target)
     expected = clf.score(diabetes.data, diabetes.target)
 
-    print(result, expected)
     assert result > 0.4
     assert result > expected - 1e-5
 
@@ -180,7 +178,6 @@ def _test_boston_linear_compare_with_sklearn(C):
     clf.fit(diabetes.data, diabetes.target)
     expected = clf.score(diabetes.data, diabetes.target)
 
-    print(result, expected)
     assert result > 0.5
     assert result > expected - 1e-3
 
@@ -200,7 +197,6 @@ def _test_boston_poly_compare_with_sklearn(params):
     clf.fit(diabetes.data, diabetes.target)
     expected = clf.score(diabetes.data, diabetes.target)
 
-    print(result, expected)
     assert result > 0.5
     assert result > expected - 1e-5
 
