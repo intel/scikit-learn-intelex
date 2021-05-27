@@ -56,7 +56,7 @@ conda install daal4py -c conda-forge
 conda install daal4py -c intel
 ```
 
-⚠️ Note. *GPU and MPI support are optional dependencies.
+⚠️ Note: *GPU and MPI support are optional dependencies.
 Required dependencies for GPU and MPI support will not be downloaded.
 You need to manually install ***dpcpp_cpp_rt*** package for GPU support and ***impi_rt*** package for MPI support.*
 
