@@ -14,17 +14,24 @@
 # limitations under the License.
 #===============================================================================
 
-try:
-    from _onedal4py_dpc import (
-        PyPolicy
-    )
-except ImportError:
-    from _onedal4py_host import (
-        PyPolicy
-    )
+def get_config():
+    """Retrieve current values of global configuration
+    Returns
+    -------
+    config : dict
+        Keys are parameter names
+    """
+    import sys
+    if 'daal4py.oneapi' in sys.modules:
+        import daal4py.oneapi as d4p_oneapi
+        devname = d4p_oneapi._get_device_name_sycl_ctxt()
+        params = d4p_oneapi._get_sycl_ctxt_params()
 
-from onedal import get_config
-
-def _get_current_policy():
-    config = get_config()
-    return PyPolicy(config.get('target_offload', 'host'))
+        return {
+            'target_offload': 'host' if devname == 'cpu' else devname,
+            'allow_fallback_to_host': params.get('host_offload_on_fail', False)
+        }
+    return {
+        'target_offload': None,
+        'allow_fallback_to_host': False
+    }

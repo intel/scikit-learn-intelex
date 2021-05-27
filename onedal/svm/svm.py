@@ -28,9 +28,9 @@ from ..common import (
     _get_sample_weight,
     _check_is_fitted,
     _column_or_1d,
-    _check_n_features,
-    _get_current_policy
+    _check_n_features
 )
+from onedal import get_config
 
 try:
     from _onedal4py_dpc import (
@@ -38,7 +38,8 @@ try:
         PyRegressionSvmTrain,
         PyRegressionSvmInfer,
         PyClassificationSvmTrain,
-        PyClassificationSvmInfer
+        PyClassificationSvmInfer,
+        PyPolicy
     )
 except ImportError:
     from _onedal4py_host import (
@@ -46,7 +47,8 @@ except ImportError:
         PyRegressionSvmTrain,
         PyRegressionSvmInfer,
         PyClassificationSvmTrain,
-        PyClassificationSvmInfer
+        PyClassificationSvmInfer,
+        PyPolicy
     )
 
 
@@ -114,32 +116,36 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                            scale=self._scale_, sigma=self._sigma_,
                            shift=self.coef0, degree=self.degree, tau=self.tau)
 
-    def _reset_context(func):
+    def _device_offload(func):
         def wrapper(*args, **kwargs):
-            if 'daal4py.oneapi' in sys.modules:
-                import daal4py.oneapi as d4p_oneapi
-                devname = d4p_oneapi._get_device_name_sycl_ctxt()
-                ctxparams = d4p_oneapi._get_sycl_ctxt_params()
 
-                if devname == 'gpu' and ctxparams.get('host_offload_on_fail', False):
-                    gpu_ctx = d4p_oneapi._get_sycl_ctxt()
+            config = get_config()
+            dev = config['target_offload']
+            if dev is None:
+                dev = 'host'
+
+            if config['allow_fallback_to_host']:
+                try:
+                    return func(*args, **kwargs, policy=PyPolicy(dev))
+                except RuntimeError:
+                    import daal4py.oneapi as d4p_oneapi
+
+                    current_ctx = d4p_oneapi._get_sycl_ctxt()
                     host_ctx = d4p_oneapi.sycl_execution_context('host')
                     try:
                         host_ctx.apply()
-                        res = func(*args, **kwargs)
+                        res = func(*args, **kwargs, policy=PyPolicy('host'))
                     finally:
                         del host_ctx
-                        gpu_ctx.apply()
+                        current_ctx.apply()
                     return res
-                else:
-                    return func(*args, **kwargs)
             else:
-                return func(*args, **kwargs)
+                return func(*args, **kwargs, policy=PyPolicy(dev))
+
         return wrapper
 
-    @_reset_context
-    def _fit(self, X, y, sample_weight, Computer):
-
+    @_device_offload
+    def _fit(self, X, y, sample_weight, Computer, policy=None):
         if hasattr(self, 'decision_function_shape'):
             if self.decision_function_shape not in ('ovr', 'ovo', None):
                 raise ValueError(
@@ -166,7 +172,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
 
         c_svm = Computer(self._get_onedal_params())
-        c_svm.train(_get_current_policy(), X, y, sample_weight)
+        c_svm.train(policy, X, y, sample_weight)
 
         self.dual_coef_ = c_svm.get_coeffs().T
         self.support_vectors_ = c_svm.get_support_vectors()
@@ -183,8 +189,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self._onedal_model = c_svm.get_model()
         return self
 
-    @_reset_context
-    def _predict(self, X, Computer):
+    @_device_offload
+    def _predict(self, X, Computer, policy=None):
         _check_is_fitted(self)
         if self.break_ties and self.decision_function_shape == 'ovo':
             raise ValueError("break_ties must be False when "
@@ -200,9 +206,9 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             c_svm = Computer(self._get_onedal_params())
 
             if hasattr(self, '_onedal_model'):
-                c_svm.infer(_get_current_policy(), X, self._onedal_model)
+                c_svm.infer(policy, X, self._onedal_model)
             else:
-                c_svm.infer_builder(_get_current_policy(),
+                c_svm.infer_builder(policy,
                                     X, self.support_vectors_,
                                     self.dual_coef_.T, self.intercept_)
             y = c_svm.get_labels()
@@ -226,17 +232,17 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             sum_of_confidences / (3 * (np.abs(sum_of_confidences) + 1))
         return votes + transformed_confidences
 
-    @_reset_context
-    def _decision_function(self, X):
+    @_device_offload
+    def _decision_function(self, X, policy=None):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=False)
         _check_n_features(self, X, False)
         c_svm = PyClassificationSvmInfer(self._get_onedal_params())
         if hasattr(self, '_onedal_model'):
-            c_svm.infer(_get_current_policy(), X, self._onedal_model)
+            c_svm.infer(policy, X, self._onedal_model)
         else:
-            c_svm.infer_builder(_get_current_policy(), X, self.support_vectors_,
+            c_svm.infer_builder(policy, X, self.support_vectors_,
                                 self.dual_coef_.T, self.intercept_)
         decision_function = c_svm.get_decision_function()
         if len(self.classes_) == 2:

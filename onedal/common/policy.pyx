@@ -18,12 +18,17 @@ include "policy.pxi"
 
 cdef class PyPolicy:
     cdef policy* _policy
+    cdef object _devtype
 
     def __cinit__(self, type_):
+        self._devtype = type_
         self._policy = new policy(to_std_string( <PyObject*>type_))
 
     def __dealloc__(self):
         del self._policy
+
+    def get_device_type(self):
+        return self._devtype
 
     cdef const policy* get_cref(self):
         return self._policy

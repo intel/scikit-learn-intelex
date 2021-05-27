@@ -14,4 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['svm', 'prims']
+from ._config import get_config
+
+__all__ = ['svm', 'prims', 'get_config']
