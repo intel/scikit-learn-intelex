@@ -14,7 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-from scipy import sparse as sp
 import logging
 from .._utils import get_patch_message
 from ._common import BaseSVC
@@ -41,7 +40,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
-        if self.kernel in ['linear', 'rbf', 'poly'] and not sp.isspmatrix(X):
+        if self.kernel in ['linear', 'rbf', 'poly']:
             logging.info("sklearn.svm.NuSVC.fit: " + get_patch_message("onedal"))
             self._onedal_fit(X, y, sample_weight)
         else:
@@ -51,7 +50,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         return self
 
     def predict(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_onedal_estimator'):
             logging.info("sklearn.svm.NuSVC.predict: " + get_patch_message("onedal"))
             return self._onedal_estimator.predict(X)
         else:
@@ -59,7 +58,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             return sklearn_NuSVC.predict(self, X)
 
     def _predict_proba(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_onedal_estimator'):
             logging.info(
                 "sklearn.svm.NuSVC._predict_proba: " + get_patch_message("onedal"))
             if getattr(self, 'clf_prob', None) is None:
@@ -72,7 +71,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             return sklearn_NuSVC._predict_proba(self, X)
 
     def decision_function(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_onedal_estimator'):
             logging.info(
                 "sklearn.svm.NuSVC.decision_function: " + get_patch_message("onedal"))
             return self._onedal_estimator.decision_function(X)

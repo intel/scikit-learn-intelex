@@ -14,7 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-from scipy import sparse as sp
 import logging
 from .._utils import get_patch_message
 from ._common import BaseSVR
@@ -36,7 +35,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             max_iter=max_iter)
 
     def fit(self, X, y, sample_weight=None):
-        if self.kernel in ['linear', 'rbf', 'poly'] and not sp.isspmatrix(X):
+        if self.kernel in ['linear', 'rbf', 'poly']:
             logging.info("sklearn.svm.NuSVR.fit: " + get_patch_message("onedal"))
             self._onedal_fit(X, y, sample_weight)
         else:
@@ -45,7 +44,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
         return self
 
     def predict(self, X):
-        if hasattr(self, '_onedal_estimator') and not sp.isspmatrix(X):
+        if hasattr(self, '_onedal_estimator'):
             logging.info("sklearn.svm.NuSVR.predict: " + get_patch_message("onedal"))
             return self._onedal_estimator.predict(X)
         else:
