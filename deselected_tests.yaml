@@ -41,14 +41,6 @@ deselected_tests:
   # SVC._dual_coef_ is changing after fitting but result of prediction is still the same
   - svm/tests/test_svm.py::test_tweak_params
 
-  # Possible problems with multiclass model
-  - svm/tests/test_svm.py::test_decision_function
-  - svm/tests/test_sparse.py::test_sparse_decision_function
-
-  # Number of support vectors is 0. oneAPI Data Analytics Library (oneDAL) raises an exception
-  - svm/tests/test_svm.py::test_svr
-  - svm/tests/test_svm.py::test_sparse_fit_support_vectors_empty
-
   # Input data is numpy.memmap. oneAPI Data Analytics Library (oneDAL) raises an exception
   - tests/test_common.py::test_estimators[SVC()-check_estimators_fit_returns_self(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True)]
