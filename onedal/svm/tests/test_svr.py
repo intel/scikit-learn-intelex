@@ -53,10 +53,7 @@ def test_estimator():
         'check_sample_weights_invariance',  # Max absolute difference: 0.0002
         'check_estimators_fit_returns_self',  # ???
         'check_regressors_train',  # Cannot get data type from empty metadata
-        'check_supervised_y_2d',  # need warning, why?
-        'check_regressors_int',  # very bad accuracy
         'check_estimators_unfitted',  # expected NotFittedError from sklearn
-        'check_fit_idempotent',  # again run fit - error. need to fix
     ], dummy)
     check_estimator(SVR())
     _restore_from_saved(md, saved)

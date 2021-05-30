@@ -53,12 +53,8 @@ def test_estimator():
     saved = _replace_and_save(md, [
         'check_sample_weights_invariance',  # Max absolute difference: 0.0008
         'check_estimators_fit_returns_self',  # ValueError: empty metadata
-        'check_classifiers_predictions',  # Cannot cast ufunc 'multiply'
         'check_classifiers_train',  # assert y_pred.shape == (n_samples,)
-        'check_classifiers_regression_target',  # Did not raise ValueError
-        'check_supervised_y_2d',  # expected 1 DataConversionWarning
         'check_estimators_unfitted',  # Call 'fit' with appropriate arguments
-        'check_estimator_sparse_data',  # Need to fix
     ], dummy)
     check_estimator(SVC())
     _restore_from_saved(md, saved)
@@ -130,8 +126,8 @@ def test_decision_function_shape():
     dec = clf.decision_function(X_train)
     assert dec.shape == (len(X_train), 10)
 
-    # with pytest.raises(ValueError, match="must be either 'ovr' or 'ovo'"):
-    #     SVC(decision_function_shape='bad').fit(X_train, y_train)
+    with pytest.raises(ValueError, match="must be either 'ovr' or 'ovo'"):
+        SVC(decision_function_shape='bad').fit(X_train, y_train)
 
 
 def test_pickle():

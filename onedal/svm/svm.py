@@ -120,7 +120,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 devname = d4p_oneapi._get_device_name_sycl_ctxt()
                 ctxparams = d4p_oneapi._get_sycl_ctxt_params()
 
-                if devname == 'gpu' and ctxparams.get('host_offload_on_fail', False):
+                if devname == 'gpu':
                     gpu_ctx = d4p_oneapi._get_sycl_ctxt()
                     host_ctx = d4p_oneapi.sycl_execution_context('host')
                     try:
