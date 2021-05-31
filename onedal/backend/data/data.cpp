@@ -272,7 +272,8 @@ static PyObject *convert_to_py_from_csr_impl(const detail::csr_table &table) {
 PyObject *convert_to_numpy(const dal::table &input) {
     PyObject *res = nullptr;
     if (!input.has_data()) {
-        throw std::invalid_argument("Empty data to output result from oneDAL");
+        npy_intp dims[1] = { static_cast<npy_intp>(0) };
+        return PyArray_EMPTY(1, dims, NPY_INT32, 0);
     }
     if (input.get_kind() == dal::homogen_table::kind()) {
         const auto &homogen_input = static_cast<const dal::homogen_table &>(input);
