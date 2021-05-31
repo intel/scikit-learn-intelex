@@ -18,6 +18,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 import sys
+from numbers import Number
 
 import numpy as np
 from scipy import sparse as sp
@@ -25,7 +26,6 @@ from ..common import (
     _validate_targets,
     _check_X_y,
     _check_array,
-    _get_sample_weight,
     _check_is_fitted,
     _column_or_1d,
     _check_n_features
@@ -37,7 +37,11 @@ try:
         PyRegressionSvmTrain,
         PyRegressionSvmInfer,
         PyClassificationSvmTrain,
-        PyClassificationSvmInfer
+        PyClassificationSvmInfer,
+        PyNuRegressionSvmTrain,
+        PyNuRegressionSvmInfer,
+        PyNuClassificationSvmTrain,
+        PyNuClassificationSvmInfer
     )
 except ImportError:
     from _onedal4py_host import (
@@ -45,23 +49,30 @@ except ImportError:
         PyRegressionSvmTrain,
         PyRegressionSvmInfer,
         PyClassificationSvmTrain,
-        PyClassificationSvmInfer
+        PyClassificationSvmInfer,
+        PyNuRegressionSvmTrain,
+        PyNuRegressionSvmInfer,
+        PyNuClassificationSvmTrain,
+        PyNuClassificationSvmInfer
     )
 
 
 class SVMtype(Enum):
     c_svc = 0
     epsilon_svr = 1
+    nu_svc = 2
+    nu_svr = 3
 
 
 class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
-    def __init__(self, C, epsilon, kernel='rbf', *, degree, gamma,
+    def __init__(self, C, nu, epsilon, kernel='rbf', *, degree, gamma,
                  coef0, tol, shrinking, cache_size, max_iter, tau,
                  class_weight, decision_function_shape,
                  break_ties, algorithm, svm_type=None, **kwargs):
 
         self.C = C
+        self.nu = nu
         self.epsilon = epsilon
         self.kernel = kernel
         self.degree = degree
@@ -103,11 +114,80 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self.classes_ = None
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
+    def _get_sample_weight(self, X, y, sample_weight):
+        n_samples = X.shape[0]
+        dtype = X.dtype
+        if n_samples == 1:
+            raise ValueError("n_samples=1")
+
+        sample_weight = np.asarray([]
+                                   if sample_weight is None
+                                   else sample_weight, dtype=np.float64)
+
+        sample_weight_count = sample_weight.shape[0]
+        if sample_weight_count != 0 and sample_weight_count != n_samples:
+            raise ValueError("sample_weight and X have incompatible shapes: "
+                             "%r vs %r\n"
+                             "Note: Sparse matrices cannot be indexed w/"
+                             "boolean masks (use `indices=True` in CV)."
+                             % (len(sample_weight), X.shape))
+
+        ww = None
+        if sample_weight_count == 0 and self.class_weight_ is None:
+            return ww
+        elif sample_weight_count == 0:
+            sample_weight = np.ones(n_samples, dtype=dtype)
+        elif isinstance(sample_weight, Number):
+            sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
+        else:
+            sample_weight = _check_array(
+                sample_weight, accept_sparse=False, ensure_2d=False,
+                dtype=dtype, order="C"
+            )
+            if sample_weight.ndim != 1:
+                raise ValueError("Sample weights must be 1D array or scalar")
+
+            if sample_weight.shape != (n_samples,):
+                raise ValueError("sample_weight.shape == {}, expected {}!"
+                                 .format(sample_weight.shape, (n_samples,)))
+
+        if self.svm_type == SVMtype.nu_svc:
+            weight_per_class = [np.sum(sample_weight[y == class_label])
+                                for class_label in np.unique(y)]
+
+            for i in range(len(weight_per_class)):
+                for j in range(i + 1, len(weight_per_class)):
+                    if self.nu * (weight_per_class[i] + weight_per_class[j]) / 2 > \
+                            min(weight_per_class[i], weight_per_class[j]):
+                        raise ValueError('specified nu is infeasible')
+
+        if np.all(sample_weight <= 0):
+            if self.svm_type == SVMtype.nu_svc:
+                err_msg = 'negative dimensions are not allowed'
+            else:
+                err_msg = 'Invalid input - all samples have zero or negative weights.'
+            raise ValueError(err_msg)
+        elif np.any(sample_weight <= 0):
+            if self.svm_type == SVMtype.c_svc and \
+                    len(np.unique(y[sample_weight > 0])) != len(self.classes_):
+                raise ValueError(
+                    'Invalid input - all samples with positive weights '
+                    'have the same label.')
+        ww = sample_weight
+        if self.class_weight_ is not None:
+            for i, v in enumerate(self.class_weight_):
+                ww[y == i] *= v
+
+        if not ww.flags.c_contiguous and not ww.flags.f_contiguous:
+            ww = np.ascontiguousarray(ww, dtype)
+
+        return ww
+
     def _get_onedal_params(self):
         max_iter = 10000 if self.max_iter == -1 else self.max_iter
         class_count = 0 if self.classes_ is None else len(self.classes_)
         return PySvmParams(method=self.algorithm, kernel=self.kernel,
-                           c=self.C, epsilon=self.epsilon,
+                           c=self.C, nu=self.nu, epsilon=self.epsilon,
                            class_count=class_count, accuracy_threshold=self.tol,
                            max_iteration_count=max_iter,
                            scale=self._scale_, sigma=self._sigma_,
@@ -153,8 +233,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             X, y, dtype=[np.float64, np.float32],
             force_all_finite=True, accept_sparse='csr')
         y = self._validate_targets(y, X.dtype)
-        sample_weight = _get_sample_weight(
-            X, y, sample_weight, self.class_weight_, self.classes_, self.svm_type)
+        sample_weight = self._get_sample_weight(X, y, sample_weight)
 
         self._sparse = sp.isspmatrix(X)
 
@@ -180,8 +259,9 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self.shape_fit_ = X.shape
 
         if getattr(self, 'classes_', None) is not None:
+            indices = y.take(self.support_, axis=0)
             self._n_support = np.array([
-                np.sum(y[self.support_] == label) for label in self.classes_])
+                np.sum(indices == i) for i, _ in enumerate(self.classes_)])
         self._gamma = self._scale_
 
         self._onedal_model = c_svm.get_model()
@@ -241,7 +321,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         return votes + transformed_confidences
 
     @_reset_context
-    def _decision_function(self, X):
+    def _decision_function(self, X, Computer):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
                          force_all_finite=False, accept_sparse='csr')
@@ -257,7 +337,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 "cannot use sparse input in %r trained on dense data"
                 % type(self).__name__)
 
-        c_svm = PyClassificationSvmInfer(self._get_onedal_params())
+        c_svm = Computer(self._get_onedal_params())
         if hasattr(self, '_onedal_model'):
             c_svm.infer(X, self._onedal_model)
         else:
@@ -282,7 +362,7 @@ class SVR(RegressorMixin, BaseSVM):
                  gamma='scale', coef0=0.0, tol=1e-3, shrinking=True,
                  cache_size=200.0, max_iter=-1, tau=1e-12,
                  algorithm='thunder', **kwargs):
-        super().__init__(C=C, epsilon=epsilon, kernel=kernel,
+        super().__init__(C=C, nu=0.5, epsilon=epsilon, kernel=kernel,
                          degree=degree, gamma=gamma,
                          coef0=coef0, tol=tol,
                          shrinking=shrinking, cache_size=cache_size,
@@ -309,7 +389,7 @@ class SVC(ClassifierMixin, BaseSVM):
                  max_iter=-1, tau=1e-12, class_weight=None,
                  decision_function_shape='ovr', break_ties=False,
                  algorithm='thunder', **kwargs):
-        super().__init__(C=C, epsilon=0.0, kernel=kernel, degree=degree,
+        super().__init__(C=C, nu=0.5, epsilon=0.0, kernel=kernel, degree=degree,
                          gamma=gamma, coef0=coef0, tol=tol,
                          shrinking=shrinking, cache_size=cache_size,
                          max_iter=max_iter, tau=tau, class_weight=class_weight,
@@ -332,4 +412,66 @@ class SVC(ClassifierMixin, BaseSVM):
         return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
     def decision_function(self, X):
-        return super()._decision_function(X)
+        return super()._decision_function(X, PyClassificationSvmInfer)
+
+
+class NuSVR(RegressorMixin, BaseSVM):
+    """
+    Nu-Support Vector Regression.
+    """
+
+    def __init__(self, nu=0.5, C=1.0, kernel='rbf', *, degree=3,
+                 gamma='scale', coef0=0.0, tol=1e-3, shrinking=True,
+                 cache_size=200.0, max_iter=-1, tau=1e-12,
+                 algorithm='thunder', **kwargs):
+        super().__init__(C=C, nu=nu, epsilon=0.0, kernel=kernel,
+                         degree=degree, gamma=gamma,
+                         coef0=coef0, tol=tol,
+                         shrinking=shrinking, cache_size=cache_size,
+                         max_iter=max_iter, tau=tau, class_weight=None,
+                         decision_function_shape=None,
+                         break_ties=False, algorithm=algorithm)
+        self.svm_type = SVMtype.nu_svr
+
+    def fit(self, X, y, sample_weight=None):
+        return super()._fit(X, y, sample_weight, PyNuRegressionSvmTrain)
+
+    def predict(self, X):
+        y = super()._predict(X, PyNuRegressionSvmInfer)
+        return y.ravel()
+
+
+class NuSVC(ClassifierMixin, BaseSVM):
+    """
+    Nu-Support Vector Classification.
+    """
+
+    def __init__(self, nu=0.5, kernel='rbf', *, degree=3, gamma='scale',
+                 coef0=0.0, tol=1e-3, shrinking=True, cache_size=200.0,
+                 max_iter=-1, tau=1e-12, class_weight=None,
+                 decision_function_shape='ovr', break_ties=False,
+                 algorithm='thunder', **kwargs):
+        super().__init__(C=1.0, nu=nu, epsilon=0.0, kernel=kernel, degree=degree,
+                         gamma=gamma, coef0=coef0, tol=tol,
+                         shrinking=shrinking, cache_size=cache_size,
+                         max_iter=max_iter, tau=tau, class_weight=class_weight,
+                         decision_function_shape=decision_function_shape,
+                         break_ties=break_ties, algorithm=algorithm)
+        self.svm_type = SVMtype.nu_svc
+
+    def _validate_targets(self, y, dtype):
+        y, self.class_weight_, self.classes_ = _validate_targets(
+            y, self.class_weight, dtype)
+        return y
+
+    def fit(self, X, y, sample_weight=None):
+        return super()._fit(X, y, sample_weight, PyNuClassificationSvmTrain)
+
+    def predict(self, X):
+        y = super()._predict(X, PyNuClassificationSvmInfer)
+        if len(self.classes_) == 2:
+            y = y.ravel()
+        return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
+
+    def decision_function(self, X):
+        return super()._decision_function(X, PyNuClassificationSvmInfer)

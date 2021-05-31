@@ -26,6 +26,7 @@ struct svm_params {
     std::string kernel;
     std::string method;
     double c;
+    double nu;
     int class_count;
     double epsilon;
     double accuracy_threshold;

@@ -14,27 +14,26 @@
 # limitations under the License.
 #===============================================================================
 
-from scipy import sparse as sp
 import logging
 from .._utils import get_patch_message
 from ._common import BaseSVC
 
-from sklearn.svm import SVC as sklearn_SVC
+from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
 
-from onedal.svm import SVC as onedal_SVC
+from onedal.svm import NuSVC as onedal_NuSVC
 
 
-class SVC(sklearn_SVC, BaseSVC):
+class NuSVC(sklearn_NuSVC, BaseSVC):
     @_deprecate_positional_args
-    def __init__(self, *, C=1.0, kernel='rbf', degree=3, gamma='scale',
+    def __init__(self, *, nu=0.5, kernel='rbf', degree=3, gamma='scale',
                  coef0=0.0, shrinking=True, probability=False,
                  tol=1e-3, cache_size=200, class_weight=None,
                  verbose=False, max_iter=-1, decision_function_shape='ovr',
                  break_ties=False, random_state=None):
         super().__init__(
-            C=C, kernel=kernel, degree=degree, gamma=gamma, coef0=coef0,
+            nu=nu, kernel=kernel, degree=degree, gamma=gamma, coef0=coef0,
             shrinking=shrinking, probability=probability, tol=tol, cache_size=cache_size,
             class_weight=class_weight, verbose=verbose, max_iter=max_iter,
             decision_function_shape=decision_function_shape, break_ties=break_ties,
@@ -42,47 +41,48 @@ class SVC(sklearn_SVC, BaseSVC):
 
     def fit(self, X, y, sample_weight=None):
         if self.kernel in ['linear', 'rbf', 'poly']:
-            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("onedal"))
+            logging.info("sklearn.svm.NuSVC.fit: " + get_patch_message("onedal"))
             self._onedal_fit(X, y, sample_weight)
         else:
-            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
-            sklearn_SVC.fit(self, X, y, sample_weight)
+            logging.info("sklearn.svm.NuSVC.fit: " + get_patch_message("sklearn"))
+            sklearn_NuSVC.fit(self, X, y, sample_weight)
 
         return self
 
     def predict(self, X):
         if hasattr(self, '_onedal_estimator'):
-            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("onedal"))
+            logging.info("sklearn.svm.NuSVC.predict: " + get_patch_message("onedal"))
             return self._onedal_estimator.predict(X)
         else:
-            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
-            return sklearn_SVC.predict(self, X)
+            logging.info("sklearn.svm.NuSVC.predict: " + get_patch_message("sklearn"))
+            return sklearn_NuSVC.predict(self, X)
 
     def _predict_proba(self, X):
         if hasattr(self, '_onedal_estimator'):
-            logging.info("sklearn.svm.SVC._predict_proba: " + get_patch_message("onedal"))
+            logging.info(
+                "sklearn.svm.NuSVC._predict_proba: " + get_patch_message("onedal"))
             if getattr(self, 'clf_prob', None) is None:
                 raise NotFittedError(
                     "predict_proba is not available when fitted with probability=False")
             return self.clf_prob.predict_proba(X)
         else:
             logging.info(
-                "sklearn.svm.SVC._predict_proba: " + get_patch_message("sklearn"))
-            return sklearn_SVC._predict_proba(self, X)
+                "sklearn.svm.NuSVC._predict_proba: " + get_patch_message("sklearn"))
+            return sklearn_NuSVC._predict_proba(self, X)
 
     def decision_function(self, X):
         if hasattr(self, '_onedal_estimator'):
             logging.info(
-                "sklearn.svm.SVC.decision_function: " + get_patch_message("onedal"))
+                "sklearn.svm.NuSVC.decision_function: " + get_patch_message("onedal"))
             return self._onedal_estimator.decision_function(X)
         else:
             logging.info(
-                "sklearn.svm.SVC.decision_function: " + get_patch_message("sklearn"))
-            return sklearn_SVC.decision_function(self, X)
+                "sklearn.svm.NuSVC.decision_function: " + get_patch_message("sklearn"))
+            return sklearn_NuSVC.decision_function(self, X)
 
     def _onedal_fit(self, X, y, sample_weight=None):
         onedal_params = {
-            'C': self.C,
+            'nu': self.nu,
             'kernel': self.kernel,
             'degree': self.degree,
             'gamma': self.gamma,
@@ -96,7 +96,7 @@ class SVC(sklearn_SVC, BaseSVC):
             'decision_function_shape': self.decision_function_shape,
         }
 
-        self._onedal_estimator = onedal_SVC(**onedal_params)
+        self._onedal_estimator = onedal_NuSVC(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight)
 
         if self.class_weight == 'balanced':

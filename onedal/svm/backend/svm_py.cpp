@@ -39,20 +39,25 @@ KernelDescriptor get_kernel_params(const svm_params &params) {
 }
 
 template <typename Result, typename Descriptor, typename... Args>
-Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, Args &&... args) {
+Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, Args &&...args) {
     using Task = typename Result::task_t;
-    descriptor.set_c(params.c)
-        .set_accuracy_threshold(params.accuracy_threshold)
+    descriptor.set_accuracy_threshold(params.accuracy_threshold)
         .set_max_iteration_count(params.max_iteration_count)
         .set_cache_size(params.shrinking)
         .set_tau(params.tau)
         .set_shrinking(params.shrinking)
         .set_kernel(get_kernel_params<typename Descriptor::kernel_t>(params));
     if constexpr (std::is_same_v<Task, svm::task::classification>) {
-        descriptor.set_class_count(params.class_count);
+        descriptor.set_class_count(params.class_count).set_c(params.c);
     }
     else if constexpr (std::is_same_v<Task, svm::task::regression>) {
-        descriptor.set_epsilon(params.epsilon);
+        descriptor.set_epsilon(params.epsilon).set_c(params.c);
+    }
+    else if constexpr (std::is_same_v<Task, svm::task::nu_classification>) {
+        descriptor.set_class_count(params.class_count).set_nu(params.nu);
+    }
+    else if constexpr (std::is_same_v<Task, svm::task::nu_regression>) {
+        descriptor.set_nu(params.nu).set_c(params.c);
     }
     if constexpr (std::is_same_v<Result, typename svm::train_result<Task>>) {
         return python::train(descriptor, std::forward<Args>(args)...);
@@ -63,7 +68,7 @@ Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, 
 }
 
 template <typename Result, typename... Args>
-Result compute_impl(svm_params &params, data_type data_type_input, Args &&... args) {
+Result compute_impl(svm_params &params, data_type data_type_input, Args &&...args) {
     using Task = typename Result::task_t;
     if constexpr (std::is_same_v<Task, svm::task::classification>) {
         if (data_type_input == data_type::float32 && params.method == "smo" &&
@@ -268,7 +273,8 @@ void svm_infer<Task>::infer(PyObject *data,
                      .set_support_vectors(support_vectors_table)
                      .set_coeffs(coeffs_table)
                      .set_biases(biases_table);
-    if constexpr (std::is_same_v<Task, svm::task::classification>) {
+    if constexpr (std::is_same_v<Task, svm::task::classification> ||
+                  std::is_same_v<Task, svm::task::nu_classification>) {
         model.set_first_class_label(0).set_second_class_label(1);
     }
     infer_result_ = compute_impl<decltype(infer_result_)>(params_, data_type, model, data_table);
@@ -294,7 +300,8 @@ PyObject *svm_infer<Task>::get_labels() {
 // attributes from infer_result
 template <typename Task>
 PyObject *svm_infer<Task>::get_decision_function() {
-    if constexpr (std::is_same_v<Task, svm::task::classification>) {
+    if constexpr (std::is_same_v<Task, svm::task::classification> ||
+                  std::is_same_v<Task, svm::task::nu_classification>) {
         return convert_to_numpy(infer_result_.get_decision_function());
     }
     return nullptr;
@@ -307,5 +314,13 @@ template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::classification>;
 template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::regression>;
 template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::regression>;
 template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::regression>;
+
+template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::nu_classification>;
+template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::nu_classification>;
+template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::nu_classification>;
+
+template class ONEDAL_BACKEND_EXPORT svm_model<svm::task::nu_regression>;
+template class ONEDAL_BACKEND_EXPORT svm_train<svm::task::nu_regression>;
+template class ONEDAL_BACKEND_EXPORT svm_infer<svm::task::nu_regression>;
 
 } // namespace oneapi::dal::python
