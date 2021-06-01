@@ -37,12 +37,8 @@ auto compute(Args &&... args) {
     else {
         throw std::runtime_error("Cannot set daal context: Pointer to queue object is NULL");
     }
-#elif defined(ONEDAL_DATA_PARALLEL)
-    cl::sycl::queue sycl_queue(sycl::host_selector{});
-    return dal::compute(sycl_queue, std::forward<Args>(args)...);
-#else
-    return dal::compute(std::forward<Args>(args)...);
 #endif
+    return dal::compute(std::forward<Args>(args)...);
 }
 
 } // namespace oneapi::dal::python
