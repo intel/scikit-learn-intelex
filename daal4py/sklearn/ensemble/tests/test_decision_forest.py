@@ -35,6 +35,7 @@ ACCURACY_RATIO = 0.85
 MSE_RATIO = 1.07
 LOG_LOSS_RATIO = 1.55
 ROC_AUC_RATIO = 0.978
+RNG = np.random.RandomState(0)
 IRIS = load_iris()
 
 
@@ -73,6 +74,7 @@ def _compare_with_sklearn_classifier_iris(n_estimators=100, class_weight=None,
     scikit_log_loss = log_loss(y_test, scikit_predict_proba)
     daal4py_log_loss = log_loss(y_test, daal4py_predict_proba)
     ratio = daal4py_log_loss / scikit_log_loss
+
     reason = description +\
         f"scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}"
     assert ratio <= LOG_LOSS_RATIO, reason
@@ -81,30 +83,31 @@ def _compare_with_sklearn_classifier_iris(n_estimators=100, class_weight=None,
     scikit_roc_auc = roc_auc_score(y_test, scikit_predict_proba, multi_class='ovr')
     daal4py_roc_auc = roc_auc_score(y_test, daal4py_predict_proba, multi_class='ovr')
     ratio = daal4py_roc_auc / scikit_roc_auc
+
+
     reason = description + \
         f"scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}"
     assert ratio >= ROC_AUC_RATIO, reason
 
 
-random.seed(777)
 CLASS_WEIGHTS_IRIS = [
     {0: 0, 1: 1, 2: 1},
     {0: 1, 1: 2, 2: 3},
     {0: 10, 1: 5, 2: 4},
     {
-        0: random.uniform(1, 50),
-        1: random.uniform(1, 50),
-        2: random.uniform(1, 50),
+        0: RNG.uniform(1, 50),
+        1: RNG.uniform(1, 50),
+        2: RNG.uniform(1, 50),
     },
     {
-        0: random.uniform(1, 1000),
-        1: random.uniform(1, 1000),
-        2: random.uniform(1, 1000),
+        0: RNG.uniform(1, 1000),
+        1: RNG.uniform(1, 1000),
+        2: RNG.uniform(1, 1000),
     },
     {
-        0: random.uniform(1, 10),
-        1: random.uniform(50, 100),
-        2: random.uniform(1, 100),
+        0: RNG.uniform(1, 10),
+        1: RNG.uniform(50, 100),
+        2: RNG.uniform(1, 100),
     },
     {0: 50, 1: 50, 2: 50},
     'balanced',
@@ -119,14 +122,13 @@ def test_classifier_class_weight_iris(class_weight):
     )
 
 
-random.seed(777)
 SAMPLE_WEIGHTS_IRIS = [
     (np.full_like(range(100), 1), 'Only 1'),
     (np.full_like(range(100), 50), 'Only 50'),
-    (np.random.rand(100), 'Uniform distribution'),
-    (np.random.normal(1000, 10, 100), 'Gaussian distribution'),
-    (np.random.poisson(lam=10, size=100), 'Poisson distribution'),
-    (np.random.rayleigh(scale=1, size=100), 'Rayleigh distribution'),
+    (RNG.rand(100), 'Uniform distribution'),
+    (RNG.normal(1000, 10, 100), 'Gaussian distribution'),
+    (RNG.poisson(lam=10, size=100), 'Poisson distribution'),
+    (RNG.rayleigh(scale=1, size=100), 'Rayleigh distribution'),
 ]
 
 
@@ -178,6 +180,7 @@ def _compare_with_sklearn_mse_regressor_iris(n_estimators=100, sample_weight=Non
 
     ratio = daal4py_mse / scikit_mse
     reason = description + f"scikit_mse={scikit_mse}, daal4py_mse={daal4py_mse}"
+    print(daal4py_mse)
     assert ratio <= MSE_RATIO, reason
 
 
