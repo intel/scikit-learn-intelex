@@ -180,7 +180,6 @@ def _compare_with_sklearn_mse_regressor_iris(n_estimators=100, sample_weight=Non
 
     ratio = daal4py_mse / scikit_mse
     reason = description + f"scikit_mse={scikit_mse}, daal4py_mse={daal4py_mse}"
-    print(daal4py_mse)
     assert ratio <= MSE_RATIO, reason
 
 
