@@ -84,7 +84,6 @@ def _compare_with_sklearn_classifier_iris(n_estimators=100, class_weight=None,
     daal4py_roc_auc = roc_auc_score(y_test, daal4py_predict_proba, multi_class='ovr')
     ratio = daal4py_roc_auc / scikit_roc_auc
 
-
     reason = description + \
         f"scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}"
     assert ratio >= ROC_AUC_RATIO, reason
