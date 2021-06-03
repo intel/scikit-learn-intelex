@@ -189,8 +189,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         return PySvmParams(method=self.algorithm, kernel=self.kernel,
                            c=self.C, nu=self.nu, epsilon=self.epsilon,
                            class_count=class_count, accuracy_threshold=self.tol,
-                           max_iteration_count=max_iter,
-                           scale=self._scale_, sigma=self._sigma_,
+                           max_iteration_count=max_iter, cache_size=self.cache_size,
+                           shrinking=self.shrinking, scale=self._scale_, sigma=self._sigma_,
                            shift=self.coef0, degree=self.degree, tau=self.tau)
 
     def _reset_context(func):

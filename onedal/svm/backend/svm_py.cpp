@@ -39,11 +39,11 @@ KernelDescriptor get_kernel_params(const svm_params &params) {
 }
 
 template <typename Result, typename Descriptor, typename... Args>
-Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, Args &&...args) {
+Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, Args &&... args) {
     using Task = typename Result::task_t;
     descriptor.set_accuracy_threshold(params.accuracy_threshold)
         .set_max_iteration_count(params.max_iteration_count)
-        .set_cache_size(params.shrinking)
+        .set_cache_size(params.cache_size)
         .set_tau(params.tau)
         .set_shrinking(params.shrinking)
         .set_kernel(get_kernel_params<typename Descriptor::kernel_t>(params));
@@ -68,7 +68,7 @@ Result compute_descriptor_impl(Descriptor descriptor, const svm_params &params, 
 }
 
 template <typename Result, typename... Args>
-Result compute_impl(svm_params &params, data_type data_type_input, Args &&...args) {
+Result compute_impl(svm_params &params, data_type data_type_input, Args &&... args) {
     using Task = typename Result::task_t;
     if constexpr (std::is_same_v<Task, svm::task::classification>) {
         if (data_type_input == data_type::float32 && params.method == "smo" &&
