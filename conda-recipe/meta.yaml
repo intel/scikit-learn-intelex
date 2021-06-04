@@ -14,8 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-{% set version = '2021.1' %}
-{% set buildnumber = 4 %}
+{% set version = '2021.2' %}
+{% set buildnumber = 0 %}
 
 package:
     name: daal4py
