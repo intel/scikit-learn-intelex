@@ -261,6 +261,16 @@ def _fit(self, X, y=None, sample_weight=None):
     return self
 
 
+def _daal4py_check_test_data(self, X):
+    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
+                    accept_large_sparse=False)
+    if self.n_features_in_ != X.shape[1]:
+        raise ValueError(
+            (f'X has {X.shape[1]} features, '
+             f'but Kmeans is expecting {self.n_features_in_} features as input'))
+    return X
+
+
 def _predict(self, X, sample_weight=None):
     """Predict the closest cluster each sample in X belongs to.
 
@@ -284,7 +294,7 @@ def _predict(self, X, sample_weight=None):
     """
     check_is_fitted(self)
 
-    X = self._check_test_data(X)
+    X = _daal4py_check_test_data(self, X)
 
     daal_ready = sample_weight is None and hasattr(
         X, '__array__')  # or sp.isspmatrix_csr(X)
