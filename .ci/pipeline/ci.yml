@@ -58,6 +58,11 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+    displayName: 'Build slearnex'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
       cd examples
       pip install jupyter matplotlib
       jupyter nbconvert --execute --ExecutePreprocessor.timeout=600 --to notebook *.ipynb
