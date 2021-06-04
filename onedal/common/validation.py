@@ -97,6 +97,13 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
     if sp.isspmatrix(array):
         return array
 
+    # TODO: Convert this kind of arrays to a table like in daal4py
+    if not array.flags.aligned and not array.flags.writeable:
+        try:
+            array = np.array(array.tolist())
+        except Exception as ex:
+            raise ex
+
     # TODO: If data is not contiguous copy to contiguous
     # Need implemeted numpy table in oneDAL
     if not array.flags.c_contiguous and not array.flags.f_contiguous:
