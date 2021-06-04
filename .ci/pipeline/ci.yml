@@ -56,8 +56,9 @@ jobs:
       ./conda-recipe/build.sh
     displayName: 'Build daal4py'
   - script: |
+      cd examples
       pip install jupyter
-      jupyter nbconvert --execute --ExecutePreprocessor.timeout=600 --to notebook examples/*.ipynb
+      jupyter nbconvert --execute --ExecutePreprocessor.timeout=600 --to notebook *.ipynb
     displayName: 'Run jupyter notebook demo'
   # - script: |
   #     . /usr/share/miniconda/etc/profile.d/conda.sh
