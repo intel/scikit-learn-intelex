@@ -151,7 +151,7 @@ def get_exe_cmd(ex, nodist, nostream):
         if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
             return None
 
-    if os.path.dirname(ex).endswith("examples"):
+    if os.path.dirname(ex).endswith("daal4py/examples"):
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
