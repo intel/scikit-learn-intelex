@@ -27,7 +27,7 @@ cdef class PySvmParams:
 
     def __init__(self, method, kernel, class_count, c, nu,
                  epsilon, accuracy_threshold, max_iteration_count,
-                 tau, sigma, shift, scale, degree):
+                 cache_size, shrinking, tau, sigma, shift, scale, degree):
         self.pt.method = to_std_string( < PyObject * >method)
         self.pt.kernel = to_std_string( < PyObject * >kernel)
         self.pt.class_count = class_count
@@ -36,6 +36,8 @@ cdef class PySvmParams:
         self.pt.epsilon = epsilon
         self.pt.accuracy_threshold = accuracy_threshold
         self.pt.max_iteration_count = max_iteration_count
+        self.pt.cache_size = cache_size
+        self.pt.shrinking = shrinking
         self.pt.tau = tau
         self.pt.sigma = sigma
         self.pt.shift = shift
