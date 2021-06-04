@@ -56,6 +56,8 @@ jobs:
       ./conda-recipe/build.sh
     displayName: 'Build daal4py'
   - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
       cd examples
       pip install jupyter
       jupyter nbconvert --execute --ExecutePreprocessor.timeout=600 --to notebook *.ipynb
