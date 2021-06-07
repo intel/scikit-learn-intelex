@@ -217,7 +217,7 @@ def getpyexts():
 
     exts = []
 
-    ext = Extension('_daal4py',
+    ext = Extension('daal4py._daal4py',
                     [os.path.abspath('src/daal4py.cpp'),
                      os.path.abspath('build/daal4py_cpp.cpp'),
                      os.path.abspath('build/daal4py_cy.pyx')] + DIST_CPPS,
@@ -233,11 +233,11 @@ def getpyexts():
 
     if dpcpp:
         if IS_LIN or IS_MAC:
-            runtime_oneapi_dirs = ["$ORIGIN/daal4py/oneapi"]
+            runtime_oneapi_dirs = ["$ORIGIN/oneapi"]
         elif IS_WIN:
             runtime_oneapi_dirs = []
 
-        ext = Extension('_oneapi',
+        ext = Extension('daal4py._oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
                         depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
@@ -257,7 +257,7 @@ def getpyexts():
         mpi_include_dir = include_dir_plat + [np.get_include()] + MPI_INCDIRS
         mpi_depens = glob.glob(jp(os.path.abspath('src'), '*.h'))
         mpi_extra_link = ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS]
-        exts.append(Extension('mpi_transceiver',
+        exts.append(Extension('daal4py.mpi_transceiver',
                               MPI_CPPS,
                               depends=mpi_depens,
                               include_dirs=mpi_include_dir,
