@@ -18,7 +18,7 @@ import numpy as np
 from onedal.common import _check_array
 
 try:
-    from _onedal4py_dpc import (
+    from onedal._onedal4py_dpc import (
         PyLinearKernelParams,
         PyLinearKernelCompute,
         PyRbfKernelParams,
@@ -27,7 +27,7 @@ try:
         PyPolyKernelCompute,
     )
 except ImportError:
-    from _onedal4py_host import (
+    from onedal._onedal4py_host import (
         PyLinearKernelParams,
         PyLinearKernelCompute,
         PyRbfKernelParams,

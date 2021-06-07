@@ -32,7 +32,7 @@ from ..common import (
 )
 
 try:
-    from _onedal4py_dpc import (
+    from onedal._onedal4py_dpc import (
         PySvmParams,
         PyRegressionSvmTrain,
         PyRegressionSvmInfer,
@@ -44,7 +44,7 @@ try:
         PyNuClassificationSvmInfer
     )
 except ImportError:
-    from _onedal4py_host import (
+    from onedal._onedal4py_host import (
         PySvmParams,
         PyRegressionSvmTrain,
         PyRegressionSvmInfer,

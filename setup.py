@@ -237,7 +237,7 @@ def getpyexts():
 
     exts = []
 
-    ext = Extension('_onedal4py_host',
+    ext = Extension('onedal._onedal4py_host',
                     sources=[main_host_pyx] + cpp_files,
                     include_dirs=include_dir_plat + [np.get_include()],
                     extra_compile_args=eca,
@@ -254,7 +254,7 @@ def getpyexts():
     if ONEDAL_VERSION >= ONEDAL_2021_3:
         exts.extend(cythonize(ext, compile_time_env={'ONEDAL_VERSION': ONEDAL_VERSION}))
 
-    ext = Extension('_daal4py',
+    ext = Extension('daal4py._daal4py',
                     [os.path.abspath('src/daal4py.cpp'),
                      os.path.abspath('build/daal4py_cpp.cpp'),
                      os.path.abspath('build/daal4py_cy.pyx')] + DIST_CPPS,
@@ -276,7 +276,7 @@ def getpyexts():
             runtime_library_dirs = []
             runtime_oneapi_dirs = []
 
-        ext = Extension('_onedal4py_dpc',
+        ext = Extension('onedal._onedal4py_dpc',
                         sources=[main_dpc_pyx],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca,
@@ -292,7 +292,7 @@ def getpyexts():
 
         if ONEDAL_VERSION >= ONEDAL_2021_3:
             exts.extend(cythonize(ext))
-        ext = Extension('_oneapi',
+        ext = Extension('daal4py._oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
                         depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
@@ -312,7 +312,7 @@ def getpyexts():
         mpi_include_dir = include_dir_plat + [np.get_include()] + MPI_INCDIRS
         mpi_depens = glob.glob(jp(os.path.abspath('src'), '*.h'))
         mpi_extra_link = ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS]
-        exts.append(Extension('mpi_transceiver',
+        exts.append(Extension('daal4py.mpi_transceiver',
                               MPI_CPPS,
                               depends=mpi_depens,
                               include_dirs=mpi_include_dir,
