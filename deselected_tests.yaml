@@ -41,34 +41,11 @@ deselected_tests:
   # SVC._dual_coef_ is changing after fitting but result of prediction is still the same
   - svm/tests/test_svm.py::test_tweak_params
 
-  # Input data is numpy.memmap. oneAPI Data Analytics Library (oneDAL) raises an exception
-  - tests/test_common.py::test_estimators[SVC()-check_estimators_fit_returns_self(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[SVC()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
-  - tests/test_common.py::test_estimators[SVR()-check_estimators_fit_returns_self(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[SVR()-check_regressors_train(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[SVR()-check_regressors_train(readonly_memmap=True,X_dtype=float32)]
-  - tests/test_common.py::test_estimators[NuSVC()-check_estimators_fit_returns_self(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[NuSVC()-check_classifiers_train(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[NuSVC()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
-  - tests/test_common.py::test_estimators[NuSVR()-check_estimators_fit_returns_self(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[NuSVR()-check_regressors_train(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[NuSVR()-check_regressors_train(readonly_memmap=True,X_dtype=float32)]
-  - utils/tests/test_estimator_checks.py::test_xfail_ignored_in_check_estimator
-
   # This test needs a warning from sklearn. sklearnex raises the same warning
   - tests/test_common.py::test_estimators[SVC()-check_supervised_y_2d]
   - tests/test_common.py::test_estimators[SVR()-check_supervised_y_2d]
   - tests/test_common.py::test_estimators[NuSVC()-check_supervised_y_2d]
   - tests/test_common.py::test_estimators[NuSVR()-check_supervised_y_2d]
-
-  # Unexpected shape of RFECV.transform() witg SVC estimator. SVC has different accuracy compared with stock Scikit-learn.
-  # Needs further investigation
-  - feature_selection/tests/test_rfe.py::test_rfecv
-
-  # Unexpected support vectors and dual_coef_ for NuSVR. Needs further investigation
-  - svm/tests/test_svm.py::test_svm_regressor_sided_sample_weight[estimator1]
-  - svm/tests/test_svm.py::test_negative_weight_equal_coeffs[partial-mask-label-1-NuSVR]
 
   # Bitwise comparison of probabilities using a print.
   - metrics/tests/test_classification.py >=0.22,<0.24
@@ -132,15 +109,9 @@ deselected_tests:
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)]
-  - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=ones)]
-  - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance]
   - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=zeros)]
-  - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=ones)]
   - tests/test_common.py::test_estimators[NuSVC()-check_sample_weights_invariance(kind=zeros)]
-  - tests/test_common.py::test_estimators[NuSVC()-check_sample_weights_invariance(kind=ones)]
-  - tests/test_common.py::test_estimators[NuSVR()-check_sample_weights_invariance]
   - tests/test_common.py::test_estimators[NuSVR()-check_sample_weights_invariance(kind=zeros)]
-  - tests/test_common.py::test_estimators[NuSVR()-check_sample_weights_invariance(kind=ones)]
   - tests/test_common.py::test_estimators[NuSVC()-check_class_weight_classifiers]
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order
