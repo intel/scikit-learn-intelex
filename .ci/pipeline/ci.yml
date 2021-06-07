@@ -154,7 +154,7 @@ jobs:
     displayName: Testing
   - script: |
       source activate CB
-      cd examples && python run_examples.py
+      cd examples/daal4py && python run_examples.py
     displayName: Examples
 
 - job: Windows_DPCPP
