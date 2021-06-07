@@ -63,145 +63,138 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      cd examples
-      pip install jupyter matplotlib
-      jupyter nbconvert --execute --ExecutePreprocessor.timeout=600 --to notebook *.ipynb
-    displayName: 'Run jupyter notebook demo'
-  # - script: |
-  #     . /usr/share/miniconda/etc/profile.d/conda.sh
-  #     conda activate CB
-  #     ./conda-recipe/run_test.sh
-  #   displayName: Testing
-  # - script: |
-  #     . /usr/share/miniconda/etc/profile.d/conda.sh
-  #     conda activate CB
-  #     cd doc/daal4py
-  #     make html
-  #   displayName: 'Build daal4py documentation'
-  # - script: |
-  #     . /usr/share/miniconda/etc/profile.d/conda.sh
-  #     conda activate CB
-  #     cd doc
-  #     make html
-  #   displayName: 'Build scikit-learn-intelex documentation'
-  # - script: |
-  #     mkdir $(Build.ArtifactStagingDirectory)/html/daal4py
-  #     mkdir $(Build.ArtifactStagingDirectory)/html/sklearnex
-  #     cp -R doc/daal4py/_build $(Build.ArtifactStagingDirectory)/html_daal4py
-  #     cp -R doc/_build $(Build.ArtifactStagingDirectory)/html_sklearnex
-  #   displayName: 'Copy build'
-  # - task: PublishPipelineArtifact@0
-  #   inputs:
-  #     artifactName: 'documentation'
-  #     targetPath: '$(Build.ArtifactStagingDirectory)/'
+      ./conda-recipe/run_test.sh
+    displayName: Testing
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      cd doc/daal4py
+      make html
+    displayName: 'Build daal4py documentation'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      cd doc
+      make html
+    displayName: 'Build scikit-learn-intelex documentation'
+  - script: |
+      mkdir $(Build.ArtifactStagingDirectory)/html/daal4py
+      mkdir $(Build.ArtifactStagingDirectory)/html/sklearnex
+      cp -R doc/daal4py/_build $(Build.ArtifactStagingDirectory)/html_daal4py
+      cp -R doc/_build $(Build.ArtifactStagingDirectory)/html_sklearnex
+    displayName: 'Copy build'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'documentation'
+      targetPath: '$(Build.ArtifactStagingDirectory)/'
 
-# - job: Linux_DPCPP
-#   pool:
-#     vmImage: 'ubuntu-20.04'
-#   steps:
-#   - task: UsePythonVersion@0
-#     displayName: 'Use Python $(python.version)'
-#   - script: |
-#       wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-#       sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-#       rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-#       echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-#       sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
-#       sudo apt-get update
-#       sudo apt-get install                  \
-#           intel-oneapi-common-vars          \
-#           intel-oneapi-common-licensing     \
-#           intel-oneapi-dpcpp-cpp-compiler   \
-#           intel-oneapi-dev-utilities        \
-#           intel-oneapi-libdpstd-devel
-#       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
-#       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
-#     displayName: 'apt-get'
-#   - script: |
-#       conda update -y -q conda
-#       conda create -q -y -n CB -c conda-forge python=$(python.version) conda-build=3.21.1 conda-verify
-#     displayName: Create Anaconda environment
-#   - script: |
-#       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
-#       . /usr/share/miniconda/etc/profile.d/conda.sh
-#       conda activate CB
-#       conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
-#   - script: |
-#       . /usr/share/miniconda/etc/profile.d/conda.sh
-#       conda activate CB
-#       pip install daal numpy
-#       pip install -r requirements-test.txt
-#       conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
-#       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
-#       cd ..
-#       pytest s/sklearnex/tests/
-#     displayName: conda build
+- job: Linux_DPCPP
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+  - script: |
+      wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+      sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+      rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+      echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+      sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
+      sudo apt-get update
+      sudo apt-get install                  \
+          intel-oneapi-common-vars          \
+          intel-oneapi-common-licensing     \
+          intel-oneapi-dpcpp-cpp-compiler   \
+          intel-oneapi-dev-utilities        \
+          intel-oneapi-libdpstd-devel
+      sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
+      sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
+    displayName: 'apt-get'
+  - script: |
+      conda update -y -q conda
+      conda create -q -y -n CB -c conda-forge python=$(python.version) conda-build=3.21.1 conda-verify
+    displayName: Create Anaconda environment
+  - script: |
+      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      pip install daal numpy
+      pip install -r requirements-test.txt
+      conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
+      python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
+      cd ..
+      pytest s/sklearnex/tests/
+    displayName: conda build
 
-# - job: MacOS
-#   pool:
-#     vmImage: 'macOS-10.15'
-#   steps:
-#   - script: |
-#       echo "##vso[task.prependpath]$CONDA/bin"
-#       sudo chown -R $USER $CONDA
-#       conda config --set always_yes yes --set changeps1 no
-#       conda update -q conda
-#       conda create -n CB python=$(python.version)
-#       conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn mpich
-#       conda install -n CB -q --override-channels -c intel dal dal-include
-#     displayName: Create Anaconda environment
-#   - script: |
-#       source activate CB
-#       export DALROOT=$CONDA_PREFIX
-#       ./conda-recipe/build.sh
-#     displayName: Conda build
-#   - script: |
-#       source activate CB
-#       ./conda-recipe/run_test.sh
-#     displayName: Testing
-#   - script: |
-#       source activate CB
-#       cd examples && python run_examples.py
-#     displayName: Examples
+- job: MacOS
+  pool:
+    vmImage: 'macOS-10.15'
+  steps:
+  - script: |
+      echo "##vso[task.prependpath]$CONDA/bin"
+      sudo chown -R $USER $CONDA
+      conda config --set always_yes yes --set changeps1 no
+      conda update -q conda
+      conda create -n CB python=$(python.version)
+      conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn mpich
+      conda install -n CB -q --override-channels -c intel dal dal-include
+    displayName: Create Anaconda environment
+  - script: |
+      source activate CB
+      export DALROOT=$CONDA_PREFIX
+      ./conda-recipe/build.sh
+    displayName: Conda build
+  - script: |
+      source activate CB
+      ./conda-recipe/run_test.sh
+    displayName: Testing
+  - script: |
+      source activate CB
+      cd examples && python run_examples.py
+    displayName: Examples
 
-# - job: Windows_DPCPP
-#   pool:
-#     vmImage: 'windows-latest'
-#   steps:
-#   - task: UsePythonVersion@0
-#     displayName: 'Use Python $(python.version)'
-#   - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
-#     timeoutInMinutes: 15
-#     displayName: oneAPI environment
-#   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-#     displayName: Add conda to PATH
-#   - script: conda create -q -y -n CB python=$(python.version) conda-build conda-verify
-#     displayName: Create Anaconda environment
-#   - script: |
-#       call activate CB
-#       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-#       conda build --override-channels -c intel -c conda-forge --numpy=1.19 --output-folder=. conda-recipe
-#     displayName: conda build
-#   - task: CopyFiles@2
-#     inputs:
-#       SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
-#       Contents: 'daal4py*'
-#       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-#   - task: PublishPipelineArtifact@0
-#     inputs:
-#       artifactName: 'daal4py win'
-#       targetPath: '$(Build.ArtifactStagingDirectory)/'
-#     condition: always()
-# - job: PEP8
-#   pool:
-#     vmImage: 'ubuntu-20.04'
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '3.7'
-#       addToPath: true
-#   - script: |
-#       python -m pip install --upgrade pip setuptools
-#       pip install flake8
-#       flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
-#     displayName: 'PEP 8 check'
+- job: Windows_DPCPP
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+  - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
+    timeoutInMinutes: 15
+    displayName: oneAPI environment
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+  - script: conda create -q -y -n CB python=$(python.version) conda-build conda-verify
+    displayName: Create Anaconda environment
+  - script: |
+      call activate CB
+      set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
+      conda build --override-channels -c intel -c conda-forge --numpy=1.19 --output-folder=. conda-recipe
+    displayName: conda build
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
+      Contents: 'daal4py*'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'daal4py win'
+      targetPath: '$(Build.ArtifactStagingDirectory)/'
+    condition: always()
+- job: PEP8
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+      addToPath: true
+  - script: |
+      python -m pip install --upgrade pip setuptools
+      pip install flake8
+      flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
+    displayName: 'PEP 8 check'
