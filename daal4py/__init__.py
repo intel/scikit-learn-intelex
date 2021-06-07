@@ -27,8 +27,8 @@ if "Windows" in platform.system():
     os.environ['PATH'] += os.pathsep + path_to_libs
 
 try:
-    from ._daal4py import *
-    from ._daal4py import (
+    from daal4py._daal4py import *
+    from daal4py._daal4py import (
         _get__version__,
         _get__daal_link_version__,
         _get__daal_run_version__,
