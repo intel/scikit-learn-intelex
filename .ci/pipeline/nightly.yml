@@ -45,7 +45,7 @@ jobs:
         --form description="$(DESCRIPTION)" \
         $(COVERITY_URL)
     displayName: 'Upload results of Coverity scan'
-- job: Jupyter examples
+- job: Jupyter
   pool:
     vmImage: 'ubuntu-20.04'
   steps:
