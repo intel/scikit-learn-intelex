@@ -79,7 +79,7 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      cd examples
+      cd examples/notebooks
       pip install jupyter matplotlib
       jupyter nbconvert --execute --ExecutePreprocessor.timeout=600 --to notebook *.ipynb
     displayName: 'Run jupyter notebook demo'
