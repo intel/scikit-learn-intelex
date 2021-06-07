@@ -29,6 +29,11 @@ class DataConversionWarning(UserWarning):
 
 def _column_or_1d(y, warn=False):
     y = np.asarray(y)
+
+    # TODO: Convert this kind of arrays to a table like in daal4py
+    if not y.flags.aligned and not y.flags.writeable:
+        y = np.array(y.tolist())
+
     shape = np.shape(y)
     if len(shape) == 1:
         return np.ravel(y)
@@ -99,10 +104,7 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
 
     # TODO: Convert this kind of arrays to a table like in daal4py
     if not array.flags.aligned and not array.flags.writeable:
-        try:
-            array = np.array(array.tolist())
-        except Exception as ex:
-            raise ex
+        array = np.array(array.tolist())
 
     # TODO: If data is not contiguous copy to contiguous
     # Need implemeted numpy table in oneDAL
