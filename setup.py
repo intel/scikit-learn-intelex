@@ -19,7 +19,12 @@
 import os
 import sys
 import time
+<<<<<<< HEAD
 from setuptools import setup, Extension
+=======
+from setuptools import setup, Extension, find_packages
+import setuptools.command.install as orig_install
+>>>>>>> test
 import setuptools.command.develop as orig_develop
 import distutils.command.build as orig_build
 from os.path import join as jp
