@@ -20,7 +20,7 @@ import os
 import sys
 import sysconfig
 import time
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 import setuptools.command.install as orig_install
 import setuptools.command.develop as orig_develop
 import distutils.command.build as orig_build
@@ -500,26 +500,27 @@ setup(
         'data science',
         'data analytics'
     ],
-    packages=[
-        'daal4py',
-        'daal4py.oneapi',
-        'daal4py.sklearn',
-        'daal4py.sklearn.cluster',
-        'daal4py.sklearn.decomposition',
-        'daal4py.sklearn.ensemble',
-        'daal4py.sklearn.linear_model',
-        'daal4py.sklearn.manifold',
-        'daal4py.sklearn.metrics',
-        'daal4py.sklearn.neighbors',
-        'daal4py.sklearn.monkeypatch',
-        'daal4py.sklearn.svm',
-        'daal4py.sklearn.utils',
-        'daal4py.sklearn.model_selection',
-        'onedal',
-        'onedal.svm',
-        'onedal.prims',
-        'onedal.common',
-    ],
+    packages=find_packages(include=["*"]),
+    # packages=[
+    #     'daal4py',
+    #     'daal4py.oneapi',
+    #     'daal4py.sklearn',
+    #     'daal4py.sklearn.cluster',
+    #     'daal4py.sklearn.decomposition',
+    #     'daal4py.sklearn.ensemble',
+    #     'daal4py.sklearn.linear_model',
+    #     'daal4py.sklearn.manifold',
+    #     'daal4py.sklearn.metrics',
+    #     'daal4py.sklearn.neighbors',
+    #     'daal4py.sklearn.monkeypatch',
+    #     'daal4py.sklearn.svm',
+    #     'daal4py.sklearn.utils',
+    #     'daal4py.sklearn.model_selection',
+    #     'onedal',
+    #     'onedal.svm',
+    #     'onedal.prims',
+    #     'onedal.common',
+    # ],
     package_data={
         'onedal': [
             'libdpc_backend.so',
