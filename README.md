@@ -146,16 +146,17 @@ with sycl_context("gpu"):
 - HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
 - SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
 
-<details><summary>[Click to expand] ℹ️ Reproduce data with help [scikit-learn_bench](https://github.com/IntelPython/scikit-learn_bench): </summary>
+[Benchmarks code](https://github.com/IntelPython/scikit-learn_bench)
 
-Intel® Extension for Scikit-learn enabled:
+<details><summary>[Click to expand] ℹ️ Reproduce data: </summary>
+
 ```bash
-python runner.py --configs configs/blogs/skl_conda_config.json --output-file result.json –report
-
+# Intel® Extension for Scikit-learn enabled:
+python runner.py --configs configs/blogs/skl_conda_config.json –report
 ```
-The original Scikit-learn:
 ```bash
-python runner.py --configs configs/blogs/skl_conda_config.json --output-file result.json –report --no-intel-optimized
+# The original Scikit-learn:
+python runner.py --configs configs/blogs/skl_conda_config.json –report --no-intel-optimized
 ```
 </details>
 
