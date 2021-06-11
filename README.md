@@ -164,7 +164,6 @@ python runner.py --configs configs/blogs/skl_conda_config.json –report --no-in
 Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
 
 <details><summary>[Click to expand] 🔥 Scikit-learn algorithms affected by the patching</summary>
- Applying the patching will impact the following existing scikit-learn algorithms:
 
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
