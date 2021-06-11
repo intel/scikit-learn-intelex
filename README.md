@@ -143,26 +143,27 @@ with sycl_context("gpu"):
 # 🚀 Scikit-learn patching
 
 ![](https://raw.githubusercontent.com/PetrovKP/daal4py/update-perf-data/doc/scikit-learn-acceleration-2021.2.3.PNG)
+Configurations:
 - HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
 - SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
 
 [Benchmarks code](https://github.com/IntelPython/scikit-learn_bench)
 
-<details><summary>[Click to expand] ℹ️ Reproduce data: </summary>
+<details><summary>[Click to expand] ℹ️ Reproduce results </summary>
 
 ```bash
-# Intel® Extension for Scikit-learn enabled:
+# With Intel® Extension for Scikit-learn enabled:
 python runner.py --configs configs/blogs/skl_conda_config.json –report
 ```
 ```bash
-# The original Scikit-learn:
+# With the original Scikit-learn:
 python runner.py --configs configs/blogs/skl_conda_config.json –report --no-intel-optimized
 ```
 </details>
 
 Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
 
-<details><summary>[Click to expand] 🔥 Applying the patching will impact the following existing scikit-learn algorithms: </summary>
+<details><summary>[Click to expand] 🔥 Applying the patching will impact the following existing scikit-learn algorithms </summary>
 
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
