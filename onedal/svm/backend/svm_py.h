@@ -26,6 +26,7 @@ struct svm_params {
     std::string kernel;
     std::string method;
     double c;
+    double nu;
     int class_count;
     double epsilon;
     double accuracy_threshold;
@@ -43,10 +44,11 @@ template <typename Task>
 class svm_model {
 public:
     svm_model();
-
     svm_model(const svm::model<Task>& model);
-
     svm::model<Task>& get_onedal_model();
+
+    PyObject* serialize();
+    void deserialize(PyObject* py_bytes);
 
 private:
     svm::model<Task> model_;

@@ -24,6 +24,10 @@ cdef extern from "oneapi/dal/algo/svm.hpp" namespace "oneapi::dal::svm::task":
         pass
     cdef cppclass regression:
         pass
+    cdef cppclass nu_classification:
+        pass
+    cdef cppclass nu_regression:
+        pass
 
 cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
     cdef cppclass svm_params:
@@ -31,6 +35,7 @@ cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
         std_string kernel
         int class_count
         double c
+        double nu
         double epsilon
         double accuracy_threshold
         int max_iteration_count
@@ -44,6 +49,8 @@ cdef extern from "svm/backend/svm_py.h" namespace "oneapi::dal::python":
 
     cdef cppclass svm_model[task_t]:
         svm_model() except +
+        object serialize() except +
+        void deserialize(object bytes) except +
 
     cdef cppclass svm_train[task_t]:
         svm_train(svm_params *) except +

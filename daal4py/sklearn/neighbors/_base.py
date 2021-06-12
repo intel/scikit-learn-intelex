@@ -28,6 +28,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.base import is_classifier, is_regressor
 import logging
+import warnings
 
 if sklearn_check_version("0.22"):
     from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
@@ -35,12 +36,14 @@ if sklearn_check_version("0.22"):
     from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
     from sklearn.neighbors._ball_tree import BallTree
     from sklearn.neighbors._kd_tree import KDTree
+    from sklearn.neighbors._base import _check_weights
 else:
     from sklearn.neighbors.base import KNeighborsMixin as BaseKNeighborsMixin
     from sklearn.neighbors.base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
     from sklearn.neighbors.base import NeighborsBase as BaseNeighborsBase
     from sklearn.neighbors.ball_tree import BallTree
     from sklearn.neighbors.kd_tree import KDTree
+    from sklearn.neighbors.base import _check_weights
 
 
 def training_algorithm(method, fptype, params):
@@ -278,6 +281,15 @@ class NeighborsBase(BaseNeighborsBase):
             p=p, metric_params=metric_params, n_jobs=n_jobs)
 
     def _fit(self, X, y=None):
+        if self.metric_params is not None and 'p' in self.metric_params:
+            if self.p is not None:
+                warnings.warn("Parameter p is found in metric_params. "
+                              "The corresponding parameter from __init__ "
+                              "is ignored.", SyntaxWarning, stacklevel=2)
+
+        if hasattr(self, 'weights') and sklearn_check_version("1.0"):
+            self.weights = _check_weights(self.weights)
+
         X_incorrect_type = isinstance(
             X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
         single_output = True

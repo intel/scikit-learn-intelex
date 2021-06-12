@@ -14,8 +14,10 @@ Running the latest scikit-learn test suite with Intel(R) Extension for Scikit-le
 
 ## 👀 Follow us on Medium
 
-We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis the help of Intel(R) Extension for Scikit-learn. Here are our latest blogs:
+We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis with the help of Intel(R) Extension for Scikit-learn. Here are our latest blogs:
 
+- [Superior Machine Learning Performance on the Latest Intel Xeon Scalable Processors](https://medium.com/intel-analytics-software/superior-machine-learning-performance-on-the-latest-intel-xeon-scalable-processor-efdec279f5a3)
+- [Leverage Intel Optimizations in Scikit-Learn](https://medium.com/intel-analytics-software/leverage-intel-optimizations-in-scikit-learn-f562cb9d5544)
 - [Intel Gives Scikit-Learn the Performance Boost Data Scientists Need](https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18)
 - [From Hours to Minutes: 600x Faster SVM](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)
 - [Improve the Performance of XGBoost and LightGBM Inference](https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e)
@@ -89,6 +91,23 @@ conda install scikit-learn-intelex -c intel
 
 </details>
 
+⚠️ Note: *GPU support is an optional dependency. Required dependencies for GPU support
+will not be downloaded. You need to manually install ***dpcpp_cpp_rt*** package.*
+
+<details><summary>[Click to expand] ℹ️ How to install dpcpp_cpp_rt package </summary>
+
+```bash
+# PyPi
+pip install --upgrade dpcpp_cpp_rt
+```
+
+```bash
+# Anaconda Cloud
+conda install dpcpp_cpp_rt -c intel
+```
+
+</details>
+
 You can [build the package from sources](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md) as well.
 
 # ⚡️ Get Started
@@ -123,14 +142,28 @@ with sycl_context("gpu"):
 
 # 🚀 Scikit-learn patching
 
-| Speedups of Intel(R) Extension for Scikit-learn over the original Scikit-learn |
-|:--:|
-| ![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/scikit-learn-acceration.png) |
-| *Technical details: float type: float64; HW: Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz, 2 sockets, 28 cores per socket; SW: scikit-learn 0.23.1, Intel® oneDAl (2021.1 Beta 10), [benchmark code](https://github.com/IntelPython/scikit-learn_bench)* |
+![](https://raw.githubusercontent.com/PetrovKP/daal4py/update-perf-data/doc/scikit-learn-acceleration-2021.2.3.PNG)
+Configurations:
+- HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
+- SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
+
+[Benchmarks code](https://github.com/IntelPython/scikit-learn_bench)
+
+<details><summary>[Click to expand] ℹ️ Reproduce results </summary>
+
+```bash
+# With Intel® Extension for Scikit-learn enabled:
+python runner.py --configs configs/blogs/skl_conda_config.json –report
+```
+```bash
+# With the original Scikit-learn:
+python runner.py --configs configs/blogs/skl_conda_config.json –report --no-intel-optimized
+```
+</details>
 
 Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
 
-<details><summary>[Click to expand] 🔥 Applying the patching will impact the following existing scikit-learn algorithms: </summary>
+<details><summary>[Click to expand] 🔥 Scikit-learn algorithms affected by the patching</summary>
 
 |Task|Functionality|Parameters support|Data support|
 |:---|:------------|:-----------------|:-----------|
@@ -156,8 +189,8 @@ Intel(R) Extension for Scikit-learn patching affects performance of specific Sci
 
  </details>
 
-⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.2.X supports scikit-learn 0.21.X,
-0.22.X, 0.23.X and 0.24.X.
+⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.2.X supports scikit-learn 0.22.X,
+0.23.X, 0.24.X and 1.0.X.
 
 ## 📜 Intel(R) Extension for Scikit-learn verbose
 

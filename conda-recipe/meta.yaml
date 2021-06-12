@@ -1,0 +1,109 @@
+#===============================================================================
+# Copyright 2020-2021 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#===============================================================================
+
+{% set version = '2021.4' %}
+{% set buildnumber = 0 %}
+
+package:
+    name: daal4py
+    version: {{ version }}
+
+source:
+    path: ..
+
+build:
+    number: {{ buildnumber }}
+    include_recipe: False
+    script_env:
+    - DPCPPROOT
+    - DAALROOT
+    - DALROOT
+    - TBBROOT
+    ignore_run_exports:
+       - python
+       - mpich
+
+requirements:
+    build:
+        - {{ compiler('cxx') }}  # [not osx]
+        - {{ compiler('c') }}  # [not osx]
+    host:
+        - python
+        - setuptools
+        - numpy {{ numpy }}
+        - daal-devel >=2020.3
+        - cython
+        - jinja2
+        - mpich  # [osx]
+        - impi-devel  # [not osx]
+        - clang-tools
+    run:
+        - python
+        - dpcpp_cpp_rt
+        - daal >=2020.3
+    ignore_run_exports:
+        - numpy
+
+test:
+    requires:
+        - lightgbm  # [not win]
+        - pandas
+        - scipy
+        - scikit-learn
+        - threadpoolctl
+        - xgboost  # [not win]
+        - pytest
+        - mpich  # [osx]
+        - impi_rt  # [not osx]
+    source_files:
+        - examples
+        - tests
+        - daal4py
+    commands:
+        - python -c "import daal4py"
+        - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
+        - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
+        - python -m unittest discover -v -s tests -p test*.py
+        - pytest --pyargs daal4py/sklearn/
+        - python examples/daal4py/run_examples.py
+        - python -m daal4py examples/daal4py/sycl/sklearn_sycl.py
+
+about:
+    about:
+        home: https://intelpython.github.io/daal4py/
+        license: Apache-2.0
+        license_file:
+              - LICENSE
+              - doc/third-party-programs.txt
+        summary: A convenient Python API to Intel (R) oneAPI Data Analytics Library
+        description: |
+          <strong>LEGAL NOTICE: Use of this software package is subject to the
+          software license agreement (as set forth above, in the license section of
+          the installed Conda package and/or the README file) and all notices,
+          disclaimers or license terms for third party or open source software
+          included in or with the software.</strong>
+          <br/><br/>
+          EULA: <a href="https://opensource.org/licenses/Apache-2.0" target="_blank">Apache-2.0</a>
+          <br/><br/>
+        dev_url: https://github.com/IntelPython/daal4py
+        doc_url: https://intelpython.github.io/daal4py
+
+extra:
+    recipe-maintainers:
+        # GitHub IDs for maintainers of the recipe.
+        - napetrov
+        - PetrovKP
+        - SmirnovEgorRu

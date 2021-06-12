@@ -19,12 +19,34 @@ import platform
 if "Windows" in platform.system():
     import os
     import sys
-    import site
+    import sysconfig
+
     current_path = os.path.dirname(__file__)
+
+    sitepackages_path = sysconfig.get_paths()['purelib']
+    installed_package_path = os.path.join(sitepackages_path, 'daal4py', 'oneapi')
 
     if sys.version_info.minor >= 8:
         os.add_dll_directory(current_path)
-    os.environ['PATH'] += os.pathsep + current_path
+        if os.path.exists(installed_package_path):
+            os.add_dll_directory(installed_package_path)
+    os.environ['PATH'] = current_path + os.pathsep + os.environ['PATH']
+    os.environ['PATH'] = installed_package_path + os.pathsep + os.environ['PATH']
 
-from _oneapi import *
-from _oneapi import _get_sycl_ctxt, _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
+try:
+    from _oneapi import *
+    from _oneapi import _get_sycl_ctxt, _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
+except ModuleNotFoundError:
+    raise
+except ImportError:
+    import daal4py
+    version = daal4py._get__version__()[1:-1].split(', ')
+    major_version, minor_version = version[0], version[1]
+    raise ImportError(
+        f'dpcpp_cpp_rt >= {major_version}.{minor_version} '
+        'has to be installed or upgraded to use this module.\n'
+        'You can download or upgrade it using the following commands:\n'
+        f'`pip install --upgrade dpcpp_cpp_rt>={major_version}.{minor_version}.*` '
+        'or '
+        f'`conda install -c intel dpcpp_cpp_rt>={major_version}.{minor_version}.*`'
+    )

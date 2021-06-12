@@ -16,29 +16,30 @@
 
 #pragma once
 
-#ifdef ONEDAL_DATA_PARALLEL
-#include <CL/sycl.hpp>
-#endif
-
-#ifdef DPCTL_ENABLE
-#include "dpctl_sycl_types.h"
-#include "dpctl_sycl_queue_manager.h"
-#endif
+#include "oneapi/dal/detail/serialization.hpp"
+#include "oneapi/dal/detail/archives.hpp"
+#include "Python.h"
 
 namespace oneapi::dal::python {
-template <typename... Args>
-auto compute(Args &&... args) {
-#if defined(DPCTL_ENABLE)
-    auto dpctl_queue = DPCTLQueueMgr_GetCurrentQueue();
-    if (dpctl_queue != NULL) {
-        cl::sycl::queue &sycl_queue = *reinterpret_cast<cl::sycl::queue *>(dpctl_queue);
-        return dal::compute(sycl_queue, std::forward<Args>(args)...);
-    }
-    else {
-        throw std::runtime_error("Cannot set daal context: Pointer to queue object is NULL");
-    }
-#endif
-    return dal::compute(std::forward<Args>(args)...);
+
+template <typename T>
+PyObject* serialize_si(T& original) {
+    detail::binary_output_archive archive;
+    detail::serialize(original, archive);
+    const auto data = archive.to_array();
+    const Py_ssize_t buf_len = archive.get_size();
+    return PyBytes_FromStringAndSize(reinterpret_cast<const char*>(data.get_data()), buf_len);
+}
+
+template <typename T>
+T deserialize_si(PyObject* py_bytes) {
+    T deserialized;
+    char* buf;
+    Py_ssize_t buf_len;
+    PyBytes_AsStringAndSize(py_bytes, &buf, &buf_len);
+    detail::binary_input_archive archive{ reinterpret_cast<byte_t*>(buf), buf_len };
+    detail::deserialize(deserialized, archive);
+    return deserialized;
 }
 
 } // namespace oneapi::dal::python

@@ -18,7 +18,11 @@
 daal4py_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 count=3
 while [[ count -ne 0 ]]; do
+<<<<<<< HEAD:dev/run_test.sh
     if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/daal4py/tests/ && -d $daal4py_dir/examples/ ]]; then
+=======
+    if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/tests/ && -d $daal4py_dir/examples/daal4py ]]; then
+>>>>>>> ea349ef5725a218fd8146abba4dcae5a38e05615:conda-recipe/run_test.sh
         break
     fi
     daal4py_dir="$( dirname "${daal4py_dir}" )"
@@ -49,7 +53,7 @@ echo "Unittest discover testing ..."
 python -m unittest discover -v -s ${daal4py_dir}/daal4py/tests -p test*.py
 return_code=$(($return_code + $?))
 
-echo "Pytest running ..."
+echo "Pytest of daal4py running ..."
 pytest --pyargs ${daal4py_dir}/daal4py/sklearn/
 return_code=$(($return_code + $?))
 

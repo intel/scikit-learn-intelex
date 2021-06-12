@@ -25,16 +25,19 @@ include "svm.pxi"
 cdef class PySvmParams:
     cdef svm_params pt
 
-    def __init__(self, method, kernel, class_count, c,
+    def __init__(self, method, kernel, class_count, c, nu,
                  epsilon, accuracy_threshold, max_iteration_count,
-                 tau, sigma, shift, scale, degree):
+                 cache_size, shrinking, tau, sigma, shift, scale, degree):
         self.pt.method = to_std_string( < PyObject * >method)
         self.pt.kernel = to_std_string( < PyObject * >kernel)
         self.pt.class_count = class_count
         self.pt.c = c
+        self.pt.nu = nu
         self.pt.epsilon = epsilon
         self.pt.accuracy_threshold = accuracy_threshold
         self.pt.max_iteration_count = max_iteration_count
+        self.pt.cache_size = cache_size
+        self.pt.shrinking = shrinking
         self.pt.tau = tau
         self.pt.sigma = sigma
         self.pt.shift = shift
@@ -52,14 +55,16 @@ cdef class PyClassificationSvmModel:
         del self.thisptr
 
     def __setstate__(self, state):
-        # TODO: need serialize of models on c++ side
-        # if isinstance(state, bytes):
-        #    self.thisptr = svm_model[svm_model[classification]](state)
-        # else:
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if isinstance(state, bytes):
+           self.thisptr.deserialize(state)
+        else:
+           raise ValueError("Invalid state")
 
     def __getstate__(self):
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if self.thisptr == NULL:
+            raise ValueError("Pointer to svm model is NULL")
+        bytes = self.thisptr.serialize()
+        return bytes
 
 
 cdef class PyClassificationSvmTrain:
@@ -124,14 +129,16 @@ cdef class PyRegressionSvmModel:
         del self.thisptr
 
     def __setstate__(self, state):
-        # TODO: need serialize of models on c++ side
-        # if isinstance(state, bytes):
-        #    self.thisptr = svm_model[svm_model[regression]](state)
-        # else:
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if isinstance(state, bytes):
+           self.thisptr.deserialize(state)
+        else:
+           raise ValueError("Invalid state")
 
     def __getstate__(self):
-        raise NotImplementedError("serialize not avalible for onedal models")
+        if self.thisptr == NULL:
+            raise ValueError("Pointer to svm model is NULL")
+        bytes = self.thisptr.serialize()
+        return bytes
 
 
 cdef class PyRegressionSvmTrain:
@@ -174,6 +181,151 @@ cdef class PyRegressionSvmInfer:
         del self.thisptr
 
     def infer(self, data, PyRegressionSvmModel model):
+        self.thisptr.infer( < PyObject * >data, model.thisptr)
+
+    def infer_builder(self, data, support_vectors, coeffs, biases):
+        self.thisptr.infer( < PyObject * >data, < PyObject * >support_vectors, < PyObject * >coeffs, < PyObject * >biases)
+
+    def get_labels(self):
+        return < object > self.thisptr.get_labels()
+
+
+cdef class PyNuClassificationSvmModel:
+    cdef svm_model[nu_classification] * thisptr
+
+    def __cinit__(self):
+        self.thisptr = new svm_model[nu_classification]()
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def __setstate__(self, state):
+        if isinstance(state, bytes):
+           self.thisptr.deserialize(state)
+        else:
+           raise ValueError("Invalid state")
+
+    def __getstate__(self):
+        if self.thisptr == NULL:
+            raise ValueError("Pointer to svm model is NULL")
+        bytes = self.thisptr.serialize()
+        return bytes
+
+
+cdef class PyNuClassificationSvmTrain:
+    cdef svm_train[nu_classification] * thisptr
+
+    def __cinit__(self, PySvmParams params):
+        self.thisptr = new svm_train[nu_classification](& params.pt)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def train(self, data, labels, weights):
+        self.thisptr.train( < PyObject * >data, < PyObject * >labels, < PyObject * >weights)
+
+    def get_support_vectors(self):
+        return < object > self.thisptr.get_support_vectors()
+
+    def get_support_indices(self):
+        return < object > self.thisptr.get_support_indices()
+
+    def get_coeffs(self):
+        return < object > self.thisptr.get_coeffs()
+
+    def get_biases(self):
+        return < object > self.thisptr.get_biases()
+
+    def get_model(self):
+        cdef PyNuClassificationSvmModel res = PyNuClassificationSvmModel.__new__(PyNuClassificationSvmModel)
+        res.thisptr[0] = self.thisptr.get_model()
+        return res
+
+
+cdef class PyNuClassificationSvmInfer:
+    cdef svm_infer[nu_classification] * thisptr
+
+    def __cinit__(self, PySvmParams params):
+        self.thisptr = new svm_infer[nu_classification](& params.pt)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def infer(self, data, PyNuClassificationSvmModel model):
+        self.thisptr.infer( < PyObject * >data, model.thisptr)
+
+    def infer_builder(self, data, support_vectors, coeffs, biases):
+        self.thisptr.infer( < PyObject * >data, < PyObject * >support_vectors, < PyObject * >coeffs, < PyObject * >biases)
+
+    def get_labels(self):
+        return < object > self.thisptr.get_labels()
+
+    def get_decision_function(self):
+        return < object > self.thisptr.get_decision_function()
+
+
+cdef class PyNuRegressionSvmModel:
+    cdef svm_model[nu_regression] * thisptr
+
+    def __cinit__(self):
+        self.thisptr = new svm_model[nu_regression]()
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def __setstate__(self, state):
+        if isinstance(state, bytes):
+           self.thisptr.deserialize(state)
+        else:
+           raise ValueError("Invalid state")
+
+    def __getstate__(self):
+        if self.thisptr == NULL:
+            raise ValueError("Pointer to svm model is NULL")
+        bytes = self.thisptr.serialize()
+        return bytes
+
+
+cdef class PyNuRegressionSvmTrain:
+    cdef svm_train[nu_regression] * thisptr
+
+    def __cinit__(self, PySvmParams params):
+        self.thisptr = new svm_train[nu_regression](& params.pt)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def train(self, data, labels, weights):
+        self.thisptr.train( < PyObject * >data, < PyObject * >labels, < PyObject * >weights)
+
+    def get_support_vectors(self):
+        return < object > self.thisptr.get_support_vectors()
+
+    def get_support_indices(self):
+        return < object > self.thisptr.get_support_indices()
+
+    def get_coeffs(self):
+        return < object > self.thisptr.get_coeffs()
+
+    def get_biases(self):
+        return < object > self.thisptr.get_biases()
+
+    def get_model(self):
+        cdef PyNuRegressionSvmModel res = PyNuRegressionSvmModel.__new__(PyNuRegressionSvmModel)
+        res.thisptr[0] = self.thisptr.get_model()
+        return res
+
+
+cdef class PyNuRegressionSvmInfer:
+    cdef svm_infer[nu_regression] * thisptr
+
+    def __cinit__(self, PySvmParams params):
+        self.thisptr = new svm_infer[nu_regression](& params.pt)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def infer(self, data, PyNuRegressionSvmModel model):
         self.thisptr.infer( < PyObject * >data, model.thisptr)
 
     def infer_builder(self, data, support_vectors, coeffs, biases):

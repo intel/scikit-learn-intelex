@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 import random
 
-from daal4py.sklearn import patch_sklearn
+from sklearnex import patch_sklearn
 patch_sklearn()
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -28,7 +28,7 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor, Nearest
 from sklearn.linear_model import LinearRegression, Ridge, ElasticNet, Lasso
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.decomposition import PCA
-from sklearn.svm import SVC
+from sklearn.svm import SVC, NuSVC, SVR, NuSVR
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 
@@ -89,7 +89,6 @@ def method_processing(X, clf, methods):
 
 def func(X, Y, clf, methods):
     clf.fit(X, Y)
-
     res, name = method_processing(X, clf, methods)
 
     for i in clf.__dict__.keys():
@@ -192,28 +191,34 @@ MODELS_INFO = [
     },
     {
         'model': DBSCAN(algorithm="brute", n_jobs=-1),
-        'methods': ['fit_predict'],
+        'methods': [],
         'dataset': 'blobs',
     },
     {
-        'model': SVC(kernel='linear'),
-        'methods': ['predict', 'decision_function'],
-        'dataset': 'classifier',
-    },
-    {
         'model': SVC(kernel='rbf'),
         'methods': ['predict', 'decision_function'],
         'dataset': 'classifier',
     },
+    # Uncomment after enable sparse support for new interfaces
+    # {
+    #     'model': SVC(kernel='rbf'),
+    #     'methods': ['predict', 'decision_function'],
+    #     'dataset': 'sparse',
+    # },
     {
-        'model': SVC(kernel='linear'),
+        'model': NuSVC(kernel='rbf'),
         'methods': ['predict', 'decision_function'],
-        'dataset': 'sparse',
+        'dataset': 'classifier',
     },
     {
-        'model': SVC(kernel='rbf'),
-        'methods': ['predict', 'decision_function'],
-        'dataset': 'sparse',
+        'model': SVR(kernel='rbf'),
+        'methods': ['predict'],
+        'dataset': 'regression',
+    },
+    {
+        'model': NuSVR(kernel='rbf'),
+        'methods': ['predict'],
+        'dataset': 'regression',
     },
     {
         'model': TSNE(random_state=0),

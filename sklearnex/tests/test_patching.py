@@ -62,7 +62,6 @@ def get_result_log():
     except subprocess.CalledProcessError as e:
         print(e)
         exit(1)
-
     mas = []
     result = {}
     for i in process.decode().split('\n'):

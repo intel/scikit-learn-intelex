@@ -18,46 +18,13 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
-from onedal.svm import SVC
+from onedal.svm import NuSVC
+from sklearn.svm import NuSVC as SklearnNuSVC
 
-from sklearn.utils.estimator_checks import check_estimator
-import sklearn.utils.estimator_checks
 from sklearn import datasets
-from sklearn.metrics.pairwise import rbf_kernel
 from sklearn.datasets import make_blobs
+from sklearn.metrics.pairwise import rbf_kernel
 from sklearn.model_selection import train_test_split
-
-
-def _replace_and_save(md, fns, replacing_fn):
-    saved = dict()
-    for check_f in fns:
-        try:
-            fn = getattr(md, check_f)
-            setattr(md, check_f, replacing_fn)
-            saved[check_f] = fn
-        except RuntimeError:
-            pass
-    return saved
-
-
-def _restore_from_saved(md, saved_dict):
-    for check_f in saved_dict:
-        setattr(md, check_f, saved_dict[check_f])
-
-
-def test_estimator():
-    def dummy(*args, **kwargs):
-        pass
-
-    md = sklearn.utils.estimator_checks
-    saved = _replace_and_save(md, [
-        'check_sample_weights_invariance',  # Max absolute difference: 0.0008
-        'check_estimators_fit_returns_self',  # ValueError: empty metadata
-        'check_classifiers_train',  # assert y_pred.shape == (n_samples,)
-        'check_estimators_unfitted',  # Call 'fit' with appropriate arguments
-    ], dummy)
-    check_estimator(SVC())
-    _restore_from_saved(md, saved)
 
 
 def _test_libsvm_parameters(array_constr, dtype):
@@ -65,10 +32,11 @@ def _test_libsvm_parameters(array_constr, dtype):
                       [1, 1], [1, 2], [2, 1]], dtype=dtype)
     y = array_constr([1, 1, 1, 2, 2, 2], dtype=dtype)
 
-    clf = SVC(kernel='linear').fit(X, y)
-    assert_array_equal(clf.dual_coef_, [[-0.25, .25]])
-    assert_array_equal(clf.support_, [1, 3])
-    assert_array_equal(clf.support_vectors_, (X[1], X[3]))
+    clf = NuSVC(kernel='linear').fit(X, y)
+    assert_array_almost_equal(
+        clf.dual_coef_, [[-0.04761905, -0.0952381, 0.0952381, 0.04761905]])
+    assert_array_equal(clf.support_, [0, 1, 3, 4])
+    assert_array_equal(clf.support_vectors_, X[clf.support_])
     assert_array_equal(clf.intercept_, [0.])
     assert_array_equal(clf.predict(X), y)
 
@@ -83,7 +51,7 @@ def test_class_weight():
     X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
     y = np.array([1, 1, 1, 2, 2, 2])
 
-    clf = SVC(class_weight={1: 0.1})
+    clf = NuSVC(class_weight={1: 0.1})
     clf.fit(X, y)
     assert_array_almost_equal(clf.predict(X), [2] * 6)
 
@@ -92,7 +60,7 @@ def test_sample_weight():
     X = np.array([[-2, 0], [-1, -1], [0, -2], [0, 2], [1, 1], [2, 2]])
     y = np.array([1, 1, 1, 2, 2, 2])
 
-    clf = SVC(kernel='linear')
+    clf = NuSVC(kernel='linear')
     clf.fit(X, y, sample_weight=[1] * 6)
     assert_array_almost_equal(clf.intercept_, [0.0])
 
@@ -101,7 +69,7 @@ def test_decision_function():
     X = [[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]]
     Y = [1, 1, 1, 2, 2, 2]
 
-    clf = SVC(kernel='rbf', gamma=1, decision_function_shape='ovo')
+    clf = NuSVC(kernel='rbf', gamma=1, decision_function_shape='ovo')
     clf.fit(X, Y)
 
     rbfs = rbf_kernel(X, clf.support_vectors_, gamma=clf.gamma)
@@ -111,7 +79,7 @@ def test_decision_function():
 
 def test_iris():
     iris = datasets.load_iris()
-    clf = SVC(kernel='linear').fit(iris.data, iris.target)
+    clf = NuSVC(kernel='linear').fit(iris.data, iris.target)
     assert clf.score(iris.data, iris.target) > 0.9
     assert_array_equal(clf.classes_, np.sort(clf.classes_))
 
@@ -121,18 +89,18 @@ def test_decision_function_shape():
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
     # check shape of ovo_decition_function=True
-    clf = SVC(kernel='linear',
-              decision_function_shape='ovo').fit(X_train, y_train)
+    clf = NuSVC(kernel='linear',
+                decision_function_shape='ovo').fit(X_train, y_train)
     dec = clf.decision_function(X_train)
     assert dec.shape == (len(X_train), 10)
 
-    with pytest.raises(ValueError, match="must be either 'ovr' or 'ovo'"):
-        SVC(decision_function_shape='bad').fit(X_train, y_train)
+    # with pytest.raises(ValueError, match="must be either 'ovr' or 'ovo'"):
+    #     SVC(decision_function_shape='bad').fit(X_train, y_train)
 
 
 def test_pickle():
     iris = datasets.load_iris()
-    clf = SVC(kernel='linear').fit(iris.data, iris.target)
+    clf = NuSVC(kernel='linear').fit(iris.data, iris.target)
     expected = clf.decision_function(iris.data)
 
     import pickle
@@ -142,3 +110,67 @@ def test_pickle():
     assert type(clf2) == clf.__class__
     result = clf2.decision_function(iris.data)
     assert_array_equal(expected, result)
+
+
+def _test_cancer_rbf_compare_with_sklearn(nu, gamma):
+    cancer = datasets.load_breast_cancer()
+
+    clf = NuSVC(kernel='rbf', gamma=gamma, nu=nu)
+    clf.fit(cancer.data, cancer.target)
+    result = clf.score(cancer.data, cancer.target)
+
+    clf = SklearnNuSVC(kernel='rbf', gamma=gamma, nu=nu)
+    clf.fit(cancer.data, cancer.target)
+    expected = clf.score(cancer.data, cancer.target)
+
+    assert result > 0.4
+    assert abs(result - expected) < 1e-4
+
+
+@pytest.mark.parametrize('gamma', ['scale', 'auto'])
+@pytest.mark.parametrize('nu', [0.25, 0.5])
+def test_cancer_rbf_compare_with_sklearn(nu, gamma):
+    _test_cancer_rbf_compare_with_sklearn(nu, gamma)
+
+
+def _test_cancer_linear_compare_with_sklearn(nu):
+    cancer = datasets.load_breast_cancer()
+
+    clf = NuSVC(kernel='linear', nu=nu)
+    clf.fit(cancer.data, cancer.target)
+    result = clf.score(cancer.data, cancer.target)
+
+    clf = SklearnNuSVC(kernel='linear', nu=nu)
+    clf.fit(cancer.data, cancer.target)
+    expected = clf.score(cancer.data, cancer.target)
+
+    assert result > 0.5
+    assert abs(result - expected) < 1e-3
+
+
+@pytest.mark.parametrize('nu', [0.25, 0.5])
+def test_cancer_linear_compare_with_sklearn(nu):
+    _test_cancer_linear_compare_with_sklearn(nu)
+
+
+def _test_cancer_poly_compare_with_sklearn(params):
+    cancer = datasets.load_breast_cancer()
+
+    clf = NuSVC(kernel='poly', **params)
+    clf.fit(cancer.data, cancer.target)
+    result = clf.score(cancer.data, cancer.target)
+
+    clf = SklearnNuSVC(kernel='poly', **params)
+    clf.fit(cancer.data, cancer.target)
+    expected = clf.score(cancer.data, cancer.target)
+
+    assert result > 0.5
+    assert abs(result - expected) < 1e-4
+
+
+@pytest.mark.parametrize('params', [
+    {'degree': 2, 'coef0': 0.1, 'gamma': 'scale', 'nu': .25},
+    {'degree': 3, 'coef0': 0.0, 'gamma': 'scale', 'nu': .5}
+])
+def test_cancer_poly_compare_with_sklearn(params):
+    _test_cancer_poly_compare_with_sklearn(params)

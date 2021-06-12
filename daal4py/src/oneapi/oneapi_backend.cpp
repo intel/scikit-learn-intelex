@@ -160,7 +160,7 @@ daal::data_management::NumericTablePtr * to_daal_nt(void * ptr, int * shape)
 #if INTEL_DAAL_VERSION >= 20210200
         auto * usm_ptr = reinterpret_cast<daal::services::SharedPtr<T> *>(ptr);
         // we need to return a pointer to safely cross language boundaries
-        return new daal::data_management::NumericTablePtr(TBL_T::create(*usm_ptr, shape[1], shape[0], get_current_queue()));
+        return new daal::data_management::NumericTablePtr(TBL_T::create(usm_ptr->get(), shape[1], shape[0], get_current_queue()));
 #else
         auto * buffer = reinterpret_cast<sycl::buffer<T> *>(ptr);
         return new daal::data_management::NumericTablePtr(TBL_T::create(*buffer, shape[1], shape[0]));

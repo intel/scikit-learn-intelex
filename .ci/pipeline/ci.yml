@@ -29,7 +29,7 @@ variables:
     value: '1'
 
 jobs:
-- job: Linux_Docs
+- job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
   steps:
@@ -55,6 +55,11 @@ jobs:
       export DALROOT=$CONDA_PREFIX
       ./dev/build.sh
     displayName: 'Build daal4py'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+    displayName: 'Build slearnex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -164,7 +169,7 @@ jobs:
     displayName: Testing
   - script: |
       source activate CB
-      cd examples && python run_examples.py
+      cd examples/daal4py && python run_examples.py
     displayName: Examples
 
 - job: Windows_DPCPP
