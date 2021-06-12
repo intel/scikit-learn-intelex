@@ -14,8 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-{% set version = '2021.1' %}
-{% set buildnumber = 4 %}
+{% set version = '2021.4' %}
+{% set buildnumber = 0 %}
 
 package:
     name: daal4py
@@ -78,8 +78,8 @@ test:
         - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
         - pytest --pyargs daal4py/sklearn/
-        - python examples/run_examples.py
-        - python -m daal4py examples/sycl/sklearn_sycl.py
+        - python examples/daal4py/run_examples.py
+        - python -m daal4py examples/daal4py/sycl/sklearn_sycl.py
 
 about:
     about:
