@@ -18,11 +18,8 @@
 daal4py_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 count=3
 while [[ count -ne 0 ]]; do
-<<<<<<< HEAD:dev/run_test.sh
     if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/daal4py/tests/ && -d $daal4py_dir/examples/ ]]; then
-=======
-    if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/tests/ && -d $daal4py_dir/examples/daal4py ]]; then
->>>>>>> ea349ef5725a218fd8146abba4dcae5a38e05615:conda-recipe/run_test.sh
+        dev/run_test.sh
         break
     fi
     daal4py_dir="$( dirname "${daal4py_dir}" )"
