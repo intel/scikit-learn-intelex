@@ -49,7 +49,7 @@ def custom_build_cmake_clib():
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")
 
-    builder_directory = jp(root_dir, "scripts")
+    builder_directory = jp(root_dir, "dev")
     abs_build_temp_path = jp(root_dir, "build", "backend")
     install_directory = jp(root_dir, "onedal")
     log.info(f"Builder directory: {builder_directory}")
