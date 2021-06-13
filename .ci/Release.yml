@@ -60,10 +60,11 @@ jobs:
     displayName: Add conda to PATH
   - script: |
       sudo conda update -y -q conda
-      sudo conda install -y -q python=$(python.version) scikit-learn-intelex pandas pytest
+      sudo conda create -y -q -n CB python=$(python.version) scikit-learn-intelex pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
       cd ..
       python -c "import sklearnex"
     displayName: 'Testing of import'
