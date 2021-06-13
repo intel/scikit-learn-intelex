@@ -68,11 +68,16 @@ jobs:
     condition: eq( variables['Agent.OS'], 'Windows_NT' )
     displayName: Add conda to PATH
   - script: |
-      sudo conda update -y -q conda
-      sudo conda create -y -q -n CB python=$(python.version) scikit-learn-intelex pandas pytest
+      echo "##vso[task.prependpath]$CONDA/bin"
+      sudo chown -R $USER $CONDA
+    condition: eq( variables['Agent.OS'], 'Darwin')
+    displayName: Add sudo access
+  - script: |
+      conda update -y -q conda
+      conda create -y -q -n CB python=$(python.version) scikit-learn-intelex pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
+# . /usr/share/miniconda/etc/profile.d/conda.sh
       $(conda.activate) CB
       cd ..
       python -c "import sklearnex"
