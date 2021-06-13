@@ -63,10 +63,10 @@ jobs:
       conda install -y -q python=$(python.version) scikit-learn-intelex pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
-      call activate CB
+      cd ..
       python -c "import sklearnex"
     displayName: 'Testing of import'
-  - script: |
-      call activate CB
-      pytest --pyargs sklearnex
-    displayName: 'Testing of scikit-learn-intelex'
+#   - script: |
+#       call activate CB
+#       pytest --pyargs sklearnex
+#     displayName: 'Testing of scikit-learn-intelex'
