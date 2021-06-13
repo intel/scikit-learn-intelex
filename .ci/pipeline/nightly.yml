@@ -81,5 +81,5 @@ jobs:
       conda activate CB
       cd examples/notebooks
       pip install jupyter matplotlib
-      jupyter nbconvert --execute --ExecutePreprocessor.timeout=600 --to notebook *.ipynb
+      jupyter nbconvert --execute --ExecutePreprocessor.timeout=1800 --to notebook *.ipynb
     displayName: 'Run jupyter notebook demo'
