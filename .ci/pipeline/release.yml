@@ -84,5 +84,5 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       $(conda.activate) CB
-      python -m sklearnex -m pytest -ra --disable-warnings --pyargs sklearn.svm.tests.test_svm --deselect test_svc_clone_with_callable_kernel --deselect test_precomputed
+      python -m sklearnex -m pytest -ra --disable-warnings --pyargs sklearn.svm.tests.test_svm --deselect ::test_svc_clone_with_callable_kernel --deselect ::test_precomputed
     displayName: 'Testing of scikit-learn-intelex'
