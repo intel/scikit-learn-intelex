@@ -102,7 +102,7 @@ pip install --upgrade dpcpp_cpp_rt
 ```
 
 ```bash
-# Anaconda Cloud
+# Anaconda Cloud
 conda install dpcpp_cpp_rt -c intel
 ```
 
@@ -161,33 +161,7 @@ python runner.py --configs configs/blogs/skl_conda_config.json –report --no-in
 ```
 </details>
 
-Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
-
-<details><summary>[Click to expand] 🔥 Scikit-learn algorithms affected by the patching</summary>
-
-|Task|Functionality|Parameters support|Data support|
-|:---|:------------|:-----------------|:-----------|
-|Classification|**SVC**|All parameters except `kernel` = 'poly' and 'sigmoid'. | No limitations.|
-||**RandomForestClassifier**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'gini'. | Multi-output and sparse data is not supported. |
-||**KNeighborsClassifier**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Multi-output and sparse data is not supported. |
-||**LogisticRegression / LogisticRegressionCV**|All parameters except `solver` != 'lbfgs' or 'newton-cg', `class_weight` != None, `sample_weight` != None. | Only dense data is supported. |
-|Regression|**RandomForestRegressor**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'mse'. | Multi-output and sparse data is not supported. |
-||**KNeighborsRegressor**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
-||**LinearRegression**|All parameters except `normalize` != False and `sample_weight` != None. | Only dense data is supported, `#observations` should be >= `#features`. |
-||**Ridge**|All parameters except `normalize` != False, `solver` != 'auto' and `sample_weight` != None. | Only dense data is supported, `#observations` should be >= `#features`. |
-||**ElasticNet**|All parameters except `sample_weight` != None. | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
-||**Lasso**|All parameters except `sample_weight` != None. | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
-|Clustering|**KMeans**|All parameters except `precompute_distances` and `sample_weight` != None. | No limitations. |
-||**DBSCAN**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2, `algorithm` != `brute` or `auto` . | Only dense data is supported. |
-|Dimensionality reduction|**PCA**|All parameters except `svd_solver` != 'full'. | No limitations. |
-|| **TSNE**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
-|Unsupervised|**NearestNeighbors**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
-|Other|**train_test_split**|All parameters are supported. | Only dense data is supported.|
-||**assert_all_finite**|All parameters are supported. | Only dense data is supported. |
-||**pairwise_distance**|With `metric`='cosine' and 'correlation'.| Only dense data is supported. |
-||**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
-
- </details>
+Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality.  Support list of algorithms and parameters see [here](https://intel.github.io/scikit-learn-intelex/algorithms.html). In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
 
 ⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.2.X supports scikit-learn 0.22.X,
 0.23.X, 0.24.X and 1.0.X.
