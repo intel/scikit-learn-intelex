@@ -160,7 +160,7 @@ jobs:
     displayName: Add sudo access
   - script: |
       conda update -y -q conda
-      conda create -y -q -n CB python=$(python.version) -c $(conda.channel) scikit-learn-intelex pandas pytest
+      conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
