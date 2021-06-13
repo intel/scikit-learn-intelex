@@ -54,7 +54,7 @@ pip install scikit-learn-intelex
 ```
 
 ```bash
-# Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
+# Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
 conda install scikit-learn-intelex -c conda-forge
 ```
 
@@ -142,7 +142,7 @@ with sycl_context("gpu"):
 
 # 🚀 Scikit-learn patching
 
-![](https://raw.githubusercontent.com/PetrovKP/daal4py/update-perf-data/doc/scikit-learn-acceleration-2021.2.3.PNG)
+![](https://raw.githubusercontent.com/PetrovKP/daal4py/update-perf-data/doc/sources/_static/scikit-learn-acceleration-2021.2.3.PNG)
 Configurations:
 - HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
 - SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8

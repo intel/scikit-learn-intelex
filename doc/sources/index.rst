@@ -24,14 +24,13 @@ The acceleration is achieved through the use of the Intel(R) oneAPI Data Analyti
 (`oneDAL <https://github.com/oneapi-src/oneDAL>`_). Patching scikit-learn makes it a
 well-suited machine learning framework for dealing with real-life problems.
 
-.. image:: scikit-learn-acceleration-2021.2.3.PNG
+.. image:: _static_static/scikit-learn-acceleration-2021.2.3.PNG
   :width: 800
-  :alt: End to End Analytics Frameworks
 
 Configurations:
 
-HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
-SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
+- HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
+- SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
 
 Designed for Data Scientists and Framework Designers
 ----------------------------------------------------
@@ -77,6 +76,7 @@ To undo the patch Scikit-learn with::
 
     sklearnex.unpatch_sklearn()
     # Need to re-import sklearn algorithms after the unpatch
+    from sklearn.cluster import KMeans
 
 Patching only one algorithm can be done as follows::
 
