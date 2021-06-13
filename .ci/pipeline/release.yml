@@ -20,7 +20,54 @@ variables:
   TEST_COMMAND: python -m sklearnex -m pytest -ra --disable-warnings --pyargs sklearn.svm.tests.test_svm $(DESELECT)
 
 jobs:
-- job: TestConda
+- job: ReleasePyPi
+  strategy:
+    matrix:
+      main - ubuntu - python38:
+        imageName: 'ubuntu-latest'
+        python.version: '3.8'
+      main - ubuntu - python37:
+        imageName: 'ubuntu-latest'
+        python.version: '3.7'
+      main - ubuntu - python36:
+        imageName: 'ubuntu-latest'
+        python.version: '3.6'
+      main - mac - python38:
+        imageName: 'macos-latest'
+        python.version: '3.8'
+      main - mac - python37:
+        imageName: 'macos-latest'
+        python.version: '3.7'
+      main - mac - python36:
+        imageName: 'macos-latest'
+        python.version: '3.6'
+      main - windows - python38:
+        imageName: 'windows-latest'
+        python.version: '3.8'
+      main - windows - python37:
+        imageName: 'windows-latest'
+        python.version: '3.7'
+      main - windows - python36:
+        imageName: 'windows-latest'
+        python.version: '3.6'
+  pool:
+    vmImage: $(imageName)
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+    inputs:
+      versionSpec: '$(python.version)'
+  - script: |
+      pip insatll scikit-learn-intelex pandas pytest
+    displayName: 'Install scikit-learn-intelex'
+  - script: |
+      python -c "import sklearnex"
+    displayName: 'Testing of import'
+  - script: |
+      $(TEST_COMMAND)
+    displayName: 'Testing of scikit-learn-intelex'
+
+- job: ReleaseConda
   strategy:
     matrix:
       main - ubuntu - python39:
