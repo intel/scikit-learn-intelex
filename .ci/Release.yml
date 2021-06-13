@@ -22,13 +22,13 @@ jobs:
   strategy:
     matrix:
       ubuntu - python38:
-        imageName: 'ubuntu-20.04'
+        imageName: 'ubuntu-latest'
         python.version: '3.8'
       ubuntu - python37:
-        imageName: 'ubuntu-20.04'
+        imageName: 'ubuntu-latest'
         python.version: '3.7'
       ubuntu - python36:
-        imageName: 'ubuntu-20.04'
+        imageName: 'ubuntu-latest'
         python.version: '3.6'
       mac - python38:
         imageName: 'macos-latest'
@@ -61,7 +61,8 @@ jobs:
       conda install scikit-learn pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
-      echo "python -c import scikit-learn-intelex"
-      python -c "python -c import scikit-learn-intelex"
+      python -c "import scikit-learn-intelex"
+    displayName: 'Testing of import'
+  - script: |
       pytest --pyargs sklearnex
     displayName: 'Testing of scikit-learn-intelex'
