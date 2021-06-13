@@ -24,30 +24,39 @@ jobs:
       ubuntu - python38:
         imageName: 'ubuntu-latest'
         python.version: '3.8'
+        conda.activate: 'conda activate'
       ubuntu - python37:
         imageName: 'ubuntu-latest'
         python.version: '3.7'
+        conda.activate: 'conda activate'
       ubuntu - python36:
         imageName: 'ubuntu-latest'
         python.version: '3.6'
+        conda.activate: 'conda activate'
       mac - python38:
         imageName: 'macos-latest'
         python.version: '3.8'
+        conda.activate: 'source activate'
       mac - python37:
         imageName: 'macos-latest'
         python.version: '3.7'
+        conda.activate: 'source activate'
       mac - python36:
         imageName: 'macos-latest'
         python.version: '3.6'
+        conda.activate: 'source activate'
       windows - python38:
         imageName: 'windows-latest'
         python.version: '3.8'
+        conda.activate: 'call activate'
       windows - python37:
         imageName: 'windows-latest'
         python.version: '3.7'
+        conda.activate: 'call activate'
       windows - python36:
         imageName: 'windows-latest'
         python.version: '3.6'
+        conda.activate: 'call activate'
   pool:
     vmImage: $(imageName)
   steps:
@@ -64,7 +73,7 @@ jobs:
     displayName: 'Install scikit-learn-intelex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
+      $(conda.activate) CB
       cd ..
       python -c "import sklearnex"
     displayName: 'Testing of import'
