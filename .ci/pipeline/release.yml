@@ -82,6 +82,7 @@ jobs:
       python -c "import sklearnex"
     displayName: 'Testing of import'
   - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
       $(conda.activate) CB
-      pytest --pyargs sklearnex
+      python -m pytest --pyargs sklearnex
     displayName: 'Testing of scikit-learn-intelex'
