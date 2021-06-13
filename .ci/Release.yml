@@ -56,12 +56,9 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
   - script: |
-      pip install scikit-learn-intelex
-      pip install -r requirements-test.txt
-    displayName: 'Install scikit-learn-intelex'
-  - script: |
-      pip install scikit-learn-intelex
-      pip install -r requirements-test.txt
+      conda update -y -q conda
+      conda install -y -q python=$(python.version) scikit-learn-intelex
+      conda install scikit-learn pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
       echo "python -c import scikit-learn-intelex"
