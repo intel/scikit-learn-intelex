@@ -18,7 +18,7 @@ variables:
   DESCRIPTION: ReleaseTesting
 
 jobs:
-- job: TestPyPi
+- job: TestMainConda
   strategy:
     matrix:
       ubuntu - python38:
@@ -77,6 +77,7 @@ jobs:
       conda create -y -q -n CB python=$(python.version) scikit-learn-intelex pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
       $(conda.activate) CB
       cd ..
       python -c "import sklearnex"
