@@ -23,31 +23,31 @@ jobs:
 - job: ReleasePyPi
   strategy:
     matrix:
-      main - ubuntu - python38:
+      ubuntu - python38:
         imageName: 'ubuntu-latest'
         python.version: '3.8'
-      main - ubuntu - python37:
+      ubuntu - python37:
         imageName: 'ubuntu-latest'
         python.version: '3.7'
-      main - ubuntu - python36:
+      ubuntu - python36:
         imageName: 'ubuntu-latest'
         python.version: '3.6'
-      main - mac - python38:
+      mac - python38:
         imageName: 'macos-latest'
         python.version: '3.8'
-      main - mac - python37:
+      mac - python37:
         imageName: 'macos-latest'
         python.version: '3.7'
-      main - mac - python36:
+      mac - python36:
         imageName: 'macos-latest'
         python.version: '3.6'
-      main - windows - python38:
+      windows - python38:
         imageName: 'windows-latest'
         python.version: '3.8'
-      main - windows - python37:
+      windows - python37:
         imageName: 'windows-latest'
         python.version: '3.7'
-      main - windows - python36:
+      windows - python36:
         imageName: 'windows-latest'
         python.version: '3.6'
   pool:
