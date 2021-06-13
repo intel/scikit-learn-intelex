@@ -1,0 +1,70 @@
+#===============================================================================
+# Copyright 2021 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#===============================================================================
+
+variables:
+  DESCRIPTION: ReleaseTesting
+
+jobs:
+- job: TestPyPi
+  strategy:
+    matrix:
+      ubuntu - python38:
+        imageName: 'ubuntu-20.04'
+        python.version: '3.8'
+      ubuntu - python37:
+        imageName: 'ubuntu-20.04'
+        python.version: '3.7'
+      ubuntu - python36:
+        imageName: 'ubuntu-20.04'
+        python.version: '3.6'
+      mac - python38:
+        imageName: 'macos-latest'
+        python.version: '3.8'
+      mac - python37:
+        imageName: 'macos-latest'
+        python.version: '3.7'
+      mac - python36:
+        imageName: 'macos-latest'
+        python.version: '3.6'
+      windows - python38:
+        imageName: 'windows-latest'
+        python.version: '3.8'
+      windows - python37:
+        imageName: 'windows-latest'
+        python.version: '3.7'
+      windows - python36:
+        imageName: 'windows-latest'
+        python.version: '3.6'
+  pool:
+    vmImage: $(imageName)
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+    inputs:
+      versionSpec: '$(python.version)'
+  - script: |
+      pip install scikit-learn-intelex
+      pip install -r requirements-test.txt
+    displayName: 'Install scikit-learn-intelex'
+  - script: |
+      pip install scikit-learn-intelex
+      pip install -r requirements-test.txt
+    displayName: 'Install scikit-learn-intelex'
+  - script: |
+      echo "python -c import scikit-learn-intelex"
+      python -c "python -c import scikit-learn-intelex"
+      pytest --pyargs sklearnex
+    displayName: 'Testing of scikit-learn-intelex'
