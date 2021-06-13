@@ -39,7 +39,7 @@ jobs:
       versionSpec: '$(python.version)'
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB -c intel python=$(python.version) dal-devel impi-devel
+      conda create -y -q -n CB -c intel python=$(python.version) dal-devel impi-devel
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -112,7 +112,7 @@ jobs:
     displayName: 'apt-get'
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB -c intel python=$(python.version) dal-devel impi-devel
+      conda create -y -q -n CB -c intel python=$(python.version) dal-devel impi-devel
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -148,10 +148,9 @@ jobs:
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
-      conda update -q conda
-      conda create -n CB python=$(python.version)
-      conda install -n CB -q clang-tools mpich
-      conda install -n CB -q --override-channels -c intel dal-devel
+      conda update -y -q conda
+      conda create -n CB -y -q python=$(python.version) clang-tools mpich
+      conda install -n CB -y -q --override-channels -c intel dal-devel
     displayName: Create Anaconda environment
   - script: |
       source activate CB
