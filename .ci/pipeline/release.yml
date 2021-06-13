@@ -58,7 +58,7 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
   - script: |
-      pip insatll scikit-learn-intelex pandas pytest
+      pip install scikit-learn-intelex pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
       python -c "import sklearnex"
