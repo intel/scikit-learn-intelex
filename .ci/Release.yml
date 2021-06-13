@@ -55,10 +55,12 @@ jobs:
     displayName: 'Use Python $(python.version)'
     inputs:
       versionSpec: '$(python.version)'
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    condition: eq( variables['Agent.OS'], 'Windows_NT' )
+    displayName: Add conda to PATH
   - script: |
       conda update -y -q conda
-      conda install -y -q python=$(python.version) scikit-learn-intelex
-      conda install scikit-learn pandas pytest
+      conda install -y -q python=$(python.version) scikit-learn-intelex pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
       python -c "import scikit-learn-intelex"
