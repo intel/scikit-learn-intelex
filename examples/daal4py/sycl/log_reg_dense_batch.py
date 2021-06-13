@@ -147,9 +147,9 @@ def main(readcsv=read_csv, method='defaultDense'):
     assert np.count_nonzero(result_classic.prediction - predict_labels) \
            / predict_labels.shape[0] < 0.025
 
-    assert np.allclose(result_classic.prediction, result_cpu.prediction)
-    assert np.allclose(result_classic.probabilities, result_cpu.probabilities)
-    assert np.allclose(result_classic.logProbabilities, result_cpu.logProbabilities)
+    assert np.allclose(result_classic.prediction, result_cpu.prediction, atol=1e-2)
+    assert np.allclose(result_classic.probabilities, result_cpu.probabilities, atol=1e-2)
+    assert np.allclose(result_classic.logProbabilities, result_cpu.logProbabilities, atol=1e-2)
 
     return (train_result, result_classic, predict_labels)
 
