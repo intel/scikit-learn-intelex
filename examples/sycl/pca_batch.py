@@ -106,7 +106,8 @@ def main(readcsv=read_csv, method='svdDense'):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data)
         assert np.allclose(result_classic.eigenvalues, result_gpu.eigenvalues, atol=1e-5)
-        assert np.allclose(result_classic.eigenvectors, result_gpu.eigenvectors, atol=1e-5)
+        assert np.allclose(result_classic.eigenvectors, result_gpu.eigenvectors,
+                           atol=1e-5)
         assert np.allclose(result_classic.means, result_gpu.means, atol=1e-5)
         assert np.allclose(result_classic.variances, result_gpu.variances, atol=1e-5)
 
