@@ -114,7 +114,7 @@ algorithms:
      - Only dense data is supported.
    * - Other
      - pairwise_distance
-     - With ``metric`` = 'cosine' and 'correlation'.
+     - With ``metric`` = 'cosine' or 'correlation'.
      - Only dense data is supported.
    * - Other
      - roc_auc_score

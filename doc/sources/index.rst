@@ -72,22 +72,24 @@ For example::
 In the example above, you can see that the use of the original Scikit-learn
 has not changed. This behavior is achieved through drop-in patching.
 
-To undo the patch Scikit-learn with::
+To undo the patch, run::
 
     sklearnex.unpatch_sklearn()
-    # Need to re-import sklearn algorithms after the unpatch
+    # You need to re-import scikit-learn algorithms after the unpatch:
     from sklearn.cluster import KMeans
 
-Patching only one algorithm can be done as follows::
+You may specify which algorithms to patch:
+
+- Patching only one algorithm::
 
     from sklearnex import patch_sklearn
-    # The names matched to scikit-learn estimators
+    # The names match scikit-learn estimators
     patch_sklearn("SVC")
 
-Patching several algorithm can be done as follows::
+- Patching several algorithms::
 
     from sklearnex import patch_sklearn
-    # The names matched to scikit-learn estimators
+    # The names match scikit-learn estimators
     patch_sklearn(["SVC", "DBSCAN"])
 
 Intel(R) Extension for Scikit-learn does not patch all scikit-learn algorithms and parameters.

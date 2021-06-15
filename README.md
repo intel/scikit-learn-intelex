@@ -161,9 +161,9 @@ python runner.py --configs configs/blogs/skl_conda_config.json –report --no-in
 ```
 </details>
 
-Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality.  Support list of algorithms and parameters see [here](https://intel.github.io/scikit-learn-intelex/algorithms.html). In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
+Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality. Refer to the [list of supported algorithms and parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html) for details. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
 
-⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.2.X supports scikit-learn 0.22.X,
+⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.3.X supports scikit-learn 0.22.X,
 0.23.X, 0.24.X and 1.0.X.
 
 ## 📜 Intel(R) Extension for Scikit-learn verbose
