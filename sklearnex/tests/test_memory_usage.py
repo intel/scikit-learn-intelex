@@ -24,6 +24,7 @@ from sklearn.model_selection import KFold
 from sklearn.datasets import make_classification, make_regression
 import pandas as pd
 import numpy as np
+import gc
 
 
 class TrainTestSplitEstimator:
@@ -109,6 +110,7 @@ def _kfold_function_template(estimator, data_transform_function):
             alg.transform(x_test)
         elif hasattr(alg, 'kneighbors'):
             alg.kneighbors(x_test)
+        gc.collect()
     del alg, x_train, x_test, y_train, y_test
     mem_after, _ = tracemalloc.get_traced_memory()
     tracemalloc.stop()
