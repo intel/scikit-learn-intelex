@@ -24,7 +24,7 @@ The acceleration is achieved through the use of the Intel(R) oneAPI Data Analyti
 (`oneDAL <https://github.com/oneapi-src/oneDAL>`_). Patching scikit-learn makes it a
 well-suited machine learning framework for dealing with real-life problems.
 
-.. image:: _static_static/scikit-learn-acceleration-2021.2.3.PNG
+.. image:: _static/scikit-learn-acceleration-2021.2.3.PNG
   :width: 800
 
 Configurations:
