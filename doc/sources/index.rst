@@ -61,7 +61,7 @@ For example::
     from sklearnex import patch_sklearn
     patch_sklearn()
 
-    # Need to re-import sklearn algorithms after the patch
+    # You need to re-import scikit-learn algorithms after the patch
     from sklearn.cluster import KMeans
 
     X = np.array([[1,  2], [1,  4], [1,  0],
