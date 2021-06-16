@@ -43,7 +43,6 @@ ESTIMATORS = [
 
 BANNED_ESTIMATORS = [
     'TSNE',  # too slow for using in testing on applicable data sizes
-    'LogisticRegression'  # disabled because of known fails
 ]
 
 # add all daa4lpy estimators enabled in patching (except banned)
