@@ -115,11 +115,11 @@ def _kfold_function_template(estimator, data_transform_function):
     mem_before_gc, _ = tracemalloc.get_traced_memory()
     mem_diff = mem_before_gc - mem_before
     if mem_diff >= 0.25 * data_memory_size:
-        logging.info('Size of extra allocated memory before using garbage collector' \
-                     'is greater than 25% of input data:' \
-                     f'\n\tAlgorithm: {estimator.__name__}' \
-                     f'\n\tInput data size: {data_memory_size} bytes' \
-                     f'\n\tExtra allocated memory size: {mem_diff} bytes' \
+        logging.info('Size of extra allocated memory before using garbage collector'
+                     'is greater than 25% of input data:'
+                     f'\n\tAlgorithm: {estimator.__name__}'
+                     f'\n\tInput data size: {data_memory_size} bytes'
+                     f'\n\tExtra allocated memory size: {mem_diff} bytes'
                      f' / {round((mem_diff) / data_memory_size * 100, 2)} %')
     gc.collect()
     mem_after, _ = tracemalloc.get_traced_memory()
