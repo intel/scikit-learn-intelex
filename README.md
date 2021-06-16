@@ -142,7 +142,7 @@ with sycl_context("gpu"):
 
 # 🚀 Scikit-learn patching
 
-![](https://raw.githubusercontent.com/PetrovKP/daal4py/update-perf-data/doc/scikit-learn-acceleration-2021.2.3.PNG)
+![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/scikit-learn-acceleration-2021.2.3.PNG)
 Configurations:
 - HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
 - SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
