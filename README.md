@@ -106,6 +106,8 @@ pip install --upgrade dpcpp_cpp_rt
 conda install dpcpp_cpp_rt -c intel
 ```
 
+It's available as a part of [Intel oneAPI AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3) (AI Kit)
+
 </details>
 
 You can [build the package from sources](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md) as well.
