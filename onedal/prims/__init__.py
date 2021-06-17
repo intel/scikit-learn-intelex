@@ -14,6 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-from .kernel_functions import linear_kernel, rbf_kernel, poly_kernel
+from .kernel_functions import linear_kernel, rbf_kernel, poly_kernel, sigmoid_kernel
 
-__all__ = ['linear_kernel', 'rbf_kernel', 'poly_kernel']
+__all__ = ['linear_kernel', 'rbf_kernel', 'poly_kernel', 'sigmoid_kernel']

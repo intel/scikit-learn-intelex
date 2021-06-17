@@ -35,6 +35,13 @@ KernelDescriptor get_kernel_params(const svm_params &params) {
             .set_shift(params.shift)
             .set_degree(params.degree);
     }
+
+    if constexpr (std::is_same_v<typename KernelDescriptor::tag_t,
+                                 sigmoid_kernel::detail::descriptor_tag>) {
+        return KernelDescriptor{}
+            .set_scale(params.scale)
+            .set_shift(params.shift);
+    }
     return KernelDescriptor{};
 }
 
@@ -85,8 +92,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
                 params,
                 std::forward<Args>(args)...);
         }
-
-        if (data_type_input == data_type::float32 && params.method == "smo" &&
+        else if (data_type_input == data_type::float32 && params.method == "smo" &&
             params.kernel == "poly") {
             return compute_descriptor_impl<Result>(
                 svm::descriptor<float,
@@ -96,7 +102,17 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
                 params,
                 std::forward<Args>(args)...);
         }
-        if (data_type_input == data_type::float64 && params.method == "smo" &&
+        else if (data_type_input == data_type::float32 && params.method == "smo" &&
+            params.kernel == "sigmoid") {
+            return compute_descriptor_impl<Result>(
+                svm::descriptor<float,
+                                svm::method::smo,
+                                Task,
+                                sigmoid_kernel::descriptor<float>>{},
+                params,
+                std::forward<Args>(args)...);
+        }
+        else if (data_type_input == data_type::float64 && params.method == "smo" &&
             params.kernel == "linear") {
             return compute_descriptor_impl<Result>(
                 svm::
@@ -118,6 +134,16 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
                                 svm::method::smo,
                                 Task,
                                 polynomial_kernel::descriptor<double>>{},
+                params,
+                std::forward<Args>(args)...);
+        }
+        else if (data_type_input == data_type::float64 && params.method == "smo" &&
+                 params.kernel == "sigmoid") {
+            return compute_descriptor_impl<Result>(
+                svm::descriptor<double,
+                                svm::method::smo,
+                                Task,
+                                sigmoid_kernel::descriptor<double>>{},
                 params,
                 std::forward<Args>(args)...);
         }
@@ -147,6 +173,16 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
             params,
             std::forward<Args>(args)...);
     }
+    else if (data_type_input == data_type::float32 && params.method == "thunder" &&
+             params.kernel == "sigmoid") {
+        return compute_descriptor_impl<Result>(
+            svm::descriptor<float,
+                            svm::method::thunder,
+                            Task,
+                            sigmoid_kernel::descriptor<float>>{},
+            params,
+            std::forward<Args>(args)...);
+    }
     else if (data_type_input == data_type::float64 && params.method == "thunder" &&
              params.kernel == "linear") {
         return compute_descriptor_impl<Result>(
@@ -172,7 +208,16 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
             params,
             std::forward<Args>(args)...);
     }
-
+    else if (data_type_input == data_type::float64 && params.method == "thunder" &&
+             params.kernel == "sigmoid") {
+        return compute_descriptor_impl<Result>(
+            svm::descriptor<double,
+                            svm::method::thunder,
+                            Task,
+                            sigmoid_kernel::descriptor<double>>{},
+            params,
+            std::forward<Args>(args)...);
+    }
     else {
         throw std::invalid_argument("No correct parameters for onedal descriptor");
     }

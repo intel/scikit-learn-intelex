@@ -25,6 +25,8 @@ try:
         PyRbfKernelCompute,
         PyPolyKernelParams,
         PyPolyKernelCompute,
+        PySigmoidKernelParams,
+        PySigmoidKernelCompute,
     )
 except ImportError:
     from _onedal4py_host import (
@@ -34,6 +36,8 @@ except ImportError:
         PyRbfKernelCompute,
         PyPolyKernelParams,
         PyPolyKernelCompute,
+        PySigmoidKernelParams,
+        PySigmoidKernelCompute,
     )
 
 
@@ -147,5 +151,42 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
     _onedal_params = PyPolyKernelParams(
         scale=gamma, shift=coef0, degree=degree)
     c_kernel = PyPolyKernelCompute(_onedal_params)
+    c_kernel.compute(X, Y)
+    return c_kernel.get_values()
+
+
+def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0):
+    """
+    Compute the sigmoid kernel between X and Y:
+
+        K(x, y) = tanh(scale*dot(x, y^T) + shift)
+
+    for each pair of rows x in X and y in Y.
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_samples_X, n_features)
+
+    Y : ndarray of shape (n_samples_Y, n_features)
+
+    scale : float, default=1.0
+
+    shift : float, default=0.0
+
+    Returns
+    -------
+    kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
+    """
+
+    X = _check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
+    if Y is None:
+        Y = X
+    else:
+        Y = _check_array(
+            Y, dtype=[np.float64, np.float32], force_all_finite=False)
+
+    _onedal_params = PySigmoidKernelParams(
+        scale=gamma, shift=coef0)
+    c_kernel = PySigmoidKernelCompute(_onedal_params)
     c_kernel.compute(X, Y)
     return c_kernel.get_values()
