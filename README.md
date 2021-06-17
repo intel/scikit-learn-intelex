@@ -47,6 +47,7 @@ You may reach out to project maintainers privately at onedal.maintainers@intel.c
 # 🛠 Installation
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex).
+Also Intel(R) Extension for Scikit-learn is available available as a part of [Intel oneAPI AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3) (AI Kit)
 
 ```bash
 # PyPi (recommended by default)
@@ -105,8 +106,6 @@ pip install --upgrade dpcpp_cpp_rt
 # Anaconda Cloud
 conda install dpcpp_cpp_rt -c intel
 ```
-
-It's available as a part of [Intel oneAPI AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3) (AI Kit)
 
 </details>
 
