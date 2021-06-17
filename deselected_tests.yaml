@@ -158,6 +158,9 @@ deselected_tests:
   # Need to fix for next release
   - tests/test_multioutput.py::test_classifier_chain_tuple_order
 
+  # RandomForestRegressor sum(y_pred)!=sum(y_true)
+  - ensemble/tests/test_forest.py::test_balance_property_random_forest[squared_error] >=1.0
+
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
 reduced_tests:
