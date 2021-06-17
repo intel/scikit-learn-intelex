@@ -48,11 +48,11 @@ except:
 # Commone code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data):
     # Configure a Linear regression training object
-    train_algo = d4p.linear_regression_training(interceptFlag=True)
+    train_algo = d4p.linear_regression_training(interceptFlag=True, fptype='float')
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(train_indep_data, train_dep_data)
     # Now let's do some prediction
-    predict_algo = d4p.linear_regression_prediction()
+    predict_algo = d4p.linear_regression_prediction(fptype='float')
     # now predict using the model from the training above
     return predict_algo.compute(test_indep_data, train_result.model), train_result
 
@@ -119,7 +119,7 @@ def main(readcsv=read_csv, method='defaultDense'):
             sycl_test_indep_data = sycl_buffer(test_indep_data)
             result_gpu, _ = compute(sycl_train_indep_data, sycl_train_dep_data,
                                     sycl_test_indep_data)
-        assert np.allclose(result_classic.prediction, result_gpu.prediction)
+        assert np.allclose(result_classic.prediction, result_gpu.prediction, atol=1e-3)
 
     # It is possible to specify to make the computations on CPU
     with cpu_context():
