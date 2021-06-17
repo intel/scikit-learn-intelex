@@ -77,9 +77,14 @@ def _get_n_samples_bootstrap(n_samples, max_samples):
         return float(max_samples / n_samples)
 
     if isinstance(max_samples, numbers.Real):
-        if not (0. < float(max_samples) < 1.):
-            msg = "`max_samples` must be in range (0, 1) but got value {}"
-            raise ValueError(msg.format(max_samples))
+        if sklearn_check_version('1.0'):
+            if not (0 < float(max_samples) <= 1):
+                msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
+                raise ValueError(msg.format(max_samples))
+        else:
+            if not (0 < float(max_samples) < 1):
+                msg = "`max_samples` must be in range (0, 1) but got value {}"
+                raise ValueError(msg.format(max_samples))
         return float(max_samples)
 
     msg = "`max_samples` should be int or float, but got type '{}'"
@@ -521,30 +526,28 @@ def check_sample_weight(sample_weight, X, dtype=None):
 
 class RandomForestClassifier(RandomForestClassifier_original):
     __doc__ = RandomForestClassifier_original.__doc__
-
-    def __init__(self,
-                 n_estimators=100,
-                 criterion="gini",
-                 max_depth=None,
-                 min_samples_split=2,
-                 min_samples_leaf=1,
-                 min_weight_fraction_leaf=0.,
-                 max_features="auto",
-                 max_leaf_nodes=None,
-                 min_impurity_decrease=0.,
-                 min_impurity_split=None,
-                 bootstrap=True,
-                 oob_score=False,
-                 n_jobs=None,
-                 random_state=None,
-                 verbose=0,
-                 warm_start=False,
-                 class_weight=None,
-                 ccp_alpha=0.0,
-                 max_samples=None,
-                 maxBins=256,
-                 minBinSize=1):
-        if sklearn_check_version('0.21'):
+    if sklearn_check_version('1.0'):
+        def __init__(self,
+                    n_estimators=100,
+                    criterion="gini",
+                    max_depth=None,
+                    min_samples_split=2,
+                    min_samples_leaf=1,
+                    min_weight_fraction_leaf=0.,
+                    max_features="auto",
+                    max_leaf_nodes=None,
+                    min_impurity_decrease=0.,
+                    bootstrap=True,
+                    oob_score=False,
+                    n_jobs=None,
+                    random_state=None,
+                    verbose=0,
+                    warm_start=False,
+                    class_weight=None,
+                    ccp_alpha=0.0,
+                    max_samples=None,
+                    maxBins=256,
+                    minBinSize=1):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -555,7 +558,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 max_features=max_features,
                 max_leaf_nodes=max_leaf_nodes,
                 min_impurity_decrease=min_impurity_decrease,
-                min_impurity_split=min_impurity_split,
                 bootstrap=bootstrap,
                 oob_score=oob_score,
                 n_jobs=n_jobs,
@@ -566,31 +568,79 @@ class RandomForestClassifier(RandomForestClassifier_original):
             )
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-        else:
-            super(RandomForestClassifier, self).__init__(
-                n_estimators=n_estimators,
-                criterion=criterion,
-                max_depth=max_depth,
-                min_samples_split=min_samples_split,
-                min_samples_leaf=min_samples_leaf,
-                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                max_features=max_features,
-                max_leaf_nodes=max_leaf_nodes,
-                min_impurity_decrease=min_impurity_decrease,
-                min_impurity_split=min_impurity_split,
-                bootstrap=bootstrap,
-                oob_score=oob_score,
-                n_jobs=n_jobs,
-                random_state=random_state,
-                verbose=verbose,
-                warm_start=warm_start,
-                class_weight=class_weight,
-                ccp_alpha=ccp_alpha,
-                max_samples=max_samples
-            )
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+    else:
+        def __init__(self,
+                    n_estimators=100,
+                    criterion="gini",
+                    max_depth=None,
+                    min_samples_split=2,
+                    min_samples_leaf=1,
+                    min_weight_fraction_leaf=0.,
+                    max_features="auto",
+                    max_leaf_nodes=None,
+                    min_impurity_decrease=0.,
+                    min_impurity_split=None,
+                    bootstrap=True,
+                    oob_score=False,
+                    n_jobs=None,
+                    random_state=None,
+                    verbose=0,
+                    warm_start=False,
+                    class_weight=None,
+                    ccp_alpha=0.0,
+                    max_samples=None,
+                    maxBins=256,
+                    minBinSize=1):
+            if sklearn_check_version('0.21'):
+                super(RandomForestClassifier, self).__init__(
+                    n_estimators=n_estimators,
+                    criterion=criterion,
+                    max_depth=max_depth,
+                    min_samples_split=min_samples_split,
+                    min_samples_leaf=min_samples_leaf,
+                    min_weight_fraction_leaf=min_weight_fraction_leaf,
+                    max_features=max_features,
+                    max_leaf_nodes=max_leaf_nodes,
+                    min_impurity_decrease=min_impurity_decrease,
+                    min_impurity_split=min_impurity_split,
+                    bootstrap=bootstrap,
+                    oob_score=oob_score,
+                    n_jobs=n_jobs,
+                    random_state=random_state,
+                    verbose=verbose,
+                    warm_start=warm_start,
+                    class_weight=class_weight
+                )
+                self.ccp_alpha = ccp_alpha
+                self.max_samples = max_samples
+            else:
+                super(RandomForestClassifier, self).__init__(
+                    n_estimators=n_estimators,
+                    criterion=criterion,
+                    max_depth=max_depth,
+                    min_samples_split=min_samples_split,
+                    min_samples_leaf=min_samples_leaf,
+                    min_weight_fraction_leaf=min_weight_fraction_leaf,
+                    max_features=max_features,
+                    max_leaf_nodes=max_leaf_nodes,
+                    min_impurity_decrease=min_impurity_decrease,
+                    min_impurity_split=min_impurity_split,
+                    bootstrap=bootstrap,
+                    oob_score=oob_score,
+                    n_jobs=n_jobs,
+                    random_state=random_state,
+                    verbose=verbose,
+                    warm_start=warm_start,
+                    class_weight=class_weight,
+                    ccp_alpha=ccp_alpha,
+                    max_samples=max_samples
+                )
 
-        self.maxBins = maxBins
-        self.minBinSize = minBinSize
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -730,17 +780,29 @@ class RandomForestClassifier(RandomForestClassifier_original):
         classes_ = self.classes_[0]
         n_classes_ = self.n_classes_[0]
         # convert model to estimators
-        est = DecisionTreeClassifier(
-            criterion=self.criterion,
-            max_depth=self.max_depth,
-            min_samples_split=self.min_samples_split,
-            min_samples_leaf=self.min_samples_leaf,
-            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-            max_features=self.max_features,
-            max_leaf_nodes=self.max_leaf_nodes,
-            min_impurity_decrease=self.min_impurity_decrease,
-            min_impurity_split=self.min_impurity_split,
-            random_state=None)
+        if sklearn_check_version('1.0'):
+            est = DecisionTreeClassifier(
+                criterion=self.criterion,
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                min_samples_leaf=self.min_samples_leaf,
+                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+                max_features=self.max_features,
+                max_leaf_nodes=self.max_leaf_nodes,
+                min_impurity_decrease=self.min_impurity_decrease,
+                random_state=None)
+        else:
+            est = DecisionTreeClassifier(
+                criterion=self.criterion,
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                min_samples_leaf=self.min_samples_leaf,
+                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+                max_features=self.max_features,
+                max_leaf_nodes=self.max_leaf_nodes,
+                min_impurity_decrease=self.min_impurity_decrease,
+                min_impurity_split=self.min_impurity_split,
+                random_state=None)
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
@@ -789,29 +851,28 @@ class RandomForestClassifier(RandomForestClassifier_original):
 
 class RandomForestRegressor(RandomForestRegressor_original):
     __doc__ = RandomForestRegressor_original.__doc__
-
-    def __init__(self,
-                 n_estimators=100, *,
-                 criterion="squared_error" if sklearn_check_version('1.0') else "mse",
-                 max_depth=None,
-                 min_samples_split=2,
-                 min_samples_leaf=1,
-                 min_weight_fraction_leaf=0.,
-                 max_features="auto",
-                 max_leaf_nodes=None,
-                 min_impurity_decrease=0.,
-                 min_impurity_split=None,
-                 bootstrap=True,
-                 oob_score=False,
-                 n_jobs=None,
-                 random_state=None,
-                 verbose=0,
-                 warm_start=False,
-                 ccp_alpha=0.0,
-                 max_samples=None,
-                 maxBins=256,
-                 minBinSize=1):
-        if sklearn_check_version('0.21'):
+    
+    if sklearn_check_version('1.0'):
+        def __init__(self,
+                    n_estimators=100, *,
+                    criterion="squared_error",
+                    max_depth=None,
+                    min_samples_split=2,
+                    min_samples_leaf=1,
+                    min_weight_fraction_leaf=0.,
+                    max_features="auto",
+                    max_leaf_nodes=None,
+                    min_impurity_decrease=0.,
+                    bootstrap=True,
+                    oob_score=False,
+                    n_jobs=None,
+                    random_state=None,
+                    verbose=0,
+                    warm_start=False,
+                    ccp_alpha=0.0,
+                    max_samples=None,
+                    maxBins=256,
+                    minBinSize=1):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -822,7 +883,6 @@ class RandomForestRegressor(RandomForestRegressor_original):
                 max_features=max_features,
                 max_leaf_nodes=max_leaf_nodes,
                 min_impurity_decrease=min_impurity_decrease,
-                min_impurity_split=min_impurity_split,
                 bootstrap=bootstrap,
                 oob_score=oob_score,
                 n_jobs=n_jobs,
@@ -832,29 +892,75 @@ class RandomForestRegressor(RandomForestRegressor_original):
             )
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-        else:
-            super(RandomForestRegressor, self).__init__(
-                n_estimators=n_estimators,
-                criterion=criterion,
-                max_depth=max_depth,
-                min_samples_split=min_samples_split,
-                min_samples_leaf=min_samples_leaf,
-                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                max_features=max_features,
-                max_leaf_nodes=max_leaf_nodes,
-                min_impurity_decrease=min_impurity_decrease,
-                min_impurity_split=min_impurity_split,
-                bootstrap=bootstrap,
-                oob_score=oob_score,
-                n_jobs=n_jobs,
-                random_state=random_state,
-                verbose=verbose,
-                warm_start=warm_start,
-                ccp_alpha=ccp_alpha,
-                max_samples=max_samples
-            )
-        self.maxBins = maxBins
-        self.minBinSize = minBinSize
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+    else:
+        def __init__(self,
+                    n_estimators=100, *,
+                    criterion="mse",
+                    max_depth=None,
+                    min_samples_split=2,
+                    min_samples_leaf=1,
+                    min_weight_fraction_leaf=0.,
+                    max_features="auto",
+                    max_leaf_nodes=None,
+                    min_impurity_decrease=0.,
+                    min_impurity_split=None,
+                    bootstrap=True,
+                    oob_score=False,
+                    n_jobs=None,
+                    random_state=None,
+                    verbose=0,
+                    warm_start=False,
+                    ccp_alpha=0.0,
+                    max_samples=None,
+                    maxBins=256,
+                    minBinSize=1):
+            if sklearn_check_version('0.21'):
+                super(RandomForestRegressor, self).__init__(
+                    n_estimators=n_estimators,
+                    criterion=criterion,
+                    max_depth=max_depth,
+                    min_samples_split=min_samples_split,
+                    min_samples_leaf=min_samples_leaf,
+                    min_weight_fraction_leaf=min_weight_fraction_leaf,
+                    max_features=max_features,
+                    max_leaf_nodes=max_leaf_nodes,
+                    min_impurity_decrease=min_impurity_decrease,
+                    min_impurity_split=min_impurity_split,
+                    bootstrap=bootstrap,
+                    oob_score=oob_score,
+                    n_jobs=n_jobs,
+                    random_state=random_state,
+                    verbose=verbose,
+                    warm_start=warm_start
+                )
+                self.ccp_alpha = ccp_alpha
+                self.max_samples = max_samples
+            else:
+                super(RandomForestRegressor, self).__init__(
+                    n_estimators=n_estimators,
+                    criterion=criterion,
+                    max_depth=max_depth,
+                    min_samples_split=min_samples_split,
+                    min_samples_leaf=min_samples_leaf,
+                    min_weight_fraction_leaf=min_weight_fraction_leaf,
+                    max_features=max_features,
+                    max_leaf_nodes=max_leaf_nodes,
+                    min_impurity_decrease=min_impurity_decrease,
+                    min_impurity_split=min_impurity_split,
+                    bootstrap=bootstrap,
+                    oob_score=oob_score,
+                    n_jobs=n_jobs,
+                    random_state=random_state,
+                    verbose=verbose,
+                    warm_start=warm_start,
+                    ccp_alpha=ccp_alpha,
+                    max_samples=max_samples
+                )
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -940,17 +1046,29 @@ class RandomForestRegressor(RandomForestRegressor_original):
         else:
             check_is_fitted(self, 'daal_model_')
         # convert model to estimators
-        est = DecisionTreeRegressor(
-            criterion=self.criterion,
-            max_depth=self.max_depth,
-            min_samples_split=self.min_samples_split,
-            min_samples_leaf=self.min_samples_leaf,
-            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-            max_features=self.max_features,
-            max_leaf_nodes=self.max_leaf_nodes,
-            min_impurity_decrease=self.min_impurity_decrease,
-            min_impurity_split=self.min_impurity_split,
-            random_state=None)
+        if sklearn_check_version('1.0'):
+            est = DecisionTreeRegressor(
+                criterion=self.criterion,
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                min_samples_leaf=self.min_samples_leaf,
+                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+                max_features=self.max_features,
+                max_leaf_nodes=self.max_leaf_nodes,
+                min_impurity_decrease=self.min_impurity_decrease,
+                random_state=None)
+        else :
+            est = DecisionTreeRegressor(
+                criterion=self.criterion,
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                min_samples_leaf=self.min_samples_leaf,
+                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+                max_features=self.max_features,
+                max_leaf_nodes=self.max_leaf_nodes,
+                min_impurity_decrease=self.min_impurity_decrease,
+                min_impurity_split=self.min_impurity_split,
+                random_state=None)
 
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
