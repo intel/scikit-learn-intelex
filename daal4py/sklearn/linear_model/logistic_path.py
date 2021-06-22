@@ -596,7 +596,7 @@ def daal4py_predict(self, X, resultsToEvaluate):
                      computeClassProbabilities, computeClassLogProbabilities]')
 
 
-if (LooseVersion(sklearn_version) >= LooseVersion("0.24")):
+if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
     def logistic_regression_path(X, y, pos_class=None, Cs=10, fit_intercept=True,
                                  max_iter=100, tol=1e-4, verbose=0,
                                  solver='lbfgs', coef=None,

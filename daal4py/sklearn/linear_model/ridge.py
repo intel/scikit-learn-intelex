@@ -14,10 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+from daal4py.sklearn._utils import sklearn_check_version
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+if sklearn_check_version('0.22'):
     from ._ridge_0_22 import *
-else:
-    from ._ridge_0_21 import *
+
