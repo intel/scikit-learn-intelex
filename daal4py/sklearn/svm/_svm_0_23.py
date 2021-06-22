@@ -744,9 +744,7 @@ class SVC(svm_base.BaseSVC):
                  verbose=False, max_iter=-1, decision_function_shape='ovr',
                  break_ties=False, random_state=None):
 
-        super(
-            SVC,
-            self).__init__(
+        super(SVC, self).__init__(
             kernel=kernel,
             degree=degree,
             gamma=gamma,
