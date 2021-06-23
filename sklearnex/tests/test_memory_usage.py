@@ -113,9 +113,9 @@ def _kfold_function_template(estimator, data_transform_function):
     del alg, x_train, x_test, y_train, y_test
     mem_before_gc, _ = tracemalloc.get_traced_memory()
     mem_diff = mem_before_gc - mem_before
-    if mem_diff >= 0.25 * data_memory_size:
+    if mem_diff >= 0.27 * data_memory_size:
         logging.info('Size of extra allocated memory before using garbage collector'
-                     'is greater than 25% of input data:'
+                     'is greater than 27% of input data:'
                      f'\n\tAlgorithm: {estimator.__name__}'
                      f'\n\tInput data size: {data_memory_size} bytes'
                      f'\n\tExtra allocated memory size: {mem_diff} bytes'
@@ -125,8 +125,8 @@ def _kfold_function_template(estimator, data_transform_function):
     tracemalloc.stop()
     mem_diff = mem_after - mem_before
 
-    assert mem_diff < 0.25 * data_memory_size, \
-        'Size of extra allocated memory is greater than 25% of input data:' \
+    assert mem_diff < 0.27 * data_memory_size, \
+        'Size of extra allocated memory is greater than 27% of input data:' \
         f'\n\tInput data size: {data_memory_size} bytes' \
         f'\n\tExtra allocated memory size: {mem_diff} bytes' \
         f' / {round((mem_diff) / data_memory_size * 100, 2)} %'
