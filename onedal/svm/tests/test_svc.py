@@ -142,3 +142,19 @@ def test_pickle():
     assert type(clf2) == clf.__class__
     result = clf2.decision_function(iris.data)
     assert_array_equal(expected, result)
+
+
+@pytest.mark.parametrize('dtype', [np.float32, np.float64])
+def test_sklearnex_svc_sigmoid(dtype):
+    from sklearnex.svm import SVC
+    X_train = np.array([[-1, 2], [0, 0], [2, -1],
+                        [+1, +1], [+1, +2], [+2, +1]], dtype=dtype)
+    X_test = np.array([[0, 2], [0.5, 0.5],
+                       [0.3, 0.1], [2, 0], [-1, -1]], dtype=dtype)
+    y_train = np.array([1, 1, 1, 2, 2, 2], dtype=dtype)
+    svc = SVC(kernel='sigmoid').fit(X_train, y_train)
+
+    assert 'daal4py' in svc.__module__ or 'sklearnex' in svc.__module__
+    assert_array_equal(svc.dual_coef_, [[-1, -1, -1, 1, 1, 1]])
+    assert_array_equal(svc.support_, [0, 1, 2, 3, 4, 5])
+    assert_array_equal(svc.predict(X_test), [2, 2, 1, 2, 1])

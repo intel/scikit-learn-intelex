@@ -140,7 +140,7 @@ def _test_diabetes_compare_with_sklearn(kernel):
     assert_allclose(clf_sklearn.dual_coef_, clf_onedal.dual_coef_, atol=1e-2)
 
 
-@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
+@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly', 'sigmoid'])
 def test_diabetes_compare_with_sklearn(kernel):
     _test_diabetes_compare_with_sklearn(kernel)
 
