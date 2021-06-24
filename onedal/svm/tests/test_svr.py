@@ -125,11 +125,11 @@ def test_predict():
 
 def _test_diabetes_compare_with_sklearn(kernel):
     diabetes = datasets.load_diabetes()
-    clf_onedal = SVR(kernel=kernel, C=10., gamma=3)
+    clf_onedal = SVR(kernel=kernel, C=1, gamma=2, coef0=10)
     clf_onedal.fit(diabetes.data, diabetes.target)
     result = clf_onedal.score(diabetes.data, diabetes.target)
 
-    clf_sklearn = SklearnSVR(kernel=kernel, C=10., gamma=3)
+    clf_sklearn = SklearnSVR(kernel=kernel, C=1, gamma=2, coef0=10)
     clf_sklearn.fit(diabetes.data, diabetes.target)
     expected = clf_sklearn.score(diabetes.data, diabetes.target)
 
