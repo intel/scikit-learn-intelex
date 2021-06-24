@@ -36,7 +36,7 @@ class SVR(sklearn_SVR, BaseSVR):
             max_iter=max_iter)
 
     def fit(self, X, y, sample_weight=None):
-        if self.kernel in ['linear', 'rbf', 'poly']:
+        if self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']:
             logging.info("sklearn.svm.SVR.fit: " + get_patch_message("onedal"))
             self._onedal_fit(X, y, sample_weight)
         else:

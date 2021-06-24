@@ -41,7 +41,7 @@ class SVC(sklearn_SVC, BaseSVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
-        if self.kernel in ['linear', 'rbf', 'poly']:
+        if self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']:
             logging.info("sklearn.svm.SVC.fit: " + get_patch_message("onedal"))
             self._onedal_fit(X, y, sample_weight)
         else:

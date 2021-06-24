@@ -125,11 +125,11 @@ def test_predict():
 
 def _test_diabetes_compare_with_sklearn(kernel):
     diabetes = datasets.load_diabetes()
-    clf_onedal = SVR(kernel=kernel, C=10.)
+    clf_onedal = SVR(kernel=kernel, C=10., gamma=2)
     clf_onedal.fit(diabetes.data, diabetes.target)
     result = clf_onedal.score(diabetes.data, diabetes.target)
 
-    clf_sklearn = SklearnSVR(kernel=kernel, C=10.)
+    clf_sklearn = SklearnSVR(kernel=kernel, C=10., gamma=2)
     clf_sklearn.fit(diabetes.data, diabetes.target)
     expected = clf_sklearn.score(diabetes.data, diabetes.target)
 
@@ -140,7 +140,7 @@ def _test_diabetes_compare_with_sklearn(kernel):
     assert_allclose(clf_sklearn.dual_coef_, clf_onedal.dual_coef_, atol=1e-2)
 
 
-@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
+@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly', 'sigmoid'])
 def test_diabetes_compare_with_sklearn(kernel):
     _test_diabetes_compare_with_sklearn(kernel)
 
