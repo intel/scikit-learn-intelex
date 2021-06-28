@@ -16,7 +16,13 @@
 #===============================================================================
 
 import sys
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--channels', , nargs="+", default=['pypi'])
+args = parser.parse_args()
+
+CHANNELS = args.channel
 PYTHON_VERSIONS = ['3.6', '3.7', '3.8']
 SYSTEMS = ['ubuntu-latest', 'macos-latest', 'windows-latest']
 ACTIVATE = {
@@ -26,12 +32,14 @@ ACTIVATE = {
 }
 
 res_enum = {}
-for python_version in PYTHON_VERSIONS:
-    for os in SYSTEMS:
-        res_key = 'python' + python_version + ' - ' + os
-        res_enum[res_key] = {}
-        res_enum[res_key]['python.version'] = python_version
-        res_enum[res_key]['imageName'] = os
-        res_enum[res_key]['conda.activate'] = ACTIVATE[os]
+for channel in CHANNELS:
+    for python_version in PYTHON_VERSIONS:
+        for os in SYSTEMS:
+            res_key = 'python' + python_version + ' - ' + os
+            res_enum[res_key] = {}
+            res_enum[res_key]['python.version'] = python_version
+            res_enum[res_key]['imageName'] = os
+            res_enum[res_key]['conda.activate'] = ACTIVATE[os]
+            res_enum[res_key]['conda.channel'] = channel
 
 sys.stderr.write("##vso[task.setVariable variable=legs;isOutput=true]{}".format(res_enum))
