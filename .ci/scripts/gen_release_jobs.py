@@ -28,4 +28,4 @@ for python_version in PYTHON_VERSIONS:
         res_enum[res_key]['python.version'] = python_version
         res_enum[res_key]['imageName'] = os
 
-print("##vso[task.setVariable variable=legs;isOutput=true]{}".format(res_enum), file=sys.stderr)
+sys.stderr.write("##vso[task.setVariable variable=legs;isOutput=true]{}".format(res_enum))
