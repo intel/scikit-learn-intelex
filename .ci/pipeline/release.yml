@@ -16,11 +16,11 @@
 
 variables:
   DESCRIPTION: ReleaseTesting
-  DESELECT: --deselect ::test_svc_clone_with_callable_kernel --deselect ::test_precomputed --deselect::test_tweak_params 
+  DESELECT: --deselect ::test_svc_clone_with_callable_kernel --deselect ::test_precomputed --deselect ::test_tweak_params 
   TEST_COMMAND: python -m sklearnex -m pytest -ra --disable-warnings --pyargs sklearn.svm.tests.test_svm $(DESELECT)
 
 jobs:
-- job: Generator
+- job: GeneratorPyPi
   steps:
   - bash: python .ci/scripts/gen_release_jobs.py
     name: MatrixGen
@@ -28,7 +28,7 @@ jobs:
   dependsOn: Generator
   strategy:
     maxParallel: 3
-    matrix: $[ dependencies.Generator.outputs['MatrixGen.legs'] ]
+    matrix: $[ dependencies.GeneratorPyPi.outputs['MatrixGen.legs'] ]
   pool:
     vmImage: $(imageName)
   steps:
@@ -45,15 +45,15 @@ jobs:
   - script: |
       $(TEST_COMMAND)
     displayName: 'Testing of scikit-learn-intelex'
-
+- job: GeneratorConda
+  steps:
+  - bash: python .ci/scripts/gen_release_jobs.py --channels main conda-forge intel
+    name: MatrixGenConda
 - job: ReleaseConda
   dependsOn: Generator
   strategy:
     maxParallel: 5
-    matrix:
-      main channel:
-        matrix: $[ dependencies.Generator.outputs['MatrixGen.legs'] ]
-        conda.channel: 'main'
+    matrix: $[ dependencies.GeneratorConda.outputs['MatrixGen.legs'] ]
   pool:
     vmImage: $(imageName)
   steps:
