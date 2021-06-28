@@ -22,13 +22,12 @@ variables:
 jobs:
 - job: GeneratorPyPi
   steps:
-  - bash: python .ci/scripts/gen_release_jobs.py 2> matrix.json
-  - bash: cat matrix.json
-    name: mtrx
+  - bash: python .ci/scripts/gen_release_jobs.py
+    name: MatrixGen
 - job: ReleasePyPi
   dependsOn: GeneratorPyPi
   strategy:
-    matrix: $[ dependencies.GeneratorPyPi.outputs['mtrx.legs'] ]
+    matrix: $[ dependencies.GeneratorPyPi.outputs['MatrixGen.legs'] ]
   pool:
     vmImage: $(imageName)
   steps:
