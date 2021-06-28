@@ -28,7 +28,7 @@ jobs:
 - job: ReleasePyPi
   dependsOn: GeneratorPyPi
   strategy:
-    matrix: $[ dependencies.generator.outputs['mtrx.legs'] ]
+    matrix: $[ dependencies.GeneratorPyPi.outputs['mtrx.legs'] ]
   pool:
     vmImage: $(imageName)
   steps:
