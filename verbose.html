@@ -30,6 +30,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -179,10 +180,10 @@ set the environment variable.</p>
 that indicate which implementation is being called.
 These print statements are only available for <a class="reference internal" href="algorithms.html#sklearn-algorithms"><span class="std std-ref">scikit-learn algorithms with daal4py patches</span></a>.</p>
 <p>For example, for DBSCAN you get one of these print statements depending on which implementation is used:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">DBSCAN</span><span class="o">.</span><span class="n">fit</span><span class="p">:</span> <span class="n">uses</span> <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="n">oneAPI</span> <span class="n">Data</span> <span class="n">Analytics</span> <span class="n">Library</span> <span class="n">solver</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SKLEARNEX</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">DBSCAN</span><span class="o">.</span><span class="n">fit</span><span class="p">:</span> <span class="n">running</span> <span class="n">accelerated</span> <span class="n">version</span> <span class="n">on</span> <span class="n">CPU</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">DBSCAN</span><span class="o">.</span><span class="n">fit</span><span class="p">:</span> <span class="n">uses</span> <span class="n">original</span> <span class="n">Scikit</span><span class="o">-</span><span class="n">learn</span> <span class="n">solver</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SKLEARNEX</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">DBSCAN</span><span class="o">.</span><span class="n">fit</span><span class="p">:</span> <span class="n">fallback</span> <span class="n">to</span> <span class="n">original</span> <span class="n">Scikit</span><span class="o">-</span><span class="n">learn</span>
 </pre></div>
 </div>
 </div>

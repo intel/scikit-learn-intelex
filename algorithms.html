@@ -30,6 +30,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -165,7 +166,7 @@
             
   <div class="section" id="supported-algorithms">
 <h1>Supported algorithms<a class="headerlink" href="#supported-algorithms" title="Permalink to this headline">¶</a></h1>
-<p id="sklearn-algorithms">Applying Intel(R) Extension for Scikit-learn* will impact the following existing scikit-learn
+<p id="sklearn-algorithms">Applying Intel(R) Extension for Scikit-learn will impact the following existing scikit-learn
 algorithms:</p>
 <table class="colwidths-given docutils align-left">
 <colgroup>
@@ -184,72 +185,92 @@ algorithms:</p>
 <tbody>
 <tr class="row-even"><td><p>Classification</p></td>
 <td><p>SVC</p></td>
-<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">poly</span></code> and <code class="docutils literal notranslate"><span class="pre">sigmoid</span></code> kernels.</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">kernel</span></code> = ‘sigmoid’.</p></td>
 <td><p>No limitations.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Classification</p></td>
+<td><p>NuSVC</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">kernel</span></code> = ‘sigmoid’.</p></td>
+<td><p>No limitations.</p></td>
+</tr>
+<tr class="row-even"><td><p>Classification</p></td>
 <td><p>RandomForestClassifier</p></td>
 <td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">warm_start</span></code> = True, <code class="docutils literal notranslate"><span class="pre">cpp_alpha</span></code> != 0, <code class="docutils literal notranslate"><span class="pre">criterion</span></code> != ‘gini’, <code class="docutils literal notranslate"><span class="pre">oob_score</span></code> = True.</p></td>
 <td><p>Multi-output, sparse data and out-of-bag score are not supported.</p></td>
 </tr>
-<tr class="row-even"><td><p>Classification</p></td>
+<tr class="row-odd"><td><p>Classification</p></td>
 <td><p>KNeighborsClassifier</p></td>
-<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or <code class="docutils literal notranslate"><span class="pre">minkowski</span></code> with <code class="docutils literal notranslate"><span class="pre">p</span></code> = 2.</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or <code class="docutils literal notranslate"><span class="pre">minkowski</span></code> with <code class="docutils literal notranslate"><span class="pre">p</span></code> != 2.</p></td>
 <td><p>Multi-output and sparse data is not supported.</p></td>
 </tr>
-<tr class="row-odd"><td><p>Classification</p></td>
+<tr class="row-even"><td><p>Classification</p></td>
 <td><p>LogisticRegression</p></td>
 <td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">solver</span></code> != ‘lbfgs’ or ‘newton-cg’, <code class="docutils literal notranslate"><span class="pre">class_weight</span></code> != None, <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
 <td><p>Only dense data is supported.</p></td>
 </tr>
+<tr class="row-odd"><td><p>Regression</p></td>
+<td><p>SVR</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">kernel</span></code> = ‘sigmoid’.</p></td>
+<td><p>No limitations.</p></td>
+</tr>
 <tr class="row-even"><td><p>Regression</p></td>
+<td><p>NuSVR</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">kernel</span></code> = ‘sigmoid’.</p></td>
+<td><p>No limitations.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Regression</p></td>
 <td><p>RandomForestRegressor</p></td>
 <td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">warm_start</span></code> = True, <code class="docutils literal notranslate"><span class="pre">cpp_alpha</span></code> != 0, <code class="docutils literal notranslate"><span class="pre">criterion</span></code> != ‘mse’, <code class="docutils literal notranslate"><span class="pre">oob_score</span></code> = True.</p></td>
 <td><p>Multi-output, sparse data and out-of-bag score are not supported.</p></td>
 </tr>
-<tr class="row-odd"><td><p>Regression</p></td>
+<tr class="row-even"><td><p>Regression</p></td>
 <td><p>KNeighborsRegressor</p></td>
-<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or <code class="docutils literal notranslate"><span class="pre">minkowski</span></code> with <code class="docutils literal notranslate"><span class="pre">p</span></code> = 2.</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or ‘minkowski’ with <code class="docutils literal notranslate"><span class="pre">p</span></code> != 2.</p></td>
 <td><p>Multi-output and sparse data is not supported.</p></td>
 </tr>
-<tr class="row-even"><td><p>Regression</p></td>
+<tr class="row-odd"><td><p>Regression</p></td>
 <td><p>LinearRegression</p></td>
 <td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">normalize</span></code> != False and <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
 <td><p>Only dense data is supported, #observations should be &gt;= #features.</p></td>
 </tr>
-<tr class="row-odd"><td><p>Regression</p></td>
+<tr class="row-even"><td><p>Regression</p></td>
 <td><p>Ridge</p></td>
 <td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">normalize</span></code> != False, <code class="docutils literal notranslate"><span class="pre">solver</span></code> != ‘auto’ and <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
 <td><p>Only dense data is supported, #observations should be &gt;= #features.</p></td>
 </tr>
-<tr class="row-even"><td><p>Regression</p></td>
+<tr class="row-odd"><td><p>Regression</p></td>
 <td><p>ElasticNet</p></td>
 <td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
 <td><p>Multi-output and sparse data is not supported, #observations should be &gt;= #features.</p></td>
 </tr>
-<tr class="row-odd"><td><p>Regression</p></td>
+<tr class="row-even"><td><p>Regression</p></td>
 <td><p>Lasso</p></td>
 <td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
 <td><p>Multi-output and sparse data is not supported, #observations should be &gt;= #features.</p></td>
 </tr>
-<tr class="row-even"><td><p>Clustering</p></td>
+<tr class="row-odd"><td><p>Clustering</p></td>
 <td><p>KMeans</p></td>
 <td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">precompute_distances</span></code> and <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
 <td><p>No limitations.</p></td>
 </tr>
-<tr class="row-odd"><td><p>Clustering</p></td>
+<tr class="row-even"><td><p>Clustering</p></td>
 <td><p>DBSCAN</p></td>
-<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or <code class="docutils literal notranslate"><span class="pre">minkowski</span></code> with <code class="docutils literal notranslate"><span class="pre">p</span></code> = 2.</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or ‘minkowski’ with <code class="docutils literal notranslate"><span class="pre">p</span></code> != 2, <code class="docutils literal notranslate"><span class="pre">algorithm</span></code> != ‘brute’ or ‘auto’.</p></td>
 <td><p>Only dense data is supported.</p></td>
 </tr>
-<tr class="row-even"><td><p>Dimensionality reduction</p></td>
+<tr class="row-odd"><td><p>Dimensionality reduction</p></td>
 <td><p>PCA</p></td>
 <td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">svd_solver</span></code> != ‘full’.</p></td>
 <td><p>Sparse data is not supported.</p></td>
 </tr>
+<tr class="row-even"><td><p>Dimensionality reduction</p></td>
+<td><p>TSNE</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or ‘minkowski’ with <code class="docutils literal notranslate"><span class="pre">p</span></code> != 2.</p></td>
+<td><p>Sparse data is not supported.</p></td>
+</tr>
 <tr class="row-odd"><td><p>Unsupervised</p></td>
 <td><p>NearestNeighbors</p></td>
-<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or <code class="docutils literal notranslate"><span class="pre">minkowski</span></code> with <code class="docutils literal notranslate"><span class="pre">p</span></code> = 2.</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’ or ‘minkowski’ with <code class="docutils literal notranslate"><span class="pre">p</span></code> != 2.</p></td>
 <td><p>Sparse data is not supported.</p></td>
 </tr>
 <tr class="row-even"><td><p>Other</p></td>
@@ -264,7 +285,7 @@ algorithms:</p>
 </tr>
 <tr class="row-even"><td><p>Other</p></td>
 <td><p>pairwise_distance</p></td>
-<td><p>With metric=``cosine`` and <code class="docutils literal notranslate"><span class="pre">correlation</span></code>.</p></td>
+<td><p>With <code class="docutils literal notranslate"><span class="pre">metric</span></code> = ‘cosine’ or ‘correlation’.</p></td>
 <td><p>Only dense data is supported.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Other</p></td>
@@ -276,7 +297,7 @@ algorithms:</p>
 </table>
 <p>Monkey-patched scikit-learn classes and functions passes scikit-learn’s own test
 suite, with few exceptions, specified in <a class="reference external" href="https://github.com/intel/scikit-learn-intelex/blob/master/deselected_tests.yaml">deselected_tests.yaml</a>.</p>
-<p>The results of the entire latest scikit-learn test suite with Intel(R) Extension for Scikit-learn*: <a class="reference external" href="https://circleci.com/gh/intel/scikit-learn-intelex">CircleCI</a>.</p>
+<p>The results of the entire latest scikit-learn test suite with Intel(R) Extension for Scikit-learn: <a class="reference external" href="https://circleci.com/gh/intel/scikit-learn-intelex">CircleCI</a>.</p>
 </div>
 
 
