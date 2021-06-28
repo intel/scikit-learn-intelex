@@ -19,10 +19,10 @@ import sys
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--channels', , nargs="+", default=['pypi'])
+parser.add_argument('--channels', nargs="+", default=['pypi'])
 args = parser.parse_args()
 
-CHANNELS = args.channel
+CHANNELS = args.channels
 PYTHON_VERSIONS = ['3.6', '3.7', '3.8']
 SYSTEMS = ['ubuntu-latest', 'macos-latest', 'windows-latest']
 ACTIVATE = {
@@ -31,11 +31,13 @@ ACTIVATE = {
     'windows-latest': 'call activate',
 }
 
+print(CHANNELS)
+
 res_enum = {}
 for channel in CHANNELS:
     for python_version in PYTHON_VERSIONS:
         for os in SYSTEMS:
-            res_key = 'python' + python_version + ' - ' + os
+            res_key = channel + ' - ' + 'python' + python_version + ' - ' + os
             res_enum[res_key] = {}
             res_enum[res_key]['python.version'] = python_version
             res_enum[res_key]['imageName'] = os
