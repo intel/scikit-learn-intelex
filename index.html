@@ -30,6 +30,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -176,6 +177,12 @@
 The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library
 (<a class="reference external" href="https://github.com/oneapi-src/oneDAL">oneDAL</a>). Patching scikit-learn makes it a
 well-suited machine learning framework for dealing with real-life problems.</p>
+<a class="reference internal image-reference" href="_images/scikit-learn-acceleration-2021.2.3.PNG"><img alt="_images/scikit-learn-acceleration-2021.2.3.PNG" src="_images/scikit-learn-acceleration-2021.2.3.PNG" style="width: 800px;" /></a>
+<p>Configurations:</p>
+<ul class="simple">
+<li><p>HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket</p></li>
+<li><p>SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8</p></li>
+</ul>
 <div class="section" id="designed-for-data-scientists-and-framework-designers">
 <h2>Designed for Data Scientists and Framework Designers<a class="headerlink" href="#designed-for-data-scientists-and-framework-designers" title="Permalink to this headline">¶</a></h2>
 <p>Intel(R) Extension for Scikit-learn* was created to give data scientists the easiest way to get a better performance
@@ -201,32 +208,50 @@ using the following commandline flag:</p>
 </li>
 </ul>
 <p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
 <span class="n">patch_sklearn</span><span class="p">()</span>
 
+<span class="c1"># You need to re-import scikit-learn algorithms after the patch</span>
 <span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">0</span><span class="p">],</span>
               <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
 <span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kmeans.labels_ = </span><span class="si">{</span><span class="n">kmeans</span><span class="o">.</span><span class="n">labels_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">pred</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pred = </span><span class="si">{</span><span class="n">pred</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kmeans.cluster_centers_ = </span><span class="si">{</span><span class="n">kmeans</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In the example above, you can see that the use of the original Scikit-learn
 has not changed. This behavior is achieved through drop-in patching.</p>
-<p>To undo the patch Scikit-learn with:</p>
+<p>To undo the patch, run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sklearnex</span><span class="o">.</span><span class="n">unpatch_sklearn</span><span class="p">()</span>
+<span class="c1"># You need to re-import scikit-learn algorithms after the unpatch:</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
 </pre></div>
 </div>
-<p>Intel (R) Extension for Scikit-learn* does not patch all scikit-learn algorithms and parameters.
+<p>You may specify which algorithms to patch:</p>
+<ul>
+<li><p>Patching only one algorithm:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
+<span class="c1"># The names match scikit-learn estimators</span>
+<span class="n">patch_sklearn</span><span class="p">(</span><span class="s2">&quot;SVC&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Patching several algorithms:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
+<span class="c1"># The names match scikit-learn estimators</span>
+<span class="n">patch_sklearn</span><span class="p">([</span><span class="s2">&quot;SVC&quot;</span><span class="p">,</span> <span class="s2">&quot;DBSCAN&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Intel(R) Extension for Scikit-learn does not patch all scikit-learn algorithms and parameters.
 You can find the <a class="reference internal" href="algorithms.html#sklearn-algorithms"><span class="std std-ref">full patching map here</span></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Intel(R) Extension for Scikit-learn* supports optimizations for the last four versions of scikit-learn.
-The latest release of scikit-learn-intelex-2021.2.X supports scikit-learn 0.21.X, 0.22.X, 0.23.X and 0.24.X.</p>
+<p>Intel(R) Extension for Scikit-learn supports optimizations for the last four versions of scikit-learn.
+The latest release of scikit-learn-intelex-2021.3.X supports scikit-learn 0.22.X, 0.23.X, 0.24.X and 1.0.X.</p>
 </div>
 </div>
 <div class="section" id="follow-us-on-medium">
@@ -235,6 +260,8 @@ The latest release of scikit-learn-intelex-2021.2.X supports scikit-learn 0.21.X
 to learn tips and tricks for more efficient data analysis the help of Intel(R) Extension for Scikit-learn.
 Here are our latest blogs:</p>
 <ul class="simple">
+<li><p><a class="reference external" href="https://medium.com/intel-analytics-software/superior-machine-learning-performance-on-the-latest-intel-xeon-scalable-processor-efdec279f5a3">Superior Machine Learning Performance on the Latest Intel Xeon Scalable Processors</a>,</p></li>
+<li><p><a class="reference external" href="https://medium.com/intel-analytics-software/leverage-intel-optimizations-in-scikit-learn-f562cb9d5544">Leverage Intel Optimizations in Scikit-Learn</a>,</p></li>
 <li><p><a class="reference external" href="https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18">Intel Gives Scikit-Learn the Performance Boost Data Scientists Need</a>,</p></li>
 <li><p><a class="reference external" href="https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae">From Hours to Minutes: 600x Faster SVM</a>,</p></li>
 <li><p><a class="reference external" href="https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e">Improve the Performance of XGBoost and LightGBM Inference</a>,</p></li>
@@ -247,6 +274,7 @@ Here are our latest blogs:</p>
 <div class="section" id="important-links">
 <h2>Important links<a class="headerlink" href="#important-links" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
+<li><p><a class="reference external" href="https://github.com/intel/scikit-learn-intelex">GitHub</a></p></li>
 <li><p><a class="reference external" href="https://github.com/IntelPython/scikit-learn_bench">Benchmark code</a></p></li>
 <li><p><a class="reference external" href="https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md">Building from Sources</a></p></li>
 <li><p><a class="reference external" href="https://github.com/oneapi-src/oneDAL">About Intel(R) oneAPI Data Analytics Library</a></p></li>
