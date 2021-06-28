@@ -433,12 +433,6 @@ class ElasticNet(ElasticNet_original):
         To avoid memory re-allocation it is advised to allocate the
         initial data in memory directly using that format.
         """
-        if sklearn_check_version('1.0'):
-            _ = _deprecate_normalize(
-                self.normalize,
-                default=False,
-                estimator_name=self.__class__.__name__)
-
         # check X and y
         if check_input:
             X, y = check_X_y(
@@ -464,6 +458,12 @@ class ElasticNet(ElasticNet_original):
                 X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
+
+        if sklearn_check_version('1.0'):
+            self.normalize = _deprecate_normalize(
+                self.normalize,
+                default=False,
+                estimator_name=self.__class__.__name__)
 
         if not check_input:
             # only for compliance with Sklearn,
@@ -652,12 +652,6 @@ class Lasso(ElasticNet):
         To avoid memory re-allocation it is advised to allocate the
         initial data in memory directly using that format.
         """
-        if sklearn_check_version('1.0'):
-            _ = _deprecate_normalize(
-                self.normalize,
-                default=False,
-                estimator_name=self.__class__.__name__)
-
         # check X and y
         if check_input:
             X, y = check_X_y(
@@ -691,6 +685,13 @@ class Lasso(ElasticNet):
                 X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
+
+        if sklearn_check_version('1.0'):
+            self.normalize = _deprecate_normalize(
+                self.normalize,
+                default=False,
+                estimator_name=self.__class__.__name__)
+
         self.n_iter_ = None
         self._gap = None
         # only for pass tests
