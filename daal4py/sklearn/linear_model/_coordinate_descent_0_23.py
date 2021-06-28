@@ -21,7 +21,8 @@ from scipy import sparse as sp
 from sklearn.utils import check_array, check_X_y
 from sklearn.linear_model._coordinate_descent import ElasticNet as ElasticNet_original
 from sklearn.linear_model._coordinate_descent import Lasso as Lasso_original
-from daal4py.sklearn._utils import (make2d, getFPType, get_patch_message, sklearn_check_version)
+from daal4py.sklearn._utils import (make2d, getFPType,
+                                    get_patch_message, sklearn_check_version)
 if sklearn_check_version('1.0'):
     from sklearn.linear_model._base import _deprecate_normalize
 
