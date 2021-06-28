@@ -48,7 +48,7 @@ jobs:
 - job: GeneratorConda
   steps:
   - bash: python .ci/scripts/gen_release_jobs.py --channels main conda-forge intel
-    name: MatrixGenConda
+    name: MatrixGen
 - job: ReleaseConda
   dependsOn: GeneratorConda
   strategy:
