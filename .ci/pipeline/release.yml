@@ -22,7 +22,8 @@ variables:
 jobs:
 - job: GeneratorPyPi
   steps:
-  - bash: python .ci/scripts/gen_release_jobs.py
+  - bash: python .ci/scripts/gen_release_jobs.py 2> matrix.json
+  - bash: cat matrix.json
     name: mtrx
 - job: ReleasePyPi
   dependsOn: GeneratorPyPi
