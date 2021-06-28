@@ -18,7 +18,12 @@
 import sys
 
 PYTHON_VERSIONS = ['3.6', '3.7', '3.8']
-SYSTEMS = ['ubuntu-latest', 'macos-latest']
+SYSTEMS = ['ubuntu-latest', 'macos-latest', 'windows-latest']
+ACTIVATE = {
+    'ubuntu-latest': 'conda activate',
+    'macos-latest': 'source activate',
+    'windows-latest': 'call activate',
+}
 
 res_enum = {}
 for python_version in PYTHON_VERSIONS:
@@ -27,5 +32,6 @@ for python_version in PYTHON_VERSIONS:
         res_enum[res_key] = {}
         res_enum[res_key]['python.version'] = python_version
         res_enum[res_key]['imageName'] = os
+        res_enum[res_key]['conda.activate'] = ACTIVATE[os]
 
 sys.stderr.write("##vso[task.setVariable variable=legs;isOutput=true]{}".format(res_enum))
