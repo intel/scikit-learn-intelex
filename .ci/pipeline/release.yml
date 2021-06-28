@@ -47,7 +47,7 @@ jobs:
     displayName: 'Testing of scikit-learn-intelex'
 - job: GeneratorConda
   steps:
-  - bash: python .ci/scripts/gen_release_jobs.py --channels main conda-forge intel
+  - bash: python .ci/scripts/gen_release_jobs.py --channels main conda-forge
     name: MatrixGen
 - job: ReleaseConda
   dependsOn: GeneratorConda
