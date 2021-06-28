@@ -22,8 +22,7 @@ variables:
 jobs:
 - job: GeneratorPyPi
   steps:
-  - script: |
-      python .ci/scripts/gen_release_jobs.py
+  - bash: python .ci/scripts/gen_release_jobs.py
     name: mtrx
 - job: ReleasePyPi
   dependsOn: GeneratorPyPi
