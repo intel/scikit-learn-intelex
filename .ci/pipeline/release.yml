@@ -20,36 +20,15 @@ variables:
   TEST_COMMAND: python -m sklearnex -m pytest -ra --disable-warnings --pyargs sklearn.svm.tests.test_svm $(DESELECT)
 
 jobs:
+- job: GeneratorPyPi
+  steps:
+  - script: |
+      python .ci/scripts/gen_release_jobs.py
+    name: mtrx
 - job: ReleasePyPi
+  dependsOn: GeneratorPyPi
   strategy:
-    matrix:
-      ubuntu - python38:
-        imageName: 'ubuntu-latest'
-        python.version: '3.8'
-      ubuntu - python37:
-        imageName: 'ubuntu-latest'
-        python.version: '3.7'
-      ubuntu - python36:
-        imageName: 'ubuntu-latest'
-        python.version: '3.6'
-      mac - python38:
-        imageName: 'macos-latest'
-        python.version: '3.8'
-      mac - python37:
-        imageName: 'macos-latest'
-        python.version: '3.7'
-      mac - python36:
-        imageName: 'macos-latest'
-        python.version: '3.6'
-      windows - python38:
-        imageName: 'windows-latest'
-        python.version: '3.8'
-      windows - python37:
-        imageName: 'windows-latest'
-        python.version: '3.7'
-      windows - python36:
-        imageName: 'windows-latest'
-        python.version: '3.6'
+    matrix: $[ dependencies.generator.outputs['mtrx.legs'] ]
   pool:
     vmImage: $(imageName)
   steps:
@@ -67,155 +46,158 @@ jobs:
       $(TEST_COMMAND)
     displayName: 'Testing of scikit-learn-intelex'
 
-- job: ReleaseConda
-  strategy:
-    matrix:
-      main - ubuntu - python39:
-        imageName: 'ubuntu-latest'
-        python.version: '3.9'
-        conda.channel: 'main'
-        conda.activate: 'conda activate'
-      main - ubuntu - python38:
-        imageName: 'ubuntu-latest'
-        python.version: '3.8'
-        conda.channel: 'main'
-        conda.activate: 'conda activate'
-      main - ubuntu - python37:
-        imageName: 'ubuntu-latest'
-        python.version: '3.7'
-        conda.channel: 'main'
-        conda.activate: 'conda activate'
-      main - ubuntu - python36:
-        imageName: 'ubuntu-latest'
-        python.version: '3.6'
-        conda.channel: 'main'
-        conda.activate: 'conda activate'
-      main - mac - python39:
-        imageName: 'macos-latest'
-        python.version: '3.9'
-        conda.channel: 'main'
-        conda.activate: 'source activate'
-      main - mac - python38:
-        imageName: 'macos-latest'
-        python.version: '3.8'
-        conda.channel: 'main'
-        conda.activate: 'source activate'
-      main - mac - python37:
-        imageName: 'macos-latest'
-        python.version: '3.7'
-        conda.channel: 'main'
-        conda.activate: 'source activate'
-      main - mac - python36:
-        imageName: 'macos-latest'
-        python.version: '3.6'
-        conda.channel: 'main'
-        conda.activate: 'source activate'
-      main - windows - python39:
-        imageName: 'windows-latest'
-        python.version: '3.9'
-        conda.channel: 'main'
-        conda.activate: 'call activate'
-      main - windows - python38:
-        imageName: 'windows-latest'
-        python.version: '3.8'
-        conda.channel: 'main'
-        conda.activate: 'call activate'
-      main - windows - python37:
-        imageName: 'windows-latest'
-        python.version: '3.7'
-        conda.channel: 'main'
-        conda.activate: 'call activate'
-      main - windows - python36:
-        imageName: 'windows-latest'
-        python.version: '3.6'
-        conda.channel: 'main'
-        conda.activate: 'call activate'
-      forge - ubuntu - python39:
-        imageName: 'ubuntu-latest'
-        python.version: '3.9'
-        conda.channel: 'conda-forge'
-        conda.activate: 'conda activate'
-      forge - ubuntu - python38:
-        imageName: 'ubuntu-latest'
-        python.version: '3.8'
-        conda.channel: 'conda-forge'
-        conda.activate: 'conda activate'
-      forge - ubuntu - python37:
-        imageName: 'ubuntu-latest'
-        python.version: '3.7'
-        conda.channel: 'conda-forge'
-        conda.activate: 'conda activate'
-      forge - ubuntu - python36:
-        imageName: 'ubuntu-latest'
-        python.version: '3.6'
-        conda.channel: 'conda-forge'
-        conda.activate: 'conda activate'
-      forge - mac - python39:
-        imageName: 'macos-latest'
-        python.version: '3.9'
-        conda.channel: 'conda-forge'
-        conda.activate: 'source activate'
-      forge - mac - python38:
-        imageName: 'macos-latest'
-        python.version: '3.8'
-        conda.channel: 'conda-forge'
-        conda.activate: 'source activate'
-      forge - mac - python37:
-        imageName: 'macos-latest'
-        python.version: '3.7'
-        conda.channel: 'conda-forge'
-        conda.activate: 'source activate'
-      forge - mac - python36:
-        imageName: 'macos-latest'
-        python.version: '3.6'
-        conda.channel: 'conda-forge'
-        conda.activate: 'source activate'
-      forge - windows - python39:
-        imageName: 'windows-latest'
-        python.version: '3.9'
-        conda.channel: 'conda-forge'
-        conda.activate: 'call activate'
-      forge - windows - python38:
-        imageName: 'windows-latest'
-        python.version: '3.8'
-        conda.channel: 'conda-forge'
-        conda.activate: 'call activate'
-      forge - windows - python37:
-        imageName: 'windows-latest'
-        python.version: '3.7'
-        conda.channel: 'conda-forge'
-        conda.activate: 'call activate'
-      forge - windows - python36:
-        imageName: 'windows-latest'
-        python.version: '3.6'
-        conda.channel: 'conda-forge'
-        conda.activate: 'call activate'
-  pool:
-    vmImage: $(imageName)
-  steps:
-  - task: UsePythonVersion@0
-    displayName: 'Use Python $(python.version)'
-    inputs:
-      versionSpec: '$(python.version)'
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    condition: eq( variables['Agent.OS'], 'Windows_NT' )
-    displayName: Add conda to PATH
-  - script: |
-      echo "##vso[task.prependpath]$CONDA/bin"
-      sudo chown -R $USER $CONDA
-    condition: eq( variables['Agent.OS'], 'Darwin')
-    displayName: Add sudo access
-  - script: |
-      conda update -y -q conda
-      conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest
-    displayName: 'Install scikit-learn-intelex'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      $(conda.activate) CB
-      python -c "import sklearnex"
-    displayName: 'Testing of import'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      $(conda.activate) CB
-      $(TEST_COMMAND)
-    displayName: 'Testing of scikit-learn-intelex'
+# - job: Generator
+#   steps:
+#   - script: 
+# - job: ReleaseConda
+  # strategy:
+  #   matrix:
+  #     main - ubuntu - python39:
+  #       imageName: 'ubuntu-latest'
+  #       python.version: '3.9'
+  #       conda.channel: 'main'
+  #       conda.activate: 'conda activate'
+  #     main - ubuntu - python38:
+  #       imageName: 'ubuntu-latest'
+  #       python.version: '3.8'
+  #       conda.channel: 'main'
+  #       conda.activate: 'conda activate'
+  #     main - ubuntu - python37:
+  #       imageName: 'ubuntu-latest'
+  #       python.version: '3.7'
+  #       conda.channel: 'main'
+  #       conda.activate: 'conda activate'
+  #     main - ubuntu - python36:
+  #       imageName: 'ubuntu-latest'
+  #       python.version: '3.6'
+  #       conda.channel: 'main'
+  #       conda.activate: 'conda activate'
+  #     main - mac - python39:
+  #       imageName: 'macos-latest'
+  #       python.version: '3.9'
+  #       conda.channel: 'main'
+  #       conda.activate: 'source activate'
+  #     main - mac - python38:
+  #       imageName: 'macos-latest'
+  #       python.version: '3.8'
+  #       conda.channel: 'main'
+  #       conda.activate: 'source activate'
+  #     main - mac - python37:
+  #       imageName: 'macos-latest'
+  #       python.version: '3.7'
+  #       conda.channel: 'main'
+  #       conda.activate: 'source activate'
+  #     main - mac - python36:
+  #       imageName: 'macos-latest'
+  #       python.version: '3.6'
+  #       conda.channel: 'main'
+  #       conda.activate: 'source activate'
+  #     main - windows - python39:
+  #       imageName: 'windows-latest'
+  #       python.version: '3.9'
+  #       conda.channel: 'main'
+  #       conda.activate: 'call activate'
+  #     main - windows - python38:
+  #       imageName: 'windows-latest'
+  #       python.version: '3.8'
+  #       conda.channel: 'main'
+  #       conda.activate: 'call activate'
+  #     main - windows - python37:
+  #       imageName: 'windows-latest'
+  #       python.version: '3.7'
+  #       conda.channel: 'main'
+  #       conda.activate: 'call activate'
+  #     main - windows - python36:
+  #       imageName: 'windows-latest'
+  #       python.version: '3.6'
+  #       conda.channel: 'main'
+  #       conda.activate: 'call activate'
+  #     forge - ubuntu - python39:
+  #       imageName: 'ubuntu-latest'
+  #       python.version: '3.9'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'conda activate'
+  #     forge - ubuntu - python38:
+  #       imageName: 'ubuntu-latest'
+  #       python.version: '3.8'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'conda activate'
+  #     forge - ubuntu - python37:
+  #       imageName: 'ubuntu-latest'
+  #       python.version: '3.7'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'conda activate'
+  #     forge - ubuntu - python36:
+  #       imageName: 'ubuntu-latest'
+  #       python.version: '3.6'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'conda activate'
+  #     forge - mac - python39:
+  #       imageName: 'macos-latest'
+  #       python.version: '3.9'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'source activate'
+  #     forge - mac - python38:
+  #       imageName: 'macos-latest'
+  #       python.version: '3.8'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'source activate'
+  #     forge - mac - python37:
+  #       imageName: 'macos-latest'
+  #       python.version: '3.7'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'source activate'
+  #     forge - mac - python36:
+  #       imageName: 'macos-latest'
+  #       python.version: '3.6'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'source activate'
+  #     forge - windows - python39:
+  #       imageName: 'windows-latest'
+  #       python.version: '3.9'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'call activate'
+  #     forge - windows - python38:
+  #       imageName: 'windows-latest'
+  #       python.version: '3.8'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'call activate'
+  #     forge - windows - python37:
+  #       imageName: 'windows-latest'
+  #       python.version: '3.7'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'call activate'
+  #     forge - windows - python36:
+  #       imageName: 'windows-latest'
+  #       python.version: '3.6'
+  #       conda.channel: 'conda-forge'
+  #       conda.activate: 'call activate'
+  # pool:
+  #   vmImage: $(imageName)
+  # steps:
+  # - task: UsePythonVersion@0
+  #   displayName: 'Use Python $(python.version)'
+  #   inputs:
+  #     versionSpec: '$(python.version)'
+  # - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+  #   condition: eq( variables['Agent.OS'], 'Windows_NT' )
+  #   displayName: Add conda to PATH
+  # - script: |
+  #     echo "##vso[task.prependpath]$CONDA/bin"
+  #     sudo chown -R $USER $CONDA
+  #   condition: eq( variables['Agent.OS'], 'Darwin')
+  #   displayName: Add sudo access
+  # - script: |
+  #     conda update -y -q conda
+  #     conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest
+  #   displayName: 'Install scikit-learn-intelex'
+  # - script: |
+  #     . /usr/share/miniconda/etc/profile.d/conda.sh
+  #     $(conda.activate) CB
+  #     python -c "import sklearnex"
+  #   displayName: 'Testing of import'
+  # - script: |
+  #     . /usr/share/miniconda/etc/profile.d/conda.sh
+  #     $(conda.activate) CB
+  #     $(TEST_COMMAND)
+  #   displayName: 'Testing of scikit-learn-intelex'
