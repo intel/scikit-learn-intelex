@@ -25,7 +25,7 @@ jobs:
   - bash: python .ci/scripts/gen_release_jobs.py
     name: MatrixGen
 - job: ReleasePyPi
-  dependsOn: Generator
+  dependsOn: GeneratorPyPi
   strategy:
     maxParallel: 3
     matrix: $[ dependencies.GeneratorPyPi.outputs['MatrixGen.legs'] ]
@@ -50,7 +50,7 @@ jobs:
   - bash: python .ci/scripts/gen_release_jobs.py --channels main conda-forge intel
     name: MatrixGenConda
 - job: ReleaseConda
-  dependsOn: Generator
+  dependsOn: GeneratorConda
   strategy:
     maxParallel: 5
     matrix: $[ dependencies.GeneratorConda.outputs['MatrixGen.legs'] ]
