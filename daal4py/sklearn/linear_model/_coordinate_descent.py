@@ -379,6 +379,93 @@ def _daal4py_predict_lasso(self, X):
     return res
 
 
+def _fit(self, X, y, sample_weight=None, check_input=True):
+    # check X and y
+    if check_input:
+        X, y = check_X_y(
+            X,
+            y,
+            copy=False,
+            accept_sparse='csc',
+            dtype=[np.float64, np.float32],
+            multi_output=True,
+            y_numeric=True,
+        )
+        y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
+    else:
+        # only for compliance with Sklearn,
+        # this assert is not required for Intel(R) oneAPI Data
+        # Analytics Library
+        if isinstance(X, np.ndarray) and \
+                X.flags['F_CONTIGUOUS'] is False:
+            # print(X.flags)
+            raise ValueError("ndarray is not Fortran contiguous")
+
+    if isinstance(X, np.ndarray):
+        self.fit_shape_good_for_daal_ = \
+            True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
+    else:
+        self.fit_shape_good_for_daal_ = False
+
+    log_str = "sklearn.linear_model." + self.__class__.__name__ + ".fit: "
+    sklearn_ready = sp.issparse(X) or not self.fit_shape_good_for_daal_ or \
+        X.dtype not in [np.float64, np.float32] or sample_weight is not None
+
+    if sklearn_ready:
+        if hasattr(self, 'daal_model_'):
+            del self.daal_model_
+        logging.info(
+            log_str + get_patch_message("sklearn")
+        )
+        if sklearn_check_version('0.23'):
+            res_new = super(ElasticNet, self).fit(
+                X, y, sample_weight=sample_weight, check_input=check_input)
+        else:
+            res_new = super(ElasticNet, self).fit(
+                X, y, check_input=check_input)
+        self._gap = res_new.dual_gap_
+        return res_new
+    self.n_iter_ = None
+    self._gap = None
+
+    if sklearn_check_version('1.0'):
+        self.normalize = _deprecate_normalize(
+            self.normalize,
+            default=False,
+            estimator_name=self.__class__.__name__)
+
+    # only for pass tests
+    # "check_estimators_fit_returns_self(readonly_memmap=True) and
+    # check_regressors_train(readonly_memmap=True)
+    if not (X.flags.writeable):
+        X = np.copy(X)
+    if not (y.flags.writeable):
+        y = np.copy(y)
+    logging.info(
+        log_str + get_patch_message("daal")
+    )
+
+    if self.__class__.__name__ == "ElasticNet":
+        res = _daal4py_fit_enet(self, X, y, check_input=check_input)
+    else:
+        res = _daal4py_fit_lasso(self, X, y, check_input=check_input)
+    if res is None:
+        if hasattr(self, 'daal_model_'):
+            del self.daal_model_
+        logging.info(
+            log_str + get_patch_message("sklearn_after_daal")
+        )
+        if sklearn_check_version('0.23'):
+            res_new = super(ElasticNet, self).fit(
+                X, y, sample_weight=sample_weight, check_input=check_input)
+        else:
+            res_new = super(ElasticNet, self).fit(
+                X, y, check_input=check_input)
+        self._gap = res_new.dual_gap_
+        return res_new
+    return res
+
+
 class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
@@ -412,114 +499,12 @@ class ElasticNet(ElasticNet_original):
             selection=selection,
         )
 
-    def fit(self, X, y, sample_weight=None, check_input=True):
-        """Fit model with coordinate descent.
-
-        Parameters
-        ----------
-        X : {ndarray, sparse matrix} of (n_samples, n_features)
-            Data
-
-        y : {ndarray, sparse matrix} of shape (n_samples,) or \
-            (n_samples, n_targets)
-            Target. Will be cast to X's dtype if necessary
-
-        sample_weight : float or array-like of shape (n_samples,), default=None
-            Sample weight.
-
-        check_input : bool, default=True
-            Allow to bypass several input checking.
-            Don't use this parameter unless you know what you do.
-
-        Notes
-        -----
-
-        Coordinate descent is an algorithm that considers each column of
-        data at a time hence it will automatically convert the X input
-        as a Fortran-contiguous numpy array if necessary.
-
-        To avoid memory re-allocation it is advised to allocate the
-        initial data in memory directly using that format.
-        """
-        # check X and y
-        if check_input:
-            X, y = check_X_y(
-                X,
-                y,
-                copy=False,
-                accept_sparse='csc',
-                dtype=[np.float64, np.float32],
-                multi_output=True,
-                y_numeric=True,
-            )
-            y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
-        else:
-            # only for compliance with Sklearn,
-            # this assert is not required for Intel(R) oneAPI Data
-            # Analytics Library
-            if isinstance(X, np.ndarray) and \
-                    X.flags['F_CONTIGUOUS'] is False:
-                # print(X.flags)
-                raise ValueError("ndarray is not Fortran contiguous")
-
-        if isinstance(X, np.ndarray):
-            self.fit_shape_good_for_daal_ = \
-                True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
-        else:
-            self.fit_shape_good_for_daal_ = False
-
-        sklearn_ready = sp.issparse(X) or not self.fit_shape_good_for_daal_ or \
-            X.dtype not in [np.float64, np.float32] or sample_weight is not None
-
-        if sklearn_ready:
-            if hasattr(self, 'daal_model_'):
-                del self.daal_model_
-            logging.info(
-                "sklearn.linear_model.ElasticNet."
-                "fit: " + get_patch_message("sklearn"))
-            if sklearn_check_version('0.23'):
-                res_new = super(ElasticNet, self).fit(
-                    X, y, sample_weight=sample_weight, check_input=check_input)
-            else:
-                res_new = super(ElasticNet, self).fit(
-                    X, y, check_input=check_input)
-            self._gap = res_new.dual_gap_
-            return res_new
-        self.n_iter_ = None
-        self._gap = None
-
-        if sklearn_check_version('1.0'):
-            self.normalize = _deprecate_normalize(
-                self.normalize,
-                default=False,
-                estimator_name=self.__class__.__name__)
-
-        # only for pass tests
-        # "check_estimators_fit_returns_self(readonly_memmap=True) and
-        # check_regressors_train(readonly_memmap=True)
-        if not (X.flags.writeable):
-            X = np.copy(X)
-        if not (y.flags.writeable):
-            y = np.copy(y)
-        logging.info(
-            "sklearn.linear_model.ElasticNet."
-            "fit: " + get_patch_message("daal"))
-        res = _daal4py_fit_enet(self, X, y, check_input=check_input)
-        if res is None:
-            if hasattr(self, 'daal_model_'):
-                del self.daal_model_
-            logging.info(
-                "sklearn.linear_model.ElasticNet."
-                "fit: " + get_patch_message("sklearn_after_daal"))
-            if sklearn_check_version('0.23'):
-                res_new = super(ElasticNet, self).fit(
-                    X, y, sample_weight=sample_weight, check_input=check_input)
-            else:
-                res_new = super(ElasticNet, self).fit(
-                    X, y, check_input=check_input)
-            self._gap = res_new.dual_gap_
-            return res_new
-        return res
+    if sklearn_check_version('0.23'):
+        def fit(self, X, y, sample_weight=None, check_input=True):
+            return _fit(self, X, y, sample_weight, check_input)
+    else:
+        def fit(self, X, y, check_input=True):
+            return _fit(self, X, y, check_input)
 
     def predict(self, X):
         """Predict using the linear model
@@ -654,112 +639,12 @@ class Lasso(ElasticNet):
             selection=selection,
         )
 
-    def fit(self, X, y, sample_weight=None, check_input=True):
-        """Fit model with coordinate descent.
-
-        Parameters
-        ----------
-        X : {ndarray, sparse matrix} of (n_samples, n_features)
-            Data
-
-        y : {ndarray, sparse matrix} of shape (n_samples,) or \
-            (n_samples, n_targets)
-            Target. Will be cast to X's dtype if necessary
-
-        sample_weight : float or array-like of shape (n_samples,), default=None
-            Sample weight.
-
-        check_input : bool, default=True
-            Allow to bypass several input checking.
-            Don't use this parameter unless you know what you do.
-
-        Notes
-        -----
-
-        Coordinate descent is an algorithm that considers each column of
-        data at a time hence it will automatically convert the X input
-        as a Fortran-contiguous numpy array if necessary.
-
-        To avoid memory re-allocation it is advised to allocate the
-        initial data in memory directly using that format.
-        """
-        # check X and y
-        if check_input:
-            X, y = check_X_y(
-                X,
-                y,
-                copy=False,
-                accept_sparse='csc', dtype=[np.float64, np.float32],
-                multi_output=True,
-                y_numeric=True
-            )
-            y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
-        else:
-            # only for compliance with Sklearn,
-            # this assert is not required for Intel(R) oneAPI Data
-            # Analytics Library
-            if isinstance(X, np.ndarray) and \
-                    X.flags['F_CONTIGUOUS'] is False:
-                raise ValueError("ndarray is not Fortran contiguous")
-
-        if isinstance(X, np.ndarray):
-            self.fit_shape_good_for_daal_ = True if X.ndim <= 1 else True if X.shape[
-                0] >= X.shape[1] else False
-        else:
-            self.fit_shape_good_for_daal_ = False
-
-        sklearn_ready = sp.issparse(X) or sample_weight is not None or \
-            not self.fit_shape_good_for_daal_ or \
-            X.dtype not in [np.float64, np.float32]
-        if sklearn_ready:
-            if hasattr(self, 'daal_model_'):
-                del self.daal_model_
-            logging.info(
-                "sklearn.linear_model.Lasso."
-                "fit: " + get_patch_message("sklearn"))
-            if sklearn_check_version('0.23'):
-                res_new = super(ElasticNet, self).fit(
-                    X, y, sample_weight=sample_weight, check_input=check_input)
-            else:
-                res_new = super(ElasticNet, self).fit(
-                    X, y, check_input=check_input)
-            self._gap = res_new.dual_gap_
-            return res_new
-
-        if sklearn_check_version('1.0'):
-            self.normalize = _deprecate_normalize(
-                self.normalize,
-                default=False,
-                estimator_name=self.__class__.__name__)
-
-        self.n_iter_ = None
-        self._gap = None
-        # only for pass tests
-        # "check_estimators_fit_returns_self(readonly_memmap=True) and
-        # check_regressors_train(readonly_memmap=True)
-        if not (X.flags.writeable):
-            X = np.copy(X)
-        if not (y.flags.writeable):
-            y = np.copy(y)
-        logging.info(
-            "sklearn.linear_model.Lasso."
-            "fit: " + get_patch_message("daal"))
-        res = _daal4py_fit_lasso(self, X, y, check_input=check_input)
-        if res is None:
-            if hasattr(self, 'daal_model_'):
-                del self.daal_model_
-            logging.info(
-                "sklearn.linear_model.Lasso."
-                "fit: " + get_patch_message("sklearn_after_daal"))
-            if sklearn_check_version('0.23'):
-                res_new = super(ElasticNet, self).fit(
-                    X, y, sample_weight=sample_weight, check_input=check_input)
-            else:
-                res_new = super(ElasticNet, self).fit(
-                    X, y, check_input=check_input)
-            self._gap = res_new.dual_gap_
-            return res_new
-        return res
+    if sklearn_check_version('0.23'):
+        def fit(self, X, y, sample_weight=None, check_input=True):
+            return _fit(self, X, y, sample_weight, check_input)
+    else:
+        def fit(self, X, y, check_input=True):
+            return _fit(self, X, y, check_input)
 
     def predict(self, X):
         """Predict using the linear model
