@@ -593,11 +593,11 @@ def daal4py_predict(self, X, resultsToEvaluate):
     except ValueError:
         fptype = None
 
-    multinomial = self.multi_class in ["multinomial", "warn"] or \
+    daal_ready = self.multi_class in ["multinomial", "warn"] or \
         self.classes_.size == 2 or resultsToEvaluate == 'computeClassLabels'
-
-    if not sparse.issparse(X) and not sparse.issparse(self.coef_) and \
-       fptype is not None and multinomial:
+    daal_ready = daal_ready and not sparse.issparse(X) and \
+        not sparse.issparse(self.coef_) and fptype is not None
+    if daal_ready:
         logging.info(
             "sklearn.linear_model.LogisticRegression."
             "predict: " + get_patch_message("daal")
