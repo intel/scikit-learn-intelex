@@ -107,11 +107,8 @@ def _daal4py_fit_enet(self, X, y_, check_input):
 
     # only for compliance with Sklearn
     if isinstance(self.precompute, np.ndarray) and self.fit_intercept and \
-       not np.allclose(
-           X_offset,
-           np.zeros(X.shape[1])
-       ) or self.normalize and \
-       not np.allclose(X_scale, np.ones(X.shape[1])):
+       not np.allclose(X_offset, np.zeros(X.shape[1])) or \
+       self.normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
         warnings.warn("Gram matrix was provided but X was centered"
                       " to fit intercept, "
                       "or X was normalized : recomputing Gram matrix.",
@@ -216,9 +213,9 @@ def _daal4py_predict_enet(self, X):
     )
     if sklearn_check_version('0.23'):
         if self.n_features_in_ != X.shape[1]:
-            raise ValueError((f'X has {X.shape[1]} features, '
-                            f'but ElasticNet is expecting '
-                            f'{self.n_features_in_} features as input'))
+            raise ValueError(f'X has {X.shape[1]} features, '
+                             f'but ElasticNet is expecting '
+                             f'{self.n_features_in_} features as input')
     elastic_net_res = elastic_net_palg.compute(X, self.daal_model_)
 
     res = elastic_net_res.prediction
@@ -265,10 +262,8 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     # only for compliance with Sklearn
     if isinstance(self.precompute, np.ndarray) and \
        self.fit_intercept and not np.allclose(
-            X_offset,
-            np.zeros(X.shape[1])) or \
-       self.normalize and not np.allclose(
-            X_scale, np.ones(X.shape[1])):
+            X_offset, np.zeros(X.shape[1])) or \
+       self.normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
         warnings.warn("Gram matrix was provided but X was centered"
                       " to fit intercept, "
                       "or X was normalized : recomputing Gram matrix.",
@@ -474,7 +469,7 @@ class ElasticNet(ElasticNet_original):
             self.fit_shape_good_for_daal_ = False
 
         sklearn_ready = sp.issparse(X) or not self.fit_shape_good_for_daal_ or \
-            not X.dtype in [np.float64, np.float32] or sample_weight is not None
+            X.dtype not in [np.float64, np.float32] or sample_weight is not None
 
         if sklearn_ready:
             if hasattr(self, 'daal_model_'):
@@ -715,7 +710,7 @@ class Lasso(ElasticNet):
 
         sklearn_ready = sp.issparse(X) or sample_weight is not None or \
             not self.fit_shape_good_for_daal_ or \
-            not X.dtype in [np.float64, np.float32]
+            X.dtype not in [np.float64, np.float32]
         if sklearn_ready:
             if hasattr(self, 'daal_model_'):
                 del self.daal_model_
