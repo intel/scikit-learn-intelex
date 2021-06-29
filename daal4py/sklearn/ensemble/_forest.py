@@ -43,7 +43,10 @@ from scipy import sparse as sp
 
 
 def _to_absolute_max_features(
-        max_features, n_features, is_classification=False):
+    max_features,
+    n_features,
+    is_classification=False
+):
     if max_features is None:
         return n_features
     elif isinstance(max_features, str):
@@ -202,7 +205,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     dfc_algorithm = daal4py.decision_forest_classification_training(
         nClasses=int(n_classes_),
         fptype=X_fptype,
-        method='hist' if daal_check_version((2021, 'P', 200)) else 'defaultDense',
+        method='hist',
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap_
         if self.bootstrap is True else 1.,
@@ -248,8 +251,6 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
 
 
 def _daal_predict_classifier(self, X):
-    if not daal_check_version((2021, 'P', 200)):
-        X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfc_algorithm = daal4py.decision_forest_classification_prediction(
         nClasses=int(self.n_classes_),
@@ -270,8 +271,6 @@ def _daal_predict_classifier(self, X):
 
 
 def _daal_predict_proba(self, X):
-    if not daal_check_version((2021, 'P', 200)):
-        X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfc_algorithm = daal4py.decision_forest_classification_prediction(
         nClasses=int(self.n_classes_),
@@ -376,7 +375,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     # create algorithm
     dfr_algorithm = daal4py.decision_forest_regression_training(
         fptype=getFPType(X),
-        method='hist' if daal_check_version((2021, 'P', 200)) else 'defaultDense',
+        method='hist',
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap if self.bootstrap is True else 1.,
         featuresPerNode=int(_featuresPerNode),
@@ -430,7 +429,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
 
-    if (sklearn_check_version('1.0') and self.criterion == "mse"):
+    if sklearn_check_version('1.0') and self.criterion == "mse":
         warnings.warn(
             "Criterion 'mse' was deprecated in v1.0 and will be "
             "removed in version 1.2. Use `criterion='squared_error'` "
@@ -487,8 +486,6 @@ def _daal_predict_regressor(self, X):
             (f'X has {X.shape[1]} features, '
              f'but RandomForestRegressor is expecting '
              f'{self.n_features_in_} features as input'))
-    if not daal_check_version((2021, 'P', 200)):
-        X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)
     dfr_predictionResult = dfr_alg.compute(X, self.daal_model_)
@@ -670,9 +667,10 @@ class RandomForestClassifier(RandomForestClassifier_original):
         """
 
         X = check_array(
-            X, accept_sparse=[
-                'csr', 'csc', 'coo'], dtype=[
-                np.float64, np.float32])
+            X,
+            accept_sparse=['csr', 'csc', 'coo'],
+            dtype=[np.float64, np.float32]
+        )
 
         if not hasattr(self, 'daal_model_') or \
                 sp.issparse(X) or self.n_outputs_ != 1:
@@ -958,9 +956,10 @@ class RandomForestRegressor(RandomForestRegressor_original):
             The predicted classes.
         """
         X = check_array(
-            X, accept_sparse=[
-                'csr', 'csc', 'coo'], dtype=[
-                np.float64, np.float32])
+            X,
+            accept_sparse=['csr', 'csc', 'coo'],
+            dtype=[np.float64, np.float32]
+        )
 
         if not hasattr(self, 'daal_model_') or \
                 sp.issparse(X) or self.n_outputs_ != 1:
