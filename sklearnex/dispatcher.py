@@ -50,7 +50,7 @@ def get_patch_names():
     return list(get_patch_map().keys())
 
 
-def patch_sklearn(name=None, verbose=True):    
+def patch_sklearn(name=None, verbose=True):
     if not sklearn_check_version('0.22.0'):
         raise NotImplementedError("Intel(R) Extension for Scikit-learn* patches apply "
                                   "for scikit-learn >= 0.22.0 only ...")

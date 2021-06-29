@@ -19,7 +19,7 @@ from scipy import sparse as sp
 from scipy import linalg
 
 from sklearn.linear_model._base import _rescale_data
-from ..utils.validation import _daal_check_array
+from ..utils.validation import _daal_check_array, _daal_check_X_y
 from ..utils.base import _daal_validate_data
 from .._utils import sklearn_check_version
 
@@ -95,9 +95,9 @@ def _daal4py_predict(self, X):
     if sklearn_check_version('0.23'):
         if X.shape[1] != self.n_features_in_:
             raise ValueError(
-                (f'X has {X.shape[1]} features, '
+                f'X has {X.shape[1]} features, '
                 f'but LinearRegression is expecting '
-                f'{self.n_features_in_} features as input'))
+                f'{self.n_features_in_} features as input')
     try:
         lr_res = lr_pred.compute(X, self.daal_model_)
     except RuntimeError:
@@ -262,7 +262,7 @@ def _predict_linear(self, X):
         not self.fit_shape_good_for_daal_ or not good_shape_for_daal or \
         (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)
 
-    if sklearn_check_version('0.22') and now sklearn_check_version('0.23'):
+    if sklearn_check_version('0.22') and not sklearn_check_version('0.23'):
         dtype = get_dtype(X)
         sklearn_ready = sklearn_ready or dtype in [np.float64, np.float32]
 
@@ -326,7 +326,9 @@ class LinearRegression(LinearRegression_original):
                 logging.info(
                     "sklearn.linar_model.LinearRegression."
                     "fit: " + get_patch_message("sklearn"))
-                return super(LinearRegression, self).fit(X, y=y, sample_weight=sample_weight)
+                return super(LinearRegression, self).fit(
+                    X, y=y, sample_weight=sample_weight
+                )
         return _fit_linear(self, X, y, sample_weight=sample_weight)
 
     def predict(self, X):
