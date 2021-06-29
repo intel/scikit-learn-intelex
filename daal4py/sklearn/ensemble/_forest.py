@@ -736,7 +736,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
         #return _daal_predict_proba(self, X)
 
     if sklearn_check_version('1.0'):
-        @deprecated(  # type: ignore
+        @deprecated(
             "Attribute `n_features_` was deprecated in version 1.0 and will be "
             "removed in 1.2. Use `n_features_in_` instead."
         )
@@ -974,7 +974,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
         return _daal_predict_regressor(self, X)
 
     if sklearn_check_version('1.0'):
-        @deprecated(  # type: ignore
+        @deprecated(
             "Attribute `n_features_` was deprecated in version 1.0 and will be "
             "removed in 1.2. Use `n_features_in_` instead."
         )
