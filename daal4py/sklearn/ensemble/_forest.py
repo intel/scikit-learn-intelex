@@ -737,8 +737,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
 
     if sklearn_check_version('1.0'):
         @deprecated(
-            "Attribute n_features_ was deprecated in version 1.0 and will be "
-            "removed in 1.2. Use 'n_features_in_' instead."
+            "Attribute `n_features_` was deprecated in version 1.0 and will be "
+            "removed in 1.2. Use `n_features_in_` instead."
         )
         @property
         def n_features_(self):
@@ -975,8 +975,8 @@ class RandomForestRegressor(RandomForestRegressor_original):
 
     if sklearn_check_version('1.0'):
         @deprecated(
-            "Attribute n_features_ was deprecated in version 1.0 and will be "
-            "removed in 1.2. Use 'n_features_in_' instead."
+            "Attribute `n_features_` was deprecated in version 1.0 and will be "
+            "removed in 1.2. Use `n_features_in_` instead."
         )
         @property
         def n_features_(self):
