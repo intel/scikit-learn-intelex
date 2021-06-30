@@ -27,16 +27,7 @@ import logging
 
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
-    if eps <= 0.0:
-        raise ValueError("eps must be positive.")
-
-    X = check_array(X, dtype=[np.float64, np.float32])
-    if sample_weight is not None:
-        sample_weight = _check_sample_weight(sample_weight, X)
-        ww = make2d(sample_weight)
-    else:
-        ww = None
-
+    ww = make2d(sample_weight) if sample_weight is not None else None
     XX = make2d(X)
 
     fpt = getFPType(XX)
@@ -46,7 +37,8 @@ def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
         epsilon=float(eps),
         minObservations=int(min_samples),
         memorySavingMode=False,
-        resultsToCompute="computeCoreIndices")
+        resultsToCompute="computeCoreIndices"
+    )
 
     daal_res = alg.compute(XX, ww)
     assignments = daal_res.assignments.ravel()
@@ -133,22 +125,14 @@ class DBSCAN(DBSCAN_original):
         Cluster labels for each point in the dataset given to fit().
         Noisy samples are given the label -1.
 
-    Examples
-    --------
-    >>> from sklearn.cluster import DBSCAN
-    >>> import numpy as np
-    >>> X = np.array([[1, 2], [2, 2], [2, 3],
-    ...               [8, 7], [8, 8], [25, 80]])
-    >>> clustering = DBSCAN(eps=3, min_samples=2).fit(X)
-    >>> clustering.labels_
-    array([ 0,  0,  0,  1,  1, -1])
-    >>> clustering
-    DBSCAN(eps=3, min_samples=2)
+    n_features_in_ : int
+        Number of features seen during :term:`fit`.
 
-    See also
+        .. versionadded:: 0.24
+
+    See Also
     --------
-    OPTICS
-        A similar clustering at multiple values of eps. Our implementation
+    OPTICS : A similar clustering at multiple values of eps. Our implementation
         is optimized for memory usage.
 
     Notes
@@ -184,11 +168,31 @@ class DBSCAN(DBSCAN_original):
     Schubert, E., Sander, J., Ester, M., Kriegel, H. P., & Xu, X. (2017).
     DBSCAN revisited, revisited: why and how you should (still) use DBSCAN.
     ACM Transactions on Database Systems (TODS), 42(3), 19.
+
+    Examples
+    --------
+    >>> from sklearn.cluster import DBSCAN
+    >>> import numpy as np
+    >>> X = np.array([[1, 2], [2, 2], [2, 3],
+    ...               [8, 7], [8, 8], [25, 80]])
+    >>> clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+    >>> clustering.labels_
+    array([ 0,  0,  0,  1,  1, -1])
+    >>> clustering
+    DBSCAN(eps=3, min_samples=2)
     """
 
-    def __init__(self, eps=0.5, min_samples=5, metric='euclidean',
-                 metric_params=None, algorithm='auto', leaf_size=30, p=None,
-                 n_jobs=None):
+    def __init__(
+        self,
+        eps=0.5,
+        min_samples=5,
+        metric='euclidean',
+        metric_params=None,
+        algorithm='auto',
+        leaf_size=30,
+        p=None,
+        n_jobs=None,
+    ):
         self.eps = eps
         self.min_samples = min_samples
         self.metric = metric
@@ -220,8 +224,8 @@ class DBSCAN(DBSCAN_original):
 
         Returns
         -------
-        self
-
+        self : object
+            Returns a fitted instance of self.
         """
         X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
 
@@ -231,19 +235,20 @@ class DBSCAN(DBSCAN_original):
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
 
-        _daal_ready = self.algorithm in [
-            'auto', 'brute'] and (
-            self.metric == 'euclidean' or (
-                self.metric == 'minkowski' and self.p == 2)) and isinstance(
-                X, np.ndarray)
+        _daal_ready = self.algorithm in ['auto', 'brute'] and \
+            (self.metric == 'euclidean' or (
+             self.metric == 'minkowski' and self.p == 2)) and \
+            isinstance(X, np.ndarray)
         if _daal_ready:
             logging.info(
                 "sklearn.cluster.DBSCAN."
                 "fit: " + get_patch_message("daal"))
             core_ind, assignments = _daal_dbscan(
-                X, self.eps,
+                X,
+                self.eps,
                 self.min_samples,
-                sample_weight=sample_weight)
+                sample_weight=sample_weight
+            )
             self.core_sample_indices_ = core_ind
             self.labels_ = assignments
             self.components_ = np.take(X, core_ind, axis=0)
