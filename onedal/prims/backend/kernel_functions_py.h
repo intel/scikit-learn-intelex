@@ -23,6 +23,7 @@
 #include "oneapi/dal/algo/linear_kernel.hpp"
 #include "oneapi/dal/algo/rbf_kernel.hpp"
 #include "oneapi/dal/algo/polynomial_kernel.hpp"
+#include "oneapi/dal/algo/sigmoid_kernel.hpp"
 
 namespace oneapi::dal::python {
 struct ONEDAL_BACKEND_EXPORT linear_kernel_params {
@@ -89,6 +90,27 @@ public:
 private:
     polynomial_kernel_params params_;
     polynomial_kernel::compute_result<> compute_result_;
+};
+
+struct ONEDAL_BACKEND_EXPORT sigmoid_kernel_params {
+    double scale;
+    double shift;
+};
+
+class ONEDAL_BACKEND_EXPORT sigmoid_kernel_compute {
+public:
+    // from descriptor
+    sigmoid_kernel_compute(sigmoid_kernel_params* params);
+
+    // attributes from compute_input
+    void compute(PyObject* x, PyObject* y);
+
+    // attributes from compute_result
+    PyObject* get_values();
+
+private:
+    sigmoid_kernel_params params_;
+    sigmoid_kernel::compute_result<> compute_result_;
 };
 
 } // namespace oneapi::dal::python

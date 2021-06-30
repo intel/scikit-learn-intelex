@@ -17,7 +17,8 @@
 import pytest
 import numpy as np
 from numpy.testing import assert_allclose
-from onedal.prims import linear_kernel, rbf_kernel, poly_kernel
+from onedal.prims import (linear_kernel, rbf_kernel,
+                          poly_kernel, sigmoid_kernel)
 from sklearn.metrics.pairwise import rbf_kernel as sklearn_rbf_kernel
 
 
@@ -105,3 +106,32 @@ def _test_dense_small_poly_kernel(gamma, coef0, degree, dtype):
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_dense_small_poly_kernel(gamma, coef0, degree, dtype):
     _test_dense_small_poly_kernel(gamma, coef0, degree, dtype)
+
+
+def test_dense_self_sigmoid_kernel():
+    rng = np.random.RandomState(0)
+    X = np.array(2 * rng.random_sample((15, 4)))
+
+    result = sigmoid_kernel(X)
+    expected = np.tanh(np.dot(X, np.array(X).T))
+
+    assert_allclose(result, expected)
+
+
+def _test_dense_small_sigmoid_kernel(gamma, coef0, dtype):
+    rng = np.random.RandomState(0)
+    X = np.array(2 * rng.random_sample((10, 4)), dtype=dtype)
+    Y = np.array(2 * rng.random_sample((15, 4)), dtype=dtype)
+
+    result = sigmoid_kernel(X, Y, gamma=gamma, coef0=coef0)
+    expected = np.tanh(gamma * np.dot(X, np.array(Y).T) + coef0)
+
+    tol = 1e-14 if dtype == np.float64 else 1e-6
+    assert_allclose(result, expected, rtol=tol)
+
+
+@pytest.mark.parametrize('gamma', [0.1, 1.0, 2.4])
+@pytest.mark.parametrize('coef0', [0.0, 1.0, 5.5])
+@pytest.mark.parametrize('dtype', [np.float32, np.float64])
+def test_dense_small_sigmoid_kernel(gamma, coef0, dtype):
+    _test_dense_small_sigmoid_kernel(gamma, coef0, dtype)

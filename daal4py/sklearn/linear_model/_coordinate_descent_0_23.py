@@ -21,7 +21,11 @@ from scipy import sparse as sp
 from sklearn.utils import check_array, check_X_y
 from sklearn.linear_model._coordinate_descent import ElasticNet as ElasticNet_original
 from sklearn.linear_model._coordinate_descent import Lasso as Lasso_original
-from daal4py.sklearn._utils import (make2d, getFPType, get_patch_message)
+from daal4py.sklearn._utils import (make2d, getFPType,
+                                    get_patch_message, sklearn_check_version)
+if sklearn_check_version('1.0'):
+    from sklearn.linear_model._base import _deprecate_normalize
+
 import logging
 
 # only for compliance with Sklearn
@@ -380,10 +384,21 @@ def _daal4py_predict_lasso(self, X):
 class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
-    def __init__(self, alpha=1.0, l1_ratio=0.5, fit_intercept=True,
-                 normalize=False, precompute=False, max_iter=1000,
-                 copy_X=True, tol=1e-4, warm_start=False, positive=False,
-                 random_state=None, selection='cyclic'):
+    def __init__(
+        self,
+        alpha=1.0,
+        l1_ratio=0.5,
+        fit_intercept=True,
+        normalize="deprecated" if sklearn_check_version('1.0') else False,
+        precompute=False,
+        max_iter=1000,
+        copy_X=True,
+        tol=1e-4,
+        warm_start=False,
+        positive=False,
+        random_state=None,
+        selection='cyclic'
+    ):
         super(ElasticNet, self).__init__(
             alpha=alpha, l1_ratio=l1_ratio, fit_intercept=fit_intercept,
             normalize=normalize, precompute=precompute, max_iter=max_iter,
@@ -444,6 +459,12 @@ class ElasticNet(ElasticNet_original):
                 X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
+
+        if sklearn_check_version('1.0'):
+            self.normalize = _deprecate_normalize(
+                self.normalize,
+                default=False,
+                estimator_name=self.__class__.__name__)
 
         if not check_input:
             # only for compliance with Sklearn,
@@ -582,10 +603,20 @@ class ElasticNet(ElasticNet_original):
 class Lasso(ElasticNet):
     __doc__ = Lasso_original.__doc__
 
-    def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
-                 precompute=False, copy_X=True, max_iter=1000,
-                 tol=1e-4, warm_start=False, positive=False,
-                 random_state=None, selection='cyclic'):
+    def __init__(
+        self,
+        alpha=1.0,
+        fit_intercept=True,
+        normalize="deprecated" if sklearn_check_version('1.0') else False,
+        precompute=False,
+        copy_X=True,
+        max_iter=1000,
+        tol=1e-4,
+        warm_start=False,
+        positive=False,
+        random_state=None,
+        selection='cyclic'
+    ):
         super().__init__(
             alpha=alpha, l1_ratio=1.0, fit_intercept=fit_intercept,
             normalize=normalize, precompute=precompute, copy_X=copy_X,
@@ -655,6 +686,13 @@ class Lasso(ElasticNet):
                 X, y, sample_weight=sample_weight, check_input=check_input)
             self._gap = res_new.dual_gap_
             return res_new
+
+        if sklearn_check_version('1.0'):
+            self.normalize = _deprecate_normalize(
+                self.normalize,
+                default=False,
+                estimator_name=self.__class__.__name__)
+
         self.n_iter_ = None
         self._gap = None
         # only for pass tests

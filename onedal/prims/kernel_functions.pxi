@@ -41,3 +41,12 @@ cdef extern from "prims/backend/kernel_functions_py.h" namespace "oneapi::dal::p
         polynomial_kernel_compute(polynomial_kernel_params *) except +
         void compute(PyObject * x, PyObject * y) except +
         PyObject * get_values() except +
+
+    cdef cppclass sigmoid_kernel_params:
+        double scale
+        double shift
+
+    cdef cppclass sigmoid_kernel_compute:
+        sigmoid_kernel_compute(sigmoid_kernel_params *) except +
+        void compute(PyObject * x, PyObject * y) except +
+        PyObject * get_values() except +
