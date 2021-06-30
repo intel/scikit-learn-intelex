@@ -110,14 +110,23 @@ def _daal_type_of_target(y):
     return result
 
 
-def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
-                        max_fpr=None, multi_class="raise", labels=None):
+def _daal_roc_auc_score(
+    y_true,
+    y_score,
+    *,
+    average="macro",
+    sample_weight=None,
+    max_fpr=None,
+    multi_class="raise",
+    labels=None,
+):
     y_type = _daal_type_of_target(y_true)
     y_true = check_array(y_true, ensure_2d=False, dtype=None)
     y_score = check_array(y_score, ensure_2d=False)
 
-    if y_type[0] == "multiclass" or \
-            (y_type[0] == "binary" and y_score.ndim == 2 and y_score.shape[1] > 2):
+    if y_type[0] == "multiclass" or (
+        y_type[0] == "binary" and y_score.ndim == 2 and y_score.shape[1] > 2
+    ):
         # do not support partial ROC computation for multiclass
         if max_fpr is not None and max_fpr != 1.:
             raise ValueError("Partial AUC computation not available in "
@@ -127,39 +136,28 @@ def _daal_roc_auc_score(y_true, y_score, *, average="macro", sample_weight=None,
         if multi_class == 'raise':
             raise ValueError("multi_class must be in ('ovo', 'ovr')")
         logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
-        result = multiclass_roc_auc_score(y_true, y_score, labels,
-                                          multi_class, average, sample_weight)
-    elif y_type[0] == "binary":
+        return multiclass_roc_auc_score(
+            y_true, y_score, labels, multi_class, average, sample_weight)
+
+    if y_type[0] == "binary":
         labels = y_type[1]
-        daal_use = max_fpr is None and sample_weight is None and len(labels) == 2
-        if daal_use:
+        daal_ready = max_fpr is None and sample_weight is None and len(labels) == 2
+        if daal_ready:
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
             if not np.array_equal(labels, [0, 1]):
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
             result = d4p.daal_roc_auc_score(y_true.reshape(-1, 1),
                                             y_score.reshape(-1, 1))
+            if result != -1:
+                return result
+        # return to sklearn implementation
+        y_true = label_binarize(y_true, classes=labels)[:, 0]
 
-        if not daal_use or result == -1:
-            y_true = label_binarize(y_true, classes=labels)[:, 0]
-            logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
-            if sklearn_check_version('0.22'):
-                result = _average_binary_score(partial(_binary_roc_auc_score,
-                                                       max_fpr=max_fpr),
-                                               y_true, y_score, average,
-                                               sample_weight=sample_weight)
-            else:
-                result = multiclass_roc_auc_score(y_true, y_score, average,
-                                                  sample_weight=sample_weight,
-                                                  max_fpr=max_fpr)
-    else:
-        logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
-        if sklearn_check_version('0.22'):
-            result = _average_binary_score(partial(_binary_roc_auc_score,
-                                                   max_fpr=max_fpr),
-                                           y_true, y_score, average,
-                                           sample_weight=sample_weight)
-        else:
-            result = multiclass_roc_auc_score(y_true, y_score, average,
-                                              sample_weight=sample_weight,
-                                              max_fpr=max_fpr)
-    return result
+    logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
+    return _average_binary_score(
+        partial(_binary_roc_auc_score, max_fpr=max_fpr),
+        y_true,
+        y_score,
+        average,
+        sample_weight=sample_weight,
+    )
