@@ -396,6 +396,7 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         # only for compliance with Sklearn,
         # this assert is not required for Intel(R) oneAPI Data
         # Analytics Library
+        print(type(X), X.flags['F_CONTIGUOUS'])
         if isinstance(X, np.ndarray) and \
                 X.flags['F_CONTIGUOUS'] is False:
             # print(X.flags)
@@ -501,10 +502,10 @@ class ElasticNet(ElasticNet_original):
 
     if sklearn_check_version('0.23'):
         def fit(self, X, y, sample_weight=None, check_input=True):
-            return _fit(self, X, y, sample_weight, check_input)
+            return _fit(self, X, y, sample_weight=sample_weight, check_input=check_input)
     else:
         def fit(self, X, y, check_input=True):
-            return _fit(self, X, y, check_input)
+            return _fit(self, X, y, check_input=check_input)
 
     def predict(self, X):
         """Predict using the linear model
