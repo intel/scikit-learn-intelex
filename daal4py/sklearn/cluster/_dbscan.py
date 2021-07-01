@@ -15,6 +15,7 @@
 #===============================================================================
 
 import numpy as np
+from scipy import sparse as sp
 
 from sklearn.utils import check_array
 from sklearn.utils.validation import _check_sample_weight
@@ -227,8 +228,6 @@ class DBSCAN(DBSCAN_original):
         self : object
             Returns a fitted instance of self.
         """
-        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
-
         if self.eps <= 0.0:
             raise ValueError("eps must be positive.")
 
@@ -238,11 +237,12 @@ class DBSCAN(DBSCAN_original):
         _daal_ready = self.algorithm in ['auto', 'brute'] and \
             (self.metric == 'euclidean' or (
              self.metric == 'minkowski' and self.p == 2)) and \
-            isinstance(X, np.ndarray)
+            not sp.issparse(X)
         if _daal_ready:
             logging.info(
                 "sklearn.cluster.DBSCAN."
                 "fit: " + get_patch_message("daal"))
+            X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
             core_ind, assignments = _daal_dbscan(
                 X,
                 self.eps,

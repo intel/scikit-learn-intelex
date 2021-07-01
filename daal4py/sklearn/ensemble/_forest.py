@@ -297,8 +297,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         self.ccp_alpha == 0.0 and not sp.issparse(X) and self.oob_score is False
 
     if daal_ready:
-        _supported_dtypes_ = [np.float32, np.float64]
-        X = check_array(X, dtype=_supported_dtypes_)
+        X = check_array(X, dtype=[np.float32, np.float64])
         y = np.asarray(y)
         y = np.atleast_1d(y)
 
@@ -442,8 +441,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
         not sp.issparse(X) and self.oob_score is False
 
     if daal_ready:
-        _supported_dtypes_ = [np.double, np.single]
-        X = check_array(X, dtype=_supported_dtypes_)
+        X = check_array(X, dtype=[np.float64, np.float32])
         y = np.asarray(y)
         y = np.atleast_1d(y)
 
@@ -666,18 +664,18 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The predicted classes.
         """
 
-        X = check_array(
-            X,
-            accept_sparse=['csr', 'csc', 'coo'],
-            dtype=[np.float64, np.float32]
-        )
-
         if not hasattr(self, 'daal_model_') or \
                 sp.issparse(X) or self.n_outputs_ != 1:
             logging.info(
                 "sklearn.ensemble.RandomForestClassifier."
                 "predict: " + get_patch_message("sklearn"))
             return super(RandomForestClassifier, self).predict(X)
+
+        X = check_array(
+            X,
+            accept_sparse=['csr', 'csc', 'coo'],
+            dtype=[np.float64, np.float32]
+        )
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
             "predict: " + get_patch_message("daal"))
@@ -748,7 +746,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             if self._cached_estimators_:
                 return self._cached_estimators_
 
-        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+        if sklearn_check_version('0.22'):
             check_is_fitted(self)
         else:
             check_is_fitted(self, 'daal_model_')
@@ -955,18 +953,18 @@ class RandomForestRegressor(RandomForestRegressor_original):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        X = check_array(
-            X,
-            accept_sparse=['csr', 'csc', 'coo'],
-            dtype=[np.float64, np.float32]
-        )
-
         if not hasattr(self, 'daal_model_') or \
                 sp.issparse(X) or self.n_outputs_ != 1:
             logging.info(
                 "sklearn.ensemble.RandomForestRegressor."
                 "predict: " + get_patch_message("sklearn"))
             return super(RandomForestRegressor, self).predict(X)
+
+        X = check_array(
+            X,
+            accept_sparse=['csr', 'csc', 'coo'],
+            dtype=[np.float64, np.float32]
+        )
         logging.info(
             "sklearn.ensemble.RandomForestRegressor."
             "predict: " + get_patch_message("daal"))
@@ -986,34 +984,25 @@ class RandomForestRegressor(RandomForestRegressor_original):
         if hasattr(self, '_cached_estimators_'):
             if self._cached_estimators_:
                 return self._cached_estimators_
-        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+        if sklearn_check_version('0.22'):
             check_is_fitted(self)
         else:
             check_is_fitted(self, 'daal_model_')
         # convert model to estimators
-        if sklearn_check_version('1.0'):
-            est = DecisionTreeRegressor(
-                criterion=self.criterion,
-                max_depth=self.max_depth,
-                min_samples_split=self.min_samples_split,
-                min_samples_leaf=self.min_samples_leaf,
-                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-                max_features=self.max_features,
-                max_leaf_nodes=self.max_leaf_nodes,
-                min_impurity_decrease=self.min_impurity_decrease,
-                random_state=None)
-        else:
-            est = DecisionTreeRegressor(
-                criterion=self.criterion,
-                max_depth=self.max_depth,
-                min_samples_split=self.min_samples_split,
-                min_samples_leaf=self.min_samples_leaf,
-                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-                max_features=self.max_features,
-                max_leaf_nodes=self.max_leaf_nodes,
-                min_impurity_decrease=self.min_impurity_decrease,
-                min_impurity_split=self.min_impurity_split,
-                random_state=None)
+        params = {
+            'criterion': self.criterion,
+            'max_depth': self.max_depth,
+            'min_samples_split': self.min_samples_split,
+            'min_samples_leaf': self.min_samples_leaf,
+            'min_weight_fraction_leaf': self.min_weight_fraction_leaf,
+            'max_features': self.max_features,
+            'max_leaf_nodes': self.max_leaf_nodes,
+            'min_impurity_decrease': self.min_impurity_decrease,
+            'random_state': None,
+        }
+        if not sklearn_check_version('1.0'):
+            params['min_impurity_split'] = self.min_impurity_split
+        est = DecisionTreeClassifier(**params)
 
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution

@@ -22,12 +22,13 @@ from sklearn.linear_model._base import _rescale_data
 from ..utils.validation import _daal_check_array, _daal_check_X_y
 from ..utils.base import _daal_validate_data
 from .._utils import sklearn_check_version
-
 from sklearn.utils.fixes import sparse_lsqr
 from sklearn.utils.validation import _check_sample_weight
 from sklearn.utils import check_array
 
 from sklearn.linear_model import LinearRegression as LinearRegression_original
+if sklearn_check_version('1.0'):
+    from sklearn.linear_model._base import _deprecate_normalize
 
 try:
     from sklearn.utils._joblib import Parallel, delayed
@@ -314,7 +315,6 @@ class LinearRegression(LinearRegression_original):
 
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version('1.0'):
-            from sklearn.linear_model._base import _deprecate_normalize
             self._normalize = _deprecate_normalize(
                 self.normalize,
                 default=False,

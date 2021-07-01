@@ -83,21 +83,18 @@ class TSNE(BaseTSNE):
                                "'square_distances'=True to silence this warning."),
                               FutureWarning)
 
-        if self.method == 'barnes_hut':
-            if sklearn_check_version('0.23'):
-                X = self._validate_data(X, accept_sparse=['csr'],
-                                        ensure_min_samples=2,
-                                        dtype=[np.float32, np.float64])
-            else:
-                X = check_array(X, accept_sparse=['csr'], ensure_min_samples=2,
-                                dtype=[np.float32, np.float64])
+        params = {
+            'X': X,
+            'accept_sparse':
+                ['csr'] if self.method == 'barnes_hut' else ['csr', 'csc', 'coo'],
+            'ensure_min_samples': 2 if self.method == 'barnes_hut' else 1,
+            'dtype': [np.float32, np.float64],
+        }
+        if sklearn_check_version('0.23'):
+            X = self._validate_data(**params)
         else:
-            if sklearn_check_version('0.23'):
-                X = self._validate_data(X, accept_sparse=['csr', 'csc', 'coo'],
-                                        dtype=[np.float32, np.float64])
-            else:
-                X = check_array(X, accept_sparse=['csr', 'csc', 'coo'],
-                                dtype=[np.float32, np.float64])
+            X = check_array(**params)
+
         if self.metric == "precomputed":
             if isinstance(self._init, str) and self._init == 'pca':
                 raise ValueError("The parameter init=\"pca\" cannot be "
@@ -178,10 +175,12 @@ class TSNE(BaseTSNE):
                       .format(n_neighbors))
 
             # Find the nearest neighbors for every point
-            knn = NearestNeighbors(algorithm='auto',
-                                   n_jobs=self.n_jobs,
-                                   n_neighbors=n_neighbors,
-                                   metric=self.metric)
+            knn = NearestNeighbors(
+                algorithm='auto',
+                n_jobs=self.n_jobs,
+                n_neighbors=n_neighbors,
+                metric=self.metric,
+            )
             t0 = time()
             knn.fit(X)
             duration = time() - t0
@@ -215,8 +214,11 @@ class TSNE(BaseTSNE):
         if isinstance(self._init, np.ndarray):
             X_embedded = self._init
         elif self._init == 'pca':
-            pca = PCA(n_components=self.n_components, svd_solver='randomized',
-                      random_state=random_state)
+            pca = PCA(
+                n_components=self.n_components,
+                svd_solver='randomized',
+                random_state=random_state,
+            )
             X_embedded = pca.fit_transform(X).astype(np.float32, copy=False)
             warnings.warn("The PCA initialization in TSNE will change to "
                           "have the standard deviation of PC1 equal to 1e-4 "
@@ -237,7 +239,11 @@ class TSNE(BaseTSNE):
         # Laurens van der Maaten, 2009.
         degrees_of_freedom = max(self.n_components - 1, 1)
 
-        return self._tsne(P, degrees_of_freedom, n_samples,
-                          X_embedded=X_embedded,
-                          neighbors=neighbors_nn,
-                          skip_num_points=skip_num_points)
+        return self._tsne(
+            P,
+            degrees_of_freedom,
+            n_samples,
+            X_embedded=X_embedded,
+            neighbors=neighbors_nn,
+            skip_num_points=skip_num_points
+        )

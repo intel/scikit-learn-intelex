@@ -94,9 +94,10 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     else:
         y_offset = np.zeros(y.shape[1], dtype=X.dtype)
 
+    _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
     if self.fit_intercept:
         X_offset = np.average(X, axis=0)
-        if self._normalize:
+        if _normalize:
             if self.copy_X:
                 X = np.copy(X) - X_offset
             else:
@@ -108,7 +109,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     # only for compliance with Sklearn
     if isinstance(self.precompute, np.ndarray) and self.fit_intercept and \
        not np.allclose(X_offset, np.zeros(X.shape[1])) or \
-       self._normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
+       _normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
         warnings.warn("Gram matrix was provided but X was centered"
                       " to fit intercept, "
                       "or X was normalized : recomputing Gram matrix.",
@@ -145,7 +146,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
                 n_rows == 1) else self.coef_[i, :].copy(order='C')
         cd_solver.setup(inputArgument)
     doUse_condition = self.copy_X is False or \
-        (self.fit_intercept and self._normalize and self.copy_X)
+        (self.fit_intercept and _normalize and self.copy_X)
     elastic_net_alg = daal4py.elastic_net_training(
         fptype=_fptype,
         method='defaultDense',
@@ -171,7 +172,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     self.daal_model_ = elastic_net_model
 
     # update coefficients if normalizing and centering
-    if self.fit_intercept and self._normalize:
+    if self.fit_intercept and _normalize:
         elastic_net_model.Beta[:, 1:] = elastic_net_model.Beta[:, 1:] / X_scale
         elastic_net_model.Beta[:, 0] = (
             y_offset - np.dot(X_offset, elastic_net_model.Beta[:, 1:].T)).T
@@ -248,9 +249,10 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     else:
         y_offset = np.zeros(y.shape[1], dtype=X.dtype)
 
+    _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
     if self.fit_intercept:
         X_offset = np.average(X, axis=0)
-        if self._normalize:
+        if _normalize:
             if self.copy_X:
                 X = np.copy(X) - X_offset
             else:
@@ -263,7 +265,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     if isinstance(self.precompute, np.ndarray) and \
        self.fit_intercept and not np.allclose(
             X_offset, np.zeros(X.shape[1])) or \
-       self._normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
+       _normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
         warnings.warn("Gram matrix was provided but X was centered"
                       " to fit intercept, "
                       "or X was normalized : recomputing Gram matrix.",
@@ -300,7 +302,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
                 n_rows == 1) else self.coef_[i, :].copy(order='C')
         cd_solver.setup(inputArgument)
     doUse_condition = self.copy_X is False or \
-        (self.fit_intercept and self._normalize and self.copy_X)
+        (self.fit_intercept and _normalize and self.copy_X)
     lasso_alg = daal4py.lasso_regression_training(
         fptype=_fptype,
         method='defaultDense',
@@ -325,7 +327,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     self.daal_model_ = lasso_model
 
     # update coefficients if normalizing and centering
-    if self.fit_intercept and self._normalize:
+    if self.fit_intercept and _normalize:
         lasso_model.Beta[:, 1:] = lasso_model.Beta[:, 1:] / X_scale
         lasso_model.Beta[:, 0] = \
             (y_offset - np.dot(X_offset, lasso_model.Beta[:, 1:].T)).T
@@ -380,20 +382,7 @@ def _daal4py_predict_lasso(self, X):
 
 
 def _fit(self, X, y, sample_weight=None, check_input=True):
-    # check X and y
-    if check_input:
-        X, y = check_X_y(
-            X,
-            y,
-            copy=False,
-            accept_sparse='csc',
-            dtype=[np.float64, np.float32],
-            multi_output=True,
-            y_numeric=True,
-        )
-        y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
-
-    if isinstance(X, np.ndarray):
+    if not sp.issparse(X):
         self.fit_shape_good_for_daal_ = \
             True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
     else:
@@ -419,14 +408,19 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         return res_new
     self.n_iter_ = None
     self._gap = None
-
-    if sklearn_check_version('1.0'):
-        self._normalize = _deprecate_normalize(
-            self.normalize,
-            default=False,
-            estimator_name=self.__class__.__name__)
-
-    if not check_input:
+    # check X and y
+    if check_input:
+        X, y = check_X_y(
+            X,
+            y,
+            copy=False,
+            accept_sparse='csc',
+            dtype=[np.float64, np.float32],
+            multi_output=True,
+            y_numeric=True,
+        )
+        y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
+    else:
         # only for compliance with Sklearn,
         # this assert is not required for Intel(R) oneAPI Data
         # Analytics Library
@@ -436,16 +430,20 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
             # print(X.flags)
             raise ValueError("ndarray is not Fortran contiguous")
 
+    if sklearn_check_version('1.0'):
+        self._normalize = _deprecate_normalize(
+            self.normalize,
+            default=False,
+            estimator_name=self.__class__.__name__)
+
     # only for pass tests
     # "check_estimators_fit_returns_self(readonly_memmap=True) and
     # check_regressors_train(readonly_memmap=True)
-    if not (X.flags.writeable):
+    if not X.flags.writeable:
         X = np.copy(X)
-    if not (y.flags.writeable):
+    if not y.flags.writeable:
         y = np.copy(y)
-    logging.info(
-        log_str + get_patch_message("daal")
-    )
+    logging.info(log_str + get_patch_message("daal"))
 
     if self.__class__.__name__ == "ElasticNet":
         res = _daal4py_fit_enet(self, X, y, check_input=check_input)
