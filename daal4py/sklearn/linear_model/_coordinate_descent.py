@@ -392,15 +392,6 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
             y_numeric=True,
         )
         y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
-    else:
-        # only for compliance with Sklearn,
-        # this assert is not required for Intel(R) oneAPI Data
-        # Analytics Library
-        print(type(X), X.flags['F_CONTIGUOUS'])
-        if isinstance(X, np.ndarray) and \
-                X.flags['F_CONTIGUOUS'] is False:
-            # print(X.flags)
-            raise ValueError("ndarray is not Fortran contiguous")
 
     if isinstance(X, np.ndarray):
         self.fit_shape_good_for_daal_ = \
@@ -434,6 +425,16 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
             self.normalize,
             default=False,
             estimator_name=self.__class__.__name__)
+
+    if not check_input:
+        # only for compliance with Sklearn,
+        # this assert is not required for Intel(R) oneAPI Data
+        # Analytics Library
+        print(type(X), X.flags['F_CONTIGUOUS'])
+        if isinstance(X, np.ndarray) and \
+                X.flags['F_CONTIGUOUS'] is False:
+            # print(X.flags)
+            raise ValueError("ndarray is not Fortran contiguous")
 
     # only for pass tests
     # "check_estimators_fit_returns_self(readonly_memmap=True) and
