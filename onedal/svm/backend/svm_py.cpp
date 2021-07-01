@@ -38,9 +38,7 @@ KernelDescriptor get_kernel_params(const svm_params &params) {
 
     if constexpr (std::is_same_v<typename KernelDescriptor::tag_t,
                                  sigmoid_kernel::detail::descriptor_tag>) {
-        return KernelDescriptor{}
-            .set_scale(params.scale)
-            .set_shift(params.shift);
+        return KernelDescriptor{}.set_scale(params.scale).set_shift(params.shift);
     }
     return KernelDescriptor{};
 }
@@ -93,7 +91,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
                 std::forward<Args>(args)...);
         }
         else if (data_type_input == data_type::float32 && params.method == "smo" &&
-            params.kernel == "poly") {
+                 params.kernel == "poly") {
             return compute_descriptor_impl<Result>(
                 svm::descriptor<float,
                                 svm::method::smo,
@@ -103,17 +101,14 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
                 std::forward<Args>(args)...);
         }
         else if (data_type_input == data_type::float32 && params.method == "smo" &&
-            params.kernel == "sigmoid") {
+                 params.kernel == "sigmoid") {
             return compute_descriptor_impl<Result>(
-                svm::descriptor<float,
-                                svm::method::smo,
-                                Task,
-                                sigmoid_kernel::descriptor<float>>{},
+                svm::descriptor<float, svm::method::smo, Task, sigmoid_kernel::descriptor<float>>{},
                 params,
                 std::forward<Args>(args)...);
         }
         else if (data_type_input == data_type::float64 && params.method == "smo" &&
-            params.kernel == "linear") {
+                 params.kernel == "linear") {
             return compute_descriptor_impl<Result>(
                 svm::
                     descriptor<double, svm::method::smo, Task, linear_kernel::descriptor<double>>{},
@@ -176,10 +171,7 @@ Result compute_impl(svm_params &params, data_type data_type_input, Args &&... ar
     else if (data_type_input == data_type::float32 && params.method == "thunder" &&
              params.kernel == "sigmoid") {
         return compute_descriptor_impl<Result>(
-            svm::descriptor<float,
-                            svm::method::thunder,
-                            Task,
-                            sigmoid_kernel::descriptor<float>>{},
+            svm::descriptor<float, svm::method::thunder, Task, sigmoid_kernel::descriptor<float>>{},
             params,
             std::forward<Args>(args)...);
     }
@@ -250,15 +242,15 @@ svm_train<Task>::svm_train(svm_params *params) : params_(*params) {}
 
 // attributes from train_input
 template <typename Task>
-void svm_train<Task>::train(PyObject *data, PyObject *labels, PyObject *weights) {
+void svm_train<Task>::train(PyObject *data, PyObject *responses, PyObject *weights) {
     auto data_table = convert_to_table(data);
-    auto labels_table = convert_to_table(labels);
+    auto responses_table = convert_to_table(responses);
     auto weights_table = convert_to_table(weights);
     auto data_type = data_table.get_metadata().get_data_type(0);
     train_result_ = compute_impl<decltype(train_result_)>(params_,
                                                           data_type,
                                                           data_table,
-                                                          labels_table,
+                                                          responses_table,
                                                           weights_table);
 }
 
@@ -320,7 +312,7 @@ void svm_infer<Task>::infer(PyObject *data,
                      .set_biases(biases_table);
     if constexpr (std::is_same_v<Task, svm::task::classification> ||
                   std::is_same_v<Task, svm::task::nu_classification>) {
-        model.set_first_class_label(0).set_second_class_label(1);
+        model.set_first_class_response(0).set_second_class_response(1);
     }
     infer_result_ = compute_impl<decltype(infer_result_)>(params_, data_type, model, data_table);
 }
@@ -339,7 +331,7 @@ void svm_infer<Task>::infer(PyObject *data, svm_model<Task> *model) {
 // attributes from infer_result
 template <typename Task>
 PyObject *svm_infer<Task>::get_labels() {
-    return convert_to_numpy(infer_result_.get_labels());
+    return convert_to_numpy(infer_result_.get_responses());
 }
 
 // attributes from infer_result
