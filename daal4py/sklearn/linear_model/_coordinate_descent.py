@@ -96,7 +96,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
 
     if self.fit_intercept:
         X_offset = np.average(X, axis=0)
-        if self.normalize:
+        if self._normalize:
             if self.copy_X:
                 X = np.copy(X) - X_offset
             else:
@@ -108,7 +108,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     # only for compliance with Sklearn
     if isinstance(self.precompute, np.ndarray) and self.fit_intercept and \
        not np.allclose(X_offset, np.zeros(X.shape[1])) or \
-       self.normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
+       self._normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
         warnings.warn("Gram matrix was provided but X was centered"
                       " to fit intercept, "
                       "or X was normalized : recomputing Gram matrix.",
@@ -145,7 +145,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
                 n_rows == 1) else self.coef_[i, :].copy(order='C')
         cd_solver.setup(inputArgument)
     doUse_condition = self.copy_X is False or \
-        (self.fit_intercept and self.normalize and self.copy_X)
+        (self.fit_intercept and self._normalize and self.copy_X)
     elastic_net_alg = daal4py.elastic_net_training(
         fptype=_fptype,
         method='defaultDense',
@@ -171,7 +171,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     self.daal_model_ = elastic_net_model
 
     # update coefficients if normalizing and centering
-    if self.fit_intercept and self.normalize:
+    if self.fit_intercept and self._normalize:
         elastic_net_model.Beta[:, 1:] = elastic_net_model.Beta[:, 1:] / X_scale
         elastic_net_model.Beta[:, 0] = (
             y_offset - np.dot(X_offset, elastic_net_model.Beta[:, 1:].T)).T
@@ -250,7 +250,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
 
     if self.fit_intercept:
         X_offset = np.average(X, axis=0)
-        if self.normalize:
+        if self._normalize:
             if self.copy_X:
                 X = np.copy(X) - X_offset
             else:
@@ -263,7 +263,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     if isinstance(self.precompute, np.ndarray) and \
        self.fit_intercept and not np.allclose(
             X_offset, np.zeros(X.shape[1])) or \
-       self.normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
+       self._normalize and not np.allclose(X_scale, np.ones(X.shape[1])):
         warnings.warn("Gram matrix was provided but X was centered"
                       " to fit intercept, "
                       "or X was normalized : recomputing Gram matrix.",
@@ -300,7 +300,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
                 n_rows == 1) else self.coef_[i, :].copy(order='C')
         cd_solver.setup(inputArgument)
     doUse_condition = self.copy_X is False or \
-        (self.fit_intercept and self.normalize and self.copy_X)
+        (self.fit_intercept and self._normalize and self.copy_X)
     lasso_alg = daal4py.lasso_regression_training(
         fptype=_fptype,
         method='defaultDense',
@@ -325,7 +325,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     self.daal_model_ = lasso_model
 
     # update coefficients if normalizing and centering
-    if self.fit_intercept and self.normalize:
+    if self.fit_intercept and self._normalize:
         lasso_model.Beta[:, 1:] = lasso_model.Beta[:, 1:] / X_scale
         lasso_model.Beta[:, 0] = \
             (y_offset - np.dot(X_offset, lasso_model.Beta[:, 1:].T)).T
@@ -421,7 +421,7 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
     self._gap = None
 
     if sklearn_check_version('1.0'):
-        self.normalize = _deprecate_normalize(
+        self._normalize = _deprecate_normalize(
             self.normalize,
             default=False,
             estimator_name=self.__class__.__name__)
@@ -484,7 +484,7 @@ class ElasticNet(ElasticNet_original):
         warm_start=False,
         positive=False,
         random_state=None,
-        selection='cyclic'
+        selection='cyclic',
     ):
         super(ElasticNet, self).__init__(
             alpha=alpha,
