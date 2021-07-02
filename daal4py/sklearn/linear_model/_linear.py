@@ -136,32 +136,22 @@ def _fit_linear(self, X, y, sample_weight=None):
     """
 
     n_jobs_ = self.n_jobs
+    params = {
+        'X': X,
+        'y': y,
+        'accept_sparse': ['csr', 'csc', 'coo'],
+        'y_numeric': True,
+        'multi_output': True,
+    }
     if sklearn_check_version('0.23'):
         X, y = _daal_validate_data(
             self,
-            X,
-            y,
-            accept_sparse=['csr', 'csc', 'coo'],
-            y_numeric=True,
-            multi_output=True,
-            dtype=[np.float64, np.float32]
+            dtype=[np.float64, np.float32],
+            **params,
         )
     else:
-        X, y = _daal_check_X_y(
-            X,
-            y,
-            accept_sparse=['csr', 'csc', 'coo'],
-            y_numeric=True,
-            multi_output=True
-        )
+        X, y = _daal_check_X_y(**params)
 
-    dtype = get_dtype(X)
-
-    if sample_weight is not None:
-        sample_weight = _check_sample_weight(sample_weight, X,
-                                             dtype=dtype)
-
-    self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = \
         bool(X.shape[0] > X.shape[1] + int(self.fit_intercept))
 
@@ -185,58 +175,11 @@ def _fit_linear(self, X, y, sample_weight=None):
             "sklearn.linar_model.LinearRegression."
             "fit: " + get_patch_message("sklearn"))
 
-    if sample_weight is not None:
-        sample_weight = np.asarray(sample_weight)
-        if np.atleast_1d(sample_weight).ndim > 1:
-            raise ValueError("Sample weights must be 1D array or scalar")
-
-    X, y, X_offset, y_offset, X_scale = self._preprocess_data(
+    return super(LinearRegression, self).fit(
         X,
         y,
-        fit_intercept=self.fit_intercept,
-        normalize=self.normalize,
-        copy=self.copy_X,
         sample_weight=sample_weight,
-        return_mean=True,
     )
-
-    if sample_weight is not None:
-        # Sample weight can be implemented via a simple rescaling.
-        X, y = _rescale_data(X, y, sample_weight)
-
-    if sp.issparse(X):
-        X_offset_scale = X_offset / X_scale
-
-        def matvec(b):
-            return X.dot(b) - b.dot(X_offset_scale)
-
-        def rmatvec(b):
-            return X.T.dot(b) - X_offset_scale * np.sum(b)
-
-        X_centered = sp.linalg.LinearOperator(
-            shape=X.shape, matvec=matvec, rmatvec=rmatvec
-        )
-
-        if y.ndim < 2:
-            out = sparse_lsqr(X_centered, y)
-            self.coef_ = out[0]
-            self._residues = out[3]
-        else:
-            # sparse_lstsq cannot handle y with shape (M, K)
-            outs = Parallel(n_jobs=n_jobs_)(
-                delayed(sparse_lsqr)(X_centered, y[:, j].ravel())
-                for j in range(y.shape[1]))
-            self.coef_ = np.vstack([out[0] for out in outs])
-            self._residues = np.vstack([out[3] for out in outs])
-    else:
-        self.coef_, self._residues, self.rank_, self.singular_ = \
-            linalg.lstsq(X, y)
-        self.coef_ = self.coef_.T
-
-    if y.ndim == 1:
-        self.coef_ = np.ravel(self.coef_)
-    self._set_intercept(X_offset, y_offset, X_scale)
-    return self
 
 
 def _predict_linear(self, X):
@@ -261,7 +204,7 @@ def _predict_linear(self, X):
 
     sklearn_ready = sp.issparse(X) or not hasattr(self, 'daal_model_') or \
         not self.fit_shape_good_for_daal_ or not good_shape_for_daal or \
-        (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)
+        (hasattr(self, 'sample_weight') and self.sample_weight is not None)
 
     if sklearn_check_version('0.22') and not sklearn_check_version('0.23'):
         dtype = get_dtype(X)

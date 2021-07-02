@@ -382,6 +382,19 @@ def _daal4py_predict_lasso(self, X):
 
 
 def _fit(self, X, y, sample_weight=None, check_input=True):
+    # check X and y
+    if check_input:
+        X, y = check_X_y(
+            X,
+            y,
+            copy=False,
+            accept_sparse='csc',
+            dtype=[np.float64, np.float32],
+            multi_output=True,
+            y_numeric=True,
+        )
+        y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
+
     if not sp.issparse(X):
         self.fit_shape_good_for_daal_ = \
             True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
@@ -408,19 +421,8 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         return res_new
     self.n_iter_ = None
     self._gap = None
-    # check X and y
-    if check_input:
-        X, y = check_X_y(
-            X,
-            y,
-            copy=False,
-            accept_sparse='csc',
-            dtype=[np.float64, np.float32],
-            multi_output=True,
-            y_numeric=True,
-        )
-        y = check_array(y, copy=False, dtype=X.dtype.type, ensure_2d=False)
-    else:
+
+    if not check_input:
         # only for compliance with Sklearn,
         # this assert is not required for Intel(R) oneAPI Data
         # Analytics Library
