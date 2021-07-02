@@ -26,7 +26,7 @@
 
 deselected_tests:
   # Model with sparse data are different between oneAPI Data Analytics Library (oneDAL) and stock sklearn
-  - svm/tests/test_sparse.py::test_svc >=0.23
+  - svm/tests/test_sparse.py::test_svc
   - svm/tests/test_sparse.py::test_svc_iris
   - svm/tests/test_sparse.py::test_sparse_realdata
   # decision function different 1.83697605e-06
@@ -34,7 +34,7 @@ deselected_tests:
   - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
 
   # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with custom and precompute kernel
-  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel >=0.23
+  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
 
   # SVC._dual_coef_ is changing after fitting but result of prediction is still the same
@@ -130,7 +130,7 @@ deselected_tests:
   - metrics/tests/test_score_objects.py::test_scoring_is_not_metric
 
   # Stability issue with max absolute difference: 4.33846826e-08/1.17613697e-11. Remove in next release
-  - ensemble/tests/test_bagging.py::test_estimators_samples_deterministic >=1.0
+  - ensemble/tests/test_bagging.py::test_estimators_samples_deterministic >=0.24
 
   # Some values in PCA.components_ (in the last component) aren't equal (0.6 on average for absolute error in this test)
   # because of different implementations of PCA. Also, results are not stable.
