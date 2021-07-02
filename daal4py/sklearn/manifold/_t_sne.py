@@ -83,17 +83,21 @@ class TSNE(BaseTSNE):
                                "'square_distances'=True to silence this warning."),
                               FutureWarning)
 
-        params = {
-            'X': X,
-            'accept_sparse':
-                ['csr'] if self.method == 'barnes_hut' else ['csr', 'csc', 'coo'],
-            'ensure_min_samples': 2 if self.method == 'barnes_hut' else 1,
-            'dtype': [np.float32, np.float64],
-        }
-        if sklearn_check_version('0.23'):
-            X = self._validate_data(**params)
+        if self.method == 'barnes_hut':
+            if sklearn_check_version('0.23'):
+                X = self._validate_data(X, accept_sparse=['csr'],
+                                        ensure_min_samples=2,
+                                        dtype=[np.float32, np.float64])
+            else:
+                X = check_array(X, accept_sparse=['csr'], ensure_min_samples=2,
+                                dtype=[np.float32, np.float64])
         else:
-            X = check_array(**params)
+            if sklearn_check_version('0.23'):
+                X = self._validate_data(X, accept_sparse=['csr', 'csc', 'coo'],
+                                        dtype=[np.float32, np.float64])
+            else:
+                X = check_array(X, accept_sparse=['csr', 'csc', 'coo'],
+                                dtype=[np.float32, np.float64])
 
         if self.metric == "precomputed":
             if isinstance(self._init, str) and self._init == 'pca':
