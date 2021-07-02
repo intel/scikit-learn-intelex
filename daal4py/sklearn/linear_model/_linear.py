@@ -135,7 +135,6 @@ def _fit_linear(self, X, y, sample_weight=None):
     self : returns an instance of self.
     """
 
-    n_jobs_ = self.n_jobs
     params = {
         'X': X,
         'y': y,
@@ -158,6 +157,7 @@ def _fit_linear(self, X, y, sample_weight=None):
     daal_ready = self.fit_shape_good_for_daal_ and not sp.issparse(X) and \
         sample_weight is None
     if sklearn_check_version('0.22') and not sklearn_check_version('0.23'):
+        dtype = get_dtype(X)
         daal_ready = daal_ready and dtype in [np.float32, np.float64]
 
     if daal_ready:
