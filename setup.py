@@ -199,9 +199,6 @@ def get_build_options():
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x]
                             for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
-    if IS_LIN:
-        ela.append("-fPIC")
-        ela.append("-Wl,-rpath,$ORIGIN/../..")
     return eca, ela, include_dir_plat
 
 
