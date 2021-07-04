@@ -22,7 +22,7 @@ from functools import lru_cache
 from daal4py.sklearn._utils import daal_check_version
 
 # Classes for patching
-if daal_check_version((2021, 'P', 300)):
+if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P', 300)):
     from .svm import SVR as SVR_sklearnex
     from .svm import SVC as SVC_sklearnex
     from .svm import NuSVR as NuSVR_sklearnex
@@ -37,7 +37,7 @@ def get_patch_map():
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
     mapping = _get_map_of_algorithms().copy()
 
-    if daal_check_version((2021, 'P', 300)):
+    if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P', 300)):
         mapping.pop('svm')
         mapping.pop('svc')
         mapping['svr'] = [[(svm_module, 'SVR', SVR_sklearnex), None]]
