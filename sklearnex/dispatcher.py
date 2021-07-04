@@ -17,6 +17,7 @@
 
 # Other imports
 import sys
+import os
 from distutils.version import LooseVersion
 from functools import lru_cache
 from daal4py.sklearn._utils import daal_check_version
