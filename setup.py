@@ -42,7 +42,6 @@ IS_MAC = False
 IS_LIN = False
 
 dal_root = os.environ.get('DALROOT')
-is_onedal_iface = os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
 
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
@@ -61,7 +60,7 @@ else:
 
 ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
-
+is_onedal_iface = os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
 
 def get_win_major_version():
     lib_name = find_library('onedal_core')
