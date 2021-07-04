@@ -27,6 +27,7 @@ variables:
     value: python
   - name: 'ARGS'
     value: '1'
+  - name: 'OFF_ONEDAL_IFACE'
 
 jobs:
 - job: Linux
