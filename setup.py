@@ -42,7 +42,7 @@ IS_MAC = False
 IS_LIN = False
 
 dal_root = os.environ.get('DALROOT')
-off_onedal_iface = os.environ.get('OFF_ONEDAL_IFACE')
+is_onedal_iface = os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
 
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
@@ -252,7 +252,7 @@ def getpyexts():
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
 
-    if ONEDAL_VERSION >= ONEDAL_2021_3 and off_onedal_iface is not None:
+    if  is_onedal_iface:
         exts.extend(cythonize(ext, compile_time_env={'ONEDAL_VERSION': ONEDAL_VERSION}))
 
     ext = Extension('_daal4py',
@@ -291,7 +291,7 @@ def getpyexts():
                         runtime_library_dirs=runtime_library_dirs,
                         language='c++')
 
-        if ONEDAL_VERSION >= ONEDAL_2021_3 and off_onedal_iface is not None:
+        if is_onedal_iface:
             exts.extend(cythonize(ext))
         ext = Extension('_oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
@@ -420,7 +420,7 @@ class install(orig_install.install):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if is_onedal_iface:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -429,7 +429,7 @@ class develop(orig_develop.develop):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if is_onedal_iface:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -438,7 +438,7 @@ class build(orig_build.build):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if is_onedal_iface:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
