@@ -152,7 +152,7 @@ def _fit_linear(self, X, y, sample_weight=None):
         X, y = _daal_check_X_y(**params)
 
     dtype = get_dtype(X)
-    
+
     self.fit_shape_good_for_daal_ = \
         bool(X.shape[0] > X.shape[1] + int(self.fit_intercept))
 
