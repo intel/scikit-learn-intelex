@@ -14,9 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn._utils import sklearn_check_version
-
-if sklearn_check_version('0.23'):
-    from ._coordinate_descent_0_23 import *
-elif sklearn_check_version('0.22'):
-    from ._coordinate_descent_0_22 import *
+from ._coordinate_descent import *

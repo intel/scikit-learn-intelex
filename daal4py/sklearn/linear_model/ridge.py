@@ -14,7 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn._utils import sklearn_check_version
-
-if sklearn_check_version('0.22'):
-    from ._ridge_0_22 import *
+from ._ridge import *

@@ -17,9 +17,8 @@
 
 # Other imports
 import sys
-from distutils.version import LooseVersion
 from functools import lru_cache
-from daal4py.sklearn._utils import daal_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 # Classes for patching
 if daal_check_version((2021, 'P', 300)):
@@ -52,10 +51,9 @@ def get_patch_names():
 
 
 def patch_sklearn(name=None, verbose=True):
-    from sklearn import __version__ as sklearn_version
-    if LooseVersion(sklearn_version) < LooseVersion("0.22.0"):
+    if not sklearn_check_version('0.22'):
         raise NotImplementedError("Intel(R) Extension for Scikit-learn* patches apply "
-                                  "for scikit-learn >= 0.22.0 only ...")
+                                  "for scikit-learn >= 0.22 only ...")
 
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
     if isinstance(name, list):

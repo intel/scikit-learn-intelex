@@ -18,5 +18,5 @@ from daal4py.sklearn._utils import sklearn_check_version
 
 if sklearn_check_version('0.23'):
     from ._k_means_0_23 import *
-elif sklearn_check_version('0.22'):
+else:
     from ._k_means_0_22 import *
