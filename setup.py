@@ -161,7 +161,7 @@ def get_libs(iface='daal'):
         libraries_plat = ['onedal_core', 'onedal_thread']
         onedal_lib = ['onedal']
     if iface == 'onedal':
-        libraries_plat += onedal_lib
+        libraries_plat = onedal_lib + libraries_plat
     return libraries_plat
 
 
