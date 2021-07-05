@@ -532,5 +532,5 @@ setup(
             'oneapi_backend.dll'
         ],
     },
-    ext_modules=getpyexts()
+    ext_modules=getpyexts() if is_onedal_iface else None
 )
