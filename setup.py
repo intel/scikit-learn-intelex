@@ -161,7 +161,7 @@ def get_libs(iface='daal'):
         libraries_plat = ['onedal_core', 'onedal_thread']
         onedal_lib = ['onedal']
     if iface == 'onedal':
-        libraries_plat += onedal_lib
+        libraries_plat = onedal_lib + libraries_plat
     return libraries_plat
 
 
@@ -199,6 +199,9 @@ def get_build_options():
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x]
                             for x in ['CPPFLAGS', 'CFLAGS', 'LDFLAGS']):
         ela.append('-s')
+    if IS_LIN:
+        ela.append("-fPIC")
+        ela.append("-Wl,-rpath,$ORIGIN/../..")
     return eca, ela, include_dir_plat
 
 
