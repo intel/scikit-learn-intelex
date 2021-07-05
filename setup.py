@@ -428,7 +428,7 @@ class install(orig_install.install):
 
 class develop(orig_develop.develop):
     def run(self):
-        if dpcpp:
+        if dpcpp and is_onedal_iface:
             build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib()
@@ -437,7 +437,7 @@ class develop(orig_develop.develop):
 
 class build(orig_build.build):
     def run(self):
-        if dpcpp:
+        if dpcpp and is_onedal_iface:
             build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib()
