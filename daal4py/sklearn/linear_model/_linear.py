@@ -152,10 +152,6 @@ def _fit_linear(self, X, y, sample_weight=None):
         X, y = _daal_check_X_y(**params)
 
     dtype = get_dtype(X)
-    if sample_weight is not None:
-        sample_weight = _check_sample_weight(sample_weight, X,
-                                             dtype=dtype)
-    self.sample_weight_ = sample_weight
     
     self.fit_shape_good_for_daal_ = \
         bool(X.shape[0] > X.shape[1] + int(self.fit_intercept))
@@ -209,11 +205,7 @@ def _predict_linear(self, X):
 
     sklearn_ready = sp.issparse(X) or not hasattr(self, 'daal_model_') or \
         not self.fit_shape_good_for_daal_ or not good_shape_for_daal or \
-        (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None)
-
-    if sklearn_check_version('0.22') and not sklearn_check_version('0.23'):
-        dtype = get_dtype(X)
-        sklearn_ready = sklearn_ready or dtype in [np.float64, np.float32]
+        (hasattr(self, 'sample_weight') and self.sample_weight is not None)
 
     if sklearn_ready:
         logging.info(

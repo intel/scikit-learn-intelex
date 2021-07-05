@@ -51,9 +51,9 @@ def get_patch_names():
 
 
 def patch_sklearn(name=None, verbose=True):
-    if not sklearn_check_version('0.22.0'):
+    if not sklearn_check_version('0.22'):
         raise NotImplementedError("Intel(R) Extension for Scikit-learn* patches apply "
-                                  "for scikit-learn >= 0.22.0 only ...")
+                                  "for scikit-learn >= 0.22 only ...")
 
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
     if isinstance(name, list):
