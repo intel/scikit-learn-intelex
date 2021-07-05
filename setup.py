@@ -81,7 +81,7 @@ trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
 no_stream = 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues
 mpi_root = None if no_dist else os.environ['MPIROOT']
-dpcpp = True if 'DPCPPROOT' in os.environ else False
+dpcpp = True if 'DPCPPROOT' in os.environ and is_onedal_iface else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
 dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
@@ -532,5 +532,5 @@ setup(
             'oneapi_backend.dll'
         ],
     },
-    ext_modules=getpyexts() if is_onedal_iface else None
+    ext_modules=getpyexts()
 )
