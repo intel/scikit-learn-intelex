@@ -419,7 +419,7 @@ def distutils_dir_name(dname):
 
 class install(orig_install.install):
     def run(self):
-        if dpcpp:
+        if dpcpp and is_onedal_iface:
             build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib()
