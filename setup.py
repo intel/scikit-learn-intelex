@@ -60,7 +60,9 @@ else:
 
 ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
-is_onedal_iface = os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
+is_onedal_iface = \
+    os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
+
 
 def get_win_major_version():
     lib_name = find_library('onedal_core')
@@ -81,7 +83,7 @@ trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
 no_stream = 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues
 mpi_root = None if no_dist else os.environ['MPIROOT']
-dpcpp = True if 'DPCPPROOT' in os.environ and is_onedal_iface else False
+dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
 dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
@@ -251,7 +253,7 @@ def getpyexts():
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
 
-    if  is_onedal_iface:
+    if is_onedal_iface:
         exts.extend(cythonize(ext, compile_time_env={'ONEDAL_VERSION': ONEDAL_VERSION}))
 
     ext = Extension('_daal4py',
@@ -268,7 +270,7 @@ def getpyexts():
                     language='c++')
     exts.extend(cythonize(ext))
 
-    if dpcpp:
+    if dpcpp and is_onedal_iface:
         if IS_LIN or IS_MAC:
             runtime_library_dirs = ["$ORIGIN/onedal"]
             runtime_oneapi_dirs = ["$ORIGIN/daal4py/oneapi"]

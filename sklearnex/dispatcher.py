@@ -37,7 +37,8 @@ def get_patch_map():
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
     mapping = _get_map_of_algorithms().copy()
 
-    if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P', 300)):
+    if os.environ.get('OFF_ONEDAL_IFACE') is None and \
+       daal_check_version((2021, 'P', 300)):
         mapping.pop('svm')
         mapping.pop('svc')
         mapping['svr'] = [[(svm_module, 'SVR', SVR_sklearnex), None]]
