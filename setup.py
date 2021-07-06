@@ -462,6 +462,31 @@ with open('requirements.txt') as f:
                 install_requires.remove(r)
                 break
 
+packages = [
+    'daal4py',
+    'daal4py.oneapi',
+    'daal4py.sklearn',
+    'daal4py.sklearn.cluster',
+    'daal4py.sklearn.decomposition',
+    'daal4py.sklearn.ensemble',
+    'daal4py.sklearn.linear_model',
+    'daal4py.sklearn.manifold',
+    'daal4py.sklearn.metrics',
+    'daal4py.sklearn.neighbors',
+    'daal4py.sklearn.monkeypatch',
+    'daal4py.sklearn.svm',
+    'daal4py.sklearn.utils',
+    'daal4py.sklearn.model_selection',
+]
+
+if is_onedal_iface:
+    packages += [
+        'onedal',
+        'onedal.svm',
+        'onedal.prims',
+        'onedal.common',
+    ]
+
 setup(
     name="daal4py",
     description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
@@ -502,26 +527,7 @@ setup(
         'data science',
         'data analytics'
     ],
-    packages=[
-        'daal4py',
-        'daal4py.oneapi',
-        'daal4py.sklearn',
-        'daal4py.sklearn.cluster',
-        'daal4py.sklearn.decomposition',
-        'daal4py.sklearn.ensemble',
-        'daal4py.sklearn.linear_model',
-        'daal4py.sklearn.manifold',
-        'daal4py.sklearn.metrics',
-        'daal4py.sklearn.neighbors',
-        'daal4py.sklearn.monkeypatch',
-        'daal4py.sklearn.svm',
-        'daal4py.sklearn.utils',
-        'daal4py.sklearn.model_selection',
-        'onedal',
-        'onedal.svm',
-        'onedal.prims',
-        'onedal.common',
-    ],
+    packages=packages,
     package_data={
         'onedal': [
             'libdpc_backend.so',
