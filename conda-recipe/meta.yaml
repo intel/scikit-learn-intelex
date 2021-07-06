@@ -31,7 +31,7 @@ build:
     - DPCPPROOT
     - DAALROOT
     - DALROOT
-    - TBBROOT
+    - OFF_ONEDAL_IFACE
     ignore_run_exports:
        - python
        - mpich
