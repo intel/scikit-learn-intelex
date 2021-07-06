@@ -704,32 +704,19 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
-        # Temporary solution
-        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'])
-        if hasattr(self, 'n_features_in_'):
-            if X.shape[1] != self.n_features_in_:
-                raise ValueError(
-                    (f'X has {X.shape[1]} features, '
-                     f'but RandomForestClassifier is expecting '
-                     f'{self.n_features_in_} features as input'))
+        X = check_array(X, accept_sparse=['csr', 'csc', 'coo'],
+                        dtype=[np.float64, np.float32])
+        if not hasattr(self, 'daal_model_') or \
+                sp.issparse(X) or self.n_outputs_ != 1 or \
+                not daal_check_version((2021, 'P', 200)):
+            logging.info(
+                "sklearn.ensemble.RandomForestClassifier."
+                "predict_proba: " + get_patch_message("sklearn"))
+            return super(RandomForestClassifier, self).predict_proba(X)
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
-            "predict_proba: " + get_patch_message("sklearn"))
-        return super(RandomForestClassifier, self).predict_proba(X)
-
-        #X = check_array(X, accept_sparse=['csr', 'csc', 'coo'],
-        #                dtype=[np.float64, np.float32])
-        #if not hasattr(self, 'daal_model_') or \
-        #        sp.issparse(X) or self.n_outputs_ != 1 or \
-        #        not daal_check_version((2021, 'P', 200)):
-        #    logging.info(
-        #        "sklearn.ensemble.RandomForestClassifier."
-        #        "predict_proba: " + get_patch_message("sklearn"))
-        #    return super(RandomForestClassifier, self).predict_proba(X)
-        #logging.info(
-        #    "sklearn.ensemble.RandomForestClassifier."
-        #    "predict_proba: " + get_patch_message("daal"))
-        #return _daal_predict_proba(self, X)
+            "predict_proba: " + get_patch_message("daal"))
+        return _daal_predict_proba(self, X)
 
     if sklearn_check_version('1.0'):
         @deprecated(
