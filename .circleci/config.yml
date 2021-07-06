@@ -93,6 +93,7 @@ jobs:
           no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
+            export OFF_ONEDAL_IFACE=1
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             conda install -y -c conda-forge threadpoolctl cython
