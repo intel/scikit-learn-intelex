@@ -478,6 +478,13 @@ packages = [
     'daal4py.sklearn.utils',
     'daal4py.sklearn.model_selection',
 ]
+package_data = {
+    'onedal': [
+        'libdpc_backend.so',
+        'dpc_backend.lib',
+        'dpc_backend.dll'
+    ],
+}
 
 if is_onedal_iface:
     packages += [
@@ -485,6 +492,11 @@ if is_onedal_iface:
         'onedal.svm',
         'onedal.prims',
         'onedal.common',
+    ]
+    package_data['daal4py.oneapi'] = [
+        'liboneapi_backend.so',
+        'oneapi_backend.lib',
+        'oneapi_backend.dll',
     ]
 
 setup(
@@ -528,17 +540,6 @@ setup(
         'data analytics'
     ],
     packages=packages,
-    package_data={
-        'onedal': [
-            'libdpc_backend.so',
-            'dpc_backend.lib',
-            'dpc_backend.dll'
-        ],
-        'daal4py.oneapi': [
-            'liboneapi_backend.so',
-            'oneapi_backend.lib',
-            'oneapi_backend.dll'
-        ],
-    },
+    package_data=package_data,
     ext_modules=getpyexts()
 )
