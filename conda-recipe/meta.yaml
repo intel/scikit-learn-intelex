@@ -52,7 +52,7 @@ requirements:
         - clang-tools
     run:
         - python
-        - dpcpp_cpp_rt ==2021.2
+        - dpcpp_cpp_rt ==2021.3
         - dal ==2021.3
     ignore_run_exports:
         - numpy
