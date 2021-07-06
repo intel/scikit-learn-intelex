@@ -16,7 +16,7 @@
 
 variables:
   - name: WINDOWS_BASEKIT_URL
-    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17978/w_BaseKit_p_2021.3.0.3221_offline.exe
+    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17768/w_BaseKit_p_2021.2.0.2871_offline.exe
   - name: WINDOWS_DPCPP_COMPONENTS
     value: intel.oneapi.win.dpcpp-compiler
   - name: MACOSX_DEPLOYMENT_TARGET
@@ -28,6 +28,7 @@ variables:
   - name: 'ARGS'
     value: '1'
   - name: 'OFF_ONEDAL_IFACE'
+    value: '1'
 
 jobs:
 - job: Linux
