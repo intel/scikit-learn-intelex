@@ -175,7 +175,7 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      conda build --override-channels -c conda-forge --numpy=1.19 --output-folder=. conda-recipe
+      conda build --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
     displayName: conda build
   - task: CopyFiles@2
     inputs:
