@@ -169,7 +169,9 @@ def get_libs(iface='daal'):
 
 def get_build_options():
     include_dir_plat = [os.path.abspath(
-        './src'), os.path.abspath('./onedal'), dal_root + '/include', ]
+        './src'), dal_root + '/include', ]
+    if is_onedal_iface:
+        include_dir_plat.append(os.path.abspath('./onedal'))
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
