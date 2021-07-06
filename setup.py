@@ -168,10 +168,9 @@ def get_libs(iface='daal'):
 
 
 def get_build_options():
-    include_dir_plat = [os.path.abspath(
-        './src'), dal_root + '/include', ]
-    if is_onedal_iface:
-        include_dir_plat.append(os.path.abspath('./onedal'))
+    include_dir_plat = [os.path.abspath('./src'),
+                        os.path.abspath('./onedal'),
+                        dal_root + '/include', ]
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
@@ -464,43 +463,6 @@ with open('requirements.txt') as f:
                 install_requires.remove(r)
                 break
 
-packages = [
-    'daal4py',
-    'daal4py.oneapi',
-    'daal4py.sklearn',
-    'daal4py.sklearn.cluster',
-    'daal4py.sklearn.decomposition',
-    'daal4py.sklearn.ensemble',
-    'daal4py.sklearn.linear_model',
-    'daal4py.sklearn.manifold',
-    'daal4py.sklearn.metrics',
-    'daal4py.sklearn.neighbors',
-    'daal4py.sklearn.monkeypatch',
-    'daal4py.sklearn.svm',
-    'daal4py.sklearn.utils',
-    'daal4py.sklearn.model_selection',
-]
-package_data = {
-    'onedal': [
-        'libdpc_backend.so',
-        'dpc_backend.lib',
-        'dpc_backend.dll'
-    ],
-}
-
-if is_onedal_iface:
-    packages += [
-        'onedal',
-        'onedal.svm',
-        'onedal.prims',
-        'onedal.common',
-    ]
-    package_data['daal4py.oneapi'] = [
-        'liboneapi_backend.so',
-        'oneapi_backend.lib',
-        'oneapi_backend.dll',
-    ]
-
 setup(
     name="daal4py",
     description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
@@ -541,7 +503,37 @@ setup(
         'data science',
         'data analytics'
     ],
-    packages=packages,
-    package_data=package_data,
+    packages=[
+        'daal4py',
+        'daal4py.oneapi',
+        'daal4py.sklearn',
+        'daal4py.sklearn.cluster',
+        'daal4py.sklearn.decomposition',
+        'daal4py.sklearn.ensemble',
+        'daal4py.sklearn.linear_model',
+        'daal4py.sklearn.manifold',
+        'daal4py.sklearn.metrics',
+        'daal4py.sklearn.neighbors',
+        'daal4py.sklearn.monkeypatch',
+        'daal4py.sklearn.svm',
+        'daal4py.sklearn.utils',
+        'daal4py.sklearn.model_selection',
+        'onedal',
+        'onedal.svm',
+        'onedal.prims',
+        'onedal.common',
+    ],
+    package_data={
+        'onedal': [
+            'libdpc_backend.so',
+            'dpc_backend.lib',
+            'dpc_backend.dll'
+        ],
+        'daal4py.oneapi': [
+            'liboneapi_backend.so',
+            'oneapi_backend.lib',
+            'oneapi_backend.dll'
+        ],
+    },
     ext_modules=getpyexts()
 )
