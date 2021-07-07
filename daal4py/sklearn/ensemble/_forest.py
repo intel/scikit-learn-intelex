@@ -715,7 +715,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
             "sklearn.ensemble.RandomForestClassifier."
             "predict_proba: " + get_patch_message("daal"))
         X = check_array(X, dtype=[np.float64, np.float32])
-        self._check_n_features(X, reset=False)
+        if sklearn_check_version('0.23'):
+            self._check_n_features(X, reset=False)
         return _daal_predict_proba(self, X)
 
     if sklearn_check_version('1.0'):
