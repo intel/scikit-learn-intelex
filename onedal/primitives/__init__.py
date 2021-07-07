@@ -14,4 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['primitives', 'svm']
+from .kernel_functions import linear_kernel, rbf_kernel, poly_kernel, sigmoid_kernel
+
+__all__ = ['linear_kernel', 'rbf_kernel', 'poly_kernel', 'sigmoid_kernel']

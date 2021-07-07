@@ -2,3 +2,4 @@ Cython==0.29.23
 Jinja2==3.0.1
 numpy==1.19.2 ; python_version <= '3.8'
 numpy==1.19.3 ; python_version >= '3.9'
+pybind11

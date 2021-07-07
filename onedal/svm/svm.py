@@ -22,7 +22,7 @@ from numbers import Number
 
 import numpy as np
 from scipy import sparse as sp
-from ..common import (
+from ..datatypes import (
     _validate_targets,
     _check_X_y,
     _check_array,
@@ -32,30 +32,9 @@ from ..common import (
 )
 
 try:
-    from _onedal4py_dpc import (
-        PySvmParams,
-        PyRegressionSvmTrain,
-        PyRegressionSvmInfer,
-        PyClassificationSvmTrain,
-        PyClassificationSvmInfer,
-        PyNuRegressionSvmTrain,
-        PyNuRegressionSvmInfer,
-        PyNuClassificationSvmTrain,
-        PyNuClassificationSvmInfer
-    )
+    import onedal._onedal_py_dpc as backend
 except ImportError:
-    from _onedal4py_host import (
-        PySvmParams,
-        PyRegressionSvmTrain,
-        PyRegressionSvmInfer,
-        PyClassificationSvmTrain,
-        PyClassificationSvmInfer,
-        PyNuRegressionSvmTrain,
-        PyNuRegressionSvmInfer,
-        PyNuClassificationSvmTrain,
-        PyNuClassificationSvmInfer
-    )
-
+    import onedal._onedal_py_host as backend
 
 class SVMtype(Enum):
     c_svc = 0
@@ -183,40 +162,21 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
         return ww
 
-    def _get_onedal_params(self):
+    def _get_onedal_params(self, data):
         max_iter = 10000 if self.max_iter == -1 else self.max_iter
         class_count = 0 if self.classes_ is None else len(self.classes_)
-        return PySvmParams(method=self.algorithm, kernel=self.kernel,
-                           c=self.C, nu=self.nu, epsilon=self.epsilon,
-                           class_count=class_count, accuracy_threshold=self.tol,
-                           max_iteration_count=max_iter, cache_size=self.cache_size,
-                           shrinking=self.shrinking,
-                           scale=self._scale_, sigma=self._sigma_,
-                           shift=self.coef0, degree=self.degree, tau=self.tau)
+        return {
+            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'method': self.algorithm,
+            'kernel': self.kernel,
+            'c': self.C, 'nu': self.nu, 'epsilon': self.epsilon,
+            'class_count': class_count, 'accuracy_threshold':self.tol,
+            'max_iteration_count': int(max_iter), 'scale': self._scale_,
+            'sigma': self._sigma_, 'shift': self.coef0, 'degree': self.degree,
+            'tau': self.tau, 'shrinking': self.shrinking, 'cache_size': self.cache_size
+        }
 
-    def _reset_context(func):
-        def wrapper(*args, **kwargs):
-            if 'daal4py.oneapi' in sys.modules:
-                import daal4py.oneapi as d4p_oneapi
-                devname = d4p_oneapi._get_device_name_sycl_ctxt()
-                if devname == 'gpu':
-                    gpu_ctx = d4p_oneapi._get_sycl_ctxt()
-                    host_ctx = d4p_oneapi.sycl_execution_context('host')
-                    try:
-                        host_ctx.apply()
-                        res = func(*args, **kwargs)
-                    finally:
-                        del host_ctx
-                        gpu_ctx.apply()
-                    return res
-                else:
-                    return func(*args, **kwargs)
-            else:
-                return func(*args, **kwargs)
-        return wrapper
-
-    @_reset_context
-    def _fit(self, X, y, sample_weight, Computer):
+    def _fit(self, X, y, sample_weight, module):
         if hasattr(self, 'decision_function_shape'):
             if self.decision_function_shape not in ('ovr', 'ovo', None):
                 raise ValueError(
@@ -244,18 +204,20 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         else:
             self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
 
-        c_svm = Computer(self._get_onedal_params())
-        c_svm.train(X, y, sample_weight)
+        policy = backend.host_policy()
+        params = self._get_onedal_params(X)
+        Xt, yt, sample_weightt = backend.from_numpy(X), backend.from_numpy(y), backend.from_numpy(sample_weight)
+        result = module.train(policy, params, Xt, yt, sample_weightt)
 
         if self._sparse:
-            self.dual_coef_ = sp.csr_matrix(c_svm.get_coeffs().T)
-            self.support_vectors_ = sp.csr_matrix(c_svm.get_support_vectors())
+            self.dual_coef_ = sp.csr_matrix(backend.to_numpy(result.coeffs).T)
+            self.support_vectors_ = sp.csr_matrix(backend.to_numpy(result.support_vectors))
         else:
-            self.dual_coef_ = c_svm.get_coeffs().T
-            self.support_vectors_ = c_svm.get_support_vectors()
+            self.dual_coef_ = backend.to_numpy(result.coeffs).T
+            self.support_vectors_ = backend.to_numpy(result.support_vectors)
 
-        self.intercept_ = c_svm.get_biases().ravel()
-        self.support_ = c_svm.get_support_indices().ravel().astype('int')
+        self.intercept_ = backend.to_numpy(result.biases).ravel()
+        self.support_ = backend.to_numpy(result.support_indices).ravel().astype('int')
         self.n_features_in_ = X.shape[1]
         self.shape_fit_ = X.shape
 
@@ -265,11 +227,20 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 np.sum(indices == i) for i, _ in enumerate(self.classes_)])
         self._gamma = self._scale_
 
-        self._onedal_model = c_svm.get_model()
+        self._onedal_model = result.model
         return self
 
-    @_reset_context
-    def _predict(self, X, Computer):
+    def _create_model(self, module):
+        m = module.model()
+        m.support_vectors = backend.from_numpy(self.support_vectors_)
+
+        m.coeffs = backend.from_numpy(self.dual_coef_.T)
+        m.biases = backend.from_numpy(self.intercept_)
+        if self.svm_type is SVMtype.c_svc or self.svm_type is SVMtype.nu_svc:
+            m.first_class_response, m.second_class_response = 0, 1
+        return m
+
+    def _predict(self, X, module):
         _check_is_fitted(self)
         if self.break_ties and self.decision_function_shape == 'ovo':
             raise ValueError("break_ties must be False when "
@@ -293,14 +264,15 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     "cannot use sparse input in %r trained on dense data"
                     % type(self).__name__)
 
-            c_svm = Computer(self._get_onedal_params())
+            policy = backend.host_policy()
+            params, X = self._get_onedal_params(X), backend.from_numpy(X)
 
             if hasattr(self, '_onedal_model'):
-                c_svm.infer(X, self._onedal_model)
+                model = self._onedal_model
             else:
-                c_svm.infer_builder(X, self.support_vectors_,
-                                    self.dual_coef_.T, self.intercept_)
-            y = c_svm.get_labels()
+                model = self._create_model(module)
+            result = module.infer(policy, params, model, X)
+            y = backend.to_numpy(result.responses)
         return y
 
     def _ovr_decision_function(self, predictions, confidences, n_classes):
@@ -321,8 +293,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             sum_of_confidences / (3 * (np.abs(sum_of_confidences) + 1))
         return votes + transformed_confidences
 
-    @_reset_context
-    def _decision_function(self, X, Computer):
+    def _decision_function(self, X, module):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
                          force_all_finite=False, accept_sparse='csr')
@@ -338,13 +309,16 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 "cannot use sparse input in %r trained on dense data"
                 % type(self).__name__)
 
-        c_svm = Computer(self._get_onedal_params())
+        policy = backend.host_policy()
+        params, X = self._get_onedal_params(X), backend.from_numpy(X)
+
         if hasattr(self, '_onedal_model'):
-            c_svm.infer(X, self._onedal_model)
+            model = self._onedal_model
         else:
-            c_svm.infer_builder(X, self.support_vectors_,
-                                self.dual_coef_.T, self.intercept_)
-        decision_function = c_svm.get_decision_function()
+            model = self._create_model(module)
+        result = module.infer(policy, params, model, X)
+        decision_function = backend.to_numpy(result.decision_function)
+
         if len(self.classes_) == 2:
             decision_function = decision_function.ravel()
 
@@ -373,10 +347,10 @@ class SVR(RegressorMixin, BaseSVM):
         self.svm_type = SVMtype.epsilon_svr
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, PyRegressionSvmTrain)
+        return super()._fit(X, y, sample_weight, backend.svm.regression)
 
     def predict(self, X):
-        y = super()._predict(X, PyRegressionSvmInfer)
+        y = super()._predict(X, backend.svm.regression)
         return y.ravel()
 
 
@@ -404,16 +378,16 @@ class SVC(ClassifierMixin, BaseSVM):
         return y
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, PyClassificationSvmTrain)
+        return super()._fit(X, y, sample_weight, backend.svm.classification)
 
     def predict(self, X):
-        y = super()._predict(X, PyClassificationSvmInfer)
+        y = super()._predict(X, backend.svm.classification)
         if len(self.classes_) == 2:
             y = y.ravel()
         return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
     def decision_function(self, X):
-        return super()._decision_function(X, PyClassificationSvmInfer)
+        return super()._decision_function(X, backend.svm.classification)
 
 
 class NuSVR(RegressorMixin, BaseSVM):
@@ -435,10 +409,10 @@ class NuSVR(RegressorMixin, BaseSVM):
         self.svm_type = SVMtype.nu_svr
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, PyNuRegressionSvmTrain)
+        return super()._fit(X, y, sample_weight, backend.svm.nu_regression)
 
     def predict(self, X):
-        y = super()._predict(X, PyNuRegressionSvmInfer)
+        y = super()._predict(X, backend.svm.nu_regression)
         return y.ravel()
 
 
@@ -466,13 +440,13 @@ class NuSVC(ClassifierMixin, BaseSVM):
         return y
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, PyNuClassificationSvmTrain)
+        return super()._fit(X, y, sample_weight, backend.svm.nu_classification)
 
     def predict(self, X):
-        y = super()._predict(X, PyNuClassificationSvmInfer)
+        y = super()._predict(X, backend.svm.nu_classification)
         if len(self.classes_) == 2:
             y = y.ravel()
         return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
     def decision_function(self, X):
-        return super()._decision_function(X, PyNuClassificationSvmInfer)
+        return super()._decision_function(X, backend.svm.nu_classification)
