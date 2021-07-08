@@ -147,6 +147,7 @@ def get_dtype(X):
 
 def get_number_of_types(dataframe):
     dtypes = getattr(dataframe, "dtypes", None)
-    if dtypes is None or isinstance(dtypes, np.dtype):
+    try:
+        return len(set(dtypes))
+    except TypeError:
         return 1
-    return len(set(dtypes))
