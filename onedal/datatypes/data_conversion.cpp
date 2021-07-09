@@ -156,12 +156,11 @@ inline dal::homogen_table convert_to_homogen_impl(PyArrayObject *np_data) {
     auto res_table = dal::homogen_table(data_pointer,
                                         row_count,
                                         column_count,
-                                        dal::detail::empty_delete<const T>(),
+                                        [np_data](const T* data) { Py_DECREF(np_data); },
                                         layout);
     // we need it increment the ref-count if we use the input array in-place
     // if we copied/converted it we already own our own reference
-    if (reinterpret_cast<PyArrayObject *>(data_pointer) == np_data)
-        Py_INCREF(np_data);
+    Py_INCREF(np_data);
     return res_table;
 }
 
