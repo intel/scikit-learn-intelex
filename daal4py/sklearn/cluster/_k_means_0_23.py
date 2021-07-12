@@ -18,7 +18,7 @@ import numpy as np
 import numbers
 from scipy import sparse as sp
 
-from sklearn.utils import (check_random_state, check_array)
+from sklearn.utils import check_random_state, check_array
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import (
     check_is_fitted,
@@ -38,7 +38,6 @@ import daal4py
 from .._utils import (
     getFPType,
     get_patch_message,
-    daal_check_version,
     sklearn_check_version)
 import logging
 
@@ -68,8 +67,13 @@ def _tolerance(X, rtol):
 
 
 def _daal4py_compute_starting_centroids(
-        X, X_fptype, nClusters, cluster_centers_0, verbose, random_state):
-
+    X,
+    X_fptype,
+    nClusters,
+    cluster_centers_0,
+    verbose,
+    random_state
+):
     def is_string(s, target_str):
         return isinstance(s, str) and s == target_str
     is_sparse = sp.isspmatrix(X)
@@ -81,9 +85,13 @@ def _daal4py_compute_starting_centroids(
         daal_engine = daal4py.engines_mt19937(
             fptype=X_fptype, method="defaultDense", seed=_seed)
         _n_local_trials = 2 + int(np.log(nClusters))
-        kmeans_init = daal4py.kmeans_init(nClusters, fptype=X_fptype,
-                                          nTrials=_n_local_trials,
-                                          method=plus_plus_method, engine=daal_engine)
+        kmeans_init = daal4py.kmeans_init(
+            nClusters,
+            fptype=X_fptype,
+            nTrials=_n_local_trials,
+            method=plus_plus_method,
+            engine=daal_engine,
+        )
         kmeans_init_res = kmeans_init.compute(X)
         centroids_ = kmeans_init_res.centroids
     elif is_string(cluster_centers_0, 'random'):
@@ -95,7 +103,8 @@ def _daal4py_compute_starting_centroids(
             nClusters,
             fptype=X_fptype,
             method=random_method,
-            engine=daal_engine)
+            engine=daal_engine,
+        )
         kmeans_init_res = kmeans_init.compute(X)
         centroids_ = kmeans_init_res.centroids
     elif hasattr(cluster_centers_0, '__array__'):
@@ -127,23 +136,14 @@ def _daal4py_compute_starting_centroids(
 def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype="double",
                                   method="lloydDense", accuracyThreshold=0.0,
                                   resultsToEvaluate="computeCentroids"):
-    kmeans_algo = None
-    if daal_check_version(((2020, 'P', 2), (2021, 'B', 107))):
-        kmeans_algo = daal4py.kmeans(nClusters=nClusters,
-                                     maxIterations=maxIterations,
-                                     fptype=fptype,
-                                     resultsToEvaluate=resultsToEvaluate,
-                                     accuracyThreshold=accuracyThreshold,
-                                     method=method)
-    else:
-        assigFlag = 'computeAssignments' in resultsToEvaluate
-
-        kmeans_algo = daal4py.kmeans(nClusters=nClusters,
-                                     maxIterations=maxIterations,
-                                     fptype=fptype,
-                                     assignFlag=assigFlag,
-                                     accuracyThreshold=accuracyThreshold,
-                                     method=method)
+    kmeans_algo = daal4py.kmeans(
+        nClusters=nClusters,
+        maxIterations=maxIterations,
+        fptype=fptype,
+        resultsToEvaluate=resultsToEvaluate,
+        accuracyThreshold=accuracyThreshold,
+        method=method,
+    )
     return kmeans_algo
 
 
@@ -157,7 +157,8 @@ def _daal4py_k_means_predict(X, nClusters, centroids,
         maxIterations=0,
         fptype=X_fptype,
         resultsToEvaluate=resultsToEvaluate,
-        method=method)
+        method=method,
+    )
 
     res = kmeans_algo.compute(X, centroids)
 
@@ -181,7 +182,8 @@ def _daal4py_k_means_fit(X, nClusters, numIterations,
         accuracyThreshold=abs_tol,
         fptype=X_fptype,
         resultsToEvaluate='computeCentroids',
-        method=method)
+        method=method,
+    )
 
     for k in range(n_init):
         deterministic, starting_centroids_ = _daal4py_compute_starting_centroids(
@@ -315,8 +317,12 @@ def _fit(self, X, y=None, sample_weight=None):
 
 
 def _daal4py_check_test_data(self, X):
-    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
-                    accept_large_sparse=False)
+    X = check_array(
+        X,
+        accept_sparse='csr',
+        dtype=[np.float64, np.float32],
+        accept_large_sparse=False
+    )
     if self.n_features_in_ != X.shape[1]:
         raise ValueError(
             (f'X has {X.shape[1]} features, '
@@ -369,27 +375,60 @@ class KMeans(KMeans_original):
 
     if sklearn_check_version('1.0'):
         @_deprecate_positional_args
-        def __init__(self, n_clusters=8, *, init='k-means++', n_init=10,
-                     max_iter=300, tol=1e-4, verbose=0, random_state=None,
-                     copy_x=True, algorithm='auto'):
-
+        def __init__(
+            self,
+            n_clusters=8,
+            *,
+            init='k-means++',
+            n_init=10,
+            max_iter=300,
+            tol=1e-4,
+            verbose=0,
+            random_state=None,
+            copy_x=True,
+            algorithm='auto',
+        ):
             super(KMeans, self).__init__(
-                n_clusters=n_clusters, init=init, max_iter=max_iter,
-                tol=tol, n_init=n_init, verbose=verbose,
-                random_state=random_state, copy_x=copy_x,
-                algorithm=algorithm)
+                n_clusters=n_clusters,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+                n_init=n_init,
+                verbose=verbose,
+                random_state=random_state,
+                copy_x=copy_x,
+                algorithm=algorithm,
+            )
     else:
         @_deprecate_positional_args
-        def __init__(self, n_clusters=8, *, init='k-means++', n_init=10,
-                     max_iter=300, tol=1e-4, precompute_distances='deprecated',
-                     verbose=0, random_state=None, copy_x=True,
-                     n_jobs='deprecated', algorithm='auto'):
-
+        def __init__(
+            self,
+            n_clusters=8,
+            *,
+            init='k-means++',
+            n_init=10,
+            max_iter=300,
+            tol=1e-4,
+            precompute_distances='deprecated',
+            verbose=0,
+            random_state=None,
+            copy_x=True,
+            n_jobs='deprecated',
+            algorithm='auto',
+        ):
             super(KMeans, self).__init__(
-                n_clusters=n_clusters, init=init, max_iter=max_iter,
-                tol=tol, precompute_distances=precompute_distances,
-                n_init=n_init, verbose=verbose, random_state=random_state,
-                copy_x=copy_x, n_jobs=n_jobs, algorithm=algorithm)
+                n_clusters=n_clusters,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+                precompute_distances=precompute_distances,
+                n_init=n_init,
+                verbose=verbose,
+                random_state=random_state,
+                copy_x=copy_x,
+                n_jobs=n_jobs,
+                algorithm=algorithm,
+            )
 
     def fit(self, X, y=None, sample_weight=None):
         return _fit(self, X, y=y, sample_weight=sample_weight)

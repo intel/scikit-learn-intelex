@@ -110,3 +110,26 @@ cdef class PyPolyKernelCompute:
 
     def get_values(self):
         return <object>self.thisptr.get_values()
+
+cdef class PySigmoidKernelParams:
+    cdef sigmoid_kernel_params pt
+
+    def __init__(self, scale, shift):
+        self.pt.scale = scale
+        self.pt.shift = shift
+
+
+cdef class PySigmoidKernelCompute:
+    cdef sigmoid_kernel_compute * thisptr
+
+    def __cinit__(self, PySigmoidKernelParams params):
+        self.thisptr = new sigmoid_kernel_compute(&params.pt)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def compute(self, x, y):
+        self.thisptr.compute(<PyObject *>x, <PyObject *>y)
+
+    def get_values(self):
+        return <object>self.thisptr.get_values()

@@ -61,7 +61,7 @@ public:
     svm_train(svm_params* params);
 
     // attributes from train_input
-    void train(PyObject* data, PyObject* labels, PyObject* weights);
+    void train(PyObject* data, PyObject* responses, PyObject* weights);
 
     // attributes from train_result
     svm_model<Task> get_model();

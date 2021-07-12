@@ -60,6 +60,8 @@ else:
 
 ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
+is_onedal_iface = \
+    os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
 
 
 def get_win_major_version():
@@ -161,13 +163,14 @@ def get_libs(iface='daal'):
         libraries_plat = ['onedal_core', 'onedal_thread']
         onedal_lib = ['onedal']
     if iface == 'onedal':
-        libraries_plat += onedal_lib
+        libraries_plat = onedal_lib + libraries_plat
     return libraries_plat
 
 
 def get_build_options():
-    include_dir_plat = [os.path.abspath(
-        './src'), os.path.abspath('./onedal'), dal_root + '/include', ]
+    include_dir_plat = [os.path.abspath('./src'),
+                        os.path.abspath('./onedal'),
+                        dal_root + '/include', ]
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
@@ -251,7 +254,7 @@ def getpyexts():
                     library_dirs=ONEDAL_LIBDIRS,
                     language='c++')
 
-    if ONEDAL_VERSION >= ONEDAL_2021_3:
+    if is_onedal_iface:
         exts.extend(cythonize(ext, compile_time_env={'ONEDAL_VERSION': ONEDAL_VERSION}))
 
     ext = Extension('daal4py._daal4py',
@@ -268,7 +271,7 @@ def getpyexts():
                     language='c++')
     exts.extend(cythonize(ext))
 
-    if dpcpp:
+    if dpcpp and is_onedal_iface:
         if IS_LIN or IS_MAC:
             runtime_library_dirs = ["$ORIGIN/onedal"]
             runtime_oneapi_dirs = ["$ORIGIN/daal4py/oneapi"]
@@ -290,7 +293,7 @@ def getpyexts():
                         runtime_library_dirs=runtime_library_dirs,
                         language='c++')
 
-        if ONEDAL_VERSION >= ONEDAL_2021_3:
+        if is_onedal_iface:
             exts.extend(cythonize(ext))
         ext = Extension('daal4py._oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
@@ -419,7 +422,7 @@ class install(orig_install.install):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if is_onedal_iface:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -428,7 +431,7 @@ class develop(orig_develop.develop):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if is_onedal_iface:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 
@@ -437,7 +440,7 @@ class build(orig_build.build):
     def run(self):
         if dpcpp:
             build_oneapi_backend()
-            if ONEDAL_VERSION >= ONEDAL_2021_3:
+            if is_onedal_iface:
                 build_backend.custom_build_cmake_clib()
         return super().run()
 

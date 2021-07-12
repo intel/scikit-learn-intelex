@@ -14,14 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
-
-if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
-    from ._linear_0_24 import *
-elif LooseVersion(sklearn_version) >= LooseVersion("0.23"):
-    from ._linear_0_23 import *
-elif LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-    from ._linear_0_22 import *
-else:
-    from ._linear_0_21 import *
+from ._linear import *

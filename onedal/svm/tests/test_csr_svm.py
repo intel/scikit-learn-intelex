@@ -86,7 +86,7 @@ def _test_binary_dataset(kernel):
     check_svm_model_equal(clf, *dataset)
 
 
-@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
+@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly', 'sigmoid'])
 def test_binary_dataset(kernel):
     _test_binary_dataset(kernel)
 
@@ -105,7 +105,7 @@ def _test_iris(kernel):
     check_svm_model_equal(clf, *dataset, decimal=2)
 
 
-@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
+@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly', 'sigmoid'])
 def test_iris(kernel):
     _test_iris(kernel)
 
@@ -120,7 +120,7 @@ def _test_diabetes(kernel):
     check_svm_model_equal(clf, *dataset)
 
 
-@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly'])
+@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly', 'sigmoid'])
 def test_diabetes(kernel):
     _test_diabetes(kernel)
 

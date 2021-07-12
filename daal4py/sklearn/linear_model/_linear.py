@@ -20,11 +20,15 @@ from scipy import linalg
 
 from sklearn.linear_model._base import _rescale_data
 from ..utils.validation import _daal_check_array, _daal_check_X_y
-
+from ..utils.base import _daal_validate_data
+from .._utils import sklearn_check_version
 from sklearn.utils.fixes import sparse_lsqr
 from sklearn.utils.validation import _check_sample_weight
+from sklearn.utils import check_array
 
 from sklearn.linear_model import LinearRegression as LinearRegression_original
+if sklearn_check_version('1.0'):
+    from sklearn.linear_model._base import _deprecate_normalize
 
 try:
     from sklearn.utils._joblib import Parallel, delayed
@@ -32,8 +36,12 @@ except ImportError:
     from sklearn.externals.joblib import Parallel, delayed
 
 import daal4py
-from .._utils import (make2d, getFPType, get_patch_message,
-                      is_DataFrame, get_dtype)
+from .._utils import (
+    make2d,
+    getFPType,
+    get_patch_message,
+    is_DataFrame,
+    get_dtype)
 import logging
 
 
@@ -85,13 +93,18 @@ def _daal4py_predict(self, X):
         fptype=_fptype,
         method='defaultDense'
     )
+    if sklearn_check_version('0.23'):
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                f'X has {X.shape[1]} features, '
+                f'but LinearRegression is expecting '
+                f'{self.n_features_in_} features as input')
     try:
         lr_res = lr_pred.compute(X, self.daal_model_)
     except RuntimeError:
         raise ValueError(
-            'Input data shape {} is inconsistent with the trained model'.format(
-                X.shape))
-
+            f'Input data shape {X.shape} is inconsistent with the trained model'
+        )
     res = lr_res.prediction
     if res.shape[1] == 1 and self.coef_.ndim == 1:
         res = np.ravel(res)
@@ -122,24 +135,33 @@ def _fit_linear(self, X, y, sample_weight=None):
     self : returns an instance of self.
     """
 
-    n_jobs_ = self.n_jobs
-    X, y = _daal_check_X_y(X, y, accept_sparse=['csr', 'csc', 'coo'],
-                           y_numeric=True, multi_output=True)
+    params = {
+        'X': X,
+        'y': y,
+        'accept_sparse': ['csr', 'csc', 'coo'],
+        'y_numeric': True,
+        'multi_output': True,
+    }
+    if sklearn_check_version('0.23'):
+        X, y = _daal_validate_data(
+            self,
+            dtype=[np.float64, np.float32],
+            **params,
+        )
+    else:
+        X, y = _daal_check_X_y(**params)
 
     dtype = get_dtype(X)
 
-    if sample_weight is not None:
-        sample_weight = _check_sample_weight(sample_weight, X,
-                                             dtype=dtype)
+    self.fit_shape_good_for_daal_ = \
+        bool(X.shape[0] > X.shape[1] + int(self.fit_intercept))
 
-    self.sample_weight_ = sample_weight
-    self.fit_shape_good_for_daal_ = bool(
-        X.shape[0] > X.shape[1] + int(self.fit_intercept))
+    daal_ready = self.fit_shape_good_for_daal_ and not sp.issparse(X) and \
+        sample_weight is None
+    if sklearn_check_version('0.22') and not sklearn_check_version('0.23'):
+        daal_ready = daal_ready and dtype in [np.float32, np.float64]
 
-    if self.fit_shape_good_for_daal_ and \
-            not sp.issparse(X) and \
-            (dtype == np.float64 or dtype == np.float32) and \
-            sample_weight is None:
+    if daal_ready:
         logging.info(
             "sklearn.linar_model.LinearRegression."
             "fit: " + get_patch_message("daal"))
@@ -154,52 +176,11 @@ def _fit_linear(self, X, y, sample_weight=None):
             "sklearn.linar_model.LinearRegression."
             "fit: " + get_patch_message("sklearn"))
 
-    if sample_weight is not None:
-        sample_weight = np.asarray(sample_weight)
-        if np.atleast_1d(sample_weight).ndim > 1:
-            raise ValueError("Sample weights must be 1D array or scalar")
-
-    X, y, X_offset, y_offset, X_scale = self._preprocess_data(
-        X, y, fit_intercept=self.fit_intercept, normalize=self.normalize,
-        copy=self.copy_X, sample_weight=sample_weight, return_mean=True)
-
-    if sample_weight is not None:
-        # Sample weight can be implemented via a simple rescaling.
-        X, y = _rescale_data(X, y, sample_weight)
-
-    if sp.issparse(X):
-        X_offset_scale = X_offset / X_scale
-
-        def matvec(b):
-            return X.dot(b) - b.dot(X_offset_scale)
-
-        def rmatvec(b):
-            return X.T.dot(b) - X_offset_scale * np.sum(b)
-
-        X_centered = sp.linalg.LinearOperator(shape=X.shape,
-                                              matvec=matvec,
-                                              rmatvec=rmatvec)
-
-        if y.ndim < 2:
-            out = sparse_lsqr(X_centered, y)
-            self.coef_ = out[0]
-            self._residues = out[3]
-        else:
-            # sparse_lstsq cannot handle y with shape (M, K)
-            outs = Parallel(n_jobs=n_jobs_)(
-                delayed(sparse_lsqr)(X_centered, y[:, j].ravel())
-                for j in range(y.shape[1]))
-            self.coef_ = np.vstack([out[0] for out in outs])
-            self._residues = np.vstack([out[3] for out in outs])
-    else:
-        self.coef_, self._residues, self.rank_, self.singular_ = \
-            linalg.lstsq(X, y)
-        self.coef_ = self.coef_.T
-
-    if y.ndim == 1:
-        self.coef_ = np.ravel(self.coef_)
-    self._set_intercept(X_offset, y_offset, X_scale)
-    return self
+    return super(LinearRegression, self).fit(
+        X,
+        y,
+        sample_weight=sample_weight,
+    )
 
 
 def _predict_linear(self, X):
@@ -216,17 +197,17 @@ def _predict_linear(self, X):
         Returns predicted values.
     """
     is_df = is_DataFrame(X)
+    if sklearn_check_version('0.23'):
+        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     X = np.asarray(X) if not sp.issparse(X) and not is_df else X
     good_shape_for_daal = \
         True if X.ndim <= 1 else True if X.shape[0] > X.shape[1] else False
-    dtype = get_dtype(X)
 
-    if sp.issparse(X) or \
-            not hasattr(self, 'daal_model_') or \
-            not self.fit_shape_good_for_daal_ or \
-            not good_shape_for_daal or \
-            not (dtype == np.float64 or dtype == np.float32) or \
-            (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None):
+    sklearn_ready = sp.issparse(X) or not hasattr(self, 'daal_model_') or \
+        not self.fit_shape_good_for_daal_ or not good_shape_for_daal or \
+        (hasattr(self, 'sample_weight') and self.sample_weight is not None)
+
+    if sklearn_ready:
         logging.info(
             "sklearn.linar_model.LinearRegression."
             "predict: " + get_patch_message("sklearn"))
@@ -241,13 +222,53 @@ def _predict_linear(self, X):
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 
-    def __init__(self, fit_intercept=True, normalize=False, copy_X=True,
-                 n_jobs=None):
-        super(LinearRegression, self).__init__(
-            fit_intercept=fit_intercept, normalize=normalize,
-            copy_X=copy_X, n_jobs=n_jobs)
+    if sklearn_check_version('0.24'):
+        def __init__(
+            self,
+            fit_intercept=True,
+            normalize='deprecated' if sklearn_check_version('1.0') else False,
+            copy_X=True,
+            n_jobs=None,
+            positive=False,
+        ):
+            super(LinearRegression, self).__init__(
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                copy_X=copy_X,
+                n_jobs=n_jobs,
+                positive=positive,
+            )
+    else:
+        def __init__(
+            self,
+            fit_intercept=True,
+            normalize=False,
+            copy_X=True,
+            n_jobs=None,
+        ):
+            super(LinearRegression, self).__init__(
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                copy_X=copy_X,
+                n_jobs=n_jobs
+            )
 
     def fit(self, X, y, sample_weight=None):
+        if sklearn_check_version('1.0'):
+            self._normalize = _deprecate_normalize(
+                self.normalize,
+                default=False,
+                estimator_name=self.__class__.__name__,
+            )
+
+        if sklearn_check_version('0.24'):
+            if self.positive is True:
+                logging.info(
+                    "sklearn.linar_model.LinearRegression."
+                    "fit: " + get_patch_message("sklearn"))
+                return super(LinearRegression, self).fit(
+                    X, y=y, sample_weight=sample_weight
+                )
         return _fit_linear(self, X, y, sample_weight=sample_weight)
 
     def predict(self, X):

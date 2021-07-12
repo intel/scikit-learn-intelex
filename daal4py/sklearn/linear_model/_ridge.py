@@ -71,8 +71,9 @@ def _daal4py_predict(self, X):
     )
     if self.n_features_in_ != X.shape[1]:
         raise ValueError(
-            (f'X has {X.shape[1]} features, '
-             f'but Ridge is expecting {self.n_features_in_} features as input'))
+            f'X has {X.shape[1]} features, '
+            f'but Ridge is expecting {self.n_features_in_} features as input'
+        )
     ridge_res = ridge_palg.compute(X, self.daal_model_)
 
     res = ridge_res.prediction
@@ -103,7 +104,8 @@ def _fit_ridge(self, X, y, sample_weight=None):
     if sklearn_check_version('1.0'):
         from sklearn.linear_model._base import _deprecate_normalize
         self._normalize = _deprecate_normalize(
-            self.normalize, default=False,
+            self.normalize,
+            default=False,
             estimator_name=self.__class__.__name__
         )
 
@@ -112,11 +114,11 @@ def _fit_ridge(self, X, y, sample_weight=None):
     self.n_features_in_ = X.shape[1]
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = True if X.shape[0] >= X.shape[1] else False
-    if not self.solver == 'auto' or \
-            sp.issparse(X) or \
+    if not self.solver == 'auto' or sp.issparse(X) or \
             not self.fit_shape_good_for_daal_ or \
             not (X.dtype == np.float64 or X.dtype == np.float32) or \
-            sample_weight is not None:
+            sample_weight is not None or \
+            (hasattr(self, 'positive') and self.positive):
         if hasattr(self, 'daal_model_'):
             del self.daal_model_
         logging.info("sklearn.linear_model.Ridge.fit: " + get_patch_message("sklearn"))
@@ -167,9 +169,18 @@ class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 
     if sklearn_check_version('1.0'):
-        def __init__(self, alpha=1.0, fit_intercept=True, normalize='deprecated',
-                     copy_X=True, max_iter=None, tol=1e-3, solver="auto",
-                     random_state=None):
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            normalize='deprecated',
+            copy_X=True,
+            max_iter=None,
+            tol=1e-3,
+            solver="auto",
+            positive=False,
+            random_state=None,
+        ):
             self.alpha = alpha
             self.fit_intercept = fit_intercept
             self.normalize = normalize
@@ -177,11 +188,20 @@ class Ridge(Ridge_original, _BaseRidge):
             self.max_iter = max_iter
             self.tol = tol
             self.solver = solver
+            self.positive = positive
             self.random_state = random_state
     else:
-        def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
-                     copy_X=True, max_iter=None, tol=1e-3, solver="auto",
-                     random_state=None):
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            normalize=False,
+            copy_X=True,
+            max_iter=None,
+            tol=1e-3,
+            solver="auto",
+            random_state=None,
+        ):
             self.alpha = alpha
             self.fit_intercept = fit_intercept
             self.normalize = normalize

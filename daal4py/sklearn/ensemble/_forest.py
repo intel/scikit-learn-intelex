@@ -43,7 +43,10 @@ from scipy import sparse as sp
 
 
 def _to_absolute_max_features(
-        max_features, n_features, is_classification=False):
+    max_features,
+    n_features,
+    is_classification=False
+):
     if max_features is None:
         return n_features
     elif isinstance(max_features, str):
@@ -77,9 +80,14 @@ def _get_n_samples_bootstrap(n_samples, max_samples):
         return float(max_samples / n_samples)
 
     if isinstance(max_samples, numbers.Real):
-        if not (0. < float(max_samples) < 1.):
-            msg = "`max_samples` must be in range (0, 1) but got value {}"
-            raise ValueError(msg.format(max_samples))
+        if sklearn_check_version('1.0'):
+            if not (0 < float(max_samples) <= 1):
+                msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
+                raise ValueError(msg.format(max_samples))
+        else:
+            if not (0 < float(max_samples) < 1):
+                msg = "`max_samples` must be in range (0, 1) but got value {}"
+                raise ValueError(msg.format(max_samples))
         return float(max_samples)
 
     msg = "`max_samples` should be int or float, but got type '{}'"
@@ -197,7 +205,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     dfc_algorithm = daal4py.decision_forest_classification_training(
         nClasses=int(n_classes_),
         fptype=X_fptype,
-        method='hist' if daal_check_version((2021, 'P', 200)) else 'defaultDense',
+        method='hist',
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap_
         if self.bootstrap is True else 1.,
@@ -243,8 +251,6 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
 
 
 def _daal_predict_classifier(self, X):
-    if not daal_check_version((2021, 'P', 200)):
-        X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfc_algorithm = daal4py.decision_forest_classification_prediction(
         nClasses=int(self.n_classes_),
@@ -265,8 +271,6 @@ def _daal_predict_classifier(self, X):
 
 
 def _daal_predict_proba(self, X):
-    if not daal_check_version((2021, 'P', 200)):
-        X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfc_algorithm = daal4py.decision_forest_classification_prediction(
         nClasses=int(self.n_classes_),
@@ -293,8 +297,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         self.ccp_alpha == 0.0 and not sp.issparse(X) and self.oob_score is False
 
     if daal_ready:
-        _supported_dtypes_ = [np.float32, np.float64]
-        X = check_array(X, dtype=_supported_dtypes_)
+        X = check_array(X, dtype=[np.float32, np.float64])
         y = np.asarray(y)
         y = np.atleast_1d(y)
 
@@ -371,7 +374,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     # create algorithm
     dfr_algorithm = daal4py.decision_forest_regression_training(
         fptype=getFPType(X),
-        method='hist' if daal_check_version((2021, 'P', 200)) else 'defaultDense',
+        method='hist',
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap if self.bootstrap is True else 1.,
         featuresPerNode=int(_featuresPerNode),
@@ -425,7 +428,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
 
-    if (sklearn_check_version('1.0') and self.criterion == "mse"):
+    if sklearn_check_version('1.0') and self.criterion == "mse":
         warnings.warn(
             "Criterion 'mse' was deprecated in v1.0 and will be "
             "removed in version 1.2. Use `criterion='squared_error'` "
@@ -438,8 +441,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
         not sp.issparse(X) and self.oob_score is False
 
     if daal_ready:
-        _supported_dtypes_ = [np.double, np.single]
-        X = check_array(X, dtype=_supported_dtypes_)
+        X = check_array(X, dtype=[np.float64, np.float32])
         y = np.asarray(y)
         y = np.atleast_1d(y)
 
@@ -482,8 +484,6 @@ def _daal_predict_regressor(self, X):
             (f'X has {X.shape[1]} features, '
              f'but RandomForestRegressor is expecting '
              f'{self.n_features_in_} features as input'))
-    if not daal_check_version((2021, 'P', 200)):
-        X = self._validate_X_predict(X)
     X_fptype = getFPType(X)
     dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)
     dfr_predictionResult = dfr_alg.compute(X, self.daal_model_)
@@ -522,29 +522,28 @@ def check_sample_weight(sample_weight, X, dtype=None):
 class RandomForestClassifier(RandomForestClassifier_original):
     __doc__ = RandomForestClassifier_original.__doc__
 
-    def __init__(self,
-                 n_estimators=100,
-                 criterion="gini",
-                 max_depth=None,
-                 min_samples_split=2,
-                 min_samples_leaf=1,
-                 min_weight_fraction_leaf=0.,
-                 max_features="auto",
-                 max_leaf_nodes=None,
-                 min_impurity_decrease=0.,
-                 min_impurity_split=None,
-                 bootstrap=True,
-                 oob_score=False,
-                 n_jobs=None,
-                 random_state=None,
-                 verbose=0,
-                 warm_start=False,
-                 class_weight=None,
-                 ccp_alpha=0.0,
-                 max_samples=None,
-                 maxBins=256,
-                 minBinSize=1):
-        if sklearn_check_version('0.21'):
+    if sklearn_check_version('1.0'):
+        def __init__(self,
+                     n_estimators=100,
+                     criterion="gini",
+                     max_depth=None,
+                     min_samples_split=2,
+                     min_samples_leaf=1,
+                     min_weight_fraction_leaf=0.,
+                     max_features="auto",
+                     max_leaf_nodes=None,
+                     min_impurity_decrease=0.,
+                     bootstrap=True,
+                     oob_score=False,
+                     n_jobs=None,
+                     random_state=None,
+                     verbose=0,
+                     warm_start=False,
+                     class_weight=None,
+                     ccp_alpha=0.0,
+                     max_samples=None,
+                     maxBins=256,
+                     minBinSize=1):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -555,7 +554,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 max_features=max_features,
                 max_leaf_nodes=max_leaf_nodes,
                 min_impurity_decrease=min_impurity_decrease,
-                min_impurity_split=min_impurity_split,
                 bootstrap=bootstrap,
                 oob_score=oob_score,
                 n_jobs=n_jobs,
@@ -566,7 +564,32 @@ class RandomForestClassifier(RandomForestClassifier_original):
             )
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-        else:
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+    else:
+        def __init__(self,
+                     n_estimators=100,
+                     criterion="gini",
+                     max_depth=None,
+                     min_samples_split=2,
+                     min_samples_leaf=1,
+                     min_weight_fraction_leaf=0.,
+                     max_features="auto",
+                     max_leaf_nodes=None,
+                     min_impurity_decrease=0.,
+                     min_impurity_split=None,
+                     bootstrap=True,
+                     oob_score=False,
+                     n_jobs=None,
+                     random_state=None,
+                     verbose=0,
+                     warm_start=False,
+                     class_weight=None,
+                     ccp_alpha=0.0,
+                     max_samples=None,
+                     maxBins=256,
+                     minBinSize=1):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -588,9 +611,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 ccp_alpha=ccp_alpha,
                 max_samples=max_samples
             )
-
-        self.maxBins = maxBins
-        self.minBinSize = minBinSize
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -642,17 +664,18 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The predicted classes.
         """
 
-        X = check_array(
-            X, accept_sparse=[
-                'csr', 'csc', 'coo'], dtype=[
-                np.float64, np.float32])
-
         if not hasattr(self, 'daal_model_') or \
                 sp.issparse(X) or self.n_outputs_ != 1:
             logging.info(
                 "sklearn.ensemble.RandomForestClassifier."
                 "predict: " + get_patch_message("sklearn"))
             return super(RandomForestClassifier, self).predict(X)
+
+        X = check_array(
+            X,
+            accept_sparse=['csr', 'csc', 'coo'],
+            dtype=[np.float64, np.float32]
+        )
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
             "predict: " + get_patch_message("daal"))
@@ -710,8 +733,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
 
     if sklearn_check_version('1.0'):
         @deprecated(
-            "Attribute n_features_ was deprecated in version 1.0 and will be "
-            "removed in 1.2. Use 'n_features_in_' instead."
+            "Attribute `n_features_` was deprecated in version 1.0 and will be "
+            "removed in 1.2. Use `n_features_in_` instead."
         )
         @property
         def n_features_(self):
@@ -723,24 +746,27 @@ class RandomForestClassifier(RandomForestClassifier_original):
             if self._cached_estimators_:
                 return self._cached_estimators_
 
-        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+        if sklearn_check_version('0.22'):
             check_is_fitted(self)
         else:
             check_is_fitted(self, 'daal_model_')
         classes_ = self.classes_[0]
         n_classes_ = self.n_classes_[0]
         # convert model to estimators
-        est = DecisionTreeClassifier(
-            criterion=self.criterion,
-            max_depth=self.max_depth,
-            min_samples_split=self.min_samples_split,
-            min_samples_leaf=self.min_samples_leaf,
-            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-            max_features=self.max_features,
-            max_leaf_nodes=self.max_leaf_nodes,
-            min_impurity_decrease=self.min_impurity_decrease,
-            min_impurity_split=self.min_impurity_split,
-            random_state=None)
+        params = {
+            'criterion': self.criterion,
+            'max_depth': self.max_depth,
+            'min_samples_split': self.min_samples_split,
+            'min_samples_leaf': self.min_samples_leaf,
+            'min_weight_fraction_leaf': self.min_weight_fraction_leaf,
+            'max_features': self.max_features,
+            'max_leaf_nodes': self.max_leaf_nodes,
+            'min_impurity_decrease': self.min_impurity_decrease,
+            'random_state': None,
+        }
+        if not sklearn_check_version('1.0'):
+            params['min_impurity_split'] = self.min_impurity_split
+        est = DecisionTreeClassifier(**params)
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
@@ -790,28 +816,27 @@ class RandomForestClassifier(RandomForestClassifier_original):
 class RandomForestRegressor(RandomForestRegressor_original):
     __doc__ = RandomForestRegressor_original.__doc__
 
-    def __init__(self,
-                 n_estimators=100, *,
-                 criterion="squared_error" if sklearn_check_version('1.0') else "mse",
-                 max_depth=None,
-                 min_samples_split=2,
-                 min_samples_leaf=1,
-                 min_weight_fraction_leaf=0.,
-                 max_features="auto",
-                 max_leaf_nodes=None,
-                 min_impurity_decrease=0.,
-                 min_impurity_split=None,
-                 bootstrap=True,
-                 oob_score=False,
-                 n_jobs=None,
-                 random_state=None,
-                 verbose=0,
-                 warm_start=False,
-                 ccp_alpha=0.0,
-                 max_samples=None,
-                 maxBins=256,
-                 minBinSize=1):
-        if sklearn_check_version('0.21'):
+    if sklearn_check_version('1.0'):
+        def __init__(self,
+                     n_estimators=100, *,
+                     criterion="squared_error",
+                     max_depth=None,
+                     min_samples_split=2,
+                     min_samples_leaf=1,
+                     min_weight_fraction_leaf=0.,
+                     max_features="auto",
+                     max_leaf_nodes=None,
+                     min_impurity_decrease=0.,
+                     bootstrap=True,
+                     oob_score=False,
+                     n_jobs=None,
+                     random_state=None,
+                     verbose=0,
+                     warm_start=False,
+                     ccp_alpha=0.0,
+                     max_samples=None,
+                     maxBins=256,
+                     minBinSize=1):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -822,7 +847,6 @@ class RandomForestRegressor(RandomForestRegressor_original):
                 max_features=max_features,
                 max_leaf_nodes=max_leaf_nodes,
                 min_impurity_decrease=min_impurity_decrease,
-                min_impurity_split=min_impurity_split,
                 bootstrap=bootstrap,
                 oob_score=oob_score,
                 n_jobs=n_jobs,
@@ -832,7 +856,31 @@ class RandomForestRegressor(RandomForestRegressor_original):
             )
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-        else:
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+    else:
+        def __init__(self,
+                     n_estimators=100, *,
+                     criterion="mse",
+                     max_depth=None,
+                     min_samples_split=2,
+                     min_samples_leaf=1,
+                     min_weight_fraction_leaf=0.,
+                     max_features="auto",
+                     max_leaf_nodes=None,
+                     min_impurity_decrease=0.,
+                     min_impurity_split=None,
+                     bootstrap=True,
+                     oob_score=False,
+                     n_jobs=None,
+                     random_state=None,
+                     verbose=0,
+                     warm_start=False,
+                     ccp_alpha=0.0,
+                     max_samples=None,
+                     maxBins=256,
+                     minBinSize=1):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -853,8 +901,8 @@ class RandomForestRegressor(RandomForestRegressor_original):
                 ccp_alpha=ccp_alpha,
                 max_samples=max_samples
             )
-        self.maxBins = maxBins
-        self.minBinSize = minBinSize
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -905,17 +953,18 @@ class RandomForestRegressor(RandomForestRegressor_original):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        X = check_array(
-            X, accept_sparse=[
-                'csr', 'csc', 'coo'], dtype=[
-                np.float64, np.float32])
-
         if not hasattr(self, 'daal_model_') or \
                 sp.issparse(X) or self.n_outputs_ != 1:
             logging.info(
                 "sklearn.ensemble.RandomForestRegressor."
                 "predict: " + get_patch_message("sklearn"))
             return super(RandomForestRegressor, self).predict(X)
+
+        X = check_array(
+            X,
+            accept_sparse=['csr', 'csc', 'coo'],
+            dtype=[np.float64, np.float32]
+        )
         logging.info(
             "sklearn.ensemble.RandomForestRegressor."
             "predict: " + get_patch_message("daal"))
@@ -923,8 +972,8 @@ class RandomForestRegressor(RandomForestRegressor_original):
 
     if sklearn_check_version('1.0'):
         @deprecated(
-            "Attribute n_features_ was deprecated in version 1.0 and will be "
-            "removed in 1.2. Use 'n_features_in_' instead."
+            "Attribute `n_features_` was deprecated in version 1.0 and will be "
+            "removed in 1.2. Use `n_features_in_` instead."
         )
         @property
         def n_features_(self):
@@ -935,22 +984,25 @@ class RandomForestRegressor(RandomForestRegressor_original):
         if hasattr(self, '_cached_estimators_'):
             if self._cached_estimators_:
                 return self._cached_estimators_
-        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+        if sklearn_check_version('0.22'):
             check_is_fitted(self)
         else:
             check_is_fitted(self, 'daal_model_')
         # convert model to estimators
-        est = DecisionTreeRegressor(
-            criterion=self.criterion,
-            max_depth=self.max_depth,
-            min_samples_split=self.min_samples_split,
-            min_samples_leaf=self.min_samples_leaf,
-            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-            max_features=self.max_features,
-            max_leaf_nodes=self.max_leaf_nodes,
-            min_impurity_decrease=self.min_impurity_decrease,
-            min_impurity_split=self.min_impurity_split,
-            random_state=None)
+        params = {
+            'criterion': self.criterion,
+            'max_depth': self.max_depth,
+            'min_samples_split': self.min_samples_split,
+            'min_samples_leaf': self.min_samples_leaf,
+            'min_weight_fraction_leaf': self.min_weight_fraction_leaf,
+            'max_features': self.max_features,
+            'max_leaf_nodes': self.max_leaf_nodes,
+            'min_impurity_decrease': self.min_impurity_decrease,
+            'random_state': None,
+        }
+        if not sklearn_check_version('1.0'):
+            params['min_impurity_split'] = self.min_impurity_split
+        est = DecisionTreeClassifier(**params)
 
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
