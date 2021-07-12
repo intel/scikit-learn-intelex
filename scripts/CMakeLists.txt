@@ -72,6 +72,7 @@ if(IFACE STREQUAL "host")
     set(TARGET "_onedal_py_host")
 
     if(WIN32)
+        set(CMAKE_CXX_COMPILER "cl")
         list(APPEND ONEDAL_LIBRARIES "onedal_dll")
     else()
         set(CMAKE_CXX_COMPILER "g++")
