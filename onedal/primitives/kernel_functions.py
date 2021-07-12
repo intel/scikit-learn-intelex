@@ -22,6 +22,8 @@ try:
 except ImportError:
     import onedal._onedal_py_host as backend
 
+from ..common._policy import _HostPolicy
+
 def _check_inputs(X, Y):
     def check_input(input):
         return _check_array(input, dtype=[np.float64, np.float32], force_all_finite=False)
@@ -32,7 +34,7 @@ def _check_inputs(X, Y):
 
 
 def _compute_kernel(params, submodule, X, Y):
-    policy = backend.host_policy()
+    policy = _HostPolicy()
     X, Y = backend.from_numpy(X), backend.from_numpy(Y)
     result = submodule.compute(policy, params, X, Y)
     return backend.to_numpy(result.values)

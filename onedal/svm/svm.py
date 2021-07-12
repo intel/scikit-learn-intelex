@@ -36,6 +36,8 @@ try:
 except ImportError:
     import onedal._onedal_py_host as backend
 
+from ..common._policy import _HostPolicy
+
 class SVMtype(Enum):
     c_svc = 0
     epsilon_svr = 1
@@ -204,7 +206,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         else:
             self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
 
-        policy = backend.host_policy()
+        policy = _HostPolicy()
         params = self._get_onedal_params(X)
         Xt, yt, sample_weightt = backend.from_numpy(X), backend.from_numpy(y), backend.from_numpy(sample_weight)
         result = module.train(policy, params, Xt, yt, sample_weightt)
@@ -264,7 +266,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     "cannot use sparse input in %r trained on dense data"
                     % type(self).__name__)
 
-            policy = backend.host_policy()
+            policy = _HostPolicy()
             params, X = self._get_onedal_params(X), backend.from_numpy(X)
 
             if hasattr(self, '_onedal_model'):
@@ -309,7 +311,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 "cannot use sparse input in %r trained on dense data"
                 % type(self).__name__)
 
-        policy = backend.host_policy()
+        policy = _HostPolicy()
         params, X = self._get_onedal_params(X), backend.from_numpy(X)
 
         if hasattr(self, '_onedal_model'):
