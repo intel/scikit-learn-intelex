@@ -42,7 +42,7 @@ def custom_build_cmake_clib(iface):
     log.info(f"Project directory is: {root_dir}")
 
     builder_directory = jp(root_dir, "scripts")
-    abs_build_temp_path = jp(root_dir, "build", "backend")
+    abs_build_temp_path = jp(root_dir, "build", f"backend_{iface}")
     install_directory = jp(root_dir, "onedal")
     log.info(f"Builder directory: {builder_directory}")
     log.info(f"Install directory: {install_directory}")

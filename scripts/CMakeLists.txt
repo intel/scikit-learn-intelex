@@ -16,6 +16,11 @@
 
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
+project("oneDAL python interface"
+    LANGUAGES CXX
+    HOMEPAGE_URL https://github.com/oneapi-src/oneDAL
+)
+
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -27,36 +32,6 @@ if(WIN32)
 else()
     set(ONEDAL_LIBRARIES "onedal_core")
     list(APPEND ONEDAL_LIBRARIES "onedal_thread")
-endif()
-
-if(IFACE STREQUAL "host")
-    set(TARGET "_onedal_py_host")
-
-    if(WIN32)
-        list(APPEND ONEDAL_LIBRARIES "onedal_dll")
-    else()
-        list(APPEND ONEDAL_LIBRARIES "onedal")
-    endif()
-
-elseif(IFACE STREQUAL "dpc")
-    if(NOT DEFINED ENV{DPCPPROOT})
-        message(FATAL_ERROR "DPCPPROOT is not set")
-    endif()
-
-    set(CMAKE_CXX_COMPILER "dpcpp")
-    set(CMAKE_C_COMPILER "dpcpp")
-    message(STATUS "Resetting CXX compiler to: " ${CMAKE_CXX_COMPILER})
-    message(STATUS "Resetting C compiler to: " ${CMAKE_C_COMPILER})
-
-    set(TARGET "_onedal_py_dpc")
-
-    if(WIN32)
-        list(APPEND ONEDAL_LIBRARIES "onedal_dpc_dll")
-    else()
-        list(APPEND ONEDAL_LIBRARIES "onedal_dpc")
-    endif()
-else()
-    message(FATAL_ERROR "Invalid IFACE value: " ${IFACE})
 endif()
 
 if(WIN32)
@@ -72,20 +47,9 @@ elseif(UNIX OR APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} ${SDL_FLAGS}")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG")
-
-    # if(APPLE)
-    #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -undefined dynamic_lookup")
-    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -undefined dynamic_lookup")
-    #     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -undefined dynamic_lookup")
-    #     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -undefined dynamic_lookup")
-    # endif()
 else()
     message(FATAL_ERROR "Unsupported system.")
 endif()
-
-project("oneDAL python interface"
-    HOMEPAGE_URL https://github.com/oneapi-src/oneDAL
-)
 
 set(PYTHON_ONEDAL "${CMAKE_CURRENT_SOURCE_DIR}/../onedal/")
 
@@ -104,6 +68,42 @@ message(STATUS "NUMPY_INCLUDE_DIRS:" ${NUMPY_INCLUDE_DIRS})
 
 find_package(pybind11 REQUIRED)
 
+if(IFACE STREQUAL "host")
+    set(TARGET "_onedal_py_host")
+
+    if(WIN32)
+        list(APPEND ONEDAL_LIBRARIES "onedal_dll")
+    else()
+        set(CMAKE_CXX_COMPILER "g++")
+        list(APPEND ONEDAL_LIBRARIES "onedal")
+    endif()
+
+    list(APPEND COMPILE_DEFINITIONS "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
+
+elseif(IFACE STREQUAL "dpc")
+
+    if(NOT DEFINED ENV{DPCPPROOT})
+        message(FATAL_ERROR "DPCPPROOT is not set")
+    endif()
+
+    set(CMAKE_CXX_COMPILER "dpcpp")
+    message(STATUS "Resetting CXX compiler to: " ${CMAKE_CXX_COMPILER})
+
+    set(TARGET "_onedal_py_dpc")
+
+    if(WIN32)
+        list(APPEND ONEDAL_LIBRARIES "onedal_dpc_dll")
+    else()
+        list(APPEND ONEDAL_LIBRARIES "onedal_dpc")
+    endif()
+
+    list(APPEND COMPILE_DEFINITIONS
+        "ONEDAL_DATA_PARALLEL"
+        "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
+else()
+    message(FATAL_ERROR "Invalid IFACE value: " ${IFACE})
+endif()
+
 pybind11_add_module(${TARGET} ${sources})
 
 target_include_directories(${TARGET}
@@ -113,21 +113,8 @@ target_include_directories(${TARGET}
     PRIVATE ${NUMPY_INCLUDE_DIRS}
 )
 
-if(IFACE STREQUAL "host")
-    target_compile_definitions(${TARGET}
-        PUBLIC "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
-    )
-elseif(IFACE STREQUAL "dpc")
-    target_compile_definitions(${TARGET}
-        PUBLIC "ONEDAL_DATA_PARALLEL"
-        PUBLIC "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
-    )
-endif()
-
-target_link_directories(${TARGET}
-    PRIVATE ${PYTHON_LIBRARY_DIR}
-)
-
+target_compile_definitions(${TARGET} PUBLIC ${COMPILE_DEFINITIONS})
+target_link_directories(${TARGET} PRIVATE ${PYTHON_LIBRARY_DIR})
 target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
 
 install(
