@@ -144,7 +144,7 @@ def _daal_roc_auc_score(
         daal_ready = max_fpr is None and sample_weight is None and len(labels) == 2
         if daal_ready:
             logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
-            if not np.array_equal(labels, np.ndarray([0, 1])):
+            if not np.array_equal(labels, [0, 1]) or labels.dtype == np.bool:
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
             result = d4p.daal_roc_auc_score(y_true.reshape(-1, 1),
                                             y_score.reshape(-1, 1))
