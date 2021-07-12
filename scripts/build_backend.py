@@ -34,18 +34,10 @@ elif sys.platform == 'darwin':
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
 
-try:
-    import dpctl
-    _dpctrl_include_dir = str(os.path.abspath(dpctl.get_include()))
-    _dpctrl_library_dir = str(os.path.abspath(jp(dpctl.get_include(), "..")))
-    _dpctrl_exists = "ON"
-except ImportError:
-    _dpctrl_include_dir = ""
-    _dpctrl_library_dir = ""
-    _dpctrl_exists = "OFF"
 
+def custom_build_cmake_clib(iface):
+    import pybind11
 
-def custom_build_cmake_clib():
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")
 
@@ -68,12 +60,11 @@ def custom_build_cmake_clib():
         "-B" + abs_build_temp_path,
         "-DCMAKE_INSTALL_PREFIX=" + install_directory,
         "-DCMAKE_PREFIX_PATH=" + install_directory,
-        "-DDPCTL_ENABLE:BOOL=" + _dpctrl_exists,
-        "-DDPCTL_INCLUDE_DIR=" + _dpctrl_include_dir,
-        "-DDPCTL_LIB_DIR=" + _dpctrl_library_dir,
+        "-DIFACE=" + iface,
         "-DPYTHON_INCLUDE_DIR=" + python_include,
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
-        "-DPYTHON_LIBRARY_DIR=" + python_library_dir
+        "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
+        "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
 
     import multiprocessing

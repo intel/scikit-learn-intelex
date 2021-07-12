@@ -31,6 +31,7 @@ import numpy as np
 import scripts.build_backend as build_backend
 from scripts.version import get_onedal_version
 import pybind11
+import scripts.build_backend as build_backend
 
 try:
     from ctypes.utils import find_library
@@ -439,22 +440,22 @@ def distutils_dir_name(dname):
 class develop(orig_develop.develop):
     def run(self):
         if is_onedal_iface:
-            build_onedal('host')
+            build_backend.custom_build_cmake_clib('host')
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
-                build_onedal('dpc')
+                build_backend.custom_build_cmake_clib('dpc')
         return super().run()
 
 
 class build(orig_build.build):
     def run(self):
         if is_onedal_iface:
-            build_onedal('host')
+            build_backend.custom_build_cmake_clib('host')
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
-                build_onedal('dpc')
+                build_backend.custom_build_cmake_clib('dpc')
         return super().run()
 
 

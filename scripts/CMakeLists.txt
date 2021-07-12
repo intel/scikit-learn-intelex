@@ -14,43 +14,76 @@
 # limitations under the License.
 #===============================================================================
 
-cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 set(CMAKE_BUILD_TYPE Release)
-set(TARGET "dpc_backend")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(NOT DEFINED ENV{DPCPPROOT})
-    message(FATAL_ERROR "Not set DPCPPROOT env")
+# TODO: Get from findOneDAL
+if(WIN32)
+    set(ONEDAL_LIBRARIES "onedal_core_dll")
 else()
-    set(DPCPPROOT $ENV{DPCPPROOT})
+    set(ONEDAL_LIBRARIES "onedal_core")
+    list(APPEND ONEDAL_LIBRARIES "onedal_thread")
+endif()
+
+if(IFACE STREQUAL "host")
+    set(TARGET "_onedal_py_host")
+
+    if(WIN32)
+        list(APPEND ONEDAL_LIBRARIES "onedal_dll")
+    else()
+        list(APPEND ONEDAL_LIBRARIES "onedal")
+    endif()
+
+elseif(IFACE STREQUAL "dpc")
+    if(NOT DEFINED ENV{DPCPPROOT})
+        message(FATAL_ERROR "DPCPPROOT is not set")
+    endif()
+
+    set(CMAKE_CXX_COMPILER "dpcpp")
+    set(CMAKE_C_COMPILER "dpcpp")
+    message(STATUS "Resetting CXX compiler to: " ${CMAKE_CXX_COMPILER})
+    message(STATUS "Resetting C compiler to: " ${CMAKE_C_COMPILER})
+
+    set(TARGET "_onedal_py_dpc")
+
+    if(WIN32)
+        list(APPEND ONEDAL_LIBRARIES "onedal_dpc_dll")
+    else()
+        list(APPEND ONEDAL_LIBRARIES "onedal_dpc")
+    endif()
+else()
+    message(FATAL_ERROR "Invalid IFACE value: " ${IFACE})
 endif()
 
 if(WIN32)
-    set(CMAKE_CXX_COMPILER "dpcpp")
-    set(CMAKE_C_COMPILER "clang-cl")
-    message(STATUS "Resetting CXX compiler to: " ${CMAKE_CXX_COMPILER})
-    message(STATUS "Resetting C compiler to: " ${CMAKE_C_COMPILER})
     set(WARNING_FLAGS "-Winit-self -Wmissing-declarations -Wno-null-conversion -Wno-unknown-pragmas -Wno-unused-const-variable")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} -Qstd=c++17 /EHsc /MD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} /EHsc /MD")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG -Qstd=c++17")
-elseif(UNIX)
-    set(CMAKE_CXX_COMPILER "dpcpp")
-    set(CMAKE_C_COMPILER "clang")
-    message(STATUS "Resetting CXX compiler to: " ${CMAKE_CXX_COMPILER})
-    message(STATUS "Resetting C compiler to: " ${CMAKE_C_COMPILER})
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG")
+elseif(UNIX OR APPLE)
     set(SDL_FLAGS "-fstack-protector -fstack-protector-all -fPIC -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -fno-strict-overflow -fno-delete-null-pointer-checks")
     set(WARNING_FLAGS "-Winit-self -Wmissing-declarations -Wno-null-conversion")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS} ${SDL_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} ${SDL_FLAGS} -std=c++17 -fsycl")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} ${SDL_FLAGS}")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG -std=c++17 -fsycl")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG")
+
+    # if(APPLE)
+    #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -undefined dynamic_lookup")
+    #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -undefined dynamic_lookup")
+    #     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -undefined dynamic_lookup")
+    #     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -undefined dynamic_lookup")
+    # endif()
 else()
     message(FATAL_ERROR "Unsupported system.")
 endif()
 
-project("dpcpp part python onedal"
+project("oneDAL python interface"
     HOMEPAGE_URL https://github.com/oneapi-src/oneDAL
 )
 
@@ -58,73 +91,44 @@ set(PYTHON_ONEDAL "${CMAKE_CURRENT_SOURCE_DIR}/../onedal/")
 
 file(GLOB_RECURSE sources
     ${PYTHON_ONEDAL}/**/*.cpp
+    ${PYTHON_ONEDAL}/*.cpp
 )
 
 message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}")
-
-set(USE_DPCPP "yes")
-set(USE_NEW_IFACES "yes")
-set(LINK_TYPE "so")
-set(THREADING_TYPE "parallel")
 
 # find_package(oneDAL REQUIRED)
 message(STATUS "oneDAL_INCLUDE_DIRS:" ${oneDAL_INCLUDE_DIRS})
 message(STATUS "PYTHON_INCLUDE_DIR:" ${PYTHON_INCLUDE_DIR})
 message(STATUS "PYTHON_LIBRARY_DIR:" ${PYTHON_LIBRARY_DIR})
 message(STATUS "NUMPY_INCLUDE_DIRS:" ${NUMPY_INCLUDE_DIRS})
-message(STATUS "DPCTL_INCLUDE_DIR:" ${DPCTL_INCLUDE_DIR})
-message(STATUS "DPCTL_LIB_DIR:" ${DPCTL_LIB_DIR})
 
-add_library(${TARGET}
-    SHARED
-    ${sources}
-)
+find_package(pybind11 REQUIRED)
+
+pybind11_add_module(${TARGET} ${sources})
 
 target_include_directories(${TARGET}
-    PRIVATE ${PYTHON_ONEDAL}
+    PRIVATE ${PYTHON_ONEDAL}../
     PRIVATE ${oneDAL_INCLUDE_DIRS}
     PRIVATE ${PYTHON_INCLUDE_DIR}
     PRIVATE ${NUMPY_INCLUDE_DIRS}
 )
 
-target_compile_definitions(${TARGET}
-    PUBLIC "ONEDAL_DATA_PARALLEL"
-    PUBLIC "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
-)
-
-target_link_libraries(${TARGET}
-    PRIVATE ${DPCPP_OPENCL_LIBRARY}
-)
+if(IFACE STREQUAL "host")
+    target_compile_definitions(${TARGET}
+        PUBLIC "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
+    )
+elseif(IFACE STREQUAL "dpc")
+    target_compile_definitions(${TARGET}
+        PUBLIC "ONEDAL_DATA_PARALLEL"
+        PUBLIC "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
+    )
+endif()
 
 target_link_directories(${TARGET}
     PRIVATE ${PYTHON_LIBRARY_DIR}
 )
 
-# TODO: Get from findOneDAL
-if(WIN32)
-    set(ONEDAL_LIBRARIES "onedal_core_dll")
-    list(APPEND ONEDAL_LIBRARIES "onedal_dpc_dll")
-    target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
-
-else()
-    set(ONEDAL_LIBRARIES "onedal_core")
-    list(APPEND ONEDAL_LIBRARIES "onedal_thread")
-    list(APPEND ONEDAL_LIBRARIES "onedal_dpc")
-    target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
-endif()
-
-if(DPCTL_ENABLE)
-    target_include_directories(${TARGET} PUBLIC ${DPCTL_INCLUDE_DIR})
-    target_link_directories(${TARGET} PUBLIC ${DPCTL_LIB_DIR})
-    target_link_libraries(${TARGET} PUBLIC "DPCTLSyclInterface")
-    target_compile_definitions(${TARGET} PUBLIC "DPCTL_ENABLE")
-
-    # not sure but add runpath
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${DPCTL_LIB_DIR}")
-
-    # disable stripping rpath in installation logic
-    set_target_properties(${TARGET} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
-endif()
+target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
 
 install(
   TARGETS ${TARGET}
