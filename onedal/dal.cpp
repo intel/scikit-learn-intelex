@@ -14,11 +14,26 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "onedal/modules.hpp"
+#include "onedal/common.hpp"
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
+
+/* common */
+ONEDAL_PY_INIT_MODULE(policy);
+
+/* datatypes*/
+ONEDAL_PY_INIT_MODULE(table);
+
+/* primitives */
+ONEDAL_PY_INIT_MODULE(linear_kernel);
+ONEDAL_PY_INIT_MODULE(rbf_kernel);
+ONEDAL_PY_INIT_MODULE(polynomial_kernel);
+ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
+
+/* algorithms */
+ONEDAL_PY_INIT_MODULE(svm);
 
 #ifdef ONEDAL_DATA_PARALLEL
 PYBIND11_MODULE(_onedal_py_dpc, m) {
