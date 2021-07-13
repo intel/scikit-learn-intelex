@@ -61,13 +61,12 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
-      pwd
-    displayName: 'Build slearnex'
+    displayName: 'Build sklearnex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      ./scikit-learn-intelex/conda-recipe/run_test.sh
+      ./s/conda-recipe/run_test.sh
     displayName: 'Testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -123,7 +122,6 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
-      pwd
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -132,7 +130,7 @@ jobs:
       conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       cd ..
-      pytest --pyargs scikit-learn-intelex/sklearnex/tests/
+      pytest --pyargs s/sklearnex/tests/
     displayName: conda build
 
 - job: MacOS
@@ -152,12 +150,11 @@ jobs:
       source activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
-      pwd
     displayName: Conda build
   - script: |
       source activate CB
       cd ..
-      ./scikit-learn-intelex/conda-recipe/run_test.sh
+      ./s/conda-recipe/run_test.sh
     displayName: Testing
   - script: |
       source activate CB
