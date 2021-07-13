@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 project("oneDAL python interface"
     LANGUAGES CXX
@@ -36,16 +36,15 @@ endif()
 
 if(WIN32)
     set(SDL_FLAGS "-GS -NXCompat -DynamicBase")
-    set(WARNING_FLAGS "-Wmissing-declarations -Wno-null-conversion -Wno-unknown-pragmas -Wno-unused-const-variable")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MD")
-elseif(UNIX OR APPLE)
+elseif(UNIX)
     set(SDL_FLAGS "-fstack-protector-strong -fPIC -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -fno-strict-overflow -fno-delete-null-pointer-checks")
-    if(UNIX)
-        set(SDL_FLAGS "-Wl,-z,noexecstack,-z,relro,-z,now,-fstack-protector-strong,-fno-strict-overflow,-fno-delete-null-pointer-checks,-fwrapv ${SDL_FLAGS}")
+    if(APPLE)
+        set(ONEDAL_PY_LINK_OPTIONS "-fwrapv")
     else()
-        set(SDL_FLAGS "-fwrapv ${SDL_FLAGS}")
+        set(ONEDAL_PY_LINK_OPTIONS "-Wl,-z,noexecstack,-z,relro,-z,now,-fstack-protector-strong,-fno-strict-overflow,-fno-delete-null-pointer-checks,-fwrapv")
     endif()
-    set(WARNING_FLAGS "-Winit-self -Wmissing-declarations -Wno-null-conversion")
+    set(WARNING_FLAGS "-Winit-self")
 else()
     message(FATAL_ERROR "Unsupported system.")
 endif()
@@ -121,6 +120,7 @@ target_include_directories(${TARGET}
 target_compile_definitions(${TARGET} PUBLIC ${COMPILE_DEFINITIONS})
 target_link_directories(${TARGET} PRIVATE ${PYTHON_LIBRARY_DIR})
 target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
+target_link_options(${TARGET} PRIVATE ${ONEDAL_PY_LINK_OPTIONS})
 
 install(
   TARGETS ${TARGET}
