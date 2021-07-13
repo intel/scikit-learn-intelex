@@ -117,7 +117,8 @@ def _fit_ridge(self, X, y, sample_weight=None):
     if not self.solver == 'auto' or sp.issparse(X) or \
             not self.fit_shape_good_for_daal_ or \
             not (X.dtype == np.float64 or X.dtype == np.float32) or \
-            sample_weight is not None:
+            sample_weight is not None or \
+            (hasattr(self, 'positive') and self.positive):
         if hasattr(self, 'daal_model_'):
             del self.daal_model_
         logging.info("sklearn.linear_model.Ridge.fit: " + get_patch_message("sklearn"))
@@ -177,6 +178,7 @@ class Ridge(Ridge_original, _BaseRidge):
             max_iter=None,
             tol=1e-3,
             solver="auto",
+            positive=False,
             random_state=None,
         ):
             self.alpha = alpha
@@ -186,6 +188,7 @@ class Ridge(Ridge_original, _BaseRidge):
             self.max_iter = max_iter
             self.tol = tol
             self.solver = solver
+            self.positive = positive
             self.random_state = random_state
     else:
         def __init__(
