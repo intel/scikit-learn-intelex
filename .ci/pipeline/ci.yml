@@ -74,6 +74,7 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+      pwd
     displayName: 'Build slearnex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -134,6 +135,7 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
+      pwd
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -162,6 +164,7 @@ jobs:
       source activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
+      pwd
     displayName: Conda build
   - script: |
       source activate CB
