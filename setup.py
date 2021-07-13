@@ -212,7 +212,7 @@ def get_build_options():
         ela.append('-s')
     if IS_LIN:
         ela.append("-fPIC")
-        ela.append("-Wl,-rpath,$ORIGIN/../..")
+        ela.append("-Wl,-rpath,$ORIGIN/../../../")
     return eca, ela, include_dir_plat
 
 
