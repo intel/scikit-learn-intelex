@@ -110,17 +110,25 @@ def custom_build_cmake_clib(iface):
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var('LIBDIR')
     numpy_include = np.get_include()
 
+    if iface == 'dpc':
+        cxx = 'dpcpp'
+    else:
+        cxx = 'cl' if IS_WIN else 'g++'
+
     cmake_args = [
         "cmake",
         cmake_generator,
         "-S" + builder_directory,
         "-B" + abs_build_temp_path,
+        "-DCMAKE_CXX_COMPILER=" + cxx,
         "-DCMAKE_INSTALL_PREFIX=" + install_directory,
         "-DCMAKE_PREFIX_PATH=" + install_directory,
         "-DIFACE=" + iface,
         "-DPYTHON_INCLUDE_DIR=" + python_include,
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
         "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
+        "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ['DALROOT'], 'include'),
+        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ['DALROOT'], 'lib', 'intel64'),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
 

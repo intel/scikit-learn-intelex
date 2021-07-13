@@ -35,7 +35,7 @@ else()
 endif()
 
 if(WIN32)
-    set(SDL_FLAGS "-GS -NXCompat -DynamicBase")
+    set(SDL_FLAGS "-GS -DynamicBase")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MD")
 elseif(UNIX)
     set(SDL_FLAGS "-fstack-protector-strong -fPIC -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -fno-strict-overflow -fno-delete-null-pointer-checks")
@@ -51,8 +51,6 @@ endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS} ${SDL_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} ${SDL_FLAGS}")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${WARNING_FLAGS} -ggdb3 -DDEBUG")
 
 set(PYTHON_ONEDAL "${CMAKE_CURRENT_SOURCE_DIR}/../onedal/")
 
@@ -65,6 +63,7 @@ message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # find_package(oneDAL REQUIRED)
 message(STATUS "oneDAL_INCLUDE_DIRS:" ${oneDAL_INCLUDE_DIRS})
+message(STATUS "oneDAL_LIBRARY_DIR:" ${oneDAL_LIBRARY_DIR})
 message(STATUS "PYTHON_INCLUDE_DIR:" ${PYTHON_INCLUDE_DIR})
 message(STATUS "PYTHON_LIBRARY_DIR:" ${PYTHON_LIBRARY_DIR})
 message(STATUS "NUMPY_INCLUDE_DIRS:" ${NUMPY_INCLUDE_DIRS})
@@ -75,24 +74,14 @@ if(IFACE STREQUAL "host")
     set(TARGET "_onedal_py_host")
 
     if(WIN32)
-        set(CMAKE_CXX_COMPILER "cl")
         list(APPEND ONEDAL_LIBRARIES "onedal_dll")
     else()
-        set(CMAKE_CXX_COMPILER "g++")
         list(APPEND ONEDAL_LIBRARIES "onedal")
     endif()
 
     list(APPEND COMPILE_DEFINITIONS "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
 
 elseif(IFACE STREQUAL "dpc")
-
-    if(NOT DEFINED ENV{DPCPPROOT})
-        message(FATAL_ERROR "DPCPPROOT is not set")
-    endif()
-
-    set(CMAKE_CXX_COMPILER "dpcpp")
-    message(STATUS "Resetting CXX compiler to: " ${CMAKE_CXX_COMPILER})
-
     set(TARGET "_onedal_py_dpc")
 
     if(WIN32)
@@ -118,7 +107,7 @@ target_include_directories(${TARGET}
 )
 
 target_compile_definitions(${TARGET} PUBLIC ${COMPILE_DEFINITIONS})
-target_link_directories(${TARGET} PRIVATE ${PYTHON_LIBRARY_DIR})
+target_link_directories(${TARGET} PRIVATE ${PYTHON_LIBRARY_DIR} ${oneDAL_LIBRARY_DIR})
 target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
 target_link_options(${TARGET} PRIVATE ${ONEDAL_PY_LINK_OPTIONS})
 
