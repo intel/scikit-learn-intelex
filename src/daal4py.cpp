@@ -829,6 +829,27 @@ extern "C"
     {
         daal::services::Environment::getInstance()->enableThreadPinning(enabled);
     }
+
+    void c_set_instructions_set(const std::string instructions_set)
+    {
+        if (instructions_set == "avx512")
+        {
+            daal::services::Environment::getInstance()->setCpuId(daal::avx512);
+        }
+        else if (instructions_set == "avx2")
+        {
+            daal::services::Environment::getInstance()->setCpuId(daal::avx2);
+        }
+        else if (instructions_set == "sse2")
+        {
+            daal::services::Environment::getInstance()->setCpuId(daal::sse2);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "Unknown Instructions Set");
+        }
+    }
+
 } // extern "C"
 
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)

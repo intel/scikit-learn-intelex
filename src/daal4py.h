@@ -64,6 +64,7 @@ size_t c_num_threads();
 size_t c_num_procs();
 size_t c_my_procid();
 void c_enable_thread_pinning(bool enabled=true);
+void c_set_instructions_set(const std::string instructions_set);
 }
 
 using daal::data_management::NumericTablePtr;
