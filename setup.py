@@ -27,7 +27,6 @@ from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 import glob
 import numpy as np
-import scripts.build_backend as build_backend
 from scripts.version import get_onedal_version
 import scripts.build_backend as build_backend
 from scripts.package_helpers import get_packages_with_tests
@@ -234,10 +233,8 @@ def getpyexts():
 
     if dpcpp:
         if IS_LIN or IS_MAC:
-            runtime_library_dirs = ["$ORIGIN/onedal"]
             runtime_oneapi_dirs = ["$ORIGIN/daal4py/oneapi"]
         elif IS_WIN:
-            runtime_library_dirs = []
             runtime_oneapi_dirs = []
 
         ext = Extension('_oneapi',
@@ -316,13 +313,13 @@ def build_oneapi_backend():
         targetprefix='' if IS_WIN else 'lib',
         targetsuffix='.dll' if IS_WIN else '.so',
         libs=get_libs('daal') + ['OpenCL', 'onedal_sycl'],
-        libdirs = ONEDAL_LIBDIRS,
+        libdirs=ONEDAL_LIBDIRS,
         includes=includes,
         eca=eca,
         ela=ela,
         defines=[],
         installpath='daal4py/oneapi/'
-        )
+    )
 
 
 def get_onedal_py_libs():

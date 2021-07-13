@@ -24,6 +24,7 @@ except ImportError:
 
 from ..common._policy import _HostPolicy
 
+
 def _check_inputs(X, Y):
     def check_input(input):
         return _check_array(input, dtype=[np.float64, np.float32], force_all_finite=False)
@@ -58,9 +59,9 @@ def linear_kernel(X, Y=None, scale=1.0, shift=0.0):
     kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
     """
     X, Y, fptype = _check_inputs(X, Y)
-    return _compute_kernel({'fptype': fptype,
-        'method': 'dense', 'scale': scale, 'shift': shift},
-        backend.linear_kernel, X, Y)
+    return _compute_kernel({'fptype': fptype, 'method': 'dense',
+                            'scale': scale, 'shift': shift},
+                           backend.linear_kernel, X, Y)
 
 
 def rbf_kernel(X, Y=None, gamma=None):
@@ -86,8 +87,8 @@ def rbf_kernel(X, Y=None, gamma=None):
     gamma = 1.0 / X.shape[1] if gamma is None else gamma
     sigma = np.sqrt(0.5 / gamma)
 
-    return _compute_kernel({'fptype': fptype,
-        'method': 'dense', 'sigma': sigma}, backend.rbf_kernel, X, Y)
+    return _compute_kernel({'fptype': fptype, 'method': 'dense', 'sigma': sigma},
+                           backend.rbf_kernel, X, Y)
 
 
 def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
@@ -110,9 +111,9 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
     """
 
     X, Y, fptype = _check_inputs(X, Y)
-    return _compute_kernel({'fptype': fptype,
-        'method': 'dense', 'scale': gamma, 'shift': coef0, 'degree': degree},
-        backend.polynomial_kernel, X, Y)
+    return _compute_kernel({'fptype': fptype, 'method': 'dense',
+                            'scale': gamma, 'shift': coef0, 'degree': degree},
+                           backend.polynomial_kernel, X, Y)
 
 
 def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0):
@@ -134,6 +135,6 @@ def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0):
     """
 
     X, Y, fptype = _check_inputs(X, Y)
-    return _compute_kernel({'fptype': fptype,
-        'method': 'dense', 'scale': gamma, 'shift': coef0 },
-        backend.sigmoid_kernel, X, Y)
+    return _compute_kernel({'fptype': fptype, 'method': 'dense',
+                            'scale': gamma, 'shift': coef0},
+                           backend.sigmoid_kernel, X, Y)

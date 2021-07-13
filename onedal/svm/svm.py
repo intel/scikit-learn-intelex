@@ -38,6 +38,7 @@ except ImportError:
 
 from ..common._policy import _HostPolicy
 
+
 class SVMtype(Enum):
     c_svc = 0
     epsilon_svr = 1
@@ -172,7 +173,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             'method': self.algorithm,
             'kernel': self.kernel,
             'c': self.C, 'nu': self.nu, 'epsilon': self.epsilon,
-            'class_count': class_count, 'accuracy_threshold':self.tol,
+            'class_count': class_count, 'accuracy_threshold': self.tol,
             'max_iteration_count': int(max_iter), 'scale': self._scale_,
             'sigma': self._sigma_, 'shift': self.coef0, 'degree': self.degree,
             'tau': self.tau, 'shrinking': self.shrinking, 'cache_size': self.cache_size
@@ -208,12 +209,15 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
         policy = _HostPolicy()
         params = self._get_onedal_params(X)
-        Xt, yt, sample_weightt = backend.from_numpy(X), backend.from_numpy(y), backend.from_numpy(sample_weight)
-        result = module.train(policy, params, Xt, yt, sample_weightt)
+        result = module.train(policy, params,
+                              backend.from_numpy(X),
+                              backend.from_numpy(y),
+                              backend.from_numpy(sample_weight))
 
         if self._sparse:
             self.dual_coef_ = sp.csr_matrix(backend.to_numpy(result.coeffs).T)
-            self.support_vectors_ = sp.csr_matrix(backend.to_numpy(result.support_vectors))
+            self.support_vectors_ = sp.csr_matrix(
+                backend.to_numpy(result.support_vectors))
         else:
             self.dual_coef_ = backend.to_numpy(result.coeffs).T
             self.support_vectors_ = backend.to_numpy(result.support_vectors)
@@ -267,13 +271,13 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     % type(self).__name__)
 
             policy = _HostPolicy()
-            params, X = self._get_onedal_params(X), backend.from_numpy(X)
+            params = self._get_onedal_params(X)
 
             if hasattr(self, '_onedal_model'):
                 model = self._onedal_model
             else:
                 model = self._create_model(module)
-            result = module.infer(policy, params, model, X)
+            result = module.infer(policy, params, model, backend.from_numpy(X))
             y = backend.to_numpy(result.responses)
         return y
 
@@ -312,13 +316,13 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 % type(self).__name__)
 
         policy = _HostPolicy()
-        params, X = self._get_onedal_params(X), backend.from_numpy(X)
+        params = self._get_onedal_params(X)
 
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:
             model = self._create_model(module)
-        result = module.infer(policy, params, model, X)
+        result = module.infer(policy, params, model, backend.from_numpy(X))
         decision_function = backend.to_numpy(result.decision_function)
 
         if len(self.classes_) == 2:

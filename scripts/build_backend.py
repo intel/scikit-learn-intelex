@@ -34,7 +34,9 @@ elif sys.platform == 'darwin':
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
 
-def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, libdirs, includes, eca, ela, defines, installpath=''):
+
+def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, libdirs,
+              includes, eca, ela, defines, installpath=''):
     import shutil
     import subprocess
     from sysconfig import get_paths as gp
@@ -50,7 +52,10 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
         obj_ext = '.obj'
         libdirs += [jp(gp()['data'], 'libs')]
         library_dir_plat = ['/link'] + [f'/LIBPATH:{libdir}' for libdir in libdirs]
-        additional_linker_opts = ['/DLL', f'/OUT:{targetprefix}{targetname}{targetsuffix}']
+        additional_linker_opts = [
+            '/DLL',
+            f'/OUT:{targetprefix}{targetname}{targetsuffix}'
+        ]
     else:
         eca += ['-fPIC']
         ela += ['-shared']
@@ -80,15 +85,16 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
         print(subprocess.list2cmdline(cmd))
         subprocess.check_call(cmd)
 
-    cmd = [cxx] + objfiles + library_dir_plat + \
-          ela + libs + additional_linker_opts
+    cmd = [cxx] + objfiles + library_dir_plat + ela + libs + additional_linker_opts
     print(subprocess.list2cmdline(cmd))
     subprocess.check_call(cmd)
 
-    shutil.copy(f'{targetprefix}{targetname}{targetsuffix}', os.path.join(d4p_dir, installpath))
+    shutil.copy(f'{targetprefix}{targetname}{targetsuffix}',
+                os.path.join(d4p_dir, installpath))
     if IS_WIN:
         target_lib_suffix = targetsuffix.replace('.dll', '.lib')
-        shutil.copy(f'{targetprefix}{targetname}{target_lib_suffix}', os.path.join(d4p_dir, installpath))
+        shutil.copy(f'{targetprefix}{targetname}{target_lib_suffix}',
+                    os.path.join(d4p_dir, installpath))
     os.chdir(d4p_dir)
 
 
