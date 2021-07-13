@@ -79,8 +79,8 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      ./sckit-learn-intelex/conda-recipe/run_test.sh
-    displayName: Testing
+      ./scikit-learn-intelex/conda-recipe/run_test.sh
+    displayName: 'Testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -142,7 +142,7 @@ jobs:
       conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       cd ..
-      pytest s/sklearnex/tests/
+      pytest --pyargs scikit-learn-intelex/sklearnex/tests/
     displayName: conda build
 
 - job: MacOS
@@ -166,7 +166,7 @@ jobs:
   - script: |
       source activate CB
       cd ..
-      ./sckit-learn-intelex/conda-recipe/run_test.sh
+      ./scikit-learn-intelex/conda-recipe/run_test.sh
     displayName: Testing
   - script: |
       source activate CB
