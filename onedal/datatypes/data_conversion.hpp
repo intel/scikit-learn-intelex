@@ -16,7 +16,10 @@
 
 #pragma once
 
+#define PY_ARRAY_UNIQUE_SYMBOL ONEDAL_PY_ARRAY_API
+
 #include <Python.h>
+#include <numpy/arrayobject.h>
 
 #include "oneapi/dal/table/common.hpp"
 

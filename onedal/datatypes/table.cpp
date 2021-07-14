@@ -24,7 +24,14 @@ namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
+static void* init_numpy() {
+    import_array();
+    return nullptr;
+}
+
 ONEDAL_PY_INIT_MODULE(table) {
+    init_numpy();
+
     py::class_<table>(m, "table")
         .def(py::init())
         .def_property_readonly("has_data", &table::has_data)

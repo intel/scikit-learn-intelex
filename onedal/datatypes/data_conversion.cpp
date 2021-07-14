@@ -14,9 +14,10 @@
 * limitations under the License.
 *******************************************************************************/
 
+#define NO_IMPORT_ARRAY
+
 #include <stdexcept>
 #include <string>
-#include <numpy/arrayobject.h>
 
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/csr.hpp"
@@ -104,13 +105,6 @@ namespace oneapi::dal::python {
 #define array_numdims(a)   PyArray_NDIM((PyArrayObject *)a)
 #define array_data(a)      PyArray_DATA((PyArrayObject *)a)
 #define array_size(a, i)   PyArray_DIM((PyArrayObject *)a, i)
-
-void* init_numpy() {
-    import_array();
-    return nullptr;
-}
-
-const static void* numpy_initializer = init_numpy();
 
 template <typename T>
 static dal::array<T> transfer_to_host(const dal::array<T>& array) {
