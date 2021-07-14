@@ -28,8 +28,8 @@ jupyter notebook --notebook-dir=./ --ip=* --no-browser
 | RandomForestRegressor  |     Yolanda     | [View source on GitHub](https://github.com/intel/scikit-learn-intelex/blob/master/examples/notebooks/random_forest_yolanda.ipynb) | [sklearn.ensemble.RandomForestRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html) |
 
 <details><summary>[Click to expand] ℹ️ Time measurements in Python Notebooks </summary>
-
-Training and inference times are measured using the [**%%time**](https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-time) function. This shows 2 times:  
+  
+Training and inference times are measured using the [**%%time**](https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-time) function. This shows 2 times:
 - CPU times: **sys** - the operating system CPU time due to system calls from the process;  
 - CPU times: **user** - the process CPU time (contains all cores);  
 - **Wall time** - time of cell computing  
