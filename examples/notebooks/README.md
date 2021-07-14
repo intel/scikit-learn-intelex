@@ -2,7 +2,7 @@
 
 This folder contains examples of python notebooks that use Intel(R) extension for Scikit-learn for popular datasets.  
 
-#### :rocket: Launch guide
+#### :rocket: Jupyter startup guide
 You need Jupyter* notebook to run the following .ipynb files:
 
 ```bash
