@@ -152,8 +152,8 @@ inline dal::homogen_table convert_to_homogen_impl(PyArrayObject *np_data) {
                                         column_count,
                                         [np_data](const T* data) { Py_DECREF(np_data); },
                                         layout);
-    // we need it increment the ref-count if we use the input array in-place
-    // if we copied/converted it we already own our own reference
+
+    // we need to increment the ref-count as we use the input array in-place
     Py_INCREF(np_data);
     return res_table;
 }
@@ -193,11 +193,14 @@ inline dal::detail::csr_table convert_to_csr_impl(PyObject *py_data,
     const std::int64_t data_count = static_cast<std::int64_t>(array_size(np_data, 0));
 
     auto res_table = dal::detail::csr_table(
-        dal::array<T>(data_pointer, data_count, dal::detail::empty_delete<const T>()),
+        dal::array<T>(data_pointer, data_count, [np_data](const T* data) { Py_DECREF(np_data); }),
         column_indices_one_based,
         row_indices_one_based,
         row_count,
         column_count);
+
+    // we need to increment the ref-count as we use the input array in-place
+    Py_INCREF(np_data);
     return res_table;
 }
 
