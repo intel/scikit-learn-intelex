@@ -1,7 +1,9 @@
 # :snake: Intel(R) Extension for Scikit-learn* notebooks
 
-This folder contains examples of Jupyter* notebooks that use Intel(R) extension for Scikit-learn for popular datasets.  
-You need Jupyter* notebook to run the following .ipynb files:
+This folder contains examples of python notebooks that use Intel(R) extension for Scikit-learn for popular datasets.  
+
+#### :rocket: Jupyter startup guide
+You can use python notebooks with the help of Jupyter* notebook to run the following files:
 
 ```bash
 conda install -c conda-forge notebook scikit-learn-intelex
@@ -9,6 +11,10 @@ conda install -c conda-forge notebook scikit-learn-intelex
 or  
 ```bash
 pip install notebook scikit-learn-intelex
+```  
+Run Jupyter after installation:
+```bash
+jupyter notebook --notebook-dir=./ --ip=* --no-browser
 ```  
 
 #### :pencil: Table of contents
