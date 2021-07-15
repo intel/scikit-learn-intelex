@@ -156,6 +156,9 @@ deselected_tests:
   # RandomForestRegressor sum(y_pred)!=sum(y_true)
   - ensemble/tests/test_forest.py::test_balance_property_random_forest[squared_error] >=1.0
 
+  # This tests fail on mac mini 8.1 with stock scikit-learn
+  - semi_supervised/tests/test_label_propagation.py
+
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
 reduced_tests:
