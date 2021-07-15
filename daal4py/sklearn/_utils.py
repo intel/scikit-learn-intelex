@@ -76,7 +76,7 @@ def getFPType(X):
         from pandas import DataFrame
         from pandas.core.dtypes.cast import find_common_type
         if isinstance(X, DataFrame):
-            dt = find_common_type(X.dtypes)
+            dt = find_common_type(X.dtypes.tolist())
             return parse_dtype(dt)
     except ImportError:
         pass
