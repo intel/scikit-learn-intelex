@@ -3,7 +3,7 @@
 This folder contains examples of python notebooks that use Intel(R) extension for Scikit-learn for popular datasets.  
 
 #### :rocket: Jupyter startup guide
-You can run python notebooks with help Jupyter* notebook the following:
+You can use python* notebooks with the help of Jupyter* notebook to run the following files:
 
 ```bash
 conda install -c conda-forge notebook scikit-learn-intelex
@@ -26,11 +26,3 @@ jupyter notebook --notebook-dir=./ --ip=* --no-browser
 | KNeighborsClassifier   |       MNIST     | [View source on GitHub](https://github.com/intel/scikit-learn-intelex/blob/master/examples/notebooks/knn_mnist.ipynb) |    [sklearn.neighbors.KNeighborsClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html) |
 |        NuSVR           | Medical charges | [View source on GitHub](https://github.com/intel/scikit-learn-intelex/blob/master/examples/notebooks/nusvr_medical_charges.ipynb) | [sklearn.svm.NuSVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVR.html) |
 | RandomForestRegressor  |     Yolanda     | [View source on GitHub](https://github.com/intel/scikit-learn-intelex/blob/master/examples/notebooks/random_forest_yolanda.ipynb) | [sklearn.ensemble.RandomForestRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html) |
-
-<details><summary>[Click to expand] ℹ️ Time measurements in python notebooks </summary>
-  
-Training and inference times are measured using the [**%%time**](https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-time) function. This shows 2 times:
-- CPU times: **sys** - the operating system CPU time due to system calls from the process;  
-- CPU times: **user** - the process CPU time (contains all cores);  
-- **Wall time** - time of cell computing  
-</details>
