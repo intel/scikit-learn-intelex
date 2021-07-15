@@ -46,12 +46,14 @@ def linear_kernel(X, Y=None, scale=1.0, shift=0.0):
     Compute the linear kernel between X and Y:
         K(x, y) = scale*dot(x, y^T) + shift
     for each pair of rows x in X and y in Y.
+
     Parameters
     ----------
     X : ndarray of shape (n_samples_X, n_features)
     Y : ndarray of shape (n_samples_Y, n_features)
     scale : float, default=1.0
     shift : float, default=0.0
+
     Returns
     -------
     kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
@@ -67,12 +69,14 @@ def rbf_kernel(X, Y=None, gamma=None):
     Compute the rbf (gaussian) kernel between X and Y:
         K(x, y) = exp(-gamma ||x-y||^2)
     for each pair of rows x in X and y in Y.
+
     Parameters
     ----------
     X : ndarray of shape (n_samples_X, n_features)
     Y : ndarray of shape (n_samples_Y, n_features)
     gamma : float, default=None
         If None, defaults to 1.0 / n_features.
+
     Returns
     -------
     kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
@@ -92,6 +96,7 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
     Compute the poly kernel between X and Y:
         K(x, y) = (scale*dot(x, y^T) + shift)**degree
     for each pair of rows x in X and y in Y.
+
     Parameters
     ----------
     X : ndarray of shape (n_samples_X, n_features)
@@ -99,6 +104,7 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
     scale : float, default=1.0
     shift : float, default=0.0
     degree : float, default=3
+
     Returns
     -------
     kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
@@ -115,12 +121,14 @@ def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0):
     Compute the sigmoid kernel between X and Y:
         K(x, y) = tanh(scale*dot(x, y^T) + shift)
     for each pair of rows x in X and y in Y.
+
     Parameters
     ----------
     X : ndarray of shape (n_samples_X, n_features)
     Y : ndarray of shape (n_samples_Y, n_features)
     scale : float, default=1.0
     shift : float, default=0.0
+
     Returns
     -------
     kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
