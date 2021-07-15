@@ -24,87 +24,9 @@
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
 #include "onedal/datatypes/data_conversion.hpp"
+#include "onedal/datatypes/numpy_helpers.hpp"
 
 namespace oneapi::dal::python {
-
-#define SET_CTYPE_NPY_FROM_DAL_TYPE(_T, _FUNCT, _EXCEPTION) \
-    switch (_T) {                                           \
-        case dal::data_type::float32: {                     \
-            _FUNCT(NPY_FLOAT32);                            \
-            break;                                          \
-        }                                                   \
-        case dal::data_type::float64: {                     \
-            _FUNCT(NPY_FLOAT64);                            \
-            break;                                          \
-        }                                                   \
-        case dal::data_type::int32: {                       \
-            _FUNCT(NPY_INT32);                              \
-            break;                                          \
-        }                                                   \
-        default: _EXCEPTION;                                \
-    };
-
-#define SET_CTYPES_NPY_FROM_DAL_TYPE(_T, _FUNCT, _EXCEPTION) \
-    switch (_T) {                                            \
-        case dal::data_type::float32: {                      \
-            _FUNCT(NPY_FLOAT32, float);                      \
-            break;                                           \
-        }                                                    \
-        case dal::data_type::float64: {                      \
-            _FUNCT(NPY_FLOAT64, double);                     \
-            break;                                           \
-        }                                                    \
-        case dal::data_type::int32: {                        \
-            _FUNCT(NPY_INT32, std::int32_t);                 \
-            break;                                           \
-        }                                                    \
-        default: _EXCEPTION;                                 \
-    };
-
-#define SET_NPY_FEATURE(_T, _FUNCT, _EXCEPTION) \
-    switch (_T) {                               \
-        case NPY_DOUBLE:                        \
-        case NPY_CDOUBLE:                       \
-        case NPY_DOUBLELTR:                     \
-        case NPY_CDOUBLELTR: {                  \
-            _FUNCT(double);                     \
-            break;                              \
-        }                                       \
-        case NPY_FLOAT:                         \
-        case NPY_CFLOAT:                        \
-        case NPY_FLOATLTR:                      \
-        case NPY_CFLOATLTR: {                   \
-            _FUNCT(float);                      \
-            break;                              \
-        }                                       \
-        case NPY_INT32: {                       \
-            _FUNCT(std::int32_t);               \
-            break;                              \
-        }                                       \
-        case NPY_UINT32: {                      \
-            _FUNCT(std::uint32_t);              \
-            break;                              \
-        }                                       \
-        case NPY_INT64: {                       \
-            _FUNCT(std::int64_t);               \
-            break;                              \
-        }                                       \
-        case NPY_UINT64: {                      \
-            _FUNCT(std::uint64_t);              \
-            break;                              \
-        }                                       \
-        default: _EXCEPTION;                    \
-    };
-
-#define is_array(a)         ((a) && PyArray_Check(a))
-#define array_type(a)       PyArray_TYPE((PyArrayObject *)a)
-#define array_is_behaved(a) (PyArray_ISCARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
-#define array_is_behaved_F(a) \
-    (PyArray_ISFARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
-#define array_is_native(a) (PyArray_ISNOTSWAPPED((PyArrayObject *)a))
-#define array_numdims(a)   PyArray_NDIM((PyArrayObject *)a)
-#define array_data(a)      PyArray_DATA((PyArrayObject *)a)
-#define array_size(a, i)   PyArray_DIM((PyArrayObject *)a, i)
 
 template <typename T>
 static dal::array<T> transfer_to_host(const dal::array<T>& array) {
@@ -277,7 +199,7 @@ dal::table convert_to_table(PyObject *obj) {
     return res;
 }
 
-void free_capsule(PyObject *cap) {
+static void free_capsule(PyObject *cap) {
     // TODO: check safe cast
     dal::base *stored_array = static_cast<dal::base *>(PyCapsule_GetPointer(cap, NULL));
     if (stored_array) {

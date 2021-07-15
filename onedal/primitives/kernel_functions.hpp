@@ -28,7 +28,7 @@
 namespace oneapi::dal::python {
 
 template <typename Kernel>
-auto get_kernel_descriptor(const pybind11::dict& params) {
+inline auto get_kernel_descriptor(const pybind11::dict& params) {
     using float_t = typename Kernel::float_t;
     using method_t = typename Kernel::method_t;
     using task_t = typename Kernel::task_t;
@@ -79,7 +79,7 @@ struct kernel_params2desc {
 };
 
 template <typename Policy, typename Input, typename Result, typename Param2Desc, typename DenseMethod>
-void init_kernel_compute_ops(pybind11::module_& m) {
+inline void init_kernel_compute_ops(pybind11::module_& m) {
     m.def("compute",
           [](const Policy& policy, const pybind11::dict& params, const table& x, const table& y) {
               compute_ops ops (policy, Input{x, y}, Param2Desc{});
@@ -88,7 +88,7 @@ void init_kernel_compute_ops(pybind11::module_& m) {
 }
 
 template <typename Result>
-void init_kernel_result(pybind11::module_& m) {
+inline void init_kernel_result(pybind11::module_& m) {
     pybind11::class_<Result>(m, "result")
         .def(pybind11::init())
         .def_property("values", &Result::get_values, &Result::set_values);

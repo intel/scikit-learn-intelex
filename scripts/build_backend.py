@@ -42,7 +42,7 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     from sysconfig import get_paths as gp
     from os.path import basename
 
-    print(f'building cpp target {targetname}...')
+    log.info(f'building cpp target {targetname}...')
 
     include_dir_plat = ['-I' + incdir for incdir in includes]
     if IS_WIN:
@@ -82,11 +82,11 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
         else:
             out = ['-o', objfiles[i]]
         cmd = [cc] + include_dir_plat + eca + [f'{d4p_dir}/{cppfile}'] + out + defines
-        print(subprocess.list2cmdline(cmd))
+        log.info(subprocess.list2cmdline(cmd))
         subprocess.check_call(cmd)
 
     cmd = [cxx] + objfiles + library_dir_plat + ela + libs + additional_linker_opts
-    print(subprocess.list2cmdline(cmd))
+    log.info(subprocess.list2cmdline(cmd))
     subprocess.check_call(cmd)
 
     shutil.copy(f'{targetprefix}{targetname}{targetsuffix}',

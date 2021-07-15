@@ -66,17 +66,17 @@ struct iterator {
 };
 
 template <typename Iter>
-void instantiate_impl(pybind11::module_& m) {
+inline void instantiate_impl(pybind11::module_& m) {
     Iter(m).run();
 }
 
 template <typename Iter, typename T, typename... Args>
-void instantiate_impl(pybind11::module_& m) {
+inline void instantiate_impl(pybind11::module_& m) {
     instantiate_impl<iterator<T, Iter>, Args...>(m);
 }
 
 template <typename Instantiator, typename T, typename... Args>
-void instantiate(pybind11::module_& m) {
+inline void instantiate(pybind11::module_& m) {
     instantiate_impl<iterator<T, Instantiator>, Args...>(m);
 }
 

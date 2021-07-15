@@ -24,7 +24,7 @@
 namespace oneapi::dal::python {
 
 template <typename T>
-pybind11::bytes serialize(const T& original) {
+inline pybind11::bytes serialize(const T& original) {
     detail::binary_output_archive archive;
     detail::serialize(original, archive);
     const auto data = archive.to_array();
@@ -33,7 +33,7 @@ pybind11::bytes serialize(const T& original) {
 }
 
 template <typename T>
-T deserialize(const pybind11::bytes& bytes) {
+inline T deserialize(const pybind11::bytes& bytes) {
     T deserialized;
     const std::string str = bytes;
 
