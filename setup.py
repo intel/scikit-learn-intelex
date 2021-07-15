@@ -204,7 +204,7 @@ def get_build_options():
         eca.append('-stdlib=libc++')
         ela.append('-stdlib=libc++')
         ela.append("-Wl,-rpath,{}".format(daal_lib_dir))
-        ela.append("-Wl,-rpath,@loader_path/../..")
+        ela.append("-Wl,-rpath,@loader_path/../../../")
     elif IS_WIN:
         ela.append('-IGNORE:4197')
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x]
