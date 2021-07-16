@@ -187,13 +187,13 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 
-ONEDAL_PY_INIT_MODULE(knn) {
+ONEDAL_PY_INIT_MODULE(neighbors) {
     using namespace knn;
     using namespace dal::detail;
 
     using task_list =
         types<task::classification, task::search>;
-    auto sub = m.def_submodule("knn");
+    auto sub = m.def_submodule("neighbors");
 
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);

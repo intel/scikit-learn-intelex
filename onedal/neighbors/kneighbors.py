@@ -41,13 +41,29 @@ except ImportError:
 
 def training_algorithm(method, fptype, params):
     if method == 'brute':
-        train_alg = d4p.bf_knn_classification_training
+        train_lag = backend.neighbors
 
     else:
-        train_alg = d4p.kdtree_knn_classification_training
+        train_alg = backend.kdtree_knn_classification_training
 
     params['fptype'] = fptype
     return train_alg(**params)
+
+def parse_auto_method(estimator, method, n_samples, n_features):
+    result_method = method
+
+    if (method in ['auto', 'ball_tree']):
+        condition = estimator.n_neighbors is not None and \
+            estimator.n_neighbors >= estimator.n_samples_fit_ // 2
+        if estimator.metric == 'precomputed' or n_features > 11 or condition:
+            result_method = 'brute'
+        else:
+            if estimator.effective_metric_ in KDTree.valid_metrics:
+                result_method = 'kd_tree'
+            else:
+                result_method = 'brute'
+
+    return result_method
 
 def daal4py_fit(estimator, X, fptype):
     estimator._fit_X = X
@@ -57,15 +73,14 @@ def daal4py_fit(estimator, X, fptype):
     weights = getattr(estimator, 'weights', 'uniform')
 
     params = {
-        'method': 'defaultDense',
-        'k': estimator.n_neighbors,
-        'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
+        'neighbor_count': estimator.n_neighbors,
+        'vote_weights': 'uniform' if weights == 'uniform' else 'distance',
         'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
         'resultsToEvaluate': 'none' if getattr(estimator, '_y', None) is None
         else 'computeClassLabels'
     }
     if hasattr(estimator, 'classes_'):
-        params['nClasses'] = len(estimator.classes_)
+        params['class_count'] = len(estimator.classes_)
 
     if getattr(estimator, '_y', None) is None:
         labels = None

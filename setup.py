@@ -428,6 +428,7 @@ setup(
         'daal4py.sklearn.model_selection',
         'onedal',
         'onedal.svm',
+        'onedal.neighbors',
         'onedal.primitives',
         'onedal.datatypes',
         'onedal.common'
