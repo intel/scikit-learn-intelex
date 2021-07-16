@@ -239,25 +239,6 @@ gpu:
   # Segfaults
   - ensemble/tests/test_weight_boosting.py
   - svm/tests/test_sparse.py
-  # predict_proba
-  - ensemble/tests/test_forest.py::test_probability[RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_parallel_train
-  - ensemble/tests/test_stacking.py::test_stacking_classifier_iris
-  - ensemble/tests/test_stacking.py::test_stacking_classifier_drop_column_binary_classification
-  - ensemble/tests/test_stacking.py::test_stacking_classifier_drop_estimator
-  - ensemble/tests/test_stacking.py::test_stacking_classifier_drop_binary_prob
-  - ensemble/tests/test_voting.py::test_weights_iris
-  - ensemble/tests/test_voting.py::test_predict_on_toy_problem
-  - ensemble/tests/test_voting.py::test_predict_proba_on_toy_problem
-  - ensemble/tests/test_voting.py::test_gridsearch
-  - ensemble/tests/test_voting.py::test_voting_classifier_set_params
-  - ensemble/tests/test_voting.py::test_set_estimator_drop
-  - ensemble/tests/test_voting.py::test_estimator_weights_format
-  - ensemble/tests/test_voting.py::test_transform
-  - inspection/tests/test_permutation_importance.py::test_permutation_importance_equivalence_sequential_parallel
-  - tests/test_calibration.py
-  - tests/test_common.py::test_estimators
-  - tests/test_multioutput.py::test_multi_output_classification
 
   # Fails
   - cluster/tests/test_dbscan.py::test_weighted_dbscan
