@@ -80,7 +80,7 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       ./dev/run_test.sh
-    displayName: Testing
+    displayName: 'Testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -144,18 +144,23 @@ jobs:
       ./dev/build.sh
     displayName: 'Build daal4py'
   - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+    displayName: 'Build sklearnex'
+  - script: |
       . /opt/intel/oneapi/compiler/latest/env/vars.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
       ./s/dev/run_test.sh
-    displayName: Testing
+    displayName: 'Testing'
   - script: |
       . /opt/intel/oneapi/compiler/latest/env/vars.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd examples && python run_examples.py
-    displayName: Examples
+    displayName: 'Examples'
 
 - job: MacOS
   pool:
@@ -180,14 +185,19 @@ jobs:
       ./dev/build.sh
     displayName: 'Build daal4py'
   - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+    displayName: 'Build sklearnex'
+  - script: |
       source activate CB
       cd ..
       ./s/dev/run_test.sh
-    displayName: Testing
+    displayName: 'Testing'
   - script: |
       source activate CB
       cd examples/daal4py && python run_examples.py
-    displayName: Examples
+    displayName: 'Examples'
 
 - job: Windows_DPCPP
   pool:
@@ -211,10 +221,13 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      cd ..
       call ./s/dev/bld.bat
     displayName: 'Build daal4py and sklearnex'
   - script: |
       call activate CB
+      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+    displayName: 'Build sklearnex'
+  - script: |
+      call activate CB
       call dev/run_test.bat
-    displayName: Testing
+    displayName: 'Testing'

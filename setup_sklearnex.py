@@ -19,7 +19,7 @@
 import os
 import time
 from setuptools import setup
-from scripts.package_helpers import get_packages_with_tests
+from dev.package_helpers import get_packages_with_tests
 
 sklearnex_version = (os.environ["SKLEARNEX_VERSION"] if "SKLEARNEX_VERSION" in os.environ
                      else time.strftime("2021.%Y%m%d.%H%M%S"))

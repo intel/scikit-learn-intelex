@@ -238,7 +238,10 @@ def getpyexts():
 
         ext = Extension('daal4py._oneapi',
                         [os.path.abspath('daal4py/src/oneapi/oneapi.pyx'), ],
-                        depends=['daal4py/src/oneapi/oneapi.h', 'daal4py/src/oneapi/oneapi_backend.h'],
+                        depends=[
+                            'daal4py/src/oneapi/oneapi.h',
+                            'daal4py/src/oneapi/oneapi_backend.h'
+                        ],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca,
                         extra_link_args=ela,
