@@ -216,10 +216,8 @@ def getpyexts():
     libraries_plat = get_libs("daal")
 
     exts = []
-
-
     ext = Extension('daal4py._daal4py',
-                    [os.path.abspath('src/daal4py.cpp'),
+                    [os.path.abspath('daal4py/src/daal4py.cpp'),
                      os.path.abspath('build/daal4py_cpp.cpp'),
                      os.path.abspath('build/daal4py_cy.pyx')] + DIST_CPPS,
                     depends=glob.glob(jp(os.path.abspath('daal4py/src'), '*.h')),
@@ -239,8 +237,8 @@ def getpyexts():
             runtime_oneapi_dirs = []
 
         ext = Extension('daal4py._oneapi',
-                        [os.path.abspath('src/oneapi/oneapi.pyx'), ],
-                        depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
+                        [os.path.abspath('daal4py/src/oneapi/oneapi.pyx'), ],
+                        depends=['daal4py/src/oneapi/oneapi.h', 'daal4py/src/oneapi/oneapi_backend.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca,
                         extra_link_args=ela,
@@ -310,7 +308,7 @@ def build_oneapi_backend():
     return build_backend.build_cpp(
         cc='dpcpp',
         cxx='dpcpp',
-        sources=['src/oneapi/oneapi_backend.cpp'],
+        sources=['daal4py/src/oneapi/oneapi_backend.cpp'],
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',
         targetsuffix='.dll' if IS_WIN else '.so',
