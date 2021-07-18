@@ -27,8 +27,24 @@ variables:
     value: python
   - name: 'ARGS'
     value: '1'
+  - name: 'OFF_ONEDAL_IFACE'
+    value: '1'
 
 jobs:
+- job: PEP8
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+      addToPath: true
+  - script: |
+      python -m pip install --upgrade pip setuptools
+      pip install flake8
+      flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
+    displayName: 'PEP 8 check'
+
 - job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
@@ -59,7 +75,7 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
-    displayName: 'Build slearnex'
+    displayName: 'Build sklearnex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -131,7 +147,8 @@ jobs:
       . /opt/intel/oneapi/compiler/latest/env/vars.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      ./dev/run_test.sh
+      cd ..
+      ./s/dev/run_test.sh
     displayName: Testing
   - script: |
       . /opt/intel/oneapi/compiler/latest/env/vars.sh
@@ -164,7 +181,8 @@ jobs:
     displayName: 'Build daal4py'
   - script: |
       source activate CB
-      ./dev/run_test.sh
+      cd ..
+      ./s/dev/run_test.sh
     displayName: Testing
   - script: |
       source activate CB
@@ -193,23 +211,10 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      call dev/bld.bat
+      cd ..
+      call ./s/dev/bld.bat
     displayName: 'Build daal4py and sklearnex'
   - script: |
       call activate CB
       call dev/run_test.bat
     displayName: Testing
-
-- job: PEP8
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      addToPath: true
-  - script: |
-      python -m pip install --upgrade pip setuptools
-      pip install flake8
-      flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
-    displayName: 'PEP 8 check'

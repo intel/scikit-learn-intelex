@@ -18,10 +18,8 @@
 # System imports
 import os
 import sys
-import sysconfig
 import time
 from setuptools import setup, Extension
-import setuptools.command.install as orig_install
 import setuptools.command.develop as orig_develop
 import distutils.command.build as orig_build
 from os.path import join as jp
@@ -29,8 +27,9 @@ from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 import glob
 import numpy as np
-import dev.build_backend as build_backend
 from dev.version import get_onedal_version
+import dev.build_backend as build_backend
+from dev.package_helpers import get_packages_with_tests
 
 try:
     from ctypes.utils import find_library
@@ -59,6 +58,9 @@ else:
 
 onedal_version = get_onedal_version(dal_root)
 onedal_2021_3 = 2021 * 10000 + 3 * 100
+is_onedal_iface = \
+    os.environ.get('OFF_ONEDAL_IFACE') is None and onedal_version >= onedal_2021_3
+
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
                else time.strftime('2021.%Y%m%d.%H%M%S'))
 
@@ -154,18 +156,22 @@ def get_libs(iface='daal'):
         major_version = get_win_major_version()
         libraries_plat = [f'onedal_core_dll{major_version}']
         onedal_lib = [f'onedal_dll{major_version}']
+        onedal_dpc_lib = [f'onedal_dpc_dll{major_version}']
     else:
         libraries_plat = ['onedal_core', 'onedal_thread']
         onedal_lib = ['onedal']
+        onedal_dpc_lib = ['onedal_dpc']
     if iface == 'onedal':
-        libraries_plat += onedal_lib
+        libraries_plat = onedal_lib + libraries_plat
+    elif iface == 'onedal_dpc':
+        libraries_plat = onedal_dpc_lib + libraries_plat
     return libraries_plat
 
 
 def get_build_options():
     include_dir_plat = [
         os.path.abspath('./daal4py/src'),
-        os.path.abspath('./onedal'),
+        os.path.abspath('.'),
         dal_root + '/include'
     ]
     # FIXME it is a wrong place for this dependency
@@ -193,7 +199,7 @@ def get_build_options():
         eca.append('-stdlib=libc++')
         ela.append('-stdlib=libc++')
         ela.append("-Wl,-rpath,{}".format(daal_lib_dir))
-        ela.append("-Wl,-rpath,@loader_path/../..")
+        ela.append("-Wl,-rpath,@loader_path/../../../")
     elif IS_WIN:
         ela.append('-IGNORE:4197')
     elif IS_LIN and not any(x in os.environ and '-g' in os.environ[x]
@@ -201,61 +207,19 @@ def get_build_options():
         ela.append('-s')
     if IS_LIN:
         ela.append("-fPIC")
-        ela.append("-Wl,-rpath,$ORIGIN/../..")
+        ela.append("-Wl,-rpath,$ORIGIN/../../../")
     return eca, ela, include_dir_plat
-
-
-def get_sources_onedal():
-    from distutils.dir_util import create_tree
-    from distutils.file_util import copy_file
-
-    cpp_files = glob.glob("onedal/**/**/*.cpp")
-    pyx_files = glob.glob("onedal/**/*.pyx")
-    pxi_files = glob.glob("onedal/**/*.pxi")
-
-    create_tree('build', pyx_files)
-    for f in pyx_files:
-        copy_file(f, jp('build', f))
-
-    main_pyx = 'onedal/onedal.pyx'
-    main_host_pyx = 'build/onedal/onedal_host.pyx'
-    main_dpc_pyx = 'build/onedal/onedal_dpc.pyx'
-    copy_file(main_pyx, main_host_pyx)
-    copy_file(main_pyx, main_dpc_pyx)
-
-    for f in pxi_files:
-        copy_file(f, jp('build', f))
-
-    return cpp_files, main_host_pyx, main_dpc_pyx
 
 
 def getpyexts():
     eca, ela, include_dir_plat = get_build_options()
-    onedal_libraries_plat = get_libs("onedal")
     libraries_plat = get_libs("daal")
-    cpp_files, main_host_pyx, main_dpc_pyx = get_sources_onedal()
 
     exts = []
 
-    ext = Extension('_onedal4py_host',
-                    sources=[main_host_pyx] + cpp_files,
-                    include_dirs=include_dir_plat + [np.get_include()],
-                    extra_compile_args=eca,
-                    extra_link_args=ela,
-                    define_macros=[
-                        ('NPY_NO_DEPRECATED_API',
-                         'NPY_1_7_API_VERSION'),
-                        ('onedal_version', onedal_version),
-                    ],
-                    libraries=onedal_libraries_plat,
-                    library_dirs=ONEDAL_LIBDIRS,
-                    language='c++')
 
-    if onedal_version >= onedal_2021_3:
-        exts.extend(cythonize(ext, compile_time_env={'onedal_version': onedal_version}))
-
-    ext = Extension('_daal4py',
-                    [os.path.abspath('daal4py/src/daal4py.cpp'),
+    ext = Extension('daal4py._daal4py',
+                    [os.path.abspath('src/daal4py.cpp'),
                      os.path.abspath('build/daal4py_cpp.cpp'),
                      os.path.abspath('build/daal4py_cy.pyx')] + DIST_CPPS,
                     depends=glob.glob(jp(os.path.abspath('daal4py/src'), '*.h')),
@@ -270,32 +234,13 @@ def getpyexts():
 
     if dpcpp:
         if IS_LIN or IS_MAC:
-            runtime_library_dirs = ["$ORIGIN/onedal"]
-            runtime_oneapi_dirs = ["$ORIGIN/daal4py/oneapi"]
+            runtime_oneapi_dirs = ["$ORIGIN/oneapi"]
         elif IS_WIN:
-            runtime_library_dirs = []
             runtime_oneapi_dirs = []
 
-        ext = Extension('_onedal4py_dpc',
-                        sources=[main_dpc_pyx],
-                        include_dirs=include_dir_plat + [np.get_include()],
-                        extra_compile_args=eca,
-                        extra_link_args=ela,
-                        define_macros=[
-                            ('NPY_NO_DEPRECATED_API',
-                             'NPY_1_7_API_VERSION'),
-                        ],
-                        libraries=['dpc_backend'],
-                        library_dirs=['onedal'],
-                        runtime_library_dirs=runtime_library_dirs,
-                        language='c++')
-
-        if onedal_version >= onedal_2021_3:
-            exts.extend(cythonize(ext))
-        ext = Extension('_oneapi',
-                        [os.path.abspath('daal4py/src/oneapi/oneapi.pyx'), ],
-                        depends=['daal4py/src/oneapi/oneapi.h',
-                                 'daal4py/src/oneapi/oneapi_backend.h'],
+        ext = Extension('daal4py._oneapi',
+                        [os.path.abspath('src/oneapi/oneapi.pyx'), ],
+                        depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
                         include_dirs=include_dir_plat + [np.get_include()],
                         extra_compile_args=eca,
                         extra_link_args=ela,
@@ -313,7 +258,7 @@ def getpyexts():
         mpi_include_dir = include_dir_plat + [np.get_include()] + MPI_INCDIRS
         mpi_depens = glob.glob(jp(os.path.abspath('daal4py/src'), '*.h'))
         mpi_extra_link = ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS]
-        exts.append(Extension('mpi_transceiver',
+        exts.append(Extension('daal4py.mpi_transceiver',
                               MPI_CPPS,
                               depends=mpi_depens,
                               include_dirs=mpi_include_dir,
@@ -360,87 +305,53 @@ gen_pyx(os.path.abspath('./build'))
 
 
 def build_oneapi_backend():
-    import shutil
-    import subprocess
+    eca, ela, includes = get_build_options()
 
-    eca, ela, include_dir_plat = get_build_options()
-    libraries_plat = get_libs('daal')
-    libraries = libraries_plat + ['OpenCL', 'onedal_sycl']
-    include_dir_plat = ['-I' + incdir for incdir in include_dir_plat]
-    library_dir_plat = ['-L' + libdir for libdir in ONEDAL_LIBDIRS]
+    return build_backend.build_cpp(
+        cc='dpcpp',
+        cxx='dpcpp',
+        sources=['src/oneapi/oneapi_backend.cpp'],
+        targetname='oneapi_backend',
+        targetprefix='' if IS_WIN else 'lib',
+        targetsuffix='.dll' if IS_WIN else '.so',
+        libs=get_libs('daal') + ['OpenCL', 'onedal_sycl'],
+        libdirs=ONEDAL_LIBDIRS,
+        includes=includes,
+        eca=eca,
+        ela=ela,
+        defines=[],
+        installpath='daal4py/oneapi/'
+    )
+
+
+def get_onedal_py_libs():
+    ext_suffix = get_config_vars('EXT_SUFFIX')[0]
+    libs = [f'_onedal_py_host{ext_suffix}', f'_onedal_py_dpc{ext_suffix}']
     if IS_WIN:
-        eca += ['/EHsc']
-        ela += ['/MD']
-        lib_prefix = ''
-        lib_suffix = '.lib'
-        libname = 'oneapi_backend.dll'
-        additional_linker_opts = ['/link', '/DLL', f'/OUT:{libname}']
-    else:
-        eca += ['-fPIC']
-        ela += ['-shared']
-        lib_suffix = ''
-        lib_prefix = '-l'
-        libname = 'liboneapi_backend.so'
-        additional_linker_opts = ['-o', libname]
-    libraries = [f'{lib_prefix}{str(item)}{lib_suffix}' for item in libraries]
-
-    d4p_dir = os.getcwd()
-    src_dir = os.path.join(d4p_dir, "daal4py/src/oneapi")
-    build_dir = os.path.join(d4p_dir, "build_backend")
-
-    if os.path.exists(build_dir):
-        shutil.rmtree(build_dir)
-    os.mkdir(build_dir)
-    os.chdir(build_dir)
-
-    cmd = ['dpcpp'] + \
-        include_dir_plat + eca + \
-        library_dir_plat + ela + \
-        [f'{src_dir}/oneapi_backend.cpp'] + \
-        libraries + additional_linker_opts
-
-    print(subprocess.list2cmdline(cmd))
-    subprocess.check_call(cmd)
-
-    shutil.copy(libname, os.path.join(d4p_dir, "daal4py/oneapi"))
-    if IS_WIN:
-        shutil.copy(libname.replace('.dll', '.lib'),
-                    os.path.join(d4p_dir, "daal4py/oneapi"))
-    os.chdir(d4p_dir)
-
-
-def distutils_dir_name(dname):
-    """Returns the name of a distutils build directory"""
-    f = "{dirname}.{platform}-{version[0]}.{version[1]}"
-    return f.format(dirname=dname,
-                    platform=sysconfig.get_platform(),
-                    version=sys.version_info)
-
-
-class install(orig_install.install):
-    def run(self):
-        if dpcpp:
-            build_oneapi_backend()
-            if onedal_version >= onedal_2021_3:
-                build_backend.custom_build_cmake_clib()
-        return super().run()
+        ext_suffix_lib = ext_suffix.replace('.dll', '.lib')
+        libs += [f'_onedal_py_host{ext_suffix_lib}', f'_onedal_py_dpc{ext_suffix_lib}']
+    return libs
 
 
 class develop(orig_develop.develop):
     def run(self):
+        if is_onedal_iface:
+            build_backend.custom_build_cmake_clib('host')
         if dpcpp:
             build_oneapi_backend()
-            if onedal_version >= onedal_2021_3:
-                build_backend.custom_build_cmake_clib()
+            if is_onedal_iface:
+                build_backend.custom_build_cmake_clib('dpc')
         return super().run()
 
 
 class build(orig_build.build):
     def run(self):
+        if is_onedal_iface:
+            build_backend.custom_build_cmake_clib('host')
         if dpcpp:
             build_oneapi_backend()
-            if onedal_version >= onedal_2021_3:
-                build_backend.custom_build_cmake_clib()
+            if is_onedal_iface:
+                build_backend.custom_build_cmake_clib('dpc')
         return super().run()
 
 
@@ -474,7 +385,7 @@ setup(
     author_email="scripting@intel.com",
     maintainer_email="onedal.maintainers@intel.com",
     project_urls=project_urls,
-    cmdclass={'install': install, 'develop': develop, 'build': build},
+    cmdclass={'develop': develop, 'build': build},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -502,7 +413,7 @@ setup(
         'data science',
         'data analytics'
     ],
-    packages=[
+    packages=get_packages_with_tests([
         'daal4py',
         'daal4py.oneapi',
         'daal4py.sklearn',
@@ -519,20 +430,17 @@ setup(
         'daal4py.sklearn.model_selection',
         'onedal',
         'onedal.svm',
-        'onedal.prims',
-        'onedal.common',
-    ],
+        'onedal.primitives',
+        'onedal.datatypes',
+        'onedal.common'
+    ]),
     package_data={
-        'onedal': [
-            'libdpc_backend.so',
-            'dpc_backend.lib',
-            'dpc_backend.dll'
-        ],
         'daal4py.oneapi': [
             'liboneapi_backend.so',
             'oneapi_backend.lib',
-            'oneapi_backend.dll'
+            'oneapi_backend.dll',
         ],
+        'onedal': get_onedal_py_libs()
     },
     ext_modules=getpyexts()
 )

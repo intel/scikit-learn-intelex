@@ -171,7 +171,7 @@ extern "C" PyMODINIT_FUNC PyInit_mpi_transceiver(void)
     // shared pointer, will GC transceiver when shutting down
     static std::shared_ptr<mpi_transceiver> s_smt;
     PyObject *m;
-    static struct PyModuleDef moduledef = { PyModuleDef_HEAD_INIT, "mpi_transceiver", "No docs", -1, NULL, };
+    static struct PyModuleDef moduledef = { PyModuleDef_HEAD_INIT, "daal4py.mpi_transceiver", "No docs", -1, NULL, };
     m = PyModule_Create(&moduledef);
     if (m == NULL)
         return NULL;

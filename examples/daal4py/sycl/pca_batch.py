@@ -49,9 +49,9 @@ except:
 def compute(data):
     # 'normalization' is an optional parameter to PCA;
     # we use z-score which could be configured differently
-    zscore = d4p.normalization_zscore()
+    zscore = d4p.normalization_zscore(fptype="float")
     # configure a PCA object
-    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue",
+    algo = d4p.pca(fptype="float", resultsToCompute="mean|variance|eigenvalue",
                    isDeterministic=True, normalization=zscore)
     return algo.compute(data)
 
@@ -105,10 +105,11 @@ def main(readcsv=read_csv, method='svdDense'):
         with gpu_context():
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data)
-        assert np.allclose(result_classic.eigenvalues, result_gpu.eigenvalues)
-        assert np.allclose(result_classic.eigenvectors, result_gpu.eigenvectors)
-        assert np.allclose(result_classic.means, result_gpu.means, atol=1e-7)
-        assert np.allclose(result_classic.variances, result_gpu.variances)
+        assert np.allclose(result_classic.eigenvalues, result_gpu.eigenvalues, atol=1e-5)
+        assert np.allclose(result_classic.eigenvectors, result_gpu.eigenvectors,
+                           atol=1e-5)
+        assert np.allclose(result_classic.means, result_gpu.means, atol=1e-5)
+        assert np.allclose(result_classic.variances, result_gpu.variances, atol=1e-5)
 
     # It is possible to specify to make the computations on CPU
     with cpu_context():

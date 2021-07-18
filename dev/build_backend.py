@@ -34,23 +34,78 @@ elif sys.platform == 'darwin':
 elif sys.platform in ['win32', 'cygwin']:
     IS_WIN = True
 
-try:
-    import dpctl
-    _dpctrl_include_dir = str(os.path.abspath(dpctl.get_include()))
-    _dpctrl_library_dir = str(os.path.abspath(jp(dpctl.get_include(), "..")))
-    _dpctrl_exists = "ON"
-except ImportError:
-    _dpctrl_include_dir = ""
-    _dpctrl_library_dir = ""
-    _dpctrl_exists = "OFF"
+
+def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, libdirs,
+              includes, eca, ela, defines, installpath=''):
+    import shutil
+    import subprocess
+    from sysconfig import get_paths as gp
+    from os.path import basename
+
+    log.info(f'building cpp target {targetname}...')
+
+    include_dir_plat = ['-I' + incdir for incdir in includes]
+    if IS_WIN:
+        eca += ['/EHsc']
+        lib_prefix = ''
+        lib_suffix = '.lib'
+        obj_ext = '.obj'
+        libdirs += [jp(gp()['data'], 'libs')]
+        library_dir_plat = ['/link'] + [f'/LIBPATH:{libdir}' for libdir in libdirs]
+        additional_linker_opts = [
+            '/DLL',
+            f'/OUT:{targetprefix}{targetname}{targetsuffix}'
+        ]
+    else:
+        eca += ['-fPIC']
+        ela += ['-shared']
+        lib_prefix = '-l'
+        lib_suffix = ''
+        obj_ext = '.o'
+        library_dir_plat = ['-L' + libdir for libdir in libdirs]
+        additional_linker_opts = ['-o', f'{targetprefix}{targetname}{targetsuffix}']
+    eca += ['-c']
+    libs = [f'{lib_prefix}{str(item)}{lib_suffix}' for item in libs]
+
+    d4p_dir = os.getcwd()
+    build_dir = os.path.join(d4p_dir, f"build_{targetname}")
+
+    if os.path.exists(build_dir):
+        shutil.rmtree(build_dir)
+    os.mkdir(build_dir)
+    os.chdir(build_dir)
+
+    objfiles = [basename(f).replace('.cpp', obj_ext) for f in sources]
+    for i, cppfile in enumerate(sources):
+        if IS_WIN:
+            out = [f'/Fo{objfiles[i]}']
+        else:
+            out = ['-o', objfiles[i]]
+        cmd = [cc] + include_dir_plat + eca + [f'{d4p_dir}/{cppfile}'] + out + defines
+        log.info(subprocess.list2cmdline(cmd))
+        subprocess.check_call(cmd)
+
+    cmd = [cxx] + objfiles + library_dir_plat + ela + libs + additional_linker_opts
+    log.info(subprocess.list2cmdline(cmd))
+    subprocess.check_call(cmd)
+
+    shutil.copy(f'{targetprefix}{targetname}{targetsuffix}',
+                os.path.join(d4p_dir, installpath))
+    if IS_WIN:
+        target_lib_suffix = targetsuffix.replace('.dll', '.lib')
+        shutil.copy(f'{targetprefix}{targetname}{target_lib_suffix}',
+                    os.path.join(d4p_dir, installpath))
+    os.chdir(d4p_dir)
 
 
-def custom_build_cmake_clib():
+def custom_build_cmake_clib(iface):
+    import pybind11
+
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")
 
     builder_directory = jp(root_dir, "dev")
-    abs_build_temp_path = jp(root_dir, "build", "backend")
+    abs_build_temp_path = jp(root_dir, "build", f"backend_{iface}")
     install_directory = jp(root_dir, "onedal")
     log.info(f"Builder directory: {builder_directory}")
     log.info(f"Install directory: {install_directory}")
@@ -61,19 +116,26 @@ def custom_build_cmake_clib():
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var('LIBDIR')
     numpy_include = np.get_include()
 
+    if iface == 'dpc':
+        cxx = 'dpcpp'
+    else:
+        cxx = 'cl' if IS_WIN else 'g++'
+
     cmake_args = [
         "cmake",
         cmake_generator,
         "-S" + builder_directory,
         "-B" + abs_build_temp_path,
+        "-DCMAKE_CXX_COMPILER=" + cxx,
         "-DCMAKE_INSTALL_PREFIX=" + install_directory,
         "-DCMAKE_PREFIX_PATH=" + install_directory,
-        "-DDPCTL_ENABLE:BOOL=" + _dpctrl_exists,
-        "-DDPCTL_INCLUDE_DIR=" + _dpctrl_include_dir,
-        "-DDPCTL_LIB_DIR=" + _dpctrl_library_dir,
+        "-DIFACE=" + iface,
         "-DPYTHON_INCLUDE_DIR=" + python_include,
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
-        "-DPYTHON_LIBRARY_DIR=" + python_library_dir
+        "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
+        "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ['DALROOT'], 'include'),
+        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ['DALROOT'], 'lib', 'intel64'),
+        "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
 
     import multiprocessing

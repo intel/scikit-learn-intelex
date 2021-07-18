@@ -14,4 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['svm', 'prims']
+__all__ = ['primitives', 'svm']

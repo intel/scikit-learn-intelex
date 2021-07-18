@@ -23,7 +23,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn import __version__ as sklearn_version
 
-from onedal.common.validation import _column_or_1d
+from onedal.datatypes.validation import _column_or_1d
 
 
 def get_dual_coef(self):

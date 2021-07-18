@@ -39,7 +39,7 @@ transceiver * get_transceiver()
             auto gilstate = PyGILState_Ensure();
 
             const char * modname = std::getenv("D4P_TRANSCEIVER");
-            if(modname == NULL ) modname = "mpi_transceiver";
+            if(modname == NULL ) modname = "daal4py.mpi_transceiver";
 
             PyObject * mod = PyImport_ImportModule(modname);
             CHECK();

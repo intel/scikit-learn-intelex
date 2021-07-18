@@ -23,10 +23,9 @@ Getting Intel(R) Extension for Scikit-learn*
 Installation from distribution channels
 ---------------------------------------
 
-Intel(R) Extension for Scikit-learn* is available at the `Python Package Index <https://pypi.org/project/scikit-learn-intelex/>`_,
-and in `Intel channel <https://anaconda.org/intel/scikit-learn-intelex>`_.
-Sources and build instructions are available in
-`Intel(R) Extension for Scikit-learn* repository <https://github.com/intel/scikit-learn-intelex>`_.
+Intel(R) Extension for Scikit-learn is available at the `Python Package Index <https://pypi.org/project/scikit-learn-intelex/>`_, on Anaconda Cloud in `Conda-Forge channel <https://anaconda.org/conda-forge/scikit-learn-intelex>`_ and in `Intel channel <https://anaconda.org/intel/scikit-learn-intelex>`_. 
+Also Intel(R) Extension for Scikit-learn is available available as a part of `Intel oneAPI AI Analytics Toolkit <https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3>`_ (AI Kit). 
+Sources and build instructions are available in `Intel(R) Extension for Scikit-learn repository <https://github.com/intel/scikit-learn-intelex>`_.
 
 - Install from **PyPI** (Recommended)::
 

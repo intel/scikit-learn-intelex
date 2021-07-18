@@ -17,10 +17,9 @@
 
 # System imports
 import os
-import sys
 import time
 from setuptools import setup
-from os.path import join as jp
+from scripts.package_helpers import get_packages_with_tests
 
 sklearnex_version = (os.environ["SKLEARNEX_VERSION"] if "SKLEARNEX_VERSION" in os.environ
                      else time.strftime("2021.%Y%m%d.%H%M%S"))
@@ -77,7 +76,7 @@ setup(name="scikit-learn-intelex",
           "data science",
           "data analytics",
       ],
-      packages=[
+      packages=get_packages_with_tests([
           "sklearnex",
           'sklearnex.cluster',
           'sklearnex.decomposition',
@@ -88,5 +87,5 @@ setup(name="scikit-learn-intelex",
           'sklearnex.model_selection',
           'sklearnex.neighbors',
           'sklearnex.svm',
-      ],
+      ]),
       )

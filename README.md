@@ -16,6 +16,7 @@ Running the latest scikit-learn test suite with Intel(R) Extension for Scikit-le
 
 We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis with the help of Intel(R) Extension for Scikit-learn. Here are our latest blogs:
 
+- [Save Time and Money with Intel Extension for Scikit-learn](https://medium.com/intel-analytics-software/save-time-and-money-with-intel-extension-for-scikit-learn-33627425ae4)
 - [Superior Machine Learning Performance on the Latest Intel Xeon Scalable Processors](https://medium.com/intel-analytics-software/superior-machine-learning-performance-on-the-latest-intel-xeon-scalable-processor-efdec279f5a3)
 - [Leverage Intel Optimizations in Scikit-Learn](https://medium.com/intel-analytics-software/leverage-intel-optimizations-in-scikit-learn-f562cb9d5544)
 - [Intel Gives Scikit-Learn the Performance Boost Data Scientists Need](https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18)
@@ -27,6 +28,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 - [Accelerate K-Means Clustering](https://medium.com/intel-analytics-software/accelerate-k-means-clustering-6385088788a1)
 
 ## 🔗 Important links
+- [Notebook examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)
 - [Documentation](https://intel.github.io/scikit-learn-intelex/)
 - [scikit-learn API and patching](https://intel.github.io/scikit-learn-intelex/)
 - [Benchmark code](https://github.com/IntelPython/scikit-learn_bench)
@@ -47,6 +49,7 @@ You may reach out to project maintainers privately at onedal.maintainers@intel.c
 # 🛠 Installation
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex).
+Intel(R) Extension for Scikit-learn is also available as a part of [Intel® oneAPI AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit).
 
 ```bash
 # PyPi (recommended by default)
@@ -54,7 +57,7 @@ pip install scikit-learn-intelex
 ```
 
 ```bash
-# Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
+# Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
 conda install scikit-learn-intelex -c conda-forge
 ```
 
@@ -102,7 +105,7 @@ pip install --upgrade dpcpp_cpp_rt
 ```
 
 ```bash
-# Anaconda Cloud
+# Anaconda Cloud
 conda install dpcpp_cpp_rt -c intel
 ```
 
@@ -142,7 +145,7 @@ with sycl_context("gpu"):
 
 # 🚀 Scikit-learn patching
 
-![](https://raw.githubusercontent.com/PetrovKP/daal4py/update-perf-data/doc/scikit-learn-acceleration-2021.2.3.PNG)
+![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/sources/_static/scikit-learn-acceleration-2021.2.3.PNG)
 Configurations:
 - HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
 - SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
@@ -161,35 +164,9 @@ python runner.py --configs configs/blogs/skl_conda_config.json –report --no-in
 ```
 </details>
 
-Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality listed below. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. These limitations described below. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
+Intel(R) Extension for Scikit-learn patching affects performance of specific Scikit-learn functionality. Refer to the [list of supported algorithms and parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html) for details. In cases when unsupported parameters are used, the package fallbacks into original Scikit-learn. If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues).
 
-<details><summary>[Click to expand] 🔥 Scikit-learn algorithms affected by the patching</summary>
-
-|Task|Functionality|Parameters support|Data support|
-|:---|:------------|:-----------------|:-----------|
-|Classification|**SVC**|All parameters except `kernel` = 'poly' and 'sigmoid'. | No limitations.|
-||**RandomForestClassifier**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'gini'. | Multi-output and sparse data is not supported. |
-||**KNeighborsClassifier**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Multi-output and sparse data is not supported. |
-||**LogisticRegression / LogisticRegressionCV**|All parameters except `solver` != 'lbfgs' or 'newton-cg', `class_weight` != None, `sample_weight` != None. | Only dense data is supported. |
-|Regression|**RandomForestRegressor**|All parameters except `warmstart` = True and `cpp_alpha` != 0, `criterion` != 'mse'. | Multi-output and sparse data is not supported. |
-||**KNeighborsRegressor**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
-||**LinearRegression**|All parameters except `normalize` != False and `sample_weight` != None. | Only dense data is supported, `#observations` should be >= `#features`. |
-||**Ridge**|All parameters except `normalize` != False, `solver` != 'auto' and `sample_weight` != None. | Only dense data is supported, `#observations` should be >= `#features`. |
-||**ElasticNet**|All parameters except `sample_weight` != None. | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
-||**Lasso**|All parameters except `sample_weight` != None. | Multi-output and sparse data is not supported, `#observations` should be >= `#features`. |
-|Clustering|**KMeans**|All parameters except `precompute_distances` and `sample_weight` != None. | No limitations. |
-||**DBSCAN**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2, `algorithm` != `brute` or `auto` . | Only dense data is supported. |
-|Dimensionality reduction|**PCA**|All parameters except `svd_solver` != 'full'. | No limitations. |
-|| **TSNE**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
-|Unsupervised|**NearestNeighbors**|All parameters except `metric` != 'euclidean' or `minkowski` with `p` != 2. | Sparse data is not supported. |
-|Other|**train_test_split**|All parameters are supported. | Only dense data is supported.|
-||**assert_all_finite**|All parameters are supported. | Only dense data is supported. |
-||**pairwise_distance**|With `metric`='cosine' and 'correlation'.| Only dense data is supported. |
-||**roc_auc_score**|Parameters `average`, `sample_weight`, `max_fpr` and `multi_class` are not supported. | No limitations. |
-
- </details>
-
-⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.2.X supports scikit-learn 0.22.X,
+⚠️ We support optimizations for the last four versions of scikit-learn. The latest release of Intel(R) Extension for Scikit-learn 2021.3.X supports scikit-learn 0.22.X,
 0.23.X, 0.24.X and 1.0.X.
 
 ## 📜 Intel(R) Extension for Scikit-learn verbose
