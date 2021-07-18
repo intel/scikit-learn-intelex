@@ -75,6 +75,26 @@ auto get_onedal_voting_mode(const py::dict& params) {
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(weights);
 }
 
+auto get_onedal_result_options(const py::dict& params) {
+    using namespace knn;
+
+    auto result_option = params["result_option"].cast<std::string>();
+    if (result_option == "all") {
+        return result_options::responses | knn::result_options::indices | knn::result_options::distances;
+    }
+    else if (result_option == "responses") {
+        return result_options::responses;
+    }
+    else if (result_option == "indices") {
+        return result_options::indices;
+    }
+    else if (result_option == "distances") {
+        return result_options::distances;
+    }
+    else
+        ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
+}
+
 struct params2desc {
     template <typename Float, typename Method, typename Task, typename Distance>
     auto operator()(const pybind11::dict& params) {
@@ -90,7 +110,8 @@ struct params2desc {
         const auto neighbor_count = params["neighbor_count"].cast<std::int64_t>();
 
         auto desc = descriptor<Float, Method, Task, Distance>(class_count, neighbor_count)
-                        .set_voting_mode(get_onedal_voting_mode(params));
+                        .set_voting_mode(get_onedal_voting_mode(params))
+                        .set_result_options(get_onedal_result_options(params));
 
         if constexpr (is_bf) {
             desc.set_distance(get_distance_descriptor<Distance>(params));
