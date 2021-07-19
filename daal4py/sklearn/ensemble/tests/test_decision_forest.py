@@ -31,9 +31,9 @@ from daal4py.sklearn.ensemble \
     import RandomForestRegressor as DaalRandomForestRegressor
 from daal4py.sklearn._utils import daal_check_version
 
-ACCURACY_RATIO = 0.85
+ACCURACY_RATIO = 0.95 if daal_check_version((2021, 'P', 400)) else 0.85
 MSE_RATIO = 1.07
-LOG_LOSS_RATIO = 1.55
+LOG_LOSS_RATIO = 1.4 if daal_check_version((2021, 'P', 400)) else 1.55
 ROC_AUC_RATIO = 0.978
 RNG = np.random.RandomState(0)
 IRIS = load_iris()
