@@ -17,23 +17,13 @@
 from onedal import _backend
 
 
-class _HostPolicy(_backend.host_policy):
+def from_table(*args):
+    if len(args) == 1:
+        return _backend.from_table(args[0])
+    return (_backend.from_table(item) for item in args)
 
-    def __init__(self):
-        import sys
 
-        self.host_ctx, self.gpu_ctx = None, None
-        if 'daal4py.oneapi' in sys.modules:
-            import daal4py.oneapi as d4p_oneapi
-            devname = d4p_oneapi._get_device_name_sycl_ctxt()
-            if devname == 'gpu':
-                self.gpu_ctx = d4p_oneapi._get_sycl_ctxt()
-                self.host_ctx = d4p_oneapi.sycl_execution_context('host')
-                self.host_ctx.apply()
-        super().__init__()
-
-    def __del__(self):
-        if self.host_ctx:
-            del self.host_ctx
-        if self.gpu_ctx:
-            self.gpu_ctx.apply()
+def to_table(*args):
+    if len(args) == 1:
+        return _backend.to_table(args[0])
+    return (_backend.to_table(item) for item in args)

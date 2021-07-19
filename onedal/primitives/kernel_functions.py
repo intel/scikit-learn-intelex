@@ -16,13 +16,10 @@
 
 import numpy as np
 from onedal.datatypes import _check_array
-
-try:
-    import onedal._onedal_py_dpc as backend
-except ImportError:
-    import onedal._onedal_py_host as backend
+from onedal import _backend
 
 from ..common._policy import _HostPolicy
+from ..datatypes._data_conversion import from_table, to_table
 
 
 def _check_inputs(X, Y):
@@ -36,9 +33,9 @@ def _check_inputs(X, Y):
 
 def _compute_kernel(params, submodule, X, Y):
     policy = _HostPolicy()
-    X, Y = backend.from_numpy(X), backend.from_numpy(Y)
+    X, Y = to_table(X, Y)
     result = submodule.compute(policy, params, X, Y)
-    return backend.to_numpy(result.values)
+    return from_table(result.values)
 
 
 def linear_kernel(X, Y=None, scale=1.0, shift=0.0):
@@ -61,7 +58,7 @@ def linear_kernel(X, Y=None, scale=1.0, shift=0.0):
     X, Y, fptype = _check_inputs(X, Y)
     return _compute_kernel({'fptype': fptype, 'method': 'dense',
                             'scale': scale, 'shift': shift},
-                           backend.linear_kernel, X, Y)
+                           _backend.linear_kernel, X, Y)
 
 
 def rbf_kernel(X, Y=None, gamma=None):
@@ -88,7 +85,7 @@ def rbf_kernel(X, Y=None, gamma=None):
     sigma = np.sqrt(0.5 / gamma)
 
     return _compute_kernel({'fptype': fptype, 'method': 'dense', 'sigma': sigma},
-                           backend.rbf_kernel, X, Y)
+                           _backend.rbf_kernel, X, Y)
 
 
 def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
@@ -113,7 +110,7 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
     X, Y, fptype = _check_inputs(X, Y)
     return _compute_kernel({'fptype': fptype, 'method': 'dense',
                             'scale': gamma, 'shift': coef0, 'degree': degree},
-                           backend.polynomial_kernel, X, Y)
+                           _backend.polynomial_kernel, X, Y)
 
 
 def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0):
@@ -137,4 +134,4 @@ def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0):
     X, Y, fptype = _check_inputs(X, Y)
     return _compute_kernel({'fptype': fptype, 'method': 'dense',
                             'scale': gamma, 'shift': coef0},
-                           backend.sigmoid_kernel, X, Y)
+                           _backend.sigmoid_kernel, X, Y)

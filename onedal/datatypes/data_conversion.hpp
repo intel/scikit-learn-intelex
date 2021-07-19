@@ -25,7 +25,7 @@
 
 namespace oneapi::dal::python {
 
-PyObject *convert_to_numpy(const dal::table &input);
+PyObject *convert_to_pyobject(const dal::table &input);
 dal::table convert_to_table(PyObject *obj);
 
 } // namespace oneapi::dal::python
