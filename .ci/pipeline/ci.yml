@@ -79,7 +79,8 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      ./dev/run_test.sh
+      cd ..
+      ./s/dev/run_test.sh
     displayName: 'Testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -185,7 +186,7 @@ jobs:
       ./dev/build.sh
     displayName: 'Build daal4py'
   - script: |
-      conda activate CB
+      source activate CB
       python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build sklearnex'
   - script: |
@@ -220,8 +221,8 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      call /s/dev/bld.bat
-    displayName: 'Build daal4py and sklearnex'
+      call dev/bld.bat
+    displayName: 'Build daal4py'
   - script: |
       call activate CB
       python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
