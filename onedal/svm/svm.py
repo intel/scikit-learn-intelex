@@ -31,12 +31,9 @@ from ..datatypes import (
     _check_n_features
 )
 
-try:
-    import onedal._onedal_py_dpc as backend
-except ImportError:
-    import onedal._onedal_py_host as backend
-
 from ..common._policy import _HostPolicy
+from ..datatypes._data_conversion import from_table, to_table
+from onedal import _backend
 
 
 class SVMtype(Enum):
@@ -209,21 +206,17 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
         policy = _HostPolicy()
         params = self._get_onedal_params(X)
-        result = module.train(policy, params,
-                              backend.from_numpy(X),
-                              backend.from_numpy(y),
-                              backend.from_numpy(sample_weight))
+        result = module.train(policy, params, *to_table(X, y, sample_weight))
 
         if self._sparse:
-            self.dual_coef_ = sp.csr_matrix(backend.to_numpy(result.coeffs).T)
-            self.support_vectors_ = sp.csr_matrix(
-                backend.to_numpy(result.support_vectors))
+            self.dual_coef_ = sp.csr_matrix(from_table(result.coeffs).T)
+            self.support_vectors_ = sp.csr_matrix(from_table(result.support_vectors))
         else:
-            self.dual_coef_ = backend.to_numpy(result.coeffs).T
-            self.support_vectors_ = backend.to_numpy(result.support_vectors)
+            self.dual_coef_ = from_table(result.coeffs).T
+            self.support_vectors_ = from_table(result.support_vectors)
 
-        self.intercept_ = backend.to_numpy(result.biases).ravel()
-        self.support_ = backend.to_numpy(result.support_indices).ravel().astype('int')
+        self.intercept_ = from_table(result.biases).ravel()
+        self.support_ = from_table(result.support_indices).ravel().astype('int')
         self.n_features_in_ = X.shape[1]
         self.shape_fit_ = X.shape
 
@@ -238,10 +231,11 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
     def _create_model(self, module):
         m = module.model()
-        m.support_vectors = backend.from_numpy(self.support_vectors_)
 
-        m.coeffs = backend.from_numpy(self.dual_coef_.T)
-        m.biases = backend.from_numpy(self.intercept_)
+        m.support_vectors = to_table(self.support_vectors_)
+        m.coeffs = to_table(self.dual_coef_.T)
+        m.biases = to_table(self.intercept_)
+
         if self.svm_type is SVMtype.c_svc or self.svm_type is SVMtype.nu_svc:
             m.first_class_response, m.second_class_response = 0, 1
         return m
@@ -277,8 +271,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 model = self._onedal_model
             else:
                 model = self._create_model(module)
-            result = module.infer(policy, params, model, backend.from_numpy(X))
-            y = backend.to_numpy(result.responses)
+            result = module.infer(policy, params, model, to_table(X))
+            y = from_table(result.responses)
         return y
 
     def _ovr_decision_function(self, predictions, confidences, n_classes):
@@ -322,8 +316,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             model = self._onedal_model
         else:
             model = self._create_model(module)
-        result = module.infer(policy, params, model, backend.from_numpy(X))
-        decision_function = backend.to_numpy(result.decision_function)
+        result = module.infer(policy, params, model, to_table(X))
+        decision_function = from_table(result.decision_function)
 
         if len(self.classes_) == 2:
             decision_function = decision_function.ravel()
@@ -353,10 +347,10 @@ class SVR(RegressorMixin, BaseSVM):
         self.svm_type = SVMtype.epsilon_svr
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, backend.svm.regression)
+        return super()._fit(X, y, sample_weight, _backend.svm.regression)
 
     def predict(self, X):
-        y = super()._predict(X, backend.svm.regression)
+        y = super()._predict(X, _backend.svm.regression)
         return y.ravel()
 
 
@@ -384,16 +378,16 @@ class SVC(ClassifierMixin, BaseSVM):
         return y
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, backend.svm.classification)
+        return super()._fit(X, y, sample_weight, _backend.svm.classification)
 
     def predict(self, X):
-        y = super()._predict(X, backend.svm.classification)
+        y = super()._predict(X, _backend.svm.classification)
         if len(self.classes_) == 2:
             y = y.ravel()
         return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
     def decision_function(self, X):
-        return super()._decision_function(X, backend.svm.classification)
+        return super()._decision_function(X, _backend.svm.classification)
 
 
 class NuSVR(RegressorMixin, BaseSVM):
@@ -415,10 +409,10 @@ class NuSVR(RegressorMixin, BaseSVM):
         self.svm_type = SVMtype.nu_svr
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, backend.svm.nu_regression)
+        return super()._fit(X, y, sample_weight, _backend.svm.nu_regression)
 
     def predict(self, X):
-        y = super()._predict(X, backend.svm.nu_regression)
+        y = super()._predict(X, _backend.svm.nu_regression)
         return y.ravel()
 
 
@@ -446,13 +440,13 @@ class NuSVC(ClassifierMixin, BaseSVM):
         return y
 
     def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, backend.svm.nu_classification)
+        return super()._fit(X, y, sample_weight, _backend.svm.nu_classification)
 
     def predict(self, X):
-        y = super()._predict(X, backend.svm.nu_classification)
+        y = super()._predict(X, _backend.svm.nu_classification)
         if len(self.classes_) == 2:
             y = y.ravel()
         return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
     def decision_function(self, X):
-        return super()._decision_function(X, backend.svm.nu_classification)
+        return super()._decision_function(X, _backend.svm.nu_classification)
