@@ -199,12 +199,11 @@ MODELS_INFO = [
         'methods': ['predict', 'decision_function'],
         'dataset': 'classifier',
     },
-    # Uncomment after enable sparse support for new interfaces
-    # {
-    #     'model': SVC(kernel='rbf'),
-    #     'methods': ['predict', 'decision_function'],
-    #     'dataset': 'sparse',
-    # },
+    {
+        'model': SVC(kernel='rbf'),
+        'methods': ['predict', 'decision_function'],
+        'dataset': 'sparse',
+    },
     {
         'model': NuSVC(kernel='rbf'),
         'methods': ['predict', 'decision_function'],
