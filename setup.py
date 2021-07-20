@@ -331,25 +331,26 @@ def get_onedal_py_libs():
     return libs
 
 
-class develop(orig_develop.develop):
+class custom_build():
     def run(self):
         if is_onedal_iface:
-            build_backend.custom_build_cmake_clib('host')
+            cxx = os.getenv('CXX', 'cl' if IS_WIN else 'g++')
+            build_backend.custom_build_cmake_clib('host', cxx)
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib('dpc')
+
+
+class develop(orig_develop.develop, custom_build):
+    def run(self):
+        custom_build.run(self)
         return super().run()
 
 
-class build(orig_build.build):
+class build(orig_build.build, custom_build):
     def run(self):
-        if is_onedal_iface:
-            build_backend.custom_build_cmake_clib('host')
-        if dpcpp:
-            build_oneapi_backend()
-            if is_onedal_iface:
-                build_backend.custom_build_cmake_clib('dpc')
+        custom_build.run(self)
         return super().run()
 
 
