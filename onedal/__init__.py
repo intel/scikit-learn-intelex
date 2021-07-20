@@ -14,4 +14,15 @@
 # limitations under the License.
 #===============================================================================
 
+import platform
+if "Windows" in platform.system():
+    import os
+    import sys
+    import site
+    path_to_env = site.getsitepackages()[0]
+    path_to_libs = os.path.join(path_to_env, "Library", "bin")
+    if sys.version_info.minor >= 8:
+        os.add_dll_directory(path_to_libs)
+    os.environ['PATH'] += os.pathsep + path_to_libs
+
 __all__ = ['primitives', 'svm']
