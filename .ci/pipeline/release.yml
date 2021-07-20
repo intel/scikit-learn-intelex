@@ -40,9 +40,11 @@ jobs:
       pip install scikit-learn-intelex pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
+      cd ..
       python -c "import sklearnex"
     displayName: 'Testing of import'
   - script: |
+      cd ..
       $(TEST_COMMAND)
     displayName: 'Testing of scikit-learn-intelex'
 - job: GeneratorConda
@@ -76,10 +78,12 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       $(conda.activate) CB
+      cd ..
       python -c "import sklearnex"
     displayName: 'Testing of import'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       $(conda.activate) CB
+      cd ..
       $(TEST_COMMAND)
     displayName: 'Testing of scikit-learn-intelex'

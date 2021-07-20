@@ -50,13 +50,13 @@ ONEDAL_PY_INIT_MODULE(table) {
             return "unknown";
         });
 
-    m.def("from_numpy", [](py::object obj) {
+    m.def("to_table", [](py::object obj) {
         auto* obj_ptr = obj.ptr();
         return convert_to_table(obj_ptr);
     });
 
-    m.def("to_numpy", [](dal::table& t) -> py::handle {
-        auto* obj_ptr = convert_to_numpy(t);
+    m.def("from_table", [](dal::table& t) -> py::handle {
+        auto* obj_ptr = convert_to_pyobject(t);
         return obj_ptr;
     });
 }

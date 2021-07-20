@@ -25,4 +25,9 @@ if "Windows" in platform.system():
         os.add_dll_directory(path_to_libs)
     os.environ['PATH'] += os.pathsep + path_to_libs
 
+try:
+    import onedal._onedal_py_dpc as _backend
+except ImportError:
+    import onedal._onedal_py_host as _backend
+
 __all__ = ['primitives', 'svm']
