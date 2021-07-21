@@ -294,26 +294,6 @@ class NeighborsBase(BaseEstimator, metaclass=ABCMeta):
         prediction_results = self._onedal_predict(self._onedal_model, X)
 
         distances = backend.to_numpy(prediction_results.distances)
-        print(prediction_results.indices.column_count)
-        print(prediction_results.indices.row_count)
-        print(prediction_results.indices.has_data)
-        print(prediction_results.indices.kind)
-
-        # TODO fix this
-
-        # (knn_slkex)$ python knn_experiment.py
-        # NeighborsBase(n_neighbors=2, radius=3)
-        # 2
-        # 150
-        # True
-        # homogen
-        # Traceback (most recent call last):
-        # File "knn_experiment.py", line 17, in <module>
-        #     print(res._kneighbors(X, 2))
-        # File "onedal/neighbors/neighbors.py", line 302, in _kneighbors
-        #     indices = backend.to_numpy(prediction_results.indices)
-        # ValueError: Not avalible to convert a numpy
-
         indices = backend.to_numpy(prediction_results.indices)
 
         if method == 'kd_tree':

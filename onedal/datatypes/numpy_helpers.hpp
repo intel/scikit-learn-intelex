@@ -33,6 +33,10 @@
             _FUNCT(NPY_INT32);                              \
             break;                                          \
         }                                                   \
+        case dal::data_type::int64: {                       \
+            _FUNCT(NPY_INT64);                              \
+            break;                                          \
+        }                                                   \
         default: _EXCEPTION;                                \
     };
 
@@ -48,6 +52,10 @@
         }                                                    \
         case dal::data_type::int32: {                        \
             _FUNCT(NPY_INT32, std::int32_t);                 \
+            break;                                           \
+        }                                                    \
+        case dal::data_type::int64: {                        \
+            _FUNCT(NPY_INT32, std::int64_t);                 \
             break;                                           \
         }                                                    \
         default: _EXCEPTION;                                 \
