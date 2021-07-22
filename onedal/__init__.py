@@ -14,4 +14,9 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['svm', 'prims']
+try:
+    import onedal._onedal_py_dpc as _backend
+except ImportError:
+    import onedal._onedal_py_host as _backend
+
+__all__ = ['primitives', 'svm']

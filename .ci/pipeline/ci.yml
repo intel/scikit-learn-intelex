@@ -27,9 +27,24 @@ variables:
     value: python
   - name: 'ARGS'
     value: '1'
+  - name: 'OFF_ONEDAL_IFACE'
+    value: '1'
 
 jobs:
-- job: Linux_Docs
+- job: PEP8
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+      addToPath: true
+  - script: |
+      python -m pip install --upgrade pip setuptools
+      pip install flake8
+      flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
+    displayName: 'PEP 8 check'
+- job: Linux
   pool:
     vmImage: 'ubuntu-20.04'
   steps:
@@ -58,8 +73,14 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      ./conda-recipe/run_test.sh
-    displayName: Testing
+      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+    displayName: 'Build sklearnex'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      cd ..
+      ./s/conda-recipe/run_test.sh
+    displayName: 'Testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -82,7 +103,6 @@ jobs:
     inputs:
       artifactName: 'documentation'
       targetPath: '$(Build.ArtifactStagingDirectory)/'
-
 - job: Linux_DPCPP
   pool:
     vmImage: 'ubuntu-20.04'
@@ -122,7 +142,7 @@ jobs:
       conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       cd ..
-      pytest s/sklearnex/tests/
+      pytest --pyargs s/sklearnex/tests/
     displayName: conda build
 
 - job: MacOS
@@ -145,51 +165,40 @@ jobs:
     displayName: Conda build
   - script: |
       source activate CB
-      ./conda-recipe/run_test.sh
+      cd ..
+      ./s/conda-recipe/run_test.sh
     displayName: Testing
   - script: |
       source activate CB
-      cd examples && python run_examples.py
+      cd examples/daal4py && python run_examples.py
     displayName: Examples
-
-- job: Windows_DPCPP
-  pool:
-    vmImage: 'windows-latest'
-  steps:
-  - task: UsePythonVersion@0
-    displayName: 'Use Python $(python.version)'
-  - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
-    timeoutInMinutes: 15
-    displayName: oneAPI environment
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
-  - script: conda create -q -y -n CB python=$(python.version) conda-build conda-verify
-    displayName: Create Anaconda environment
-  - script: |
-      call activate CB
-      set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      conda build --override-channels -c intel -c conda-forge --numpy=1.19 --output-folder=. conda-recipe
-    displayName: conda build
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
-      Contents: 'daal4py*'
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'daal4py win'
-      targetPath: '$(Build.ArtifactStagingDirectory)/'
-    condition: always()
-- job: PEP8
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.7'
-      addToPath: true
-  - script: |
-      python -m pip install --upgrade pip setuptools
-      pip install flake8
-      flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
-    displayName: 'PEP 8 check'
+# Need update dpcpp to 2021.3 (problem with download)
+# See here: https://github.com/intel/scikit-learn-intelex/pull/712
+# - job: Windows_DPCPP
+#   pool:
+#     vmImage: 'windows-latest'
+#   steps:
+#   - task: UsePythonVersion@0
+#     displayName: 'Use Python $(python.version)'
+#   - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
+#     timeoutInMinutes: 15
+#     displayName: oneAPI environment
+#   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+#     displayName: Add conda to PATH
+#   - script: conda create -q -y -n CB python=$(python.version) conda-build conda-verify
+#     displayName: Create Anaconda environment
+#   - script: |
+#       call activate CB
+#       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
+#       conda build --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
+#     displayName: conda build
+#   - task: CopyFiles@2
+#     inputs:
+#       SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
+#       Contents: 'daal4py*'
+#       TargetFolder: '$(Build.ArtifactStagingDirectory)'
+#   - task: PublishPipelineArtifact@0
+#     inputs:
+#       artifactName: 'daal4py win'
+#       targetPath: '$(Build.ArtifactStagingDirectory)/'
+#     condition: always()

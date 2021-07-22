@@ -1,0 +1,88 @@
+#===============================================================================
+# Copyright 2020-2021 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#===============================================================================
+
+variables:
+  COVERITY_TOOL_HOME: $(Agent.BuildDirectory)/cov-analysis
+  DESCRIPTION: Nightly
+  python.version: '3.8'
+  PYTHON: 'python'
+  ARGS: '1'
+  OFF_ONEDAL_IFACE: '1'
+
+jobs:
+- job: Coverity
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - script: |
+      cd $(Agent.BuildDirectory)
+      wget https://scan.coverity.com/download/linux64 --post-data "token=$(COVERITY_AUTHKEY)&project=daal4py" -O coverity_tool.tgz
+      tar -xzvf coverity_tool.tgz
+      mv cov-analysis-linux64* cov-analysis
+    condition: ne(variables.CACHE_RESTORED, 'true')
+    displayName: 'Install Coverity tool'
+  - script: |
+      cd $(Build.Repository.LocalPath)
+      $(COVERITY_TOOL_HOME)/bin/cov-build --dir cov-int --no-command --fs-capture-search .
+      zip -r daal4py.zip cov-int
+    displayName: 'Perform Coverity scan'
+  - script: |
+      curl --form token=$(COVERITY_AUTHKEY) \
+        --form email=$(COVERITY_AUTHLOGIN) \
+        --form file=@$(Build.Repository.LocalPath)/daal4py.zip \
+        --form description="$(DESCRIPTION)" \
+        $(COVERITY_URL)
+    displayName: 'Upload results of Coverity scan'
+- job: Jupyter
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+    inputs:
+      versionSpec: '$(python.version)'
+  - script: |
+      conda update -y -q conda
+      conda create -q -y -n CB -c intel python=$(python.version) dal-devel impi-devel
+    displayName: 'Conda create'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      pip install -r requirements-dev.txt
+      pip install -r requirements-doc.txt
+      pip install -r requirements-test.txt
+      pip install xgboost lightgbm
+    displayName: 'Install requirements'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      export DALROOT=$CONDA_PREFIX
+      ./conda-recipe/build.sh
+    displayName: 'Build daal4py'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+    displayName: 'Build slearnex'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      cd examples/notebooks
+      pip install jupyter matplotlib
+      jupyter nbconvert --execute --ExecutePreprocessor.timeout=10900 --to notebook *.ipynb
+    timeoutInMinutes: 180
+    displayName: 'Run jupyter notebook demo'

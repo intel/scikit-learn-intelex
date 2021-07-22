@@ -14,17 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
-from daal4py.sklearn._utils import daal_check_version
-
-if daal_check_version(((2020, 'P', 1))):
-    if LooseVersion(sklearn_version) >= LooseVersion("0.21") and \
-            LooseVersion(sklearn_version) < LooseVersion("0.23"):
-        from ._coordinate_descent_0_21 import *
-    elif (LooseVersion(sklearn_version) >= LooseVersion("0.23")):
-        from ._coordinate_descent_0_23 import *
-    else:
-        from sklearn.linear_model._coordinate_descent import *
-else:
-    from sklearn.linear_model._coordinate_descent import *
+from ._coordinate_descent import *

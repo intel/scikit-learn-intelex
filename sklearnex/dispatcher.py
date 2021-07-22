@@ -17,14 +17,16 @@
 
 # Other imports
 import sys
-from distutils.version import LooseVersion
+import os
 from functools import lru_cache
-from daal4py.sklearn._utils import daal_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 # Classes for patching
-if daal_check_version((2021, 'P', 300)):
+if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P', 300)):
     from .svm import SVR as SVR_sklearnex
     from .svm import SVC as SVC_sklearnex
+    from .svm import NuSVR as NuSVR_sklearnex
+    from .svm import NuSVC as NuSVC_sklearnex
 
 # Scikit-learn* modules
 import sklearn.svm as svm_module
@@ -35,11 +37,14 @@ def get_patch_map():
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
     mapping = _get_map_of_algorithms().copy()
 
-    if daal_check_version((2021, 'P', 300)):
+    if os.environ.get('OFF_ONEDAL_IFACE') is None and \
+       daal_check_version((2021, 'P', 300)):
         mapping.pop('svm')
         mapping.pop('svc')
         mapping['svr'] = [[(svm_module, 'SVR', SVR_sklearnex), None]]
         mapping['svc'] = [[(svm_module, 'SVC', SVC_sklearnex), None]]
+        mapping['nusvr'] = [[(svm_module, 'NuSVR', NuSVR_sklearnex), None]]
+        mapping['nusvc'] = [[(svm_module, 'NuSVC', NuSVC_sklearnex), None]]
     return mapping
 
 
@@ -48,10 +53,9 @@ def get_patch_names():
 
 
 def patch_sklearn(name=None, verbose=True):
-    from sklearn import __version__ as sklearn_version
-    if LooseVersion(sklearn_version) < LooseVersion("0.22.0"):
+    if not sklearn_check_version('0.22'):
         raise NotImplementedError("Intel(R) Extension for Scikit-learn* patches apply "
-                                  "for scikit-learn >= 0.22.0 only ...")
+                                  "for scikit-learn >= 0.22 only ...")
 
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
     if isinstance(name, list):

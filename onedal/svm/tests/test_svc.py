@@ -22,9 +22,9 @@ from onedal.svm import SVC
 
 from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
-from sklearn import datasets, metrics
+from sklearn import datasets
 from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.datasets import make_classification, make_blobs
+from sklearn.datasets import make_blobs
 from sklearn.model_selection import train_test_split
 
 
@@ -53,12 +53,8 @@ def test_estimator():
     saved = _replace_and_save(md, [
         'check_sample_weights_invariance',  # Max absolute difference: 0.0008
         'check_estimators_fit_returns_self',  # ValueError: empty metadata
-        'check_classifiers_predictions',  # Cannot cast ufunc 'multiply'
         'check_classifiers_train',  # assert y_pred.shape == (n_samples,)
-        'check_classifiers_regression_target',  # Did not raise ValueError
-        'check_supervised_y_2d',  # expected 1 DataConversionWarning
         'check_estimators_unfitted',  # Call 'fit' with appropriate arguments
-        'check_estimator_sparse_data',  # Need to fix
     ], dummy)
     check_estimator(SVC())
     _restore_from_saved(md, saved)
@@ -130,8 +126,8 @@ def test_decision_function_shape():
     dec = clf.decision_function(X_train)
     assert dec.shape == (len(X_train), 10)
 
-    # with pytest.raises(ValueError, match="must be either 'ovr' or 'ovo'"):
-    #     SVC(decision_function_shape='bad').fit(X_train, y_train)
+    with pytest.raises(ValueError, match="must be either 'ovr' or 'ovo'"):
+        SVC(decision_function_shape='bad').fit(X_train, y_train)
 
 
 def test_pickle():
@@ -146,3 +142,19 @@ def test_pickle():
     assert type(clf2) == clf.__class__
     result = clf2.decision_function(iris.data)
     assert_array_equal(expected, result)
+
+
+@pytest.mark.parametrize('dtype', [np.float32, np.float64])
+def test_sklearnex_svc_sigmoid(dtype):
+    from sklearnex.svm import SVC
+    X_train = np.array([[-1, 2], [0, 0], [2, -1],
+                        [+1, +1], [+1, +2], [+2, +1]], dtype=dtype)
+    X_test = np.array([[0, 2], [0.5, 0.5],
+                       [0.3, 0.1], [2, 0], [-1, -1]], dtype=dtype)
+    y_train = np.array([1, 1, 1, 2, 2, 2], dtype=dtype)
+    svc = SVC(kernel='sigmoid').fit(X_train, y_train)
+
+    assert 'daal4py' in svc.__module__ or 'sklearnex' in svc.__module__
+    assert_array_equal(svc.dual_coef_, [[-1, -1, -1, 1, 1, 1]])
+    assert_array_equal(svc.support_, [0, 1, 2, 3, 4, 5])
+    assert_array_equal(svc.predict(X_test), [2, 2, 1, 2, 1])

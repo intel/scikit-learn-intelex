@@ -18,7 +18,7 @@ import os
 import sys
 test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
-examples_path = os.path.join(os.path.dirname(test_path), "examples")
+examples_path = os.path.join(os.path.dirname(test_path), "examples", "daal4py")
 sys.path.insert(0, examples_path)
 os.chdir(examples_path)
 
@@ -182,9 +182,9 @@ gen_examples = [
     ('decision_forest_classification_hist_batch',
      None, lambda r: r[1].prediction, (2021, 'P', 200)),
     ('decision_forest_regression_default_dense_batch',
-     'decision_forest_regression_batch.csv', lambda r: r[1].prediction),
+     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2021, 'P', 400)),
     ('decision_forest_regression_hist_batch',
-     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2021, 'P', 200)),
+     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2021, 'P', 400)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv',
      lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv',

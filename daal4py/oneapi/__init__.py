@@ -34,8 +34,12 @@ if "Windows" in platform.system():
     os.environ['PATH'] = installed_package_path + os.pathsep + os.environ['PATH']
 
 try:
-    from _oneapi import *
-    from _oneapi import _get_sycl_ctxt, _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
+    from daal4py._oneapi import *
+    from daal4py._oneapi import (
+        _get_sycl_ctxt,
+        _get_device_name_sycl_ctxt,
+        _get_sycl_ctxt_params
+    )
 except ModuleNotFoundError:
     raise
 except ImportError:

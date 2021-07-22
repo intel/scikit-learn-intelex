@@ -220,17 +220,10 @@ def _fit(self, X, y=None, sample_weight=None):
                          ", but a value of %r was passed" %
                          self.precompute_distances)
 
-    # avoid forcing order when copy_x=False
-    order = "C" if self.copy_x else None
-    X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32],
-                    order=order, copy=self.copy_x)
-
     daal_ready = not sp.issparse(X) and not precompute_distances
-    daal_ready = daal_ready and hasattr(X, '__array__')
-
     if daal_ready:
         X_len = _num_samples(X)
-        daal_ready = (self.n_clusters <= X_len)
+        daal_ready = self.n_clusters <= X_len
         if daal_ready and sample_weight is not None:
             sample_weight = np.asarray(sample_weight)
             daal_ready = (sample_weight.shape == (X_len,)) and (
@@ -252,12 +245,22 @@ def _fit(self, X, y=None, sample_weight=None):
         logging.info(
             "sklearn.cluster.KMeans."
             "fit: " + get_patch_message("daal"))
-        X = check_array(X, dtype=[np.float64, np.float32])
+        X = check_array(
+            X,
+            accept_sparse='csr', dtype=[np.float64, np.float32],
+            order="C" if self.copy_x else None,
+            copy=self.copy_x
+        )
         self.n_features_in_ = X.shape[1]
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_fit(
-                X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
-                random_state)
+                X, self.n_clusters,
+                self.max_iter,
+                self.tol,
+                self.init,
+                self.n_init,
+                random_state
+            )
     return self
 
 
