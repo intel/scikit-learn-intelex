@@ -62,73 +62,67 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
         if iterations_counter == n_iterations:
             iterations_counter = 0
             class_label += 1
-        tree_struct = tree["tree_structure"]
+        sub_tree = tree["tree_structure"]
 
         # root is leaf
-        if "leaf_value" in tree_struct:
-            mb.add_leaf(tree_id=tree_id, response=tree_struct["leaf_value"])
+        if "leaf_value" in sub_tree:
+            mb.add_leaf(tree_id=tree_id, response=sub_tree["leaf_value"])
             continue
 
         # add root
-        feat_val = tree_struct["threshold"]
+        feat_val = sub_tree["threshold"]
         if isinstance(feat_val, str):
             raise NotImplementedError(
                 "Categorical features are not supported in daal4py Gradient Boosting Trees")
         parent_id = mb.add_split(
-            tree_id=tree_id, feature_index=tree_struct["split_feature"],
+            tree_id=tree_id, feature_index=sub_tree["split_feature"],
             feature_value=feat_val)
 
         # create stack
-        node_stack: List[Node] = [Node(tree_struct["left_child"], parent_id, 0),
-                                  Node(tree_struct["right_child"], parent_id, 1)]
+        node_stack: List[Node] = [Node(sub_tree["left_child"], parent_id, 0),
+                                  Node(sub_tree["right_child"], parent_id, 1)]
 
         # dfs through it
         while node_stack:
-            tree_struct = node_stack[-1].tree
+            sub_tree = node_stack[-1].tree
             parent_id = node_stack[-1].parent_id
             position = node_stack[-1].position
             node_stack.pop()
 
             # current node is leaf
-            if "leaf_index" in tree_struct:
+            if "leaf_index" in sub_tree:
                 mb.add_leaf(
-                    tree_id=tree_id, response=tree_struct["leaf_value"],
+                    tree_id=tree_id, response=sub_tree["leaf_value"],
                     parent_id=parent_id, position=position)
                 continue
 
             # current node is split
-            feat_val = tree_struct["threshold"]
+            feat_val = sub_tree["threshold"]
             if isinstance(feat_val, str):
                 raise NotImplementedError(
                     "Categorical features are not supported in daal4py Gradient Boosting Trees")
             parent_id = mb.add_split(
-                tree_id=tree_id, feature_index=tree_struct["split_feature"],
+                tree_id=tree_id, feature_index=sub_tree["split_feature"],
                 feature_value=feat_val,
                 parent_id=parent_id, position=position)
 
             # append children
-            node_stack.append(Node(tree_struct["left_child"], parent_id, 0))
-            node_stack.append(Node(tree_struct["right_child"], parent_id, 1))
+            node_stack.append(Node(sub_tree["left_child"], parent_id, 0))
+            node_stack.append(Node(sub_tree["right_child"], parent_id, 1))
 
     return mb.model()
 
 
 def get_gbt_model_from_xgboost(booster: Any) -> Any:
     class Node:
-        def __init__(self, tree: str, parent_id: int, position: int):
+        def __init__(self, tree: Dict, parent_id: int, position: int):
             self.tree = tree
             self.parent_id = parent_id
             self.position = position
 
-    booster.dump_model("raw.txt")
-    with open("raw.txt", "r") as read_file:
-        xgb_model = read_file.read()
-    remove("./raw.txt")
+    trees_arr = booster.get_dump(dump_format="json")
     xgb_config = json.loads(booster.save_config())
 
-    updater = list(xgb_config["learner"]["gradient_booster"]["updater"].keys())[0]
-    max_depth = int(xgb_config["learner"]["gradient_booster"]
-                    ["updater"][updater]["train_param"]["max_depth"])
     n_features = int(xgb_config["learner"]["learner_model_param"]["num_feature"])
     n_classes = int(xgb_config["learner"]["learner_model_param"]["num_class"])
     base_score = float(xgb_config["learner"]["learner_model_param"]["base_score"])
@@ -137,7 +131,7 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
     objective_fun = xgb_config["learner"]["learner_train_param"]["objective"]
     if n_classes > 2:
         if objective_fun not in ["multi:softprob", "multi:softmax"]:
-           raise TypeError(
+            raise TypeError(
                 "multi:softprob and multi:softmax are only supported for multiclass classification")
     elif objective_fun.find("binary:") == 0:
         if objective_fun in ["binary:logistic", "binary:logitraw"]:
@@ -148,9 +142,7 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
     else:
         is_regression = True
 
-    last_booster_start = xgb_model.rfind("booster[") + 8
-    n_iterations = int((int(xgb_model[last_booster_start:xgb_model.find(
-        "]", last_booster_start)]) + 1) / (n_classes if n_classes > 2 else 1))
+    n_iterations = int(len(trees_arr) / (n_classes if n_classes > 2 else 1))
 
     # Create + base iteration
     if is_regression:
@@ -165,58 +157,55 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
     class_label = 0
     iterations_counter = 0
     mis_eq_yes = None
-    for tree in xgb_model.expandtabs(1).replace(" ", "").split("booster[")[1:]:
+    for tree in trees_arr:
+        n_nodes = 1
+        # find out the number of nodes in the tree
+        for node in tree.split("nodeid")[1:]:
+            node_id = int(node[3:node.find(",")])
+            if node_id + 1 > n_nodes:
+                n_nodes = node_id + 1
         if is_regression:
-            tree_id = mb.create_tree(len(tree.split("\n")) - 1)
+            tree_id = mb.create_tree(n_nodes)
         else:
-            tree_id = mb.create_tree(n_nodes=len(tree.split("\n")) - 1, class_label=class_label)
+            tree_id = mb.create_tree(n_nodes=n_nodes, class_label=class_label)
 
         iterations_counter += 1
         if iterations_counter == n_iterations:
             iterations_counter = 0
             class_label += 1
-        sub_tree = tree[tree.find("\n")+1:]
+        sub_tree = json.loads(tree)
 
         # root is leaf
-        if sub_tree.find("leaf") == sub_tree.find(":") + 1:
-            mb.add_leaf(
-                tree_id=tree_id, response=float(
-                    sub_tree[sub_tree.find("=") + 1: sub_tree.find("\n")]))
+        if "leaf" in sub_tree:
+            mb.add_leaf(tree_id=tree_id, response=sub_tree["leaf"])
             continue
 
         # add root
         try:
-            feature_name = sub_tree[sub_tree.find("[") + 1:sub_tree.find("<")]
-            str_index = re.sub(r'[^0-9]', '', feature_name)
-            feature_index = int(str_index)
+            feature_index = int(sub_tree["split"])
         except ValueError:
             raise TypeError("Feature names must be integers")
-        feature_value = np.nextafter(
-            np.single(sub_tree[sub_tree.find("<") + 1: sub_tree.find("]")]),
-            np.single(-np.inf))
+        feature_value = np.nextafter(np.single(sub_tree["split_condition"]), np.single(-np.inf))
         parent_id = mb.add_split(tree_id=tree_id, feature_index=feature_index,
                                  feature_value=feature_value)
 
         # create queue
-        yes_idx = sub_tree[sub_tree.find("yes=") + 4:sub_tree.find(",no")]
-        no_idx = sub_tree[sub_tree.find("no=") + 3:sub_tree.find(",missing")]
-        mis_idx = sub_tree[sub_tree.find("missing=") + 8:sub_tree.find("\n")]
+        yes_idx = sub_tree["yes"]
+        no_idx = sub_tree["no"]
+        mis_idx = sub_tree["missing"]
         if mis_eq_yes is None:
             if mis_idx == yes_idx:
                 mis_eq_yes = True
             elif mis_idx == no_idx:
                 mis_eq_yes = False
             else:
-                raise TypeError("Missing values are not supported in daal4py Gradient Boosting Trees")
+                raise TypeError(
+                    "Missing values are not supported in daal4py Gradient Boosting Trees")
         elif mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
             raise TypeError("Missing values are not supported in daal4py Gradient Boosting Trees")
         node_queue: Deque[Node] = deque()
-        node_queue.append(
-            Node(
-                sub_tree
-                [sub_tree.find("\n" + yes_idx + ":") + 1: sub_tree.find("\n" + no_idx + ":") + 1],
-                parent_id, 0))
-        node_queue.append(Node(sub_tree[sub_tree.find("\n" + no_idx + ":") + 1:], parent_id, 1))
+        node_queue.append(Node(sub_tree["children"][0], parent_id, 0))
+        node_queue.append(Node(sub_tree["children"][1], parent_id, 1))
 
         # bfs through it
         while node_queue:
@@ -226,41 +215,30 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             node_queue.popleft()
 
             # current node is leaf
-            if sub_tree.find("leaf") == sub_tree.find(":") + 1:
+            if "leaf" in sub_tree:
                 mb.add_leaf(
-                    tree_id=tree_id,
-                    response=float(sub_tree[sub_tree.find("=") + 1: sub_tree.find("\n")]),
+                    tree_id=tree_id, response=sub_tree["leaf"],
                     parent_id=parent_id, position=position)
                 continue
 
             # current node is split
             try:
-                feature_name = sub_tree[sub_tree.find("[") + 1:sub_tree.find("<")]
-                str_index = re.sub(r'[^0-9]', '', feature_name)
-                feature_index = int(str_index)
+                feature_index = int(sub_tree["split"])
             except ValueError:
                 raise TypeError("Feature names must be integers")
-            feature_value = np.nextafter(
-                np.single(sub_tree[sub_tree.find("<") + 1: sub_tree.find("]")]),
-                np.single(-np.inf))
+            feature_value = np.nextafter(np.single(sub_tree["split_condition"]), np.single(-np.inf))
             parent_id = mb.add_split(
                 tree_id=tree_id, feature_index=feature_index, feature_value=feature_value,
                 parent_id=parent_id, position=position)
 
             # append to queue
-            yes_idx = sub_tree[sub_tree.find("yes=") + 4:sub_tree.find(",no")]
-            no_idx = sub_tree[sub_tree.find("no=") + 3:sub_tree.find(",missing")]
-            mis_idx = sub_tree[sub_tree.find("missing=") + 8:sub_tree.find("\n")]
+            yes_idx = sub_tree["yes"]
+            no_idx = sub_tree["no"]
+            mis_idx = sub_tree["missing"]
             if mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
-                raise TypeError("Missing values are not supported in daal4py Gradient Boosting Trees")
-            node_queue.append(
-                Node(
-                    sub_tree
-                    [sub_tree.find("\n" + yes_idx + ":") + 1: sub_tree.find("\n" + no_idx + ":") + 1],
-                    parent_id, 0))
-            node_queue.append(
-                Node(
-                    sub_tree[sub_tree.find("\n" + no_idx + ":") + 1:],
-                    parent_id, 1))
+                raise TypeError(
+                    "Missing values are not supported in daal4py Gradient Boosting Trees")
+            node_queue.append(Node(sub_tree["children"][0], parent_id, 0))
+            node_queue.append(Node(sub_tree["children"][1], parent_id, 1))
 
     return mb.model()
