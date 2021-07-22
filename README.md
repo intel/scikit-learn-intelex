@@ -1,4 +1,7 @@
 # Intel(R) Extension for Scikit-learn*
+
+[Installation](https://github.com/intel/scikit-learn-intelex#-installation)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://intel.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Notebook examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Medium blogs](https://medium.com/intel-analytics-software/tagged/machine-learning)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Get Started](https://github.com/intel/scikit-learn-intelex#%EF%B8%8F-get-started)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support](https://github.com/intel/scikit-learn-intelex#-support)&nbsp;&nbsp;&nbsp;
+
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/21716/badge.svg)](https://scan.coverity.com/projects/daal4py)
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/intel/scikit-learn-intelex/discussions)
