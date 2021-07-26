@@ -17,23 +17,66 @@
 from onedal import _backend
 
 
-class _HostPolicy(_backend.host_policy):
+def _get_policy(queue, *data):
+    data_queue = _get_queue(*data)
 
+    if queue is None:
+        if data_queue is None:
+            return _HostInteropPolicy()
+        return _DataParallelInteropPolicy(data_queue)
+    return _DataParallelInteropPolicy(queue)
+
+
+def _get_queue(*data):
+    if len(data) > 0 and hasattr(data[0], '__sycl_usm_array_interface__'):
+        return data[0].__sycl_usm_array_interface__['syclobj']
+    return None
+    # queues = [
+    #     item.__sycl_usm_array_interface__['syclobj']
+    #     for item in data if hasattr(item, '__sycl_usm_array_interface__') and item is not None
+    # ]
+
+    # for i in range(0, len(queues) - 1):
+    #     if queues[i].sycl_device != queues[i].sycl_device:
+    #         raise RuntimeError("All input data object shall reside on the same device")
+
+    # return queues[0] if len(queues) > 0 else None
+
+
+def _get_device_name_from_daal4py():
+    import sys
+    if 'daal4py.oneapi' in sys.modules:
+        import daal4py.oneapi as d4p_oneapi
+        return d4p_oneapi._get_device_name_sycl_ctxt()
+    return None
+
+
+class _Daal4PyContextSaver:
     def __init__(self):
         import sys
 
-        self.host_ctx, self.gpu_ctx = None, None
-        if 'daal4py.oneapi' in sys.modules:
-            import daal4py.oneapi as d4p_oneapi
-            devname = d4p_oneapi._get_device_name_sycl_ctxt()
-            if devname == 'gpu':
-                self.gpu_ctx = d4p_oneapi._get_sycl_ctxt()
-                self.host_ctx = d4p_oneapi.sycl_execution_context('host')
-                self.host_ctx.apply()
-        super().__init__()
+        self._d4p_context = None
+        self._host_context = None
+        if 'daal4py.oneapi' is sys.modules:
+            from daal4py.oneapi import _get_sycl_ctxt, sycl_execution_context
+            self._d4p_context = _get_sycl_ctxt()
+            self._host_context = sycl_execution_context('host')
+            self._host_context.apply()
 
     def __del__(self):
-        if self.host_ctx:
-            del self.host_ctx
-        if self.gpu_ctx:
-            self.gpu_ctx.apply()
+        if self._d4p_context:
+            self._d4p_context.apply()
+
+
+class _DataParallelInteropPolicy(_backend.data_parallel_policy):
+    def __init__(self, queue):
+        self._queue = queue
+        self._d4p_interop = _Daal4PyContextSaver()
+        super().__init__(self._queue.addressof_ref())
+
+
+class _HostInteropPolicy(_backend.host_policy):
+    def __init__(self):
+        super().__init__()
+        self._d4p_interop = _Daal4PyContextSaver()
+

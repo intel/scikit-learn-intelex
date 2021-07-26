@@ -23,15 +23,22 @@ from sklearn.metrics.pairwise import rbf_kernel
 from onedal.svm import NuSVR
 from sklearn.svm import NuSVR as SklearnNuSVR
 
+from onedal.tests.utils._device_selection import (get_queues,
+                                                  pass_if_not_implemented_for_gpu)
 
-def test_diabetes_simple():
+
+@pass_if_not_implemented_for_gpu(reason="nusvr is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
+def test_diabetes_simple(queue):
     diabetes = datasets.load_diabetes()
     clf = NuSVR(kernel='linear', C=10.)
-    clf.fit(diabetes.data, diabetes.target)
-    assert clf.score(diabetes.data, diabetes.target) > 0.02
+    clf.fit(diabetes.data, diabetes.target, queue=queue)
+    assert clf.score(diabetes.data, diabetes.target) > 0.02 # TODO: pass a queue
 
 
-def test_input_format_for_diabetes():
+@pass_if_not_implemented_for_gpu(reason="nusvr is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
+def test_input_format_for_diabetes(queue):
     diabetes = datasets.load_diabetes()
 
     c_contiguous_numpy = np.asanyarray(diabetes.data, dtype='float', order='C')
@@ -40,9 +47,9 @@ def test_input_format_for_diabetes():
     assert not c_contiguous_numpy.flags.fnc
 
     clf = NuSVR(kernel='linear', C=10.)
-    clf.fit(c_contiguous_numpy, diabetes.target)
+    clf.fit(c_contiguous_numpy, diabetes.target, queue=queue)
     dual_c_contiguous_numpy = clf.dual_coef_
-    res_c_contiguous_numpy = clf.predict(c_contiguous_numpy)
+    res_c_contiguous_numpy = clf.predict(c_contiguous_numpy, queue=queue)
 
     f_contiguous_numpy = np.asanyarray(diabetes.data, dtype='float', order='F')
     assert not f_contiguous_numpy.flags.c_contiguous
@@ -50,36 +57,38 @@ def test_input_format_for_diabetes():
     assert f_contiguous_numpy.flags.fnc
 
     clf = NuSVR(kernel='linear', C=10.)
-    clf.fit(f_contiguous_numpy, diabetes.target)
+    clf.fit(f_contiguous_numpy, diabetes.target, queue=queue)
     dual_f_contiguous_numpy = clf.dual_coef_
-    res_f_contiguous_numpy = clf.predict(f_contiguous_numpy)
+    res_f_contiguous_numpy = clf.predict(f_contiguous_numpy, queue=queue)
     assert_allclose(dual_c_contiguous_numpy, dual_f_contiguous_numpy)
     assert_allclose(res_c_contiguous_numpy, res_f_contiguous_numpy)
 
 
-def test_predict():
+@pass_if_not_implemented_for_gpu(reason="nusvr is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
+def test_predict(queue):
     iris = datasets.load_iris()
     X = iris.data
     y = iris.target
 
-    reg = NuSVR(kernel='linear', C=0.1).fit(X, y)
+    reg = NuSVR(kernel='linear', C=0.1).fit(X, y, queue=queue)
 
     linear = np.dot(X, reg.support_vectors_.T)
     dec = np.dot(linear, reg.dual_coef_.T) + reg.intercept_
-    assert_array_almost_equal(dec.ravel(), reg.predict(X).ravel())
+    assert_array_almost_equal(dec.ravel(), reg.predict(X, queue=queue).ravel())
 
-    reg = NuSVR(kernel='rbf', gamma=1).fit(X, y)
+    reg = NuSVR(kernel='rbf', gamma=1).fit(X, y, queue=queue)
 
     rbfs = rbf_kernel(X, reg.support_vectors_, gamma=reg.gamma)
     dec = np.dot(rbfs, reg.dual_coef_.T) + reg.intercept_
-    assert_array_almost_equal(dec.ravel(), reg.predict(X).ravel())
+    assert_array_almost_equal(dec.ravel(), reg.predict(X, queue=queue).ravel())
 
 
-def _test_diabetes_compare_with_sklearn(kernel):
+def _test_diabetes_compare_with_sklearn(queue, kernel):
     diabetes = datasets.load_diabetes()
     clf_onedal = NuSVR(kernel=kernel, nu=.25, C=10.)
-    clf_onedal.fit(diabetes.data, diabetes.target)
-    result = clf_onedal.score(diabetes.data, diabetes.target)
+    clf_onedal.fit(diabetes.data, diabetes.target, queue=queue)
+    result = clf_onedal.score(diabetes.data, diabetes.target) # TODO: pass a queue
 
     clf_sklearn = SklearnNuSVR(kernel=kernel, nu=.25, C=10.)
     clf_sklearn.fit(diabetes.data, diabetes.target)
@@ -92,17 +101,19 @@ def _test_diabetes_compare_with_sklearn(kernel):
     assert_allclose(clf_sklearn.dual_coef_, clf_onedal.dual_coef_, atol=1e-2)
 
 
+@pass_if_not_implemented_for_gpu(reason="nusvr is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly', 'sigmoid'])
-def test_diabetes_compare_with_sklearn(kernel):
-    _test_diabetes_compare_with_sklearn(kernel)
+def test_diabetes_compare_with_sklearn(queue, kernel):
+    _test_diabetes_compare_with_sklearn(queue, kernel)
 
 
-def _test_boston_rbf_compare_with_sklearn(C, nu, gamma):
+def _test_boston_rbf_compare_with_sklearn(queue, C, nu, gamma):
     diabetes = datasets.load_boston()
 
     clf = NuSVR(kernel='rbf', gamma=gamma, C=C, nu=nu)
-    clf.fit(diabetes.data, diabetes.target)
-    result = clf.score(diabetes.data, diabetes.target)
+    clf.fit(diabetes.data, diabetes.target, queue=queue)
+    result = clf.score(diabetes.data, diabetes.target) # TODO: pass a queue
 
     clf = SklearnNuSVR(kernel='rbf', gamma=gamma, C=C, nu=nu)
     clf.fit(diabetes.data, diabetes.target)
@@ -112,19 +123,21 @@ def _test_boston_rbf_compare_with_sklearn(C, nu, gamma):
     assert abs(result - expected) < 1e-3
 
 
+@pass_if_not_implemented_for_gpu(reason="nusvr is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('gamma', ['scale', 'auto'])
 @pytest.mark.parametrize('C', [100.0, 1000.0])
 @pytest.mark.parametrize('nu', [0.25, 0.75])
-def test_boston_rbf_compare_with_sklearn(C, nu, gamma):
-    _test_boston_rbf_compare_with_sklearn(C, nu, gamma)
+def test_boston_rbf_compare_with_sklearn(queue, C, nu, gamma):
+    _test_boston_rbf_compare_with_sklearn(queue, C, nu, gamma)
 
 
-def _test_boston_linear_compare_with_sklearn(C, nu):
+def _test_boston_linear_compare_with_sklearn(queue, C, nu):
     diabetes = datasets.load_boston()
 
     clf = NuSVR(kernel='linear', C=C, nu=nu)
-    clf.fit(diabetes.data, diabetes.target)
-    result = clf.score(diabetes.data, diabetes.target)
+    clf.fit(diabetes.data, diabetes.target, queue=queue)
+    result = clf.score(diabetes.data, diabetes.target) # TODO: pass a queue
 
     clf = SklearnNuSVR(kernel='linear', C=C, nu=nu)
     clf.fit(diabetes.data, diabetes.target)
@@ -134,18 +147,20 @@ def _test_boston_linear_compare_with_sklearn(C, nu):
     assert abs(result - expected) < 1e-3
 
 
+@pass_if_not_implemented_for_gpu(reason="nusvr is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('C', [0.001, 0.1])
 @pytest.mark.parametrize('nu', [0.25, 0.75])
-def test_boston_linear_compare_with_sklearn(C, nu):
-    _test_boston_linear_compare_with_sklearn(C, nu)
+def test_boston_linear_compare_with_sklearn(queue, C, nu):
+    _test_boston_linear_compare_with_sklearn(queue, C, nu)
 
 
-def _test_boston_poly_compare_with_sklearn(params):
+def _test_boston_poly_compare_with_sklearn(queue, params):
     diabetes = datasets.load_boston()
 
     clf = NuSVR(kernel='poly', **params)
-    clf.fit(diabetes.data, diabetes.target)
-    result = clf.score(diabetes.data, diabetes.target)
+    clf.fit(diabetes.data, diabetes.target, queue=queue)
+    result = clf.score(diabetes.data, diabetes.target) # TODO: pass a queue
 
     clf = SklearnNuSVR(kernel='poly', **params)
     clf.fit(diabetes.data, diabetes.target)
@@ -155,25 +170,29 @@ def _test_boston_poly_compare_with_sklearn(params):
     assert abs(result - expected) < 1e-3
 
 
+@pass_if_not_implemented_for_gpu(reason="nusvr is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('params', [
     {'degree': 2, 'coef0': 0.1, 'gamma': 'scale', 'C': 100, 'nu': .25},
     {'degree': 3, 'coef0': 0.0, 'gamma': 'scale', 'C': 1000, 'nu': .75}
 ])
-def test_boston_poly_compare_with_sklearn(params):
-    _test_boston_poly_compare_with_sklearn(params)
+def test_boston_poly_compare_with_sklearn(queue, params):
+    _test_boston_poly_compare_with_sklearn(queue, params)
 
 
-def test_pickle():
+@pass_if_not_implemented_for_gpu(reason="nusvr is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
+def test_pickle(queue):
     diabetes = datasets.load_diabetes()
 
     clf = NuSVR(kernel='rbf', C=10.)
-    clf.fit(diabetes.data, diabetes.target)
-    expected = clf.predict(diabetes.data)
+    clf.fit(diabetes.data, diabetes.target, queue=queue)
+    expected = clf.predict(diabetes.data, queue=queue)
 
     import pickle
     dump = pickle.dumps(clf)
     clf2 = pickle.loads(dump)
 
     assert type(clf2) == clf.__class__
-    result = clf2.predict(diabetes.data)
+    result = clf2.predict(diabetes.data, queue=queue)
     assert_array_equal(expected, result)

@@ -23,8 +23,11 @@ from onedal.primitives import linear_kernel
 from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
 
+from onedal.tests.utils._device_selection import (get_queues,
+                                                  pass_if_not_implemented_for_gpu)
 
-def _test_input_format_c_contiguous_numpy(dtype):
+
+def _test_input_format_c_contiguous_numpy(queue, dtype):
     rng = np.random.RandomState(0)
     x_default = np.array(5 * rng.random_sample((10, 4)), dtype=dtype)
 
@@ -33,17 +36,18 @@ def _test_input_format_c_contiguous_numpy(dtype):
     assert not x_numpy.flags.f_contiguous
     assert not x_numpy.flags.fnc
 
-    expected = linear_kernel(x_default)
-    result = linear_kernel(x_numpy)
+    expected = linear_kernel(x_default, queue=queue)
+    result = linear_kernel(x_numpy, queue=queue)
     assert_allclose(expected, result)
 
 
+@pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-def test_input_format_c_contiguous_numpy(dtype):
-    _test_input_format_c_contiguous_numpy(dtype)
+def test_input_format_c_contiguous_numpy(queue, dtype):
+    _test_input_format_c_contiguous_numpy(queue, dtype)
 
 
-def _test_input_format_f_contiguous_numpy(dtype):
+def _test_input_format_f_contiguous_numpy(queue, dtype):
     rng = np.random.RandomState(0)
     x_default = np.array(5 * rng.random_sample((10, 4)), dtype=dtype)
 
@@ -52,17 +56,18 @@ def _test_input_format_f_contiguous_numpy(dtype):
     assert x_numpy.flags.f_contiguous
     assert x_numpy.flags.fnc
 
-    expected = linear_kernel(x_default)
-    result = linear_kernel(x_numpy)
+    expected = linear_kernel(x_default, queue=queue)
+    result = linear_kernel(x_numpy, queue=queue)
     assert_allclose(expected, result)
 
 
+@pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-def test_input_format_f_contiguous_numpy(dtype):
-    _test_input_format_f_contiguous_numpy(dtype)
+def test_input_format_f_contiguous_numpy(queue, dtype):
+    _test_input_format_f_contiguous_numpy(queue, dtype)
 
 
-def _test_input_format_c_not_contiguous_numpy(dtype):
+def _test_input_format_c_not_contiguous_numpy(queue, dtype):
     rng = np.random.RandomState(0)
     x_default = np.array(5 * rng.random_sample((10, 4)), dtype=dtype)
 
@@ -75,17 +80,18 @@ def _test_input_format_c_not_contiguous_numpy(dtype):
     assert not x_numpy.flags.f_contiguous
     assert not x_numpy.flags.fnc
 
-    expected = linear_kernel(x_default)
-    result = linear_kernel(x_numpy)
+    expected = linear_kernel(x_default, queue=queue)
+    result = linear_kernel(x_numpy, queue=queue)
     assert_allclose(expected, result)
 
 
+@pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-def test_input_format_c_not_contiguous_numpy(dtype):
-    _test_input_format_c_not_contiguous_numpy(dtype)
+def test_input_format_c_not_contiguous_numpy(queue, dtype):
+    _test_input_format_c_not_contiguous_numpy(queue, dtype)
 
 
-def _test_input_format_c_contiguous_pandas(dtype):
+def _test_input_format_c_contiguous_pandas(queue, dtype):
     pd = pytest.importorskip('pandas')
     rng = np.random.RandomState(0)
     x_default = np.array(5 * rng.random_sample((10, 4)), dtype=dtype)
@@ -96,17 +102,18 @@ def _test_input_format_c_contiguous_pandas(dtype):
     assert not x_numpy.flags.fnc
     x_df = pd.DataFrame(x_numpy)
 
-    expected = linear_kernel(x_df)
-    result = linear_kernel(x_numpy)
+    expected = linear_kernel(x_df, queue=queue)
+    result = linear_kernel(x_numpy, queue=queue)
     assert_allclose(expected, result)
 
 
+@pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-def test_input_format_c_contiguous_pandas(dtype):
-    _test_input_format_c_contiguous_pandas(dtype)
+def test_input_format_c_contiguous_pandas(queue, dtype):
+    _test_input_format_c_contiguous_pandas(queue, dtype)
 
 
-def _test_input_format_f_contiguous_pandas(dtype):
+def _test_input_format_f_contiguous_pandas(queue, dtype):
     pd = pytest.importorskip('pandas')
     rng = np.random.RandomState(0)
     x_default = np.array(5 * rng.random_sample((10, 4)), dtype=dtype)
@@ -117,11 +124,12 @@ def _test_input_format_f_contiguous_pandas(dtype):
     assert x_numpy.flags.fnc
     x_df = pd.DataFrame(x_numpy)
 
-    expected = linear_kernel(x_df)
-    result = linear_kernel(x_numpy)
+    expected = linear_kernel(x_df, queue=queue)
+    result = linear_kernel(x_numpy, queue=queue)
     assert_allclose(expected, result)
 
 
+@pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-def test_input_format_f_contiguous_pandas(dtype):
-    _test_input_format_f_contiguous_pandas(dtype)
+def test_input_format_f_contiguous_pandas(queue, dtype):
+    _test_input_format_f_contiguous_pandas(queue, dtype)

@@ -31,7 +31,7 @@ from ..datatypes import (
     _check_n_features
 )
 
-from ..common._policy import _HostPolicy
+from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
 from onedal import _backend
 
@@ -176,7 +176,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             'tau': self.tau, 'shrinking': self.shrinking, 'cache_size': self.cache_size
         }
 
-    def _fit(self, X, y, sample_weight, module):
+    def _fit(self, X, y, sample_weight, module, queue):
         if hasattr(self, 'decision_function_shape'):
             if self.decision_function_shape not in ('ovr', 'ovo', None):
                 raise ValueError(
@@ -204,7 +204,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         else:
             self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
 
-        policy = _HostPolicy()
+        policy = _get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
         result = module.train(policy, params, *to_table(X, y, sample_weight))
 
@@ -240,7 +240,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             m.first_class_response, m.second_class_response = 0, 1
         return m
 
-    def _predict(self, X, module):
+    def _predict(self, X, module, queue):
         _check_is_fitted(self)
         if self.break_ties and self.decision_function_shape == 'ovo':
             raise ValueError("break_ties must be False when "
@@ -264,7 +264,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     "cannot use sparse input in %r trained on dense data"
                     % type(self).__name__)
 
-            policy = _HostPolicy()
+            policy = _get_policy(queue, X)
             params = self._get_onedal_params(X)
 
             if hasattr(self, '_onedal_model'):
@@ -293,7 +293,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             sum_of_confidences / (3 * (np.abs(sum_of_confidences) + 1))
         return votes + transformed_confidences
 
-    def _decision_function(self, X, module):
+    def _decision_function(self, X, module, queue):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
                          force_all_finite=False, accept_sparse='csr')
@@ -309,7 +309,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 "cannot use sparse input in %r trained on dense data"
                 % type(self).__name__)
 
-        policy = _HostPolicy()
+        policy = _get_policy(queue, X)
         params = self._get_onedal_params(X)
 
         if hasattr(self, '_onedal_model'):
@@ -346,11 +346,11 @@ class SVR(RegressorMixin, BaseSVM):
                          break_ties=False, algorithm=algorithm)
         self.svm_type = SVMtype.epsilon_svr
 
-    def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, _backend.svm.regression)
+    def fit(self, X, y, sample_weight=None, queue=None):
+        return super()._fit(X, y, sample_weight, _backend.svm.regression, queue)
 
-    def predict(self, X):
-        y = super()._predict(X, _backend.svm.regression)
+    def predict(self, X, queue=None):
+        y = super()._predict(X, _backend.svm.regression, queue)
         return y.ravel()
 
 
@@ -377,17 +377,17 @@ class SVC(ClassifierMixin, BaseSVM):
             y, self.class_weight, dtype)
         return y
 
-    def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, _backend.svm.classification)
+    def fit(self, X, y, sample_weight=None, queue=None):
+        return super()._fit(X, y, sample_weight, _backend.svm.classification, queue)
 
-    def predict(self, X):
-        y = super()._predict(X, _backend.svm.classification)
+    def predict(self, X, queue=None):
+        y = super()._predict(X, _backend.svm.classification, queue)
         if len(self.classes_) == 2:
             y = y.ravel()
         return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
-    def decision_function(self, X):
-        return super()._decision_function(X, _backend.svm.classification)
+    def decision_function(self, X, queue=None):
+        return super()._decision_function(X, _backend.svm.classification, queue)
 
 
 class NuSVR(RegressorMixin, BaseSVM):
@@ -408,11 +408,11 @@ class NuSVR(RegressorMixin, BaseSVM):
                          break_ties=False, algorithm=algorithm)
         self.svm_type = SVMtype.nu_svr
 
-    def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, _backend.svm.nu_regression)
+    def fit(self, X, y, sample_weight=None, queue=None):
+        return super()._fit(X, y, sample_weight, _backend.svm.nu_regression, queue)
 
-    def predict(self, X):
-        y = super()._predict(X, _backend.svm.nu_regression)
+    def predict(self, X, queue=None):
+        y = super()._predict(X, _backend.svm.nu_regression, queue)
         return y.ravel()
 
 
@@ -439,14 +439,14 @@ class NuSVC(ClassifierMixin, BaseSVM):
             y, self.class_weight, dtype)
         return y
 
-    def fit(self, X, y, sample_weight=None):
-        return super()._fit(X, y, sample_weight, _backend.svm.nu_classification)
+    def fit(self, X, y, sample_weight=None, queue=None):
+        return super()._fit(X, y, sample_weight, _backend.svm.nu_classification, queue)
 
-    def predict(self, X):
-        y = super()._predict(X, _backend.svm.nu_classification)
+    def predict(self, X, queue=None):
+        y = super()._predict(X, _backend.svm.nu_classification, queue)
         if len(self.classes_) == 2:
             y = y.ravel()
         return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
 
-    def decision_function(self, X):
-        return super()._decision_function(X, _backend.svm.nu_classification)
+    def decision_function(self, X, queue=None):
+        return super()._decision_function(X, _backend.svm.nu_classification, queue)
