@@ -19,11 +19,12 @@ from .dispatcher import patch_sklearn
 from .dispatcher import unpatch_sklearn
 from .dispatcher import get_patch_names
 from .dispatcher import get_patch_map
+from ._config import get_config, set_config, config_context
 
 __all__ = [
     "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "get_patch_map", "cluster", "decomposition",
-    "ensemble", "linear_model",
+    "get_patch_map", "get_config", "set_config", "config_context",
+    "cluster", "decomposition", "ensemble", "linear_model",
     "manifold", "neighbors", "svm", "metrics",
 ]
 
