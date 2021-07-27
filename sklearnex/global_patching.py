@@ -15,8 +15,8 @@
 # limitations under the License.
 #===============================================================================
 
-import sys
 import os
+
 
 def get_patch_str():
     return \
@@ -46,6 +46,7 @@ def global_patching():
     with open(distributor_file_path,'a',encoding = 'utf-8') as distributor_file:
         distributor_file.write("\n" + get_patch_str() + "\n")
 
+
 def global_unpatching():
     try:
         import sklearn
@@ -62,8 +63,3 @@ def global_unpatching():
 
     with open(distributor_file_path,'w',encoding = 'utf-8') as distributor_file:
         distributor_file.write(lines)
-
-#global_patching()
-#global_unpatching()
-
-
