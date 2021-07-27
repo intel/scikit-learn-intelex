@@ -33,13 +33,17 @@ def _main():
 
     parser.add_argument('-m', action='store_true', dest='module',
                         help="Executes following as a module")
-    parser.add_argument('name', help="Script or module name")
+    parser.add_argument('name', help="Script or module name. Type 'patch' or"
+                        " 'unpatch' to, patch/unpatch all scikit-learn applications"
+                        " (in this case other arguments must be empty)")
     parser.add_argument('args', nargs=argparse.REMAINDER,
                         help="Command line arguments")
     args = parser.parse_args()
 
-    global_patching_opt = not args.module and not len(args.args) and args.name == "patch"
-    global_unpatching_opt = not args.module and not len(args.args) and args.name == "unpatch"
+    global_patching_opt = (not args.module and not len(args.args)
+                                                    and args.name == "patch")
+    global_unpatching_opt = (not args.module and not len(args.args)
+                                                    and args.name == "unpatch")
 
     if global_patching_opt:
         from .global_patching import global_patching
