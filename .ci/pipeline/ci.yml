@@ -150,7 +150,7 @@ jobs:
       conda activate CB
       cd ..
       python -m sklearnex patch
-      python -c "from sklearn impor SVC; assert SVC._class_ in 'sklearnex'"
+      python -c "from sklearn import SVC; assert SVC._class_ in 'sklearnex'"
     displayName: global patching testing
 
 - job: MacOS
@@ -185,7 +185,7 @@ jobs:
       source activate CB
       cd ..
       python -m sklearnex patch
-      python -c "from sklearn impor SVC; assert SVC._class_ in 'sklearnex'"
+      python -c "from sklearn import SVC; assert SVC._class_ in 'sklearnex'"
     displayName: global patching testing
 
 - job: Windows_DPCPP
@@ -214,12 +214,12 @@ jobs:
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       cd ..
       pytest --pyargs s/sklearnex/tests/
-    displayName: conda build
+    displayName: install sklearnex
   - script: |
       call activate CB
       cd ..
       python -m sklearnex patch
-      python -c "from sklearn impor SVC; assert SVC._class_ in 'sklearnex'"
+      python -c "from sklearn import SVC; assert SVC._class_ in 'sklearnex'"
     displayName: global patching testing
   - task: CopyFiles@2
     inputs:
