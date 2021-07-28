@@ -20,7 +20,7 @@ import os
 
 def get_patch_str():
     return \
-"""try:
+    """try:
     from sklearnex import patch_sklearn
     patch_sklearn()
     del patch_sklearn
@@ -28,7 +28,7 @@ except (ImportError, ModuleNotFoundError):
     pass"""
 
 
-def global_patching():
+def patch_sklearn_global():
     try:
         import sklearn
     except ImportError:
@@ -36,18 +36,19 @@ def global_patching():
         raise ImportError("Scikit-learn could not be imported. Nothing to patch\n")
 
     init_file_path = sklearn.__file__
-    distributor_file_path = os.path.join(os.path.dirname(init_file_path), "_distributor_init.py")
-    
-    with open(distributor_file_path,'r',encoding = 'utf-8') as distributor_file:
+    distributor_file_path = os.path.join(os.path.dirname(init_file_path),
+                                                            "_distributor_init.py")
+
+    with open(distributor_file_path, 'r', encoding='utf-8') as distributor_file:
         if get_patch_str() in distributor_file.read():
             print("Scikit-learn already patched")
             exit(0)
-    
-    with open(distributor_file_path,'a',encoding = 'utf-8') as distributor_file:
+
+    with open(distributor_file_path, 'a', encoding='utf-8') as distributor_file:
         distributor_file.write("\n" + get_patch_str() + "\n")
 
 
-def global_unpatching():
+def unpatch_sklearn_global():
     try:
         import sklearn
     except ImportError:
@@ -55,11 +56,12 @@ def global_unpatching():
         raise ImportError("Scikit-learn could not be imported. Nothing to unpatch\n")
 
     init_file_path = sklearn.__file__
-    distributor_file_path = os.path.join(os.path.dirname(init_file_path), "_distributor_init.py")
-    
-    with open(distributor_file_path,'r',encoding = 'utf-8') as distributor_file:
+    distributor_file_path = os.path.join(os.path.dirname(init_file_path),
+                                                            "_distributor_init.py")
+
+    with open(distributor_file_path, 'r' ,encoding='utf-8') as distributor_file:
         lines = distributor_file.read()
         lines = lines.replace("\n" + get_patch_str(), '')
 
-    with open(distributor_file_path,'w',encoding = 'utf-8') as distributor_file:
+    with open(distributor_file_path, 'w' ,encoding='utf-8') as distributor_file:
         distributor_file.write(lines)

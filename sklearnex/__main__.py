@@ -40,19 +40,19 @@ def _main():
                         help="Command line arguments")
     args = parser.parse_args()
 
-    global_patching_opt = (not args.module and not len(args.args)
-                                                    and args.name == "patch")
-    global_unpatching_opt = (not args.module and not len(args.args)
-                                                    and args.name == "unpatch")
+    patch_sklearn_global_ready = (not args.module and not len(args.args) and
+                                                args.name == "patch")
+    unpatch_sklearn_global_ready = (not args.module and not len(args.args) and
+                                                args.name == "unpatch")
 
-    if global_patching_opt:
-        from .global_patching import global_patching
-        global_patching()
+    if patch_sklearn_global_ready:
+        from .global_patching import patch_sklearn_global
+        patch_sklearn_global()
         return
-    
-    if global_unpatching_opt:
-        from .global_patching import global_unpatching
-        global_unpatching()
+
+    if unpatch_sklearn_global_ready:
+        from .global_patching import unpatch_sklearn_global
+        unpatch_sklearn_global()
         return
 
     try:
