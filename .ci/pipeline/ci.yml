@@ -187,9 +187,6 @@ jobs:
       python -c "from sklearn impor SVC; assert SVC._class_ in 'sklearnex'"
     displayName: global patching testing
 
-# Need update dpcpp to 2021.3 (problem with download)
-# See here: https://github.com/intel/scikit-learn-intelex/pull/712
-
 - job: Windows_DPCPP
   pool:
     vmImage: 'windows-latest'
@@ -208,7 +205,6 @@ jobs:
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
       conda build --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
     displayName: conda build
-
   - script: |
      call activate CB
      pip install daal numpy scikit-learn
@@ -218,13 +214,12 @@ jobs:
      cd ..
      pytest --pyargs s/sklearnex/tests/
    displayName: conda build
- - script: |
+  - script: |
      call activate CB
      cd ..
      python -m sklearnex patch
      python -c "from sklearn impor SVC; assert SVC._class_ in 'sklearnex'"
    displayName: global patching testing
-
   - task: CopyFiles@2
     inputs:
       SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
