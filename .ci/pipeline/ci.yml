@@ -190,48 +190,48 @@ jobs:
 # Need update dpcpp to 2021.3 (problem with download)
 # See here: https://github.com/intel/scikit-learn-intelex/pull/712
 
- - job: Windows_DPCPP
-   pool:
-     vmImage: 'windows-latest'
-   steps:
-   - task: UsePythonVersion@0
-     displayName: 'Use Python $(python.version)'
-   - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
-     timeoutInMinutes: 15
-     displayName: oneAPI environment
-   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-     displayName: Add conda to PATH
-   - script: conda create -q -y -n CB python=$(python.version) conda-build conda-verify
-     displayName: Create Anaconda environment
-   - script: |
-       call activate CB
-       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-       conda build --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
-     displayName: conda build
-
-   - script: |
-      call activate CB
-      pip install daal numpy scikit-learn
-      pip install -r requirements-test.txt
-      conda install -y 'C:\Miniconda\envs\CB\pkgs\daal4py*'
-      python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
-      cd ..
-      pytest --pyargs s/sklearnex/tests/
-    displayName: conda build
+- job: Windows_DPCPP
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+  - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
+    timeoutInMinutes: 15
+    displayName: oneAPI environment
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+  - script: conda create -q -y -n CB python=$(python.version) conda-build conda-verify
+    displayName: Create Anaconda environment
   - script: |
       call activate CB
-      cd ..
-      python -m sklearnex patch
-      python -c "from sklearn impor SVC; assert SVC._class_ in 'sklearnex'"
-    displayName: global patching testing
+      set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
+      conda build --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
+    displayName: conda build
 
-   - task: CopyFiles@2
-     inputs:
-       SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
-       Contents: 'daal4py*'
-       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-   - task: PublishPipelineArtifact@0
-     inputs:
-       artifactName: 'daal4py win'
-       targetPath: '$(Build.ArtifactStagingDirectory)/'
-     condition: always()
+  - script: |
+     call activate CB
+     pip install daal numpy scikit-learn
+     pip install -r requirements-test.txt
+     conda install -y 'C:\Miniconda\envs\CB\pkgs\daal4py*'
+     python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
+     cd ..
+     pytest --pyargs s/sklearnex/tests/
+   displayName: conda build
+ - script: |
+     call activate CB
+     cd ..
+     python -m sklearnex patch
+     python -c "from sklearn impor SVC; assert SVC._class_ in 'sklearnex'"
+   displayName: global patching testing
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
+      Contents: 'daal4py*'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'daal4py win'
+      targetPath: '$(Build.ArtifactStagingDirectory)/'
+    condition: always()
