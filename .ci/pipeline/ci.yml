@@ -206,20 +206,20 @@ jobs:
       conda build --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
     displayName: conda build
   - script: |
-     call activate CB
-     pip install daal numpy scikit-learn
-     pip install -r requirements-test.txt
-     conda install -y 'C:\Miniconda\envs\CB\pkgs\daal4py*'
-     python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
-     cd ..
-     pytest --pyargs s/sklearnex/tests/
+      call activate CB
+      pip install daal numpy scikit-learn
+      pip install -r requirements-test.txt
+      conda install -y 'C:\Miniconda\envs\CB\pkgs\daal4py*'
+      python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
+      cd ..
+      pytest --pyargs s/sklearnex/tests/
    displayName: conda build
   - script: |
-     call activate CB
-     cd ..
-     python -m sklearnex patch
-     python -c "from sklearn impor SVC; assert SVC._class_ in 'sklearnex'"
-   displayName: global patching testing
+      call activate CB
+      cd ..
+      python -m sklearnex patch
+      python -c "from sklearn impor SVC; assert SVC._class_ in 'sklearnex'"
+    displayName: global patching testing
   - task: CopyFiles@2
     inputs:
       SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
