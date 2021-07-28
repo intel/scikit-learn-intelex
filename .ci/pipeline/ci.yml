@@ -150,9 +150,9 @@ jobs:
       conda activate CB
       cd ..
       python -m sklearnex patch
-      python -c "from sklearn.svm import SVC; print(SVC.__module__); assert SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
       python -m sklearnex unpatch
-      python -c "from sklearn.svm import SVC; print(SVC.__module__); assert not SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVC; assert not (assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
 
 - job: MacOS
@@ -187,9 +187,9 @@ jobs:
       source activate CB
       cd ..
       python -m sklearnex patch
-      python -c "from sklearn.svm import SVC; print(SVC.__module__); assert SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
       python -m sklearnex unpatch
-      python -c "from sklearn.svm import SVC; print(SVC.__module__); assert not SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVC; assert not (assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
 
 - job: Windows_DPCPP
@@ -223,9 +223,9 @@ jobs:
       call activate CB
       cd ..
       python -m sklearnex patch
-      python -c "from sklearn.svm import SVC; print(SVC.__module__); assert SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
       python -m sklearnex unpatch
-      python -c "from sklearn.svm import SVC; print(SVC.__module__); assert not SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVC; assert not (assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
   - task: CopyFiles@2
     inputs:
