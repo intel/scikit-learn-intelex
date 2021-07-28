@@ -150,7 +150,9 @@ jobs:
       conda activate CB
       cd ..
       python -m sklearnex patch
-      python -c "from sklearn import SVC; assert SVC._class_ in 'sklearnex'"
+      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('sklearn')"
+      python -m sklearnex unpatch
+      python -c "from sklearn.svm import SVC; assert not SVC.__module__.startswith('sklearn')"
     displayName: global patching testing
 
 - job: MacOS
@@ -185,7 +187,9 @@ jobs:
       source activate CB
       cd ..
       python -m sklearnex patch
-      python -c "from sklearn import SVC; assert SVC._class_ in 'sklearnex'"
+      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('sklearn')"
+      python -m sklearnex unpatch
+      python -c "from sklearn.svm import SVC; assert not SVC.__module__.startswith('sklearn')"
     displayName: global patching testing
 
 - job: Windows_DPCPP
@@ -219,7 +223,9 @@ jobs:
       call activate CB
       cd ..
       python -m sklearnex patch
-      python -c "from sklearn import SVC; assert SVC._class_ in 'sklearnex'"
+      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('sklearn')"
+      python -m sklearnex unpatch
+      python -c "from sklearn.svm import SVC; assert not SVC.__module__.startswith('sklearn')"
     displayName: global patching testing
   - task: CopyFiles@2
     inputs:

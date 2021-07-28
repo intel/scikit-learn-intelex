@@ -40,10 +40,10 @@ def _main():
                         help="Command line arguments")
     args = parser.parse_args()
 
-    patch_sklearn_global_ready = (not args.module and not len(args.args) and
-                                                args.name == "patch")
-    unpatch_sklearn_global_ready = (not args.module and not len(args.args) and
-                                                args.name == "unpatch")
+    patch_sklearn_global_ready = \
+        not args.module and not len(args.args) and args.name == "patch"
+    unpatch_sklearn_global_ready = \
+        not args.module and not len(args.args) and args.name == "unpatch"
 
     if patch_sklearn_global_ready:
         from .global_patching import patch_sklearn_global
