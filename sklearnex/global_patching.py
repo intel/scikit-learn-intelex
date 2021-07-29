@@ -36,7 +36,7 @@ def patch_sklearn_global():
 
     init_file_path = sklearn.__file__
     distributor_file_path = os.path.join(os.path.dirname(init_file_path),
-                                                "_distributor_init.py")
+                                         "_distributor_init.py")
 
     with open(distributor_file_path, 'r', encoding='utf-8') as distributor_file:
         if get_patch_str() in distributor_file.read():

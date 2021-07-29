@@ -214,7 +214,7 @@ jobs:
       call activate CB
       pip install daal numpy scikit-learn
       pip install -r requirements-test.txt
-      conda install -y 'C:\Miniconda\envs\CB\pkgs\daal4py*'
+      conda install -y "C:\Miniconda\envs\CB\conda-bld\win-64\daal4py*.tar.bz2"
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       cd ..
       pytest --pyargs s/sklearnex/tests/
