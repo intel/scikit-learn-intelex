@@ -152,7 +152,7 @@ jobs:
       python -m sklearnex patch
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
       python -m sklearnex unpatch
-      python -c "from sklearn.svm import SVC; assert not (assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
+      python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
 
 - job: MacOS
@@ -189,7 +189,7 @@ jobs:
       python -m sklearnex patch
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
       python -m sklearnex unpatch
-      python -c "from sklearn.svm import SVC; assert not (assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
+      python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
 
 - job: Windows_DPCPP
@@ -208,7 +208,7 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      conda build --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
+      conda build --no-test --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
     displayName: conda build
   - script: |
       call activate CB
@@ -225,7 +225,7 @@ jobs:
       python -m sklearnex patch
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
       python -m sklearnex unpatch
-      python -c "from sklearn.svm import SVC; assert not (assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
+      python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
   - task: CopyFiles@2
     inputs:
