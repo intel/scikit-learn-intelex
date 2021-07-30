@@ -59,5 +59,5 @@ def test_sklearnex_import_nusvr():
     y = np.array([1, 1, 1, 2, 2, 2])
     svc = NuSVR(kernel='linear', nu=0.9).fit(X, y)
     assert 'daal4py' in svc.__module__ or 'sklearnex' in svc.__module__
-    assert_allclose(svc.dual_coef_, [[-1.,  0.611111, 1., -0.611111]], rtol=1e-3)
+    assert_allclose(svc.dual_coef_, [[-1., 0.611111, 1., -0.611111]], rtol=1e-3)
     assert_allclose(svc.support_, [1, 2, 3, 5])
