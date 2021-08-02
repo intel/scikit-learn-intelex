@@ -73,6 +73,7 @@ def get_patch_str(name=None, verbose=True):
 except (ImportError, ModuleNotFoundError):
     pass"""
 
+
 def get_patch_str_re():
     return r"""\ntry:
     from sklearnex import patch_sklearn
@@ -101,7 +102,7 @@ def patch_sklearn_global(name=None, verbose=True):
 
     with open(distributor_file_path, 'w', encoding='utf-8') as distributor_file:
         distributor_file.write(lines + "\n" + get_patch_str(name, verbose) + "\n")
-        print(f"Scikit-learn successfully patched by Intel(R) Extension for Scikit-learn")
+        print("Scikit-learn successfully patched by Intel(R) Extension for Scikit-learn")
         return
 
 

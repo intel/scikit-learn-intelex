@@ -207,7 +207,7 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       call activate CB
-      conda install -c conda-forge -c intel daal-devel numpy impi-devel cython jinja2 pybind11 cmake
+      conda install -c conda-forge -c intel dal-devel numpy impi-devel cython jinja2 pybind11 cmake
       pip install -r requirements-test.txt
     displayName: install dependencies
   - script: |

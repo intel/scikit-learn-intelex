@@ -56,7 +56,7 @@ def patch_sklearn(name=None, verbose=True, _global=False):
     if not sklearn_check_version('0.22'):
         raise NotImplementedError("Intel(R) Extension for Scikit-learn* patches apply "
                                   "for scikit-learn >= 0.22 only ...")
-    
+
     if _global:
         from ._utils import patch_sklearn_global
         patch_sklearn_global(name, verbose)
