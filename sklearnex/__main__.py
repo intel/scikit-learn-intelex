@@ -17,6 +17,7 @@
 
 import sys
 from sklearnex import patch_sklearn
+from sklearnex import unpatch_sklearn
 
 
 def _main():
@@ -36,25 +37,32 @@ def _main():
     parser.add_argument('name', help="Script or module name. Type 'patch' or"
                         " 'unpatch' to, patch/unpatch all scikit-learn applications"
                         " (in this case other arguments must be empty)")
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help="Additional info about patching"
+                        " (only for global patching)")
+    parser.add_argument('--algorithm', '-a', action='append',
+                        help="Name of algorithm to global patch")
     parser.add_argument('args', nargs=argparse.REMAINDER,
                         help="Command line arguments")
     args = parser.parse_args()
 
     patch_sklearn_global_ready = \
-        not args.module and not len(args.args) and args.name == "patch"
+        not args.module and not args.args and args.name == "global_patch"
     unpatch_sklearn_global_ready = \
-        not args.module and not len(args.args) and args.name == "unpatch"
+        not args.module and not args.args and args.name == "global_unpatch"
 
     if patch_sklearn_global_ready:
-        from .global_patching import patch_sklearn_global
-        patch_sklearn_global()
+        patch_sklearn(name=args.algorithm, verbose=not args.verbose, _global=True)
         return
 
     if unpatch_sklearn_global_ready:
-        from .global_patching import unpatch_sklearn_global
-        unpatch_sklearn_global()
+        unpatch_sklearn(name=args.algorithm, _global=True)
         return
 
+    if args.verbose or not args.algorithm:
+        raise RuntimeError("-v, --verbose and -a, --algorithm options can be using"
+                        " only for global pathcing. For example:"
+                        " python -m sklearnex -v -a algo_1 -a algo_2 global_patch")
     try:
         import sklearn
         patch_sklearn()

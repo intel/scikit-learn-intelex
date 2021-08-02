@@ -149,9 +149,9 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      python -m sklearnex patch
+      python -m sklearnex global_patch
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
-      python -m sklearnex unpatch
+      python -m sklearnex global_unpatch
       python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
 
@@ -186,9 +186,9 @@ jobs:
   - script: |
       source activate CB
       cd ..
-      python -m sklearnex patch
+      python -m sklearnex global_patch
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
-      python -m sklearnex unpatch
+      python -m sklearnex global_unpatch
       python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
 
@@ -207,14 +207,18 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       call activate CB
-      set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      conda build --no-test --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
-    displayName: conda build
+      conda install -c conda-forge -c intel daal-devel numpy impi-devel cython jinja2 pybind11 cmake
+      pip install -r requirements-test.txt
+    displayName: install dependencies
   - script: |
       call activate CB
-      pip install daal numpy scikit-learn
-      pip install -r requirements-test.txt
-      conda install -y "C:\Miniconda\envs\CB\conda-bld\win-64\daal4py*.tar.bz2"
+      set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
+      set PREFIX=%CONDA_PREFIX%
+      set PYTHON=python
+      call conda-recipe\bld.bat
+    displayName: daal4py build
+  - script: |
+      call activate CB
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       cd ..
       pytest --pyargs s/sklearnex/tests/
@@ -222,9 +226,9 @@ jobs:
   - script: |
       call activate CB
       cd ..
-      python -m sklearnex patch
+      python -m sklearnex global_patch
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
-      python -m sklearnex unpatch
+      python -m sklearnex global_unpatch
       python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
   - task: CopyFiles@2
