@@ -54,18 +54,21 @@ Intel(R) Extension for Scikit-learn is available at the [Python Package Index](h
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex).
 Intel(R) Extension for Scikit-learn is also available as a part of [Intel® oneAPI AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit).
 
+- PyPi (recommended by default)
+
 ```bash
-# PyPi (recommended by default)
 pip install scikit-learn-intelex
 ```
 
+- Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
+
 ```bash
-# Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
 conda install scikit-learn-intelex -c conda-forge
 ```
 
+- Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python users)
+
 ```bash
-# Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python users)
 conda install scikit-learn-intelex -c intel
 ```
 
@@ -102,13 +105,15 @@ will not be downloaded. You need to manually install ***dpcpp_cpp_rt*** package.
 
 <details><summary>[Click to expand] ℹ️ How to install dpcpp_cpp_rt package </summary>
 
+- PyPi
+
 ```bash
-# PyPi
 pip install --upgrade dpcpp_cpp_rt
 ```
 
+- Anaconda Cloud
+
 ```bash
-# Anaconda Cloud
 conda install dpcpp_cpp_rt -c intel
 ```
 
@@ -157,12 +162,15 @@ Configurations:
 
 <details><summary>[Click to expand] ℹ️ Reproduce results </summary>
 
+- With Intel® Extension for Scikit-learn enabled:
+
 ```bash
-# With Intel® Extension for Scikit-learn enabled:
 python runner.py --configs configs/blogs/skl_conda_config.json –report
 ```
+
+- With the original Scikit-learn:
+
 ```bash
-# With the original Scikit-learn:
 python runner.py --configs configs/blogs/skl_conda_config.json –report --no-intel-optimized
 ```
 </details>
