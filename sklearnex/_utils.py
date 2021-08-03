@@ -120,11 +120,12 @@ def unpatch_sklearn_global():
 
     with open(distributor_file_path, 'r', encoding='utf-8') as distributor_file:
         lines = distributor_file.read()
-        to_delete = re.search(get_patch_str_re(), lines)
-        if not to_delete:
-            print("Scikit-learn wasn't patch. Nothing to unpatch\n")
+        if not re.search(get_patch_str_re(), lines):
+            print("Scikit-learn didn't patched. Nothing to unpatch\n")
             return
         lines = re.sub(get_patch_str_re(), '', lines)
 
     with open(distributor_file_path, 'w', encoding='utf-8') as distributor_file:
         distributor_file.write(lines)
+        print("Scikit-learn successfully unpatched")
+        return

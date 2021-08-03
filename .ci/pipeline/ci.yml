@@ -149,9 +149,9 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      python -m sklearnex global_patch
+      python -m sklearnex.global patch_sklearn
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
-      python -m sklearnex global_unpatch
+      python -m sklearnex.global unpatch_sklearn
       python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
 
@@ -186,9 +186,9 @@ jobs:
   - script: |
       source activate CB
       cd ..
-      python -m sklearnex global_patch
+      python -m sklearnex.global patch_sklearn
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
-      python -m sklearnex global_unpatch
+      python -m sklearnex.global unpatch_sklearn
       python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
 
@@ -203,41 +203,33 @@ jobs:
     displayName: oneAPI environment
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB python=$(python.version) conda-build conda-verify
-    displayName: Create Anaconda environment
+  - script: conda create -q -y -n CB -c intel -c conda-forge python=$(python.version) dal-devel impi-devel clang-tools
+    displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
-      conda install -c conda-forge -c intel dal-devel numpy impi-devel cython jinja2 pybind11 cmake
+      pip install --upgrade setuptools
+      pip install -r requirements-dev.txt
       pip install -r requirements-test.txt
-    displayName: install dependencies
+    displayName: 'Install requirements'
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      set PREFIX=%CONDA_PREFIX%
-      set PYTHON=python
-      call conda-recipe\bld.bat
-    displayName: daal4py build
+      call dev/bld.bat
+    displayName: 'Build daal4py'
   - script: |
       call activate CB
-      python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
+      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+    displayName: 'Build sklearnex'
+  - script: |
+      call activate CB
       cd ..
       pytest --pyargs s/sklearnex/tests/
-    displayName: install sklearnex
+    displayName: sklearnex testing
   - script: |
       call activate CB
       cd ..
-      python -m sklearnex global_patch
+      python -m sklearnex.global patch_sklearn
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
-      python -m sklearnex global_unpatch
+      python -m sklearnex.global unpatch_sklearn
       python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
     displayName: global patching testing
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
-      Contents: 'daal4py*'
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'daal4py win'
-      targetPath: '$(Build.ArtifactStagingDirectory)/'
-    condition: always()
