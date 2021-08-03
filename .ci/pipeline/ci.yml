@@ -149,10 +149,14 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      python -m sklearnex.global patch_sklearn
+      python -m sklearnex.global patch_sklearn -a svc nusvc
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
+      python -c "from sklearn.svm import NuSVC; assert NuSVC.__module__.startswith('daal4py') or NuSVC.__module__.startswith('sklearnex')"
+      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
       python -m sklearnex.global unpatch_sklearn
-      python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
+      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import NuSVC; assert NuSVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVR; assert SVC.__module__.startswith('sklearn')"
     displayName: global patching testing
 
 - job: MacOS
@@ -202,9 +206,6 @@ jobs:
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
-  - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
-    timeoutInMinutes: 15
-    displayName: oneAPI environment
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
   - script: conda create -q -y -n CB -c intel -c conda-forge python=$(python.version) dal-devel impi-devel clang-tools
@@ -217,7 +218,6 @@ jobs:
     displayName: 'Install requirements'
   - script: |
       call activate CB
-      set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
       set PREFIX=%CONDA_PREFIX%
       set PYTHON=python
       call conda-recipe\bld.bat
