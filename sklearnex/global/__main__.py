@@ -48,4 +48,5 @@ def _main():
         unpatch_sklearn(_global=True)
         return
 
+
 sys.exit(_main())

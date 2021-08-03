@@ -214,7 +214,7 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-      call dev/bld.bat
+      call ./dev/bld.bat
     displayName: 'Build daal4py'
   - script: |
       call activate CB
