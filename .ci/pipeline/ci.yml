@@ -214,6 +214,8 @@ jobs:
   - script: |
       call activate CB
       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
+      set PREFIX=%CONDA_PREFIX%
+      set PYTHON=python
       call conda-recipe\bld.bat
     displayName: 'Build daal4py'
   - script: |
