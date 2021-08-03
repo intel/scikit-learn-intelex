@@ -156,7 +156,7 @@ jobs:
       python -m sklearnex.global unpatch_sklearn
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('sklearn')"
       python -c "from sklearn.svm import NuSVC; assert NuSVC.__module__.startswith('sklearn')"
-      python -c "from sklearn.svm import SVR; assert SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
     displayName: global patching testing
 
 - job: MacOS
@@ -197,7 +197,7 @@ jobs:
       python -m sklearnex.global unpatch_sklearn
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('sklearn')"
       python -c "from sklearn.svm import NuSVC; assert NuSVC.__module__.startswith('sklearn')"
-      python -c "from sklearn.svm import SVR; assert SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
     displayName: global patching testing
 
 - job: Windows_DPCPP
