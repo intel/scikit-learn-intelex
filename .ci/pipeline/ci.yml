@@ -186,10 +186,14 @@ jobs:
   - script: |
       source activate CB
       cd ..
-      python -m sklearnex.global patch_sklearn
+      python -m sklearnex.global patch_sklearn -a svc nusvc
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
+      python -c "from sklearn.svm import NuSVC; assert NuSVC.__module__.startswith('daal4py') or NuSVC.__module__.startswith('sklearnex')"
+      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
       python -m sklearnex.global unpatch_sklearn
-      python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
+      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import NuSVC; assert NuSVC.__module__.startswith('sklearn')"
+      python -c "from sklearn.svm import SVR; assert SVC.__module__.startswith('sklearn')"
     displayName: global patching testing
 
 - job: Windows_DPCPP
