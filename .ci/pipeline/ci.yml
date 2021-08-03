@@ -149,7 +149,7 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      python -m sklearnex.global patch_sklearn -a svc nusvc
+      python -m sklearnex.global patch_sklearn -a svc
       python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
       python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
       python -m sklearnex.global unpatch_sklearn
