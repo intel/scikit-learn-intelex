@@ -23,6 +23,13 @@ from sklearnex import unpatch_sklearn
 def _main():
     import argparse
 
+    # Adding custom extend action for support all python versions
+    class ExtendAction(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            items = getattr(namespace, self.dest) or []
+            items.extend(values)
+            setattr(namespace, self.dest, items)
+
     parser = argparse.ArgumentParser(
         prog="python -m sklearnex.global",
         description="""
@@ -32,6 +39,7 @@ def _main():
             """,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    parser.register('action', 'extend', ExtendAction)
     parser.add_argument('action', choices=["patch_sklearn", "unpatch_sklearn"],
                         help="Enable or Disable patching")
     parser.add_argument('--no-verbose', '-nv', action='store_true',
