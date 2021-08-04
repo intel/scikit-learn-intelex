@@ -43,14 +43,6 @@ def _get_queue(*data):
     # return queues[0] if len(queues) > 0 else None
 
 
-def _get_device_name_from_daal4py():
-    import sys
-    if 'daal4py.oneapi' in sys.modules:
-        import daal4py.oneapi as d4p_oneapi
-        return d4p_oneapi._get_device_name_sycl_ctxt()
-    return None
-
-
 class _Daal4PyContextSaver:
     def __init__(self):
         import sys

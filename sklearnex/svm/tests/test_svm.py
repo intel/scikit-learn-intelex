@@ -18,6 +18,39 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
+from dpctl import SyclQueue
+from dpctl.tensor import usm_ndarray
+from dpctl.memory import MemoryUSMDevice, MemoryUSMShared, MemoryUSMHost
+
+def to_usm(queue, memtype, arrays):
+    results = []
+    for item in arrays:
+        mem = memtype(item.nbytes, queue=queue)
+        mem.copy_from_host(item.tobytes())
+        results.append(usm_ndarray(item.shape, item.dtype, buffer=mem))
+    return results
+
+
+def test_sklearnex_usm_svc():
+    """Tests if sklearn classifiers accept usm_ndarrays and return
+    usm_ndarrays on the same device
+    """
+    from sklearn.datasets import make_classification
+    from sklearn.model_selection import train_test_split
+    from sklearnex.svm import SVC
+
+    q = SyclQueue('gpu')
+
+    X, y = make_classification()
+    Xtrain, Xtest, ytrain, ytest = to_usm(q, MemoryUSMDevice, train_test_split(X, y))
+
+    estimator = SVC().fit(Xtrain, ytrain)
+    ypred = estimator.predict(Xtest)
+
+    assert hasattr(ypred, '__sycl_usm_array_interface__')
+    assert ypred.sycl_queue.sycl_device == q.sycl_device
+    assert ypred.shape == ytest.shape
+
 
 def test_sklearnex_import_svc():
     from sklearnex.svm import SVC

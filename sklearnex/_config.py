@@ -14,7 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-import os
 import threading
 from contextlib import contextmanager
 
@@ -109,3 +108,4 @@ def config_context(**new_config):
         yield
     finally:
         set_config(**old_config)
+

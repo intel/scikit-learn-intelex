@@ -18,6 +18,7 @@ from scipy import sparse as sp
 import logging
 from .._utils import get_patch_message
 from ._common import BaseSVR
+from .._device_offload import _dispatch
 
 from sklearn.svm import SVR as sklearn_SVR
 from sklearn.utils.validation import _deprecate_positional_args
@@ -35,24 +36,32 @@ class SVR(sklearn_SVR, BaseSVR):
             epsilon=epsilon, shrinking=shrinking, cache_size=cache_size, verbose=verbose,
             max_iter=max_iter)
 
+    def _gpu_supported(self, method_name, *data):
+        return False
+
+    def _cpu_supported(self, method_name, *data):
+        if method_name == 'svm.SVC.fit':
+            return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
+        if method_name in ['svm.SVC.predict',
+                           'svm.SVC._predict_proba',
+                           'svm.SVC.decision_function']:
+            return hasattr(self, '_onedal_estimator')
+
     def fit(self, X, y, sample_weight=None):
-        if self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']:
-            logging.info("sklearn.svm.SVR.fit: " + get_patch_message("onedal"))
-            self._onedal_fit(X, y, sample_weight)
-        else:
-            logging.info("sklearn.svm.SVR.fit: " + get_patch_message("sklearn"))
-            sklearn_SVR.fit(self, X, y, sample_weight)
+        _dispatch(self, 'svm.SVR.fit', {
+            'onedal': lambda q, X, y, w: self._onedal_fit(X, y, sample_weight=w, queue=q),
+            'sklearn': lambda X, y, w: sklearn_SVR.fit(self, X, y, sample_weight=w),
+        }, X, y, sample_weight)
+
         return self
 
     def predict(self, X):
-        if hasattr(self, '_onedal_estimator'):
-            logging.info("sklearn.svm.SVR.predict: " + get_patch_message("onedal"))
-            return self._onedal_estimator.predict(X)
-        else:
-            logging.info("sklearn.svm.SVR.predict: " + get_patch_message("sklearn"))
-            return sklearn_SVR.predict(self, X)
+        return _dispatch(self, 'svm.SVR.predict', {
+            'onedal': lambda q, X: self._onedal_estimator.predict(X, queue=q),
+            'sklearn': lambda X: sklearn_SVR.predict(self, X),
+        }, X)
 
-    def _onedal_fit(self, X, y, sample_weight=None):
+    def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
             'C': self.C,
             'epsilon': self.epsilon,
@@ -67,5 +76,5 @@ class SVR(sklearn_SVR, BaseSVR):
         }
 
         self._onedal_estimator = onedal_SVR(**onedal_params)
-        self._onedal_estimator.fit(X, y, sample_weight)
+        self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
         self._save_attributes()
