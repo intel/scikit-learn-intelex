@@ -15,7 +15,6 @@
 # limitations under the License.
 #===============================================================================
 
-import sys
 from sklearnex import patch_sklearn
 from sklearnex import unpatch_sklearn
 
@@ -42,19 +41,20 @@ def _main():
     parser.register('action', 'extend', ExtendAction)
     parser.add_argument('action', choices=["patch_sklearn", "unpatch_sklearn"],
                         help="Enable or Disable patching")
-    parser.add_argument('--no-verbose', '-nv', action='store_true',
+    parser.add_argument('--no-verbose', '-nv', action='store_false',
                         help="Additional info about patching")
     parser.add_argument('--algorithm', '-a', action='extend', type=str, nargs="+",
                         help="Name of algorithm to global patch")
     args = parser.parse_args()
 
     if args.action == "patch_sklearn":
-        patch_sklearn(name=args.algorithm, verbose=(not args.no_verbose), _global=True)
-        return
+        patch_sklearn(name=args.algorithm, verbose=args.no_verbose, global_patch=True)
+    elif args.action == "unpatch_sklearn":
+        unpatch_sklearn(global_patch=True)
+    else:
+        raise RuntimeError("Invalid choise for action attribute."
+                           " Expected: patch_sklearn or unpatch_sklearn."
+                           f" Got {args.action}")
 
-    if args.action == "unpatch_sklearn":
-        unpatch_sklearn(_global=True)
-        return
 
-
-sys.exit(_main())
+_main()

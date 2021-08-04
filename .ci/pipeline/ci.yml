@@ -149,20 +149,8 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      ret_code=0
-      python -m sklearnex.global patch_sklearn -a svc
-      ret_code=$(($ret_code + $?))
-      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
-      ret_code=$(($ret_code + $?))
-      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
-      ret_code=$(($ret_code + $?))
-      python -m sklearnex.global unpatch_sklearn
-      ret_code=$(($ret_code + $?))
-      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('sklearn')"
-      ret_code=$(($ret_code + $?))
-      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
-      ret_code=$(($ret_code + $?))
-      exit $ret_code
+      python s/sklearnex/.ci/scripts/test_global_patching.py
+      exit $?
     displayName: global patching testing
 
 - job: MacOS
@@ -196,20 +184,8 @@ jobs:
   - script: |
       source activate CB
       cd ..
-      ret_code=0
-      python -m sklearnex.global patch_sklearn -a svc
-      ret_code=$(($ret_code + $?))
-      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
-      ret_code=$(($ret_code + $?))
-      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
-      ret_code=$(($ret_code + $?))
-      python -m sklearnex.global unpatch_sklearn
-      ret_code=$(($ret_code + $?))
-      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('sklearn')"
-      ret_code=$(($ret_code + $?))
-      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
-      ret_code=$(($ret_code + $?))
-      exit $ret_code
+      python s/sklearnex/.ci/scripts/test_global_patching.py
+      exit $?
     displayName: global patching testing
 
 - job: Windows_DPCPP
@@ -246,16 +222,6 @@ jobs:
   - script: |
       call activate CB
       cd ..
-      python -m sklearnex.global patch_sklearn -a svc
-      IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
-      python -c "from sklearn.svm import SVC; assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')"
-      IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
-      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
-      IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
-      python -m sklearnex.global unpatch_sklearn
-      IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
-      python -c "from sklearn.svm import SVC; assert not (SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex'))"
-      IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
-      python -c "from sklearn.svm import SVR; assert SVR.__module__.startswith('sklearn')"
-      IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
+      python s\sklearnex\.ci\scripts\test_global_patch.py
+      EXIT \b %ERRORLEVEL%
     displayName: global patching testing
