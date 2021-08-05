@@ -18,7 +18,7 @@
 import sys
 import subprocess
 
-err_code = subprocess.call([sys.executable(), "-m", "sklearnex.globally", "patch_sklearn",
+err_code = subprocess.call([sys.executable, "-m", "sklearnex.globally", "patch_sklearn",
                             "-a", "svc"])
 assert not err_code
 
@@ -30,7 +30,8 @@ from sklearn.svm import SVR
 assert SVR.__module__.startswith('sklearn')
 del SVR
 
-err_code = subprocess.call([sys.executable(), "-m", "sklearnex.globally", "unpatch_sklearn"])
+err_code = subprocess.call([sys.executable, "-m", "sklearnex.globally",
+                            "unpatch_sklearn"])
 assert not err_code
 
 from sklearn.svm import SVC
