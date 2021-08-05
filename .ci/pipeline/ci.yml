@@ -149,7 +149,7 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      python s/sklearnex/.ci/scripts/test_global_patching.py
+      python s/.ci/scripts/test_global_patch.py
       exit $?
     displayName: global patching testing
 
@@ -184,7 +184,7 @@ jobs:
   - script: |
       source activate CB
       cd ..
-      python s/sklearnex/.ci/scripts/test_global_patching.py
+      python s/.ci/scripts/test_global_patch.py
       exit $?
     displayName: global patching testing
 
@@ -222,6 +222,6 @@ jobs:
   - script: |
       call activate CB
       cd ..
-      python s\sklearnex\.ci\scripts\test_global_patch.py
+      python s\.ci\scripts\test_global_patch.py
       EXIT \b %ERRORLEVEL%
     displayName: global patching testing

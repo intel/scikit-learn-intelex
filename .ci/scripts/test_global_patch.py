@@ -15,23 +15,28 @@
 # limitations under the License.
 #===============================================================================
 
+import sys
 import subprocess
 
-err_code = subprocess.call(["python", "-m", "sklearnex.globally", "patch_sklearn",
-                             "-a", "svc"])
-if err_code: raise Exception("Patch error")
+err_code = subprocess.call([sys.executable(), "-m", "sklearnex.globally", "patch_sklearn",
+                            "-a", "svc"])
+assert not err_code
 
 from sklearn.svm import SVC
 assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')
+del SVC
 
 from sklearn.svm import SVR
 assert SVR.__module__.startswith('sklearn')
+del SVR
 
-err_code = subprocess.call(["python", "-m", "sklearnex.globally", "unpatch_sklearn"])
-if err_code: raise Exception("Unpatch error")
+err_code = subprocess.call([sys.executable(), "-m", "sklearnex.globally", "unpatch_sklearn"])
+assert not err_code
 
 from sklearn.svm import SVC
 assert SVC.__module__.startswith('sklearn')
+del SVC
 
 from sklearn.svm import SVR
 assert SVR.__module__.startswith('sklearn')
+del SVR
