@@ -25,8 +25,8 @@ err_code = subprocess.call([sys.executable, "-m", "sklearnex.globally", "patch_s
 assert not err_code
 from sklearn.svm import SVC, SVR
 assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')
-assert not (SVR.__module__.startswith('daal4py') or \
-    SVR.__module__.startswith('sklearnex'))
+assert not SVR.__module__.startswith('daal4py') and \
+       not SVR.__module__.startswith('sklearnex')
 
 
 from sklearnex import patch_sklearn, unpatch_sklearn
@@ -38,25 +38,25 @@ err_code = subprocess.call([sys.executable, "-m",
 assert not err_code
 unpatch_sklearn()
 from sklearn.svm import SVC, SVR
-assert not (SVC.__module__.startswith('daal4py') or \
-    SVC.__module__.startswith('sklearnex'))
-assert not (SVR.__module__.startswith('daal4py') or \
-    SVR.__module__.startswith('sklearnex'))
+assert not SVR.__module__.startswith('daal4py') and \
+       not SVR.__module__.startswith('sklearnex')
+assert not SVR.__module__.startswith('daal4py') and \
+       not SVR.__module__.startswith('sklearnex')
 
 
 # test patching from function
 patch_sklearn(name=['svc'], global_patch=True)
 from sklearn.svm import SVC, SVR
 assert SVC.__module__.startswith('daal4py') or \
-    SVC.__module__.startswith('sklearnex')
-assert not (SVR.__module__.startswith('daal4py') or \
-    SVR.__module__.startswith('sklearnex'))
+       SVC.__module__.startswith('sklearnex')
+assert not SVR.__module__.startswith('daal4py') and \
+       not SVR.__module__.startswith('sklearnex')
 
 
 # test unpatching from function
 unpatch_sklearn(global_unpatch=True)
 from sklearn.svm import SVC, SVR
-assert not (SVC.__module__.startswith('daal4py') or \
-    SVC.__module__.startswith('sklearnex'))
-assert not (SVR.__module__.startswith('daal4py') or \
-    SVR.__module__.startswith('sklearnex'))
+assert not SVR.__module__.startswith('daal4py') and \
+       not SVR.__module__.startswith('sklearnex')
+assert not SVR.__module__.startswith('daal4py') and \
+       not SVR.__module__.startswith('sklearnex')
