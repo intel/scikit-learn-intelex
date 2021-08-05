@@ -30,7 +30,7 @@ def _main():
             setattr(namespace, self.dest, items)
 
     parser = argparse.ArgumentParser(
-        prog="python -m sklearnex.global",
+        prog="python -m sklearnex.glob",
         description="""
             Patch your all Scikit-learn applications using Intel(R) Extension for
             scikit-learn, optimizing solvers of

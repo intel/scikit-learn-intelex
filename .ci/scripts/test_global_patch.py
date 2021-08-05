@@ -20,7 +20,7 @@ import subprocess
 
 
 # test patching from command line
-err_code = subprocess.call([sys.executable, "-m", "sklearnex.globally", "patch_sklearn",
+err_code = subprocess.call([sys.executable, "-m", "sklearnex.glob", "patch_sklearn",
                             "-a", "svc"])
 assert not err_code
 from sklearn.svm import SVC, SVR
@@ -34,7 +34,7 @@ from sklearnex import patch_sklearn, unpatch_sklearn
 
 # test unpatching from command line
 err_code = subprocess.call([sys.executable, "-m",
-                            "sklearnex.globally", "unpatch_sklearn"])
+                            "sklearnex.glob", "unpatch_sklearn"])
 assert not err_code
 unpatch_sklearn()
 from sklearn.svm import SVC, SVR
