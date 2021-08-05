@@ -150,7 +150,6 @@ jobs:
       conda activate CB
       cd ..
       python s/.ci/scripts/test_global_patch.py
-      exit $?
     displayName: global patching testing
 
 - job: MacOS
@@ -185,7 +184,6 @@ jobs:
       source activate CB
       cd ..
       python s/.ci/scripts/test_global_patch.py
-      exit $?
     displayName: global patching testing
 
 - job: Windows_DPCPP
@@ -223,5 +221,4 @@ jobs:
       call activate CB
       cd ..
       python s\.ci\scripts\test_global_patch.py
-      EXIT \b %ERRORLEVEL%
     displayName: global patching testing
