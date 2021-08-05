@@ -50,7 +50,7 @@ def _main():
     if args.action == "patch_sklearn":
         patch_sklearn(name=args.algorithm, verbose=args.no_verbose, global_patch=True)
     elif args.action == "unpatch_sklearn":
-        unpatch_sklearn(global_patch=True)
+        unpatch_sklearn(global_unpatch=True)
     else:
         raise RuntimeError("Invalid choise for action attribute."
                            " Expected: patch_sklearn or unpatch_sklearn."

@@ -77,5 +77,4 @@ def unpatch_sklearn_global():
 
     with open(distributor_file_path, 'w', encoding='utf-8') as distributor_file:
         distributor_file.write(lines)
-        print("Scikit-learn successfully unpatched")
-        return
+        print("Scikit-learn has been successfully globally unpatched")

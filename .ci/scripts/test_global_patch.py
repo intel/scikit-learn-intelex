@@ -18,26 +18,45 @@
 import sys
 import subprocess
 
+
+# test patching from command line
 err_code = subprocess.call([sys.executable, "-m", "sklearnex.globally", "patch_sklearn",
                             "-a", "svc"])
 assert not err_code
-
-from sklearn.svm import SVC
+from sklearn.svm import SVC, SVR
 assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')
-del SVC
+assert not (SVR.__module__.startswith('daal4py') or \
+    SVR.__module__.startswith('sklearnex'))
 
-from sklearn.svm import SVR
-assert SVR.__module__.startswith('sklearn')
-del SVR
 
-err_code = subprocess.call([sys.executable, "-m", "sklearnex.globally",
-                            "unpatch_sklearn"])
+from sklearnex import patch_sklearn, unpatch_sklearn
+
+
+# test unpatching from command line
+err_code = subprocess.call([sys.executable, "-m",
+                            "sklearnex.globally", "unpatch_sklearn"])
 assert not err_code
+unpatch_sklearn()
+from sklearn.svm import SVC, SVR
+assert not (SVC.__module__.startswith('daal4py') or \
+    SVC.__module__.startswith('sklearnex'))
+assert not (SVR.__module__.startswith('daal4py') or \
+    SVR.__module__.startswith('sklearnex'))
 
-from sklearn.svm import SVC
-assert SVC.__module__.startswith('sklearn')
-del SVC
 
-from sklearn.svm import SVR
-assert SVR.__module__.startswith('sklearn')
-del SVR
+# test patching from function
+patch_sklearn(name=['svc'], global_patch=True)
+from sklearn.svm import SVC, SVR
+assert SVC.__module__.startswith('daal4py') or \
+    SVC.__module__.startswith('sklearnex')
+assert not (SVR.__module__.startswith('daal4py') or \
+    SVR.__module__.startswith('sklearnex'))
+
+
+# test unpatching from function
+unpatch_sklearn(global_unpatch=True)
+from sklearn.svm import SVC, SVR
+assert not (SVC.__module__.startswith('daal4py') or \
+    SVC.__module__.startswith('sklearnex'))
+assert not (SVR.__module__.startswith('daal4py') or \
+    SVR.__module__.startswith('sklearnex'))

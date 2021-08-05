@@ -60,7 +60,6 @@ def patch_sklearn(name=None, verbose=True, global_patch=False):
     if global_patch:
         from sklearnex.globally.dispatcher import patch_sklearn_global
         patch_sklearn_global(name, verbose)
-        return
 
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
     if isinstance(name, list):
@@ -77,8 +76,8 @@ def patch_sklearn(name=None, verbose=True, global_patch=False):
             "(https://github.com/intel/scikit-learn-intelex)\n")
 
 
-def unpatch_sklearn(name=None, global_patch=False):
-    if global_patch:
+def unpatch_sklearn(name=None, global_unpatch=False):
+    if global_unpatch:
         from sklearnex.globally.dispatcher import unpatch_sklearn_global
         unpatch_sklearn_global()
     from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
