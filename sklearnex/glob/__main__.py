@@ -32,19 +32,17 @@ def _main():
     parser = argparse.ArgumentParser(
         prog="python -m sklearnex.glob",
         description="""
-            Patch your all Scikit-learn applications using Intel(R) Extension for
-            scikit-learn, optimizing solvers of
-            scikit-learn with Intel(R) oneAPI Data Analytics Library.
-            """,
+            Patch all your Scikit-learn applications using Intel(R) Extension for
+            scikit-learn.""",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.register('action', 'extend', ExtendAction)
     parser.add_argument('action', choices=["patch_sklearn", "unpatch_sklearn"],
                         help="Enable or Disable patching")
     parser.add_argument('--no-verbose', '-nv', action='store_false',
-                        help="Additional info about patching")
+                        help="Disable additional information about enabling patching")
     parser.add_argument('--algorithm', '-a', action='extend', type=str, nargs="+",
-                        help="Name of algorithm to global patch")
+                        help="The name of an algorithm to be patched globally")
     args = parser.parse_args()
 
     if args.action == "patch_sklearn":
@@ -52,7 +50,7 @@ def _main():
     elif args.action == "unpatch_sklearn":
         unpatch_sklearn(global_unpatch=True)
     else:
-        raise RuntimeError("Invalid choise for action attribute."
+        raise RuntimeError("Invalid choice for the action attribute."
                            " Expected: patch_sklearn or unpatch_sklearn."
                            f" Got {args.action}")
 
