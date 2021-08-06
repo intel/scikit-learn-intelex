@@ -52,10 +52,14 @@ def get_patch_names():
     return list(get_patch_map().keys())
 
 
-def patch_sklearn(name=None, verbose=True):
+def patch_sklearn(name=None, verbose=True, global_patch=False):
     if not sklearn_check_version('0.22'):
         raise NotImplementedError("Intel(R) Extension for Scikit-learn* patches apply "
                                   "for scikit-learn >= 0.22 only ...")
+
+    if global_patch:
+        from sklearnex.glob.dispatcher import patch_sklearn_global
+        patch_sklearn_global(name, verbose)
 
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
     if isinstance(name, list):
@@ -72,7 +76,10 @@ def patch_sklearn(name=None, verbose=True):
             "(https://github.com/intel/scikit-learn-intelex)\n")
 
 
-def unpatch_sklearn(name=None):
+def unpatch_sklearn(name=None, global_unpatch=False):
+    if global_unpatch:
+        from sklearnex.glob.dispatcher import unpatch_sklearn_global
+        unpatch_sklearn_global()
     from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
     if isinstance(name, list):
         for algorithm in name:
