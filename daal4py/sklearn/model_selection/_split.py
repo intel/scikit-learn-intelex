@@ -108,9 +108,12 @@ def _daal_train_test_split(*arrays, **options):
                 (isinstance(random_state, int) or random_state is None) and \
                     platform.system() != 'Windows':
                 indexes = np.empty(
-                    shape=(n_samples,),
-                    dtype=np.int64 if n_train + n_test > 2 ** 31 - 1 else np.int32
-                )
+                    shape=(
+                        n_samples,
+                    ),
+                    dtype=np.int64 if n_train +
+                    n_test > 2 ** 31 -
+                    1 else np.int32)
                 random_state = np.random.RandomState(random_state)
                 random_state = random_state.get_state()[1]
                 d4p.daal_generate_shuffled_indices([indexes], [random_state])

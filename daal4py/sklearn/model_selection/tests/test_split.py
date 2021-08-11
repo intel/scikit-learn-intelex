@@ -30,13 +30,21 @@ def test_results_similarity(n_samples):
     x, y = make_classification(
         n_samples=n_samples, n_features=4, random_state=RANDOM_STATE)
     d4p_res = d4p_train_test_split(
-        x, y, test_size=n_samples // 2 - 1, train_size=n_samples // 2 - 1, random_state=RANDOM_STATE)
+        x,
+        y,
+        test_size=n_samples // 2 - 1,
+        train_size=n_samples // 2 - 1,
+        random_state=RANDOM_STATE)
     skl_res = skl_train_test_split(
-        x, y, test_size=n_samples // 2 - 1, train_size=n_samples // 2 - 1, random_state=RANDOM_STATE)
+        x,
+        y,
+        test_size=n_samples // 2 - 1,
+        train_size=n_samples // 2 - 1,
+        random_state=RANDOM_STATE)
 
     assert len(d4p_res) == len(
         skl_res), 'train_test_splits have different output size'
 
-    for i in range(len(d4p_res)):
+    for i, _ in enumerate(d4p_res):
         assert np.all(d4p_res[i] == skl_res[i]
                       ), 'train_test_splits have different output'
