@@ -57,7 +57,6 @@ deselected_tests:
 
   # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
   # See https://github.com/IntelPython/daal4py/issues/69
-  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1]
   - cluster/tests/test_k_means.py::test_relocated_clusters >=0.23,<0.24
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters >=0.24
 
