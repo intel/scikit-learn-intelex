@@ -222,9 +222,10 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
         impurityThreshold=float(
             0.0 if self.min_impurity_split is None else self.min_impurity_split),
         varImportance="MDI",
-        resultsToCompute=("computeOutOfBagError|computeOutOfBagErrorDecisionFunction"
-                          if self.oob_score
-                          else ""),
+        resultsToCompute=(
+            "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction"
+            if self.oob_score
+            else ""),
         memorySavingMode=False,
         bootstrap=bool(self.bootstrap),
         minObservationsInSplitNode=(self.min_samples_split
@@ -247,7 +248,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     self.daal_model_ = model
 
     if self.oob_score:
-        self.oob_score_ = dfc_trainingResult.outOfBagError[0][0]
+        self.oob_score_ = dfc_trainingResult.outOfBagErrorAccuracy[0][0]
         self.oob_decision_function_ = dfc_trainingResult.outOfBagErrorDecisionFunction
         if self.oob_decision_function_.shape[-1] == 1:
             self.oob_decision_function_ = self.oob_decision_function_.squeeze(axis=-1)
@@ -393,7 +394,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
         impurityThreshold=float(
             0.0 if self.min_impurity_split is None else self.min_impurity_split),
         varImportance="MDI",
-        resultsToCompute=("computeOutOfBagError|computeOutOfBagErrorPrediction"
+        resultsToCompute=("computeOutOfBagErrorR2|computeOutOfBagErrorPrediction"
                           if self.oob_score
                           else ""),
         memorySavingMode=False,
@@ -419,7 +420,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     self.daal_model_ = model
 
     if self.oob_score:
-        self.oob_score_ = dfr_trainingResult.outOfBagError[0][0]
+        self.oob_score_ = dfr_trainingResult.outOfBagErrorR2[0][0]
         self.oob_prediction_ = dfr_trainingResult.outOfBagErrorPrediction.squeeze(axis=1)
         if self.oob_prediction_.shape[-1] == 1:
             self.oob_prediction_ = self.oob_prediction_.squeeze(axis=-1)
