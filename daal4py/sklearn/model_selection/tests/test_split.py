@@ -22,7 +22,7 @@ from sklearn.datasets import make_classification
 
 
 N_SAMPLES = [2 ** i + 1 for i in range(2, 17)]
-RANDOM_STATE = 42
+RANDOM_STATE = 777
 
 
 @pytest.mark.parametrize('n_samples', N_SAMPLES)
