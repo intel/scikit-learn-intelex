@@ -130,9 +130,11 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
 
-  # Need a warning from sklearn that can not be raised from oneDAL
+  # Need a warning from sklearn if some samples do not have OOB scores that can not be raised from oneDAL
   - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestRegressor]
+  - ensemble/tests/test_forest.py::test_oob_score_classifiers[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_oob_score_regressors[RandomForestRegressor]
 
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
