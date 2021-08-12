@@ -222,7 +222,9 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
         impurityThreshold=float(
             0.0 if self.min_impurity_split is None else self.min_impurity_split),
         varImportance="MDI",
-        resultsToCompute="",
+        resultsToCompute=("computeOutOfBagError|computeOutOfBagErrorDecisionFunction"
+                          if self.oob_score
+                          else ""),
         memorySavingMode=False,
         bootstrap=bool(self.bootstrap),
         minObservationsInSplitNode=(self.min_samples_split
@@ -244,10 +246,11 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     model = dfc_trainingResult.model
     self.daal_model_ = model
 
-    # compute oob_score_
-    #if self.oob_score:
-    #    self.estimators_ = self._estimators_
-    #    self._set_oob_score(X, y)
+    if self.oob_score:
+        self.oob_score_ = dfc_trainingResult.outOfBagError[0][0]
+        self.oob_decision_function_ = dfc_trainingResult.outOfBagErrorDecisionFunction
+        if self.oob_decision_function_.shape[-1] == 1:
+            self.oob_decision_function_ = self.oob_decision_function_.squeeze(axis=-1)
 
     return self
 
@@ -296,7 +299,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         sample_weight = check_sample_weight(sample_weight, X)
 
     daal_ready = self.warm_start is False and self.criterion == "gini" and \
-        self.ccp_alpha == 0.0 and not sp.issparse(X) and self.oob_score is False
+        self.ccp_alpha == 0.0 and not sp.issparse(X)
 
     if daal_ready:
         X = check_array(X, dtype=[np.float32, np.float64])
@@ -390,7 +393,9 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
         impurityThreshold=float(
             0.0 if self.min_impurity_split is None else self.min_impurity_split),
         varImportance="MDI",
-        resultsToCompute="",
+        resultsToCompute=("computeOutOfBagError|computeOutOfBagErrorPrediction"
+                          if self.oob_score
+                          else ""),
         memorySavingMode=False,
         bootstrap=bool(self.bootstrap),
         minObservationsInSplitNode=(self.min_samples_split
@@ -413,10 +418,11 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     model = dfr_trainingResult.model
     self.daal_model_ = model
 
-    # compute oob_score_
-    #if self.oob_score:
-    #    self.estimators_ = self._estimators_
-    #    self._set_oob_score(X, y)
+    if self.oob_score:
+        self.oob_score_ = dfr_trainingResult.outOfBagError[0][0]
+        self.oob_prediction_ = dfr_trainingResult.outOfBagErrorPrediction.squeeze(axis=1)
+        if self.oob_prediction_.shape[-1] == 1:
+            self.oob_prediction_ = self.oob_prediction_.squeeze(axis=-1)
 
     return self
 
@@ -440,7 +446,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
 
     daal_ready = self.warm_start is False and \
         self.criterion in ["mse", "squared_error"] and self.ccp_alpha == 0.0 and \
-        not sp.issparse(X) and self.oob_score is False
+        not sp.issparse(X)
 
     if daal_ready:
         X = check_array(X, dtype=[np.float64, np.float32])
