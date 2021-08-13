@@ -249,7 +249,7 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
         raise RuntimeError(
             "Model should be fitted before exporting to daal4py.")
 
-    dump_filename = str(time()) + '_' + str(getpid())
+    dump_filename = f"catboost_model_{getpid()}_{time()}"
 
     # Dump model in file
     model.save_model(dump_filename, 'json')
