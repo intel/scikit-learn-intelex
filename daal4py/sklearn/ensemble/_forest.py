@@ -708,7 +708,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
         if hasattr(self, 'n_features_in_'):
             try:
                 num_features = _num_features(X)
-            except TypeError as ex:
+            except TypeError:
                 num_features = _num_samples(X)
             if num_features != self.n_features_in_:
                 raise ValueError(
