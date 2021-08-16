@@ -37,6 +37,9 @@ deselected_tests:
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
 
+  # Fails sporadically, needs further investigation
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
+
   # SVC._dual_coef_ is changing after fitting but result of prediction is still the same
   - svm/tests/test_svm.py::test_tweak_params
 
