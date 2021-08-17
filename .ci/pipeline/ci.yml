@@ -134,16 +134,23 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
+    displayName: conda build
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      pip install daal numpy
+      pip install daal numpy scikit-learn
       pip install -r requirements-test.txt
       conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       cd ..
       pytest --pyargs s/sklearnex/tests/
-    displayName: conda build
+    displayName: install sklearnex
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      cd ..
+      python s/.ci/scripts/test_global_patch.py
+    displayName: global patching testing
 
 - job: MacOS
   pool:
@@ -162,6 +169,7 @@ jobs:
       source activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
+      python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
     displayName: Conda build
   - script: |
       source activate CB
@@ -172,33 +180,45 @@ jobs:
       source activate CB
       cd examples/daal4py && python run_examples.py
     displayName: Examples
-# Need update dpcpp to 2021.3 (problem with download)
-# See here: https://github.com/intel/scikit-learn-intelex/pull/712
-# - job: Windows_DPCPP
-#   pool:
-#     vmImage: 'windows-latest'
-#   steps:
-#   - task: UsePythonVersion@0
-#     displayName: 'Use Python $(python.version)'
-#   - script: .ci/scripts/install_windows.bat $(WINDOWS_BASEKIT_URL) $(WINDOWS_DPCPP_COMPONENTS)
-#     timeoutInMinutes: 15
-#     displayName: oneAPI environment
-#   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-#     displayName: Add conda to PATH
-#   - script: conda create -q -y -n CB python=$(python.version) conda-build conda-verify
-#     displayName: Create Anaconda environment
-#   - script: |
-#       call activate CB
-#       set "DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest"
-#       conda build --override-channels -c conda-forge -c intel --numpy=1.19 --output-folder=. conda-recipe
-#     displayName: conda build
-#   - task: CopyFiles@2
-#     inputs:
-#       SourceFolder: 'C:\Miniconda\envs\CB\pkgs\'
-#       Contents: 'daal4py*'
-#       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-#   - task: PublishPipelineArtifact@0
-#     inputs:
-#       artifactName: 'daal4py win'
-#       targetPath: '$(Build.ArtifactStagingDirectory)/'
-#     condition: always()
+  - script: |
+      source activate CB
+      cd ..
+      python s/.ci/scripts/test_global_patch.py
+    displayName: global patching testing
+
+- job: Windows_DPCPP
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python $(python.version)'
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+  - script: conda create -q -y -n CB -c intel -c conda-forge python=$(python.version) dal-devel impi-devel clang-tools
+    displayName: 'Create Anaconda environment'
+  - script: |
+      call activate CB
+      pip install --upgrade setuptools
+      pip install -r requirements-dev.txt
+      pip install -r requirements-test.txt
+    displayName: 'Install requirements'
+  - script: |
+      call activate CB
+      set PREFIX=%CONDA_PREFIX%
+      set PYTHON=python
+      call conda-recipe\bld.bat
+    displayName: 'Build daal4py'
+  - script: |
+      call activate CB
+      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+    displayName: 'Build sklearnex'
+  - script: |
+      call activate CB
+      cd ..
+      pytest --pyargs s/sklearnex/tests/
+    displayName: sklearnex testing
+  - script: |
+      call activate CB
+      cd ..
+      python s\.ci\scripts\test_global_patch.py
+    displayName: global patching testing

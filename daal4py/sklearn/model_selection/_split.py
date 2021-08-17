@@ -21,8 +21,9 @@ from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from sklearn.model_selection._split import _validate_shuffle_split
 import daal4py as d4p
 import numpy as np
-from daal4py.sklearn._utils import daal_check_version
+from daal4py.sklearn._utils import daal_check_version, get_patch_message
 import platform
+import logging
 
 try:
     from sklearn.utils import _safe_indexing as safe_indexing
@@ -100,19 +101,21 @@ def _daal_train_test_split(*arrays, **options):
                rng not in ['default', 'OPTIMIZED_MT19937'] and \
                (isinstance(random_state, int) or random_state is None):
                 random_state = mkl_random.RandomState(random_state, rng)
-                indexes = random_state.permutation(n_train + n_test)
-                test, train = indexes[:n_test], indexes[n_test:]
+                indexes = random_state.permutation(n_samples)
+                test, train = indexes[:n_test], indexes[n_test:(
+                    n_test + n_train)]
             elif rng == 'OPTIMIZED_MT19937' and \
                 (isinstance(random_state, int) or random_state is None) and \
                     platform.system() != 'Windows':
                 indexes = np.empty(
-                    shape=(n_train + n_test,),
+                    shape=(n_samples,),
                     dtype=np.int64 if n_train + n_test > 2 ** 31 - 1 else np.int32
                 )
                 random_state = np.random.RandomState(random_state)
                 random_state = random_state.get_state()[1]
                 d4p.daal_generate_shuffled_indices([indexes], [random_state])
-                test, train = indexes[:n_test], indexes[n_test:]
+                test, train = indexes[:n_test], indexes[n_test:(
+                    n_test + n_train)]
             else:
                 cv = ShuffleSplit(
                     test_size=n_test,
@@ -152,10 +155,15 @@ def _daal_train_test_split(*arrays, **options):
                     break
 
         if fallback:
+            logging.info(
+                "sklearn.model_selection."
+                "train_test_split: " + get_patch_message("sklearn"))
             res.append(safe_indexing(arr, train))
             res.append(safe_indexing(arr, test))
         else:
-
+            logging.info(
+                "sklearn.model_selection."
+                "train_test_split: " + get_patch_message("daal"))
             if len(arr.shape) == 2:
                 n_cols = arr.shape[1]
                 reshape_later = False
