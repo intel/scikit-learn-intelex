@@ -53,7 +53,6 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
         'classes_count': 5,
     }
 
-
     # Training
     cb_model = cb.CatBoost(params)
     cb_model.fit(cb_train)
@@ -89,10 +88,10 @@ if __name__ == "__main__":
     print("\nGround truth (first 10 rows):\n", y_test[0:10])
 
     print("Catboost errors count:", cb_errors_count)
-    print("Catboost accuracy score:", 1 -
-          cb_errors_count / cb_prediction.shape[0])
+    print("Catboost accuracy score:",
+          1 - cb_errors_count / cb_prediction.shape[0])
 
     print("\ndaal4py errors count:", daal_errors_count)
-    print("daal4py accuracy score:", 1 -
-          daal_errors_count / daal_prediction.shape[0])
+    print("daal4py accuracy score:",
+          1 - daal_errors_count / daal_prediction.shape[0])
     print("\nAll looks good!")
