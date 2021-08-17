@@ -50,9 +50,9 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
         'objective': 'MultiClass',
         'learning_rate': 0.3,
         'n_estimators': 100,
+        'classes_count': 5,
     }
 
-    num_classes = 5
 
     # Training
     cb_model = cb.CatBoost(params)
@@ -67,7 +67,7 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
 
     # daal4py prediction
     daal_predict_algo = d4p.gbt_classification_prediction(
-        nClasses=num_classes,
+        nClasses=params['classes_count'],
         resultsToEvaluate="computeClassLabels",
         fptype='float'
     )
