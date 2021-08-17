@@ -37,6 +37,11 @@ deselected_tests:
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
 
+  # sklearn expects an exception for sparce matrices with 64-bit integer indices.
+  # sklearnex works correctly with 64-bit integer indices
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
+  - utils/tests/test_estimator_checks.py::test_xfail_ignored_in_check_estimator
+
   # SVC._dual_coef_ is changing after fitting but result of prediction is still the same
   - svm/tests/test_svm.py::test_tweak_params
 
