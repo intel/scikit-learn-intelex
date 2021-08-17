@@ -14,7 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-import logging
 from ._config import get_config
 from ._utils import get_patch_message
 from functools import wraps
@@ -44,8 +43,7 @@ def _get_global_queue():
                                "inside daal4py.oneapi.sycl_context")
         if type(target) != SyclQueue:
             return SyclQueue(target)
-        else:
-            return target
+        return target
     if d4p_target is not None and d4p_target != 'host':
         return SyclQueue(d4p_target)
     return None
@@ -119,6 +117,8 @@ def _check_supported(obj, queue, method_name, *data):
 
 
 def _dispatch(obj, method_name, branches, *args, **kwargs):
+        import logging
+
         q = _get_global_queue()
         q, hostargs = _transfer_to_host(q, *args, **kwargs)
         backend, q = _check_supported(obj, q, method_name, *hostargs)
