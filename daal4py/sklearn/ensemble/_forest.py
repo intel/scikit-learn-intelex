@@ -32,8 +32,8 @@ from sklearn.utils import (check_random_state, check_array, deprecated)
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
-    _num_samples,
-    _num_features)
+    _num_samples)
+from ..utils.validation import _daal_num_features
 from sklearn.base import clone
 from sklearn.exceptions import DataConversionWarning
 
@@ -707,7 +707,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
         """
         if hasattr(self, 'n_features_in_'):
             try:
-                num_features = _num_features(X)
+                num_features = _daal_num_features(X)
             except TypeError:
                 num_features = _num_samples(X)
             if num_features != self.n_features_in_:
