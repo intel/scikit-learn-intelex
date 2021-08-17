@@ -62,7 +62,7 @@ test:
         - lightgbm  # [not win]
         - pandas
         - scipy
-        - scikit-learn ==0.24.2
+        - scikit-learn
         - threadpoolctl
         - xgboost  # [not win]
         - pytest
