@@ -135,6 +135,7 @@ req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
 req_library = defaultdict(lambda: [])
 req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
 req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
+req_library['gbt_cls_model_create_from_catboost_batch.py'] = ['catboost']
 
 req_os = defaultdict(lambda: [])
 
