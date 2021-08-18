@@ -23,8 +23,8 @@ from ..datatypes._data_conversion import from_table, to_table
 
 
 def _check_inputs(X, Y):
-    def check_input(input):
-        return _check_array(input, dtype=[np.float64, np.float32], force_all_finite=False)
+    def check_input(data):
+        return _check_array(data, dtype=[np.float64, np.float32], force_all_finite=False)
     X = check_input(X)
     Y = X if Y is None else check_input(Y)
     fptype = 'float' if X.dtype is np.dtype('float32') else 'double'

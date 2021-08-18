@@ -59,7 +59,8 @@ def check_svm_model_equal(queue, svm, X_train, y_train, X_test, decimal=6):
 
     if is_classifier(svm):
         assert_array_almost_equal(dense_svm.decision_function(X_test_dense, queue=queue),
-                                  sparse_svm.decision_function(X_test, queue=queue), decimal)
+                                  sparse_svm.decision_function(X_test, queue=queue),
+                                  decimal)
 
 
 def _test_simple_dataset(queue, kernel):
@@ -100,7 +101,8 @@ def _test_binary_dataset(queue, kernel):
     pytest.param(get_queues('gpu'),
                  marks=pytest.mark.xfail(
                      reason="raises UnknownError for linear and rbf, "
-                            "Unimplemented error with inconsistent error message for poly and sigmoid"))])
+                            "Unimplemented error with inconsistent error message "
+                            "for poly and sigmoid"))])
 @pytest.mark.parametrize('kernel', ['linear', 'rbf', 'poly', 'sigmoid'])
 def test_binary_dataset(queue, kernel):
     _test_binary_dataset(queue, kernel)

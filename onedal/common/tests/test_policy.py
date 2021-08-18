@@ -18,14 +18,14 @@ import pytest
 import numpy as np
 
 from onedal.common._policy import _get_policy
-from onedal.tests.utils._device_selection import (get_queues,
-    get_memory_usm, is_dpctl_available, device_type_to_str)
+from onedal.tests.utils._device_selection import (
+    get_queues, get_memory_usm, is_dpctl_available, device_type_to_str)
 
 
 @pytest.mark.parametrize('queue', get_queues())
 def test_queue_passed_directly(queue):
     device_name = device_type_to_str(queue)
-    assert _get_policy(queue).get_device_name()  == device_name
+    assert _get_policy(queue).get_device_name() == device_name
 
 
 @pytest.mark.parametrize('queue', get_queues())
@@ -44,8 +44,8 @@ def test_with_usm_ndarray_data(queue, memtype):
     from dpctl.tensor import usm_ndarray
 
     device_name = device_type_to_str(queue)
-    X = usm_ndarray((5, 3), buffer=memtype(5*3*8, queue=queue))
-    y = usm_ndarray((3, ), buffer=memtype(3*8, queue=queue))
+    X = usm_ndarray((5, 3), buffer=memtype(5 * 3 * 8, queue=queue))
+    y = usm_ndarray((3, ), buffer=memtype(3 * 8, queue=queue))
     assert _get_policy(None, X, y).get_device_name() == device_name
 
 
@@ -59,5 +59,5 @@ def test_queue_parameter_with_usm_ndarray(memtype):
     q1 = SyclQueue('cpu')
     q2 = SyclQueue('gpu')
 
-    X = usm_ndarray((5, 3), buffer=memtype(5*3*8, queue=q1))
+    X = usm_ndarray((5, 3), buffer=memtype(5 * 3 * 8, queue=q1))
     assert _get_policy(q2, X).get_device_name() == device_type_to_str(q2)

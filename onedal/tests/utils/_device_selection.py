@@ -31,9 +31,8 @@ def get_queues(filter_='cpu,gpu,host'):
             queues.append(dpctl.SyclQueue('cpu'))
         if dpctl.has_gpu_devices and 'gpu' in filter_:
             queues.append(dpctl.SyclQueue('gpu'))
-    except:
-        pass
-    return queues
+    finally:
+        return queues
 
 
 def get_memory_usm():
@@ -63,14 +62,14 @@ def is_dpctl_available(targets=None):
 def device_type_to_str(queue):
     if queue is None:
         return 'host'
-    else:
-        from dpctl import device_type
-        if queue.sycl_device.device_type == device_type.cpu:
-            return 'cpu'
-        if queue.sycl_device.device_type == device_type.gpu:
-            return 'gpu'
-        if queue.sycl_device.device_type == device_type.host:
-            return 'host'
+
+    from dpctl import device_type
+    if queue.sycl_device.device_type == device_type.cpu:
+        return 'cpu'
+    if queue.sycl_device.device_type == device_type.gpu:
+        return 'gpu'
+    if queue.sycl_device.device_type == device_type.host:
+        return 'host'
     return 'unknown'
 
 

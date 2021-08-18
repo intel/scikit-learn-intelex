@@ -40,7 +40,7 @@ class _Daal4PyContextReset:
 
         self._d4p_context = None
         self._host_context = None
-        if 'daal4py.oneapi' is sys.modules:
+        if 'daal4py.oneapi' in sys.modules:
             from daal4py.oneapi import _get_sycl_ctxt, sycl_execution_context
             self._d4p_context = _get_sycl_ctxt()
             self._host_context = sycl_execution_context('host')
@@ -62,4 +62,3 @@ class _HostInteropPolicy(_backend.host_policy):
     def __init__(self):
         super().__init__()
         self._d4p_interop = _Daal4PyContextReset()
-

@@ -20,7 +20,8 @@ class ClassifierMixin:
 
     def score(self, X, y, sample_weight=None, queue=None):
         from sklearn.metrics import accuracy_score
-        return accuracy_score(y, self.predict(X, queue=queue), sample_weight=sample_weight)
+        return accuracy_score(y, self.predict(X, queue=queue),
+                              sample_weight=sample_weight)
 
     def _more_tags(self):
         return {"requires_y": True}

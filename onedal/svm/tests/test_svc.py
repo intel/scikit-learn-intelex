@@ -164,8 +164,8 @@ def test_pickle(queue):
 @pass_if_not_implemented_for_gpu(reason="sigmoid kernel is not implemented")
 @pytest.mark.parametrize('queue', get_queues('cpu') + [
     pytest.param(get_queues('gpu'),
-                 marks=pytest.mark.xfail(
-                     reason="raises Unimplemented error with inconsistent error message"))])
+                 marks=pytest.mark.xfail(reason="raises Unimplemented error "
+                                                "with inconsistent error message"))])
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_svc_sigmoid(queue, dtype):
     X_train = np.array([[-1, 2], [0, 0], [2, -1],
