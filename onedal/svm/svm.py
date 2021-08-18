@@ -14,10 +14,9 @@
 # limitations under the License.
 #===============================================================================
 
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from sklearn.base import BaseEstimator
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-import sys
 from numbers import Number
 
 import numpy as np
@@ -31,6 +30,7 @@ from ..datatypes import (
     _check_n_features
 )
 
+from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
 from onedal import _backend
@@ -114,7 +114,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         ww = None
         if sample_weight_count == 0 and self.class_weight_ is None:
             return ww
-        elif sample_weight_count == 0:
+
+        if sample_weight_count == 0:
             sample_weight = np.ones(n_samples, dtype=dtype)
         elif isinstance(sample_weight, Number):
             sample_weight = np.full(n_samples, sample_weight, dtype=dtype)

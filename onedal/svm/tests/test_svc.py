@@ -125,7 +125,7 @@ def test_decision_function(queue):
 def test_iris(queue):
     iris = datasets.load_iris()
     clf = SVC(kernel='linear').fit(iris.data, iris.target, queue=queue)
-    assert clf.score(iris.data, iris.target) > 0.9 # TODO: pass a queue
+    assert clf.score(iris.data, iris.target, queue=queue) > 0.9
     assert_array_equal(clf.classes_, np.sort(clf.classes_))
 
 

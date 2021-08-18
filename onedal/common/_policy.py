@@ -29,21 +29,12 @@ def _get_policy(queue, *data):
 
 def _get_queue(*data):
     if len(data) > 0 and hasattr(data[0], '__sycl_usm_array_interface__'):
+        # Assume that all data reside on the same device
         return data[0].__sycl_usm_array_interface__['syclobj']
     return None
-    # queues = [
-    #     item.__sycl_usm_array_interface__['syclobj']
-    #     for item in data if hasattr(item, '__sycl_usm_array_interface__') and item is not None
-    # ]
-
-    # for i in range(0, len(queues) - 1):
-    #     if queues[i].sycl_device != queues[i].sycl_device:
-    #         raise RuntimeError("All input data object shall reside on the same device")
-
-    # return queues[0] if len(queues) > 0 else None
 
 
-class _Daal4PyContextSaver:
+class _Daal4PyContextReset:
     def __init__(self):
         import sys
 
@@ -63,12 +54,12 @@ class _Daal4PyContextSaver:
 class _DataParallelInteropPolicy(_backend.data_parallel_policy):
     def __init__(self, queue):
         self._queue = queue
-        self._d4p_interop = _Daal4PyContextSaver()
+        self._d4p_interop = _Daal4PyContextReset()
         super().__init__(self._queue.addressof_ref())
 
 
 class _HostInteropPolicy(_backend.host_policy):
     def __init__(self):
         super().__init__()
-        self._d4p_interop = _Daal4PyContextSaver()
+        self._d4p_interop = _Daal4PyContextReset()
 

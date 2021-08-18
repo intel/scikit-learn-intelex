@@ -36,6 +36,30 @@ def get_queues(filter_='cpu,gpu,host'):
     return queues
 
 
+def get_memory_usm():
+    try:
+        from dpctl.memory import MemoryUSMDevice, MemoryUSMShared
+        return [MemoryUSMDevice, MemoryUSMShared]
+    except ImportError:
+        return []
+
+
+def is_dpctl_available(targets=None):
+    try:
+        import dpctl
+
+        if targets is None:
+            return True
+        for device in targets:
+            if device == 'cpu' and not dpctl.has_cpu_devices():
+                return False
+            if device == 'gpu' and not dpctl.has_gpu_devices():
+                return False
+        return True
+    except ImportError:
+        return False
+
+
 def device_type_to_str(queue):
     if queue is None:
         return 'host'

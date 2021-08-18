@@ -83,7 +83,7 @@ def test_diabetes_simple(queue):
     diabetes = datasets.load_diabetes()
     clf = SVR(kernel='linear', C=10.)
     clf.fit(diabetes.data, diabetes.target, queue=queue)
-    assert clf.score(diabetes.data, diabetes.target) > 0.02 # TODO: pass a queue
+    assert clf.score(diabetes.data, diabetes.target, queue=queue) > 0.02
 
 
 @pass_if_not_implemented_for_gpu(reason="svr is not implemented")
@@ -138,7 +138,7 @@ def _test_diabetes_compare_with_sklearn(queue, kernel):
     diabetes = datasets.load_diabetes()
     clf_onedal = SVR(kernel=kernel, C=10., gamma=2)
     clf_onedal.fit(diabetes.data, diabetes.target, queue=queue)
-    result = clf_onedal.score(diabetes.data, diabetes.target) # TODO: pass a queue
+    result = clf_onedal.score(diabetes.data, diabetes.target, queue=queue)
 
     clf_sklearn = SklearnSVR(kernel=kernel, C=10., gamma=2)
     clf_sklearn.fit(diabetes.data, diabetes.target)
@@ -162,7 +162,7 @@ def _test_boston_rbf_compare_with_sklearn(queue, C, gamma):
     diabetes = datasets.load_boston()
     clf = SVR(kernel='rbf', gamma=gamma, C=C)
     clf.fit(diabetes.data, diabetes.target, queue=queue)
-    result = clf.score(diabetes.data, diabetes.target) # TODO: pass a queue
+    result = clf.score(diabetes.data, diabetes.target, queue=queue)
 
     clf = SklearnSVR(kernel='rbf', gamma=gamma, C=C)
     clf.fit(diabetes.data, diabetes.target)
@@ -184,7 +184,7 @@ def _test_boston_linear_compare_with_sklearn(queue, C):
     diabetes = datasets.load_boston()
     clf = SVR(kernel='linear', C=C)
     clf.fit(diabetes.data, diabetes.target, queue=queue)
-    result = clf.score(diabetes.data, diabetes.target) # TODO: pass a queue
+    result = clf.score(diabetes.data, diabetes.target, queue=queue)
 
     clf = SklearnSVR(kernel='linear', C=C)
     clf.fit(diabetes.data, diabetes.target)
@@ -205,7 +205,7 @@ def _test_boston_poly_compare_with_sklearn(queue, params):
     diabetes = datasets.load_boston()
     clf = SVR(kernel='poly', **params)
     clf.fit(diabetes.data, diabetes.target, queue=queue)
-    result = clf.score(diabetes.data, diabetes.target) # TODO: pass a queue
+    result = clf.score(diabetes.data, diabetes.target, queue=queue)
 
     clf = SklearnSVR(kernel='poly', **params)
     clf.fit(diabetes.data, diabetes.target)

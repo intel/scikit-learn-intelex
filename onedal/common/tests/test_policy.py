@@ -17,17 +17,9 @@
 import pytest
 import numpy as np
 
-try:
-    from dpctl import SyclQueue, has_gpu_devices, has_cpu_devices
-    from dpctl.tensor import usm_ndarray
-    from dpctl.memory import MemoryUSMDevice, MemoryUSMShared
-
-    dpctl_available = True
-except ImportError:
-    dpctl_available = False
-
 from onedal.common._policy import _get_policy
-from onedal.tests.utils._device_selection import get_queues, device_type_to_str
+from onedal.tests.utils._device_selection import (get_queues,
+    get_memory_usm, is_dpctl_available, device_type_to_str)
 
 
 @pytest.mark.parametrize('queue', get_queues())
@@ -45,20 +37,25 @@ def test_with_numpy_data(queue):
     assert _get_policy(queue, X, y).get_device_name() == device_name
 
 
-@pytest.mark.skipif(not dpctl_available, reason='depends on dpctl')
+@pytest.mark.skipif(not is_dpctl_available(), reason='depends on dpctl')
 @pytest.mark.parametrize('queue', get_queues('cpu,gpu'))
-@pytest.mark.parametrize('memtype', [MemoryUSMDevice, MemoryUSMShared])
+@pytest.mark.parametrize('memtype', get_memory_usm())
 def test_with_usm_ndarray_data(queue, memtype):
+    from dpctl.tensor import usm_ndarray
+
     device_name = device_type_to_str(queue)
     X = usm_ndarray((5, 3), buffer=memtype(5*3*8, queue=queue))
     y = usm_ndarray((3, ), buffer=memtype(3*8, queue=queue))
     assert _get_policy(None, X, y).get_device_name() == device_name
 
 
-@pytest.mark.skipif(not (dpctl_available and has_cpu_devices and has_gpu_devices),
+@pytest.mark.skipif(not is_dpctl_available(['cpu', 'gpu']),
                     reason='test uses multiple devices')
-@pytest.mark.parametrize('memtype', [MemoryUSMDevice, MemoryUSMShared])
+@pytest.mark.parametrize('memtype', get_memory_usm())
 def test_queue_parameter_with_usm_ndarray(memtype):
+    from dpctl import SyclQueue
+    from dpctl.tensor import usm_ndarray
+
     q1 = SyclQueue('cpu')
     q2 = SyclQueue('gpu')
 

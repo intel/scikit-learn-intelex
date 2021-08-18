@@ -93,7 +93,7 @@ def test_decision_function(queue):
 def test_iris(queue):
     iris = datasets.load_iris()
     clf = NuSVC(kernel='linear').fit(iris.data, iris.target, queue=queue)
-    assert clf.score(iris.data, iris.target) > 0.9 # TODO: pass a queue
+    assert clf.score(iris.data, iris.target, queue=queue) > 0.9
     assert_array_equal(clf.classes_, np.sort(clf.classes_))
 
 
@@ -134,7 +134,7 @@ def _test_cancer_rbf_compare_with_sklearn(queue, nu, gamma):
 
     clf = NuSVC(kernel='rbf', gamma=gamma, nu=nu)
     clf.fit(cancer.data, cancer.target, queue=queue)
-    result = clf.score(cancer.data, cancer.target) # TODO: pass a queue
+    result = clf.score(cancer.data, cancer.target, queue=queue)
 
     clf = SklearnNuSVC(kernel='rbf', gamma=gamma, nu=nu)
     clf.fit(cancer.data, cancer.target)
@@ -157,7 +157,7 @@ def _test_cancer_linear_compare_with_sklearn(queue, nu):
 
     clf = NuSVC(kernel='linear', nu=nu)
     clf.fit(cancer.data, cancer.target, queue=queue)
-    result = clf.score(cancer.data, cancer.target) # TODO: pass a queue
+    result = clf.score(cancer.data, cancer.target, queue=queue)
 
     clf = SklearnNuSVC(kernel='linear', nu=nu)
     clf.fit(cancer.data, cancer.target)
@@ -179,7 +179,7 @@ def _test_cancer_poly_compare_with_sklearn(queue, params):
 
     clf = NuSVC(kernel='poly', **params)
     clf.fit(cancer.data, cancer.target, queue=queue)
-    result = clf.score(cancer.data, cancer.target) # TODO: pass a queue
+    result = clf.score(cancer.data, cancer.target, queue=queue)
 
     clf = SklearnNuSVC(kernel='poly', **params)
     clf.fit(cancer.data, cancer.target)

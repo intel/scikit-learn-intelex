@@ -17,14 +17,9 @@
 import pytest
 import numpy as np
 from numpy.testing import assert_allclose
-from sklearn import datasets, metrics
 from onedal.primitives import linear_kernel
 
-from sklearn.utils.estimator_checks import check_estimator
-import sklearn.utils.estimator_checks
-
-from onedal.tests.utils._device_selection import (get_queues,
-                                                  pass_if_not_implemented_for_gpu)
+from onedal.tests.utils._device_selection import get_queues
 
 
 def _test_input_format_c_contiguous_numpy(queue, dtype):
