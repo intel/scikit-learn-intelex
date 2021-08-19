@@ -14,7 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py import sklearn
 import sklearn
 import sklearnex
 
@@ -33,5 +32,5 @@ def test_set_config_works():
 
     config = sklearnex.get_config()
     assert config['target_offload'] == 'cpu:0'
-    assert config['allow_fallback_to_host'] == True
-    assert config['assume_finite'] == True
+    assert config['allow_fallback_to_host']
+    assert config['assume_finite']

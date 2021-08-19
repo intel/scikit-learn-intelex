@@ -15,7 +15,7 @@
 #===============================================================================
 
 from ._common import BaseSVC
-from .._device_offload import _dispatch, wrap_output_data
+from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
@@ -38,58 +38,58 @@ class SVC(sklearn_SVC, BaseSVC):
             decision_function_shape=decision_function_shape, break_ties=break_ties,
             random_state=random_state)
 
-    def _gpu_supported(self, method_name, *data):
-        if method_name == 'svm.SVC.fit':
-            # TODO: class count is not checked
-            return self.kernel in ['linear', 'rbf'] and self.class_weight is None
-        if method_name in ['svm.SVC.predict',
-                           'svm.SVC._predict_proba',
-                           'svm.SVC.decision_function']:
-           return hasattr(self, '_onedal_estimator') and self._gpu_supported('svm.SVC.fit', *data)
-
-    def _cpu_supported(self, method_name, *data):
-        if method_name == 'svm.SVC.fit':
-            return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
-        if method_name in ['svm.SVC.predict',
-                           'svm.SVC._predict_proba',
-                           'svm.SVC.decision_function']:
-            return hasattr(self, '_onedal_estimator')
-
-
     def fit(self, X, y, sample_weight=None):
-        _dispatch(self, 'svm.SVC.fit', {
-            'onedal': lambda q, X, y, w: self._onedal_fit(X, y, sample_weight=w, queue=q),
-            'sklearn': lambda X, y, w: sklearn_SVC.fit(self, X, y, sample_weight=w),
+        dispatch(self, 'svm.SVC.fit', {
+            'onedal': self.__class__._onedal_fit,
+            'sklearn': sklearn_SVC.fit,
         }, X, y, sample_weight)
 
         return self
 
     @wrap_output_data
     def predict(self, X):
-        return _dispatch(self, 'svm.SVC.predict', {
-            'onedal': lambda q, X: self._onedal_estimator.predict(X, queue=q),
-            'sklearn': lambda X: sklearn_SVC.predict(self, X),
+        return dispatch(self, 'svm.SVC.predict', {
+            'onedal': self.__class__._onedal_predict,
+            'sklearn': sklearn_SVC.predict,
         }, X)
 
     @wrap_output_data
     def _predict_proba(self, X):
-        return _dispatch(self, 'svm.SVC._predict_proba', {
-            'onedal': lambda q, X: self._onedal_predict_proba(X),
-            'sklearn': lambda X: sklearn_SVC._predict_proba(self, X),
+        return dispatch(self, 'svm.SVC._predict_proba', {
+            'onedal': self.__class__._onedal_predict_proba,
+            'sklearn': sklearn_SVC._predict_proba,
         }, X)
 
     @wrap_output_data
     def decision_function(self, X):
-        return _dispatch(self, 'svm.SVC.decision_function', {
-            'onedal': lambda q, X: self._onedal_estimator.decision_function(X, queue=q),
-            'sklearn': lambda X: sklearn_SVC.decision_function(self, X),
+        return dispatch(self, 'svm.SVC.decision_function', {
+            'onedal': self.__class__._onedal_decision_function,
+            'sklearn': sklearn_SVC.decision_function,
         }, X)
 
-    def _onedal_predict_proba(self, X):
-        if getattr(self, 'clf_prob', None) is None:
-            raise NotFittedError(
-                "predict_proba is not available when fitted with probability=False")
-        return self.clf_prob.predict_proba(X)
+    def _onedal_gpu_supported(self, method_name, *data):
+        if method_name == 'svm.SVC.fit':
+            if len(data) > 1:
+                import numpy as np
+                self._class_count = len(np.unique(data[1]))
+            return self.kernel in ['linear', 'rbf'] and \
+                self.class_weight is None and \
+                self._class_count == 2
+        if method_name in ['svm.SVC.predict',
+                           'svm.SVC._predict_proba',
+                           'svm.SVC.decision_function']:
+            return hasattr(self, '_onedal_estimator') and \
+                self._onedal_gpu_supported('svm.SVC.fit', *data)
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+
+    def _onedal_cpu_supported(self, method_name, *data):
+        if method_name == 'svm.SVC.fit':
+            return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
+        if method_name in ['svm.SVC.predict',
+                           'svm.SVC._predict_proba',
+                           'svm.SVC.decision_function']:
+            return hasattr(self, '_onedal_estimator')
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
@@ -118,3 +118,15 @@ class SVC(sklearn_SVC, BaseSVC):
         if self.probability:
             self._fit_proba(X, y, sample_weight)
         self._save_attributes()
+
+    def _onedal_predict(self, X, queue=None):
+        return self._onedal_estimator.predict(X, queue=queue)
+
+    def _onedal_predict_proba(self, X, queue=None):
+        if getattr(self, 'clf_prob', None) is None:
+            raise NotFittedError(
+                "predict_proba is not available when fitted with probability=False")
+        return self.clf_prob.predict_proba(X)  # TODO: pass a queue
+
+    def _onedal_decision_function(self, X, queue=None):
+        return self._onedal_estimator.decision_function(X, queue=queue)

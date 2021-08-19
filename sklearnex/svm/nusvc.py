@@ -14,10 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-import logging
-from .._utils import get_patch_message
 from ._common import BaseSVC
-from .._device_offload import _dispatch
+from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
@@ -40,48 +38,45 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             decision_function_shape=decision_function_shape, break_ties=break_ties,
             random_state=random_state)
 
-    def _gpu_supported(self, method_name, *data):
+    def fit(self, X, y, sample_weight=None):
+        dispatch(self, 'svm.NuSVC.fit', {
+            'onedal': self.__class__._onedal_fit,
+            'sklearn': sklearn_NuSVC.fit,
+        }, X, y, sample_weight)
+
+        return self
+
+    @wrap_output_data
+    def predict(self, X):
+        return dispatch(self, 'svm.NuSVC.predict', {
+            'onedal': self.__class__._onedal_predict,
+            'sklearn': sklearn_NuSVC.predict,
+        }, X)
+
+    @wrap_output_data
+    def _predict_proba(self, X):
+        return dispatch(self, 'svm.NuSVC._predict_proba', {
+            'onedal': self.__class__._onedal_predict_proba,
+            'sklearn': sklearn_NuSVC._predict_proba,
+        }, X)
+
+    @wrap_output_data
+    def decision_function(self, X):
+        return dispatch(self, 'svm.NuSVC.decision_function', {
+            'onedal': self.__class__._onedal_decision_function,
+            'sklearn': sklearn_NuSVC.decision_function,
+        }, X)
+
+    def _onedal_gpu_supported(self, method_name, *data):
         return False
 
-    def _cpu_supported(self, method_name, *data):
+    def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'svm.NuSVC.fit':
             return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
         if method_name in ['svm.NuSVC.predict',
                            'svm.NuSVC._predict_proba',
                            'svm.NuSVC.decision_function']:
             return hasattr(self, '_onedal_estimator')
-
-    def fit(self, X, y, sample_weight=None):
-        _dispatch(self, 'svm.NuSVC.fit', {
-            'onedal': lambda q, X, y, w: self._onedal_fit(X, y, sample_weight=w, queue=q),
-            'sklearn': lambda X, y, w: sklearn_NuSVC.fit(self, X, y, sample_weight=w),
-        }, X, y, sample_weight)
-
-        return self
-
-    def predict(self, X):
-        return _dispatch(self, 'svm.NuSVC.predict', {
-            'onedal': lambda q, X: self._onedal_estimator.predict(X, queue=q),
-            'sklearn': lambda X: sklearn_NuSVC.predict(self, X),
-        }, X)
-
-    def _predict_proba(self, X):
-        return _dispatch(self, 'svm.NuSVC._predict_proba', {
-            'onedal': lambda q, X: self._onedal_predict_proba(X),
-            'sklearn': lambda X: sklearn_NuSVC._predict_proba(self, X),
-        }, X)
-
-    def decision_function(self, X):
-        return _dispatch(self, 'svm.NuSVC.decision_function', {
-            'onedal': lambda q, X: self._onedal_estimator.decision_function(X, queue=q),
-            'sklearn': lambda X: sklearn_NuSVC.decision_function(self, X),
-        }, X)
-
-    def _onedal_predict_proba(self, X):
-        if getattr(self, 'clf_prob', None) is None:
-            raise NotFittedError(
-                "predict_proba is not available when fitted with probability=False")
-        return self.clf_prob.predict_proba(X)
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
@@ -110,3 +105,15 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         if self.probability:
             self._fit_proba(X, y, sample_weight)
         self._save_attributes()
+
+    def _onedal_predict(self, X, queue=None):
+        return self._onedal_estimator.predict(X, queue=queue)
+
+    def _onedal_predict_proba(self, X, queue=None):
+        if getattr(self, 'clf_prob', None) is None:
+            raise NotFittedError(
+                "predict_proba is not available when fitted with probability=False")
+        return self.clf_prob.predict_proba(X)  # TODO: pass a queue
+
+    def _onedal_decision_function(self, X, queue=None):
+        return self._onedal_estimator.decision_function(X, queue=queue)

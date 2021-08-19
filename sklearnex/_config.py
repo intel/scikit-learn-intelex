@@ -108,4 +108,3 @@ def config_context(**new_config):
         yield
     finally:
         set_config(**old_config)
-
