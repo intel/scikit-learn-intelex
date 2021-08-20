@@ -80,7 +80,7 @@ elseif(IFACE STREQUAL "dpc")
     set(TARGET "_onedal_py_dpc")
 
     if(WIN32)
-        set(ONEDAL_LIBRARIES "onedal_dll" "onedal_core_dll" "onedal_thread_dll")
+        set(ONEDAL_LIBRARIES "onedal_dpc_dll" "onedal_core_dll" "onedal_thread_dll")
     else()
         set(ONEDAL_LIBRARIES "onedal_dpc" "onedal_core" "onedal_thread")
     endif()
