@@ -55,6 +55,9 @@ using daal::services::LibraryVersionInfo;
 #if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210200
     #include "data_management/data/internal/roc_auc_score.h"
 #endif
+#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210500
+    #include "algorithms/tsne/tsne_gradient_descent.h"
+#endif
 
 
 extern "C" {
@@ -340,6 +343,12 @@ double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test);
 
 extern "C" {
 void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state);
+}
+
+extern "C"
+{
+    void c_tsne_gradient_descent(data_or_file & init, data_or_file & p, data_or_file & size_iter,
+                                 data_or_file & params, data_or_file & results, char dtype);
 }
 
 #endif // _HLAPI_H_INCLUDED_
