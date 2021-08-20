@@ -79,7 +79,7 @@ if(IFACE STREQUAL "host")
     if(WIN32)
         list(APPEND ONEDAL_LIBRARIES "onedal_dll")
     else()
-        list(APPEND ONEDAL_LIBRARIES "onedal")
+        set(ONEDAL_LIBRARIES "onedal" "onedal_core" "onedal_thread")
     endif()
 
     list(APPEND COMPILE_DEFINITIONS "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
@@ -90,7 +90,7 @@ elseif(IFACE STREQUAL "dpc")
     if(WIN32)
         list(APPEND ONEDAL_LIBRARIES "onedal_dpc_dll")
     else()
-        list(APPEND ONEDAL_LIBRARIES "onedal_dpc")
+        set(ONEDAL_LIBRARIES "onedal_dpc" "onedal_core" "onedal_thread")
     endif()
 
     list(APPEND COMPILE_DEFINITIONS
