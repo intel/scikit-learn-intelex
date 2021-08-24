@@ -1,4 +1,4 @@
-# Intel(R) Extension for Scikit-learn*
+# Intel(R) Extension for Scikit-learn* <img align="right" width="100" height="100" src="https://spec.oneapi.io/oneapi-logo-white-scaled.jpg">
 
 [Installation](https://github.com/intel/scikit-learn-intelex#-installation)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://intel.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Notebook examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Medium blogs](https://medium.com/intel-analytics-software/tagged/machine-learning)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Get Started](https://github.com/intel/scikit-learn-intelex#%EF%B8%8F-get-started)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support](https://github.com/intel/scikit-learn-intelex#-support)&nbsp;&nbsp;&nbsp; 
 
@@ -8,7 +8,6 @@
 [![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-learn-intelex)](https://anaconda.org/conda-forge/scikit-learn-intelex)
 
-<img align="right" width="100" height="100" src="https://spec.oneapi.io/oneapi-logo-white-scaled.jpg">
 
 Intel(R) Extension for Scikit-learn is a seamless way to speed up your Scikit-learn application. The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library ([oneDAL](https://github.com/oneapi-src/oneDAL)). Patching scikit-learn makes it a well-suited machine learning framework for dealing with real-life problems.
 
