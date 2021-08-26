@@ -23,12 +23,18 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 # Classes for patching
 if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P', 300)):
+    from ._config import set_config as set_config_sklearnex
+    from ._config import get_config as get_config_sklearnex
+    from ._config import config_context as config_context_sklearnex
+
     from .svm import SVR as SVR_sklearnex
     from .svm import SVC as SVC_sklearnex
     from .svm import NuSVR as NuSVR_sklearnex
     from .svm import NuSVC as NuSVC_sklearnex
 
 # Scikit-learn* modules
+
+import sklearn as base_module
 import sklearn.svm as svm_module
 
 
@@ -45,6 +51,9 @@ def get_patch_map():
         mapping['svc'] = [[(svm_module, 'SVC', SVC_sklearnex), None]]
         mapping['nusvr'] = [[(svm_module, 'NuSVR', NuSVR_sklearnex), None]]
         mapping['nusvc'] = [[(svm_module, 'NuSVC', NuSVC_sklearnex), None]]
+        mapping['set_config'] = [[(base_module, 'set_config', set_config_sklearnex), None]]
+        mapping['get_config'] = [[(base_module, 'get_config', get_config_sklearnex), None]]
+        mapping['config_context'] = [[(base_module, 'config_context', config_context_sklearnex), None]]
     return mapping
 
 

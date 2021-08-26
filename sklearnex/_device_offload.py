@@ -41,9 +41,9 @@ def _get_global_queue():
         if d4p_target is not None:
             raise RuntimeError("Cannot use target offload option "
                                "inside daal4py.oneapi.sycl_context")
-        if type(target) != SyclQueue:
-            return SyclQueue(target)
-        return target
+        if isinstance(target, SyclQueue):
+            return target
+        return SyclQueue(target)
     if d4p_target is not None:
         return SyclQueue(d4p_target if d4p_target != 'host' else 'cpu')
     return None
@@ -103,8 +103,7 @@ def _get_backend(obj, queue, method_name, *data):
     if gpu_device and allow_fallback:
         if obj._onedal_cpu_supported(method_name, *data):
             return 'onedal', None
-        else:
-            return 'sklearn', None
+        return 'sklearn', None
 
     raise RuntimeError("Device support is not implemented")
 
@@ -116,7 +115,7 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     q, hostargs = _transfer_to_host(q, *args, **kwargs)
     backend, q = _get_backend(obj, q, method_name, *hostargs)
 
-    logging.info(f"sklearn.{method_name}: {get_patch_message(backend)}")
+    logging.info(f"sklearn.{method_name}: {get_patch_message(backend, q)}")
     if backend == 'onedal':
         return branches[backend](obj, *hostargs, queue=q)
     if backend == 'sklearn':
