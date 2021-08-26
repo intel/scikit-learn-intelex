@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2020-2021 Intel Corporation
+.. * Copyright 2021 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -20,25 +20,26 @@
 Global patching
 ###############
 
-To patch your all scikit-learn applications for your environment without additional actions
-you can use global patching.
+Use global patching to patch all your scikit-learn applications without any additional actions.
 
-You need **Scikit-learn** and **Intel(R) Extension for Scikit-learn** in your environment,
-then use following command::
+**Prerequisites for global patching**:
+
+- Intel(R) Extension for Scikit-learn
+- Scikit-learn
+
+.. note::
+    For global patching to work, you need read and write permissions to Scikit-learn files.
+
+To patch all :ref:`supported algorithms <sklearn_algorithms>`, run::
 
     python sklearnex.glob patch_sklearn
 
-This command applies patching for all supported algorithms.
-
-.. note::
-    For correct work of global patching, you need read and write permissions to scikit-learn files.
-
-If you need to patch only some algorithms (for example SVC and RandomForestClassifier estimators),
-then use ``--algorithm`` or ``-a`` keys with list of needed algorithms::
+If you want to patch only some algorithms, use ``--algorithm`` or ``-a`` keys
+with a list of algorithms to patch. For example, to patch only SVC and RandomForestClassifier estimators, run::
 
     python sklearnex.glob patch_sklearn -a svc random_forest_classifier
 
-If you don't want to receive patching notification, then use ``--no-verbose`` or ``-nv`` keys::
+If you do not want to receive patching notifications, then use ``--no-verbose`` or ``-nv`` keys::
 
     python sklearnex.glob patch_sklearn -a svc random_forest_classifier -nv
 
@@ -46,22 +47,22 @@ If you don't want to receive patching notification, then use ``--no-verbose`` or
     If you run the global patching command several times with different parameters,
     then only the last configuration will be applied.
 
-To disable global patching, use following command::
+To disable global patching, use the following command::
 
     python sklearnex.glob unpatch_sklearn
 
-You can also enable global patching by your code, with helps ``global_patch``
-argument in ``patch_sklearn`` function::
+You can also enable global patching in your code. To do this,
+use the ``patch_sklearn`` function with the ``global_patch`` argument::
 
     from sklearnex import patch_sklearn
     patch_sklearn(global_patch=True)
     import sklearn
 
-After that, sklearn patches will be enabled in the current application and
-in all others using the same environment.
+After that, Scikit-learn patches will be enabled in the current application and
+in all others that use the same environment.
 
-To disable global patching by code, use ``global_patch``
-argument in ``unpatch_sklearn`` function::
+To disable global patching via code, use the ``global_patch``
+argument in the ``unpatch_sklearn`` function::
 
     from sklearnex import unpatch_sklearn
     unpatch_sklearn(global_patch=True)
