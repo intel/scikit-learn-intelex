@@ -23,7 +23,8 @@ from scipy import sparse as sp
 from .._utils import (
     getFPType,
     sklearn_check_version,
-    get_patch_message)
+    get_patch_message,
+    PatchingConditionsChain)
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.base import is_classifier, is_regressor
@@ -371,17 +372,23 @@ class NeighborsBase(BaseNeighborsBase):
                     "enter integer value" %
                     type(self.n_neighbors))
 
-        condition = (self.metric == 'minkowski' and self.p == 2) or \
-            self.metric == 'euclidean'
-        if not X_incorrect_type and weights in ['uniform', 'distance'] \
-            and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
-            and condition \
-            and single_output and fptype is not None and not sp.issparse(X) and \
-                correct_n_classes:
+        _patching_status = PatchingConditionsChain(
+            "sklearn.neighbors.KNeighborsMixin.kneighbors")
+        _dal_ready = _patching_status.and_conditions([
+            (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean',
+                f"metric is '{self.metric}' (p={self.p}) while euclidean is only supported"),
+            (not X_incorrect_type, "X type is incorrect"),
+            (weights in ['uniform', 'distance'],
+                f"weights is '{weights}' while 'uniform' and 'distance' are supported"),
+            (self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'],
+                f"algorithm is '{self.algorithm}' while 'brute', 'kd_tree', 'auto' and 'ball_tree' are supported"),
+            (single_output, "output is not single"),
+            (fptype, "fptype is incorrect"),
+            (not sp.issparse(X), "input is sparse"),
+            (correct_n_classes, "n_classes is incorrect")])
+        _patching_status.write_log()
+        if _dal_ready:
             try:
-                logging.info(
-                    "sklearn.neighbors.KNeighborsMixin."
-                    "kneighbors: " + get_patch_message("daal"))
                 daal4py_fit(self, X, fptype)
                 result = self
             except RuntimeError:
@@ -390,9 +397,6 @@ class NeighborsBase(BaseNeighborsBase):
                     "kneighbors: " + get_patch_message("sklearn_after_daal"))
                 result = stock_fit(self, X, y)
         else:
-            logging.info(
-                "sklearn.neighbors.KNeighborsMixin."
-                "kneighbors: " + get_patch_message("sklearn"))
             result = stock_fit(self, X, y)
 
         if y is not None and is_regressor(self):
@@ -414,16 +418,17 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_model is not None and fptype is not None and not sp.issparse(
-                X):
-            logging.info(
-                "sklearn.neighbors.KNeighborsMixin."
-                "kneighbors: " + get_patch_message("daal"))
+        _patching_status = PatchingConditionsChain(
+            "sklearn.neighbors.KNeighborsMixin.kneighbors")
+        _dal_ready = _patching_status.and_conditions([
+            (daal_model is not None, "onedal model was not trained"),
+            (fptype is not None, "fptype is incorrect"),
+            (not sp.issparse(X), "input is sparse")])
+        _patching_status.write_log()
+
+        if _dal_ready:
             result = daal4py_kneighbors(self, X, n_neighbors, return_distance)
         else:
-            logging.info(
-                "sklearn.neighbors.KNeighborsMixin."
-                "kneighbors:" + get_patch_message("sklearn"))
             if daal_model is not None or getattr(self, '_tree', 0) is None and \
                     self._fit_method == 'kd_tree':
                 if sklearn_check_version("0.24"):
