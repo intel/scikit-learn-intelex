@@ -43,7 +43,6 @@ class SVC(sklearn_SVC, BaseSVC):
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_SVC.fit,
         }, X, y, sample_weight)
-
         return self
 
     @wrap_output_data
@@ -116,7 +115,7 @@ class SVC(sklearn_SVC, BaseSVC):
             self.class_weight_ = self._onedal_estimator.class_weight_
 
         if self.probability:
-            self._fit_proba(X, y, sample_weight)
+            self._fit_proba(X, y, sample_weight, queue=queue)
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
@@ -126,7 +125,14 @@ class SVC(sklearn_SVC, BaseSVC):
         if getattr(self, 'clf_prob', None) is None:
             raise NotFittedError(
                 "predict_proba is not available when fitted with probability=False")
-        return self.clf_prob.predict_proba(X)  # TODO: pass a queue
+        from .._config import get_config, config_context
+
+        # We use stock metaestimators below, so the only way
+        # to pass a queue is using config_context.
+        cfg = get_config()
+        cfg['target_offload'] = queue
+        with config_context(**cfg):
+            return self.clf_prob.predict_proba(X)
 
     def _onedal_decision_function(self, X, queue=None):
         return self._onedal_estimator.decision_function(X, queue=queue)

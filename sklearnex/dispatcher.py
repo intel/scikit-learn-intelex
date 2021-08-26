@@ -51,9 +51,15 @@ def get_patch_map():
         mapping['svc'] = [[(svm_module, 'SVC', SVC_sklearnex), None]]
         mapping['nusvr'] = [[(svm_module, 'NuSVR', NuSVR_sklearnex), None]]
         mapping['nusvc'] = [[(svm_module, 'NuSVC', NuSVC_sklearnex), None]]
-        mapping['set_config'] = [[(base_module, 'set_config', set_config_sklearnex), None]]
-        mapping['get_config'] = [[(base_module, 'get_config', get_config_sklearnex), None]]
-        mapping['config_context'] = [[(base_module, 'config_context', config_context_sklearnex), None]]
+        mapping['set_config'] = [[(base_module,
+                                   'set_config',
+                                   set_config_sklearnex), None]]
+        mapping['get_config'] = [[(base_module,
+                                   'get_config',
+                                   get_config_sklearnex), None]]
+        mapping['config_context'] = [[(base_module,
+                                      'config_context',
+                                       config_context_sklearnex), None]]
     return mapping
 
 
