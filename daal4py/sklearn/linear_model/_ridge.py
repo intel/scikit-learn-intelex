@@ -21,7 +21,9 @@ from sklearn.linear_model._ridge import _BaseRidge
 from sklearn.linear_model._ridge import Ridge as Ridge_original
 
 import daal4py
-from .._utils import make2d, getFPType, get_patch_message, sklearn_check_version
+from .._utils import (
+    make2d, getFPType, get_patch_message, sklearn_check_version,
+    PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
 import logging
 
@@ -115,17 +117,23 @@ def _fit_ridge(self, X, y, sample_weight=None):
     self.n_features_in_ = X.shape[1]
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = True if X.shape[0] >= X.shape[1] else False
-    if not self.solver == 'auto' or sp.issparse(X) or \
-            not self.fit_shape_good_for_daal_ or \
-            not (X.dtype == np.float64 or X.dtype == np.float32) or \
-            sample_weight is not None or \
-            (hasattr(self, 'positive') and self.positive):
+
+    _patching_status = PatchingConditionsChain(
+        "sklearn.linear_model.Ridge.fit")
+    _dal_ready = _patching_status.and_conditions([
+        (self.solver == 'auto', f"solver is '{self.solver}' while only 'auto' is supported"),
+        (not sp.issparse(X), "input is sparse"),
+        (self.fit_shape_good_for_daal_, "shape is not good for onedal"),
+        (X.dtype == np.float64 or X.dtype == np.float32, f"X.dtype ({X.dtype}) is incorrect"),
+        (sample_weight is None, "sample_weight is not None"),
+        (not (hasattr(self, 'positive') and self.positive), "self.positive exists")])
+    _patching_status.write_log()
+
+    if not _dal_ready:
         if hasattr(self, 'daal_model_'):
             del self.daal_model_
-        logging.info("sklearn.linear_model.Ridge.fit: " + get_patch_message("sklearn"))
         return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
     self.n_iter_ = None
-    logging.info("sklearn.linear_model.Ridge.fit: " + get_patch_message("daal"))
     res = _daal4py_fit(self, X, y)
     if res is None:
         logging.info(
@@ -154,15 +162,22 @@ def _predict_ridge(self, X):
     good_shape_for_daal = \
         True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
 
-    if not self.solver == 'auto' or \
-            not hasattr(self, 'daal_model_') or \
-            sp.issparse(X) or \
-            not good_shape_for_daal or \
-            (hasattr(self, 'sample_weight_') and self.sample_weight_ is not None):
-        logging.info(
-            "sklearn.linear_model.Ridge.predict: " + get_patch_message("sklearn"))
+    _patching_status = PatchingConditionsChain(
+        "sklearn.linear_model.Ridge.predict")
+    _dal_ready = _patching_status.and_conditions([
+        (self.solver == 'auto',
+            f"solver is '{self.solver}' while only 'auto' is supported"),
+        (hasattr(self, 'daal_model_'), 'onedal model was not trained'),
+        (not sp.issparse(X), "input is sparse"),
+        (good_shape_for_daal, "shape is not good for onedal"),
+        (X.dtype == np.float64 or X.dtype == np.float32,
+            f"X.dtype ({X.dtype}) is incorrect"),
+        (not hasattr(self, 'sample_weight_') or self.sample_weight_ is None,
+            "sample_weight is not None")])
+    _patching_status.write_log()
+
+    if not _dal_ready:
         return self._decision_function(X)
-    logging.info("sklearn.linear_model.Ridge.predict: " + get_patch_message("daal"))
     return _daal4py_predict(self, X)
 
 

@@ -464,7 +464,8 @@ def _fit_regressor(self, X, y, sample_weight=None):
             f"OOB score is used while supported starting from 2021.5 version of oneDAL")
         (self.warm_start is False, "warm start is used"),
         (self.criterion in ["mse", "squared_error"],
-            f"criterion is '{self.criterion}' while 'mse' or 'squared_error' is supported"),
+            f"criterion is '{self.criterion}' "
+            "while 'mse' or 'squared_error' is supported"),
         (self.ccp_alpha == 0.0,
             f"ccp_alpha ({self.ccp_alpha}) is not equal to 0.0"),
         (not sp.issparse(X), "input is sparse"),

@@ -376,12 +376,14 @@ class NeighborsBase(BaseNeighborsBase):
             "sklearn.neighbors.KNeighborsMixin.kneighbors")
         _dal_ready = _patching_status.and_conditions([
             (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean',
-                f"metric is '{self.metric}' (p={self.p}) while euclidean is only supported"),
+                f"metric is '{self.metric}' (p={self.p}) "
+                "while euclidean is only supported"),
             (not X_incorrect_type, "X type is incorrect"),
             (weights in ['uniform', 'distance'],
                 f"weights is '{weights}' while 'uniform' and 'distance' are supported"),
             (self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'],
-                f"algorithm is '{self.algorithm}' while 'brute', 'kd_tree', 'auto' and 'ball_tree' are supported"),
+                f"algorithm is '{self.algorithm}' "
+                "while 'brute', 'kd_tree', 'auto' and 'ball_tree' are supported"),
             (single_output, "output is not single"),
             (fptype, "fptype is incorrect"),
             (not sp.issparse(X), "input is sparse"),
