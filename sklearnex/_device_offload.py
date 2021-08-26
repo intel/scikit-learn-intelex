@@ -112,14 +112,17 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     import logging
 
     q = _get_global_queue()
-    q, hostargs = _transfer_to_host(q, *args, **kwargs)
+    q, hostargs = _transfer_to_host(q, *args)
+    q, hostvalues = _transfer_to_host(q, *kwargs.values())
+    hostkwargs = dict(zip(kwargs.keys(), hostvalues))
+
     backend, q = _get_backend(obj, q, method_name, *hostargs)
 
     logging.info(f"sklearn.{method_name}: {get_patch_message(backend, q)}")
     if backend == 'onedal':
-        return branches[backend](obj, *hostargs, queue=q)
+        return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == 'sklearn':
-        return branches[backend](obj, *hostargs)
+        return branches[backend](obj, *hostargs, **hostkwargs)
     raise RuntimeError(f'Undefined backend {backend} in {method_name}')
 
 

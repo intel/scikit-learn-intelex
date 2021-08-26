@@ -21,7 +21,7 @@ from scipy import linalg
 from sklearn.linear_model._base import _rescale_data
 from ..utils.validation import _daal_check_array, _daal_check_X_y
 from ..utils.base import _daal_validate_data
-from .._utils import sklearn_check_version
+from .._utils import sklearn_check_version, support_usm_ndarray
 from sklearn.utils.fixes import sparse_lsqr
 from sklearn.utils.validation import _check_sample_weight
 from sklearn.utils import check_array
@@ -253,6 +253,7 @@ class LinearRegression(LinearRegression_original):
                 n_jobs=n_jobs
             )
 
+    @support_usm_ndarray
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version('1.0'):
             self._normalize = _deprecate_normalize(
@@ -271,5 +272,6 @@ class LinearRegression(LinearRegression_original):
                 )
         return _fit_linear(self, X, y, sample_weight=sample_weight)
 
+    @support_usm_ndarray
     def predict(self, X):
         return _predict_linear(self, X)

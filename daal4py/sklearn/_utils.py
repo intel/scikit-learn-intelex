@@ -19,6 +19,7 @@ import numpy as np
 from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
+from functools import wraps
 
 
 def set_idp_sklearn_verbose():
@@ -151,3 +152,28 @@ def get_number_of_types(dataframe):
         return len(set(dtypes))
     except TypeError:
         return 1
+
+
+def support_usm_ndarray(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        from sklearnex._device_offload import _get_global_queue, _transfer_to_host, _copy_to_usm
+
+        q = _get_global_queue()
+        q, hostargs = _transfer_to_host(q, *args)
+        q, hostvalues = _transfer_to_host(q, *kwargs.values())
+        hostkwargs = dict(zip(kwargs.keys(), hostvalues))
+
+        usm_iface = getattr((*args, *kwargs.values())[0],
+                            '__sycl_usm_array_interface__',
+                            None)
+        if q is not None:
+            from daal4py.oneapi import sycl_context
+
+            with sycl_context('gpu' if q.sycl_device.is_gpu else 'cpu'):
+                result = func(self, *hostargs, **hostkwargs)
+            if usm_iface is not None and hasattr(result, '__array_interface__'):
+                return _copy_to_usm(q, result)
+            return result
+        return func(self, *hostargs, **hostkwargs)
+    return wrapper

@@ -38,7 +38,8 @@ import daal4py
 from .._utils import (
     getFPType,
     get_patch_message,
-    sklearn_check_version)
+    sklearn_check_version,
+    support_usm_ndarray)
 import logging
 
 
@@ -430,8 +431,14 @@ class KMeans(KMeans_original):
                 algorithm=algorithm,
             )
 
+    @support_usm_ndarray
     def fit(self, X, y=None, sample_weight=None):
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
+    @support_usm_ndarray
     def predict(self, X, sample_weight=None):
         return _predict(self, X, sample_weight=sample_weight)
+
+    @support_usm_ndarray
+    def fit_predict(self, X, y=None, sample_weight=None):
+        return super().fit_predict(X, y, sample_weight)

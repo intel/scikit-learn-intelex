@@ -33,6 +33,8 @@ import warnings
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import normalize
 
+from .._utils import support_usm_ndarray
+
 
 def _daal4py_check(self, X, y, check_input):
     _fptype = getFPType(X)
@@ -502,12 +504,15 @@ class ElasticNet(ElasticNet_original):
         )
 
     if sklearn_check_version('0.23'):
+        @support_usm_ndarray
         def fit(self, X, y, sample_weight=None, check_input=True):
             return _fit(self, X, y, sample_weight=sample_weight, check_input=check_input)
     else:
+        @support_usm_ndarray
         def fit(self, X, y, check_input=True):
             return _fit(self, X, y, check_input=check_input)
 
+    @support_usm_ndarray
     def predict(self, X):
         """Predict using the linear model
 
@@ -642,12 +647,15 @@ class Lasso(ElasticNet):
         )
 
     if sklearn_check_version('0.23'):
+        @support_usm_ndarray
         def fit(self, X, y, sample_weight=None, check_input=True):
             return _fit(self, X, y, sample_weight, check_input)
     else:
+        @support_usm_ndarray
         def fit(self, X, y, check_input=True):
             return _fit(self, X, y, check_input)
 
+    @support_usm_ndarray
     def predict(self, X):
         """Predict using the linear model
 

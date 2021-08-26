@@ -34,7 +34,7 @@ from scipy.sparse import issparse
 from scipy.spatial import distance
 
 import daal4py
-from .._utils import (getFPType, get_patch_message)
+from .._utils import (getFPType, get_patch_message, support_usm_ndarray)
 import logging
 
 
@@ -52,6 +52,7 @@ def _daal4py_correlation_distance_dense(X):
     return res.correlationDistance
 
 
+@support_usm_ndarray
 def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
                             force_all_finite=True, **kwds):
     """ Compute the distance matrix from a vector array X and optional Y.

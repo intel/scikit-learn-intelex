@@ -18,7 +18,7 @@
 
 from ._base import NeighborsBase, KNeighborsMixin
 from sklearn.base import RegressorMixin
-from .._utils import sklearn_check_version
+from .._utils import sklearn_check_version, support_usm_ndarray
 
 
 if sklearn_check_version("0.22"):
@@ -86,8 +86,10 @@ class KNeighborsRegressor(KNeighborsRegressor_):
     def _more_tags(self):
         return BaseKNeighborsRegressor._more_tags(self)
 
+    @support_usm_ndarray
     def fit(self, X, y):
         return NeighborsBase._fit(self, X, y)
 
+    @support_usm_ndarray
     def predict(self, X):
         return BaseKNeighborsRegressor.predict(self, X)
