@@ -316,7 +316,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         (self.ccp_alpha == 0.0,
             f"ccp_alpha ({self.ccp_alpha}) is not equal to 0.0"),
         (not sp.issparse(X), "input is sparse"),
-        (self.oob_score, "oob_score is not False")])
+        (self.oob_score is False, "oob_score is True")])
 
     if _dal_ready:
 >>>>>>> Initial patching debug for RF and kNN
@@ -469,7 +469,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
         (self.ccp_alpha == 0.0,
             f"ccp_alpha ({self.ccp_alpha}) is not equal to 0.0"),
         (not sp.issparse(X), "input is sparse"),
-        (self.oob_score, "oob_score is not False")])
+        (self.oob_score is False, "oob_score is True")])
 
     if _dal_ready:
         X = check_array(X, dtype=[np.float64, np.float32])
