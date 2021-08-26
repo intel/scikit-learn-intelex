@@ -409,7 +409,8 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
     _dal_ready = _patching_status.and_conditions([
         (not sp.issparse(X), "input is sparse"),
         (self.fit_shape_good_for_daal_, "shape is not good for onedal"),
-        (X.dtype == np.float64 or X.dtype == np.float32, f"X.dtype ({X.dtype}) is incorrect"),
+        (X.dtype == np.float64 or X.dtype == np.float32,
+            f"X.dtype ({X.dtype}) is incorrect"),
         (sample_weight is None, "sample_weight is not None")])
     _patching_status.write_log()
 

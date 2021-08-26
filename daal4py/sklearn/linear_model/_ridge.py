@@ -121,10 +121,12 @@ def _fit_ridge(self, X, y, sample_weight=None):
     _patching_status = PatchingConditionsChain(
         "sklearn.linear_model.Ridge.fit")
     _dal_ready = _patching_status.and_conditions([
-        (self.solver == 'auto', f"solver is '{self.solver}' while only 'auto' is supported"),
+        (self.solver == 'auto',
+            f"solver is '{self.solver}' while only 'auto' is supported"),
         (not sp.issparse(X), "input is sparse"),
         (self.fit_shape_good_for_daal_, "shape is not good for onedal"),
-        (X.dtype == np.float64 or X.dtype == np.float32, f"X.dtype ({X.dtype}) is incorrect"),
+        (X.dtype == np.float64 or X.dtype == np.float32,
+            f"X.dtype ({X.dtype}) is incorrect"),
         (sample_weight is None, "sample_weight is not None"),
         (not (hasattr(self, 'positive') and self.positive), "self.positive exists")])
     _patching_status.write_log()
