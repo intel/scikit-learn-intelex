@@ -26,6 +26,7 @@ def test_get_config_contains_sklearn_params():
 
 
 def test_set_config_works():
+    default_config = sklearnex.get_config()
     sklearnex.set_config(assume_finite=True,
                          target_offload='cpu:0',
                          allow_fallback_to_host=True)
@@ -34,3 +35,4 @@ def test_set_config_works():
     assert config['target_offload'] == 'cpu:0'
     assert config['allow_fallback_to_host']
     assert config['assume_finite']
+    sklearnex.set_config(**default_config)
