@@ -23,7 +23,7 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn import preprocessing
 from sklearn.utils.multiclass import check_classification_targets
 import daal4py as d4p
-from .._utils import getFPType, support_usm_ndarray
+from .._utils import getFPType
 
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
@@ -44,7 +44,6 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         self.learning_rate = learning_rate
         self.accuracy_threshold = accuracy_threshold
 
-    @support_usm_ndarray
     def fit(self, X, y):
         if self.split_criterion not in ('gini', 'infoGain'):
             raise ValueError('Parameter "split_criterion" must be '
@@ -128,7 +127,6 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         # Return the classifier
         return self
 
-    @support_usm_ndarray
     def predict(self, X):
         # Check is fit had been called
         if LooseVersion(sklearn_version) >= LooseVersion("0.22"):

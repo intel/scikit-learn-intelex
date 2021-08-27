@@ -24,7 +24,7 @@ from sklearn import preprocessing
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils import check_random_state
 import daal4py as d4p
-from .._utils import getFPType, support_usm_ndarray
+from .._utils import getFPType
 
 
 class GBTDAALBase(BaseEstimator):
@@ -103,7 +103,6 @@ class GBTDAALBase(BaseEstimator):
 
 
 class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
-    @support_usm_ndarray
     def fit(self, X, y):
         # Check the algorithm parameters
         self._check_params()
@@ -202,15 +201,12 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
                 predict_result.prediction.ravel().astype(np.int64, copy=False))
         return predict_result.probabilities
 
-    @support_usm_ndarray
     def predict(self, X):
         return self._predict(X, "computeClassLabels")
 
-    @support_usm_ndarray
     def predict_proba(self, X):
         return self._predict(X, "computeClassProbabilities")
 
-    @support_usm_ndarray
     def predict_log_proba(self, X):
         proba = self.predict_proba(X)
 
@@ -224,7 +220,6 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
 
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
-    @support_usm_ndarray
     def fit(self, X, y):
         # Check the algorithm parameters
         self._check_params()
@@ -268,7 +263,6 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         # Return the classifier
         return self
 
-    @support_usm_ndarray
     def predict(self, X):
         # Check is fit had been called
         check_is_fitted(self, ['n_features_in_'])
