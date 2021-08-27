@@ -157,7 +157,9 @@ def get_number_of_types(dataframe):
 def support_usm_ndarray(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
-        from sklearnex._device_offload import _get_global_queue, _transfer_to_host, _copy_to_usm
+        from sklearnex._device_offload import (_get_global_queue,
+                                               _transfer_to_host,
+                                               _copy_to_usm)
 
         q = _get_global_queue()
         q, hostargs = _transfer_to_host(q, *args)
