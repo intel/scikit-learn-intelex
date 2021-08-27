@@ -33,6 +33,7 @@ from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
     _num_samples)
+from ..utils.validation import _daal_num_features
 from sklearn.base import clone
 from sklearn.exceptions import DataConversionWarning
 
@@ -707,9 +708,19 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
+        if hasattr(self, 'n_features_in_'):
+            try:
+                num_features = _daal_num_features(X)
+            except TypeError:
+                num_features = _num_samples(X)
+            if num_features != self.n_features_in_:
+                raise ValueError(
+                    (f'X has {num_features} features, '
+                     f'but RandomForestClassifier is expecting '
+                     f'{self.n_features_in_} features as input'))
         if not hasattr(self, 'daal_model_') or \
-                sp.issparse(X) or self.n_outputs_ != 1 or \
-                not daal_check_version((2021, 'P', 400)):
+           sp.issparse(X) or self.n_outputs_ != 1 or \
+           not daal_check_version((2021, 'P', 400)):
             logging.info(
                 "sklearn.ensemble.RandomForestClassifier."
                 "predict_proba: " + get_patch_message("sklearn"))
@@ -718,6 +729,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             "sklearn.ensemble.RandomForestClassifier."
             "predict_proba: " + get_patch_message("daal"))
         X = check_array(X, dtype=[np.float64, np.float32])
+        check_is_fitted(self)
         if sklearn_check_version('0.23'):
             self._check_n_features(X, reset=False)
         return _daal_predict_proba(self, X)

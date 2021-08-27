@@ -26,14 +26,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# TODO: Get from findOneDAL
-if(WIN32)
-    set(ONEDAL_LIBRARIES "onedal_core_dll")
-else()
-    set(ONEDAL_LIBRARIES "onedal_core")
-    list(APPEND ONEDAL_LIBRARIES "onedal_thread")
-endif()
-
 if(WIN32)
     set(SDL_FLAGS "-GS -DynamicBase")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MD")
@@ -77,9 +69,9 @@ if(IFACE STREQUAL "host")
     set(TARGET "_onedal_py_host")
 
     if(WIN32)
-        list(APPEND ONEDAL_LIBRARIES "onedal_dll")
+        set(ONEDAL_LIBRARIES "onedal_dll" "onedal_core_dll")
     else()
-        list(APPEND ONEDAL_LIBRARIES "onedal")
+        set(ONEDAL_LIBRARIES "onedal" "onedal_core" "onedal_thread")
     endif()
 
     list(APPEND COMPILE_DEFINITIONS "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
@@ -88,9 +80,9 @@ elseif(IFACE STREQUAL "dpc")
     set(TARGET "_onedal_py_dpc")
 
     if(WIN32)
-        list(APPEND ONEDAL_LIBRARIES "onedal_dpc_dll")
+        set(ONEDAL_LIBRARIES "onedal_dpc_dll" "onedal_core_dll")
     else()
-        list(APPEND ONEDAL_LIBRARIES "onedal_dpc")
+        set(ONEDAL_LIBRARIES "onedal_dpc" "onedal_core" "onedal_thread")
     endif()
 
     list(APPEND COMPILE_DEFINITIONS
