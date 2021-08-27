@@ -52,11 +52,9 @@ class SVR(sklearn_SVR, BaseSVR):
         return False
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'svm.SVC.fit':
+        if method_name == 'svm.SVR.fit':
             return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
-        if method_name in ['svm.SVC.predict',
-                           'svm.SVC._predict_proba',
-                           'svm.SVC.decision_function']:
+        if method_name == 'svm.SVR.predict':
             return hasattr(self, '_onedal_estimator')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
