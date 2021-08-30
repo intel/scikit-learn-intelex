@@ -49,43 +49,6 @@ def _get_global_queue():
     return None
 
 
-def _transfer_to_host(queue, *data):
-    has_usm_data = False
-
-    host_data = []
-    for item in data:
-        usm_iface = getattr(item, '__sycl_usm_array_interface__', None)
-        if usm_iface is not None:
-            import dpctl.memory as dp_mem
-            import numpy as np
-
-            if queue is not None:
-                if queue.sycl_device != usm_iface['syclobj'].sycl_device:
-                    raise RuntimeError('Input data shall be located '
-                                       'on single target device')
-            else:
-                queue = usm_iface['syclobj']
-
-            buffer = dp_mem.as_usm_memory(item).copy_to_host()
-            item = np.ndarray(shape=usm_iface['shape'],
-                              dtype=usm_iface['typestr'],
-                              buffer=buffer)
-            has_usm_data = True
-        elif has_usm_data and item is not None:
-            raise RuntimeError('Input data shall be located on single target device')
-        host_data.append(item)
-    return queue, host_data
-
-
-def _copy_to_usm(queue, array):
-    from dpctl.memory import MemoryUSMDevice
-    from dpctl.tensor import usm_ndarray
-
-    mem = MemoryUSMDevice(array.nbytes, queue=queue)
-    mem.copy_from_host(array.tobytes())
-    return usm_ndarray(array.shape, array.dtype, buffer=mem)
-
-
 def _get_backend(obj, queue, method_name, *data):
     cpu_device = queue is None or queue.sycl_device.is_cpu
     gpu_device = queue is not None and queue.sycl_device.is_gpu
@@ -110,6 +73,7 @@ def _get_backend(obj, queue, method_name, *data):
 
 def dispatch(obj, method_name, branches, *args, **kwargs):
     import logging
+    from daal4py.sklearn._utils import _transfer_to_host
 
     q = _get_global_queue()
     q, hostargs = _transfer_to_host(q, *args)
@@ -127,6 +91,8 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
 
 
 def wrap_output_data(func):
+    from daal4py.sklearn._utils import _copy_to_usm
+
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data = (*args, *kwargs.values())
