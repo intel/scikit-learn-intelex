@@ -38,7 +38,7 @@ if sklearn_check_version("0.22") and not sklearn_check_version("0.23"):
                 leaf_size=leaf_size, metric=metric, p=p,
                 metric_params=metric_params, n_jobs=n_jobs)
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def fit(self, X, y=None):
             return NeighborsBase._fit(self, X)
 else:
@@ -54,6 +54,6 @@ else:
                 leaf_size=leaf_size, metric=metric, p=p,
                 metric_params=metric_params, n_jobs=n_jobs)
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def fit(self, X, y=None):
             return NeighborsBase._fit(self, X)

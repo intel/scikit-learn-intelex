@@ -111,7 +111,7 @@ def _daal_type_of_target(y):
     return result
 
 
-@support_usm_ndarray
+@support_usm_ndarray(freefunc=True)
 def _daal_roc_auc_score(
     y_true,
     y_score,

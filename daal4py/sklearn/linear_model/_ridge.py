@@ -212,10 +212,10 @@ class Ridge(Ridge_original, _BaseRidge):
             self.solver = solver
             self.random_state = random_state
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         return _fit_ridge(self, X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def predict(self, X):
         return _predict_ridge(self, X)

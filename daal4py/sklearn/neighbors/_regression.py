@@ -86,10 +86,10 @@ class KNeighborsRegressor(KNeighborsRegressor_):
     def _more_tags(self):
         return BaseKNeighborsRegressor._more_tags(self)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit(self, X, y):
         return NeighborsBase._fit(self, X, y)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def predict(self, X):
         return BaseKNeighborsRegressor.predict(self, X)

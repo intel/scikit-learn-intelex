@@ -155,14 +155,14 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             metric_params=metric_params,
             n_jobs=n_jobs, **kwargs)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit(self, X, y):
         return NeighborsBase._fit(self, X, y)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def predict(self, X):
         return daal4py_classifier_predict(self, X, BaseKNeighborsClassifier.predict)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def predict_proba(self, X):
         return BaseKNeighborsClassifier.predict_proba(self, X)

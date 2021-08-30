@@ -253,7 +253,7 @@ class LinearRegression(LinearRegression_original):
                 n_jobs=n_jobs
             )
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version('1.0'):
             self._normalize = _deprecate_normalize(
@@ -272,6 +272,6 @@ class LinearRegression(LinearRegression_original):
                 )
         return _fit_linear(self, X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def predict(self, X):
         return _predict_linear(self, X)

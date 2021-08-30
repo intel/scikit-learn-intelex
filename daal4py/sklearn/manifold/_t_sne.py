@@ -37,11 +37,11 @@ else:
 
 
 class TSNE(BaseTSNE):
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit_transform(self, X, y=None):
         return super().fit_transform(X, y)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit(self, X, y=None):
         return super().fit(X, y)
 

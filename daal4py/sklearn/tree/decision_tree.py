@@ -135,7 +135,7 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
         ts = self._get_tree_state()
         return ts.max_depth
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None, pruning_set=None):
         """Build a decision tree classifier from the training set (X, y).
 
@@ -267,14 +267,14 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
         res = alg.compute(X, self.daal_model_)
         return res.prediction.ravel()
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def predict(self, X, check_input=True):
         check_is_fitted(self, 'daal_model_')
         X = self._validate_X_predict(X, check_input)
         y = self._daal4py_predict(X)
         return self.classes_.take(np.asarray(y, dtype=np.intp), axis=0)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def predict_proba(self, X, check_input=True):
         check_is_fitted(self, 'daal_model_')
         X = self._validate_X_predict(X, check_input)

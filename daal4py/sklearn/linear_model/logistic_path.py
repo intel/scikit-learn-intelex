@@ -659,7 +659,7 @@ def daal4py_predict(self, X, resultsToEvaluate):
 
 
 if sklearn_check_version('0.24'):
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def logistic_regression_path(
         X,
         y,
@@ -733,7 +733,7 @@ if sklearn_check_version('0.24'):
             self.n_jobs = 1 if n_jobs is not None else None
             self.l1_ratio = l1_ratio
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def fit(self, X, y, sample_weight=None):
             which, what = logistic_module, '_logistic_regression_path'
             replacer = logistic_regression_path
@@ -743,21 +743,21 @@ if sklearn_check_version('0.24'):
             setattr(which, what, descriptor)
             return clf
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def predict_log_proba(self, X):
             return daal4py_predict(self, X, 'computeClassLogProbabilities')
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def predict_proba(self, X):
             return daal4py_predict(self, X, 'computeClassProbabilities')
 
 
 else:
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def logistic_regression_path(
         X,
         y,
@@ -832,7 +832,7 @@ else:
             self.n_jobs = 1 if n_jobs is not None else None
             self.l1_ratio = l1_ratio
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def fit(self, X, y, sample_weight=None):
             which, what = logistic_module, '_logistic_regression_path'
             replacer = logistic_regression_path
@@ -842,14 +842,14 @@ else:
             setattr(which, what, descriptor)
             return clf
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def predict(self, X):
             return daal4py_predict(self, X, 'computeClassLabels')
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def predict_log_proba(self, X):
             return daal4py_predict(self, X, 'computeClassLogProbabilities')
 
-        @support_usm_ndarray
+        @support_usm_ndarray()
         def predict_proba(self, X):
             return daal4py_predict(self, X, 'computeClassProbabilities')

@@ -205,7 +205,7 @@ class DBSCAN(DBSCAN_original):
         self.p = p
         self.n_jobs = n_jobs
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit(self, X, y=None, sample_weight=None):
         """Perform DBSCAN clustering from features, or distance matrix.
 
@@ -262,6 +262,6 @@ class DBSCAN(DBSCAN_original):
             "fit: " + get_patch_message("sklearn"))
         return super().fit(X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit_predict(self, X, y=None, sample_weight=None):
         return super().fit_predict(X, y, sample_weight)

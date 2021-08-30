@@ -54,7 +54,7 @@ def get_dtypes(data):
     return None
 
 
-@support_usm_ndarray
+@support_usm_ndarray(freefunc=True)
 def _daal_train_test_split(*arrays, **options):
     n_arrays = len(arrays)
     if n_arrays == 0:
