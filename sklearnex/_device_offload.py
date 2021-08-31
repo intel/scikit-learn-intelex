@@ -30,6 +30,8 @@ def _get_device_info_from_daal4py():
 def _get_global_queue():
     target = get_config()['target_offload']
     d4p_target, _ = _get_device_info_from_daal4py()
+    if d4p_target == 'host':
+        d4p_target = 'cpu'
 
     if target != 'auto' or d4p_target is not None:
         try:
@@ -38,14 +40,16 @@ def _get_global_queue():
             raise RuntimeError("dpctl need to be installed for device offload")
 
     if target != 'auto':
-        if d4p_target is not None:
+        if d4p_target is not None and \
+            (d4p_target != target and
+             d4p_target not in target.sycl_device.get_filter_string()):
             raise RuntimeError("Cannot use target offload option "
                                "inside daal4py.oneapi.sycl_context")
         if isinstance(target, SyclQueue):
             return target
         return SyclQueue(target)
     if d4p_target is not None:
-        return SyclQueue(d4p_target if d4p_target != 'host' else 'cpu')
+        return SyclQueue(d4p_target)
     return None
 
 
