@@ -14,10 +14,10 @@
 # limitations under the License.
 #===============================================================================
 
-from .neighbors import NeighborsBase
+from .neighbors import NeighborsBase, KNeighborsMixin
 # from ._classification import KNeighborsClassifier
 # from ._unsupervised import NearestNeighbors
 # from ._regression import KNeighborsRegressor
 
 # __all__ = ['NeighborsBase', 'KNeighborsClassifier', 'NearestNeighbors', 'KNeighborsRegressor']
-__all__ = ['NeighborsBase']
+__all__ = ['NeighborsBase', 'KNeighborsMixin']

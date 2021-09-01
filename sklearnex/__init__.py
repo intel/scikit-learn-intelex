@@ -15,10 +15,10 @@
 # limitations under the License.
 #===============================================================================
 
-from .dispatcher import patch_sklearn
-from .dispatcher import unpatch_sklearn
-from .dispatcher import get_patch_names
-from .dispatcher import get_patch_map
+# from .dispatcher import patch_sklearn
+# from .dispatcher import unpatch_sklearn
+# from .dispatcher import get_patch_names
+# from .dispatcher import get_patch_map
 
 __all__ = [
     "patch_sklearn", "unpatch_sklearn", "get_patch_names",

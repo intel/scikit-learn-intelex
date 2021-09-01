@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #===============================================================================
-    
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.base import is_classifier, is_regressor
 from abc import ABCMeta, abstractmethod
@@ -27,9 +26,20 @@ from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+    from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
+    from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
+    from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
+    from sklearn.neighbors._ball_tree import BallTree
     from sklearn.neighbors._kd_tree import KDTree
+    from sklearn.neighbors._base import _check_weights
 else:
+    from sklearn.neighbors.base import KNeighborsMixin as BaseKNeighborsMixin
+    from sklearn.neighbors.base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
+    from sklearn.neighbors.base import NeighborsBase as BaseNeighborsBase
+    from sklearn.neighbors.ball_tree import BallTree
     from sklearn.neighbors.kd_tree import KDTree
+    from sklearn.neighbors.base import _check_weights
+
             
 
 import numpy as np
@@ -99,7 +109,132 @@ def validate_data(estimator, X, y=None, reset=True,
 
     return out
 
-class NeighborsBase(BaseEstimator, metaclass=ABCMeta):
+def _onedal_fit(estimator, X, y):
+    policy = _HostPolicy()
+    params = estimator._get_onedal_params(X)
+    train_alg = backend.neighbors.classification.train(policy, params,
+                            backend.from_numpy(X),
+                            backend.from_numpy(y))
+
+    return train_alg
+
+def _onedal_predict(estimator, model, X, params):
+    policy = _HostPolicy()
+    # params = estimator._get_onedal_params(X)
+
+    if hasattr(estimator, '_onedal_model'):
+        model = estimator._onedal_model
+    else:
+        model = estimator._create_model(backend.neighbors.classification)
+    result = backend.neighbors.classification.infer(policy, params, model, backend.from_numpy(X))
+
+    return result
+
+def _get_responses(prediction_results):
+    return backend.to_numpy(prediction_results.responses)
+
+
+def _kneighbors(estimator, X=None, n_neighbors=None,
+                    return_distance=True):
+    n_features = getattr(estimator, 'n_features_in_', None)
+    shape = getattr(X, 'shape', None)
+    if n_features and shape and len(shape) > 1 and shape[1] != n_features:
+        raise ValueError((f'X has {X.shape[1]} features, '
+                        f'but kneighbors is expecting {n_features} features as input'))
+
+    _check_is_fitted(estimator)
+
+    if n_neighbors is None:
+        n_neighbors = estimator.n_neighbors
+    elif n_neighbors <= 0:
+        raise ValueError(
+            "Expected n_neighbors > 0. Got %d" %
+            n_neighbors
+        )
+    else:
+        if not isinstance(n_neighbors, Integral):
+            raise TypeError(
+                "n_neighbors does not take %s value, "
+                "enter integer value" %
+                type(n_neighbors))
+
+    if X is not None:
+        query_is_train = False
+        X = _check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
+    else:
+        query_is_train = True
+        X = estimator._fit_X
+        # Include an extra neighbor to account for the sample itself being
+        # returned, which is removed later
+        n_neighbors += 1
+
+    n_samples_fit = estimator.n_samples_fit_
+    if n_neighbors > n_samples_fit:
+        raise ValueError(
+            "Expected n_neighbors <= n_samples, "
+            " but n_samples = %d, n_neighbors = %d" %
+            (n_samples_fit, n_neighbors)
+        )
+
+    chunked_results = None
+
+    method = parse_auto_method(
+        estimator, estimator._fit_method, estimator.n_samples_fit_, n_features)
+
+    params = estimator._get_onedal_params(X)
+    prediction_results = _onedal_predict(estimator, estimator._onedal_model, X, params)
+
+    distances = backend.to_numpy(prediction_results.distances)
+    indices = backend.to_numpy(prediction_results.indices)
+
+    if method == 'kd_tree':
+        for i in range(distances.shape[0]):
+            seq = distances[i].argsort()
+            indices[i] = indices[i][seq]
+            distances[i] = distances[i][seq]
+
+    if return_distance:
+        results = distances, indices.astype(int)
+    else:
+        results = indices.astype(int)
+
+    if chunked_results is not None:
+        if return_distance:
+            neigh_dist, neigh_ind = zip(*chunked_results)
+            results = np.vstack(neigh_dist), np.vstack(neigh_ind)
+        else:
+            results = np.vstack(chunked_results)
+
+    if not query_is_train:
+        return results
+    # If the query data is the same as the indexed data, we would like
+    # to ignore the first nearest neighbor of every sample, i.e
+    # the sample itself.
+    if return_distance:
+        neigh_dist, neigh_ind = results
+    else:
+        neigh_ind = results
+
+    n_queries, _ = X.shape
+    sample_range = np.arange(n_queries)[:, None]
+    sample_mask = neigh_ind != sample_range
+
+    # Corner case: When the number of duplicates are more
+    # than the number of neighbors, the first NN will not
+    # be the sample, but a duplicate.
+    # In that case mask the first duplicate.
+    dup_gr_nbrs = np.all(sample_mask, axis=1)
+    sample_mask[:, 0][dup_gr_nbrs] = False
+    neigh_ind = np.reshape(
+        neigh_ind[sample_mask], (n_queries, n_neighbors - 1))
+
+    if return_distance:
+        neigh_dist = np.reshape(
+            neigh_dist[sample_mask], (n_queries, n_neighbors - 1))
+        return neigh_dist, neigh_ind
+    return neigh_ind
+
+class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
     # @abstractmethod
     def __init__(self, n_neighbors=None, radius=None,
                  algorithm='auto', leaf_size=30, metric='minkowski',
@@ -136,27 +271,6 @@ class NeighborsBase(BaseEstimator, metaclass=ABCMeta):
             'result_option': 'all',
         }
 
-    def _onedal_fit(self, X, y):
-        policy = _HostPolicy()
-        params = self._get_onedal_params(X)
-        train_alg = backend.neighbors.classification.train(policy, params,
-                                backend.from_numpy(X),
-                                backend.from_numpy(y))
-
-        return train_alg
-
-    def _onedal_predict(self, model, X):
-        policy = _HostPolicy()
-        params = self._get_onedal_params(X)
-
-        if hasattr(self, '_onedal_model'):
-            model = self._onedal_model
-        else:
-            model = self._create_model(backend.neighbors.classification)
-        result = backend.neighbors.classification.infer(policy, params, model, backend.from_numpy(X))
-    
-        return result
-
     def _fit(self, X, y=None):
         if self.metric_params is not None and 'p' in self.metric_params:
             if self.p is not None:
@@ -185,7 +299,7 @@ class NeighborsBase(BaseEstimator, metaclass=ABCMeta):
             y = self._validate_targets(y, X.dtype)
             shape = y.shape
 
-            if True:#is_classifier(self) or is_regressor(self):
+            if is_classifier(self) or is_regressor(self):
                 if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
                     self.outputs_2d_ = False
                     y = y.reshape((-1, 1))
@@ -231,7 +345,7 @@ class NeighborsBase(BaseEstimator, metaclass=ABCMeta):
             self.n_samples_fit_, self.n_features_in_)
         self._fit_method = method
 
-        result = self._onedal_fit(X, y)
+        result = _onedal_fit(self, X, y)
 
         if y is not None and is_regressor(self):
             self._y = y if shape is None else y.reshape(shape)
@@ -241,138 +355,15 @@ class NeighborsBase(BaseEstimator, metaclass=ABCMeta):
 
         return result
 
-    def _kneighbors(self, X=None, n_neighbors=None,
-                       return_distance=True):
-        n_features = getattr(self, 'n_features_in_', None)
-        shape = getattr(X, 'shape', None)
-        if n_features and shape and len(shape) > 1 and shape[1] != n_features:
-            raise ValueError((f'X has {X.shape[1]} features, '
-                            f'but kneighbors is expecting {n_features} features as input'))
-
-        # if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-        #     _check_is_fitted(self)
-        # else:
-        #     _check_is_fitted(self, [])
-
-        if n_neighbors is None:
-            n_neighbors = self.n_neighbors
-        elif n_neighbors <= 0:
-            raise ValueError(
-                "Expected n_neighbors > 0. Got %d" %
-                n_neighbors
-            )
-        else:
-            if not isinstance(n_neighbors, Integral):
-                raise TypeError(
-                    "n_neighbors does not take %s value, "
-                    "enter integer value" %
-                    type(n_neighbors))
-
+class KNeighborsMixin(BaseKNeighborsMixin):
+    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+        onedal_model = getattr(self, '_onedal_model', None)
         if X is not None:
-            query_is_train = False
-            X = _check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
-        else:
-            query_is_train = True
-            X = self._fit_X
-            # Include an extra neighbor to account for the sample itself being
-            # returned, which is removed later
-            n_neighbors += 1
+            X = _check_array(
+                X, accept_sparse='csr', dtype=[
+                    np.float64, np.float32])
 
-        n_samples_fit = self.n_samples_fit_
-        if n_neighbors > n_samples_fit:
-            raise ValueError(
-                "Expected n_neighbors <= n_samples, "
-                " but n_samples = %d, n_neighbors = %d" %
-                (n_samples_fit, n_neighbors)
-            )
+        if onedal_model is not None and not sp.issparse(X):
+            result = _kneighbors(self, X, n_neighbors, return_distance)
 
-        chunked_results = None
-
-        method = parse_auto_method(
-            self, self._fit_method, self.n_samples_fit_, n_features)
-
-        prediction_results = self._onedal_predict(self._onedal_model, X)
-
-        distances = backend.to_numpy(prediction_results.distances)
-        indices = backend.to_numpy(prediction_results.indices)
-
-        if method == 'kd_tree':
-            for i in range(distances.shape[0]):
-                seq = distances[i].argsort()
-                indices[i] = indices[i][seq]
-                distances[i] = distances[i][seq]
-
-        if return_distance:
-            results = distances, indices.astype(int)
-        else:
-            results = indices.astype(int)
-
-        if chunked_results is not None:
-            if return_distance:
-                neigh_dist, neigh_ind = zip(*chunked_results)
-                results = np.vstack(neigh_dist), np.vstack(neigh_ind)
-            else:
-                results = np.vstack(chunked_results)
-
-        if not query_is_train:
-            return results
-        # If the query data is the same as the indexed data, we would like
-        # to ignore the first nearest neighbor of every sample, i.e
-        # the sample itself.
-        if return_distance:
-            neigh_dist, neigh_ind = results
-        else:
-            neigh_ind = results
-
-        n_queries, _ = X.shape
-        sample_range = np.arange(n_queries)[:, None]
-        sample_mask = neigh_ind != sample_range
-
-        # Corner case: When the number of duplicates are more
-        # than the number of neighbors, the first NN will not
-        # be the sample, but a duplicate.
-        # In that case mask the first duplicate.
-        dup_gr_nbrs = np.all(sample_mask, axis=1)
-        sample_mask[:, 0][dup_gr_nbrs] = False
-        neigh_ind = np.reshape(
-            neigh_ind[sample_mask], (n_queries, n_neighbors - 1))
-
-        if return_distance:
-            neigh_dist = np.reshape(
-                neigh_dist[sample_mask], (n_queries, n_neighbors - 1))
-            return neigh_dist, neigh_ind
-        return neigh_ind
-
-
-# class KNeighborsMixin:
-#     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
-#         onedal_model = getattr(self, '_onedal_model', None)
-#         if X is not None:
-#             X = _check_array(
-#                 X, accept_sparse='csr', dtype=[
-#                     np.float64, np.float32])
-
-#         result = onedal4py_kneighbors(self, X, n_neighbors, return_distance)
-
-#         return result
-
-
-# class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
-#     def radius_neighbors(self, X=None, radius=None, return_distance=True,
-#                          sort_results=False):
-#         onedal_model = getattr(self, '_onedal_model', None)
-
-#         if onedal_model is not None or getattr(self, '_tree', 0) is None and \
-#                 self._fit_method == 'kd_tree':
-#             if sklearn_check_version("0.24"):
-#                 BaseNeighborsBase._fit(self, self._fit_X, getattr(self, '_y', None))
-#             else:
-#                 BaseNeighborsBase._fit(self, self._fit_X)
-#         if sklearn_check_version("0.22"):
-#             result = BaseRadiusNeighborsMixin.radius_neighbors(
-#                 self, X, radius, return_distance, sort_results)
-#         else:
-#             result = BaseRadiusNeighborsMixin.radius_neighbors(
-#                 self, X, radius, return_distance)
-
-#         return result
+        return result

@@ -80,7 +80,10 @@ auto get_onedal_result_options(const py::dict& params) {
 
     auto result_option = params["result_option"].cast<std::string>();
     if (result_option == "all") {
-        return result_options::responses | knn::result_options::indices | knn::result_options::distances;
+        return result_options::responses | result_options::indices | result_options::distances;
+    }
+    else if (result_option == "indices|distances") {
+        return result_options::indices | result_options::distances;
     }
     else if (result_option == "responses") {
         return result_options::responses;
