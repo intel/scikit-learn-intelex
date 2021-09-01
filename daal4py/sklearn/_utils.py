@@ -222,7 +222,10 @@ def _get_host_inputs(*args, **kwargs):
 
 
 def _extract_usm_iface(*args, **kwargs):
-    return getattr((*args, *kwargs.values())[0],
+    allargs = (*args, *kwargs.values())
+    if len(allargs) == 0:
+        return None
+    return getattr(allargs[0],
                    '__sycl_usm_array_interface__',
                    None)
 
