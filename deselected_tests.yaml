@@ -170,6 +170,10 @@ deselected_tests:
   # This tests fail on mac mini 8.1 with stock scikit-learn
   - semi_supervised/tests/test_label_propagation.py
 
+  # This test fails because with patch config_context with new options, but the
+  # test checks that only exact number of options is used
+  - tests/test_config.py::test_config_context
+
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
 reduced_tests:
