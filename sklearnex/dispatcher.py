@@ -78,8 +78,9 @@ def patch_sklearn(name=None, verbose=True, global_patch=False):
 
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
 
-    patch_sklearn_orig(['set_config', 'get_config', 'config_context'],
-                       verbose=False, deprecation=False, get_map=get_patch_map)
+    for config in ['set_config', 'get_config', 'config_context']:
+        patch_sklearn_orig(config, verbose=False, deprecation=False,
+                           get_map=get_patch_map)
     if isinstance(name, list):
         for algorithm in name:
             patch_sklearn_orig(algorithm, verbose=False, deprecation=False,
@@ -104,6 +105,6 @@ def unpatch_sklearn(name=None, global_unpatch=False):
         for algorithm in name:
             unpatch_sklearn_orig(algorithm, get_map=get_patch_map)
     else:
-        unpatch_sklearn_orig(['set_config', 'get_config', 'config_context'],
-                             get_map=get_patch_map)
+        for config in ['set_config', 'get_config', 'config_context']:
+            unpatch_sklearn_orig(config, get_map=get_patch_map)
         unpatch_sklearn_orig(name, get_map=get_patch_map)
