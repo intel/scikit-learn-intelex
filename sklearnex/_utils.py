@@ -39,7 +39,7 @@ def get_patch_message(s, queue=None):
         if queue is not None:
             if queue.sycl_device.is_gpu:
                 message += 'GPU'
-            elif queue.sycl_device.is_cpu:
+            elif queue.sycl_device.is_cpu or queue.sycl_device.is_host:
                 message += 'CPU'
             else:
                 raise RuntimeError('Unsupported device')
