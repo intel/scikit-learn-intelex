@@ -15,12 +15,14 @@
 #===============================================================================
 
 import numpy as np
+import sys
 
 from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 from functools import wraps
 
+_sklearnex_available = 'sklearnex' in sys.modules
 
 def set_idp_sklearn_verbose():
     import logging
@@ -154,56 +156,6 @@ def get_number_of_types(dataframe):
         return 1
 
 
-def _create_global_queue_from_sycl_context():
-    import sys
-    d4p_target = None
-    if 'daal4py.oneapi' in sys.modules:
-        from daal4py.oneapi import _get_device_name_sycl_ctxt
-        d4p_target = _get_device_name_sycl_ctxt()
-
-    if d4p_target is not None:
-        try:
-            from dpctl import SyclQueue
-        except ImportError:
-            raise RuntimeError("dpctl need to be installed for device offload")
-        return SyclQueue(d4p_target if d4p_target != 'host' else 'cpu')
-    return None
-
-
-def _transfer_to_host(queue, *data):
-    has_usm_data, has_host_data = False, False
-
-    host_data = []
-    for item in data:
-        usm_iface = getattr(item, '__sycl_usm_array_interface__', None)
-        if usm_iface is not None:
-            import dpctl.memory as dp_mem
-
-            if queue is not None:
-                if queue.sycl_device != usm_iface['syclobj'].sycl_device:
-                    raise RuntimeError('Input data shall be located '
-                                       'on single target device')
-            else:
-                queue = usm_iface['syclobj']
-
-            buffer = dp_mem.as_usm_memory(item).copy_to_host()
-            item = np.ndarray(shape=usm_iface['shape'],
-                              dtype=usm_iface['typestr'],
-                              buffer=buffer)
-            has_usm_data = True
-        else:
-            has_host_data = True
-
-        mismatch_host_item = usm_iface is None and item is not None and has_usm_data
-        mismatch_usm_item = usm_iface is not None and has_host_data
-
-        if mismatch_host_item or mismatch_usm_item:
-            raise RuntimeError('Input data shall be located on single target device')
-
-        host_data.append(item)
-    return queue, host_data
-
-
 def _copy_to_usm(queue, array):
     from dpctl.memory import MemoryUSMDevice
     from dpctl.tensor import usm_ndarray
@@ -214,13 +166,9 @@ def _copy_to_usm(queue, array):
 
 
 def _get_host_inputs(*args, **kwargs):
-    import sys
-    if 'sklearnex' in sys.modules:
-        from sklearnex._device_offload import _get_global_queue as get_queue
-    else:
-        get_queue = _create_global_queue_from_sycl_context
+    from sklearnex._device_offload import _get_global_queue, _transfer_to_host
 
-    q = get_queue()
+    q = _get_global_queue()
     q, hostargs = _transfer_to_host(q, *args)
     q, hostvalues = _transfer_to_host(q, *kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
@@ -246,12 +194,8 @@ def _run_on_device(func, queue, obj=None, *args, **kwargs):
         from daal4py.oneapi import sycl_context, _get_in_sycl_ctxt
 
         if _get_in_sycl_ctxt() == False:
-            import sys
-            if 'sklearnex' in sys.modules:
-                from sklearnex import get_config
-                host_offload = get_config()['allow_fallback_to_host']
-            else:
-                host_offload = False
+            from sklearnex import get_config
+            host_offload = get_config()['allow_fallback_to_host']
 
             with sycl_context('gpu' if queue.sycl_device.is_gpu else 'cpu',
                               host_offload_on_fail=host_offload):
@@ -262,12 +206,17 @@ def _run_on_device(func, queue, obj=None, *args, **kwargs):
 def support_usm_ndarray(freefunc=False):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            usm_iface = _extract_usm_iface(*args, **kwargs)
-            q, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-            result = _run_on_device(func, q, obj, *hostargs, **hostkwargs)
-            if usm_iface is not None and hasattr(result, '__array_interface__'):
-                return _copy_to_usm(q, result)
-            return result
+            if _sklearnex_available:
+                usm_iface = _extract_usm_iface(*args, **kwargs)
+                q, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
+                result = _run_on_device(func, q, obj, *hostargs, **hostkwargs)
+                if usm_iface is not None and hasattr(result, '__array_interface__'):
+                    return _copy_to_usm(q, result)
+                return result
+            import logging
+            logging.warning('Device support is limited in daal4py patching.'
+                            'Use Intel(R) Extension for Scikit-learn* for full experience.')
+            return _run_on_device(func, None, obj, *args, **kwargs)
 
         if freefunc:
             @wraps(func)

@@ -53,6 +53,40 @@ def _get_global_queue():
     return None
 
 
+def _transfer_to_host(queue, *data):
+    has_usm_data, has_host_data = False, False
+
+    host_data = []
+    for item in data:
+        usm_iface = getattr(item, '__sycl_usm_array_interface__', None)
+        if usm_iface is not None:
+            import dpctl.memory as dp_mem
+
+            if queue is not None:
+                if queue.sycl_device != usm_iface['syclobj'].sycl_device:
+                    raise RuntimeError('Input data shall be located '
+                                       'on single target device')
+            else:
+                queue = usm_iface['syclobj']
+
+            buffer = dp_mem.as_usm_memory(item).copy_to_host()
+            item = np.ndarray(shape=usm_iface['shape'],
+                              dtype=usm_iface['typestr'],
+                              buffer=buffer)
+            has_usm_data = True
+        else:
+            has_host_data = True
+
+        mismatch_host_item = usm_iface is None and item is not None and has_usm_data
+        mismatch_usm_item = usm_iface is not None and has_host_data
+
+        if mismatch_host_item or mismatch_usm_item:
+            raise RuntimeError('Input data shall be located on single target device')
+
+        host_data.append(item)
+    return queue, host_data
+
+
 def _get_backend(obj, queue, method_name, *data):
     cpu_device = queue is None or queue.sycl_device.is_cpu
     gpu_device = queue is not None and queue.sycl_device.is_gpu
@@ -77,7 +111,6 @@ def _get_backend(obj, queue, method_name, *data):
 
 def dispatch(obj, method_name, branches, *args, **kwargs):
     import logging
-    from daal4py.sklearn._utils import _transfer_to_host
 
     q = _get_global_queue()
     q, hostargs = _transfer_to_host(q, *args)
