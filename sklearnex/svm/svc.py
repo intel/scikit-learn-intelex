@@ -73,7 +73,7 @@ class SVC(sklearn_SVC, BaseSVC):
                 self._class_count = len(np.unique(data[1]))
             return self.kernel in ['linear', 'rbf'] and \
                 self.class_weight is None and \
-                self._class_count == 2
+                hasattr(self, '_class_count') and self._class_count == 2
         if method_name in ['svm.SVC.predict',
                            'svm.SVC._predict_proba',
                            'svm.SVC.decision_function']:
