@@ -128,9 +128,16 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     raise RuntimeError(f'Undefined backend {backend} in {method_name}')
 
 
-def wrap_output_data(func):
-    from daal4py.sklearn._utils import _copy_to_usm
+def _copy_to_usm(queue, array):
+    from dpctl.memory import MemoryUSMDevice
+    from dpctl.tensor import usm_ndarray
 
+    mem = MemoryUSMDevice(array.nbytes, queue=queue)
+    mem.copy_from_host(array.tobytes())
+    return usm_ndarray(array.shape, array.dtype, buffer=mem)
+
+
+def wrap_output_data(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data = (*args, *kwargs.values())

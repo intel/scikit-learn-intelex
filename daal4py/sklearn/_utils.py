@@ -22,14 +22,24 @@ from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
 from functools import wraps
 
-_sklearnex_available = 'sklearnex' in sys.modules
+try:
+    from sklearnex import get_config
+    from sklearnex._device_offload import (_get_global_queue,
+                                           _transfer_to_host,
+                                           _copy_to_usm)
+    _sklearnex_available = True
+except ImportError:
+    import logging
+    logging.warning('Device support is limited in daal4py patching.'
+                    'Use Intel(R) Extension for Scikit-learn*'
+                    'for full experience.')
+    _sklearnex_available = False
 
 
 def set_idp_sklearn_verbose():
     import logging
     import warnings
     import os
-    import sys
     logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
     try:
         if logLevel is not None:
@@ -98,7 +108,6 @@ def make2d(X):
 
 
 def get_patch_message(s):
-    import sys
     if s == "daal":
         message = "running accelerated version on "
         if 'daal4py.oneapi' in sys.modules:
@@ -157,18 +166,7 @@ def get_number_of_types(dataframe):
         return 1
 
 
-def _copy_to_usm(queue, array):
-    from dpctl.memory import MemoryUSMDevice
-    from dpctl.tensor import usm_ndarray
-
-    mem = MemoryUSMDevice(array.nbytes, queue=queue)
-    mem.copy_from_host(array.tobytes())
-    return usm_ndarray(array.shape, array.dtype, buffer=mem)
-
-
 def _get_host_inputs(*args, **kwargs):
-    from sklearnex._device_offload import _get_global_queue, _transfer_to_host
-
     q = _get_global_queue()
     q, hostargs = _transfer_to_host(q, *args)
     q, hostvalues = _transfer_to_host(q, *kwargs.values())
@@ -195,7 +193,6 @@ def _run_on_device(func, queue, obj=None, *args, **kwargs):
         from daal4py.oneapi import sycl_context, _get_in_sycl_ctxt
 
         if _get_in_sycl_ctxt() is False:
-            from sklearnex import get_config
             host_offload = get_config()['allow_fallback_to_host']
 
             with sycl_context('gpu' if queue.sycl_device.is_gpu else 'cpu',
@@ -214,10 +211,6 @@ def support_usm_ndarray(freefunc=False):
                 if usm_iface is not None and hasattr(result, '__array_interface__'):
                     return _copy_to_usm(q, result)
                 return result
-            import logging
-            logging.warning('Device support is limited in daal4py patching.'
-                            'Use Intel(R) Extension for Scikit-learn*'
-                            'for full experience.')
             return _run_on_device(func, None, obj, *args, **kwargs)
 
         if freefunc:
