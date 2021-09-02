@@ -171,14 +171,13 @@ def _create_global_queue_from_sycl_context():
 
 
 def _transfer_to_host(queue, *data):
-    has_usm_data = False
+    has_usm_data, has_host_data = False, False
 
     host_data = []
     for item in data:
         usm_iface = getattr(item, '__sycl_usm_array_interface__', None)
         if usm_iface is not None:
             import dpctl.memory as dp_mem
-            import numpy as np
 
             if queue is not None:
                 if queue.sycl_device != usm_iface['syclobj'].sycl_device:
@@ -192,8 +191,15 @@ def _transfer_to_host(queue, *data):
                               dtype=usm_iface['typestr'],
                               buffer=buffer)
             has_usm_data = True
-        elif has_usm_data and item is not None:
+        else:
+            has_host_data = True
+
+        mismatch_host_item = usm_iface is None and item is not None and has_usm_data
+        mismatch_usm_item = usm_iface is not None and has_host_data
+
+        if mismatch_host_item or mismatch_usm_item:
             raise RuntimeError('Input data shall be located on single target device')
+
         host_data.append(item)
     return queue, host_data
 
@@ -237,10 +243,19 @@ def _run_on_device(func, queue, obj=None, *args, **kwargs):
         return func(*args, **kwargs)
 
     if queue is not None:
-        from daal4py.oneapi import sycl_context
+        from daal4py.oneapi import sycl_context, _get_in_sycl_ctxt
 
-        with sycl_context('gpu' if queue.sycl_device.is_gpu else 'cpu'):
-            return dispatch_by_obj(obj, func, *args, **kwargs)
+        if _get_in_sycl_ctxt() == False:
+            import sys
+            if 'sklearnex' in sys.modules:
+                from sklearnex import get_config
+                host_offload = get_config()['allow_fallback_to_host']
+            else:
+                host_offload = False
+
+            with sycl_context('gpu' if queue.sycl_device.is_gpu else 'cpu',
+                              host_offload_on_fail=host_offload):
+                return dispatch_by_obj(obj, func, *args, **kwargs)
     return dispatch_by_obj(obj, func, *args, **kwargs)
 
 
