@@ -32,6 +32,10 @@ if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P',
     from .svm import NuSVR as NuSVR_sklearnex
     from .svm import NuSVC as NuSVC_sklearnex
 
+    new_patching_available = True
+else:
+    new_patching_available = False
+
 # Scikit-learn* modules
 
 import sklearn as base_module
@@ -43,8 +47,7 @@ def get_patch_map():
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
     mapping = _get_map_of_algorithms().copy()
 
-    if os.environ.get('OFF_ONEDAL_IFACE') is None and \
-       daal_check_version((2021, 'P', 300)):
+    if new_patching_available:
         mapping.pop('svm')
         mapping.pop('svc')
         mapping['svr'] = [[(svm_module, 'SVR', SVR_sklearnex), None]]
@@ -78,9 +81,10 @@ def patch_sklearn(name=None, verbose=True, global_patch=False):
 
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
 
-    for config in ['set_config', 'get_config', 'config_context']:
-        patch_sklearn_orig(config, verbose=False, deprecation=False,
-                           get_map=get_patch_map)
+    if new_patching_available:
+        for config in ['set_config', 'get_config', 'config_context']:
+            patch_sklearn_orig(config, verbose=False, deprecation=False,
+                               get_map=get_patch_map)
     if isinstance(name, list):
         for algorithm in name:
             patch_sklearn_orig(algorithm, verbose=False, deprecation=False,
@@ -105,6 +109,7 @@ def unpatch_sklearn(name=None, global_unpatch=False):
         for algorithm in name:
             unpatch_sklearn_orig(algorithm, get_map=get_patch_map)
     else:
-        for config in ['set_config', 'get_config', 'config_context']:
-            unpatch_sklearn_orig(config, get_map=get_patch_map)
+        if new_patching_available:
+            for config in ['set_config', 'get_config', 'config_context']:
+                unpatch_sklearn_orig(config, get_map=get_patch_map)
         unpatch_sklearn_orig(name, get_map=get_patch_map)

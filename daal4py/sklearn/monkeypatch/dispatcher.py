@@ -103,7 +103,6 @@ def _get_map_of_algorithms():
 
 def do_patch(name, get_map=_get_map_of_algorithms):
     lname = name.lower()
-    print('patch: ', name, ' in ', get_map())
     if lname in get_map():
         for descriptor in get_map()[lname]:
             which, what, replacer = descriptor[0]
