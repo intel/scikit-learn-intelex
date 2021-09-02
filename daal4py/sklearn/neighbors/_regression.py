@@ -18,7 +18,8 @@
 
 from ._base import NeighborsBase, KNeighborsMixin
 from sklearn.base import RegressorMixin
-from .._utils import sklearn_check_version, support_usm_ndarray
+from .._utils import sklearn_check_version
+from .._device_offload import support_usm_ndarray
 
 
 if sklearn_check_version("0.22"):

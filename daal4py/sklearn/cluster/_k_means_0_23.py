@@ -38,8 +38,8 @@ import daal4py
 from .._utils import (
     getFPType,
     get_patch_message,
-    sklearn_check_version,
-    support_usm_ndarray)
+    sklearn_check_version)
+from .._device_offload import support_usm_ndarray
 import logging
 
 

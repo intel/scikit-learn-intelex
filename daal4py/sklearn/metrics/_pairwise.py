@@ -34,7 +34,8 @@ from scipy.sparse import issparse
 from scipy.spatial import distance
 
 import daal4py
-from .._utils import (getFPType, get_patch_message, support_usm_ndarray)
+from .._utils import (getFPType, get_patch_message)
+from .._device_offload import support_usm_ndarray
 import logging
 
 

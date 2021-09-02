@@ -22,7 +22,7 @@ from sklearn.linear_model._ridge import Ridge as Ridge_original
 
 import daal4py
 from .._utils import make2d, getFPType, get_patch_message, sklearn_check_version
-from .._utils import support_usm_ndarray
+from .._device_offload import support_usm_ndarray
 import logging
 
 

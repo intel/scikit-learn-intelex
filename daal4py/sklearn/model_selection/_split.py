@@ -24,7 +24,7 @@ import numpy as np
 from daal4py.sklearn._utils import daal_check_version, get_patch_message
 import platform
 import logging
-from .._utils import support_usm_ndarray
+from .._device_offload import support_usm_ndarray
 
 try:
     from sklearn.utils import _safe_indexing as safe_indexing

@@ -26,7 +26,8 @@ from sklearn.utils.validation import (
 )
 from sklearn.utils.multiclass import check_classification_targets
 import daal4py as d4p
-from .._utils import (make2d, getFPType, support_usm_ndarray)
+from .._utils import (make2d, getFPType)
+from .._device_offload import support_usm_ndarray
 from scipy.sparse import issparse
 
 

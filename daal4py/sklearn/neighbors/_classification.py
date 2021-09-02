@@ -22,8 +22,8 @@ from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from .._utils import (
     getFPType,
     sklearn_check_version,
-    get_patch_message,
-    support_usm_ndarray)
+    get_patch_message)
+from .._device_offload import support_usm_ndarray
 from sklearn.utils.validation import check_array
 import numpy as np
 from scipy import sparse as sp

@@ -28,7 +28,8 @@ from sklearn.utils.validation import check_non_negative
 from sklearn.utils import check_random_state, check_array
 
 from ..neighbors import NearestNeighbors
-from .._utils import sklearn_check_version, support_usm_ndarray
+from .._utils import sklearn_check_version
+from .._device_offload import support_usm_ndarray
 
 if sklearn_check_version('0.22'):
     from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn

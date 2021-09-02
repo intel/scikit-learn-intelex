@@ -26,7 +26,7 @@ import daal4py
 from daal4py.sklearn._utils import (make2d, getFPType, get_patch_message)
 import logging
 
-from .._utils import support_usm_ndarray
+from .._device_offload import support_usm_ndarray
 
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):

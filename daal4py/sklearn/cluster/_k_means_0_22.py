@@ -35,7 +35,7 @@ from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
 from .._utils import getFPType, get_patch_message, daal_check_version
-from .._utils import support_usm_ndarray
+from .._device_offload import support_usm_ndarray
 import logging
 
 

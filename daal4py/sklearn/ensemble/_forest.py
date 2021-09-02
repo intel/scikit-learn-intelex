@@ -20,7 +20,8 @@ import numbers
 import warnings
 
 import daal4py
-from .._utils import (getFPType, get_patch_message, support_usm_ndarray)
+from .._utils import (getFPType, get_patch_message)
+from .._device_offload import support_usm_ndarray
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 import logging
 

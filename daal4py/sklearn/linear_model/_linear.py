@@ -21,7 +21,8 @@ from scipy import linalg
 from sklearn.linear_model._base import _rescale_data
 from ..utils.validation import _daal_check_array, _daal_check_X_y
 from ..utils.base import _daal_validate_data
-from .._utils import sklearn_check_version, support_usm_ndarray
+from .._utils import sklearn_check_version
+from .._device_offload import support_usm_ndarray
 from sklearn.utils.fixes import sparse_lsqr
 from sklearn.utils.validation import _check_sample_weight
 from sklearn.utils import check_array

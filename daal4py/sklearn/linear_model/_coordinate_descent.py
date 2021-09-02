@@ -33,7 +33,7 @@ import warnings
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import normalize
 
-from .._utils import support_usm_ndarray
+from .._device_offload import support_usm_ndarray
 
 
 def _daal4py_check(self, X, y, check_input):

@@ -17,7 +17,8 @@
 # daal4py KNN scikit-learn-compatible classes
 
 from ._base import NeighborsBase, KNeighborsMixin, RadiusNeighborsMixin
-from .._utils import sklearn_check_version, support_usm_ndarray
+from .._utils import sklearn_check_version
+from .._device_offload import support_usm_ndarray
 
 if sklearn_check_version("0.22"):
     from sklearn.utils.validation import _deprecate_positional_args
