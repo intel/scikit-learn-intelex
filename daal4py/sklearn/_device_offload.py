@@ -17,7 +17,7 @@
 from functools import wraps
 
 try:
-    from sklearnex import get_config
+    from sklearnex._config import get_config
     from sklearnex._device_offload import (_get_global_queue,
                                            _transfer_to_host,
                                            _copy_to_usm)
