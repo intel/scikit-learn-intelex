@@ -24,6 +24,7 @@ from functools import wraps
 
 _sklearnex_available = 'sklearnex' in sys.modules
 
+
 def set_idp_sklearn_verbose():
     import logging
     import warnings
@@ -193,7 +194,7 @@ def _run_on_device(func, queue, obj=None, *args, **kwargs):
     if queue is not None:
         from daal4py.oneapi import sycl_context, _get_in_sycl_ctxt
 
-        if _get_in_sycl_ctxt() == False:
+        if _get_in_sycl_ctxt() is False:
             from sklearnex import get_config
             host_offload = get_config()['allow_fallback_to_host']
 
@@ -215,7 +216,8 @@ def support_usm_ndarray(freefunc=False):
                 return result
             import logging
             logging.warning('Device support is limited in daal4py patching.'
-                            'Use Intel(R) Extension for Scikit-learn* for full experience.')
+                            'Use Intel(R) Extension for Scikit-learn*'
+                            'for full experience.')
             return _run_on_device(func, None, obj, *args, **kwargs)
 
         if freefunc:

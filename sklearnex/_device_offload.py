@@ -17,6 +17,7 @@
 from ._config import get_config
 from ._utils import get_patch_message
 from functools import wraps
+import numpy as np
 
 
 def _get_device_info_from_daal4py():
