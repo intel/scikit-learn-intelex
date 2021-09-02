@@ -150,4 +150,3 @@ def get_number_of_types(dataframe):
         return len(set(dtypes))
     except TypeError:
         return 1
-
