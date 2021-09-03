@@ -15,6 +15,7 @@
 #===============================================================================
 
 from onedal import _backend
+import sys
 
 
 def _get_policy(queue, *data):
@@ -55,6 +56,11 @@ class _DataParallelInteropPolicy(_backend.data_parallel_policy):
     def __init__(self, queue):
         self._queue = queue
         self._d4p_interop = _Daal4PyContextReset()
+        if 'sklearnex' in sys.modules:
+            from sklearnex._device_offload import DummySyclQueue
+            if isinstance(queue, DummySyclQueue):
+                super().__init__(self._queue.sycl_device.get_filter_string())
+                return
         super().__init__(self._queue.addressof_ref())
 
 

@@ -19,6 +19,34 @@ from ._utils import get_patch_message
 from functools import wraps
 import numpy as np
 
+try:
+    from dpctl import SyclQueue
+    from dpctl.memory import MemoryUSMDevice, as_usm_memory
+    from dpctl.tensor import usm_ndarray
+    dpctl_available = True
+except ImportError:
+    import logging
+    logging.warning("Device support is limited. "
+                    "Please install dpctl for full experience")
+    dpctl_available = False
+
+class DummySyclQueue:
+    '''This class is designed to act like dpctl.SyclQueue
+    to allow device dispatching in scenarios when dpctl is not available'''
+
+    class DummySyclDevice:
+        def __init__(self, filter_string):
+            self._filter_string = filter_string
+            self.is_cpu = 'cpu' in filter_string
+            self.is_gpu = 'gpu' in filter_string
+            self.is_host = False
+
+        def get_filter_string(self):
+            return self._filter_string
+
+    def __init__(self, filter_string):
+        self.sycl_device = self.DummySyclDevice(filter_string)
+
 
 def _get_device_info_from_daal4py():
     import sys
@@ -34,11 +62,8 @@ def _get_global_queue():
     if d4p_target == 'host':
         d4p_target = 'cpu'
 
-    if target != 'auto' or d4p_target is not None:
-        try:
-            from dpctl import SyclQueue
-        except ImportError:
-            raise RuntimeError("dpctl need to be installed for device offload")
+    if not dpctl_available:
+        SyclQueue = DummySyclQueue
 
     if target != 'auto':
         if d4p_target is not None and \
@@ -61,8 +86,9 @@ def _transfer_to_host(queue, *data):
     for item in data:
         usm_iface = getattr(item, '__sycl_usm_array_interface__', None)
         if usm_iface is not None:
-            import dpctl.memory as dp_mem
-
+            if not dpctl_available:
+                raise RuntimeError("dpctl need to be installed to work "
+                                   "with __sycl_usm_array_interface__")
             if queue is not None:
                 if queue.sycl_device != usm_iface['syclobj'].sycl_device:
                     raise RuntimeError('Input data shall be located '
@@ -70,7 +96,7 @@ def _transfer_to_host(queue, *data):
             else:
                 queue = usm_iface['syclobj']
 
-            buffer = dp_mem.as_usm_memory(item).copy_to_host()
+            buffer = as_usm_memory(item).copy_to_host()
             item = np.ndarray(shape=usm_iface['shape'],
                               dtype=usm_iface['typestr'],
                               buffer=buffer)
@@ -129,9 +155,9 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
 
 
 def _copy_to_usm(queue, array):
-    from dpctl.memory import MemoryUSMDevice
-    from dpctl.tensor import usm_ndarray
-
+    if not dpctl_available:
+        raise RuntimeError("dpctl need to be installed to work "
+                           "with __sycl_usm_array_interface__")
     mem = MemoryUSMDevice(array.nbytes, queue=queue)
     mem.copy_from_host(array.tobytes())
     return usm_ndarray(array.shape, array.dtype, buffer=mem)
