@@ -30,6 +30,7 @@ except ImportError:
                     "Please install dpctl for full experience")
     dpctl_available = False
 
+
 class DummySyclQueue:
     '''This class is designed to act like dpctl.SyclQueue
     to allow device dispatching in scenarios when dpctl is not available'''
@@ -62,8 +63,7 @@ def _get_global_queue():
     if d4p_target == 'host':
         d4p_target = 'cpu'
 
-    if not dpctl_available:
-        SyclQueue = DummySyclQueue
+    QueueClass = DummySyclQueue if not dpctl_available else SyclQueue
 
     if target != 'auto':
         if d4p_target is not None and \
@@ -71,11 +71,11 @@ def _get_global_queue():
            d4p_target not in target.sycl_device.get_filter_string():
             raise RuntimeError("Cannot use target offload option "
                                "inside daal4py.oneapi.sycl_context")
-        if isinstance(target, SyclQueue):
+        if isinstance(target, QueueClass):
             return target
-        return SyclQueue(target)
+        return QueueClass(target)
     if d4p_target is not None:
-        return SyclQueue(d4p_target)
+        return QueueClass(d4p_target)
     return None
 
 
