@@ -70,10 +70,14 @@ class SVC(sklearn_SVC, BaseSVC):
         if method_name == 'svm.SVC.fit':
             if len(data) > 1:
                 import numpy as np
+                from scipy import sparse as sp
+
                 self._class_count = len(np.unique(data[1]))
+                self._is_sparse = sp.isspmatrix(data[0])
             return self.kernel in ['linear', 'rbf'] and \
                 self.class_weight is None and \
-                hasattr(self, '_class_count') and self._class_count == 2
+                hasattr(self, '_class_count') and self._class_count == 2 and \
+                hasattr(self, '_is_sparse') and not self._is_sparse
         if method_name in ['svm.SVC.predict',
                            'svm.SVC._predict_proba',
                            'svm.SVC.decision_function']:
