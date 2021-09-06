@@ -59,6 +59,7 @@ class _HostInteropPolicy(_backend.host_policy):
         super().__init__()
         self._d4p_interop = _Daal4PyContextReset()
 
+
 if _is_dpc_backend:
     class _DataParallelInteropPolicy(_backend.data_parallel_policy):
         def __init__(self, queue):
