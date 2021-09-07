@@ -22,17 +22,32 @@ namespace py = pybind11;
 namespace oneapi::dal::python {
 
 ONEDAL_PY_INIT_MODULE(policy) {
-    py::class_<detail::host_policy>(m, "host_policy").def(py::init());
+    py::class_<detail::host_policy>(m, "host_policy")
+        .def(py::init())
+        .def("get_device_name", [](const detail::host_policy& self) {
+            return "host";
+        });
 
 #ifdef ONEDAL_DATA_PARALLEL
     py::class_<detail::data_parallel_policy>(m, "data_parallel_policy")
-        .def(py::init([](const std::string& device_type) {
-            if (device_type == "gpu") {
-                return new detail::data_parallel_policy(sycl::gpu_selector());
+        .def(py::init([](std::size_t address_of_queue) {
+            auto* queue = reinterpret_cast<sycl::queue*>(address_of_queue);
+            return detail::data_parallel_policy(*queue);
+        }))
+        .def(py::init([](const std::string& filter_string) {
+            sycl::queue q { sycl::ext::oneapi::filter_selector(filter_string) };
+            return detail::data_parallel_policy(q);
+        }))
+        .def("get_device_name", [](const detail::data_parallel_policy& self) {
+            if (self.get_queue().get_device().is_gpu()) {
+                return "gpu";
+            } else if (self.get_queue().get_device().is_cpu()) {
+                return "cpu";
+            } else if (self.get_queue().get_device().is_host()) {
+                return "host";
             }
-
-            return new detail::data_parallel_policy(sycl::cpu_selector());
-        }));
+            return "unknown";
+        });
 #endif
 }
 

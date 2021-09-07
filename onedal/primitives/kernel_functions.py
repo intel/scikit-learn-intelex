@@ -18,27 +18,27 @@ import numpy as np
 from onedal.datatypes import _check_array
 from onedal import _backend
 
-from ..common._policy import _HostPolicy
+from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
 
 
 def _check_inputs(X, Y):
-    def check_input(input):
-        return _check_array(input, dtype=[np.float64, np.float32], force_all_finite=False)
+    def check_input(data):
+        return _check_array(data, dtype=[np.float64, np.float32], force_all_finite=False)
     X = check_input(X)
     Y = X if Y is None else check_input(Y)
     fptype = 'float' if X.dtype is np.dtype('float32') else 'double'
     return X, Y, fptype
 
 
-def _compute_kernel(params, submodule, X, Y):
-    policy = _HostPolicy()
+def _compute_kernel(params, submodule, X, Y, queue):
+    policy = _get_policy(queue, X, Y)
     X, Y = to_table(X, Y)
     result = submodule.compute(policy, params, X, Y)
     return from_table(result.values)
 
 
-def linear_kernel(X, Y=None, scale=1.0, shift=0.0):
+def linear_kernel(X, Y=None, scale=1.0, shift=0.0, queue=None):
     """
     Compute the linear kernel between X and Y:
         K(x, y) = scale*dot(x, y^T) + shift
@@ -58,10 +58,10 @@ def linear_kernel(X, Y=None, scale=1.0, shift=0.0):
     X, Y, fptype = _check_inputs(X, Y)
     return _compute_kernel({'fptype': fptype, 'method': 'dense',
                             'scale': scale, 'shift': shift},
-                           _backend.linear_kernel, X, Y)
+                           _backend.linear_kernel, X, Y, queue)
 
 
-def rbf_kernel(X, Y=None, gamma=None):
+def rbf_kernel(X, Y=None, gamma=None, queue=None):
     """
     Compute the rbf (gaussian) kernel between X and Y:
         K(x, y) = exp(-gamma ||x-y||^2)
@@ -85,10 +85,10 @@ def rbf_kernel(X, Y=None, gamma=None):
     sigma = np.sqrt(0.5 / gamma)
 
     return _compute_kernel({'fptype': fptype, 'method': 'dense', 'sigma': sigma},
-                           _backend.rbf_kernel, X, Y)
+                           _backend.rbf_kernel, X, Y, queue)
 
 
-def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
+def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3, queue=None):
     """
     Compute the poly kernel between X and Y:
         K(x, y) = (scale*dot(x, y^T) + shift)**degree
@@ -110,10 +110,10 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3):
     X, Y, fptype = _check_inputs(X, Y)
     return _compute_kernel({'fptype': fptype, 'method': 'dense',
                             'scale': gamma, 'shift': coef0, 'degree': degree},
-                           _backend.polynomial_kernel, X, Y)
+                           _backend.polynomial_kernel, X, Y, queue)
 
 
-def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0):
+def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0, queue=None):
     """
     Compute the sigmoid kernel between X and Y:
         K(x, y) = tanh(scale*dot(x, y^T) + shift)
@@ -134,4 +134,4 @@ def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0):
     X, Y, fptype = _check_inputs(X, Y)
     return _compute_kernel({'fptype': fptype, 'method': 'dense',
                             'scale': gamma, 'shift': coef0},
-                           _backend.sigmoid_kernel, X, Y)
+                           _backend.sigmoid_kernel, X, Y, queue)

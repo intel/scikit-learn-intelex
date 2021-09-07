@@ -26,6 +26,7 @@ from sklearn.preprocessing import label_binarize
 
 from ..utils.validation import _daal_assert_all_finite
 from .._utils import get_patch_message, sklearn_check_version
+from .._device_offload import support_usm_ndarray
 import logging
 
 if sklearn_check_version('0.22'):
@@ -110,6 +111,7 @@ def _daal_type_of_target(y):
     return result
 
 
+@support_usm_ndarray(freefunc=True)
 def _daal_roc_auc_score(
     y_true,
     y_score,
