@@ -25,9 +25,6 @@ try:
     from dpctl.tensor import usm_ndarray
     dpctl_available = True
 except ImportError:
-    import logging
-    logging.warning("Device support is limited. "
-                    "Please install dpctl for full experience")
     dpctl_available = False
 
 
@@ -41,6 +38,11 @@ class DummySyclQueue:
             self.is_cpu = 'cpu' in filter_string
             self.is_gpu = 'gpu' in filter_string
             self.is_host = False
+
+            if not (self.is_cpu or self.is_host):
+                import logging
+                logging.warning("Device support is limited. "
+                                "Please install dpctl for full experience")
 
         def get_filter_string(self):
             return self._filter_string

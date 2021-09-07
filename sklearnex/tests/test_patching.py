@@ -65,8 +65,9 @@ def get_result_log():
     mas = []
     result = {}
     for i in process.decode().split('\n'):
+        if i.startswith('SKLEARNEX WARNING'):
+            continue
         if not i.startswith('SKLEARNEX INFO') and len(mas) != 0:
-            print(mas, result)
             run_parse(mas, result)
             mas.clear()
             mas.append(i.strip())
