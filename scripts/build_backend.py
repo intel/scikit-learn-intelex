@@ -98,7 +98,7 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     os.chdir(d4p_dir)
 
 
-def custom_build_cmake_clib(iface):
+def custom_build_cmake_clib(iface, cxx=None):
     import pybind11
 
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
@@ -118,8 +118,8 @@ def custom_build_cmake_clib(iface):
 
     if iface == 'dpc':
         cxx = 'dpcpp'
-    else:
-        cxx = 'cl' if IS_WIN else 'g++'
+    elif cxx is None:
+        raise RuntimeError('CXX compiler shall be specified')
 
     cmake_args = [
         "cmake",

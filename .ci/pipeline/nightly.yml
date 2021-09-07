@@ -20,6 +20,7 @@ variables:
   python.version: '3.8'
   PYTHON: 'python'
   ARGS: '1'
+  OFF_ONEDAL_IFACE: '1'
 
 jobs:
 - job: Coverity

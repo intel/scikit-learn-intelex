@@ -271,7 +271,7 @@ static PyObject *convert_to_py_from_csr_impl(const detail::csr_table &table) {
     return result;
 }
 
-PyObject *convert_to_numpy(const dal::table &input) {
+PyObject *convert_to_pyobject(const dal::table &input) {
     PyObject *res = nullptr;
     if (!input.has_data()) {
         npy_intp dims[1] = { static_cast<npy_intp>(0) };

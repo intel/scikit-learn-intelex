@@ -1,4 +1,7 @@
-# Intel(R) Extension for Scikit-learn*
+# Intel(R) Extension for Scikit-learn* <img align="right" width="100" height="100" src="https://spec.oneapi.io/oneapi-logo-white-scaled.jpg">
+
+[Installation](https://github.com/intel/scikit-learn-intelex#-installation)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://intel.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Notebook examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Medium blogs](https://medium.com/intel-analytics-software/tagged/machine-learning)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Get Started](https://github.com/intel/scikit-learn-intelex#%EF%B8%8F-get-started)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support](https://github.com/intel/scikit-learn-intelex#-support)&nbsp;&nbsp;&nbsp;
+
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/21716/badge.svg)](https://scan.coverity.com/projects/daal4py)
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/intel/scikit-learn-intelex/discussions)
@@ -11,6 +14,8 @@ Intel(R) Extension for Scikit-learn is a seamless way to speed up your Scikit-le
 You can learn more about daal4py in [daal4py documentation](https://intelpython.github.io/daal4py).
 
 Running the latest scikit-learn test suite with Intel(R) Extension for Scikit-learn: [![CircleCI](https://circleci.com/gh/intel/scikit-learn-intelex.svg?style=svg)](https://circleci.com/gh/intel/scikit-learn-intelex)
+
+Intel(R) Extension for Scikit-learn* is part of [oneAPI](https://oneapi.io).
 
 ## 👀 Follow us on Medium
 
@@ -51,18 +56,21 @@ Intel(R) Extension for Scikit-learn is available at the [Python Package Index](h
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex).
 Intel(R) Extension for Scikit-learn is also available as a part of [Intel® oneAPI AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit).
 
+- PyPi (recommended by default)
+
 ```bash
-# PyPi (recommended by default)
 pip install scikit-learn-intelex
 ```
 
+- Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
+
 ```bash
-# Anaconda Cloud from Conda-Forge channel (recommended for conda users by default)
 conda install scikit-learn-intelex -c conda-forge
 ```
 
+- Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python users)
+
 ```bash
-# Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python users)
 conda install scikit-learn-intelex -c intel
 ```
 
@@ -99,13 +107,15 @@ will not be downloaded. You need to manually install ***dpcpp_cpp_rt*** package.
 
 <details><summary>[Click to expand] ℹ️ How to install dpcpp_cpp_rt package </summary>
 
+- PyPi
+
 ```bash
-# PyPi
 pip install --upgrade dpcpp_cpp_rt
 ```
 
+- Anaconda Cloud
+
 ```bash
-# Anaconda Cloud
 conda install dpcpp_cpp_rt -c intel
 ```
 
@@ -154,12 +164,15 @@ Configurations:
 
 <details><summary>[Click to expand] ℹ️ Reproduce results </summary>
 
+- With Intel® Extension for Scikit-learn enabled:
+
 ```bash
-# With Intel® Extension for Scikit-learn enabled:
 python runner.py --configs configs/blogs/skl_conda_config.json –report
 ```
+
+- With the original Scikit-learn:
+
 ```bash
-# With the original Scikit-learn:
 python runner.py --configs configs/blogs/skl_conda_config.json –report --no-intel-optimized
 ```
 </details>

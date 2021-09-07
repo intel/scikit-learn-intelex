@@ -37,8 +37,16 @@ deselected_tests:
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
 
+  # sklearn expects an exception for sparce matrices with 64-bit integer indices.
+  # sklearnex works correctly with 64-bit integer indices
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
+  - utils/tests/test_estimator_checks.py::test_xfail_ignored_in_check_estimator
+
   # SVC._dual_coef_ is changing after fitting but result of prediction is still the same
   - svm/tests/test_svm.py::test_tweak_params
+
+  # Bitwise comparison of SVR score using a print (diff = 2.220446049250313e-16)
+  - svm/tests/test_svm.py::test_custom_kernel_not_array_input[SVR]
 
   # This test needs a warning from sklearn. sklearnex raises the same warning
   - tests/test_common.py::test_estimators[SVC()-check_supervised_y_2d]
@@ -54,7 +62,6 @@ deselected_tests:
 
   # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
   # See https://github.com/IntelPython/daal4py/issues/69
-  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1]
   - cluster/tests/test_k_means.py::test_relocated_clusters >=0.23,<0.24
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters >=0.24
 
@@ -90,7 +97,11 @@ deselected_tests:
 
   # Different interpretation of trees compared to scikit-learn
   # Looks like we need to align tree traversal. This problem will be fixed
-  - ensemble/tests/test_forest.py::test_min_samples_leaf[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_min_samples_leaf
+
+  # Different random number generation engine in oneDAL and scikit-learn
+  # The result is depend on random state, for random_state=777 in RandomForestClassifier the test is passed
+  - ensemble/tests/test_voting.py::test_majority_label_iris
 
   # Our threads are used internally and are not explicitly specified
   - ensemble/tests/test_forest.py::test_backend_respected
