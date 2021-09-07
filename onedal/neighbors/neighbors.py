@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-from sklearn.utils.multiclass import check_classification_targets
+# from sklearn.utils.multiclass import check_classification_targets
 from sklearn.base import is_classifier, is_regressor
 from abc import ABCMeta, abstractmethod
 from enum import Enum
@@ -25,22 +25,11 @@ import warnings
 from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
-    from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
-    from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
-    from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
-    from sklearn.neighbors._ball_tree import BallTree
-    from sklearn.neighbors._kd_tree import KDTree
-    from sklearn.neighbors._base import _check_weights
-else:
-    from sklearn.neighbors.base import KNeighborsMixin as BaseKNeighborsMixin
-    from sklearn.neighbors.base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
-    from sklearn.neighbors.base import NeighborsBase as BaseNeighborsBase
-    from sklearn.neighbors.ball_tree import BallTree
-    from sklearn.neighbors.kd_tree import KDTree
-    from sklearn.neighbors.base import _check_weights
 
-            
+from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
+from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
+from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
+from sklearn.neighbors._kd_tree import KDTree
 
 import numpy as np
 from scipy import sparse as sp
@@ -50,7 +39,8 @@ from ..datatypes import (
     _check_array,
     _check_is_fitted,
     _column_or_1d,
-    _check_n_features
+    _check_n_features,
+    _check_classification_targets
 )
 
 try:
@@ -69,7 +59,8 @@ def parse_auto_method(estimator, method, n_samples, n_features):
         if estimator.metric == 'precomputed' or n_features > 11 or condition:
             result_method = 'brute'
         else:
-            if estimator.metric in KDTree.valid_metrics:
+            # if estimator.metric in KDTree.valid_metrics:
+            if estimator.metric in 'euclidean':
                 result_method = 'kd_tree'
             else:
                 result_method = 'brute'
@@ -118,9 +109,9 @@ def _onedal_fit(estimator, X, y):
 
     return train_alg
 
-def _onedal_predict(estimator, model, X, params):
+def _onedal_predict(estimator, model, X):
     policy = _HostPolicy()
-    # params = estimator._get_onedal_params(X)
+    params = estimator._get_onedal_params(X)
 
     if hasattr(estimator, '_onedal_model'):
         model = estimator._onedal_model
@@ -129,10 +120,6 @@ def _onedal_predict(estimator, model, X, params):
     result = backend.neighbors.classification.infer(policy, params, model, backend.from_numpy(X))
 
     return result
-
-def _get_responses(prediction_results):
-    return backend.to_numpy(prediction_results.responses)
-
 
 def _kneighbors(estimator, X=None, n_neighbors=None,
                     return_distance=True):
@@ -181,8 +168,7 @@ def _kneighbors(estimator, X=None, n_neighbors=None,
     method = parse_auto_method(
         estimator, estimator._fit_method, estimator.n_samples_fit_, n_features)
 
-    params = estimator._get_onedal_params(X)
-    prediction_results = _onedal_predict(estimator, estimator._onedal_model, X, params)
+    prediction_results = _onedal_predict(estimator, estimator._onedal_model, X)
 
     distances = backend.to_numpy(prediction_results.distances)
     indices = backend.to_numpy(prediction_results.indices)
@@ -235,7 +221,6 @@ def _kneighbors(estimator, X=None, n_neighbors=None,
     return neigh_ind
 
 class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
-    # @abstractmethod
     def __init__(self, n_neighbors=None, radius=None,
                  algorithm='auto', leaf_size=30, metric='minkowski',
                  p=2, metric_params=None, n_jobs=None):
@@ -307,7 +292,7 @@ class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
                     self.outputs_2d_ = True
 
                 if is_classifier(self):
-                    check_classification_targets(y)
+                    _check_classification_targets(y)
                 self.classes_ = []
                 self._y = np.empty(y.shape, dtype=int)
                 for k in range(self._y.shape[1]):
@@ -352,6 +337,62 @@ class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
         
         self._onedal_model = result.model
         result = self
+
+        return result
+
+class KNeighborsClassifier(NeighborsBase):
+    def __init__(self, n_neighbors=5, *,
+                 weights='uniform', algorithm='auto', leaf_size=30,
+                 p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                 **kwargs):
+        super().__init__(
+            n_neighbors=n_neighbors,
+            algorithm=algorithm,
+            leaf_size=leaf_size, metric=metric, p=p,
+            metric_params=metric_params,
+            n_jobs=n_jobs, **kwargs)
+        self.weights = weights
+        self._estimator_type = getattr(self, "_estimator_type", "classifier")
+
+    def _get_onedal_params(self, data):
+        class_count = 0 if self.classes_ is None else len(self.classes_)
+        weights = getattr(self, 'weights', 'uniform')
+        return {
+            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'vote_weights': 'uniform' if weights == 'uniform' else 'distance',
+            'method': self._fit_method,
+            'radius': self.radius,
+            'class_count': class_count,
+            'neighbor_count': self.n_neighbors,
+            'leaf_size': self.leaf_size,
+            'metric': self.metric,
+            'p': self.p,
+            'metric_params': self.metric_params,
+            'n_jobs': self.n_jobs,
+            'result_option': 'responses',
+        }
+
+    def _predict(self, X):
+        X = _check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
+        onedal_model = getattr(self, '_onedal_model', None)
+        n_features = getattr(self, 'n_features_in_', None)
+        shape = getattr(X, 'shape', None)
+        if n_features and shape and len(shape) > 1 and shape[1] != n_features:
+            raise ValueError((f'X has {X.shape[1]} features, '
+                            f'but KNNClassifier is expecting '
+                            f'{n_features} features as input'))
+
+        method = parse_auto_method(
+            self, self.algorithm,
+            self.n_samples_fit_, n_features)
+        self._fit_method = method
+
+        prediction_result = _onedal_predict(self, onedal_model, X)
+        # print(prediction_result.responses)
+        responses = backend.to_numpy(prediction_result.responses)
+        # indices = backend.to_numpy(prediction_result.indices)
+        result = self.classes_.take(
+            np.asarray(responses.ravel(), dtype=np.intp))
 
         return result
 
