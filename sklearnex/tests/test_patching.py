@@ -66,6 +66,7 @@ def get_result_log():
     result = {}
     for i in process.decode().split('\n'):
         if not i.startswith('SKLEARNEX INFO') and len(mas) != 0:
+            print(mas, result)
             run_parse(mas, result)
             mas.clear()
             mas.append(i.strip())
