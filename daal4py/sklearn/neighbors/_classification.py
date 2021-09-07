@@ -23,6 +23,7 @@ from .._utils import (
     getFPType,
     sklearn_check_version,
     get_patch_message)
+from .._device_offload import support_usm_ndarray
 from sklearn.utils.validation import check_array
 import numpy as np
 from scipy import sparse as sp
@@ -154,11 +155,14 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             metric_params=metric_params,
             n_jobs=n_jobs, **kwargs)
 
+    @support_usm_ndarray()
     def fit(self, X, y):
         return NeighborsBase._fit(self, X, y)
 
+    @support_usm_ndarray()
     def predict(self, X):
         return daal4py_classifier_predict(self, X, BaseKNeighborsClassifier.predict)
 
+    @support_usm_ndarray()
     def predict_proba(self, X):
         return BaseKNeighborsClassifier.predict_proba(self, X)

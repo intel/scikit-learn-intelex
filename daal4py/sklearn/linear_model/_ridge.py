@@ -22,6 +22,7 @@ from sklearn.linear_model._ridge import Ridge as Ridge_original
 
 import daal4py
 from .._utils import make2d, getFPType, get_patch_message, sklearn_check_version
+from .._device_offload import support_usm_ndarray
 import logging
 
 
@@ -211,8 +212,10 @@ class Ridge(Ridge_original, _BaseRidge):
             self.solver = solver
             self.random_state = random_state
 
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         return _fit_ridge(self, X, y, sample_weight=sample_weight)
 
+    @support_usm_ndarray()
     def predict(self, X):
         return _predict_ridge(self, X)

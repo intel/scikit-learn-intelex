@@ -27,6 +27,9 @@ from sklearn.metrics.pairwise import rbf_kernel
 from sklearn.datasets import make_blobs
 from sklearn.model_selection import train_test_split
 
+from onedal.tests.utils._device_selection import (get_queues,
+                                                  pass_if_not_implemented_for_gpu)
+
 
 def _replace_and_save(md, fns, replacing_fn):
     saved = dict()
@@ -60,12 +63,12 @@ def test_estimator():
     _restore_from_saved(md, saved)
 
 
-def _test_libsvm_parameters(array_constr, dtype):
+def _test_libsvm_parameters(queue, array_constr, dtype):
     X = array_constr([[-2, -1], [-1, -1], [-1, -2],
                       [1, 1], [1, 2], [2, 1]], dtype=dtype)
     y = array_constr([1, 1, 1, 2, 2, 2], dtype=dtype)
 
-    clf = SVC(kernel='linear').fit(X, y)
+    clf = SVC(kernel='linear').fit(X, y, queue=queue)
     assert_array_equal(clf.dual_coef_, [[-0.25, .25]])
     assert_array_equal(clf.support_, [1, 3])
     assert_array_equal(clf.support_vectors_, (X[1], X[3]))
@@ -73,88 +76,107 @@ def _test_libsvm_parameters(array_constr, dtype):
     assert_array_equal(clf.predict(X), y)
 
 
+# TODO: investigate sporadic failures on GPU
+@pytest.mark.parametrize('queue', get_queues('host,cpu'))
 @pytest.mark.parametrize('array_constr', [np.array])
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-def test_libsvm_parameters(array_constr, dtype):
-    _test_libsvm_parameters(array_constr, dtype)
+def test_libsvm_parameters(queue, array_constr, dtype):
+    _test_libsvm_parameters(queue, array_constr, dtype)
 
 
-def test_class_weight():
+@pytest.mark.parametrize('queue', get_queues('cpu') + [
+    pytest.param(get_queues('gpu'),
+                 marks=pytest.mark.xfail(
+                     reason="class weights are not implemented "
+                            "but the error is not raised"))])
+def test_class_weight(queue):
     X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
     y = np.array([1, 1, 1, 2, 2, 2])
 
     clf = SVC(class_weight={1: 0.1})
-    clf.fit(X, y)
-    assert_array_almost_equal(clf.predict(X), [2] * 6)
+    clf.fit(X, y, queue=queue)
+    assert_array_almost_equal(clf.predict(X, queue=queue), [2] * 6)
 
 
-def test_sample_weight():
+# TODO: investigate sporadic failures on GPU
+@pytest.mark.parametrize('queue', get_queues('host,cpu'))
+def test_sample_weight(queue):
     X = np.array([[-2, 0], [-1, -1], [0, -2], [0, 2], [1, 1], [2, 2]])
     y = np.array([1, 1, 1, 2, 2, 2])
 
     clf = SVC(kernel='linear')
-    clf.fit(X, y, sample_weight=[1] * 6)
+    clf.fit(X, y, sample_weight=[1] * 6, queue=queue)
     assert_array_almost_equal(clf.intercept_, [0.0])
 
 
-def test_decision_function():
+@pytest.mark.parametrize('queue', get_queues())
+def test_decision_function(queue):
     X = [[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]]
     Y = [1, 1, 1, 2, 2, 2]
 
     clf = SVC(kernel='rbf', gamma=1, decision_function_shape='ovo')
-    clf.fit(X, Y)
+    clf.fit(X, Y, queue=queue)
 
     rbfs = rbf_kernel(X, clf.support_vectors_, gamma=clf.gamma)
     dec = np.dot(rbfs, clf.dual_coef_.T) + clf.intercept_
-    assert_array_almost_equal(dec.ravel(), clf.decision_function(X))
+    assert_array_almost_equal(dec.ravel(), clf.decision_function(X, queue=queue))
 
 
-def test_iris():
+@pass_if_not_implemented_for_gpu(reason="multiclass svm is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
+def test_iris(queue):
     iris = datasets.load_iris()
-    clf = SVC(kernel='linear').fit(iris.data, iris.target)
-    assert clf.score(iris.data, iris.target) > 0.9
+    clf = SVC(kernel='linear').fit(iris.data, iris.target, queue=queue)
+    assert clf.score(iris.data, iris.target, queue=queue) > 0.9
     assert_array_equal(clf.classes_, np.sort(clf.classes_))
 
 
-def test_decision_function_shape():
+@pass_if_not_implemented_for_gpu(reason="multiclass svm is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
+def test_decision_function_shape(queue):
     X, y = make_blobs(n_samples=80, centers=5, random_state=0)
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
     # check shape of ovo_decition_function=True
     clf = SVC(kernel='linear',
-              decision_function_shape='ovo').fit(X_train, y_train)
-    dec = clf.decision_function(X_train)
+              decision_function_shape='ovo').fit(X_train, y_train, queue=queue)
+    dec = clf.decision_function(X_train, queue=queue)
     assert dec.shape == (len(X_train), 10)
 
     with pytest.raises(ValueError, match="must be either 'ovr' or 'ovo'"):
-        SVC(decision_function_shape='bad').fit(X_train, y_train)
+        SVC(decision_function_shape='bad').fit(X_train, y_train, queue=queue)
 
 
-def test_pickle():
+@pass_if_not_implemented_for_gpu(reason="multiclass svm is not implemented")
+@pytest.mark.parametrize('queue', get_queues())
+def test_pickle(queue):
     iris = datasets.load_iris()
-    clf = SVC(kernel='linear').fit(iris.data, iris.target)
-    expected = clf.decision_function(iris.data)
+    clf = SVC(kernel='linear').fit(iris.data, iris.target, queue=queue)
+    expected = clf.decision_function(iris.data, queue=queue)
 
     import pickle
     dump = pickle.dumps(clf)
     clf2 = pickle.loads(dump)
 
     assert type(clf2) == clf.__class__
-    result = clf2.decision_function(iris.data)
+    result = clf2.decision_function(iris.data, queue=queue)
     assert_array_equal(expected, result)
 
 
+@pass_if_not_implemented_for_gpu(reason="sigmoid kernel is not implemented")
+@pytest.mark.parametrize('queue', get_queues('cpu') + [
+    pytest.param(get_queues('gpu'),
+                 marks=pytest.mark.xfail(reason="raises Unimplemented error "
+                                                "with inconsistent error message"))])
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-def test_sklearnex_svc_sigmoid(dtype):
-    from sklearnex.svm import SVC
+def test_svc_sigmoid(queue, dtype):
     X_train = np.array([[-1, 2], [0, 0], [2, -1],
                         [+1, +1], [+1, +2], [+2, +1]], dtype=dtype)
     X_test = np.array([[0, 2], [0.5, 0.5],
                        [0.3, 0.1], [2, 0], [-1, -1]], dtype=dtype)
     y_train = np.array([1, 1, 1, 2, 2, 2], dtype=dtype)
-    svc = SVC(kernel='sigmoid').fit(X_train, y_train)
+    svc = SVC(kernel='sigmoid').fit(X_train, y_train, queue=queue)
 
-    assert 'daal4py' in svc.__module__ or 'sklearnex' in svc.__module__
     assert_array_equal(svc.dual_coef_, [[-1, -1, -1, 1, 1, 1]])
     assert_array_equal(svc.support_, [0, 1, 2, 3, 4, 5])
-    assert_array_equal(svc.predict(X_test), [2, 2, 1, 2, 1])
+    assert_array_equal(svc.predict(X_test, queue=queue), [2, 2, 1, 2, 1])
