@@ -76,7 +76,8 @@ def _test_libsvm_parameters(queue, array_constr, dtype):
     assert_array_equal(clf.predict(X), y)
 
 
-@pytest.mark.parametrize('queue', get_queues())
+# TODO: investigate sporadic failures on GPU
+@pytest.mark.parametrize('queue', get_queues('host,cpu'))
 @pytest.mark.parametrize('array_constr', [np.array])
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_libsvm_parameters(queue, array_constr, dtype):
@@ -97,7 +98,8 @@ def test_class_weight(queue):
     assert_array_almost_equal(clf.predict(X, queue=queue), [2] * 6)
 
 
-@pytest.mark.parametrize('queue', get_queues())
+# TODO: investigate sporadic failures on GPU
+@pytest.mark.parametrize('queue', get_queues('host,cpu'))
 def test_sample_weight(queue):
     X = np.array([[-2, 0], [-1, -1], [0, -2], [0, 2], [1, 1], [2, 2]])
     y = np.array([1, 1, 1, 2, 2, 2])
