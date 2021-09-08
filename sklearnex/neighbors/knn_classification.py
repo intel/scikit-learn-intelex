@@ -48,7 +48,7 @@ from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
 from onedal.neighbors import KNeighborsMixin as onedal_KNeighborsMixin
 from onedal.neighbors.neighbors import validate_data, parse_auto_method, _onedal_predict
 
-from sklearn.base import ClassifierMixin as BaseClassifierMixin
+# from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from .._utils import get_patch_message
 import numpy as np
 from scipy import sparse as sp
@@ -60,7 +60,7 @@ from sklearn.utils.validation import _deprecate_positional_args
 
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
-    class KNeighborsClassifier_(onedal_KNeighborsMixin, BaseClassifierMixin, onedal_KNeighborsClassifier):
+    class KNeighborsClassifier_(onedal_KNeighborsMixin, onedal_KNeighborsClassifier):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
                      weights='uniform', algorithm='auto', leaf_size=30,
@@ -79,7 +79,7 @@ elif LooseVersion(sklearn_version) >= LooseVersion("0.22"):
         BaseSupervisedIntegerMixin
 
     class KNeighborsClassifier_(onedal_KNeighborsClassifier, onedal_KNeighborsMixin,
-                                BaseSupervisedIntegerMixin, BaseClassifierMixin):
+                                BaseSupervisedIntegerMixin):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
                      weights='uniform', algorithm='auto', leaf_size=30,
@@ -97,7 +97,7 @@ else:
         BaseSupervisedIntegerMixin
 
     class KNeighborsClassifier_(onedal_KNeighborsClassifier, onedal_KNeighborsMixin,
-                                BaseSupervisedIntegerMixin, BaseClassifierMixin):
+                                BaseSupervisedIntegerMixin):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
                      weights='uniform', algorithm='auto', leaf_size=30,
@@ -136,7 +136,7 @@ class KNeighborsClassifier(KNeighborsClassifier_):
                 logging.info(
                     "sklearn.neighbors.KNeighborsClassifier."
                     "fit: " + get_patch_message("onedal"))
-                result = onedal_KNeighborsClassifier._fit(self, X, y)
+                result = onedal_KNeighborsClassifier.fit(self, X, y)
             except RuntimeError:
                 logging.info(
                     "sklearn.neighbors.KNeighborsClassifier."
@@ -160,7 +160,7 @@ class KNeighborsClassifier(KNeighborsClassifier_):
                     "sklearn.neighbors.KNeighborsClassifier"
                     ".predict: " + get_patch_message("onedal"))
 
-                result = onedal_KNeighborsClassifier._predict(self, X)
+                result = onedal_KNeighborsClassifier.predict(self, X)
             except RuntimeError:
                 logging.info(
                     "sklearn.neighbors.KNeighborsClassifier."

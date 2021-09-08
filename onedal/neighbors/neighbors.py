@@ -15,7 +15,6 @@
 #===============================================================================
 
 # from sklearn.utils.multiclass import check_classification_targets
-from sklearn.base import is_classifier, is_regressor
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 import sys
@@ -25,7 +24,9 @@ import warnings
 from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
 
-
+from sklearn.base import is_classifier, is_regressor
+# from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
 from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
 from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
@@ -256,6 +257,10 @@ class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
             'result_option': 'all',
         }
 
+    def _validate_n_classes(self, stage='train'):
+        if len(self.classes_) < 2:
+            raise ValueError((f"Classifier can't {stage} when only one class is present."))
+
     def _fit(self, X, y=None):
         if self.metric_params is not None and 'p' in self.metric_params:
             if self.p is not None:
@@ -325,6 +330,8 @@ class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
                     "enter integer value" %
                     type(self.n_neighbors))
 
+        self._validate_n_classes()
+
         method = parse_auto_method(
             self, self.algorithm,
             self.n_samples_fit_, self.n_features_in_)
@@ -340,7 +347,7 @@ class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
 
         return result
 
-class KNeighborsClassifier(NeighborsBase):
+class KNeighborsClassifier(NeighborsBase, BaseClassifierMixin):
     def __init__(self, n_neighbors=5, *,
                  weights='uniform', algorithm='auto', leaf_size=30,
                  p=2, metric='minkowski', metric_params=None, n_jobs=None,
@@ -352,7 +359,7 @@ class KNeighborsClassifier(NeighborsBase):
             metric_params=metric_params,
             n_jobs=n_jobs, **kwargs)
         self.weights = weights
-        self._estimator_type = getattr(self, "_estimator_type", "classifier")
+        # self._estimator_type = getattr(self, "_estimator_type", "classifier")
 
     def _get_onedal_params(self, data):
         class_count = 0 if self.classes_ is None else len(self.classes_)
@@ -372,25 +379,31 @@ class KNeighborsClassifier(NeighborsBase):
             'result_option': 'responses',
         }
 
-    def _predict(self, X):
+    def fit(self, X, y):
+        return super()._fit(X, y)
+
+    def predict(self, X):
         X = _check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
         onedal_model = getattr(self, '_onedal_model', None)
         n_features = getattr(self, 'n_features_in_', None)
+        n_samples_fit_ = getattr(self, 'n_samples_fit_', None)
         shape = getattr(X, 'shape', None)
         if n_features and shape and len(shape) > 1 and shape[1] != n_features:
             raise ValueError((f'X has {X.shape[1]} features, '
                             f'but KNNClassifier is expecting '
                             f'{n_features} features as input'))
+        
+        _check_is_fitted(self)
 
         method = parse_auto_method(
             self, self.algorithm,
-            self.n_samples_fit_, n_features)
+            n_samples_fit_, n_features)
         self._fit_method = method
 
+        self._validate_n_classes('predict')
+
         prediction_result = _onedal_predict(self, onedal_model, X)
-        # print(prediction_result.responses)
         responses = backend.to_numpy(prediction_result.responses)
-        # indices = backend.to_numpy(prediction_result.indices)
         result = self.classes_.take(
             np.asarray(responses.ravel(), dtype=np.intp))
 
