@@ -48,8 +48,8 @@ from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
 from onedal.neighbors import KNeighborsMixin as onedal_KNeighborsMixin
 from onedal.neighbors.neighbors import validate_data, parse_auto_method, _onedal_predict
 
-# from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from .._utils import get_patch_message
+from .._device_offload import dispatch, wrap_output_data
 import numpy as np
 from scipy import sparse as sp
 import logging
@@ -126,53 +126,51 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             n_jobs=n_jobs, **kwargs)
 
     def fit(self, X, y):
-        X_incorrect_type = isinstance(
-            X, (KDTree, BallTree, onedal_KNeighborsClassifier, BaseNeighborsBase))
+        return dispatch(self, 'neighbors.KNeighborsClassifier.fit', {
+            'onedal': onedal_KNeighborsClassifier.fit,
+            'sklearn': BaseKNeighborsClassifier.fit,
+        }, X, y)
 
-        if not X_incorrect_type and self.weights in ['uniform', 'distance'] \
-            and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
-            and self.metric in ['minkowski', 'euclidean', 'chebyshev', 'cosine']:
-            try:
-                logging.info(
-                    "sklearn.neighbors.KNeighborsClassifier."
-                    "fit: " + get_patch_message("onedal"))
-                result = onedal_KNeighborsClassifier.fit(self, X, y)
-            except RuntimeError:
-                logging.info(
-                    "sklearn.neighbors.KNeighborsClassifier."
-                    "fit: " + get_patch_message("sklearn_after_onedal"))
-                result = BaseNeighborsBase.fit(self, X, y)
-        else:
-            logging.info(
-                "sklearn.neighbors.KNeighborsClassifier."
-                "fit: " + get_patch_message("sklearn"))
-            result = BaseNeighborsBase.fit(self, X, y)
-        return result
-
+    @wrap_output_data
     def predict(self, X):
-        onedal_model = getattr(self, '_onedal_model', None)
-        if onedal_model is not None and not sp.issparse(X) \
-            and self.weights in ['uniform', 'distance'] \
-            and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
-            and self.metric in ['minkowski', 'euclidean', 'chebyshev', 'cosine']:
-            try:
-                logging.info(
-                    "sklearn.neighbors.KNeighborsClassifier"
-                    ".predict: " + get_patch_message("onedal"))
+        return dispatch(self, 'neighbors.KNeighborsClassifier.predict', {
+            'onedal': onedal_KNeighborsClassifier.predict,
+            'sklearn': BaseKNeighborsClassifier.predict,
+        }, X)
 
-                result = onedal_KNeighborsClassifier.predict(self, X)
-            except RuntimeError:
-                logging.info(
-                    "sklearn.neighbors.KNeighborsClassifier."
-                    "predict: " + get_patch_message("sklearn_after_onedal"))
-                result = BaseKNeighborsClassifier.predict(self, X)
-        else:
-            logging.info(
-                "sklearn.neighbors.KNeighborsClassifier"
-                ".predict: " + get_patch_message("sklearn"))
-            result = BaseKNeighborsClassifier.predict(self, X)
-
-        return result
-
+    @wrap_output_data
     def predict_proba(self, X):
-        return BaseKNeighborsClassifier.predict_proba(self, X)
+        return dispatch(self, 'neighbors.KNeighborsClassifier.predict_proba', {
+            # 'onedal': onedal_KNeighborsClassifier.predict,
+            'sklearn': BaseKNeighborsClassifier.predict_proba,
+        }, X)
+
+    def _onedal_gpu_supported(self, method_name, *data):
+        if method_name == 'neighbors.KNeighborsClassifier.fit':
+            if len(data) > 1:
+                import numpy as np
+                from scipy import sparse as sp
+
+                class_count = len(np.unique(data[1]))
+                is_sparse = sp.isspmatrix(data[0])
+            return self.weights in ['uniform', 'distance'] and \
+                self.algorithm in ['brute', 'auto'] and \
+                self.metric in ['minkowski', 'euclidean'] and \
+                self.class_weight is None and \
+                class_count >= 2 and \
+                not is_sparse
+        if method_name in ['neighbors.KNeighborsClassifier.predict',
+                           'neighbors.KNeighborsClassifier.predict_proba']:
+            return hasattr(self, '_onedal_model') and not sp.isspmatrix(data[0])
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+
+    def _onedal_cpu_supported(self, method_name, *data):
+        if method_name == 'neighbors.KNeighborsClassifier.fit':
+            return self.weights in ['uniform', 'distance'] \
+                    and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
+                    and self.metric in ['minkowski', 'euclidean', 'chebyshev', 'cosine']
+        if method_name in ['neighbors.KNeighborsClassifier.predict',
+                           'neighbors.KNeighborsClassifier.predict_proba']:
+            return hasattr(self, '_onedal_model') and not sp.isspmatrix(data[0])
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+

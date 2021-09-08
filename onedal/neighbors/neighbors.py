@@ -26,7 +26,7 @@ from sklearn import __version__ as sklearn_version
 
 from sklearn.base import is_classifier, is_regressor
 # from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
-from sklearn.base import ClassifierMixin as BaseClassifierMixin
+
 from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
 from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
 from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
@@ -49,7 +49,9 @@ try:
 except ImportError:
     import onedal._onedal_py_host as backend
 
-from ..common._policy import _HostPolicy
+from ..common._mixin import ClassifierMixin, RegressorMixin
+from ..common._policy import _get_policy
+
 
 def parse_auto_method(estimator, method, n_samples, n_features):
     result_method = method
@@ -101,8 +103,8 @@ def validate_data(estimator, X, y=None, reset=True,
 
     return out
 
-def _onedal_fit(estimator, X, y):
-    policy = _HostPolicy()
+def _onedal_fit(estimator, X, y, queue):
+    policy = _get_policy(queue, X, y)
     params = estimator._get_onedal_params(X)
     train_alg = backend.neighbors.classification.train(policy, params,
                             backend.from_numpy(X),
@@ -110,8 +112,8 @@ def _onedal_fit(estimator, X, y):
 
     return train_alg
 
-def _onedal_predict(estimator, model, X):
-    policy = _HostPolicy()
+def _onedal_predict(estimator, model, X, queue):
+    policy = _get_policy(queue, X)
     params = estimator._get_onedal_params(X)
 
     if hasattr(estimator, '_onedal_model'):
@@ -123,7 +125,7 @@ def _onedal_predict(estimator, model, X):
     return result
 
 def _kneighbors(estimator, X=None, n_neighbors=None,
-                    return_distance=True):
+                    return_distance=True, queue=None):
     n_features = getattr(estimator, 'n_features_in_', None)
     shape = getattr(X, 'shape', None)
     if n_features and shape and len(shape) > 1 and shape[1] != n_features:
@@ -169,7 +171,7 @@ def _kneighbors(estimator, X=None, n_neighbors=None,
     method = parse_auto_method(
         estimator, estimator._fit_method, estimator.n_samples_fit_, n_features)
 
-    prediction_results = _onedal_predict(estimator, estimator._onedal_model, X)
+    prediction_results = _onedal_predict(estimator, estimator._onedal_model, X, queue=queue)
 
     distances = backend.to_numpy(prediction_results.distances)
     indices = backend.to_numpy(prediction_results.indices)
@@ -261,7 +263,7 @@ class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
         if len(self.classes_) < 2:
             raise ValueError((f"Classifier can't {stage} when only one class is present."))
 
-    def _fit(self, X, y=None):
+    def _fit(self, X, y, queue):
         if self.metric_params is not None and 'p' in self.metric_params:
             if self.p is not None:
                 warnings.warn("Parameter p is found in metric_params. "
@@ -337,7 +339,7 @@ class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
             self.n_samples_fit_, self.n_features_in_)
         self._fit_method = method
 
-        result = _onedal_fit(self, X, y)
+        result = _onedal_fit(self, X, y, queue)
 
         if y is not None and is_regressor(self):
             self._y = y if shape is None else y.reshape(shape)
@@ -347,7 +349,7 @@ class NeighborsBase(BaseNeighborsBase, metaclass=ABCMeta):
 
         return result
 
-class KNeighborsClassifier(NeighborsBase, BaseClassifierMixin):
+class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
     def __init__(self, n_neighbors=5, *,
                  weights='uniform', algorithm='auto', leaf_size=30,
                  p=2, metric='minkowski', metric_params=None, n_jobs=None,
@@ -379,10 +381,10 @@ class KNeighborsClassifier(NeighborsBase, BaseClassifierMixin):
             'result_option': 'responses',
         }
 
-    def fit(self, X, y):
-        return super()._fit(X, y)
+    def fit(self, X, y, queue=None):
+        return super()._fit(X, y, queue=queue)
 
-    def predict(self, X):
+    def predict(self, X, queue=None):
         X = _check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
         onedal_model = getattr(self, '_onedal_model', None)
         n_features = getattr(self, 'n_features_in_', None)
@@ -402,7 +404,7 @@ class KNeighborsClassifier(NeighborsBase, BaseClassifierMixin):
 
         self._validate_n_classes('predict')
 
-        prediction_result = _onedal_predict(self, onedal_model, X)
+        prediction_result = _onedal_predict(self, onedal_model, X, queue=queue)
         responses = backend.to_numpy(prediction_result.responses)
         result = self.classes_.take(
             np.asarray(responses.ravel(), dtype=np.intp))
