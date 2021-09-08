@@ -14,22 +14,25 @@
 # limitations under the License.
 #===============================================================================
 
-import platform
-if "Windows" in platform.system():
-    import os
-    import sys
-    import site
-    path_to_env = site.getsitepackages()[0]
-    path_to_libs = os.path.join(path_to_env, "Library", "bin")
-    if sys.version_info.minor >= 8:
-        os.add_dll_directory(path_to_libs)
-    os.environ['PATH'] += os.pathsep + path_to_libs
 
-try:
-    import onedal._onedal_py_dpc as _backend
-    _is_dpc_backend = True
-except ImportError:
-    import onedal._onedal_py_host as _backend
-    _is_dpc_backend = False
+class ClassifierMixin:
+    _estimator_type = "classifier"
 
-__all__ = ['primitives', 'svm', 'neighbors']
+    def score(self, X, y, sample_weight=None, queue=None):
+        from sklearn.metrics import accuracy_score
+        return accuracy_score(y, self.predict(X, queue=queue),
+                              sample_weight=sample_weight)
+
+    def _more_tags(self):
+        return {"requires_y": True}
+
+
+class RegressorMixin:
+    _estimator_type = "regressor"
+
+    def score(self, X, y, sample_weight=None, queue=None):
+        from sklearn.metrics import r2_score
+        return r2_score(y, self.predict(X, queue=queue), sample_weight=sample_weight)
+
+    def _more_tags(self):
+        return {"requires_y": True}

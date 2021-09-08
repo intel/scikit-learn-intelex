@@ -14,22 +14,25 @@
 # limitations under the License.
 #===============================================================================
 
-import platform
-if "Windows" in platform.system():
-    import os
-    import sys
-    import site
-    path_to_env = site.getsitepackages()[0]
-    path_to_libs = os.path.join(path_to_env, "Library", "bin")
-    if sys.version_info.minor >= 8:
-        os.add_dll_directory(path_to_libs)
-    os.environ['PATH'] += os.pathsep + path_to_libs
+import sklearn
+import sklearnex
 
-try:
-    import onedal._onedal_py_dpc as _backend
-    _is_dpc_backend = True
-except ImportError:
-    import onedal._onedal_py_host as _backend
-    _is_dpc_backend = False
 
-__all__ = ['primitives', 'svm', 'neighbors']
+def test_get_config_contains_sklearn_params():
+    skex_config = sklearnex.get_config()
+    sk_config = sklearn.get_config()
+
+    assert all(value in skex_config.keys() for value in sk_config.keys())
+
+
+def test_set_config_works():
+    default_config = sklearnex.get_config()
+    sklearnex.set_config(assume_finite=True,
+                         target_offload='cpu:0',
+                         allow_fallback_to_host=True)
+
+    config = sklearnex.get_config()
+    assert config['target_offload'] == 'cpu:0'
+    assert config['allow_fallback_to_host']
+    assert config['assume_finite']
+    sklearnex.set_config(**default_config)

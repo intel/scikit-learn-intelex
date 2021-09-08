@@ -21,6 +21,7 @@ import warnings
 
 import daal4py
 from .._utils import (getFPType, get_patch_message)
+from .._device_offload import support_usm_ndarray
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 import logging
 
@@ -615,6 +616,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
 
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
@@ -643,6 +645,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
         """
         return _fit_classifier(self, X, y, sample_weight=sample_weight)
 
+    @support_usm_ndarray()
     def predict(self, X):
         """
         Predict class for X.
@@ -682,6 +685,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             "predict: " + get_patch_message("daal"))
         return _daal_predict_classifier(self, X)
 
+    @support_usm_ndarray()
     def predict_proba(self, X):
         """
         Predict class probabilities for X.
@@ -904,6 +908,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
 
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
@@ -932,6 +937,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
         """
         return _fit_regressor(self, X, y, sample_weight=sample_weight)
 
+    @support_usm_ndarray()
     def predict(self, X):
         """
         Predict class for X.

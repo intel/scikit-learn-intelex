@@ -14,26 +14,60 @@
 # limitations under the License.
 #===============================================================================
 
-from onedal import _backend
+from onedal import _backend, _is_dpc_backend
+import sys
 
 
-class _HostPolicy(_backend.host_policy):
+def _get_policy(queue, *data):
+    data_queue = _get_queue(*data)
+    if _is_dpc_backend:
+        if queue is None:
+            if data_queue is None:
+                return _HostInteropPolicy()
+            return _DataParallelInteropPolicy(data_queue)
+        return _DataParallelInteropPolicy(queue)
+    assert data_queue is None and queue is None
+    return _HostInteropPolicy()
 
+
+def _get_queue(*data):
+    if len(data) > 0 and hasattr(data[0], '__sycl_usm_array_interface__'):
+        # Assume that all data reside on the same device
+        return data[0].__sycl_usm_array_interface__['syclobj']
+    return None
+
+
+class _Daal4PyContextReset:
     def __init__(self):
         import sys
 
-        self.host_ctx, self.gpu_ctx = None, None
+        self._d4p_context = None
+        self._host_context = None
         if 'daal4py.oneapi' in sys.modules:
-            import daal4py.oneapi as d4p_oneapi
-            devname = d4p_oneapi._get_device_name_sycl_ctxt()
-            if devname == 'gpu':
-                self.gpu_ctx = d4p_oneapi._get_sycl_ctxt()
-                self.host_ctx = d4p_oneapi.sycl_execution_context('host')
-                self.host_ctx.apply()
-        super().__init__()
+            from daal4py.oneapi import _get_sycl_ctxt, sycl_execution_context
+            self._d4p_context = _get_sycl_ctxt()
+            self._host_context = sycl_execution_context('host')
+            self._host_context.apply()
 
     def __del__(self):
-        if self.host_ctx:
-            del self.host_ctx
-        if self.gpu_ctx:
-            self.gpu_ctx.apply()
+        if self._d4p_context:
+            self._d4p_context.apply()
+
+
+class _HostInteropPolicy(_backend.host_policy):
+    def __init__(self):
+        super().__init__()
+        self._d4p_interop = _Daal4PyContextReset()
+
+
+if _is_dpc_backend:
+    class _DataParallelInteropPolicy(_backend.data_parallel_policy):
+        def __init__(self, queue):
+            self._queue = queue
+            self._d4p_interop = _Daal4PyContextReset()
+            if 'sklearnex' in sys.modules:
+                from sklearnex._device_offload import DummySyclQueue
+                if isinstance(queue, DummySyclQueue):
+                    super().__init__(self._queue.sycl_device.get_filter_string())
+                    return
+            super().__init__(self._queue.addressof_ref())

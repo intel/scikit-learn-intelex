@@ -26,6 +26,8 @@ import daal4py
 from daal4py.sklearn._utils import (make2d, getFPType, get_patch_message)
 import logging
 
+from .._device_offload import support_usm_ndarray
+
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     ww = make2d(sample_weight) if sample_weight is not None else None
@@ -203,6 +205,7 @@ class DBSCAN(DBSCAN_original):
         self.p = p
         self.n_jobs = n_jobs
 
+    @support_usm_ndarray()
     def fit(self, X, y=None, sample_weight=None):
         """Perform DBSCAN clustering from features, or distance matrix.
 
@@ -258,3 +261,7 @@ class DBSCAN(DBSCAN_original):
             "sklearn.cluster.DBSCAN."
             "fit: " + get_patch_message("sklearn"))
         return super().fit(X, y, sample_weight=sample_weight)
+
+    @support_usm_ndarray()
+    def fit_predict(self, X, y=None, sample_weight=None):
+        return super().fit_predict(X, y, sample_weight)
