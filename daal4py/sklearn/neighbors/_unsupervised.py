@@ -18,6 +18,7 @@
 
 from ._base import NeighborsBase, KNeighborsMixin, RadiusNeighborsMixin
 from .._utils import sklearn_check_version
+from .._device_offload import support_usm_ndarray
 
 if sklearn_check_version("0.22"):
     from sklearn.utils.validation import _deprecate_positional_args
@@ -38,6 +39,7 @@ if sklearn_check_version("0.22") and not sklearn_check_version("0.23"):
                 leaf_size=leaf_size, metric=metric, p=p,
                 metric_params=metric_params, n_jobs=n_jobs)
 
+        @support_usm_ndarray()
         def fit(self, X, y=None):
             return NeighborsBase._fit(self, X)
 else:
@@ -53,5 +55,6 @@ else:
                 leaf_size=leaf_size, metric=metric, p=p,
                 metric_params=metric_params, n_jobs=n_jobs)
 
+        @support_usm_ndarray()
         def fit(self, X, y=None):
             return NeighborsBase._fit(self, X)

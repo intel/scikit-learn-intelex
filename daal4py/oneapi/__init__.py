@@ -38,7 +38,8 @@ try:
     from daal4py._oneapi import (
         _get_sycl_ctxt,
         _get_device_name_sycl_ctxt,
-        _get_sycl_ctxt_params
+        _get_sycl_ctxt_params,
+        _get_in_sycl_ctxt
     )
 except ModuleNotFoundError:
     raise

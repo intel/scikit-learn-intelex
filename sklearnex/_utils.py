@@ -32,14 +32,22 @@ def set_sklearn_ex_verbose():
                       '"WARNING", "INFO", "DEBUG".'.format(logLevel))
 
 
-def get_patch_message(s):
+def get_patch_message(s, queue=None):
     import sys
     if s == "onedal":
         message = "running accelerated version on "
-        if 'daal4py.oneapi' in sys.modules:
+        if queue is not None:
+            if queue.sycl_device.is_gpu:
+                message += 'GPU'
+            elif queue.sycl_device.is_cpu or queue.sycl_device.is_host:
+                message += 'CPU'
+            else:
+                raise RuntimeError('Unsupported device')
+
+        elif 'daal4py.oneapi' in sys.modules:
             from daal4py.oneapi import _get_device_name_sycl_ctxt
             dev = _get_device_name_sycl_ctxt()
-            if dev == 'cpu' or dev == 'host':
+            if dev == 'cpu' or dev == 'host' or dev is None:
                 message += 'CPU'
             elif dev == 'gpu':
                 message += 'GPU'

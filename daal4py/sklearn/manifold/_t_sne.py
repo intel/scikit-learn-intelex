@@ -29,6 +29,7 @@ from sklearn.utils import check_random_state, check_array
 
 from ..neighbors import NearestNeighbors
 from .._utils import sklearn_check_version
+from .._device_offload import support_usm_ndarray
 
 if sklearn_check_version('0.22'):
     from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
@@ -37,9 +38,16 @@ else:
 
 
 class TSNE(BaseTSNE):
+    @support_usm_ndarray()
+    def fit_transform(self, X, y=None):
+        return super().fit_transform(X, y)
+
+    @support_usm_ndarray()
+    def fit(self, X, y=None):
+        return super().fit(X, y)
+
     def _fit(self, X, skip_num_points=0):
         """Private function to fit the model using X as training data."""
-
         if isinstance(self.init, str) and self.init == 'warn':
             warnings.warn("The default initialization in TSNE will change "
                           "from 'random' to 'pca' in 1.2.", FutureWarning)

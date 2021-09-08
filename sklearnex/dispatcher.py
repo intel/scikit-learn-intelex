@@ -23,12 +23,22 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 # Classes for patching
 if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P', 300)):
+    from ._config import set_config as set_config_sklearnex
+    from ._config import get_config as get_config_sklearnex
+    from ._config import config_context as config_context_sklearnex
+
     from .svm import SVR as SVR_sklearnex
     from .svm import SVC as SVC_sklearnex
     from .svm import NuSVR as NuSVR_sklearnex
     from .svm import NuSVC as NuSVC_sklearnex
 
+    new_patching_available = True
+else:
+    new_patching_available = False
+
 # Scikit-learn* modules
+
+import sklearn as base_module
 import sklearn.svm as svm_module
 
 
@@ -37,14 +47,22 @@ def get_patch_map():
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
     mapping = _get_map_of_algorithms().copy()
 
-    if os.environ.get('OFF_ONEDAL_IFACE') is None and \
-       daal_check_version((2021, 'P', 300)):
+    if new_patching_available:
         mapping.pop('svm')
         mapping.pop('svc')
         mapping['svr'] = [[(svm_module, 'SVR', SVR_sklearnex), None]]
         mapping['svc'] = [[(svm_module, 'SVC', SVC_sklearnex), None]]
         mapping['nusvr'] = [[(svm_module, 'NuSVR', NuSVR_sklearnex), None]]
         mapping['nusvc'] = [[(svm_module, 'NuSVC', NuSVC_sklearnex), None]]
+        mapping['set_config'] = [[(base_module,
+                                   'set_config',
+                                   set_config_sklearnex), None]]
+        mapping['get_config'] = [[(base_module,
+                                   'get_config',
+                                   get_config_sklearnex), None]]
+        mapping['config_context'] = [[(base_module,
+                                      'config_context',
+                                       config_context_sklearnex), None]]
     return mapping
 
 
@@ -62,6 +80,11 @@ def patch_sklearn(name=None, verbose=True, global_patch=False):
         patch_sklearn_global(name, verbose)
 
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
+
+    if new_patching_available:
+        for config in ['set_config', 'get_config', 'config_context']:
+            patch_sklearn_orig(config, verbose=False, deprecation=False,
+                               get_map=get_patch_map)
     if isinstance(name, list):
         for algorithm in name:
             patch_sklearn_orig(algorithm, verbose=False, deprecation=False,
@@ -81,8 +104,12 @@ def unpatch_sklearn(name=None, global_unpatch=False):
         from sklearnex.glob.dispatcher import unpatch_sklearn_global
         unpatch_sklearn_global()
     from daal4py.sklearn import unpatch_sklearn as unpatch_sklearn_orig
+
     if isinstance(name, list):
         for algorithm in name:
             unpatch_sklearn_orig(algorithm, get_map=get_patch_map)
     else:
+        if new_patching_available:
+            for config in ['set_config', 'get_config', 'config_context']:
+                unpatch_sklearn_orig(config, get_map=get_patch_map)
         unpatch_sklearn_orig(name, get_map=get_patch_map)
