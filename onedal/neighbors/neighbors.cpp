@@ -17,7 +17,7 @@
 #include "oneapi/dal/algo/knn.hpp"
 
 #include "onedal/common.hpp"
-#include "onedal/distances/pairwise_distances.hpp"
+#include "onedal/primitives/pairwise_distances.hpp"
 
 namespace py = pybind11;
 

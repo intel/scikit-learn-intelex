@@ -30,9 +30,6 @@ from sklearn.datasets import make_blobs
 from sklearn.model_selection import train_test_split
 
 
-N_NEIGBORS = 2
-
-
 def _replace_and_save(md, fns, replacing_fn):
     saved = dict()
     for check_f in fns:
@@ -67,13 +64,13 @@ def test_estimator():
     check_estimator(KNeighborsClassifier())
     _restore_from_saved(md, saved)
 
-# def test_class_weight():
-#     X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
-#     y = np.array([1, 1, 1, 2, 2, 2])
+def test_minkowski_distance():
+    X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
+    y = np.array([1, 1, 1, 2, 2, 2])
 
-#     clf = SVC(class_weight={1: 0.1})
-#     clf.fit(X, y)
-#     assert_array_almost_equal(clf.predict(X), [2] * 6)
+    clf = KNeighborsClassifier(class_weight={1: 0.1})
+    clf.fit(X, y)
+    assert_array_almost_equal(clf.predict(X), [2] * 6)
 
 
 # def test_sample_weight():
@@ -101,7 +98,7 @@ def test_estimator():
 @pytest.mark.parametrize('queue', get_queues())
 def test_iris(queue):
     iris = datasets.load_iris()
-    clf = KNeighborsClassifier(N_NEIGBORS).fit(iris.data, iris.target, queue=queue)
+    clf = KNeighborsClassifier(2).fit(iris.data, iris.target, queue=queue)
     assert clf.score(iris.data, iris.target, queue=queue) > 0.9
     assert_array_equal(clf.classes_, np.sort(clf.classes_))
 
@@ -124,7 +121,7 @@ def test_iris(queue):
 @pytest.mark.parametrize('queue', get_queues())
 def test_pickle(queue):
     iris = datasets.load_iris()
-    clf = KNeighborsClassifier(N_NEIGBORS).fit(iris.data, iris.target, queue=queue)
+    clf = KNeighborsClassifier(2).fit(iris.data, iris.target, queue=queue)
     expected = clf.predict(iris.data, queue=queue)
 
     import pickle

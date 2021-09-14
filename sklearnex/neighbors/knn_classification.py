@@ -15,52 +15,46 @@
 # limitations under the License.
 #===============================================================================
 
-# from daal4py.sklearn.neighbors import KNeighborsClassifier
-
-from scipy import sparse as sp
-import logging
-from .._utils import get_patch_message
-
-from onedal.datatypes import (
-    _validate_targets,
-    _check_X_y,
-    _check_array,
-    _check_is_fitted,
-    _column_or_1d,
-    _check_n_features
-)
-
 from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
 
-from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
-from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
-from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
+from sklearn.neighbors._base import KNeighborsMixin as sklearn_KNeighborsMixin
+from sklearn.neighbors._base import RadiusNeighborsMixin as sklearn_RadiusNeighborsMixin
+from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._kd_tree import KDTree
 from sklearn.neighbors._base import _check_weights
 
-from sklearn.utils.validation import _deprecate_positional_args
-from sklearn.utils.multiclass import check_classification_targets
+from sklearn.neighbors._classification import KNeighborsClassifier as \
+    sklearn_KNeighborsClassifier
 
-from onedal.neighbors import NeighborsBase as onedal_NeighborsBase
+from sklearn.utils.validation import _deprecate_positional_args
+
+from onedal.datatypes import _check_array
+
 from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
 from onedal.neighbors import KNeighborsMixin as onedal_KNeighborsMixin
-from onedal.neighbors.neighbors import validate_data, parse_auto_method, _onedal_predict
 
-from .._utils import get_patch_message
 from .._device_offload import dispatch, wrap_output_data
 import numpy as np
 from scipy import sparse as sp
-import logging
 
-from sklearn.neighbors._classification import KNeighborsClassifier as \
-    BaseKNeighborsClassifier
-from sklearn.utils.validation import _deprecate_positional_args
 
+class KNeighborsMixin(sklearn_KNeighborsMixin):
+    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+        onedal_model = getattr(self, '_onedal_model', None)
+        if X is not None:
+            X = _check_array(
+                X, accept_sparse='csr', dtype=[
+                    np.float64, np.float32])
+
+        if onedal_model is not None and not sp.issparse(X):
+            result = onedal_KNeighborsMixin._kneighbors(self, X, n_neighbors, return_distance)
+
+        return result
 
 if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
-    class KNeighborsClassifier_(onedal_KNeighborsMixin, onedal_KNeighborsClassifier):
+    class KNeighborsClassifier_(sklearn_NeighborsBase, KNeighborsMixin, onedal_KNeighborsClassifier):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
                      weights='uniform', algorithm='auto', leaf_size=30,
@@ -78,7 +72,7 @@ elif LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     from sklearn.neighbors._base import SupervisedIntegerMixin as \
         BaseSupervisedIntegerMixin
 
-    class KNeighborsClassifier_(onedal_KNeighborsClassifier, onedal_KNeighborsMixin,
+    class KNeighborsClassifier_(sklearn_NeighborsBase, onedal_KNeighborsClassifier, KNeighborsMixin,
                                 BaseSupervisedIntegerMixin):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
@@ -96,7 +90,7 @@ else:
     from sklearn.neighbors.base import SupervisedIntegerMixin as \
         BaseSupervisedIntegerMixin
 
-    class KNeighborsClassifier_(onedal_KNeighborsClassifier, onedal_KNeighborsMixin,
+    class KNeighborsClassifier_(sklearn_NeighborsBase, onedal_KNeighborsClassifier, KNeighborsMixin,
                                 BaseSupervisedIntegerMixin):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
@@ -128,21 +122,21 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     def fit(self, X, y):
         return dispatch(self, 'neighbors.KNeighborsClassifier.fit', {
             'onedal': onedal_KNeighborsClassifier.fit,
-            'sklearn': BaseKNeighborsClassifier.fit,
+            'sklearn': sklearn_KNeighborsClassifier.fit,
         }, X, y)
 
     @wrap_output_data
     def predict(self, X):
         return dispatch(self, 'neighbors.KNeighborsClassifier.predict', {
             'onedal': onedal_KNeighborsClassifier.predict,
-            'sklearn': BaseKNeighborsClassifier.predict,
+            'sklearn': sklearn_KNeighborsClassifier.predict,
         }, X)
 
     @wrap_output_data
     def predict_proba(self, X):
         return dispatch(self, 'neighbors.KNeighborsClassifier.predict_proba', {
             # 'onedal': onedal_KNeighborsClassifier.predict,
-            'sklearn': BaseKNeighborsClassifier.predict_proba,
+            'sklearn': sklearn_KNeighborsClassifier.predict_proba,
         }, X)
 
     def _onedal_gpu_supported(self, method_name, *data):

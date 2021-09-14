@@ -163,6 +163,14 @@ def _check_is_fitted(estimator, attributes=None, *, msg=None):
         raise AttributeError(msg % {'name': type(estimator).__name__})
 
 
+def _is_classifier(estimator):
+    return getattr(estimator, "_estimator_type", None) == "classifier"
+
+
+def _is_regressor(estimator):
+    return getattr(estimator, "_estimator_type", None) == "regressor"
+
+
 def _check_classification_targets(y):
     y_type = _type_of_target(y)
     if y_type not in ['binary', 'multiclass', 'multiclass-multioutput',
