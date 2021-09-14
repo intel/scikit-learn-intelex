@@ -20,33 +20,33 @@
 oneAPI and GPU support in Intel(R) Extension for Scikit-learn*
 ##############################################################
 
-Intel(R) Extension for Scikit-learn* provides support of oneAPI concepts, which
-means that algorithms can be executed on different devices - CPUs and GPUs.
-This is done by integration with
-`dpctl <https://intelpython.github.io/dpctl/latest/index.html>`_ package, that
-implements core of oneAPI concepts like queues and devices.
+Intel(R) Extension for Scikit-learn* supports oneAPI concepts, which
+means that algorithms can be executed on different devices: CPUs and GPUs.
+This is done via integration with
+`dpctl <https://intelpython.github.io/dpctl/latest/index.html>`_ package that
+implements core oneAPI concepts like queues and devices.
 
-Intel(R) Extension for Scikit-learn* offers two ways how to run an algorithm on
-specific device with help of dpctl:
+Intel(R) Extension for Scikit-learn* offers two options for running an algorithm on a
+specific device with the help of dpctl:
 
 
 1. Pass input data as
    `dpctl.tensor.usm_ndarray
    <https://intelpython.github.io/dpctl/latest/docfiles/dpctl.tensor_api.html#dpctl.tensor.usm_ndarray>`_
-   to the algorithm. The computation will run on the device where input data is
-   located, and result will be returned as :code:`usm_ndarray` on the same
+   to the algorithm. The computation will run on the device where the input data is
+   located, and the result will be returned as :code:`usm_ndarray` to the same
    device.
 
    .. note::
-     All the data passed to the algorithm must reside on the same device.
+     All the input data for an algorithm must reside on the same device.
 
    .. warning::
-     Only base methods like :code:`fit`, :code:`predict`, and :code:`transform`
-     can consume :code:`usm_ndarray`. Please pay attension that only the
-     algorithms in Intel(R) Extension for Scikit-learn* provide support of
-     :code:`usm_ndarray`. Standard algorithms in stock version of Scikit-learn*
-     do not include this feature.
-2. Use global configurations of Intel(R) Extension for Scikit-learn*:
+     The :code:`usm_ndarray` can only be consumed by the base methods
+     like :code:`fit`, :code:`predict`, and :code:`transform`.
+     Note that only the algorithms in Intel(R) Extension for Scikit-learn* support
+     :code:`usm_ndarray`. The algorithms from the stock version of scikit-learn
+     do not support this feature.
+2. Use global configurations of Intel(R) Extension for Scikit-learn\*:
      1. Option :code:`target_offload` can be used to set the device primarily
         used to perform computations. Accepted values are :code:`str` and
         :code:`dpctl.SyclQueue`. If string, expected to be "auto" (the execution
@@ -58,14 +58,16 @@ specific device with help of dpctl:
         one. Default value is :code:`False`.
 
 These options can be set using :code:`sklearnex.set_config()` function or
-:code:`sklearnex.config_context`. Current values of these options can be
-obtained by the call of :code:`sklearnex.get_config()`.
+:code:`sklearnex.config_context`. To obtain the current values of these options,
+call :code:`sklearnex.get_config()`.
 
 .. note::
      Functions :code:`set_config`, :code:`get_config` and :code:`config_context`
-     are always patched after :code:`sklearnex.patch_sklearn()` call.
+     are always patched after the :code:`sklearnex.patch_sklearn()` call.
 
-Example how to patch your code with Intel CPU/GPU optimizations:
+.. rubric:: Example
+
+An example on how to patch your code with Intel CPU/GPU optimizations:
 
 .. code-block:: python
 
