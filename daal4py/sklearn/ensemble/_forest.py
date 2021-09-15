@@ -299,8 +299,10 @@ def _fit_classifier(self, X, y, sample_weight=None):
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
 
+    daal_oob_score = \
+        self.oob_score and daal_check_version((2021, 'P', 500)) or self.oob_score is False
     daal_ready = self.warm_start is False and self.criterion == "gini" and \
-        self.ccp_alpha == 0.0 and not sp.issparse(X)
+        self.ccp_alpha == 0.0 and not sp.issparse(X) and daal_oob_score
 
     if daal_ready:
         X = check_array(X, dtype=[np.float32, np.float64])
@@ -445,9 +447,11 @@ def _fit_regressor(self, X, y, sample_weight=None):
             FutureWarning
         )
 
+    daal_oob_score = \
+        self.oob_score and daal_check_version((2021, 'P', 500)) or self.oob_score is False
     daal_ready = self.warm_start is False and \
         self.criterion in ["mse", "squared_error"] and self.ccp_alpha == 0.0 and \
-        not sp.issparse(X)
+        not sp.issparse(X) and daal_oob_score
 
     if daal_ready:
         X = check_array(X, dtype=[np.float64, np.float32])
