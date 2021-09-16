@@ -26,18 +26,35 @@ This is done via integration with
 `dpctl <https://intelpython.github.io/dpctl/latest/index.html>`_ package that
 implements core oneAPI concepts like queues and devices.
 
+Prerequisites
+-------------
+
+For execution on GPU, DPC++ compiler runtime and driver are required. Refer to `DPC++ system
+requirements <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
+
+DPC++ compiler runtime can be installed either from PyPI or Anaconda:
+
+- Install from PyPI::
+
+     pip install dpcpp-cpp-rt
+
+- Install from Anaconda::
+
+     conda install dpcpp_cpp_rt -c intel
+
+Device offloading
+-----------------
+
 Intel(R) Extension for Scikit-learn* offers two options for running an algorithm on a
 specific device with the help of dpctl:
 
+**1. Pass input data as `dpctl.tensor.usm_ndarray <https://intelpython.github.io/dpctl/latest/docfiles/dpctl.tensor_api.html#dpctl.tensor.usm_ndarray>`_ to the algorithm.**
 
-1. Pass input data as
-   `dpctl.tensor.usm_ndarray
-   <https://intelpython.github.io/dpctl/latest/docfiles/dpctl.tensor_api.html#dpctl.tensor.usm_ndarray>`_
-   to the algorithm. The computation will run on the device where the input data is
-   located, and the result will be returned as :code:`usm_ndarray` to the same
-   device.
+The computation will run on the device where the input data is
+located, and the result will be returned as :code:`usm_ndarray` to the same
+device.
 
-   .. note::
+.. note::
      All the input data for an algorithm must reside on the same device.
 
    .. warning::
@@ -46,16 +63,16 @@ specific device with the help of dpctl:
      Note that only the algorithms in Intel(R) Extension for Scikit-learn* support
      :code:`usm_ndarray`. The algorithms from the stock version of scikit-learn
      do not support this feature.
-2. Use global configurations of Intel(R) Extension for Scikit-learn\*:
-     1. Option :code:`target_offload` can be used to set the device primarily
-        used to perform computations. Accepted values are :code:`str` and
+**2. Use global configurations of Intel(R) Extension for Scikit-learn\*:**
+     1. The :code:`target_offload` option can be used to set the device primarily
+        used to perform computations. Accepted data types are :code:`str` and
         :code:`dpctl.SyclQueue`. If string, expected to be "auto" (the execution
         context is deduced from input data location), or SYCL* filter selector
         string. Default value is "auto"
-     2. Option :code:`allow_fallback_to_host`
-        is a boolean flag, that, if set, allows to fallback computation to host
-        device in case when particular estimator does not support the selected
-        one. Default value is :code:`False`.
+     2. The :code:`allow_fallback_to_host` option
+        is a Boolean flag. If set to :code:`True`, the computation is allowed 
+        to fallback to the host device when a particular estimator does not support
+        the selected device. The default value is :code:`False`.
 
 These options can be set using :code:`sklearnex.set_config()` function or
 :code:`sklearnex.config_context`. To obtain the current values of these options,
@@ -65,7 +82,15 @@ call :code:`sklearnex.get_config()`.
      Functions :code:`set_config`, :code:`get_config` and :code:`config_context`
      are always patched after the :code:`sklearnex.patch_sklearn()` call.
 
-.. rubric:: Example
+**Compatibility considerations**::
+
+For compatibility reasons, algorithms in Intel(R) Extension for
+Scikit-learn* can be offloaded to the device with use of
+:code:`daal4py.oneapi.sycl_context`. It is recommended to use the ways
+described above for device offloading instead of using :code:`sycl_context`.
+
+Example
+-------
 
 An example on how to patch your code with Intel CPU/GPU optimizations:
 
@@ -80,23 +105,3 @@ An example on how to patch your code with Intel CPU/GPU optimizations:
                [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
    with config_context(target_offload="gpu:0"):
       clustering = DBSCAN(eps=3, min_samples=2).fit(X)
-
-.. warning::
-     For compatibility reasons, algorithms in Intel(R) Extension for
-     Scikit-learn* can be offloaded to the device with use of
-     :code:`daal4py.oneapi.sycl_context`. It is recommended to use the ways
-     described above for device offloading instead of using :code:`sycl_context`.
-
-
-For execution on GPU, DPC++ compiler runtime and driver are required. Refer to `DPC++ system
-requirements <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
-
-DPC++ compiler runtime can be installed either from PyPI or Anaconda:
-
-- Install from PyPI::
-
-     pip install dpcpp-cpp-rt
-
-- Install from Anaconda::
-
-     conda install dpcpp_cpp_rt -c intel
