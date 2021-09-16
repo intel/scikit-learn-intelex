@@ -48,13 +48,13 @@ Device offloading
 Intel(R) Extension for Scikit-learn* offers two options for running an algorithm on a
 specific device with the help of dpctl:
 
-**1. Pass input data as `dpctl.tensor.usm_ndarray <https://intelpython.github.io/dpctl/latest/docfiles/dpctl.tensor_api.html#dpctl.tensor.usm_ndarray>`_ to the algorithm.**
+1. Pass input data as `dpctl.tensor.usm_ndarray <https://intelpython.github.io/dpctl/latest/docfiles/dpctl.tensor_api.html#dpctl.tensor.usm_ndarray>`_ to the algorithm.
 
-The computation will run on the device where the input data is
-located, and the result will be returned as :code:`usm_ndarray` to the same
-device.
+   The computation will run on the device where the input data is
+   located, and the result will be returned as :code:`usm_ndarray` to the same
+   device.
 
-.. note::
+   .. note::
      All the input data for an algorithm must reside on the same device.
 
    .. warning::
@@ -63,7 +63,7 @@ device.
      Note that only the algorithms in Intel(R) Extension for Scikit-learn* support
      :code:`usm_ndarray`. The algorithms from the stock version of scikit-learn
      do not support this feature.
-**2. Use global configurations of Intel(R) Extension for Scikit-learn\*:**
+2. Use global configurations of Intel(R) Extension for Scikit-learn\*:
      1. The :code:`target_offload` option can be used to set the device primarily
         used to perform computations. Accepted data types are :code:`str` and
         :code:`dpctl.SyclQueue`. If string, expected to be "auto" (the execution
