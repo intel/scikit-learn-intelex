@@ -126,6 +126,16 @@ deselected_tests:
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order >=0.24,<1.0
 
+  # OOB scores in sklearn and oneDAL are different because of different random nuber generators
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
+
+  # Need a warning from sklearn if some samples do not have OOB scores that can not be raised from oneDAL
+  - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestRegressor]
+  - ensemble/tests/test_forest.py::test_oob_score_classifiers[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_oob_score_regressors[RandomForestRegressor]
+
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
