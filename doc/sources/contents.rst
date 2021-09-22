@@ -19,6 +19,13 @@
 ####################################
 Intel(R) Extension for Scikit-learn*
 ####################################
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Samples:
+
+   K Nearest Neighbors <samples/knn_mnist.rst>
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
