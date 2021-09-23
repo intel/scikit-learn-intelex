@@ -63,7 +63,7 @@ specific device with the help of dpctl:
      Note that only the algorithms in Intel(R) Extension for Scikit-learn* support
      :code:`usm_ndarray`. The algorithms from the stock version of scikit-learn
      do not support this feature.
-2. Use global configurations of Intel(R) Extension for Scikit-learn\*:
+- Use global configurations of Intel(R) Extension for Scikit-learn\*:
      1. The :code:`target_offload` option can be used to set the device primarily
         used to perform computations. Accepted data types are :code:`str` and
         :code:`dpctl.SyclQueue`. If string, expected to be "auto" (the execution
