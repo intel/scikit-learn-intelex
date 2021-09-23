@@ -85,7 +85,7 @@ call :code:`sklearnex.get_config()`.
 .. rubric:: Compatibility considerations
 
 For compatibility reasons, algorithms in Intel(R) Extension for
-Scikit-learn* can be offloaded to the device with use of
+Scikit-learn* may be offloaded to the device using
 :code:`daal4py.oneapi.sycl_context`. It is recommended to use the ways
 described above for device offloading instead of using :code:`sycl_context`.
 
