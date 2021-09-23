@@ -86,7 +86,7 @@ call :code:`sklearnex.get_config()`.
 
 For compatibility reasons, algorithms in Intel(R) Extension for
 Scikit-learn* may be offloaded to the device using
-:code:`daal4py.oneapi.sycl_context`. It is recommended to use the ways
+:code:`daal4py.oneapi.sycl_context`. However, it is recommended to use one of the options
 described above for device offloading instead of using :code:`sycl_context`.
 
 Example
