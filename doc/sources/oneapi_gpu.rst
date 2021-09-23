@@ -82,7 +82,7 @@ call :code:`sklearnex.get_config()`.
      Functions :code:`set_config`, :code:`get_config` and :code:`config_context`
      are always patched after the :code:`sklearnex.patch_sklearn()` call.
 
-**Compatibility considerations**::
+.. rubric:: Compatibility considerations
 
 For compatibility reasons, algorithms in Intel(R) Extension for
 Scikit-learn* can be offloaded to the device with use of
