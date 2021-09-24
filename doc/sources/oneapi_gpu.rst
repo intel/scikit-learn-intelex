@@ -66,9 +66,10 @@ specific device with the help of dpctl:
 - Use global configurations of Intel(R) Extension for Scikit-learn\*:
      1. The :code:`target_offload` option can be used to set the device primarily
         used to perform computations. Accepted data types are :code:`str` and
-        :code:`dpctl.SyclQueue`. If string, expected to be "auto" (the execution
-        context is deduced from input data location), or SYCL* filter selector
-        string. Default value is "auto"
+        :code:`dpctl.SyclQueue`. If you pass a string to :code:`target_offload`,
+        it should either be ``"auto"``, which means that the execution
+        context is deduced from the location of input data, or a string
+        with SYCL* filter selector. The default value is ``"auto"``.
      2. The :code:`allow_fallback_to_host` option
         is a Boolean flag. If set to :code:`True`, the computation is allowed 
         to fallback to the host device when a particular estimator does not support
