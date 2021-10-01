@@ -82,9 +82,8 @@ def support_usm_ndarray(freefunc=False):
             def wrapper_free(*args, **kwargs):
                 return wrapper_impl(None, *args, **kwargs)
             return wrapper_free
-        else:
-            @wraps(func)
-            def wrapper_with_self(self, *args, **kwargs):
-                return wrapper_impl(self, *args, **kwargs)
-            return wrapper_with_self
+        @wraps(func)
+        def wrapper_with_self(self, *args, **kwargs):
+            return wrapper_impl(self, *args, **kwargs)
+        return wrapper_with_self
     return decorator

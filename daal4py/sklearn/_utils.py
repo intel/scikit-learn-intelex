@@ -66,7 +66,7 @@ def get_daal_version():
 def parse_dtype(dt):
     if dt == np.double:
         return "double"
-    elif dt == np.single:
+    if dt == np.single:
         return "float"
     raise ValueError(f"Input array has unexpected dtype = {dt}")
 

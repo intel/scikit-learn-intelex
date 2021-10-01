@@ -51,24 +51,22 @@ def _to_absolute_max_features(
 ):
     if max_features is None:
         return n_features
-    elif isinstance(max_features, str):
+    if isinstance(max_features, str):
         if max_features == "auto":
             return max(1, int(np.sqrt(n_features))
                        ) if is_classification else n_features
-        elif max_features == 'sqrt':
+        if max_features == 'sqrt':
             return max(1, int(np.sqrt(n_features)))
-        elif max_features == "log2":
+        if max_features == "log2":
             return max(1, int(np.log2(n_features)))
-        else:
-            raise ValueError(
-                'Invalid value for max_features. Allowed string '
-                'values are "auto", "sqrt" or "log2".')
-    elif isinstance(max_features, (numbers.Integral, np.integer)):
+        raise ValueError(
+            'Invalid value for max_features. Allowed string '
+            'values are "auto", "sqrt" or "log2".')
+    if isinstance(max_features, (numbers.Integral, np.integer)):
         return max_features
-    else:  # float
-        if max_features > 0.0:
-            return max(1, int(max_features * n_features))
-        return 0
+    if max_features > 0.0:
+        return max(1, int(max_features * n_features))
+    return 0
 
 
 def _get_n_samples_bootstrap(n_samples, max_samples):

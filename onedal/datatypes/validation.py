@@ -230,8 +230,7 @@ def _type_of_target(y):
 
     if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
         return 'multiclass' + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
-    else:
-        return 'binary'  # [1, 2] or [["a"], ["b"]]
+    return 'binary'  # [1, 2] or [["a"], ["b"]]
 
 
 def _is_integral_float(y):
@@ -259,10 +258,9 @@ def _is_multilabel(y):
             y = y.tocsr()
         return len(y.data) == 0 or np.unique(y.data).size == 1 and \
             (y.dtype.kind in 'biu' or _is_integral_float(np.unique(y.data)))
-    else:
-        labels = np.unique(y)
+    labels = np.unique(y)
 
-        return len(labels) < 3 and (y.dtype.kind in 'biu' or _is_integral_float(labels))
+    return len(labels) < 3 and (y.dtype.kind in 'biu' or _is_integral_float(labels))
 
 
 def _check_n_features(self, X, reset):

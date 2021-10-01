@@ -129,7 +129,7 @@ def get_sdl_cflags():
                               '-D_FORTIFY_SOURCE=2', '-Wformat',
                               '-Wformat-security', '-fno-strict-overflow',
                               '-fno-delete-null-pointer-checks']
-    elif IS_WIN:
+    if IS_WIN:
         return DIST_CFLAGS + ['-GS', ]
 
 
@@ -137,12 +137,12 @@ def get_sdl_ldflags():
     if IS_LIN:
         return ['-Wl,-z,noexecstack,-z,relro,-z,now,-fstack-protector-strong,'
                 '-fno-strict-overflow,-fno-delete-null-pointer-checks,-fwrapv']
-    elif IS_MAC:
+    if IS_MAC:
         return ['-fstack-protector-strong',
                 '-fno-strict-overflow',
                 '-fno-delete-null-pointer-checks',
                 '-fwrapv']
-    elif IS_WIN:
+    if IS_WIN:
         return ['-NXCompat', '-DynamicBase']
 
 
