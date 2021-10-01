@@ -147,7 +147,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             else:
                 err_msg = 'Invalid input - all samples have zero or negative weights.'
             raise ValueError(err_msg)
-        elif np.any(sample_weight <= 0):
+        if np.any(sample_weight <= 0):
             if self.svm_type == SVMtype.c_svc and \
                     len(np.unique(y[sample_weight > 0])) != len(self.classes_):
                 raise ValueError(
