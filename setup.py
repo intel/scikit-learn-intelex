@@ -284,8 +284,8 @@ def gen_pyx(odir):
                  os.path.abspath('build/daal4py_cpp.cpp'),
                  os.path.abspath('build/daal4py_cy.pyx')]
     if all(os.path.isfile(x) for x in src_files):
-        src_files.sort(key=lambda x: os.path.getmtime(x))
-        gtr_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+        src_files.sort(key=os.path.getmtime)
+        gtr_files.sort(key=os.path.getmtime, reverse=True)
         if os.path.getmtime(src_files[0]) > os.path.getmtime(gtr_files[0]):
             print('Generated files are all newer than generator code.'
                   'Skipping code generation')
