@@ -454,7 +454,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
         "sklearn.ensemble.RandomForestRegressor.fit")
     _dal_ready = _patching_status.and_conditions([
         (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
-            "OOB score is used while supported starting from 2021.5 version of oneDAL")
+            "OOB score is used while supported starting from 2021.5 version of oneDAL"),
         (self.warm_start is False, "warm start is used"),
         (self.criterion in ["mse", "squared_error"],
             f"criterion is '{self.criterion}' "
