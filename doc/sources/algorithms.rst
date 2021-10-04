@@ -43,7 +43,7 @@ algorithms:
    * - Classification
      - RandomForestClassifier
      - All parameters except ``warm_start`` = True, ``cpp_alpha`` != 0, ``criterion`` != 'gini'.
-      - Multi-output and sparse data are not supported.
+     - Multi-output and sparse data are not supported.
    * - Classification
      - KNeighborsClassifier
      - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` != 2.
