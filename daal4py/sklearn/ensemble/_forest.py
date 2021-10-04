@@ -299,17 +299,11 @@ def _fit_classifier(self, X, y, sample_weight=None):
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
 
-<<<<<<< HEAD
-    daal_oob_score = \
-        self.oob_score and daal_check_version((2021, 'P', 500)) or self.oob_score is False
-    daal_ready = self.warm_start is False and self.criterion == "gini" and \
-        self.ccp_alpha == 0.0 and not sp.issparse(X) and daal_oob_score
-
-    if daal_ready:
-=======
     _patching_status = PatchingConditionsChain(
         "sklearn.ensemble.RandomForestClassifier.fit")
     _dal_ready = _patching_status.and_conditions([
+        (self.oob_score and daal_check_version((2021, 'P', 500)) or self.oob_score is False,
+            "OOB score is used while supported starting from 2021.5 version of oneDAL"),
         (self.warm_start is False, "warm start is used"),
         (self.criterion == "gini",
             f"criterion is '{self.criterion}' while 'gini' is supported"),
@@ -319,7 +313,6 @@ def _fit_classifier(self, X, y, sample_weight=None):
         (self.oob_score is False, "oob_score is True")])
 
     if _dal_ready:
->>>>>>> Initial patching debug for RF and kNN
         X = check_array(X, dtype=[np.float32, np.float64])
         y = np.asarray(y)
         y = np.atleast_1d(y)
@@ -461,7 +454,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
         "sklearn.ensemble.RandomForestRegressor.fit")
     _dal_ready = _patching_status.and_conditions([
         (self.oob_score and daal_check_version((2021, 'P', 500)) or self.oob_score is False,
-            f"OOB score is used while supported starting from 2021.5 version of oneDAL")
+            "OOB score is used while supported starting from 2021.5 version of oneDAL")
         (self.warm_start is False, "warm start is used"),
         (self.criterion in ["mse", "squared_error"],
             f"criterion is '{self.criterion}' "
