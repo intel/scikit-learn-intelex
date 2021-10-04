@@ -42,8 +42,8 @@ algorithms:
      - No limitations.
    * - Classification
      - RandomForestClassifier
-     - All parameters except ``warm_start`` = True, ``cpp_alpha`` != 0, ``criterion`` != 'gini', ``oob_score`` = True.
-     - Multi-output, sparse data and out-of-bag score are not supported.
+     - All parameters except ``warm_start`` = True, ``cpp_alpha`` != 0, ``criterion`` != 'gini'.
+      - Multi-output and sparse data are not supported.
    * - Classification
      - KNeighborsClassifier
      - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` != 2.
@@ -62,8 +62,8 @@ algorithms:
      - No limitations.
    * - Regression
      - RandomForestRegressor
-     - All parameters except ``warm_start`` = True, ``cpp_alpha`` != 0, ``criterion`` != 'mse', ``oob_score`` = True.
-     - Multi-output, sparse data and out-of-bag score are not supported.
+     - All parameters except ``warm_start`` = True, ``cpp_alpha`` != 0, ``criterion`` != 'mse'.
+     - Multi-output and sparse data are not supported.
    * - Regression
      - KNeighborsRegressor
      - All parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
