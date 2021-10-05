@@ -39,12 +39,6 @@ Sources and build instructions are available in `Intel(R) Extension for Scikit-l
 
     conda install scikit-learn-intelex -c intel
 
-.. raw:: html
-
-    <script type="text/javascript" src='_static/install-options.js'></script>
-
-.. include:: install_tabs.rst
-
 Building from Sources
 ---------------------
 
