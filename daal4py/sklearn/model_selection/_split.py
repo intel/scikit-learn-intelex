@@ -21,7 +21,8 @@ from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from sklearn.model_selection._split import _validate_shuffle_split
 import daal4py as d4p
 import numpy as np
-from daal4py.sklearn._utils import daal_check_version, get_patch_message
+from daal4py.sklearn._utils import (
+    daal_check_version, get_patch_message, PatchingConditionsChain)
 import platform
 import logging
 from .._device_offload import support_usm_ndarray
@@ -128,44 +129,47 @@ def _daal_train_test_split(*arrays, **options):
 
     res = []
     for arr in arrays:
-        fallback = False
+        _patching_status = PatchingConditionsChain(
+            "sklearn.model_selection.train_test_split")
 
         # input format check
-        if not isinstance(arr, np.ndarray):
-            if pandas_is_imported:
-                if not isinstance(arr, pd.core.frame.DataFrame) and \
-                   not isinstance(arr, pd.core.series.Series):
-                    fallback = True
-            else:
-                fallback = True
+        _patching_status.and_conditions([
+            (not isinstance(arr, np.ndarray), "input is not np.ndarray")])
+        if pandas_is_imported:
+            _patching_status.or_conditions([
+                (not isinstance(arr, pd.core.frame.DataFrame),
+                    "input is not np.ndarray pd.DataFrame"),
+                (not isinstance(arr, pd.core.series.Series),
+                    "input is not np.ndarray pd.Series")
+            ], conditions_merging=any)
 
         # dimensions check
+        _dal_ready = _patching_status.and_conditions([
+            (hasattr(arr, 'ndim'), "input has not 'ndim' attribute")])
         if hasattr(arr, 'ndim'):
-            if arr.ndim > 2:
-                fallback = True
-        else:
-            fallback = True
+            _patching_status.and_conditions([
+                (arr.ndim > 2, "input has more than 2 dimensions")])
 
         # data types check
         dtypes = get_dtypes(arr)
-        if dtypes is None:
-            fallback = True
-        else:
+        _dal_ready = _patching_status.and_conditions([
+            (dtypes is not None, "unable to parse input data types")])
+        if dtypes is not None:
+            incorrect_dtype = None
             for i, dtype in enumerate(dtypes):
                 if 'float' not in str(dtype) and 'int' not in str(dtype):
-                    fallback = True
+                    incorrect_dtype = str(dtype)
                     break
+            _dal_ready = _patching_status.and_conditions([
+                (incorrect_dtype is None,
+                    f"input has incorrect data type '{incorrect_dtype}' "
+                    "while integer and floating point types are supported")])
 
-        if fallback:
-            logging.info(
-                "sklearn.model_selection."
-                "train_test_split: " + get_patch_message("sklearn"))
+        _patching_status.write_log()
+        if not _dal_ready:
             res.append(safe_indexing(arr, train))
             res.append(safe_indexing(arr, test))
         else:
-            logging.info(
-                "sklearn.model_selection."
-                "train_test_split: " + get_patch_message("daal"))
             if len(arr.shape) == 2:
                 n_cols = arr.shape[1]
                 reshape_later = False

@@ -123,12 +123,13 @@ def _fit_ridge(self, X, y, sample_weight=None):
     _dal_ready = _patching_status.and_conditions([
         (self.solver == 'auto',
             f"solver is '{self.solver}' while only 'auto' is supported"),
-        (not sp.issparse(X), "input is sparse"),
-        (self.fit_shape_good_for_daal_, "shape is not good for onedal"),
+        (not sp.issparse(X), "X is sparse"),
+        (self.fit_shape_good_for_daal_, "X shape is not good for oneDAL"),
         (X.dtype == np.float64 or X.dtype == np.float32,
-            f"X.dtype ({X.dtype}) is incorrect"),
+            f"X data type is {X.dtype} while np.float32 and np.float64 are supported"),
         (sample_weight is None, "sample_weight is not None"),
-        (not (hasattr(self, 'positive') and self.positive), "self.positive exists")])
+        (not (hasattr(self, 'positive') and self.positive),
+            "self.positive is True")])
     _patching_status.write_log()
 
     if not _dal_ready:
@@ -169,11 +170,11 @@ def _predict_ridge(self, X):
     _dal_ready = _patching_status.and_conditions([
         (self.solver == 'auto',
             f"solver is '{self.solver}' while only 'auto' is supported"),
-        (hasattr(self, 'daal_model_'), 'onedal model was not trained'),
-        (not sp.issparse(X), "input is sparse"),
-        (good_shape_for_daal, "shape is not good for onedal"),
+        (hasattr(self, 'daal_model_'), 'oneDAL model was not trained'),
+        (not sp.issparse(X), "X is sparse"),
+        (good_shape_for_daal, "X shape is not good for oneDAL"),
         (X.dtype == np.float64 or X.dtype == np.float32,
-            f"X.dtype ({X.dtype}) is incorrect"),
+            f"X data type is {X.dtype} while np.float32 and np.float64 are supported"),
         (not hasattr(self, 'sample_weight_') or self.sample_weight_ is None,
             "sample_weight is not None")])
     _patching_status.write_log()

@@ -161,14 +161,14 @@ def _fit_linear(self, X, y, sample_weight=None):
     _patching_status = PatchingConditionsChain(
         "sklearn.linear_model.LinearRegression.fit")
     _patching_status.and_conditions([
-        (not sp.issparse(X), "input is sparse"),
-        (self.fit_shape_good_for_daal_, "shape is not good for onedal"),
+        (not sp.issparse(X), "X is sparse"),
+        (self.fit_shape_good_for_daal_, "X shape is not good for oneDAL"),
         (sample_weight is None, "sample_weight is not None")])
 
     if sklearn_check_version('0.22') and not sklearn_check_version('0.23'):
         _patching_status.and_conditions([
             (dtype in [np.float32, np.float64],
-                f"dtype is '{dtype}' while float32/float64 are supported")])
+                f"dtype is '{dtype}' while np.float32 and np.float64 are supported")])
 
     _dal_ready = _patching_status.get_status()
     _patching_status.write_log()
@@ -210,10 +210,10 @@ def _predict_linear(self, X):
     _patching_status = PatchingConditionsChain(
         "sklearn.linear_model.LinearRegression.predict")
     _dal_ready = _patching_status.and_conditions([
-        (hasattr(self, 'daal_model_'), 'onedal model was not trained'),
-        (not sp.issparse(X), "input is sparse"),
-        (good_shape_for_daal, "shape is not good for onedal"),
-        (self.fit_shape_good_for_daal_, "shape is not good for onedal"),
+        (hasattr(self, 'daal_model_'), 'oneDAL model was not trained'),
+        (not sp.issparse(X), "X is sparse"),
+        (good_shape_for_daal, "X shape is not good for oneDAL"),
+        (self.fit_shape_good_for_daal_, "X (fit) shape is not good for oneDAL"),
         (not hasattr(self, 'sample_weight_') or self.sample_weight_ is None,
             "sample_weight is not None")])
     _patching_status.write_log()
@@ -267,10 +267,12 @@ class LinearRegression(LinearRegression_original):
             )
 
         if sklearn_check_version('0.24'):
-            if self.positive is True:
-                logging.info(
-                    "sklearn.linar_model.LinearRegression."
-                    "fit: " + get_patch_message("sklearn"))
+            _patching_status = PatchingConditionsChain(
+                "sklearn.linear_model.LinearRegression.fit")
+            _dal_ready = _patching_status.and_conditions([
+                (self.positive is False, "positive is True")])
+            if not _dal_ready:
+                _patching_status.write_log()
                 return super(LinearRegression, self).fit(
                     X, y=y, sample_weight=sample_weight
                 )

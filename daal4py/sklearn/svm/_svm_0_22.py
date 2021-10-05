@@ -31,7 +31,8 @@ from .._utils import (
     make2d,
     getFPType,
     get_patch_message,
-    sklearn_check_version)
+    sklearn_check_version,
+    PatchingConditionsChain)
 import logging
 
 
@@ -472,14 +473,22 @@ def fit(self, X, y, sample_weight=None):
 
     # see comment on the other call to np.iinfo in this file
     seed = rnd.randint(np.iinfo('i').max)
-    if not sparse and not self.probability and \
-            not getattr(self, 'break_ties', False) and kernel in ['linear', 'rbf']:
-        logging.info("sklearn.svm.SVC.fit: " + get_patch_message("daal"))
+
+    _patching_status = PatchingConditionsChain(
+        "sklearn.svm.SVC.fit")
+    _dal_ready = _patching_status.and_conditions([
+        (not sparse, "X is sparse"),
+        (not self.probability, "probability is True"),
+        (not getattr(self, 'break_ties', False), "break_ties is True"),
+        (kernel in ['linear', 'rbf'],
+            f"kernel is '{kernel}' while 'linear' and 'rbf' are supported")
+    ])
+    _patching_status.write_log()
+    if _dal_ready:
         self._daal_fit = True
         _daal4py_fit(self, X, y, sample_weight, kernel)
         self.fit_status_ = 0
     else:
-        logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
         self._daal_fit = False
         fit(X, y, sample_weight, solver_type, kernel, random_seed=seed)
 
@@ -563,20 +572,25 @@ def predict(self, X):
         raise ValueError("break_ties must be False when "
                          "decision_function_shape is 'ovo'")
 
-    if _break_ties and self.decision_function_shape == 'ovr' and \
-            len(self.classes_) > 2:
-        logging.info(
-            "sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
+    _patching_status = PatchingConditionsChain(
+        "sklearn.svm.SVC.predict")
+    _dal_ready = _patching_status.and_conditions([
+        (not _break_ties, "break_ties is True"),
+        (self.decision_function_shape != 'ovr',
+            f"Decision function shape is 'ovr' while 'ovo' is needed"),
+        (len(self.classes_) <= 2, "Number of classes > 2")
+    ], conditions_merging=any)
+    _patching_status.write_log()
+    if not _dal_ready:
         y = np.argmax(self.decision_function(X), axis=1)
     else:
         X = self._validate_for_predict(X)
-        if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
-            logging.info(
-                "sklearn.svm.SVC.predict: " + get_patch_message("daal"))
+        _dal_ready = _patching_status.and_conditions([
+            (getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'),
+                "oneDAL model was not trained")])
+        if _dal_ready:
             y = _daal4py_predict(self, X)
         else:
-            logging.info(
-                "sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
             predict_func = self._sparse_predict if self._sparse else self._dense_predict
             y = predict_func(X)
 
