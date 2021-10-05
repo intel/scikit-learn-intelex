@@ -156,7 +156,6 @@ class PatchingConditionsChain:
     def __init__(self, scope_name):
         self.scope_name = scope_name
         self.patching_is_enabled = True
-        self.dal_full_name_is_mentioned = False
         self.messages = []
 
     def _iter_conditions(self, conditions_and_messages):
@@ -164,10 +163,6 @@ class PatchingConditionsChain:
         for condition, message in conditions_and_messages:
             result.append(condition)
             if not condition:
-                if not self.dal_full_name_is_mentioned and 'oneDAL' in message:
-                    message = message.replace(
-                        'oneDAL', 'Intel® oneAPI Data Analytics Library (oneDAL)')
-                    self.dal_full_name_is_mentioned = True
                 self.messages.append(message)
         return result
 
@@ -188,7 +183,11 @@ class PatchingConditionsChain:
         if self.patching_is_enabled:
             logging.info(f"{self.scope_name}: {get_patch_message('daal')}")
         else:
+            dal_full_name_is_mentioned = False
             for message in self.messages:
+                logging.debug(
+                    f'{self.scope_name}: patching debugging is enabled to track usage of'
+                    ' Intel® oneAPI Data Analytics Library (oneDAL)')
                 logging.debug(
                     f'{self.scope_name}: patching failed with cause - {message}')
             logging.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
