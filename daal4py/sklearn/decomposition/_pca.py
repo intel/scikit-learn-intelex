@@ -235,7 +235,7 @@ class PCA(PCA_original):
 
         if _dal_ready:
             _dal_ready = _patching_status.and_conditions([
-                (shape_good_for_daal, f"X shape is not good for oneDAL")
+                (shape_good_for_daal, "X shape is not good for oneDAL")
             ])
             if _dal_ready:
                 result = self._fit_full(X, n_components)

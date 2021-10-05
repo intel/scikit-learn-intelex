@@ -223,7 +223,7 @@ def _fit(self, X, y=None, sample_weight=None):
                          self.precompute_distances)
 
     _patching_status = PatchingConditionsChain(
-            "sklearn.cluster.KMeans.fit")
+        "sklearn.cluster.KMeans.fit")
     _dal_ready = _patching_status.and_conditions([
         (not sp.issparse(X), "X is sparse"),
         (not precompute_distances, "precompute_distances is True")
@@ -300,7 +300,7 @@ def _predict(self, X, sample_weight=None):
     X = self._check_test_data(X)
 
     _patching_status = PatchingConditionsChain(
-            "sklearn.cluster.KMeans.fit")
+        "sklearn.cluster.KMeans.predict")
     _dal_ready = _patching_status.and_conditions([
         (sample_weight is None, "sample_weight is not None"),
         (hasattr(X, '__array__'), "X hasn't __array__ attribute")

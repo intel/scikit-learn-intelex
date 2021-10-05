@@ -612,7 +612,7 @@ def predict(self, X):
     _dal_ready = _patching_status.and_conditions([
         (not _break_ties, "break_ties is True"),
         (self.decision_function_shape != 'ovr',
-            f"Decision function shape is 'ovr' while 'ovo' is needed"),
+            "Decision function shape is 'ovr' while 'ovo' is needed"),
         (len(self.classes_) <= 2, "Number of classes > 2")
     ], conditions_merging=any)
     _patching_status.write_log()

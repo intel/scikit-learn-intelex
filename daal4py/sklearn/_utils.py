@@ -165,8 +165,8 @@ class PatchingConditionsChain:
             result.append(condition)
             if not condition:
                 if not self.dal_full_name_is_mentioned and 'oneDAL' in message:
-                    message = message.replace('oneDAL',
-                        'Intel® oneAPI Data Analytics Library (oneDAL)')
+                    message = message.replace(
+                        'oneDAL', 'Intel® oneAPI Data Analytics Library (oneDAL)')
                     self.dal_full_name_is_mentioned = True
                 self.messages.append(message)
         return result
