@@ -39,103 +39,11 @@ Sources and build instructions are available in `Intel(R) Extension for Scikit-l
 
     conda install scikit-learn-intelex -c intel
 
-Supported configurations
-------------------------
+.. raw:: html
 
-**PyPi channel**
+    <script type="text/javascript" src='_static/install-options.js'></script>
 
-.. list-table::
-   :widths: 25 8 8 8 8
-   :header-rows: 1
-   :align: left
-
-   * - OS / Python version
-     - Python 3.6
-     - Python 3.7
-     - Python 3.8
-     - Python 3.9
-   * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-   * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-   * - OsX
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-
-.. note::
-    It supports Intel CPU and GPU except on OsX.
-
-**Anaconda Cloud: Conda-Forge channel**
-
-.. list-table::
-   :widths: 25 8 8 8 8
-   :header-rows: 1
-   :align: left
-
-   * - OS / Python version
-     - Python 3.6
-     - Python 3.7
-     - Python 3.8
-     - Python 3.9
-   * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-   * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-   * - OsX
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-
-.. note::
-    It supports only Intel CPU.
-    Recommended for conda users by default.
-
-**Anaconda Cloud: Intel channel**
-
-.. list-table::
-   :widths: 25 8 8 8 8
-   :header-rows: 1
-   :align: left
-
-   * - OS / Python version
-     - Python 3.6
-     - Python 3.7
-     - Python 3.8
-     - Python 3.9
-   * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-   * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-   * - OsX
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-
-.. note::
-    It supports Intel CPU and GPU except on OsX.
-    Recommended for conda users who use other components from Intel(R) Distribution for Python.
+.. include:: install_tabs.rst
 
 Building from Sources
 ---------------------
