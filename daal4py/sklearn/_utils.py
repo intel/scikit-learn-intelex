@@ -183,11 +183,10 @@ class PatchingConditionsChain:
         if self.patching_is_enabled:
             logging.info(f"{self.scope_name}: {get_patch_message('daal')}")
         else:
-            dal_full_name_is_mentioned = False
+            logging.debug(
+                f'{self.scope_name}: patching debugging is enabled to track usage of'
+                ' Intel® oneAPI Data Analytics Library (oneDAL)')
             for message in self.messages:
-                logging.debug(
-                    f'{self.scope_name}: patching debugging is enabled to track usage of'
-                    ' Intel® oneAPI Data Analytics Library (oneDAL)')
                 logging.debug(
                     f'{self.scope_name}: patching failed with cause - {message}')
             logging.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
