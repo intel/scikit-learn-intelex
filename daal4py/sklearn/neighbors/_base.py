@@ -377,7 +377,7 @@ class NeighborsBase(BaseNeighborsBase):
         _dal_ready = _patching_status.and_conditions([
             (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean',
                 f"metric is '{self.metric}' (p={self.p}) "
-                "while euclidean is only supported"),
+                "while 'euclidean' or 'minkowski' with p=2 is only supported"),
             (not X_incorrect_type, "X type is incorrect"),
             (weights in ['uniform', 'distance'],
                 f"weights is '{weights}' while 'uniform' and 'distance' are supported"),
@@ -385,8 +385,8 @@ class NeighborsBase(BaseNeighborsBase):
                 f"algorithm is '{self.algorithm}' "
                 "while 'brute', 'kd_tree', 'auto' and 'ball_tree' are supported"),
             (single_output, "output is not single"),
-            (fptype, "fptype is incorrect"),
-            (not sp.issparse(X), "input is sparse"),
+            (fptype is not None, "unable to get dtype"),
+            (not sp.issparse(X), "X is sparse"),
             (correct_n_classes, "n_classes is incorrect")])
         _patching_status.write_log()
         if _dal_ready:
@@ -423,9 +423,9 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         _patching_status = PatchingConditionsChain(
             "sklearn.neighbors.KNeighborsMixin.kneighbors")
         _dal_ready = _patching_status.and_conditions([
-            (daal_model is not None, "onedal model was not trained"),
-            (fptype is not None, "fptype is incorrect"),
-            (not sp.issparse(X), "input is sparse")])
+            (daal_model is not None, "oneDAL model was not trained"),
+            (fptype is not None, "unable to get dtype"),
+            (not sp.issparse(X), "X is sparse")])
         _patching_status.write_log()
 
         if _dal_ready:

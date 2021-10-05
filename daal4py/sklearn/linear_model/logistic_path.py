@@ -614,9 +614,9 @@ def daal4py_predict(self, X, resultsToEvaluate):
             "resultsToEvaluate != 'computeClassLabels'")],
         conditions_merging=any)
     _dal_ready = _patching_status.and_conditions([
-        (not sparse.issparse(X), "input is sparse"),
+        (not sparse.issparse(X), "X is sparse"),
         (not sparse.issparse(self.coef_), "self.coef_ is sparse"),
-        (fptype is not None, "fptype is incorrect")])
+        (fptype is not None, "unable to get dtype")])
 
     _patching_status.write_log()
     if _dal_ready:
