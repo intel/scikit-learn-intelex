@@ -168,7 +168,8 @@ def _fit_linear(self, X, y, sample_weight=None):
     if sklearn_check_version('0.22') and not sklearn_check_version('0.23'):
         _patching_status.and_conditions([
             (dtype in [np.float32, np.float64],
-                f"dtype is '{dtype}' while np.float32 and np.float64 are supported")])
+                f"X data type is '{dtype}' while "
+                "np.float32 and np.float64 are supported")])
 
     _dal_ready = _patching_status.get_status()
     _patching_status.write_log()

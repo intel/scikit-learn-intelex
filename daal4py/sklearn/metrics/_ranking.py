@@ -161,9 +161,8 @@ def _daal_roc_auc_score(
                                             y_score.reshape(-1, 1))
             if result != -1:
                 return result
-            else:
-                logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message(
-                    "sklearn_after_daal"))
+            logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message(
+                "sklearn_after_daal"))
         # return to sklearn implementation
         y_true = label_binarize(y_true, classes=labels)[:, 0]
 

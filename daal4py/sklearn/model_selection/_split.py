@@ -138,9 +138,9 @@ def _daal_train_test_split(*arrays, **options):
         if pandas_is_imported:
             _patching_status.or_conditions([
                 (not isinstance(arr, pd.core.frame.DataFrame),
-                    "input is not np.ndarray pd.DataFrame"),
+                    "input is not pd.DataFrame"),
                 (not isinstance(arr, pd.core.series.Series),
-                    "input is not np.ndarray pd.Series")
+                    "input is not pd.Series")
             ], conditions_merging=any)
 
         # dimensions check
