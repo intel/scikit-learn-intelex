@@ -58,14 +58,11 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             'sklearn': sklearn_NuSVC.predict,
         }, X)
 
-
     def _dense_predict_proba(self, X):
         return self._predict_proba(X)
 
-
     def _sparse_predict_proba(self, X):
         return self._predict_proba(X)
-
 
     @wrap_output_data
     def _predict_proba(self, X):
