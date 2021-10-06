@@ -20,7 +20,10 @@ from .._device_offload import dispatch, wrap_output_data
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
-from sklearn.utils.metaestimators import available_if
+from sklearn import __version__ as sklearn_version
+
+from distutils.version import LooseVersion
+from scipy import sparse as sp
 
 from onedal.svm import SVC as onedal_SVC
 
@@ -53,29 +56,28 @@ class SVC(sklearn_SVC, BaseSVC):
             'sklearn': sklearn_SVC.predict,
         }, X)
 
-    def _check_proba(self):
-        if not self.probability:
-            raise AttributeError(
-                "predict_proba is not available when  probability=False"
-            )
-        if self._impl not in ("c_svc", "nu_svc"):
-            raise AttributeError("predict_proba only implemented for SVC and NuSVC")
-        return True
 
-    @available_if(_check_proba)
-    def predict_proba(self, X):
-        X = self._validate_for_predict(X)
-        if self.probA_.size == 0 or self.probB_.size == 0:
-            raise NotFittedError(
-                "predict_proba is not available when fitted with probability=False"
-            )
+    def _dense_predict_proba(self, X):
         return self._predict_proba(X)
+
+
+    def _sparse_predict_proba(self, X):
+        return self._predict_proba(X)
+
 
     @wrap_output_data
     def _predict_proba(self, X):
-        return dispatch(self, 'svm.SVC.predict_proba', {
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+            sklearn_pred_proba = (
+                sklearn_SVC._sparse_predict_proba if sp.isspmatrix(X) else
+                sklearn_SVC._dense_predict_proba
+            )
+        else:
+            sklearn_pred_proba = sklearn_SVC._predict_proba
+
+        return dispatch(self, 'svm.SVC._predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
-            'sklearn': sklearn_SVC.predict_proba,
+            'sklearn': sklearn_pred_proba,
         }, X)
 
     @wrap_output_data
@@ -98,7 +100,7 @@ class SVC(sklearn_SVC, BaseSVC):
                 hasattr(self, '_class_count') and self._class_count == 2 and \
                 hasattr(self, '_is_sparse') and not self._is_sparse
         if method_name in ['svm.SVC.predict',
-                           'svm.SVC.predict_proba',
+                           'svm.SVC._predict_proba',
                            'svm.SVC.decision_function']:
             return hasattr(self, '_onedal_estimator') and \
                 self._onedal_gpu_supported('svm.SVC.fit', *data)
@@ -108,7 +110,7 @@ class SVC(sklearn_SVC, BaseSVC):
         if method_name == 'svm.SVC.fit':
             return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
         if method_name in ['svm.SVC.predict',
-                           'svm.SVC.predict_proba',
+                           'svm.SVC._predict_proba',
                            'svm.SVC.decision_function']:
             return hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
