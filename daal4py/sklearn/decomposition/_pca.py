@@ -287,11 +287,10 @@ class PCA(PCA_original):
                 "transform: " + get_patch_message("daal"))
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=True, scale_eigenvalues=False)
-        else:
-            logging.info(
-                "sklearn.decomposition.PCA."
-                "transform: " + get_patch_message("sklearn"))
-            return PCA_original.transform(self, X)
+        logging.info(
+            "sklearn.decomposition.PCA."
+            "transform: " + get_patch_message("sklearn"))
+        return PCA_original.transform(self, X)
 
     @support_usm_ndarray()
     def fit_transform(self, X, y=None):

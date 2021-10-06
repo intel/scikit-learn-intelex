@@ -174,7 +174,7 @@ def _daal4py_check_weight(self, X, y, sample_weight):
         if np.all(sample_weight <= 0):
             raise ValueError(
                 'Invalid input - all samples have zero or negative weights.')
-        elif np.any(sample_weight <= 0):
+        if np.any(sample_weight <= 0):
             if len(np.unique(y[sample_weight > 0])) != len(self.classes_):
                 raise ValueError(
                     'Invalid input - all samples with positive weights '

@@ -79,7 +79,7 @@ def cy_callext(arg, typ_cy, typ_cyext, s2e=None):
         return 'make_nt(<PyObject *>' + arg + ')'
     if any(typ_cy.endswith(x) for x in ['model', '_result']):
         return arg + '.c_ptr if ' + arg + ' != None else <' + typ_cyext + ' *>0'
-    elif any(typ_cy.endswith(x) for x in ['__iface__']):
+    if any(typ_cy.endswith(x) for x in ['__iface__']):
         return arg + '.c_ptr.get() if ' + arg + ' != None else <' + typ_cyext + ' *>0'
     if 'std_string' in typ_cy:
         return 'to_std_string(<PyObject *>' + arg + ')'

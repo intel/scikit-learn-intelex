@@ -47,9 +47,9 @@ except ImportError:
 def get_dtypes(data):
     if hasattr(data, 'dtype'):
         return [data.dtype]
-    elif hasattr(data, 'dtypes'):
+    if hasattr(data, 'dtypes'):
         return list(data.dtypes)
-    elif hasattr(data, 'values'):
+    if hasattr(data, 'values'):
         return [data.values.dtype]
     return None
 
