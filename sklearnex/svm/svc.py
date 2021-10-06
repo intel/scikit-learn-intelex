@@ -91,7 +91,6 @@ class SVC(sklearn_SVC, BaseSVC):
         if method_name == 'svm.SVC.fit':
             if len(data) > 1:
                 import numpy as np
-                from scipy import sparse as sp
 
                 self._class_count = len(np.unique(data[1]))
                 self._is_sparse = sp.isspmatrix(data[0])
