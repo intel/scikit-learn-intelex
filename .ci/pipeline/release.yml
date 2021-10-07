@@ -16,7 +16,7 @@
 
 variables:
   DESCRIPTION: ReleaseTesting
-  DESELECT: --deselect ::test_svc_clone_with_callable_kernel --deselect ::test_precomputed --deselect ::test_tweak_params 
+  DESELECT: --deselect ::test_svc_clone_with_callable_kernel --deselect ::test_precomputed --deselect ::test_tweak_params --deselect ::test_probability --deselect ::test_custom_kernel_not_array_input
   TEST_COMMAND: python -m sklearnex -m pytest -ra --disable-warnings --pyargs sklearn.svm.tests.test_svm $(DESELECT)
 
 jobs:
