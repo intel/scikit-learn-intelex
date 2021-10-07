@@ -39,11 +39,6 @@ class SVC(sklearn_SVC, BaseSVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
-        sparse = sp.isspmatrix(X)
-        if sparse and self.kernel == "precomputed":
-            raise TypeError("Sparse precomputed kernels are not supported.")
-        self._sparse = sparse and not callable(self.kernel)
-
         dispatch(self, 'svm.SVC.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_SVC.fit,
