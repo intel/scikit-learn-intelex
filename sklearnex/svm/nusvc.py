@@ -44,6 +44,11 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
+        sparse = sp.isspmatrix(X)
+        if sparse and self.kernel == "precomputed":
+            raise TypeError("Sparse precomputed kernels are not supported.")
+        self._sparse = sparse and not callable(self.kernel)
+
         dispatch(self, 'svm.NuSVC.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_NuSVC.fit,
@@ -68,7 +73,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
     def _predict_proba(self, X):
         if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
             sklearn_pred_proba = (
-                sklearn_NuSVC._sparse_predict_proba if sp.isspmatrix(X) else
+                sklearn_NuSVC._sparse_predict_proba if self._sparse else
                 sklearn_NuSVC._dense_predict_proba
             )
         else:

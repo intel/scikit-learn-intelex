@@ -43,6 +43,11 @@ class SVC(sklearn_SVC, BaseSVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
+        sparse = sp.isspmatrix(X)
+        if sparse and self.kernel == "precomputed":
+            raise TypeError("Sparse precomputed kernels are not supported.")
+        self._sparse = sparse and not callable(self.kernel)
+
         dispatch(self, 'svm.SVC.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_SVC.fit,
@@ -66,7 +71,7 @@ class SVC(sklearn_SVC, BaseSVC):
     def _predict_proba(self, X):
         if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
             sklearn_pred_proba = (
-                sklearn_SVC._sparse_predict_proba if sp.isspmatrix(X) else
+                sklearn_SVC._sparse_predict_proba if self._sparse else
                 sklearn_SVC._dense_predict_proba
             )
         else:
