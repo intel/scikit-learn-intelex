@@ -296,7 +296,7 @@ def _fit(self, X, y=None, sample_weight=None):
         "sklearn.cluster.KMeans.fit")
     _dal_ready = _patching_status.and_conditions([
         (self.n_clusters <= X_len,
-            "number of clusters > X lenght")
+            "Number of clusters > X length.")
     ])
 
     if _dal_ready and sample_weight is not None:
@@ -306,9 +306,9 @@ def _fit(self, X, y=None, sample_weight=None):
             sample_weight = np.asarray(sample_weight)
         _dal_ready = _patching_status.and_conditions([
             (sample_weight.shape == (X_len,),
-                "sample_weight hasn't same lenght as X"),
+                "Sample weights do not have the same length as X."),
             (np.allclose(sample_weight, np.ones_like(sample_weight)),
-                "sample_weight is not ones")
+                "Sample weights are not ones.")
         ])
 
     _patching_status.write_log()
@@ -366,11 +366,11 @@ def _predict(self, X, sample_weight=None):
     _patching_status = PatchingConditionsChain(
         "sklearn.cluster.KMeans.predict")
     _patching_status.and_conditions([
-        (sample_weight is None, "sample_weight is not None"),
-        (hasattr(X, '__array__'), "X hasn't __array__ attribute")
+        (sample_weight is None, "Sample weights are not supported."),
+        (hasattr(X, '__array__'), "X does not have '__array__' attribute.")
     ])
     _dal_ready = _patching_status.or_conditions([
-        (sp.isspmatrix_csr(X), "X is not sparse")
+        (sp.isspmatrix_csr(X), "X is not sparse.")
     ])
 
     _patching_status.write_log()

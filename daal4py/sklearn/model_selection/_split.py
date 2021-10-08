@@ -134,26 +134,26 @@ def _daal_train_test_split(*arrays, **options):
 
         # input format check
         _patching_status.and_conditions([
-            (not isinstance(arr, np.ndarray), "input is not np.ndarray")])
+            (not isinstance(arr, np.ndarray), "Input is not np.ndarray.")])
         if pandas_is_imported:
             _patching_status.or_conditions([
                 (not isinstance(arr, pd.core.frame.DataFrame),
-                    "input is not pd.DataFrame"),
+                    "Input is not pd.DataFrame."),
                 (not isinstance(arr, pd.core.series.Series),
-                    "input is not pd.Series")
+                    "Input is not pd.Series.")
             ], conditions_merging=any)
 
         # dimensions check
         _dal_ready = _patching_status.and_conditions([
-            (hasattr(arr, 'ndim'), "input has not 'ndim' attribute")])
+            (hasattr(arr, 'ndim'), "Input does not have 'ndim' attribute.")])
         if hasattr(arr, 'ndim'):
             _patching_status.and_conditions([
-                (arr.ndim > 2, "input has more than 2 dimensions")])
+                (arr.ndim > 2, "Input has more than 2 dimensions.")])
 
         # data types check
         dtypes = get_dtypes(arr)
         _dal_ready = _patching_status.and_conditions([
-            (dtypes is not None, "unable to parse input data types")])
+            (dtypes is not None, "Unable to parse input data types.")])
         if dtypes is not None:
             incorrect_dtype = None
             for i, dtype in enumerate(dtypes):
@@ -162,8 +162,8 @@ def _daal_train_test_split(*arrays, **options):
                     break
             _dal_ready = _patching_status.and_conditions([
                 (incorrect_dtype is None,
-                    f"input has incorrect data type '{incorrect_dtype}' "
-                    "while integer and floating point types are supported")])
+                    f"Input has incorrect data type '{incorrect_dtype}'. "
+                    "Only integer and floating point types are supported.")])
 
         _patching_status.write_log()
         if not _dal_ready:

@@ -131,10 +131,10 @@ def _daal_roc_auc_score(
         "sklearn.metrics.roc_auc_score")
     _dal_ready = _patching_status.and_conditions([
         (y_type[0] == "binary" and not (y_score.ndim == 2 and y_score.shape[1] > 2),
-            "y type is not 1d binary"),
-        (max_fpr is None, "max_fpr is not None"),
-        (sample_weight is None, "sample_weight is not None"),
-        (len(labels) == 2, "labels lenght != 2")
+            "y_true type is not one-dimensional binary."),
+        (max_fpr is None, "Maximum false-positive rate is not supported."),
+        (sample_weight is None, "Sample weights are not supported."),
+        (len(labels) == 2, "Number of unique labels is not equal to 2.")
     ])
 
     _patching_status.write_log()

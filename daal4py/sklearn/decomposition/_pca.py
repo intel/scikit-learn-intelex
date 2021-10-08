@@ -230,12 +230,15 @@ class PCA(PCA_original):
             "sklearn.decomposition.PCA.fit")
         _dal_ready = _patching_status.and_conditions([
             (self._fit_svd_solver == 'full',
-                f"SVD solver ({self._fit_svd_solver}) while only 'full' is supported")
+                f"'{self._fit_svd_solver}' SVD solver is not supported. "
+                "Only 'full' solver is supported.")
         ])
 
         if _dal_ready:
             _dal_ready = _patching_status.and_conditions([
-                (shape_good_for_daal, "X shape is not good for oneDAL")
+                (shape_good_for_daal,
+                    f"X shape is not supported for oneDAL. "
+                    "Number of features / number of samples >= 2.")
             ])
             if _dal_ready:
                 result = self._fit_full(X, n_components)
@@ -289,7 +292,7 @@ class PCA(PCA_original):
         _patching_status = PatchingConditionsChain(
             "sklearn.decomposition.PCA.transform")
         _dal_ready = _patching_status.and_conditions([
-            (self.n_components_ > 0, "n_components_ <= 0")
+            (self.n_components_ > 0, "Number of components <= 0.")
         ])
 
         _patching_status.write_log()
@@ -305,11 +308,11 @@ class PCA(PCA_original):
         _patching_status = PatchingConditionsChain(
             "sklearn.decomposition.PCA.fit_transform")
         _dal_ready = _patching_status.and_conditions([
-            (U is None, "U is not None")
+            (U is None, "Stock fitting was used.")
         ])
         if _dal_ready:
             _dal_ready = _patching_status.and_conditions([
-                (self.n_components_ > 0, "n_components_ <= 0")
+                (self.n_components_ > 0, "Number of components <= 0.")
             ])
             if _dal_ready:
                 result = self._transform_daal4py(

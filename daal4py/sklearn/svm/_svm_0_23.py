@@ -610,10 +610,10 @@ def predict(self, X):
     _patching_status = PatchingConditionsChain(
         "sklearn.svm.SVC.predict")
     _dal_ready = _patching_status.and_conditions([
-        (not _break_ties, "break_ties is True"),
+        (not _break_ties, "Breaking ties is not supported."),
         (self.decision_function_shape != 'ovr',
-            "Decision function shape is 'ovr' while 'ovo' is needed"),
-        (len(self.classes_) <= 2, "Number of classes > 2")
+            "'ovr' decision function shape is not supported."),
+        (len(self.classes_) <= 2, "Number of classes > 2.")
     ], conditions_merging=any)
     _patching_status.write_log()
     if not _dal_ready:
@@ -622,7 +622,7 @@ def predict(self, X):
         X = self._validate_for_predict(X)
         _dal_ready = _patching_status.and_conditions([
             (getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'),
-                "oneDAL model was not trained")])
+                "oneDAL model was not trained.")])
         if _dal_ready:
             if self.probability and self.clf_prob is not None:
                 y = self.clf_prob.predict(X)
@@ -677,7 +677,7 @@ def predict_proba(self):
     _patching_status = PatchingConditionsChain(
         "sklearn.svm.SVC.predict_proba")
     _dal_ready = _patching_status.and_conditions([
-        (getattr(self, '_daal_fit', False), "oneDAL model was not trained")])
+        (getattr(self, '_daal_fit', False), "oneDAL model was not trained.")])
     _patching_status.write_log()
     if _dal_ready:
         algo = self._daal4py_predict_proba
@@ -716,7 +716,7 @@ def decision_function(self, X):
     _patching_status = PatchingConditionsChain(
         "sklearn.svm.SVC.decision_function")
     _dal_ready = _patching_status.and_conditions([
-        (getattr(self, '_daal_fit', False), "oneDAL model was not trained")])
+        (getattr(self, '_daal_fit', False), "oneDAL model was not trained.")])
     _patching_status.write_log()
     if _dal_ready:
         X = self._validate_for_predict(X)

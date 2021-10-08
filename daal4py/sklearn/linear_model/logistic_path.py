@@ -252,10 +252,11 @@ def __logistic_regression_path(
         "sklearn.linear_model.LogisticRegression.fit")
     _dal_ready = _patching_status.and_conditions([
         (solver in ['lbfgs', 'newton-cg'],
-            f"solver is '{solver}' while 'lbfgs' and 'newton-cg' are supported"),
-        (not sparse.issparse(X), "input is sparse"),
-        (sample_weight is None, "sample_weight is not None"),
-        (class_weight is None, "class_weight is not None")])
+            f"'{solver}' solver is not supported. "
+            "Only 'lbfgs' and 'newton-cg' solvers are supported."),
+        (not sparse.issparse(X), "X is sparse. Sparse input is not supported."),
+        (sample_weight is None, "Sample weights are not supported."),
+        (class_weight is None, "Class weights are not supported.")])
 
     if not _dal_ready:
         if sklearn_check_version('0.24'):
@@ -608,15 +609,17 @@ def daal4py_predict(self, X, resultsToEvaluate):
         f"sklearn.linear_model.LogisticRegression.{_function_name}")
     _patching_status.and_conditions([
         (self.multi_class in ["multinomial", "warn"],
-            "multiclass is not 'multinomial' or 'warn'"),
-        (self.classes_.size == 2, "self.classes_.size != 2"),
+            f"{self.multi_class} multiclass option is not supported. "
+            "Only 'multinomial' or 'warn' options are supported."),
+        (self.classes_.size == 2, "Number of classes != 2."),
         (resultsToEvaluate == 'computeClassLabels',
-            "resultsToEvaluate != 'computeClassLabels'")],
+            "resultsToEvaluate != 'computeClassLabels'.")],
         conditions_merging=any)
     _dal_ready = _patching_status.and_conditions([
-        (not sparse.issparse(X), "X is sparse"),
-        (not sparse.issparse(self.coef_), "self.coef_ is sparse"),
-        (fptype is not None, "unable to get dtype")])
+        (not sparse.issparse(X), "X is sparse. Sparse input is not supported."),
+        (not sparse.issparse(self.coef_),
+            "self.coef_ is sparse. Sparse coefficients are not supported."),
+        (fptype is not None, "Unable to get dtype.")])
 
     _patching_status.write_log()
     if _dal_ready:

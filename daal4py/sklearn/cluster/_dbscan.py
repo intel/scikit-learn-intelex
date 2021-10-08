@@ -242,12 +242,12 @@ class DBSCAN(DBSCAN_original):
             "sklearn.cluster.DBSCAN.fit")
         _dal_ready = _patching_status.and_conditions([
             (self.algorithm in ['auto', 'brute'],
-                f"algorithm is '{self.algorithm}' "
-                "while 'auto' and 'brute' are supported"),
+                f"'{self.algorithm}' algorithm is not supported. "
+                "Only 'auto' and 'brute' algorithms are supported"),
             (self.metric == 'euclidean' or (self.metric == 'minkowski' and self.p == 2),
-                f"metric is {self.metric} (p={self.p}) "
-                "while 'euclidean' or 'minkowski' with p=2 is only supported"),
-            (not sp.issparse(X), "X is sparse")
+                f"'{self.metric}' (p={self.p}) metric is not supported. "
+                "Only 'euclidean' or 'minkowski' with p=2 metrics are supported."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")
         ])
 
         _patching_status.write_log()

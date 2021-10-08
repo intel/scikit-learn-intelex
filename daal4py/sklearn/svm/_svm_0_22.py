@@ -477,11 +477,12 @@ def fit(self, X, y, sample_weight=None):
     _patching_status = PatchingConditionsChain(
         "sklearn.svm.SVC.fit")
     _dal_ready = _patching_status.and_conditions([
-        (not sparse, "X is sparse"),
-        (not self.probability, "probability is True"),
-        (not getattr(self, 'break_ties', False), "break_ties is True"),
+        (not sparse, "X is sparse. Sparse input is not supported."),
+        (not self.probability, "Probabilities are not supported."),
+        (not getattr(self, 'break_ties', False), "Breaking ties is not supported."),
         (kernel in ['linear', 'rbf'],
-            f"kernel is '{kernel}' while 'linear' and 'rbf' are supported")
+            f"'{kernel}' kernel is not supported. "
+            "Only 'linear' and 'rbf' kernels are supported.")
     ])
     _patching_status.write_log()
     if _dal_ready:
@@ -575,10 +576,10 @@ def predict(self, X):
     _patching_status = PatchingConditionsChain(
         "sklearn.svm.SVC.predict")
     _dal_ready = _patching_status.and_conditions([
-        (not _break_ties, "break_ties is True"),
+        (not _break_ties, "Breaking ties is not supported."),
         (self.decision_function_shape != 'ovr',
-            "Decision function shape is 'ovr' while 'ovo' is needed"),
-        (len(self.classes_) <= 2, "Number of classes > 2")
+            "'ovr' decision function shape is not supported."),
+        (len(self.classes_) <= 2, "Number of classes > 2.")
     ], conditions_merging=any)
     _patching_status.write_log()
     if not _dal_ready:

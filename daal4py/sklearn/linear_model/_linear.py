@@ -161,15 +161,17 @@ def _fit_linear(self, X, y, sample_weight=None):
     _patching_status = PatchingConditionsChain(
         "sklearn.linear_model.LinearRegression.fit")
     _patching_status.and_conditions([
-        (not sp.issparse(X), "X is sparse"),
-        (self.fit_shape_good_for_daal_, "X shape is not good for oneDAL"),
-        (sample_weight is None, "sample_weight is not None")])
+        (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+        (self.fit_shape_good_for_daal_,
+            "X shape is not supported for oneDAL. "
+            "Number of features + 1 >= number of samples."),
+        (sample_weight is None, "Sample weights are not supported.")])
 
     if sklearn_check_version('0.22') and not sklearn_check_version('0.23'):
         _patching_status.and_conditions([
             (dtype in [np.float32, np.float64],
-                f"X data type is '{dtype}' while "
-                "np.float32 and np.float64 are supported")])
+                f"'{X.dtype}' X data type is not supported. "
+                "Only np.float32 and np.float64 are supported.")])
 
     _dal_ready = _patching_status.get_status()
     _patching_status.write_log()
@@ -211,12 +213,14 @@ def _predict_linear(self, X):
     _patching_status = PatchingConditionsChain(
         "sklearn.linear_model.LinearRegression.predict")
     _dal_ready = _patching_status.and_conditions([
-        (hasattr(self, 'daal_model_'), 'oneDAL model was not trained'),
-        (not sp.issparse(X), "X is sparse"),
+        (hasattr(self, 'daal_model_'), 'oneDAL model was not trained.'),
+        (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
         (good_shape_for_daal, "X shape is not good for oneDAL"),
-        (self.fit_shape_good_for_daal_, "X (fit) shape is not good for oneDAL"),
+        (self.fit_shape_good_for_daal_,
+            "X (fitting) shape is not supported for oneDAL. "
+            "Number of features + 1 >= number of samples."),
         (not hasattr(self, 'sample_weight_') or self.sample_weight_ is None,
-            "sample_weight is not None")])
+            "Sample weights are not supported.")])
     _patching_status.write_log()
     if not _dal_ready:
         return self._decision_function(X)

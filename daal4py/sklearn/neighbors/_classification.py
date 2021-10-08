@@ -62,9 +62,9 @@ def daal4py_classifier_predict(estimator, X, base_predict):
     _patching_status = PatchingConditionsChain(
         "sklearn.neighbors.KNeighborsClassifier.predict")
     _dal_ready = _patching_status.and_conditions([
-        (daal_model is not None, "oneDAL model was not trained"),
-        (fptype is not None, "unable to get dtype"),
-        (not sp.issparse(X), "X is sparse")])
+        (daal_model is not None, "oneDAL model was not trained."),
+        (fptype is not None, "Unable to get dtype."),
+        (not sp.issparse(X), "X is sparse. Sparse input is not supported.")])
     _patching_status.write_log()
 
     if _dal_ready:

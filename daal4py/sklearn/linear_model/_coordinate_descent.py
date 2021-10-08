@@ -407,11 +407,14 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
     _patching_status = PatchingConditionsChain(
         _function_name)
     _dal_ready = _patching_status.and_conditions([
-        (not sp.issparse(X), "X is sparse"),
-        (self.fit_shape_good_for_daal_, "X shape is not good for oneDAL"),
+        (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+        (self.fit_shape_good_for_daal_,
+            "X shape is not supported for oneDAL. "
+            "Number of features > number of samples."),
         (X.dtype == np.float64 or X.dtype == np.float32,
-            f"X data type is {X.dtype} while np.float32 and np.float64 are supported"),
-        (sample_weight is None, "sample_weight is not None")])
+            f"'{X.dtype}' X data type is not supported. "
+            "Only np.float32 and np.float64 are supported."),
+        (sample_weight is None, "Sample weights are not supported.")])
     _patching_status.write_log()
 
     if not _dal_ready:
@@ -541,9 +544,11 @@ class ElasticNet(ElasticNet_original):
         _patching_status = PatchingConditionsChain(
             "sklearn.linear_model.ElasticNet.predict")
         _dal_ready = _patching_status.and_conditions([
-            (hasattr(self, 'daal_model_'), 'oneDAL model was not trained'),
-            (not sp.issparse(X), "X is sparse"),
-            (good_shape_for_daal, "X shape is not good for oneDAL")])
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            (good_shape_for_daal,
+                "X shape is not supported for oneDAL. "
+                "Number of features > number of samples.")])
         _patching_status.write_log()
 
         if not _dal_ready:
@@ -684,9 +689,11 @@ class Lasso(ElasticNet):
         _patching_status = PatchingConditionsChain(
             "sklearn.linear_model.Lasso.predict")
         _dal_ready = _patching_status.and_conditions([
-            (hasattr(self, 'daal_model_'), 'oneDAL model was not trained'),
-            (not sp.issparse(X), "X is sparse"),
-            (good_shape_for_daal, "X shape is not good for oneDAL")])
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            (good_shape_for_daal,
+                "X shape is not supported for oneDAL. "
+                "Number of features > number of samples.")])
         _patching_status.write_log()
 
         if not _dal_ready:

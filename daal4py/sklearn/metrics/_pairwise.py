@@ -162,10 +162,12 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
         "sklearn.metrics.pairwise_distances")
     _dal_ready = _patching_status.and_conditions([
         (metric == 'cosine' or metric == 'correlation',
-            f"metric is '{metric}' while 'cosine' and 'correlation' are supported"),
-        (Y is None, "Y is not None"),
-        (not issparse(X), "X is sparse"),
-        (X.dtype == np.float64, f"X data type is {X.dtype} while np.float64 is supported")
+            f"'{metric}' metric is not supported. "
+            "Only 'cosine' and 'correlation' metrics are supported."),
+        (Y is None, "Second feature array is not supported."),
+        (not issparse(X), "X is sparse. Sparse input is not supported."),
+        (X.dtype == np.float64,
+            f"{X.dtype} X data type is not supported. Only np.float64 is supported.")
     ])
     _patching_status.write_log()
     if _dal_ready:
@@ -173,7 +175,7 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
             return _daal4py_cosine_distance_dense(X)
         if metric == 'correlation':
             return _daal4py_correlation_distance_dense(X)
-        raise ValueError(f'{metric} distance is wrong for daal4py')
+        raise ValueError(f"'{metric}' distance is wrong for daal4py.")
     if metric == "precomputed":
         X, _ = check_pairwise_arrays(X, Y, precomputed=True,
                                      force_all_finite=force_all_finite)
