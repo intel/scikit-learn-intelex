@@ -38,7 +38,7 @@ except ImportError:
         print("*" * 80)
         print("\ndpctl package not found, switched to daal4py package\n")
         print("*" * 80)
-    except:
+    except ImportError:
         print("\nRequired packages not found, aborting...\n")
         exit()
         
@@ -48,7 +48,7 @@ if not dpctl_available:
     try:
         with sycl_context('gpu'):
             gpu_available = True
-    except:
+    except Exception:
         gpu_available = False
 
 
@@ -137,8 +137,7 @@ def dbscan():
 def get_context(device):
     if dpctl_available:
         return config_context(target_offload=device)
-    else:
-        return sycl_context(device)
+    return sycl_context(device)
 
 def device_type_to_str(queue):
     if queue is None:
