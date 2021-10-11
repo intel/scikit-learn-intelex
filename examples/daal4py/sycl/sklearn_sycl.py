@@ -41,7 +41,7 @@ except ImportError:
     except ImportError:
         print("\nRequired packages not found, aborting...\n")
         exit()
-        
+
 
 gpu_available = False
 if not dpctl_available:
@@ -133,11 +133,11 @@ def dbscan():
     print(clustering)
 
 
-
 def get_context(device):
     if dpctl_available:
         return config_context(target_offload=device)
     return sycl_context(device)
+
 
 def device_type_to_str(queue):
     if queue is None:
@@ -151,6 +151,7 @@ def device_type_to_str(queue):
     if queue.sycl_device.device_type == device_type.host:
         return 'host'
     return 'unknown'
+
 
 if __name__ == "__main__":
     examples = [
