@@ -37,7 +37,6 @@ jobs:
             conda activate bld
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
-            export OFF_ONEDAL_IFACE=1
             python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Building sklearnex
