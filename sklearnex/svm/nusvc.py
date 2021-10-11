@@ -66,7 +66,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
                               if LooseVersion(sklearn_version) >= LooseVersion("1.0")
                               else sklearn_NuSVC._predict_proba)
 
-        return dispatch(self, 'svm.SVC.predict_proba', {
+        return dispatch(self, 'svm.NuSVC.predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_pred_proba,
         }, X)
