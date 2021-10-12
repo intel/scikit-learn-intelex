@@ -303,7 +303,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         "sklearn.ensemble.RandomForestClassifier.fit")
     _dal_ready = _patching_status.and_conditions([
         (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
-            "OOB score is used while supported starting from 2021.5 version of oneDAL"),
+            "OOB score is only supported starting from 2021.5 version of oneDAL."),
         (self.warm_start is False, "Warm start is not supported."),
         (self.criterion == "gini",
             f"'{self.criterion}' criterion is not supported. "
@@ -455,11 +455,11 @@ def _fit_regressor(self, X, y, sample_weight=None):
         "sklearn.ensemble.RandomForestRegressor.fit")
     _dal_ready = _patching_status.and_conditions([
         (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
-            "OOB score is used while supported starting from 2021.5 version of oneDAL"),
+            "OOB score is only supported starting from 2021.5 version of oneDAL."),
         (self.warm_start is False, "Warm start is not supported."),
         (self.criterion in ["mse", "squared_error"],
             f"'{self.criterion}' criterion is not supported. "
-            "Only 'mse' and 'squared_error' criterions are supported."),
+            "Only 'mse' and 'squared_error' criteria are supported."),
         (self.ccp_alpha == 0.0,
             f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported."),
         (not sp.issparse(X), "X is sparse. Sparse input is not supported.")

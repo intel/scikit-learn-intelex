@@ -184,8 +184,8 @@ class PatchingConditionsChain:
             logging.info(f"{self.scope_name}: {get_patch_message('daal')}")
         else:
             logging.debug(
-                f'{self.scope_name}: patching debugging is enabled to track usage of'
-                ' Intel® oneAPI Data Analytics Library (oneDAL)')
+                f'{self.scope_name}: debugging for the patch is enabled to track'
+                ' the usage of Intel® oneAPI Data Analytics Library (oneDAL)')
             for message in self.messages:
                 logging.debug(
                     f'{self.scope_name}: patching failed with cause - {message}')

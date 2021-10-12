@@ -588,7 +588,7 @@ def predict(self, X):
         X = self._validate_for_predict(X)
         _dal_ready = _patching_status.and_conditions([
             (getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'),
-                "oneDAL model was not trained")])
+                "oneDAL model was not trained.")])
         if _dal_ready:
             y = _daal4py_predict(self, X)
         else:

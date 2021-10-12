@@ -296,7 +296,7 @@ def _fit(self, X, y=None, sample_weight=None):
         "sklearn.cluster.KMeans.fit")
     _dal_ready = _patching_status.and_conditions([
         (self.n_clusters <= X_len,
-            "Number of clusters > X length.")
+            "The number of clusters is larger than the number of samples in X.")
     ])
 
     if _dal_ready and sample_weight is not None:

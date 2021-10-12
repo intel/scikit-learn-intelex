@@ -134,21 +134,21 @@ def _daal_train_test_split(*arrays, **options):
 
         # input format check
         _patching_status.and_conditions([
-            (not isinstance(arr, np.ndarray), "Input is not np.ndarray.")])
+            (not isinstance(arr, np.ndarray), "The input is not a np.ndarray object.")])
         if pandas_is_imported:
             _patching_status.or_conditions([
                 (not isinstance(arr, pd.core.frame.DataFrame),
-                    "Input is not pd.DataFrame."),
+                    "The input is not a pd.DataFrame object."),
                 (not isinstance(arr, pd.core.series.Series),
-                    "Input is not pd.Series.")
+                    "The input is not a pd.Series object.")
             ], conditions_merging=any)
 
         # dimensions check
         _dal_ready = _patching_status.and_conditions([
-            (hasattr(arr, 'ndim'), "Input does not have 'ndim' attribute.")])
+            (hasattr(arr, 'ndim'), "The input does not have 'ndim' attribute.")])
         if hasattr(arr, 'ndim'):
             _patching_status.and_conditions([
-                (arr.ndim > 2, "Input has more than 2 dimensions.")])
+                (arr.ndim > 2, "The input has more than 2 dimensions.")])
 
         # data types check
         dtypes = get_dtypes(arr)

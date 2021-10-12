@@ -237,8 +237,8 @@ class PCA(PCA_original):
         if _dal_ready:
             _dal_ready = _patching_status.and_conditions([
                 (shape_good_for_daal,
-                    "X shape is not supported for oneDAL. "
-                    "Number of features / number of samples >= 2.")
+                    "The shape of X does not satisfy oneDAL requirements: "
+                    "number of features / number of samples >= 2")
             ])
             if _dal_ready:
                 result = self._fit_full(X, n_components)

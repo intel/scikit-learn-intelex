@@ -163,8 +163,8 @@ def _fit_linear(self, X, y, sample_weight=None):
     _patching_status.and_conditions([
         (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
         (self.fit_shape_good_for_daal_,
-            "X shape is not supported for oneDAL. "
-            "Number of features + 1 >= number of samples."),
+            "The shape of X does not satisfy oneDAL requirements: "
+            "number of features + 1 >= number of samples."),
         (sample_weight is None, "Sample weights are not supported.")])
 
     if sklearn_check_version('0.22') and not sklearn_check_version('0.23'):
@@ -215,9 +215,11 @@ def _predict_linear(self, X):
     _dal_ready = _patching_status.and_conditions([
         (hasattr(self, 'daal_model_'), 'oneDAL model was not trained.'),
         (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
-        (good_shape_for_daal, "X shape is not good for oneDAL"),
+        (good_shape_for_daal,
+            "The shape of X does not satisfy oneDAL requirements: "
+            "Number of features >= number of samples."),
         (self.fit_shape_good_for_daal_,
-            "X (fitting) shape is not supported for oneDAL. "
+            "The shape of X (fitting) does not satisfy oneDAL requirements: "
             "Number of features + 1 >= number of samples."),
         (not hasattr(self, 'sample_weight_') or self.sample_weight_ is None,
             "Sample weights are not supported.")])

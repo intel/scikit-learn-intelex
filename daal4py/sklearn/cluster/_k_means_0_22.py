@@ -226,14 +226,14 @@ def _fit(self, X, y=None, sample_weight=None):
         "sklearn.cluster.KMeans.fit")
     _dal_ready = _patching_status.and_conditions([
         (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
-        (not precompute_distances, "Distances precomputing is not supported.")
+        (not precompute_distances, "The precomputing of distances is not supported.")
     ])
 
     if _dal_ready:
         X_len = _num_samples(X)
         _dal_ready = _patching_status.and_conditions([
             (self.n_clusters <= X_len,
-                "Number of clusters > X length.")
+                "The number of clusters is larger than the number of samples in X.")
         ])
         if _dal_ready and sample_weight is not None:
             sample_weight = np.asarray(sample_weight)

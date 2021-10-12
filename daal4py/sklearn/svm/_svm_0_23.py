@@ -481,7 +481,8 @@ def fit(self, X, y, sample_weight=None):
         "sklearn.svm.SVC.fit")
     _dal_ready = _patching_status.and_conditions([
         (kernel in ['linear', 'rbf'],
-            f"kernel is '{kernel}' while 'linear' and 'rbf' are supported")])
+            f"'{kernel}' kernel is not supported. "
+            "Only 'linear' and 'rbf' kernels are supported.")])
     _patching_status.write_log()
     if _dal_ready:
         sample_weight = _daal4py_check_weight(self, X, y, sample_weight)
