@@ -218,11 +218,13 @@ def _predict_linear(self, X):
         (good_shape_for_daal,
             "The shape of X does not satisfy oneDAL requirements: "
             "Number of features >= number of samples."),
-        (self.fit_shape_good_for_daal_,
-            "The shape of X (fitting) does not satisfy oneDAL requirements: "
-            "Number of features + 1 >= number of samples."),
         (not hasattr(self, 'sample_weight_') or self.sample_weight_ is None,
             "Sample weights are not supported.")])
+    if hasattr(self, 'fit_shape_good_for_daal_'):
+        _dal_ready = _patching_status.and_conditions([
+            (self.fit_shape_good_for_daal_,
+                "The shape of X (fitting) does not satisfy oneDAL requirements: "
+                "Number of features + 1 >= number of samples.")])
     _patching_status.write_log()
     if not _dal_ready:
         return self._decision_function(X)

@@ -125,16 +125,12 @@ def _daal_roc_auc_score(
     y_type = _daal_type_of_target(y_true)
     y_true = check_array(y_true, ensure_2d=False, dtype=None)
     y_score = check_array(y_score, ensure_2d=False)
-    labels = y_type[1]
 
     _patching_status = PatchingConditionsChain(
         "sklearn.metrics.roc_auc_score")
     _dal_ready = _patching_status.and_conditions([
         (y_type[0] == "binary" and not (y_score.ndim == 2 and y_score.shape[1] > 2),
-            "y_true type is not one-dimensional binary."),
-        (max_fpr is None, "Maximum false-positive rate is not supported."),
-        (sample_weight is None, "Sample weights are not supported."),
-        (len(labels) == 2, "Number of unique labels is not equal to 2.")
+            "y_true type is not one-dimensional binary.")
     ])
 
     _patching_status.write_log()
@@ -154,6 +150,11 @@ def _daal_roc_auc_score(
             y_true, y_score, labels, multi_class, average, sample_weight)
 
     if y_type[0] == "binary":
+        labels = y_type[1]
+        _dal_ready = _patching_status.and_conditions([
+            (len(labels) == 2, "Number of unique labels is not equal to 2."),
+            (max_fpr is None, "Maximum false-positive rate is not supported."),
+            (sample_weight is None, "Sample weights are not supported.")])
         if _dal_ready:
             if not np.array_equal(labels, [0, 1]) or labels.dtype == np.bool:
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
