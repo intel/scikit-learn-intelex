@@ -148,7 +148,7 @@ def _daal_train_test_split(*arrays, **options):
             (hasattr(arr, 'ndim'), "The input does not have 'ndim' attribute.")])
         if hasattr(arr, 'ndim'):
             _patching_status.and_conditions([
-                (arr.ndim > 2, "The input has more than 2 dimensions.")])
+                (arr.ndim <= 2, "The input has more than 2 dimensions.")])
 
         # data types check
         dtypes = get_dtypes(arr)
