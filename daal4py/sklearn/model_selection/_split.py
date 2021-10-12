@@ -134,12 +134,12 @@ def _daal_train_test_split(*arrays, **options):
 
         # input format check
         _patching_status.and_conditions([
-            (not isinstance(arr, np.ndarray), "The input is not a np.ndarray object.")])
+            (isinstance(arr, np.ndarray), "The input is not a np.ndarray object.")])
         if pandas_is_imported:
             _patching_status.or_conditions([
-                (not isinstance(arr, pd.core.frame.DataFrame),
+                (isinstance(arr, pd.core.frame.DataFrame),
                     "The input is not a pd.DataFrame object."),
-                (not isinstance(arr, pd.core.series.Series),
+                (isinstance(arr, pd.core.series.Series),
                     "The input is not a pd.Series object.")
             ], conditions_merging=any)
 
