@@ -198,7 +198,7 @@ gen_examples = [
     ('gbt_cls_model_create_from_xgboost_batch', None, None,
      ((2020, 'P', 2), (2021, 'B', 109)), ['xgboost']),
     ('gbt_cls_model_create_from_catboost_batch', None, None,
-     ((2021, 'P', 4), (2021, 'B', 109)), ['catboost']),
+     (2021, 'P', 4), ['catboost']),
     ('gradient_boosted_classification_batch',),
     ('gradient_boosted_regression_batch',),
     ('implicit_als_batch', 'implicit_als_batch.csv', 'prediction'),
