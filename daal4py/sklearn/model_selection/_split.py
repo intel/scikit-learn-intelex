@@ -24,6 +24,7 @@ import numpy as np
 from daal4py.sklearn._utils import daal_check_version, get_patch_message
 import platform
 import logging
+from .._device_offload import support_usm_ndarray
 
 try:
     from sklearn.utils import _safe_indexing as safe_indexing
@@ -46,13 +47,14 @@ except ImportError:
 def get_dtypes(data):
     if hasattr(data, 'dtype'):
         return [data.dtype]
-    elif hasattr(data, 'dtypes'):
+    if hasattr(data, 'dtypes'):
         return list(data.dtypes)
-    elif hasattr(data, 'values'):
+    if hasattr(data, 'values'):
         return [data.values.dtype]
     return None
 
 
+@support_usm_ndarray(freefunc=True)
 def _daal_train_test_split(*arrays, **options):
     n_arrays = len(arrays)
     if n_arrays == 0:

@@ -14,14 +14,14 @@
 # limitations under the License.
 #===============================================================================
 
-from scipy import sparse as sp
-import logging
-from .._utils import get_patch_message
 from ._common import BaseSVC
+from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
+from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
 
 from onedal.svm import SVC as onedal_SVC
 
@@ -41,46 +41,71 @@ class SVC(sklearn_SVC, BaseSVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
-        if self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']:
-            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("onedal"))
-            self._onedal_fit(X, y, sample_weight)
-        else:
-            logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
-            sklearn_SVC.fit(self, X, y, sample_weight)
-
+        dispatch(self, 'svm.SVC.fit', {
+            'onedal': self.__class__._onedal_fit,
+            'sklearn': sklearn_SVC.fit,
+        }, X, y, sample_weight)
         return self
 
+    @wrap_output_data
     def predict(self, X):
-        if hasattr(self, '_onedal_estimator'):
-            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("onedal"))
-            return self._onedal_estimator.predict(X)
-        else:
-            logging.info("sklearn.svm.SVC.predict: " + get_patch_message("sklearn"))
-            return sklearn_SVC.predict(self, X)
+        return dispatch(self, 'svm.SVC.predict', {
+            'onedal': self.__class__._onedal_predict,
+            'sklearn': sklearn_SVC.predict,
+        }, X)
 
+    @property
+    def predict_proba(self):
+        self._check_proba()
+        return self._predict_proba
+
+    @wrap_output_data
     def _predict_proba(self, X):
-        if hasattr(self, '_onedal_estimator'):
-            logging.info("sklearn.svm.SVC._predict_proba: " + get_patch_message("onedal"))
-            if getattr(self, 'clf_prob', None) is None:
-                raise NotFittedError(
-                    "predict_proba is not available when fitted with probability=False")
-            return self.clf_prob.predict_proba(X)
-        else:
-            logging.info(
-                "sklearn.svm.SVC._predict_proba: " + get_patch_message("sklearn"))
-            return sklearn_SVC._predict_proba(self, X)
+        sklearn_pred_proba = (sklearn_SVC.predict_proba
+                              if LooseVersion(sklearn_version) >= LooseVersion("1.0")
+                              else sklearn_SVC._predict_proba)
 
+        return dispatch(self, 'svm.SVC.predict_proba', {
+            'onedal': self.__class__._onedal_predict_proba,
+            'sklearn': sklearn_pred_proba,
+        }, X)
+
+    @wrap_output_data
     def decision_function(self, X):
-        if hasattr(self, '_onedal_estimator'):
-            logging.info(
-                "sklearn.svm.SVC.decision_function: " + get_patch_message("onedal"))
-            return self._onedal_estimator.decision_function(X)
-        else:
-            logging.info(
-                "sklearn.svm.SVC.decision_function: " + get_patch_message("sklearn"))
-            return sklearn_SVC.decision_function(self, X)
+        return dispatch(self, 'svm.SVC.decision_function', {
+            'onedal': self.__class__._onedal_decision_function,
+            'sklearn': sklearn_SVC.decision_function,
+        }, X)
 
-    def _onedal_fit(self, X, y, sample_weight=None):
+    def _onedal_gpu_supported(self, method_name, *data):
+        if method_name == 'svm.SVC.fit':
+            if len(data) > 1:
+                import numpy as np
+                from scipy import sparse as sp
+
+                self._class_count = len(np.unique(data[1]))
+                self._is_sparse = sp.isspmatrix(data[0])
+            return self.kernel in ['linear', 'rbf'] and \
+                self.class_weight is None and \
+                hasattr(self, '_class_count') and self._class_count == 2 and \
+                hasattr(self, '_is_sparse') and not self._is_sparse
+        if method_name in ['svm.SVC.predict',
+                           'svm.SVC.predict_proba',
+                           'svm.SVC.decision_function']:
+            return hasattr(self, '_onedal_estimator') and \
+                self._onedal_gpu_supported('svm.SVC.fit', *data)
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+
+    def _onedal_cpu_supported(self, method_name, *data):
+        if method_name == 'svm.SVC.fit':
+            return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
+        if method_name in ['svm.SVC.predict',
+                           'svm.SVC.predict_proba',
+                           'svm.SVC.decision_function']:
+            return hasattr(self, '_onedal_estimator')
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+
+    def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
             'C': self.C,
             'kernel': self.kernel,
@@ -97,7 +122,7 @@ class SVC(sklearn_SVC, BaseSVC):
         }
 
         self._onedal_estimator = onedal_SVC(**onedal_params)
-        self._onedal_estimator.fit(X, y, sample_weight)
+        self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         if self.class_weight == 'balanced':
             self.class_weight_ = self._compute_balanced_class_weight(y)
@@ -105,5 +130,24 @@ class SVC(sklearn_SVC, BaseSVC):
             self.class_weight_ = self._onedal_estimator.class_weight_
 
         if self.probability:
-            self._fit_proba(X, y, sample_weight)
+            self._fit_proba(X, y, sample_weight, queue=queue)
         self._save_attributes()
+
+    def _onedal_predict(self, X, queue=None):
+        return self._onedal_estimator.predict(X, queue=queue)
+
+    def _onedal_predict_proba(self, X, queue=None):
+        if getattr(self, 'clf_prob', None) is None:
+            raise NotFittedError(
+                "predict_proba is not available when fitted with probability=False")
+        from .._config import get_config, config_context
+
+        # We use stock metaestimators below, so the only way
+        # to pass a queue is using config_context.
+        cfg = get_config()
+        cfg['target_offload'] = queue
+        with config_context(**cfg):
+            return self.clf_prob.predict_proba(X)
+
+    def _onedal_decision_function(self, X, queue=None):
+        return self._onedal_estimator.decision_function(X, queue=queue)

@@ -106,5 +106,6 @@ extra:
     recipe-maintainers:
         # GitHub IDs for maintainers of the recipe.
         - napetrov
-        - PetrovKP
-        - SmirnovEgorRu
+        - Pahandrovich
+        - agorshk
+        - vmeshche

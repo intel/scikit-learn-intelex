@@ -64,13 +64,11 @@ def _compute_class_weight(class_weight, classes, y):
         if not isinstance(class_weight, dict):
             raise ValueError("class_weight must be dict, 'balanced', or None,"
                              " got: %r" % class_weight)
-        else:
-            for c in class_weight:
-                i = np.searchsorted(classes, c)
-                if i >= len(classes) or classes[i] != c:
-                    raise ValueError("Class label {} not present.".format(c))
-                else:
-                    weight[i] = class_weight[c]
+        for c in class_weight:
+            i = np.searchsorted(classes, c)
+            if i >= len(classes) or classes[i] != c:
+                raise ValueError("Class label {} not present.".format(c))
+            weight[i] = class_weight[c]
 
     return weight
 
@@ -230,8 +228,7 @@ def _type_of_target(y):
 
     if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
         return 'multiclass' + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
-    else:
-        return 'binary'  # [1, 2] or [["a"], ["b"]]
+    return 'binary'  # [1, 2] or [["a"], ["b"]]
 
 
 def _is_integral_float(y):
@@ -259,10 +256,9 @@ def _is_multilabel(y):
             y = y.tocsr()
         return len(y.data) == 0 or np.unique(y.data).size == 1 and \
             (y.dtype.kind in 'biu' or _is_integral_float(np.unique(y.data)))
-    else:
-        labels = np.unique(y)
+    labels = np.unique(y)
 
-        return len(labels) < 3 and (y.dtype.kind in 'biu' or _is_integral_float(labels))
+    return len(labels) < 3 and (y.dtype.kind in 'biu' or _is_integral_float(labels))
 
 
 def _check_n_features(self, X, reset):

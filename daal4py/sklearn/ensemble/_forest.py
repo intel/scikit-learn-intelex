@@ -21,6 +21,7 @@ import warnings
 
 import daal4py
 from .._utils import (getFPType, get_patch_message)
+from .._device_offload import support_usm_ndarray
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 import logging
 
@@ -50,24 +51,22 @@ def _to_absolute_max_features(
 ):
     if max_features is None:
         return n_features
-    elif isinstance(max_features, str):
+    if isinstance(max_features, str):
         if max_features == "auto":
             return max(1, int(np.sqrt(n_features))
                        ) if is_classification else n_features
-        elif max_features == 'sqrt':
+        if max_features == 'sqrt':
             return max(1, int(np.sqrt(n_features)))
-        elif max_features == "log2":
+        if max_features == "log2":
             return max(1, int(np.log2(n_features)))
-        else:
-            raise ValueError(
-                'Invalid value for max_features. Allowed string '
-                'values are "auto", "sqrt" or "log2".')
-    elif isinstance(max_features, (numbers.Integral, np.integer)):
+        raise ValueError(
+            'Invalid value for max_features. Allowed string '
+            'values are "auto", "sqrt" or "log2".')
+    if isinstance(max_features, (numbers.Integral, np.integer)):
         return max_features
-    else:  # float
-        if max_features > 0.0:
-            return max(1, int(max_features * n_features))
-        return 0
+    if max_features > 0.0:
+        return max(1, int(max_features * n_features))
+    return 0
 
 
 def _get_n_samples_bootstrap(n_samples, max_samples):
@@ -221,7 +220,10 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
         impurityThreshold=float(
             0.0 if self.min_impurity_split is None else self.min_impurity_split),
         varImportance="MDI",
-        resultsToCompute="",
+        resultsToCompute=(
+            "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction"
+            if self.oob_score
+            else ""),
         memorySavingMode=False,
         bootstrap=bool(self.bootstrap),
         minObservationsInSplitNode=(self.min_samples_split
@@ -243,10 +245,11 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     model = dfc_trainingResult.model
     self.daal_model_ = model
 
-    # compute oob_score_
-    #if self.oob_score:
-    #    self.estimators_ = self._estimators_
-    #    self._set_oob_score(X, y)
+    if self.oob_score:
+        self.oob_score_ = dfc_trainingResult.outOfBagErrorAccuracy[0][0]
+        self.oob_decision_function_ = dfc_trainingResult.outOfBagErrorDecisionFunction
+        if self.oob_decision_function_.shape[-1] == 1:
+            self.oob_decision_function_ = self.oob_decision_function_.squeeze(axis=-1)
 
     return self
 
@@ -294,8 +297,10 @@ def _fit_classifier(self, X, y, sample_weight=None):
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
 
+    daal_oob_score = \
+        self.oob_score and daal_check_version((2021, 'P', 500)) or self.oob_score is False
     daal_ready = self.warm_start is False and self.criterion == "gini" and \
-        self.ccp_alpha == 0.0 and not sp.issparse(X) and self.oob_score is False
+        self.ccp_alpha == 0.0 and not sp.issparse(X) and daal_oob_score
 
     if daal_ready:
         X = check_array(X, dtype=[np.float32, np.float64])
@@ -389,7 +394,9 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
         impurityThreshold=float(
             0.0 if self.min_impurity_split is None else self.min_impurity_split),
         varImportance="MDI",
-        resultsToCompute="",
+        resultsToCompute=("computeOutOfBagErrorR2|computeOutOfBagErrorPrediction"
+                          if self.oob_score
+                          else ""),
         memorySavingMode=False,
         bootstrap=bool(self.bootstrap),
         minObservationsInSplitNode=(self.min_samples_split
@@ -412,10 +419,11 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     model = dfr_trainingResult.model
     self.daal_model_ = model
 
-    # compute oob_score_
-    #if self.oob_score:
-    #    self.estimators_ = self._estimators_
-    #    self._set_oob_score(X, y)
+    if self.oob_score:
+        self.oob_score_ = dfr_trainingResult.outOfBagErrorR2[0][0]
+        self.oob_prediction_ = dfr_trainingResult.outOfBagErrorPrediction.squeeze(axis=1)
+        if self.oob_prediction_.shape[-1] == 1:
+            self.oob_prediction_ = self.oob_prediction_.squeeze(axis=-1)
 
     return self
 
@@ -437,9 +445,11 @@ def _fit_regressor(self, X, y, sample_weight=None):
             FutureWarning
         )
 
+    daal_oob_score = \
+        self.oob_score and daal_check_version((2021, 'P', 500)) or self.oob_score is False
     daal_ready = self.warm_start is False and \
         self.criterion in ["mse", "squared_error"] and self.ccp_alpha == 0.0 and \
-        not sp.issparse(X) and self.oob_score is False
+        not sp.issparse(X) and daal_oob_score
 
     if daal_ready:
         X = check_array(X, dtype=[np.float64, np.float32])
@@ -615,6 +625,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
 
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
@@ -643,6 +654,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
         """
         return _fit_classifier(self, X, y, sample_weight=sample_weight)
 
+    @support_usm_ndarray()
     def predict(self, X):
         """
         Predict class for X.
@@ -682,6 +694,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             "predict: " + get_patch_message("daal"))
         return _daal_predict_classifier(self, X)
 
+    @support_usm_ndarray()
     def predict_proba(self, X):
         """
         Predict class probabilities for X.
@@ -904,6 +917,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
 
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
@@ -932,6 +946,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
         """
         return _fit_regressor(self, X, y, sample_weight=sample_weight)
 
+    @support_usm_ndarray()
     def predict(self, X):
         """
         Predict class for X.

@@ -262,21 +262,7 @@ def daal_generate_shuffled_indices(idx, random_state):
 
 def _execute_with_context(func):
     def exec_func(*args, **keyArgs):
-        # we check is DPPY imported or not
-        # possible we should check are we in defined context or not
-        if 'dpctl' in sys.modules:
-            from dpctl import is_in_device_context, get_current_queue
-
-            if is_in_device_context():
-                from _dpctl_interop import (set_current_queue_to_daal_context,\
-                                            reset_daal_context)
-
-                set_current_queue_to_daal_context()
-                res = func(*args, **keyArgs)
-                reset_daal_context()
-
-                return res
-        elif 'daal4py.oneapi' in sys.modules:
+        if 'daal4py.oneapi' in sys.modules:
             import daal4py.oneapi as d4p_oneapi
             devname = d4p_oneapi._get_device_name_sycl_ctxt()
             ctxparams = d4p_oneapi._get_sycl_ctxt_params()

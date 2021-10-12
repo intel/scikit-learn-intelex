@@ -126,6 +126,16 @@ deselected_tests:
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order >=0.24,<1.0
 
+  # OOB scores in sklearn and oneDAL are different because of different random nuber generators
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
+
+  # Need a warning from sklearn if some samples do not have OOB scores that can not be raised from oneDAL
+  - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestRegressor]
+  - ensemble/tests/test_forest.py::test_oob_score_classifiers[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_oob_score_regressors[RandomForestRegressor]
+
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
@@ -169,6 +179,10 @@ deselected_tests:
 
   # This tests fail on mac mini 8.1 with stock scikit-learn
   - semi_supervised/tests/test_label_propagation.py
+
+  # This test fails because with patch config_context with new options, but the
+  # test checks that only exact number of options is used
+  - tests/test_config.py::test_config_context
 
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
@@ -248,7 +262,6 @@ gpu:
 
   # Segfaults
   - ensemble/tests/test_weight_boosting.py
-  - svm/tests/test_sparse.py
 
   # Fails
   - cluster/tests/test_dbscan.py::test_weighted_dbscan
@@ -338,19 +351,20 @@ gpu:
 
   - semi_supervised/tests/test_self_training.py::test_early_stopping
 
-  - svm/tests/test_svm.py::test_libsvm_parameters
-  - svm/tests/test_svm.py::test_weight
+  - svm/tests/test_sparse.py::test_svc
+  - svm/tests/test_sparse.py::test_svc_with_custom_kernel
+  - svm/tests/test_sparse.py::test_svc_iris
+  - svm/tests/test_sparse.py::test_error
+  - svm/tests/test_sparse.py::test_sample_weights
+  - svm/tests/test_sparse.py::test_sparse_realdata
+  - svm/tests/test_svm.py::test_precomputed
+  - svm/tests/test_svm.py::test_tweak_params
   - svm/tests/test_svm.py::test_svm_classifier_sided_sample_weight[estimator0]
   - svm/tests/test_svm.py::test_svm_equivalence_sample_weight_C
-  - svm/tests/test_svm.py::test_negative_weights_svc_leave_two_labels
-  - svm/tests/test_svm.py::test_negative_weight_equal_coeffs
-  - svm/tests/test_svm.py::test_bad_input
-  - svm/tests/test_svm.py::test_unicode_kernel
-  - svm/tests/test_svm.py::test_consistent_proba
-  - svm/tests/test_svm.py::test_decision_function_shape_two_class
-  - svm/tests/test_svm.py::test_gamma_auto
-  - svm/tests/test_svm.py::test_gamma_scale
-  - svm/tests/test_svm.py::test_custom_kernel_not_array_input[SVC]
+  - svm/tests/test_svm.py::test_negative_weights_svc_leave_two_labels[partial-mask-label-1-SVC]
+  - svm/tests/test_svm.py::test_negative_weights_svc_leave_two_labels[partial-mask-label-2-SVC]
+  - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
+  - svm/tests/test_svm.py::test_custom_kernel_not_array_input[SVR]
 
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_dtypes]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_score_takes_y]
@@ -443,3 +457,8 @@ gpu:
 
   - tests/test_multioutput.py::test_multiclass_multioutput_estimator_predict_proba
   - tests/test_multioutput.py::test_classifier_chain_fit_and_predict_with_sparse_data
+
+  # Very slow execution due to SVC
+  - model_selection/tests/test_validation.py::test_validation_curve_cv_splits_consistency
+  - model_selection/tests/test_search.py::test_grid_search_cv_results
+  - model_selection/tests/test_search.py::test_random_search_cv_results

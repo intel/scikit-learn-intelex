@@ -15,6 +15,7 @@
 #===============================================================================
 
 import numpy as np
+import sys
 
 from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
@@ -25,7 +26,6 @@ def set_idp_sklearn_verbose():
     import logging
     import warnings
     import os
-    import sys
     logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
     try:
         if logLevel is not None:
@@ -66,7 +66,7 @@ def get_daal_version():
 def parse_dtype(dt):
     if dt == np.double:
         return "double"
-    elif dt == np.single:
+    if dt == np.single:
         return "float"
     raise ValueError(f"Input array has unexpected dtype = {dt}")
 
@@ -94,7 +94,6 @@ def make2d(X):
 
 
 def get_patch_message(s):
-    import sys
     if s == "daal":
         message = "running accelerated version on "
         if 'daal4py.oneapi' in sys.modules:

@@ -35,6 +35,7 @@ from scipy.spatial import distance
 
 import daal4py
 from .._utils import (getFPType, get_patch_message)
+from .._device_offload import support_usm_ndarray
 import logging
 
 
@@ -52,6 +53,7 @@ def _daal4py_correlation_distance_dense(X):
     return res.correlationDistance
 
 
+@support_usm_ndarray(freefunc=True)
 def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
                             force_all_finite=True, **kwds):
     """ Compute the distance matrix from a vector array X and optional Y.
@@ -163,14 +165,14 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
                 " need to have non-negative values.")
         check_non_negative(X, whom=whom)
         return X
-    elif metric == 'cosine' and Y is None and not issparse(X) and X.dtype == np.float64:
+    if metric == 'cosine' and Y is None and not issparse(X) and X.dtype == np.float64:
         logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("daal"))
         return _daal4py_cosine_distance_dense(X)
-    elif metric == 'correlation' and Y is None and \
+    if metric == 'correlation' and Y is None and \
             not issparse(X) and X.dtype == np.float64:
         logging.info("sklearn.metrics.pairwise_distances: " + get_patch_message("daal"))
         return _daal4py_correlation_distance_dense(X)
-    elif metric in PAIRWISE_DISTANCE_FUNCTIONS:
+    if metric in PAIRWISE_DISTANCE_FUNCTIONS:
         logging.info(
             "sklearn.metrics."
             "pairwise_distances: " + get_patch_message("sklearn"))

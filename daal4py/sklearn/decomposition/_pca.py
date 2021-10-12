@@ -25,6 +25,7 @@ from sklearn.utils.extmath import stable_cumsum
 
 import daal4py
 from .._utils import getFPType, get_patch_message, sklearn_check_version
+from .._device_offload import support_usm_ndarray
 import logging
 
 if sklearn_check_version('0.22'):
@@ -278,6 +279,7 @@ class PCA(PCA_original):
 
         return tr_res.transformedData
 
+    @support_usm_ndarray()
     def transform(self, X):
         if self.n_components_ > 0:
             logging.info(
@@ -285,12 +287,12 @@ class PCA(PCA_original):
                 "transform: " + get_patch_message("daal"))
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=True, scale_eigenvalues=False)
-        else:
-            logging.info(
-                "sklearn.decomposition.PCA."
-                "transform: " + get_patch_message("sklearn"))
-            return PCA_original.transform(self, X)
+        logging.info(
+            "sklearn.decomposition.PCA."
+            "transform: " + get_patch_message("sklearn"))
+        return PCA_original.transform(self, X)
 
+    @support_usm_ndarray()
     def fit_transform(self, X, y=None):
         U, S, _ = self._fit(X)
 
