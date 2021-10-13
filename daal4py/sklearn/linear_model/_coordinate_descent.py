@@ -21,8 +21,8 @@ from scipy import sparse as sp
 from sklearn.utils import check_array, check_X_y
 from sklearn.linear_model._coordinate_descent import ElasticNet as ElasticNet_original
 from sklearn.linear_model._coordinate_descent import Lasso as Lasso_original
-from daal4py.sklearn._utils import (make2d, getFPType,
-                                    get_patch_message, sklearn_check_version)
+from daal4py.sklearn._utils import (
+    make2d, getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
 if sklearn_check_version('1.0'):
     from sklearn.linear_model._base import _deprecate_normalize
 
@@ -403,16 +403,23 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
     else:
         self.fit_shape_good_for_daal_ = False
 
-    log_str = "sklearn.linear_model." + self.__class__.__name__ + ".fit: "
-    sklearn_ready = sp.issparse(X) or not self.fit_shape_good_for_daal_ or \
-        X.dtype not in [np.float64, np.float32] or sample_weight is not None
+    _function_name = f"sklearn.linear_model.{self.__class__.__name__}.fit"
+    _patching_status = PatchingConditionsChain(
+        _function_name)
+    _dal_ready = _patching_status.and_conditions([
+        (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+        (self.fit_shape_good_for_daal_,
+            "The shape of X does not satisfy oneDAL requirements: "
+            "number of features > number of samples."),
+        (X.dtype == np.float64 or X.dtype == np.float32,
+            f"'{X.dtype}' X data type is not supported. "
+            "Only np.float32 and np.float64 are supported."),
+        (sample_weight is None, "Sample weights are not supported.")])
+    _patching_status.write_log()
 
-    if sklearn_ready:
+    if not _dal_ready:
         if hasattr(self, 'daal_model_'):
             del self.daal_model_
-        logging.info(
-            log_str + get_patch_message("sklearn")
-        )
         if sklearn_check_version('0.23'):
             res_new = super(ElasticNet, self).fit(
                 X, y, sample_weight=sample_weight, check_input=check_input)
@@ -447,7 +454,6 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         X = np.copy(X)
     if not y.flags.writeable:
         y = np.copy(y)
-    logging.info(log_str + get_patch_message("daal"))
 
     if self.__class__.__name__ == "ElasticNet":
         res = _daal4py_fit_enet(self, X, y, check_input=check_input)
@@ -457,7 +463,7 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         if hasattr(self, 'daal_model_'):
             del self.daal_model_
         logging.info(
-            log_str + get_patch_message("sklearn_after_daal")
+            _function_name + ": " + get_patch_message("sklearn_after_daal")
         )
         if sklearn_check_version('0.23'):
             res_new = super(ElasticNet, self).fit(
@@ -535,16 +541,18 @@ class ElasticNet(ElasticNet_original):
         good_shape_for_daal = \
             True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
 
-        if not hasattr(self, 'daal_model_') or \
-                sp.issparse(X) or \
-                not good_shape_for_daal:
-            logging.info(
-                "sklearn.linear_model.ElasticNet."
-                "predict: " + get_patch_message("sklearn"))
+        _patching_status = PatchingConditionsChain(
+            "sklearn.linear_model.ElasticNet.predict")
+        _dal_ready = _patching_status.and_conditions([
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            (good_shape_for_daal,
+                "The shape of X does not satisfy oneDAL requirements: "
+                "number of features > number of samples.")])
+        _patching_status.write_log()
+
+        if not _dal_ready:
             return self._decision_function(X)
-        logging.info(
-            "sklearn.linear_model.ElasticNet."
-            "predict: " + get_patch_message("daal"))
         return _daal4py_predict_enet(self, X)
 
     @property
@@ -678,14 +686,16 @@ class Lasso(ElasticNet):
         good_shape_for_daal = \
             True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
 
-        if not hasattr(self, 'daal_model_') or \
-                sp.issparse(X) or \
-                not good_shape_for_daal:
-            logging.info(
-                "sklearn.linear_model.Lasso."
-                "predict: " + get_patch_message("sklearn"))
+        _patching_status = PatchingConditionsChain(
+            "sklearn.linear_model.Lasso.predict")
+        _dal_ready = _patching_status.and_conditions([
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            (good_shape_for_daal,
+                "The shape of X does not satisfy oneDAL requirements: "
+                "number of features > number of samples.")])
+        _patching_status.write_log()
+
+        if not _dal_ready:
             return self._decision_function(X)
-        logging.info(
-            "sklearn.linear_model.Lasso."
-            "predict: " + get_patch_message("daal"))
         return _daal4py_predict_lasso(self, X)

@@ -38,7 +38,8 @@ import daal4py
 from .._utils import (
     getFPType,
     get_patch_message,
-    sklearn_check_version)
+    sklearn_check_version,
+    PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
 import logging
 
@@ -290,19 +291,28 @@ def _fit(self, X, y=None, sample_weight=None):
                          " {}".format(str(algorithm)))
 
     X_len = _num_samples(X)
-    daal_ready = self.n_clusters <= X_len
-    if daal_ready and sample_weight is not None:
+
+    _patching_status = PatchingConditionsChain(
+        "sklearn.cluster.KMeans.fit")
+    _dal_ready = _patching_status.and_conditions([
+        (self.n_clusters <= X_len,
+            "The number of clusters is larger than the number of samples in X.")
+    ])
+
+    if _dal_ready and sample_weight is not None:
         if isinstance(sample_weight, numbers.Number):
             sample_weight = np.full(X_len, sample_weight, dtype=np.float64)
         else:
             sample_weight = np.asarray(sample_weight)
-        daal_ready = (sample_weight.shape == (X_len,)) and (
-            np.allclose(sample_weight, np.ones_like(sample_weight)))
+        _dal_ready = _patching_status.and_conditions([
+            (sample_weight.shape == (X_len,),
+                "Sample weights do not have the same length as X."),
+            (np.allclose(sample_weight, np.ones_like(sample_weight)),
+                "Sample weights are not ones.")
+        ])
 
-    if daal_ready:
-        logging.info(
-            "sklearn.cluster.KMeans."
-            "fit: " + get_patch_message("daal"))
+    _patching_status.write_log()
+    if _dal_ready:
         X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
         self.n_features_in_ = X.shape[1]
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
@@ -310,9 +320,6 @@ def _fit(self, X, y=None, sample_weight=None):
                 X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
                 self.verbose, random_state)
     else:
-        logging.info(
-            "sklearn.cluster.KMeans."
-            "fit: " + get_patch_message("sklearn"))
         super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
     return self
 
@@ -356,16 +363,20 @@ def _predict(self, X, sample_weight=None):
 
     X = _daal4py_check_test_data(self, X)
 
-    if sample_weight is None and hasattr(X, '__array__') or \
-            sp.isspmatrix_csr(X):
-        logging.info(
-            "sklearn.cluster.KMeans."
-            "predict: " + get_patch_message("daal"))
+    _patching_status = PatchingConditionsChain(
+        "sklearn.cluster.KMeans.predict")
+    _patching_status.and_conditions([
+        (sample_weight is None, "Sample weights are not supported."),
+        (hasattr(X, '__array__'), "X does not have '__array__' attribute.")
+    ])
+    _dal_ready = _patching_status.or_conditions([
+        (sp.isspmatrix_csr(X), "X is not sparse.")
+    ])
+
+    _patching_status.write_log()
+    if _dal_ready:
         return _daal4py_k_means_predict(
             X, self.n_clusters, self.cluster_centers_)[0]
-    logging.info(
-        "sklearn.cluster.KMeans."
-        "predict: " + get_patch_message("sklearn"))
     x_squared_norms = row_norms(X, squared=True)
     return _labels_inertia(X, sample_weight, x_squared_norms,
                            self.cluster_centers_)[0]

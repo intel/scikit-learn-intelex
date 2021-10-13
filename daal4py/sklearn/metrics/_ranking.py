@@ -25,7 +25,7 @@ from sklearn.utils.multiclass import is_multilabel
 from sklearn.preprocessing import label_binarize
 
 from ..utils.validation import _daal_assert_all_finite
-from .._utils import get_patch_message, sklearn_check_version
+from .._utils import get_patch_message, sklearn_check_version, PatchingConditionsChain
 from .._device_offload import support_usm_ndarray
 import logging
 
@@ -126,6 +126,14 @@ def _daal_roc_auc_score(
     y_true = check_array(y_true, ensure_2d=False, dtype=None)
     y_score = check_array(y_score, ensure_2d=False)
 
+    _patching_status = PatchingConditionsChain(
+        "sklearn.metrics.roc_auc_score")
+    _dal_ready = _patching_status.and_conditions([
+        (y_type[0] == "binary" and not (y_score.ndim == 2 and y_score.shape[1] > 2),
+            "y_true type is not one-dimensional binary.")
+    ])
+
+    _patching_status.write_log()
     if y_type[0] == "multiclass" or (
         y_type[0] == "binary" and y_score.ndim == 2 and y_score.shape[1] > 2
     ):
@@ -137,25 +145,28 @@ def _daal_roc_auc_score(
                              "instead".format(max_fpr))
         if multi_class == 'raise':
             raise ValueError("multi_class must be in ('ovo', 'ovr')")
-        logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
+
         return multiclass_roc_auc_score(
             y_true, y_score, labels, multi_class, average, sample_weight)
 
     if y_type[0] == "binary":
         labels = y_type[1]
-        daal_ready = max_fpr is None and sample_weight is None and len(labels) == 2
-        if daal_ready:
-            logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("daal"))
+        _dal_ready = _patching_status.and_conditions([
+            (len(labels) == 2, "Number of unique labels is not equal to 2."),
+            (max_fpr is None, "Maximum false-positive rate is not supported."),
+            (sample_weight is None, "Sample weights are not supported.")])
+        if _dal_ready:
             if not np.array_equal(labels, [0, 1]) or labels.dtype == np.bool:
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
             result = d4p.daal_roc_auc_score(y_true.reshape(-1, 1),
                                             y_score.reshape(-1, 1))
             if result != -1:
                 return result
+            logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message(
+                "sklearn_after_daal"))
         # return to sklearn implementation
         y_true = label_binarize(y_true, classes=labels)[:, 0]
 
-    logging.info("sklearn.metrics.roc_auc_score: " + get_patch_message("sklearn"))
     return _average_binary_score(
         partial(_binary_roc_auc_score, max_fpr=max_fpr),
         y_true,
