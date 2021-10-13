@@ -279,7 +279,8 @@ class LinearRegression(LinearRegression_original):
             _patching_status = PatchingConditionsChain(
                 "sklearn.linear_model.LinearRegression.fit")
             _dal_ready = _patching_status.and_conditions([
-                (self.positive is False, "positive is True")])
+                (self.positive is False,
+                    "Forced positive coefficients are not supported.")])
             if not _dal_ready:
                 _patching_status.write_log()
                 return super(LinearRegression, self).fit(
