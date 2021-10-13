@@ -689,8 +689,11 @@ class RandomForestClassifier(RandomForestClassifier_original):
             "sklearn.ensemble.RandomForestClassifier.predict")
         _dal_ready = _patching_status.and_conditions([
             (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
-            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
-            (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1.")])
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")])
+        if hasattr(self, 'n_outputs_'):
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")])
 
         _patching_status.write_log()
         if not _dal_ready:
@@ -743,9 +746,12 @@ class RandomForestClassifier(RandomForestClassifier_original):
         _dal_ready = _patching_status.and_conditions([
             (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
             (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
-            (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1."),
             (daal_check_version((2021, 'P', 400)),
                 "oneDAL version is lower than 2021.4.")])
+        if hasattr(self, 'n_outputs_'):
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")])
         _patching_status.write_log()
 
         if not _dal_ready:
@@ -984,8 +990,11 @@ class RandomForestRegressor(RandomForestRegressor_original):
             "sklearn.ensemble.RandomForestRegressor.predict")
         _dal_ready = _patching_status.and_conditions([
             (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
-            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
-            (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1.")])
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")])
+        if hasattr(self, 'n_outputs_'):
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")])
 
         _patching_status.write_log()
         if not _dal_ready:
