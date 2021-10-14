@@ -20,6 +20,8 @@ from .._device_offload import dispatch, wrap_output_data
 from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
+from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
 
 from onedal.svm import NuSVC as onedal_NuSVC
 
@@ -53,11 +55,20 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             'sklearn': sklearn_NuSVC.predict,
         }, X)
 
+    @property
+    def predict_proba(self):
+        self._check_proba()
+        return self._predict_proba
+
     @wrap_output_data
     def _predict_proba(self, X):
-        return dispatch(self, 'svm.NuSVC._predict_proba', {
+        sklearn_pred_proba = (sklearn_NuSVC.predict_proba
+                              if LooseVersion(sklearn_version) >= LooseVersion("1.0")
+                              else sklearn_NuSVC._predict_proba)
+
+        return dispatch(self, 'svm.NuSVC.predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
-            'sklearn': sklearn_NuSVC._predict_proba,
+            'sklearn': sklearn_pred_proba,
         }, X)
 
     @wrap_output_data
@@ -74,7 +85,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         if method_name == 'svm.NuSVC.fit':
             return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
         if method_name in ['svm.NuSVC.predict',
-                           'svm.NuSVC._predict_proba',
+                           'svm.NuSVC.predict_proba',
                            'svm.NuSVC.decision_function']:
             return hasattr(self, '_onedal_estimator')
 
