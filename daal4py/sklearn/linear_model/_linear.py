@@ -262,6 +262,7 @@ class LinearRegression(LinearRegression_original):
                 default=False,
                 estimator_name=self.__class__.__name__,
             )
+            self._check_feature_names(X, reset=True)
 
         if sklearn_check_version('0.24'):
             if self.positive is True:
@@ -275,4 +276,6 @@ class LinearRegression(LinearRegression_original):
 
     @support_usm_ndarray()
     def predict(self, X):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         return _predict_linear(self, X)

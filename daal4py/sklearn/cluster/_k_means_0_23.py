@@ -271,6 +271,8 @@ def _fit(self, X, y=None, sample_weight=None):
             f"n_init should be > 0, got {self.n_init} instead.")
 
     random_state = check_random_state(self.random_state)
+    if sklearn_check_version("1.0"):
+        self._check_feature_names(X, reset=True)
 
     if self.max_iter <= 0:
         raise ValueError(
@@ -318,6 +320,8 @@ def _fit(self, X, y=None, sample_weight=None):
 
 
 def _daal4py_check_test_data(self, X):
+    if sklearn_check_version("1.0"):
+        self._check_feature_names(X, reset=False)
     X = check_array(
         X,
         accept_sparse='csr',

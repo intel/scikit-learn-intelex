@@ -16,6 +16,7 @@
 
 from ._common import BaseSVC
 from .._device_offload import dispatch, wrap_output_data
+from daal4py.sklearn._utils import sklearn_check_version
 
 from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
@@ -41,6 +42,8 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.NuSVC.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_NuSVC.fit,
@@ -50,6 +53,8 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def predict(self, X):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.NuSVC.predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_NuSVC.predict,
@@ -62,6 +67,8 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def _predict_proba(self, X):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         sklearn_pred_proba = (sklearn_NuSVC.predict_proba
                               if LooseVersion(sklearn_version) >= LooseVersion("1.0")
                               else sklearn_NuSVC._predict_proba)
@@ -73,6 +80,8 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.NuSVC.decision_function', {
             'onedal': self.__class__._onedal_decision_function,
             'sklearn': sklearn_NuSVC.decision_function,

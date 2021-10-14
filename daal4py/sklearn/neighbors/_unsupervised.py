@@ -57,4 +57,6 @@ else:
 
         @support_usm_ndarray()
         def fit(self, X, y=None):
+            if sklearn_check_version('1.0'):
+                self._check_feature_names(X, reset=True)
             return NeighborsBase._fit(self, X)

@@ -27,6 +27,7 @@ from daal4py.sklearn._utils import (make2d, getFPType, get_patch_message)
 import logging
 
 from .._device_offload import support_usm_ndarray
+from .._utils import sklearn_check_version
 
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
@@ -233,6 +234,9 @@ class DBSCAN(DBSCAN_original):
         """
         if self.eps <= 0.0:
             raise ValueError("eps must be positive.")
+
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)

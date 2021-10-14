@@ -16,6 +16,7 @@
 
 from ._common import BaseSVC
 from .._device_offload import dispatch, wrap_output_data
+from daal4py.sklearn._utils import sklearn_check_version
 
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
@@ -41,6 +42,8 @@ class SVC(sklearn_SVC, BaseSVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.SVC.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_SVC.fit,
@@ -49,6 +52,8 @@ class SVC(sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def predict(self, X):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVC.predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_SVC.predict,
@@ -72,6 +77,8 @@ class SVC(sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVC.decision_function', {
             'onedal': self.__class__._onedal_decision_function,
             'sklearn': sklearn_SVC.decision_function,

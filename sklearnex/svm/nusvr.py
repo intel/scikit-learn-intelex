@@ -16,6 +16,7 @@
 
 from ._common import BaseSVR
 from .._device_offload import dispatch, wrap_output_data
+from daal4py.sklearn._utils import sklearn_check_version
 
 from sklearn.svm import NuSVR as sklearn_NuSVR
 from sklearn.utils.validation import _deprecate_positional_args
@@ -34,6 +35,8 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             max_iter=max_iter)
 
     def fit(self, X, y, sample_weight=None):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.NuSVR.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_NuSVR.fit,
@@ -42,6 +45,8 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.NuSVR.predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_NuSVR.predict,

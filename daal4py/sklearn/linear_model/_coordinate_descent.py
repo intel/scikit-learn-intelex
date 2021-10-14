@@ -506,6 +506,8 @@ class ElasticNet(ElasticNet_original):
     if sklearn_check_version('0.23'):
         @support_usm_ndarray()
         def fit(self, X, y, sample_weight=None, check_input=True):
+            if sklearn_check_version('1.0'):
+                self._check_feature_names(X, reset=True)
             return _fit(self, X, y, sample_weight=sample_weight, check_input=check_input)
     else:
         @support_usm_ndarray()
@@ -526,6 +528,9 @@ class ElasticNet(ElasticNet_original):
         C : array, shape = (n_samples,)
             Returns predicted values.
         """
+
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
 
         X = check_array(
             X,
@@ -649,6 +654,8 @@ class Lasso(ElasticNet):
     if sklearn_check_version('0.23'):
         @support_usm_ndarray()
         def fit(self, X, y, sample_weight=None, check_input=True):
+            if sklearn_check_version('1.0'):
+                self._check_feature_names(X, reset=True)
             return _fit(self, X, y, sample_weight, check_input)
     else:
         @support_usm_ndarray()
@@ -669,7 +676,8 @@ class Lasso(ElasticNet):
         C : array, shape = (n_samples,)
             Returns predicted values.
         """
-
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         X = check_array(
             X,
             accept_sparse=['csr', 'csc', 'coo'],

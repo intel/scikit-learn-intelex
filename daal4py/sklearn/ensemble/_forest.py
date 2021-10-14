@@ -303,6 +303,8 @@ def _fit_classifier(self, X, y, sample_weight=None):
         self.ccp_alpha == 0.0 and not sp.issparse(X) and daal_oob_score
 
     if daal_ready:
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float32, np.float64])
         y = np.asarray(y)
         y = np.atleast_1d(y)
@@ -452,6 +454,8 @@ def _fit_regressor(self, X, y, sample_weight=None):
         not sp.issparse(X) and daal_oob_score
 
     if daal_ready:
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float64, np.float32])
         y = np.asarray(y)
         y = np.atleast_1d(y)
@@ -684,6 +688,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 "predict: " + get_patch_message("sklearn"))
             return super(RandomForestClassifier, self).predict(X)
 
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
         X = check_array(
             X,
             accept_sparse=['csr', 'csc', 'coo'],
@@ -718,6 +724,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
         if hasattr(self, 'n_features_in_'):
             try:
                 num_features = _daal_num_features(X)
@@ -738,6 +746,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
         logging.info(
             "sklearn.ensemble.RandomForestClassifier."
             "predict_proba: " + get_patch_message("daal"))
+
         X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self)
         if sklearn_check_version('0.23'):
@@ -975,6 +984,8 @@ class RandomForestRegressor(RandomForestRegressor_original):
                 "predict: " + get_patch_message("sklearn"))
             return super(RandomForestRegressor, self).predict(X)
 
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
         X = check_array(
             X,
             accept_sparse=['csr', 'csc', 'coo'],
