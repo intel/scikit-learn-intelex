@@ -18,43 +18,21 @@
 from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
 
-from sklearn.neighbors._base import KNeighborsMixin as sklearn_KNeighborsMixin
-from sklearn.neighbors._base import RadiusNeighborsMixin as sklearn_RadiusNeighborsMixin
-from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
-from sklearn.neighbors._ball_tree import BallTree
-from sklearn.neighbors._kd_tree import KDTree
 from sklearn.neighbors._base import _check_weights
-
 from sklearn.neighbors._classification import KNeighborsClassifier as \
     sklearn_KNeighborsClassifier
-
 from sklearn.utils.validation import _deprecate_positional_args
 
 from onedal.datatypes import _check_array
-
 from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
-from onedal.neighbors import KNeighborsMixin as onedal_KNeighborsMixin
 
 from .._device_offload import dispatch, wrap_output_data
 import numpy as np
 from scipy import sparse as sp
 
 
-class KNeighborsMixin(sklearn_KNeighborsMixin):
-    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
-        onedal_model = getattr(self, '_onedal_model', None)
-        if X is not None:
-            X = _check_array(
-                X, accept_sparse='csr', dtype=[
-                    np.float64, np.float32])
-
-        if onedal_model is not None and not sp.issparse(X):
-            result = onedal_KNeighborsMixin._kneighbors(self, X, n_neighbors, return_distance)
-
-        return result
-
 if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
-    class KNeighborsClassifier_(sklearn_NeighborsBase, KNeighborsMixin, onedal_KNeighborsClassifier):
+    class KNeighborsClassifier_(sklearn_KNeighborsClassifier):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
                      weights='uniform', algorithm='auto', leaf_size=30,
@@ -72,7 +50,7 @@ elif LooseVersion(sklearn_version) >= LooseVersion("0.22"):
     from sklearn.neighbors._base import SupervisedIntegerMixin as \
         BaseSupervisedIntegerMixin
 
-    class KNeighborsClassifier_(sklearn_NeighborsBase, onedal_KNeighborsClassifier, KNeighborsMixin,
+    class KNeighborsClassifier_(sklearn_KNeighborsClassifier,
                                 BaseSupervisedIntegerMixin):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
@@ -90,7 +68,7 @@ else:
     from sklearn.neighbors.base import SupervisedIntegerMixin as \
         BaseSupervisedIntegerMixin
 
-    class KNeighborsClassifier_(sklearn_NeighborsBase, onedal_KNeighborsClassifier, KNeighborsMixin,
+    class KNeighborsClassifier_(sklearn_KNeighborsClassifier,
                                 BaseSupervisedIntegerMixin):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
@@ -120,24 +98,36 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             n_jobs=n_jobs, **kwargs)
 
     def fit(self, X, y):
-        return dispatch(self, 'neighbors.KNeighborsClassifier.fit', {
-            'onedal': onedal_KNeighborsClassifier.fit,
+        if hasattr(self, '_onedal_estimator'):
+            delattr(self, '_onedal_estimator')
+
+        dispatch(self, 'neighbors.KNeighborsClassifier.fit', {
+            'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_KNeighborsClassifier.fit,
         }, X, y)
+        return self
 
     @wrap_output_data
     def predict(self, X):
         return dispatch(self, 'neighbors.KNeighborsClassifier.predict', {
-            'onedal': onedal_KNeighborsClassifier.predict,
+            'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_KNeighborsClassifier.predict,
         }, X)
 
     @wrap_output_data
+    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+        return dispatch(self, 'neighbors.KNeighborsClassifier.kneighbors', {
+            'onedal': self.__class__._onedal_kneighbors,
+            'sklearn': sklearn_KNeighborsClassifier.kneighbors,
+        }, X, n_neighbors, return_distance)
+
+    @wrap_output_data
     def predict_proba(self, X):
         return dispatch(self, 'neighbors.KNeighborsClassifier.predict_proba', {
-            # 'onedal': onedal_KNeighborsClassifier.predict,
+            'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_KNeighborsClassifier.predict_proba,
         }, X)
+
 
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'neighbors.KNeighborsClassifier.fit':
@@ -154,7 +144,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
                 class_count >= 2 and \
                 not is_sparse
         if method_name in ['neighbors.KNeighborsClassifier.predict',
-                           'neighbors.KNeighborsClassifier.predict_proba']:
+                           'neighbors.KNeighborsClassifier.predict_proba',
+                           'neighbors.KNeighborsClassifier.kneighbors']:
             return hasattr(self, '_onedal_model') and not sp.isspmatrix(data[0])
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
@@ -162,9 +153,54 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         if method_name == 'neighbors.KNeighborsClassifier.fit':
             return self.weights in ['uniform', 'distance'] \
                     and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
-                    and self.metric in ['minkowski', 'euclidean', 'chebyshev', 'cosine']
+                    and self.metric in ['minkowski', 'euclidean', 'chebyshev', 'cosine'] \
+                    and not sp.isspmatrix(data[0])
         if method_name in ['neighbors.KNeighborsClassifier.predict',
-                           'neighbors.KNeighborsClassifier.predict_proba']:
+                           'neighbors.KNeighborsClassifier.predict_proba',
+                           'neighbors.KNeighborsClassifier.kneighbors']:
             return hasattr(self, '_onedal_model') and not sp.isspmatrix(data[0])
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
+    def _onedal_fit(self, X, y, queue=None):
+        onedal_params = {
+            'n_neighbors': self.n_neighbors,
+            'weights': self.weights,
+            'algorithm': self.algorithm,
+            'metric': self.metric,
+            'p': self.p,
+            'metric_params': self.metric_params,
+        }
+
+        try:
+            requires_y = self._get_tags()["requires_y"]
+        except KeyError:
+            requires_y = False
+
+        self._onedal_estimator = onedal_KNeighborsClassifier(**onedal_params)
+        self._onedal_estimator.requires_y = requires_y
+        self._onedal_estimator.fit(X, y, queue=queue)
+
+        self._save_attributes()
+
+    def _onedal_predict(self, X, queue=None):
+        return self._onedal_estimator.predict(X, queue=queue)
+
+    def _onedal_predict_proba(self, X, queue=None):
+        return self._onedal_estimator.predict_proba(X, queue=queue)
+
+    def _onedal_kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
+        return self._onedal_estimator.kneighbors(X, n_neighbors, return_distance, queue=queue)
+
+    def _save_attributes(self):
+        self._onedal_model = self._onedal_estimator._onedal_model
+        self.classes_ = self._onedal_estimator.classes_
+        self.n_features_in_ = self._onedal_estimator.n_features_in_
+        self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
+        self._fit_X = self._onedal_estimator._fit_X
+        self._y = self._onedal_estimator._y
+        self.shape = self._onedal_estimator.shape
+        self.effective_metric_ = self._onedal_estimator.effective_metric_
+        self.effective_metric_params_ = self._onedal_estimator.effective_metric_params_
+        self._fit_method = self._onedal_estimator._fit_method
+        self.outputs_2d_ = self._onedal_estimator.outputs_2d_
+        self._tree = self._onedal_estimator._tree

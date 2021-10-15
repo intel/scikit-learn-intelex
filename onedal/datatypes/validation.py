@@ -20,6 +20,7 @@ from scipy import sparse as sp
 from scipy.sparse import issparse, dok_matrix, lil_matrix
 from scipy.sparse.base import spmatrix
 from collections.abc import Sequence
+from numbers import Integral
 
 
 class DataConversionWarning(UserWarning):
@@ -141,34 +142,6 @@ def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=Fals
                          " samples: %r" % [int(length) for length in lengths])
 
     return X, y
-
-
-def _check_is_fitted(estimator, attributes=None, *, msg=None):
-    if msg is None:
-        msg = ("This %(name)s instance is not fitted yet. Call 'fit' with "
-               "appropriate arguments before using this estimator.")
-
-    if not hasattr(estimator, 'fit'):
-        raise TypeError("%s is not an estimator instance." % (estimator))
-
-    if attributes is not None:
-        if not isinstance(attributes, (list, tuple)):
-            attributes = [attributes]
-        attrs = all([hasattr(estimator, attr) for attr in attributes])
-    else:
-        attrs = [v for v in vars(estimator)
-                 if v.endswith("_") and not v.startswith("__")]
-
-    if not attrs:
-        raise AttributeError(msg % {'name': type(estimator).__name__})
-
-
-def _is_classifier(estimator):
-    return getattr(estimator, "_estimator_type", None) == "classifier"
-
-
-def _is_regressor(estimator):
-    return getattr(estimator, "_estimator_type", None) == "regressor"
 
 
 def _check_classification_targets(y):
@@ -341,3 +314,30 @@ def _num_features(X):
         return len(first_sample)
     except Exception as err:
         raise TypeError(message) from err
+
+def _num_samples(x):
+    message = "Expected sequence or array-like, got %s" % type(x)
+    if hasattr(x, "fit") and callable(x.fit):
+        # Don't get num_samples from an ensembles length!
+        raise TypeError(message)
+
+    if not hasattr(x, "__len__") and not hasattr(x, "shape"):
+        if hasattr(x, "__array__"):
+            x = np.asarray(x)
+        else:
+            raise TypeError(message)
+
+    if hasattr(x, "shape") and x.shape is not None:
+        if len(x.shape) == 0:
+            raise TypeError(
+                "Singleton array %r cannot be considered a valid collection." % x
+            )
+    # Check that shape is returning an integer or default to len
+    # Dask dataframes may not return numeric shape[0] value
+    if isinstance(x.shape[0], Integral):
+        return x.shape[0]
+
+    try:
+        return len(x)
+    except TypeError as type_error:
+        raise TypeError(message) from type_error
