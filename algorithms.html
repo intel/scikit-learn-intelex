@@ -90,13 +90,14 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">About Intel(R) Extension for Scikit-learn*</a></li>
 <li class="toctree-l1"><a class="reference internal" href="get_started.html">Get started</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Supported Algorithms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="verbose.html">Intel(R) Extension for Scikit-learn* Verbose</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gpu.html">GPU support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="global_patching.html">Global patching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oneapi_gpu.html">oneAPI and GPU support</a></li>
 </ul>
 
             
@@ -195,8 +196,8 @@ algorithms:</p>
 </tr>
 <tr class="row-even"><td><p>Classification</p></td>
 <td><p>RandomForestClassifier</p></td>
-<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">warm_start</span></code> = True, <code class="docutils literal notranslate"><span class="pre">cpp_alpha</span></code> != 0, <code class="docutils literal notranslate"><span class="pre">criterion</span></code> != ‘gini’, <code class="docutils literal notranslate"><span class="pre">oob_score</span></code> = True.</p></td>
-<td><p>Multi-output, sparse data and out-of-bag score are not supported.</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">warm_start</span></code> = True, <code class="docutils literal notranslate"><span class="pre">cpp_alpha</span></code> != 0, <code class="docutils literal notranslate"><span class="pre">criterion</span></code> != ‘gini’.</p></td>
+<td><p>Multi-output and sparse data are not supported.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Classification</p></td>
 <td><p>KNeighborsClassifier</p></td>
@@ -220,8 +221,8 @@ algorithms:</p>
 </tr>
 <tr class="row-odd"><td><p>Regression</p></td>
 <td><p>RandomForestRegressor</p></td>
-<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">warm_start</span></code> = True, <code class="docutils literal notranslate"><span class="pre">cpp_alpha</span></code> != 0, <code class="docutils literal notranslate"><span class="pre">criterion</span></code> != ‘mse’, <code class="docutils literal notranslate"><span class="pre">oob_score</span></code> = True.</p></td>
-<td><p>Multi-output, sparse data and out-of-bag score are not supported.</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">warm_start</span></code> = True, <code class="docutils literal notranslate"><span class="pre">cpp_alpha</span></code> != 0, <code class="docutils literal notranslate"><span class="pre">criterion</span></code> != ‘mse’.</p></td>
+<td><p>Multi-output and sparse data are not supported.</p></td>
 </tr>
 <tr class="row-even"><td><p>Regression</p></td>
 <td><p>KNeighborsRegressor</p></td>
