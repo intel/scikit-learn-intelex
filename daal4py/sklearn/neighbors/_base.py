@@ -23,7 +23,8 @@ from scipy import sparse as sp
 from .._utils import (
     getFPType,
     sklearn_check_version,
-    get_patch_message)
+    get_patch_message,
+    PatchingConditionsChain)
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.base import is_classifier, is_regressor
@@ -374,17 +375,27 @@ class NeighborsBase(BaseNeighborsBase):
                     "enter integer value" %
                     type(self.n_neighbors))
 
-        condition = (self.metric == 'minkowski' and self.p == 2) or \
-            self.metric == 'euclidean'
-        if not X_incorrect_type and weights in ['uniform', 'distance'] \
-            and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
-            and condition \
-            and single_output and fptype is not None and not sp.issparse(X) and \
-                correct_n_classes:
+        _patching_status = PatchingConditionsChain(
+            "sklearn.neighbors.KNeighborsMixin.kneighbors")
+        _dal_ready = _patching_status.and_conditions([
+            (self.metric == 'minkowski' and self.p == 2 or self.metric == 'euclidean',
+                f"'{self.metric}' (p={self.p}) metric is not supported. "
+                "Only 'euclidean' or 'minkowski' with p=2 metrics are supported."),
+            (not X_incorrect_type, "X is not Tree or Neighbors instance or array."),
+            (weights in ['uniform', 'distance'],
+                f"'{weights}' weights is not supported. "
+                "Only 'uniform' and 'distance' weights are supported."),
+            (self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'],
+                f"'{self.algorithm}' algorithm is not supported. "
+                "Only 'brute', 'kd_tree', 'auto' and 'ball_tree' "
+                "algorithms are supported."),
+            (single_output, "Multiple outputs are not supported."),
+            (fptype is not None, "Unable to get dtype."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            (correct_n_classes, "Number of classes < 2.")])
+        _patching_status.write_log()
+        if _dal_ready:
             try:
-                logging.info(
-                    "sklearn.neighbors.KNeighborsMixin."
-                    "kneighbors: " + get_patch_message("daal"))
                 daal4py_fit(self, X, fptype)
                 result = self
             except RuntimeError:
@@ -393,9 +404,6 @@ class NeighborsBase(BaseNeighborsBase):
                     "kneighbors: " + get_patch_message("sklearn_after_daal"))
                 result = stock_fit(self, X, y)
         else:
-            logging.info(
-                "sklearn.neighbors.KNeighborsMixin."
-                "kneighbors: " + get_patch_message("sklearn"))
             result = stock_fit(self, X, y)
 
         if y is not None and is_regressor(self):
@@ -417,16 +425,17 @@ class KNeighborsMixin(BaseKNeighborsMixin):
         except ValueError:
             fptype = None
 
-        if daal_model is not None and fptype is not None and not sp.issparse(
-                X):
-            logging.info(
-                "sklearn.neighbors.KNeighborsMixin."
-                "kneighbors: " + get_patch_message("daal"))
+        _patching_status = PatchingConditionsChain(
+            "sklearn.neighbors.KNeighborsMixin.kneighbors")
+        _dal_ready = _patching_status.and_conditions([
+            (daal_model is not None, "oneDAL model was not trained."),
+            (fptype is not None, "Unable to get dtype."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")])
+        _patching_status.write_log()
+
+        if _dal_ready:
             result = daal4py_kneighbors(self, X, n_neighbors, return_distance)
         else:
-            logging.info(
-                "sklearn.neighbors.KNeighborsMixin."
-                "kneighbors:" + get_patch_message("sklearn"))
             if daal_model is not None or getattr(self, '_tree', 0) is None and \
                     self._fit_method == 'kd_tree':
                 if sklearn_check_version("0.24"):

@@ -22,7 +22,9 @@ import warnings
 import daal4py
 from .._utils import (getFPType, get_patch_message)
 from .._device_offload import support_usm_ndarray
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import (
+    daal_check_version, sklearn_check_version,
+    PatchingConditionsChain)
 import logging
 
 from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
@@ -297,12 +299,21 @@ def _fit_classifier(self, X, y, sample_weight=None):
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
 
-    daal_oob_score = \
-        self.oob_score and daal_check_version((2021, 'P', 500)) or self.oob_score is False
-    daal_ready = self.warm_start is False and self.criterion == "gini" and \
-        self.ccp_alpha == 0.0 and not sp.issparse(X) and daal_oob_score
+    _patching_status = PatchingConditionsChain(
+        "sklearn.ensemble.RandomForestClassifier.fit")
+    _dal_ready = _patching_status.and_conditions([
+        (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
+            "OOB score is only supported starting from 2021.5 version of oneDAL."),
+        (self.warm_start is False, "Warm start is not supported."),
+        (self.criterion == "gini",
+            f"'{self.criterion}' criterion is not supported. "
+            "Only 'gini' criterion is supported."),
+        (self.ccp_alpha == 0.0,
+            f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported."),
+        (not sp.issparse(X), "X is sparse. Sparse input is not supported.")
+    ])
 
-    if daal_ready:
+    if _dal_ready:
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float32, np.float64])
@@ -323,13 +334,11 @@ def _fit_classifier(self, X, y, sample_weight=None):
             y = np.reshape(y, (-1, 1))
 
         self.n_outputs_ = y.shape[1]
-        if self.n_outputs_ != 1:
-            daal_ready = False
+        _dal_ready = _patching_status.and_conditions([
+            (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1.")])
 
-    if daal_ready:
-        logging.info(
-            "sklearn.ensemble.RandomForestClassifier."
-            "fit: " + get_patch_message("daal"))
+    _patching_status.write_log()
+    if _dal_ready:
         _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
 
         self.estimators_ = self._estimators_
@@ -338,9 +347,6 @@ def _fit_classifier(self, X, y, sample_weight=None):
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
         return self
-    logging.info(
-        "sklearn.ensemble.RandomForestClassifier."
-        "fit: " + get_patch_message("sklearn"))
     return super(RandomForestClassifier, self).fit(
         X, y, sample_weight=sample_weight)
 
@@ -446,14 +452,22 @@ def _fit_regressor(self, X, y, sample_weight=None):
             "which is equivalent.",
             FutureWarning
         )
+    
+    _patching_status = PatchingConditionsChain(
+        "sklearn.ensemble.RandomForestRegressor.fit")
+    _dal_ready = _patching_status.and_conditions([
+        (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
+            "OOB score is only supported starting from 2021.5 version of oneDAL."),
+        (self.warm_start is False, "Warm start is not supported."),
+        (self.criterion in ["mse", "squared_error"],
+            f"'{self.criterion}' criterion is not supported. "
+            "Only 'mse' and 'squared_error' criteria are supported."),
+        (self.ccp_alpha == 0.0,
+            f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported."),
+        (not sp.issparse(X), "X is sparse. Sparse input is not supported.")
+    ])
 
-    daal_oob_score = \
-        self.oob_score and daal_check_version((2021, 'P', 500)) or self.oob_score is False
-    daal_ready = self.warm_start is False and \
-        self.criterion in ["mse", "squared_error"] and self.ccp_alpha == 0.0 and \
-        not sp.issparse(X) and daal_oob_score
-
-    if daal_ready:
+    if _dal_ready:
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float64, np.float32])
@@ -475,20 +489,15 @@ def _fit_regressor(self, X, y, sample_weight=None):
             y = np.reshape(y, (-1, 1))
 
         self.n_outputs_ = y.shape[1]
-        if self.n_outputs_ != 1:
-            daal_ready = False
+        _dal_ready = _patching_status.and_conditions([
+            (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1.")])
 
-    if daal_ready:
-        logging.info(
-            "sklearn.ensemble.RandomForestRegressor."
-            "fit: " + get_patch_message("daal"))
+    _patching_status.write_log()
+    if _dal_ready:
         _daal_fit_regressor(self, X, y, sample_weight=sample_weight)
 
         self.estimators_ = self._estimators_
         return self
-    logging.info(
-        "sklearn.ensemble.RandomForestRegressor."
-        "fit: " + get_patch_message("sklearn"))
     return super(RandomForestRegressor, self).fit(
         X, y, sample_weight=sample_weight)
 
@@ -680,12 +689,18 @@ class RandomForestClassifier(RandomForestClassifier_original):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.RandomForestClassifier.predict")
+        _dal_ready = _patching_status.and_conditions([
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")])
+        if hasattr(self, 'n_outputs_'):
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")])
 
-        if not hasattr(self, 'daal_model_') or \
-                sp.issparse(X) or self.n_outputs_ != 1:
-            logging.info(
-                "sklearn.ensemble.RandomForestClassifier."
-                "predict: " + get_patch_message("sklearn"))
+        _patching_status.write_log()
+        if not _dal_ready:
             return super(RandomForestClassifier, self).predict(X)
 
         if sklearn_check_version("1.0"):
@@ -695,9 +710,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
             accept_sparse=['csr', 'csc', 'coo'],
             dtype=[np.float64, np.float32]
         )
-        logging.info(
-            "sklearn.ensemble.RandomForestClassifier."
-            "predict: " + get_patch_message("daal"))
         return _daal_predict_classifier(self, X)
 
     @support_usm_ndarray()
@@ -736,17 +748,22 @@ class RandomForestClassifier(RandomForestClassifier_original):
                     (f'X has {num_features} features, '
                      f'but RandomForestClassifier is expecting '
                      f'{self.n_features_in_} features as input'))
-        if not hasattr(self, 'daal_model_') or \
-           sp.issparse(X) or self.n_outputs_ != 1 or \
-           not daal_check_version((2021, 'P', 400)):
-            logging.info(
-                "sklearn.ensemble.RandomForestClassifier."
-                "predict_proba: " + get_patch_message("sklearn"))
-            return super(RandomForestClassifier, self).predict_proba(X)
-        logging.info(
-            "sklearn.ensemble.RandomForestClassifier."
-            "predict_proba: " + get_patch_message("daal"))
 
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.RandomForestClassifier.predict_proba")
+        _dal_ready = _patching_status.and_conditions([
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            (daal_check_version((2021, 'P', 400)),
+                "oneDAL version is lower than 2021.4.")])
+        if hasattr(self, 'n_outputs_'):
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")])
+        _patching_status.write_log()
+
+        if not _dal_ready:
+            return super(RandomForestClassifier, self).predict_proba(X)
         X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self)
         if sklearn_check_version('0.23'):
@@ -977,11 +994,18 @@ class RandomForestRegressor(RandomForestRegressor_original):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        if not hasattr(self, 'daal_model_') or \
-                sp.issparse(X) or self.n_outputs_ != 1:
-            logging.info(
-                "sklearn.ensemble.RandomForestRegressor."
-                "predict: " + get_patch_message("sklearn"))
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.RandomForestRegressor.predict")
+        _dal_ready = _patching_status.and_conditions([
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")])
+        if hasattr(self, 'n_outputs_'):
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")])
+
+        _patching_status.write_log()
+        if not _dal_ready:
             return super(RandomForestRegressor, self).predict(X)
 
         if sklearn_check_version("1.0"):
@@ -991,9 +1015,6 @@ class RandomForestRegressor(RandomForestRegressor_original):
             accept_sparse=['csr', 'csc', 'coo'],
             dtype=[np.float64, np.float32]
         )
-        logging.info(
-            "sklearn.ensemble.RandomForestRegressor."
-            "predict: " + get_patch_message("daal"))
         return _daal_predict_regressor(self, X)
 
     if sklearn_check_version('1.0'):

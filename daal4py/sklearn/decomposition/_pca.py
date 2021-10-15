@@ -24,7 +24,8 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import stable_cumsum
 
 import daal4py
-from .._utils import getFPType, get_patch_message, sklearn_check_version
+from .._utils import (
+    getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
 import logging
 
@@ -225,24 +226,31 @@ class PCA(PCA_original):
             else:
                 X = check_array(X, copy=self.copy)
 
-        if self._fit_svd_solver == 'full':
-            if shape_good_for_daal:
-                logging.info(
-                    "sklearn.decomposition.PCA."
-                    "fit: " + get_patch_message("daal"))
+        _patching_status = PatchingConditionsChain(
+            "sklearn.decomposition.PCA.fit")
+        _dal_ready = _patching_status.and_conditions([
+            (self._fit_svd_solver == 'full',
+                f"'{self._fit_svd_solver}' SVD solver is not supported. "
+                "Only 'full' solver is supported.")
+        ])
+
+        if _dal_ready:
+            _dal_ready = _patching_status.and_conditions([
+                (shape_good_for_daal,
+                    "The shape of X does not satisfy oneDAL requirements: "
+                    "number of features / number of samples >= 2")
+            ])
+            if _dal_ready:
                 result = self._fit_full(X, n_components)
             else:
-                logging.info(
-                    "sklearn.decomposition.PCA."
-                    "fit: " + get_patch_message("sklearn"))
                 result = PCA_original._fit_full(self, X, n_components)
         elif self._fit_svd_solver in ['arpack', 'randomized']:
-            logging.info("sklearn.decomposition.PCA.fit: " + get_patch_message("sklearn"))
             result = self._fit_truncated(X, n_components, self._fit_svd_solver)
         else:
             raise ValueError("Unrecognized svd_solver='{0}'"
                              "".format(self._fit_svd_solver))
 
+        _patching_status.write_log()
         return result
 
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
@@ -283,36 +291,37 @@ class PCA(PCA_original):
 
     @support_usm_ndarray()
     def transform(self, X):
-        if self.n_components_ > 0:
-            logging.info(
-                "sklearn.decomposition.PCA."
-                "transform: " + get_patch_message("daal"))
+        _patching_status = PatchingConditionsChain(
+            "sklearn.decomposition.PCA.transform")
+        _dal_ready = _patching_status.and_conditions([
+            (self.n_components_ > 0, "Number of components <= 0.")
+        ])
+
+        _patching_status.write_log()
+        if _dal_ready:
             return self._transform_daal4py(X, whiten=self.whiten,
                                            check_X=True, scale_eigenvalues=False)
-        logging.info(
-            "sklearn.decomposition.PCA."
-            "transform: " + get_patch_message("sklearn"))
         return PCA_original.transform(self, X)
 
     @support_usm_ndarray()
     def fit_transform(self, X, y=None):
         U, S, _ = self._fit(X)
 
-        if U is None:
-            if self.n_components_ > 0:
-                logging.info(
-                    "sklearn.decomposition.PCA."
-                    "fit_transform: " + get_patch_message("daal"))
-
+        _patching_status = PatchingConditionsChain(
+            "sklearn.decomposition.PCA.fit_transform")
+        _dal_ready = _patching_status.and_conditions([
+            (U is None, "Stock fitting was used.")
+        ])
+        if _dal_ready:
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_components_ > 0, "Number of components <= 0.")
+            ])
+            if _dal_ready:
                 result = self._transform_daal4py(
                     X, whiten=self.whiten, check_X=False, scale_eigenvalues=False)
             else:
                 result = np.empty((self.n_samples_, 0), dtype=X.dtype)
         else:
-            logging.info(
-                "sklearn.decomposition.PCA."
-                "fit_transform: " + get_patch_message("sklearn"))
-
             U = U[:, :self.n_components_]
 
             if self.whiten:
@@ -322,4 +331,5 @@ class PCA(PCA_original):
 
             result = U
 
+        _patching_status.write_log()
         return result
