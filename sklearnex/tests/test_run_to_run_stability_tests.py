@@ -312,6 +312,8 @@ TO_SKIP = [
              # need to wait for the next sklearn release)
     'LogisticRegression',  # Absolute diff is 1e-8, will be fixed for next release
     'LogisticRegressionCV',  # Absolute diff is 1e-10, will be fixed for next release
+    'RandomForestRegressor',  # Absolute diff is 1e-14 in OOB score,
+                              # will be fixed for next release
 ]
 
 

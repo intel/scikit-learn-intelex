@@ -38,7 +38,7 @@ from sklearn import __version__ as sklearn_version
 
 import daal4py
 from .._utils import (
-    make2d, getFPType, get_patch_message, sklearn_check_version)
+    make2d, getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
 import logging
 
 
@@ -174,7 +174,7 @@ def _daal4py_check_weight(self, X, y, sample_weight):
         if np.all(sample_weight <= 0):
             raise ValueError(
                 'Invalid input - all samples have zero or negative weights.')
-        elif np.any(sample_weight <= 0):
+        if np.any(sample_weight <= 0):
             if len(np.unique(y[sample_weight > 0])) != len(self.classes_):
                 raise ValueError(
                     'Invalid input - all samples with positive weights '
@@ -477,8 +477,14 @@ def fit(self, X, y, sample_weight=None):
     # see comment on the other call to np.iinfo in this file
     seed = rnd.randint(np.iinfo('i').max)
 
-    if kernel in ['linear', 'rbf']:
-        logging.info("sklearn.svm.SVC.fit: " + get_patch_message("daal"))
+    _patching_status = PatchingConditionsChain(
+        "sklearn.svm.SVC.fit")
+    _dal_ready = _patching_status.and_conditions([
+        (kernel in ['linear', 'rbf'],
+            f"'{kernel}' kernel is not supported. "
+            "Only 'linear' and 'rbf' kernels are supported.")])
+    _patching_status.write_log()
+    if _dal_ready:
         sample_weight = _daal4py_check_weight(self, X, y, sample_weight)
 
         self._daal_fit = True
@@ -510,7 +516,6 @@ def fit(self, X, y, sample_weight=None):
                     clf_base, cv="prefit", method='sigmoid')
                 self.clf_prob.fit(X, y, sample_weight)
     else:
-        logging.info("sklearn.svm.SVC.fit: " + get_patch_message("sklearn"))
         self._daal_fit = False
         fit(X, y, sample_weight, solver_type, kernel, random_seed=seed)
 
@@ -603,22 +608,28 @@ def predict(self, X):
         raise ValueError("break_ties must be False when "
                          "decision_function_shape is 'ovo'")
 
-    if _break_ties and self.decision_function_shape == 'ovr' and \
-            len(self.classes_) > 2:
+    _patching_status = PatchingConditionsChain(
+        "sklearn.svm.SVC.predict")
+    _dal_ready = _patching_status.and_conditions([
+        (not _break_ties, "Breaking ties is not supported."),
+        (self.decision_function_shape != 'ovr',
+            "'ovr' decision function shape is not supported."),
+        (len(self.classes_) <= 2, "Number of classes > 2.")
+    ], conditions_merging=any)
+    _patching_status.write_log()
+    if not _dal_ready:
         y = np.argmax(self.decision_function(X), axis=1)
     else:
         X = self._validate_for_predict(X)
-        if getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'):
-            logging.info(
-                "sklearn.svm.SVC.predict: " + get_patch_message("daal"))
+        _dal_ready = _patching_status.and_conditions([
+            (getattr(self, '_daal_fit', False) and hasattr(self, 'daal_model_'),
+                "oneDAL model was not trained.")])
+        if _dal_ready:
             if self.probability and self.clf_prob is not None:
                 y = self.clf_prob.predict(X)
             else:
                 y = _daal4py_predict(self, X)
         else:
-            logging.info(
-                "sklearn.svm.SVC.predict: " + get_patch_message("sklearn")
-            )
             predict_func = self._sparse_predict if self._sparse else self._dense_predict
             y = predict_func(X)
 
@@ -664,15 +675,14 @@ def predict_proba(self):
     """
 
     self._check_proba()
-    if getattr(self, '_daal_fit', False):
-        logging.info(
-            "sklearn.svm.SVC.predict_proba: " + get_patch_message("daal")
-        )
+    _patching_status = PatchingConditionsChain(
+        "sklearn.svm.SVC.predict_proba")
+    _dal_ready = _patching_status.and_conditions([
+        (getattr(self, '_daal_fit', False), "oneDAL model was not trained.")])
+    _patching_status.write_log()
+    if _dal_ready:
         algo = self._daal4py_predict_proba
     else:
-        logging.info(
-            "sklearn.svm.SVC.predict_proba: " + get_patch_message("sklearn")
-        )
         algo = self._predict_proba
     return algo
 
@@ -704,15 +714,15 @@ def decision_function(self, X):
     transformation of ovo decision function.
     """
 
-    if getattr(self, '_daal_fit', False):
-        logging.info(
-            "sklearn.svm.SVC.decision_function: " + get_patch_message("daal")
-        )
+    _patching_status = PatchingConditionsChain(
+        "sklearn.svm.SVC.decision_function")
+    _dal_ready = _patching_status.and_conditions([
+        (getattr(self, '_daal_fit', False), "oneDAL model was not trained.")])
+    _patching_status.write_log()
+    if _dal_ready:
         X = self._validate_for_predict(X)
         dec = _daal4py_predict(self, X, is_decision_function=True)
     else:
-        logging.info(
-            "sklearn.svm.SVC.decision_function: " + get_patch_message("sklearn"))
         dec = self._decision_function(X)
     if self.decision_function_shape == 'ovr' and len(self.classes_) > 2:
         return _ovr_decision_function(dec < 0, -dec, len(self.classes_))

@@ -20,6 +20,8 @@ from .._device_offload import dispatch, wrap_output_data
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
+from sklearn import __version__ as sklearn_version
+from distutils.version import LooseVersion
 
 from onedal.svm import SVC as onedal_SVC
 
@@ -52,11 +54,20 @@ class SVC(sklearn_SVC, BaseSVC):
             'sklearn': sklearn_SVC.predict,
         }, X)
 
+    @property
+    def predict_proba(self):
+        self._check_proba()
+        return self._predict_proba
+
     @wrap_output_data
     def _predict_proba(self, X):
-        return dispatch(self, 'svm.SVC._predict_proba', {
+        sklearn_pred_proba = (sklearn_SVC.predict_proba
+                              if LooseVersion(sklearn_version) >= LooseVersion("1.0")
+                              else sklearn_SVC._predict_proba)
+
+        return dispatch(self, 'svm.SVC.predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
-            'sklearn': sklearn_SVC._predict_proba,
+            'sklearn': sklearn_pred_proba,
         }, X)
 
     @wrap_output_data
@@ -79,7 +90,7 @@ class SVC(sklearn_SVC, BaseSVC):
                 hasattr(self, '_class_count') and self._class_count == 2 and \
                 hasattr(self, '_is_sparse') and not self._is_sparse
         if method_name in ['svm.SVC.predict',
-                           'svm.SVC._predict_proba',
+                           'svm.SVC.predict_proba',
                            'svm.SVC.decision_function']:
             return hasattr(self, '_onedal_estimator') and \
                 self._onedal_gpu_supported('svm.SVC.fit', *data)
@@ -89,7 +100,7 @@ class SVC(sklearn_SVC, BaseSVC):
         if method_name == 'svm.SVC.fit':
             return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
         if method_name in ['svm.SVC.predict',
-                           'svm.SVC._predict_proba',
+                           'svm.SVC.predict_proba',
                            'svm.SVC.decision_function']:
             return hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')

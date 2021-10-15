@@ -20,10 +20,10 @@ import sys
 from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
 from distutils.version import LooseVersion
+import logging
 
 
 def set_idp_sklearn_verbose():
-    import logging
     import warnings
     import os
     logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
@@ -66,7 +66,7 @@ def get_daal_version():
 def parse_dtype(dt):
     if dt == np.double:
         return "double"
-    elif dt == np.single:
+    if dt == np.single:
         return "float"
     raise ValueError(f"Input array has unexpected dtype = {dt}")
 
@@ -150,3 +150,43 @@ def get_number_of_types(dataframe):
         return len(set(dtypes))
     except TypeError:
         return 1
+
+
+class PatchingConditionsChain:
+    def __init__(self, scope_name):
+        self.scope_name = scope_name
+        self.patching_is_enabled = True
+        self.messages = []
+
+    def _iter_conditions(self, conditions_and_messages):
+        result = []
+        for condition, message in conditions_and_messages:
+            result.append(condition)
+            if not condition:
+                self.messages.append(message)
+        return result
+
+    def and_conditions(self, conditions_and_messages, conditions_merging=all):
+        self.patching_is_enabled &= conditions_merging(
+            self._iter_conditions(conditions_and_messages))
+        return self.patching_is_enabled
+
+    def or_conditions(self, conditions_and_messages, conditions_merging=all):
+        self.patching_is_enabled |= conditions_merging(
+            self._iter_conditions(conditions_and_messages))
+        return self.patching_is_enabled
+
+    def get_status(self):
+        return self.patching_is_enabled
+
+    def write_log(self):
+        if self.patching_is_enabled:
+            logging.info(f"{self.scope_name}: {get_patch_message('daal')}")
+        else:
+            logging.debug(
+                f'{self.scope_name}: debugging for the patch is enabled to track'
+                ' the usage of Intel® oneAPI Data Analytics Library (oneDAL)')
+            for message in self.messages:
+                logging.debug(
+                    f'{self.scope_name}: patching failed with cause - {message}')
+            logging.info(f"{self.scope_name}: {get_patch_message('sklearn')}")

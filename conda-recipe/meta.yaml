@@ -65,6 +65,7 @@ test:
         - scikit-learn
         - threadpoolctl
         - xgboost  # [not win]
+        - catboost
         - pytest
         - mpich  # [osx]
         - impi_rt  # [not osx]
@@ -105,5 +106,6 @@ extra:
     recipe-maintainers:
         # GitHub IDs for maintainers of the recipe.
         - napetrov
-        - PetrovKP
-        - SmirnovEgorRu
+        - Pahandrovich
+        - agorshk
+        - vmeshche
