@@ -33,7 +33,7 @@ Sources and build instructions are available in `Intel(R) Extension for Scikit-l
 
 - Install from Anaconda Cloud: Conda-Forge channel::
 
-     сonda install scikit-learn-intelex -c conda-forge
+     conda install scikit-learn-intelex -c conda-forge
 
 - Install from Anaconda Cloud: Intel channel::
 

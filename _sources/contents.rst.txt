@@ -27,4 +27,5 @@ Intel(R) Extension for Scikit-learn*
    Get started <get_started>
    Supported Algorithms <algorithms>
    Intel(R) Extension for Scikit-learn* Verbose <verbose>
-   GPU support <gpu>
+   Global patching <global_patching>
+   oneAPI and GPU support <oneapi_gpu>
