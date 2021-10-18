@@ -99,6 +99,8 @@ You can find the :ref:`full patching map here <sklearn_algorithms>`.
     Intel(R) Extension for Scikit-learn supports optimizations for the last four versions of scikit-learn.
     The latest release of scikit-learn-intelex-2021.3.X supports scikit-learn 0.22.X, 0.23.X, 0.24.X and 1.0.X.
 
+.. _blogs:
+
 Follow us on Medium
 --------------------
 We publish blogs on Medium, so `follow us <https://medium.com/intel-analytics-software/tagged/machine-learning>`_

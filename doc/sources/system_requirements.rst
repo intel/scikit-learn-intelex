@@ -23,7 +23,8 @@ System requirements
 This page provides details about hardware, operating system, and software prerequisites for the Intel® Extension for Scikit-learn.
 
 .. note::
-    works on other hardware, operating system and software, but not tested.
+    Intel® Extension for Scikit-learn may work on other hardware, operating systems, and with other configurations, but that was not tested.
+    You can find our blogs about hardware comparison :ref:`here <blogs>`.
 
 Supported configurations
 ------------------------
@@ -44,17 +45,17 @@ Supported configurations
      - ✔️
      - ✔️
      - ✔️
-     - ❌
+     - ✔️
    * - Windows
      - ✔️
      - ✔️
      - ✔️
-     - ❌
+     - ✔️
    * - OsX
      - ✔️
      - ✔️
      - ✔️
-     - ❌
+     - ✔️
 
 .. note::
     It supports Intel CPU and GPU except on OsX.
@@ -107,30 +108,30 @@ Supported configurations
      - ✔️
      - ✔️
      - ✔️
-     - ❌
+     - ✔️
    * - Windows
      - ✔️
      - ✔️
      - ✔️
-     - ❌
+     - ✔️
    * - OsX
      - ✔️
      - ✔️
      - ✔️
-     - ❌
+     - ✔️
 
 .. note::
     It supports Intel CPU and GPU except on OsX.
     Recommended for conda users who use other components from Intel(R) Distribution for Python.
 
-For Data Parallel C++ (DPC++)
------------------------------
+System Requirements for Data Parallel C++ (DPC++)
+-------------------------------------------------
 
-For users using the DPC++ compiler, please refer to the DPC++compiler system
+For users using the DPC++ compiler, please refer to the DPC++ compiler system
 requirements `here <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_.
 
-Operation system
----------------------
+Operating systems
+-----------------
 - Linux*
 - Redhat Enterprise Linux (RHEL)* 7, 8
 - Ubuntu* 18.04 LTS, 20.04 LTS
@@ -171,38 +172,37 @@ Software Requirements
 - GNU* GCC v7.0 or higher.
 - Intel® oneAPI DPC++/C++ Compiler 2021.1 and later.
 - Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later.
-- For Intel GPU development, the Intel GPU drivers are requested from here.
+- For Intel GPU development, the Intel GPU drivers are requested from `here <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__.
 
 *Windows**
 
 - Intel® oneAPI DPC++/C++ Compiler 2021.1 and later.
 - Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later.
-- For Intel GPU development, the Intel GPU drivers are requested from here.
+- For Intel GPU development, the Intel GPU drivers are requested from `here <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__.
 
 **For C/C++**
 
 *Linux**
 
-- Intel® C++ Compiler Classic 2021.1 and later.
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later.
+- Intel® C++ Compiler Classic 2021.1 and later
+- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
 - Intel® C++ compiler v19.0 and v19.1
-- GNU* Compiler Collection 5.x and later.
+- GNU* Compiler Collection 5.x and later
 - PGI* Compiler 19.10 and 20.4
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later.
+- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
 
 *Windows**
 
-- Intel® C/C++ Compiler Classic 2021.1 and later.
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later. 
-- Intel® C++ compiler v19.0 and v19.1  
+- Intel® C/C++ Compiler Classic 2021.1 and later
+- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
+- Intel® C++ compiler v19.0 and v19.1
 - PGI* Compiler 19.10 and 20.4
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later.
+- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
 
 *macOS**
 
 - Xcode* 11, 12
-- Intel® C/C++ Compiler Classic 2021.1 and later.
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later.
-- Intel® C++ compiler v19.1  
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later.
-
+- Intel® C/C++ Compiler Classic 2021.1 and later
+- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
+- Intel® C++ compiler v19.1
+- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
