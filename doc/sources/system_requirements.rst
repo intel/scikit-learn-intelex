@@ -58,7 +58,7 @@ Supported configurations
      - ✔️
 
 .. note::
-    It supports Intel CPU and GPU except on OsX.
+    It supports Intel CPU and GPU except on MacOS.
 
 **Anaconda Cloud: Conda-Forge channel**
 
