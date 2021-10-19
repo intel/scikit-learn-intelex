@@ -1,6 +1,6 @@
 # Intel(R) Extension for Scikit-learn* <img align="right" width="100" height="100" src="https://spec.oneapi.io/oneapi-logo-white-scaled.jpg">
 
-[Installation](https://github.com/intel/scikit-learn-intelex#-installation)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Get Started](https://github.com/intel/scikit-learn-intelex#%EF%B8%8F-get-started)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://intel.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Medium blogs](https://medium.com/intel-analytics-software/tagged/machine-learning)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support](https://github.com/intel/scikit-learn-intelex#-support)&nbsp;&nbsp;&nbsp;
+[Installation](https://github.com/intel/scikit-learn-intelex#-installation)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Get Started](https://github.com/intel/scikit-learn-intelex#%EF%B8%8F-get-started)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://intel.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Medium blogs](https://medium.com/intel-analytics-software/tagged/machine-learning)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support](https://github.com/intel/scikit-learn-intelex#-support)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[FAQ](#-faq)&nbsp;&nbsp;&nbsp;
 
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/21716/badge.svg)](https://scan.coverity.com/projects/daal4py)
@@ -18,32 +18,9 @@ The status of the latest scikit-learn test suite with Intel(R) Extension for Sci
 Intel(R) Extension for Scikit-learn offers you a way to speed up existing scikit-learn code.
 The acceleration is achieved through **patching**: you import an additional Python package and enable optimizations via `sklearnex.patch_sklearn()`. Jump to [Get Started](#️-get-started) section to see examples.
 
-### ❓ Are all algorithms affected by patching?
+❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
 
-> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
-
-### ❓ What happens if I use parameters not supported by the extension?
-
-> In cases when unsupported parameters are used, the package fallbacks into original stock version of scikit-learn. You will not get an error.
-
-### ❓ What happens if I run algorithms not supported by the extension?
-
-> If you use algorithms for which no optimizations are available, their original version from the stock scikit-learn is used.
-
-<details><summary>❔ [More frequently asked questions]</summary>
-
-### ❓ Can I see which implementation of the algorithm is currently used?
-
-> Yes. To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), use the [verbose mode](https://intel.github.io/scikit-learn-intelex/verbose.html).
-
-### ❓ How much faster scikit-learn is after the patching?
-
-> We compare the performance of Intel(R) Extension for Scikit-Learn to other frameworks in [Machine Learning Benchmarks](https://github.com/IntelPython/scikit-learn_bench). Read [our blogs on Medium](#-follow-us-on-medium) if you are interested in the detailed comparison.
-
-### ❓ What if the patching does not cover my scenario?
-
-> If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues) with the description of what you would want to have.
-</details>
+You may still use algorithms and parameters not supported by Intel(R) Extension for Scikit-learn in your code. You will not get an error if you do this. When you use algorithms or parameters not supported by the extension, the package fallbacks into original stock version of scikit-learn.
 
 ## 🛠 Installation
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
@@ -136,6 +113,36 @@ X = np.array([[1., 2.], [2., 2.], [2., 3.],
 with sycl_context("gpu"):
     clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 ```
+
+## ❔ FAQ
+
+<details><summary>[See answers to frequently asked questions]</summary>
+
+### ❓ Are all algorithms affected by patching?
+
+> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
+
+### ❓ What happens if I use parameters not supported by the extension?
+
+> In cases when unsupported parameters are used, the package fallbacks into original stock version of scikit-learn. You will not get an error.
+
+### ❓ What happens if I run algorithms not supported by the extension?
+
+> If you use algorithms for which no optimizations are available, their original version from the stock scikit-learn is used.
+
+### ❓ Can I see which implementation of the algorithm is currently used?
+
+> Yes. To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), use the [verbose mode](https://intel.github.io/scikit-learn-intelex/verbose.html).
+
+### ❓ How much faster scikit-learn is after the patching?
+
+> We compare the performance of Intel(R) Extension for Scikit-Learn to other frameworks in [Machine Learning Benchmarks](https://github.com/IntelPython/scikit-learn_bench). Read [our blogs on Medium](#-follow-us-on-medium) if you are interested in the detailed comparison.
+
+### ❓ What if the patching does not cover my scenario?
+
+> If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues) with the description of what you would want to have.
+
+</details>
 
 ## 👀 Follow us on Medium
 
