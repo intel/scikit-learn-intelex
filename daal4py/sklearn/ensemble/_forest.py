@@ -452,7 +452,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
             "which is equivalent.",
             FutureWarning
         )
-    
+
     _patching_status = PatchingConditionsChain(
         "sklearn.ensemble.RandomForestRegressor.fit")
     _dal_ready = _patching_status.and_conditions([
