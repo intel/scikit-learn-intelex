@@ -20,36 +20,34 @@ You can learn more about daal4py in [daal4py documentation](https://intelpython.
 
 ---
 
-# :octocat: How it Works?
+## How it works?
 
 Intel(R) Extension for Scikit-learn offers you a way to speed up existing scikit-learn code.
 The acceleration is achieved through **patching**: you import an additional Python package and enable optimizations via `sklearnex.patch_sklearn()`. Jump to [Get Started](#️-get-started) section to see examples.
 
-## ❔ FAQ
+### ❔ Are all algorithms affected by patching?
 
-- Are all algorithms affected by patching?
+> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
 
-    > No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
+### ❔ What happens if I use parameters not supported by the extension?
 
-- What happens if I use parameters not supported by the extension?
+> In cases when unsupported parameters are used, the package fallbacks into original stock version of scikit-learn. You will not get an error.
 
-    > In cases when unsupported parameters are used, the package fallbacks into original stock version of scikit-learn. You will not get an error.
+### ❔ What happens if I run algorithms not supported by the extension?
 
-- What happens if I run algorithms not supported by the extension?
+> If you use algorithms for which no optimizations are available, their original version from the stock scikit-learn is used.
 
-    > If you use algorithms for which no optimizations are available, their original version from the stock scikit-learn is used.
+### ❔ Can I see which implementation of the algorithm is currently used?
 
-- Can I see which implementation of the algorithm is currently used?
+> Yes. To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), use the [verbose mode](https://intel.github.io/scikit-learn-intelex/verbose.html).
 
-    > Yes. To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), use the [verbose mode](https://intel.github.io/scikit-learn-intelex/verbose.html).
+### ❔ How much faster scikit-learn is after the patching?
 
-- How much faster scikit-learn is after the patching?
+> We compare the performance of Intel(R) Extension for Scikit-Learn to other frameworks in [Machine Learning Benchmarks](https://github.com/IntelPython/scikit-learn_bench). Read [our blogs on Medium](#-follow-us-on-medium) if you are interested in the detailed comparison.
 
-    > We compare the performance of Intel(R) Extension for Scikit-Learn to other frameworks in [Machine Learning Benchmarks](https://github.com/IntelPython/scikit-learn_bench). Read [our blogs on Medium](#-follow-us-on-medium) if you are interested in the detailed comparison.
+### ❔ What if the patching does not cover my scenario?
 
--  What if the patching does not cover my scenario?
-
-    > If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues) with the description of what you would want to have.
+> If the patching does not cover your scenarios, [submit an issue on GitHub](https://github.com/intel/scikit-learn-intelex/issues) with the description of what you would want to have.
 
 # 🛠 Installation
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
