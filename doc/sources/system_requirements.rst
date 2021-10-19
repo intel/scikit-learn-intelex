@@ -169,16 +169,16 @@ Software Requirements
 
 *Linux**
 
-- GNU* GCC v7.0 or higher.
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later.
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later.
-- For Intel GPU development, the Intel GPU drivers are requested from `here <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__.
+- GNU* GCC v7.0 or higher
+- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
+- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
+- `Intel GPU drivers <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__  for Intel GPU development
 
 *Windows**
 
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later.
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later.
-- For Intel GPU development, the Intel GPU drivers are requested from `here <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__.
+- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
+- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
+- `Intel GPU drivers <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__ for Intel GPU development
 
 **For C/C++**
 
