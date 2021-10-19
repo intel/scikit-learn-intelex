@@ -21,6 +21,7 @@ from sklearn.svm import NuSVR as sklearn_NuSVR
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn import __version__ as sklearn_version
 
+from distutils.version import LooseVersion
 from onedal.svm import NuSVR as onedal_NuSVR
 
 
