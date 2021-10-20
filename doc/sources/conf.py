@@ -121,11 +121,11 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_context = {
-    'css_files': [
-        '_static/style.css'
-    ]
-}
+# html_context = {
+#    'css_files': [
+#        '_static/style.css'
+#    ]
+# }
 
 
 # Custom sidebar templates, must be a dictionary that maps document names
@@ -137,12 +137,12 @@ html_context = {
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
-html_sidebars = {
-    '**': [
-        'globaltoc.html', 'relations.html',
-        'sourcelink.html', 'searchbox.html'
-    ]
-}
+# html_sidebars = {
+#    '**': [
+#        'globaltoc.html', 'relations.html',
+#        'sourcelink.html', 'searchbox.html'
+#    ]
+#}
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
