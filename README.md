@@ -15,7 +15,7 @@ The status of the latest scikit-learn test suite with Intel(R) Extension for Sci
 
 ## How it works?
 
-Intel(R) Extension for Scikit-learn offers you a way to speed up existing scikit-learn code.
+Intel(R) Extension for Scikit-learn offers you a way to accelerate existing scikit-learn code.
 The acceleration is achieved through **patching**: you import an additional Python package and enable optimizations via `sklearnex.patch_sklearn()`. Jump to [Get Started](#️-get-started) section to see examples.
 
 ❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
