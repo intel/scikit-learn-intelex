@@ -70,14 +70,14 @@ class NearestNeighbors(NearestNeighbors_):
             leaf_size=leaf_size, metric=metric, p=p,
             metric_params=metric_params, n_jobs=n_jobs)
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         if hasattr(self, '_onedal_estimator'):
             delattr(self, '_onedal_estimator')
 
         dispatch(self, 'neighbors.NearestNeighbors.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_NearestNeighbors.fit,
-        }, X, y)
+        }, X, None)
         return self
 
     @wrap_output_data
@@ -121,7 +121,7 @@ class NearestNeighbors(NearestNeighbors_):
             return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
-    def _onedal_fit(self, X, y, queue=None):
+    def _onedal_fit(self, X, y=None, queue=None):
         onedal_params = {
             'n_neighbors': self.n_neighbors,
             'weights': self.weights,

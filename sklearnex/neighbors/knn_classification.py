@@ -153,11 +153,15 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             class_count = None
             if len(data) > 1:
                 class_count = len(np.unique(data[1]))
+                # To check multioutput, might be overhead
+                y = np.asarray(data[1])
+                is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
             return self.weights in ['uniform', 'distance'] \
                     and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
                     and self.metric in ['minkowski', 'euclidean', 'chebyshev', 'cosine'] \
                     and class_count >= 2 \
-                    and not is_sparse
+                    and not is_sparse \
+                    and is_single_output
         if method_name in ['neighbors.KNeighborsClassifier.predict',
                            'neighbors.KNeighborsClassifier.predict_proba',
                            'neighbors.KNeighborsClassifier.kneighbors']:
