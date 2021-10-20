@@ -43,7 +43,7 @@ author = 'Intel'
 # The short X.Y version
 version = '2021'
 # The full version, including alpha/beta/rc tags
-release = '2021.2.1'
+release = '2021.4'
 
 
 # -- General configuration ---------------------------------------------------
@@ -104,7 +104,6 @@ html_favicon = '_static/favicons.png'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
 
 html_theme_options = {
     'repository_url': 'https://github.com/intel/scikit-learn-intelex',
@@ -120,30 +119,6 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-
-# html_context = {
-#    'css_files': [
-#        '_static/style.css'
-#    ]
-# }
-
-
-# Custom sidebar templates, must be a dictionary that maps document names
-# to template names.
-#
-# The default sidebars (for documents that don't match any pattern) are
-# defined by theme itself.  Builtin themes are using these templates by
-# default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
-# 'searchbox.html']``.
-#
-# html_sidebars = {}
-# html_sidebars = {
-#    '**': [
-#        'globaltoc.html', 'relations.html',
-#        'sourcelink.html', 'searchbox.html'
-#    ]
-#}
-
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
