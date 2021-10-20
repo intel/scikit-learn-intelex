@@ -131,12 +131,10 @@ class KNeighborsClassifier(KNeighborsClassifier_):
 
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'neighbors.KNeighborsClassifier.fit':
+            is_sparse = sp.isspmatrix(data[0])
+            class_count = None
             if len(data) > 1:
-                import numpy as np
-                from scipy import sparse as sp
-
                 class_count = len(np.unique(data[1]))
-                is_sparse = sp.isspmatrix(data[0])
             return self.weights in ['uniform', 'distance'] and \
                 self.algorithm in ['brute', 'auto'] and \
                 self.metric in ['minkowski', 'euclidean'] and \
@@ -146,19 +144,24 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         if method_name in ['neighbors.KNeighborsClassifier.predict',
                            'neighbors.KNeighborsClassifier.predict_proba',
                            'neighbors.KNeighborsClassifier.kneighbors']:
-            return hasattr(self, '_onedal_model') and not sp.isspmatrix(data[0])
+            return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'neighbors.KNeighborsClassifier.fit':
+            is_sparse = sp.isspmatrix(data[0])
+            class_count = None
+            if len(data) > 1:
+                class_count = len(np.unique(data[1]))
             return self.weights in ['uniform', 'distance'] \
                     and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
                     and self.metric in ['minkowski', 'euclidean', 'chebyshev', 'cosine'] \
-                    and not sp.isspmatrix(data[0])
+                    and class_count >= 2 \
+                    and not is_sparse
         if method_name in ['neighbors.KNeighborsClassifier.predict',
                            'neighbors.KNeighborsClassifier.predict_proba',
                            'neighbors.KNeighborsClassifier.kneighbors']:
-            return hasattr(self, '_onedal_model') and not sp.isspmatrix(data[0])
+            return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, queue=None):
@@ -192,7 +195,6 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         return self._onedal_estimator.kneighbors(X, n_neighbors, return_distance, queue=queue)
 
     def _save_attributes(self):
-        self._onedal_model = self._onedal_estimator._onedal_model
         self.classes_ = self._onedal_estimator.classes_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
