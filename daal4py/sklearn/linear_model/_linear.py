@@ -203,6 +203,8 @@ def _predict_linear(self, X):
     C : array, shape = (n_samples,)
         Returns predicted values.
     """
+    if sklearn_check_version('1.0'):
+        self._check_feature_names(X, reset=False)
     is_df = is_DataFrame(X)
     if sklearn_check_version('0.23'):
         X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
@@ -291,6 +293,4 @@ class LinearRegression(LinearRegression_original):
 
     @support_usm_ndarray()
     def predict(self, X):
-        if sklearn_check_version('1.0'):
-            self._check_feature_names(X, reset=False)
         return _predict_linear(self, X)

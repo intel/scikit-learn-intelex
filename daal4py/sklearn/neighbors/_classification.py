@@ -45,6 +45,8 @@ else:
 
 
 def daal4py_classifier_predict(estimator, X, base_predict):
+    if sklearn_check_version('1.0'):
+        self._check_feature_names(X, reset=False)
     X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     daal_model = getattr(estimator, '_daal_model', None)
     n_features = getattr(estimator, 'n_features_in_', None)
@@ -159,18 +161,12 @@ class KNeighborsClassifier(KNeighborsClassifier_):
 
     @support_usm_ndarray()
     def fit(self, X, y):
-        if sklearn_check_version('1.0'):
-            self._check_feature_names(X, reset=True)
         return NeighborsBase._fit(self, X, y)
 
     @support_usm_ndarray()
     def predict(self, X):
-        if sklearn_check_version('1.0'):
-            self._check_feature_names(X, reset=False)
         return daal4py_classifier_predict(self, X, BaseKNeighborsClassifier.predict)
 
     @support_usm_ndarray()
     def predict_proba(self, X):
-        if sklearn_check_version('1.0'):
-            self._check_feature_names(X, reset=False)
         return BaseKNeighborsClassifier.predict_proba(self, X)

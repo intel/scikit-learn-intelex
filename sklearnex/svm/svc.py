@@ -41,7 +41,7 @@ class SVC(sklearn_SVC, BaseSVC):
             random_state=random_state)
 
     def fit(self, X, y, sample_weight=None):
-        if LooseVersion(sklearn_version) == LooseVersion("1.0"):
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.SVC.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -51,7 +51,7 @@ class SVC(sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def predict(self, X):
-        if LooseVersion(sklearn_version) == LooseVersion("1.0"):
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVC.predict', {
             'onedal': self.__class__._onedal_predict,
@@ -76,7 +76,7 @@ class SVC(sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
-        if LooseVersion(sklearn_version) == LooseVersion("1.0"):
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVC.decision_function', {
             'onedal': self.__class__._onedal_decision_function,

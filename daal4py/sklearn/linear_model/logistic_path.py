@@ -589,6 +589,8 @@ def __logistic_regression_path(
 
 def daal4py_predict(self, X, resultsToEvaluate):
     check_is_fitted(self)
+    if sklearn_check_version('1.0'):
+        self._check_feature_names(X, reset=False)
     X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     try:
         fptype = getFPType(X)
@@ -751,20 +753,14 @@ if sklearn_check_version('0.24'):
 
         @support_usm_ndarray()
         def predict(self, X):
-            if sklearn_check_version('1.0'):
-                self._check_feature_names(X, reset=False)
             return daal4py_predict(self, X, 'computeClassLabels')
 
         @support_usm_ndarray()
         def predict_log_proba(self, X):
-            if sklearn_check_version('1.0'):
-                self._check_feature_names(X, reset=False)
             return daal4py_predict(self, X, 'computeClassLogProbabilities')
 
         @support_usm_ndarray()
         def predict_proba(self, X):
-            if sklearn_check_version('1.0'):
-                self._check_feature_names(X, reset=False)
             return daal4py_predict(self, X, 'computeClassProbabilities')
 
 
@@ -846,8 +842,6 @@ else:
 
         @support_usm_ndarray()
         def fit(self, X, y, sample_weight=None):
-            if sklearn_check_version('1.0'):
-                self._check_feature_names(X, reset=True)
             which, what = logistic_module, '_logistic_regression_path'
             replacer = logistic_regression_path
             descriptor = getattr(which, what, None)
@@ -858,18 +852,12 @@ else:
 
         @support_usm_ndarray()
         def predict(self, X):
-            if sklearn_check_version('1.0'):
-                self._check_feature_names(X, reset=False)
             return daal4py_predict(self, X, 'computeClassLabels')
 
         @support_usm_ndarray()
         def predict_log_proba(self, X):
-            if sklearn_check_version('1.0'):
-                self._check_feature_names(X, reset=False)
             return daal4py_predict(self, X, 'computeClassLogProbabilities')
 
         @support_usm_ndarray()
         def predict_proba(self, X):
-            if sklearn_check_version('1.0'):
-                self._check_feature_names(X, reset=False)
             return daal4py_predict(self, X, 'computeClassProbabilities')

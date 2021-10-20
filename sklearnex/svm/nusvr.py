@@ -36,7 +36,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             max_iter=max_iter)
 
     def fit(self, X, y, sample_weight=None):
-        if LooseVersion(sklearn_version) == LooseVersion("1.0"):
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.NuSVR.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -46,7 +46,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
-        if LooseVersion(sklearn_version) == LooseVersion("1.0"):
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.NuSVR.predict', {
             'onedal': self.__class__._onedal_predict,

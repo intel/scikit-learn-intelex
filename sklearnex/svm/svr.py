@@ -36,7 +36,7 @@ class SVR(sklearn_SVR, BaseSVR):
             max_iter=max_iter)
 
     def fit(self, X, y, sample_weight=None):
-        if LooseVersion(sklearn_version) == LooseVersion("1.0"):
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.SVR.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -47,7 +47,7 @@ class SVR(sklearn_SVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
-        if LooseVersion(sklearn_version) == LooseVersion("1.0"):
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVR.predict', {
             'onedal': self.__class__._onedal_predict,

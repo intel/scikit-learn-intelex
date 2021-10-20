@@ -89,12 +89,8 @@ class KNeighborsRegressor(KNeighborsRegressor_):
 
     @support_usm_ndarray()
     def fit(self, X, y):
-        if sklearn_check_version('1.0'):
-            self._check_feature_names(X, reset=True)
         return NeighborsBase._fit(self, X, y)
 
     @support_usm_ndarray()
     def predict(self, X):
-        if sklearn_check_version('1.0'):
-            self._check_feature_names(X, reset=False)
         return BaseKNeighborsRegressor.predict(self, X)
