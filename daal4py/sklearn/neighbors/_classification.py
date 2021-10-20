@@ -46,7 +46,7 @@ else:
 
 def daal4py_classifier_predict(estimator, X, base_predict):
     if sklearn_check_version('1.0'):
-        self._check_feature_names(X, reset=False)
+        estimator._check_feature_names(X, reset=False)
     X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     daal_model = getattr(estimator, '_daal_model', None)
     n_features = getattr(estimator, 'n_features_in_', None)
