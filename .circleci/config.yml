@@ -21,7 +21,6 @@ jobs:
             conda activate bld
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
-            export OFF_ONEDAL_IFACE=1
             python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Building sklearnex
@@ -34,7 +33,6 @@ jobs:
           no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
-            export OFF_ONEDAL_IFACE=1
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             pip install -q scikit-learn
@@ -69,7 +67,6 @@ jobs:
             conda activate bld
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
-            export OFF_ONEDAL_IFACE=1
             python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Building sklearnex
@@ -82,7 +79,6 @@ jobs:
           no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
-            export OFF_ONEDAL_IFACE=1
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             conda install -y -c conda-forge threadpoolctl cython
