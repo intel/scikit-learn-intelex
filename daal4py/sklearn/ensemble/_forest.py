@@ -314,6 +314,8 @@ def _fit_classifier(self, X, y, sample_weight=None):
     ])
 
     if _dal_ready:
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float32, np.float64])
         y = np.asarray(y)
         y = np.atleast_1d(y)
@@ -466,6 +468,8 @@ def _fit_regressor(self, X, y, sample_weight=None):
     ])
 
     if _dal_ready:
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float64, np.float32])
         y = np.asarray(y)
         y = np.atleast_1d(y)
@@ -699,6 +703,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
         if not _dal_ready:
             return super(RandomForestClassifier, self).predict(X)
 
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
         X = check_array(
             X,
             accept_sparse=['csr', 'csc', 'coo'],
@@ -730,6 +736,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
         if hasattr(self, 'n_features_in_'):
             try:
                 num_features = _daal_num_features(X)
@@ -1000,6 +1008,8 @@ class RandomForestRegressor(RandomForestRegressor_original):
         if not _dal_ready:
             return super(RandomForestRegressor, self).predict(X)
 
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
         X = check_array(
             X,
             accept_sparse=['csr', 'csc', 'coo'],

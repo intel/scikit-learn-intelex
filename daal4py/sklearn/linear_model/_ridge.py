@@ -111,6 +111,7 @@ def _fit_ridge(self, X, y, sample_weight=None):
             default=False,
             estimator_name=self.__class__.__name__
         )
+        self._check_feature_names(X, reset=True)
 
     X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=[np.float64, np.float32],
                      multi_output=True, y_numeric=True)
@@ -164,6 +165,9 @@ def _predict_ridge(self, X):
     C : array, shape = (n_samples,)
         Returns predicted values.
     """
+    if sklearn_check_version('1.0'):
+        self._check_feature_names(X, reset=False)
+
     X = check_array(
         X, accept_sparse=['csr', 'csc', 'coo'], dtype=[np.float64, np.float32])
     good_shape_for_daal = \
