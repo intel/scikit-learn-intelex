@@ -54,7 +54,7 @@ Supported configurations
      - ✔️
 
 .. note::
-    It supports Intel CPU and GPU except on MacOS.
+    It supports CPUs and GPUs
 
 **Anaconda Cloud: Conda-Forge channel**
 
@@ -85,8 +85,8 @@ Supported configurations
      - ✔️
 
 .. note::
-    It supports only Intel CPU.
-    Recommended for conda users by default.
+    It supports only CPUs.
+    Recommended for conda users by default
 
 **Anaconda Cloud: Intel channel**
 
@@ -117,6 +117,7 @@ Supported configurations
      - ✔️
 
 .. note::
+    It supports CPUs and GPUs.
     Recommended for conda users who use other components from Intel(R) Distribution for Python
 
 System Requirements
@@ -127,9 +128,9 @@ For CPU users
 
 **Operating systems**
 
-- Linux*: the last two versions of popular Linux systems
-- Windows* and Windows* Server: the last two versions 
-- macOS*: the last two versions 
+- **Linux***: the last two versions of popular Linux systems
+- **Windows*** and **Windows* Server**: the last two versions 
+- **macOS***: the last two versions 
 
 **Hardware platforms**
 
@@ -142,7 +143,7 @@ For CPU users
     ARM* architecture is not supported
 
 .. note::
-    Intel® processors provide better performance then other CPUs
+    Intel® processors provide better performance then other CPUs.
     Read more about hardware comparison in our :ref:`blogs <blogs>`
 
 For GPU users
@@ -154,8 +155,8 @@ For GPU users
 
 **Operating systems**
 
-- Linux*: the last two versions of popular Linux systems
-- Windows* and Windows* Server: the last two versions
+- **Linux***: the last two versions of popular Linux systems
+- **Windows*** and **Windows* Server**: the last two versions
 
 **Hardware platforms**
 
