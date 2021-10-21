@@ -159,6 +159,7 @@ deselected_tests:
   - tests/test_common.py::test_check_n_features_in_after_fitting[LogisticRegression()] >=0.24,<1.0
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()] >=0.24,<1.0
   - metrics/tests/test_score_objects.py::test_scoring_is_not_metric
+  - utils/tests/test_estimator_checks.py::test_check_dataframe_column_names_consistency >=1.0
 
   # Stability issue with max absolute difference: 4.33846826e-08/1.17613697e-11. Remove in next release
   - ensemble/tests/test_bagging.py::test_estimators_samples_deterministic
