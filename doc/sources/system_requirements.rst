@@ -22,10 +22,6 @@ System requirements
 
 This page provides details about hardware, operating system, and software prerequisites for the Intel® Extension for Scikit-learn.
 
-.. note::
-    Intel® Extension for Scikit-learn may work on other hardware, operating systems, and with other configurations, but that was not tested.
-    You can find our blogs about hardware comparison :ref:`here <blogs>`.
-
 Supported configurations
 ------------------------
 
@@ -51,7 +47,7 @@ Supported configurations
      - ✔️
      - ✔️
      - ✔️
-   * - OsX
+   * - macOS
      - ✔️
      - ✔️
      - ✔️
@@ -82,7 +78,7 @@ Supported configurations
      - ✔️
      - ✔️
      - ✔️
-   * - OsX
+   * - macOS
      - ✔️
      - ✔️
      - ✔️
@@ -114,95 +110,54 @@ Supported configurations
      - ✔️
      - ✔️
      - ✔️
-   * - OsX
+   * - macOS
      - ✔️
      - ✔️
      - ✔️
      - ✔️
 
 .. note::
-    It supports Intel CPU and GPU except on OsX.
-    Recommended for conda users who use other components from Intel(R) Distribution for Python.
+    Recommended for conda users who use other components from Intel(R) Distribution for Python
 
-System Requirements for Data Parallel C++ (DPC++)
--------------------------------------------------
+System Requirements
+-------------------
 
-For users using the DPC++ compiler, please refer to the DPC++ compiler system
-requirements `here <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_.
+For CPU users
+-------------
 
-Operating systems
------------------
-- Linux*
-- Redhat Enterprise Linux (RHEL)* 7, 8
-- Ubuntu* 18.04 LTS, 20.04 LTS
-- Windows*
-- Windows* Server 2019
-- Windows* 10
-- macOS*
-- macOS* 10.15
-- macOS* 11
+**Operating systems**
 
-Supported Hardware Platforms
-----------------------------
+- Linux*: the last two versions of popular Linux systems
+- Windows* and Windows* Server: the last two versions 
+- macOS*: the last two versions 
 
-**CPU**
+**Hardware platforms**
 
-- Intel Atom® Processors
-- Intel® Core™ Processor Family
-- Intel® Xeon® Processor Family
-- Intel® Xeon® Scalable Performance Processor Family
+- All processors with x86 architecture
 
-**Accelerators**
+.. note::
+    Your processor must support the SSE2 instruction set
 
-- Intel® HD Graphics
-- Intel® UHD Graphics for 9th, 10th and 11th Gen Intel® Processors
-- Intel® Iris® Plus Graphics
-- Intel® Iris® Xe Graphics
-- Intel® Iris® Xe Max Graphics
-- Intel® Iris® Graphics
-- Intel® Iris® Pro Graphics
+.. note::
+    ARM* architecture is not supported
 
-Software Requirements
----------------------
+.. note::
+    Intel® processors provide better performance then other CPUs
+    Read more about hardware comparison in our :ref:`blogs <blogs>`
 
-**For DPC++**
+For GPU users
+-------------
 
-*Linux**
+.. warning::
+    For users using accelerators, please refer to the DPC++ compiler system
+    requirements `here <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_
 
-- GNU* GCC v7.0 or higher
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
-- `Intel GPU drivers <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__  for Intel GPU development
+**Operating systems**
 
-*Windows**
+- Linux*: the last two versions of popular Linux systems
+- Windows* and Windows* Server: the last two versions
 
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
-- `Intel GPU drivers <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__ for Intel GPU development
+**Hardware platforms**
 
-**For C/C++**
-
-*Linux**
-
-- Intel® C++ Compiler Classic 2021.1 and later
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
-- Intel® C++ compiler v19.0 and v19.1
-- GNU* Compiler Collection 5.x and later
-- PGI* Compiler 19.10 and 20.4
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
-
-*Windows**
-
-- Intel® C/C++ Compiler Classic 2021.1 and later
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
-- Intel® C++ compiler v19.0 and v19.1
-- PGI* Compiler 19.10 and 20.4
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
-
-*macOS**
-
-- Xcode* 11, 12
-- Intel® C/C++ Compiler Classic 2021.1 and later
-- Intel® oneAPI DPC++/C++ Compiler 2021.1 and later
-- Intel® C++ compiler v19.1
-- Intel® oneAPI Threading Building Blocks (oneTBB) 2021.1 and later
+- All Intel® integrated and discrete GPUs
+- `Intel® GPU drivers <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__
