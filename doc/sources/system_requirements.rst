@@ -139,7 +139,7 @@ The last two versions of the following operating systems:
 - All processors with x86 architecture
 
 .. note::
-    Your processor must support at least one of SSE2, AVX, AVX2, AVX512 instruction set
+    Your processor must support at least one of SSE2, AVX, AVX2, AVX512 instruction sets.
 
 .. note::
     ARM* architecture is not supported.
