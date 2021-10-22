@@ -142,7 +142,7 @@ The last two versions of the following operating systems:
     Your processor must support at least one of SSE2, AVX, AVX2, AVX512 instruction set
 
 .. note::
-    ARM* architecture is not supported
+    ARM* architecture is not supported.
 
 .. note::
     Intel® processors provide better performance then other CPUs.
