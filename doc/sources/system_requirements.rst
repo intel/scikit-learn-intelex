@@ -20,7 +20,7 @@
 System requirements
 ###################
 
-This page provides details about hardware, operating system, and software prerequisites for the Intel® Extension for Scikit-learn.
+This page provides details about hardware, operating system, and software prerequisites for Intel® Extension for Scikit-learn.
 
 Supported configurations
 ------------------------
@@ -124,39 +124,43 @@ System Requirements
 -------------------
 
 For CPU users
--------------
+=============
 
 **Operating systems**
 
-- **Linux***: the last two versions of popular Linux systems
-- **Windows*** and **Windows* Server**: the last two versions 
-- **macOS***: the last two versions 
+The last two versions of the following operating systems:
+
+- **Linux**\*
+- **Windows**\* and **Windows\* Server**
+- **macOS**\*
 
 **Hardware platforms**
 
 - All processors with x86 architecture
 
 .. note::
-    Your processor must support at least one of SSE2. AVX, AVX2, AVX512 instruction set
+    Your processor must support at least one of SSE2, AVX, AVX2, AVX512 instruction set
 
 .. note::
     ARM* architecture is not supported
 
 .. note::
     Intel® processors provide better performance then other CPUs.
-    Read more about hardware comparison in our :ref:`blogs <blogs>`
+    Read more about hardware comparison in our :ref:`blogs <blogs>`.
 
 For GPU users
--------------
+=============
 
 .. warning::
-    For users using accelerators, please refer to the DPC++ compiler system
+    If you are using accelerators, please refer to the DPC++ compiler system
     requirements `here <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_
 
 **Operating systems**
 
-- **Linux***: the last two versions of popular Linux systems
-- **Windows*** and **Windows* Server**: the last two versions
+The last two versions of the following operating systems:
+
+- **Linux**\*
+- **Windows**\* and **Windows\* Server**
 
 **Hardware platforms**
 
