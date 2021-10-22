@@ -137,7 +137,7 @@ For CPU users
 - All processors with x86 architecture
 
 .. note::
-    Your processor must support the SSE2 instruction set
+    Your processor must support at least one of SSE2. AVX, AVX2, AVX512 instruction set
 
 .. note::
     ARM* architecture is not supported
