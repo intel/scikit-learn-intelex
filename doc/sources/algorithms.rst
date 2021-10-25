@@ -34,11 +34,11 @@ algorithms:
      - Data support
    * - Classification
      - SVC
-     - All parameters except ``kernel`` = 'sigmoid'.
+     - All parameters are supported
      - No limitations.
    * - Classification
      - NuSVC
-     - All parameters except ``kernel`` = 'sigmoid'.
+     - All parameters are supported
      - No limitations.
    * - Classification
      - RandomForestClassifier
@@ -54,11 +54,11 @@ algorithms:
      - Only dense data is supported.
    * - Regression
      - SVR
-     - All parameters except ``kernel`` = 'sigmoid'.
+     - All parameters are supported
      - No limitations.
    * - Regression
      - NuSVR
-     - All parameters except ``kernel`` = 'sigmoid'.
+     - All parameters are supported
      - No limitations.
    * - Regression
      - RandomForestRegressor
