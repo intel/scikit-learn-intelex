@@ -29,7 +29,7 @@ The extension is also available as a part of [Intel® oneAPI AI Analytics Toolki
 
 You can [build the `scikit-learn-intelex` package from sources](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md) as well.
 
-Refer to 📦 [System Requirements](https://intel.github.io/scikit-learn-intelex/system_requirements.html) for details about hardware, operating system, and software prerequisites for Intel® Extension for Scikit-learn.
+Refer to 📦 [System Requirements](https://intel.github.io/scikit-learn-intelex/system_requirements.html) for details about supported hardware for Intel® Extension for Scikit-learn.
 
 ### 🔧 Install from PyPI channel (recommended by default)
 
