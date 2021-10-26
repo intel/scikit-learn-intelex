@@ -9,6 +9,7 @@ daal4py.egg-info
 *.lib
 *.dll
 **/.ipynb_checkpoints
+doc/_build
 
 # Cython generated code
 src/oneapi/oneapi_api.h
