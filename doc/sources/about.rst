@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2020-2021 Intel Corporation
+.. * Copyright 2021 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -14,18 +14,3 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-.. _contents:
-
-####################################
-Intel(R) Extension for Scikit-learn*
-####################################
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   About Intel(R) Extension for Scikit-learn* <index>
-   Get started <get_started>
-   Supported Algorithms <algorithms>
-   Intel(R) Extension for Scikit-learn* Verbose <verbose>
-   Global patching <global_patching>
-   oneAPI and GPU support <oneapi_gpu>

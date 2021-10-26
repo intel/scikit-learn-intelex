@@ -17,178 +17,66 @@
 .. _get_started:
 
 ############################################
-Getting Intel(R) Extension for Scikit-learn*
+Quick Start
 ############################################
 
-Installation from distribution channels
----------------------------------------
+Usage
+--------------------
+Intel(R) Extension for Scikit-learn* dynamically patches scikit-learn estimators to use Intel(R) oneAPI Data Analytics Library
+as the underlying solver, while getting the same solution faster.
 
-Intel(R) Extension for Scikit-learn is available at the `Python Package Index <https://pypi.org/project/scikit-learn-intelex/>`_, on Anaconda Cloud in `Conda-Forge channel <https://anaconda.org/conda-forge/scikit-learn-intelex>`_ and in `Intel channel <https://anaconda.org/intel/scikit-learn-intelex>`_. 
-Also Intel(R) Extension for Scikit-learn is available available as a part of `Intel oneAPI AI Analytics Toolkit <https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3>`_ (AI Kit). 
-Sources and build instructions are available in `Intel(R) Extension for Scikit-learn repository <https://github.com/intel/scikit-learn-intelex>`_.
+- It is possible to enable those patches without editing the code of a scikit-learn application by
+  using the following commandline flag::
 
-- Install from **PyPI** (Recommended)::
+    python -m sklearnex my_application.py
 
-     pip install scikit-learn-intelex
+- Or from your script::
 
-- Install from Anaconda Cloud: Conda-Forge channel::
+    from sklearnex import patch_sklearn
+    patch_sklearn()
 
-     conda install scikit-learn-intelex -c conda-forge
 
-- Install from Anaconda Cloud: Intel channel::
+For example::
 
-    conda install scikit-learn-intelex -c intel
+    import numpy as np
+    from sklearnex import patch_sklearn
+    patch_sklearn()
 
-Supported configurations
-------------------------
+    # You need to re-import scikit-learn algorithms after the patch
+    from sklearn.cluster import KMeans
 
-**PyPi channel**
+    X = np.array([[1,  2], [1,  4], [1,  0],
+                  [10, 2], [10, 4], [10, 0]])
+    kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
+    print(f"kmeans.labels_ = {kmeans.labels_}")
 
-.. list-table::
-   :widths: 25 8 8 8 8
-   :header-rows: 1
-   :align: left
+In the example above, you can see that the use of the original Scikit-learn
+has not changed. This behavior is achieved through drop-in patching.
 
-   * - OS / Python version
-     - Python 3.6
-     - Python 3.7
-     - Python 3.8
-     - Python 3.9
-   * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-   * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-   * - OsX
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
+To undo the patch, run::
 
-.. note::
-    It supports Intel CPU and GPU except on OsX.
+    sklearnex.unpatch_sklearn()
+    # You need to re-import scikit-learn algorithms after the unpatch:
+    from sklearn.cluster import KMeans
 
-**Anaconda Cloud: Conda-Forge channel**
+You may specify which algorithms to patch:
 
-.. list-table::
-   :widths: 25 8 8 8 8
-   :header-rows: 1
-   :align: left
+- Patching only one algorithm::
 
-   * - OS / Python version
-     - Python 3.6
-     - Python 3.7
-     - Python 3.8
-     - Python 3.9
-   * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-   * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-   * - OsX
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
+    from sklearnex import patch_sklearn
+    # The names match scikit-learn estimators
+    patch_sklearn("SVC")
+
+- Patching several algorithms::
+
+    from sklearnex import patch_sklearn
+    # The names match scikit-learn estimators
+    patch_sklearn(["SVC", "DBSCAN"])
+
+Intel(R) Extension for Scikit-learn does not patch all scikit-learn algorithms and parameters.
+You can find the :ref:`full patching map here <sklearn_algorithms>`.
 
 .. note::
-    It supports only Intel CPU.
-    Recommended for conda users by default.
+    Intel(R) Extension for Scikit-learn supports optimizations for the last four versions of scikit-learn.
+    The latest release of scikit-learn-intelex-2021.3.X supports scikit-learn 0.22.X, 0.23.X, 0.24.X and 1.0.X.
 
-**Anaconda Cloud: Intel channel**
-
-.. list-table::
-   :widths: 25 8 8 8 8
-   :header-rows: 1
-   :align: left
-
-   * - OS / Python version
-     - Python 3.6
-     - Python 3.7
-     - Python 3.8
-     - Python 3.9
-   * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-   * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-   * - OsX
-     - ✔️
-     - ✔️
-     - ✔️
-     - ❌
-
-.. note::
-    It supports Intel CPU and GPU except on OsX.
-    Recommended for conda users who use other components from Intel(R) Distribution for Python.
-
-Building from Sources
----------------------
-
-**Prerequisites**::
-
-    Python version >= 3.6
-
-**Configuring the build with environment variables**::
-
-    SKLEARNEX_VERSION: sets package version
-
-**Building Intel(R) Extension for Scikit-learn**
-
-To install the package::
-
-    cd <checkout-dir>
-    python setup_sklearnex.py install
-
-To install the package in the development mode::
-
-    cd <checkout-dir>
-    python setup.py develop
-
-To install scikit-learn-intelex without downloading daal4py::
-
-    cd <checkout-dir>
-    python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
-
-To install scikit-learn-intelex without downloading daal4py in the development mode::
-
-    cd <checkout-dir>
-    python setup_sklearnex.py develop --no-deps
-
-.. note::
-    The ``develop`` mode will not install the package but it will create a ``.egg-link`` in the deployment directory
-    back to the project source code directory. That way you can edit the source code and see the changes
-    without having to reinstall the package every time you make a small change.
-
-⚠️ Keys ``--single-version-externally-managed`` and ``--no-deps`` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
-
-.. note::
-    ``--single-version-externally-managed`` is an option used for Python packages instructing the setuptools module
-    to create a Python package that can be easily managed by the package manager on the host
-
-**Building documentation for Intel(R) Extension for Scikit-learn**
-
-Prerequisites for creating documentation
-
-- sphinx
-- sphinx_rtd_theme
-
-Building documentation
-
-1. ```cd doc && make html```
-2. The documentation will be in ```doc/_build/html```
