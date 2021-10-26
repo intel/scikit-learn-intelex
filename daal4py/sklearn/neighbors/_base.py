@@ -291,6 +291,9 @@ class NeighborsBase(BaseNeighborsBase):
         if hasattr(self, 'weights') and sklearn_check_version("1.0"):
             self.weights = _check_weights(self.weights)
 
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
+
         X_incorrect_type = isinstance(
             X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
         single_output = True

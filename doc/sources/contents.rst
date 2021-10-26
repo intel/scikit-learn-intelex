@@ -29,3 +29,4 @@ Intel(R) Extension for Scikit-learn*
    Intel(R) Extension for Scikit-learn* Verbose <verbose>
    Global patching <global_patching>
    oneAPI and GPU support <oneapi_gpu>
+   System requirements <system_requirements>

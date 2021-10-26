@@ -384,6 +384,8 @@ def _daal4py_predict_lasso(self, X):
 
 
 def _fit(self, X, y, sample_weight=None, check_input=True):
+    if sklearn_check_version('1.0'):
+        self._check_feature_names(X, reset=True)
     # check X and y
     if check_input:
         X, y = check_X_y(
@@ -533,6 +535,9 @@ class ElasticNet(ElasticNet_original):
             Returns predicted values.
         """
 
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
+
         X = check_array(
             X,
             accept_sparse=['csr', 'csc', 'coo'],
@@ -677,7 +682,8 @@ class Lasso(ElasticNet):
         C : array, shape = (n_samples,)
             Returns predicted values.
         """
-
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         X = check_array(
             X,
             accept_sparse=['csr', 'csc', 'coo'],

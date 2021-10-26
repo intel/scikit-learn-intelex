@@ -19,7 +19,9 @@ from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.svm import SVR as sklearn_SVR
 from sklearn.utils.validation import _deprecate_positional_args
+from sklearn import __version__ as sklearn_version
 
+from distutils.version import LooseVersion
 from onedal.svm import SVR as onedal_SVR
 
 
@@ -34,6 +36,8 @@ class SVR(sklearn_SVR, BaseSVR):
             max_iter=max_iter)
 
     def fit(self, X, y, sample_weight=None):
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+            self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.SVR.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_SVR.fit,
@@ -43,6 +47,8 @@ class SVR(sklearn_SVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
+        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVR.predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_SVR.predict,

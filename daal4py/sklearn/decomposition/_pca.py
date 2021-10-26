@@ -259,6 +259,8 @@ class PCA(PCA_original):
         else:
             check_is_fitted(self, ['mean_', 'components_'], all_or_any=all)
 
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
         X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=check_X)
         fpType = getFPType(X)
 
