@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Global patching &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
+    <title>System requirements &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet" />
   <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -36,8 +36,7 @@
     <link rel="shortcut icon" href="_static/favicons.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="oneAPI and GPU support in Intel(R) Extension for Scikit-learn*" href="oneapi_gpu.html" />
-    <link rel="prev" title="Intel(R) Extension for Scikit-learn* verbose" href="verbose.html" />
+    <link rel="prev" title="oneAPI and GPU support in Intel(R) Extension for Scikit-learn*" href="oneapi_gpu.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -93,8 +92,8 @@
    Intel(R) Extension for Scikit-learn* Verbose
   </a>
  </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1">
+  <a class="reference internal" href="global_patching.html">
    Global patching
   </a>
  </li>
@@ -103,8 +102,8 @@
    oneAPI and GPU support
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="system_requirements.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    System requirements
   </a>
  </li>
@@ -149,7 +148,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/global_patching.rst.txt"><button type="button"
+        <a class="dropdown-buttons" href="_sources/system_requirements.rst.txt"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.rst</button></a>
         <!-- Download PDF via print -->
@@ -166,10 +165,10 @@
     <div class="dropdown-buttons sourcebuttons">
         
         <a class="issues-button"
-            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fglobal_patching.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fsystem_requirements.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/global_patching.rst"><button
+        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/system_requirements.rst"><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
     </div>
@@ -189,6 +188,36 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#supported-configurations">
+   Supported configurations
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id2">
+   System Requirements
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#for-cpu-users">
+     For CPU users
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#for-gpu-users">
+     For GPU users
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+            </nav>
         </div>
     </div>
 </div>
@@ -197,59 +226,189 @@
         
               <div>
                 
-  <section id="global-patching">
-<span id="id1"></span><h1>Global patching<a class="headerlink" href="#global-patching" title="Permalink to this headline">¶</a></h1>
-<p>Use global patching to patch all your scikit-learn applications without any additional actions.</p>
-<p><strong>Prerequisites for global patching</strong>:</p>
+  <section id="system-requirements">
+<span id="id1"></span><h1>System requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline">¶</a></h1>
+<p>This page provides details about hardware, operating system, and software prerequisites for Intel® Extension for Scikit-learn.</p>
+<section id="supported-configurations">
+<h2>Supported configurations<a class="headerlink" href="#supported-configurations" title="Permalink to this headline">¶</a></h2>
+<p><strong>PyPi channel</strong></p>
+<table class="colwidths-given table">
+<colgroup>
+<col style="width: 44%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
+<th class="head"><p>Python 3.6</p></th>
+<th class="head"><p>Python 3.7</p></th>
+<th class="head"><p>Python 3.8</p></th>
+<th class="head"><p>Python 3.9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Linux</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-odd"><td><p>Windows</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-even"><td><p>macOS</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It supports CPUs and GPUs</p>
+</div>
+<p><strong>Anaconda Cloud: Conda-Forge channel</strong></p>
+<table class="colwidths-given table">
+<colgroup>
+<col style="width: 44%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
+<th class="head"><p>Python 3.6</p></th>
+<th class="head"><p>Python 3.7</p></th>
+<th class="head"><p>Python 3.8</p></th>
+<th class="head"><p>Python 3.9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Linux</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-odd"><td><p>Windows</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-even"><td><p>macOS</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It supports only CPUs.
+Recommended for conda users by default</p>
+</div>
+<p><strong>Anaconda Cloud: Intel channel</strong></p>
+<table class="colwidths-given table">
+<colgroup>
+<col style="width: 44%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>OS / Python version</p></th>
+<th class="head"><p>Python 3.6</p></th>
+<th class="head"><p>Python 3.7</p></th>
+<th class="head"><p>Python 3.8</p></th>
+<th class="head"><p>Python 3.9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Linux</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-odd"><td><p>Windows</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+<tr class="row-even"><td><p>macOS</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+<td><p>✔️</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It supports CPUs and GPUs.
+Recommended for conda users who use other components from Intel(R) Distribution for Python</p>
+</div>
+</section>
+<section id="id2">
+<h2>System Requirements<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<section id="for-cpu-users">
+<h3>For CPU users<a class="headerlink" href="#for-cpu-users" title="Permalink to this headline">¶</a></h3>
+<p><strong>Operating systems</strong></p>
+<p>The last two versions of the following operating systems:</p>
 <ul class="simple">
-<li><p>Intel(R) Extension for Scikit-learn</p></li>
-<li><p>Scikit-learn</p></li>
+<li><p><strong>Linux</strong>*</p></li>
+<li><p><strong>Windows</strong>* and <strong>Windows* Server</strong></p></li>
+<li><p><strong>macOS</strong>*</p></li>
+</ul>
+<p><strong>Hardware platforms</strong></p>
+<ul class="simple">
+<li><p>All processors with x86 architecture</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For global patching to work, you need read and write permissions to Scikit-learn files.</p>
-</div>
-<p>To patch all <a class="reference internal" href="algorithms.html#sklearn-algorithms"><span class="std std-ref">supported algorithms</span></a>, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span>
-</pre></div>
-</div>
-<p>If you want to patch only some algorithms, use <code class="docutils literal notranslate"><span class="pre">--algorithm</span></code> or <code class="docutils literal notranslate"><span class="pre">-a</span></code> keys
-with a list of algorithms to patch. For example, to patch only SVC and RandomForestClassifier estimators, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span> <span class="o">-</span><span class="n">a</span> <span class="n">svc</span> <span class="n">random_forest_classifier</span>
-</pre></div>
-</div>
-<p>If you do not want to receive patching notifications, then use <code class="docutils literal notranslate"><span class="pre">--no-verbose</span></code> or <code class="docutils literal notranslate"><span class="pre">-nv</span></code> keys:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span> <span class="o">-</span><span class="n">a</span> <span class="n">svc</span> <span class="n">random_forest_classifier</span> <span class="o">-</span><span class="n">nv</span>
-</pre></div>
+<p>Your processor must support at least one of SSE2, AVX, AVX2, AVX512 instruction sets.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If you run the global patching command several times with different parameters,
-then only the last configuration will be applied.</p>
-</div>
-<p>To disable global patching, use the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">unpatch_sklearn</span>
-</pre></div>
-</div>
-<p>You can also enable global patching in your code. To do this,
-use the <code class="docutils literal notranslate"><span class="pre">patch_sklearn</span></code> function with the <code class="docutils literal notranslate"><span class="pre">global_patch</span></code> argument:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
-<span class="n">patch_sklearn</span><span class="p">(</span><span class="n">global_patch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">sklearn</span>
-</pre></div>
-</div>
-<p>After that, Scikit-learn patches will be enabled in the current application and
-in all others that use the same environment.</p>
-<p>To disable global patching via code, use the <code class="docutils literal notranslate"><span class="pre">global_patch</span></code>
-argument in the <code class="docutils literal notranslate"><span class="pre">unpatch_sklearn</span></code> function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">unpatch_sklearn</span>
-<span class="n">unpatch_sklearn</span><span class="p">(</span><span class="n">global_patch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
+<p>ARM* architecture is not supported.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If you clone an environment with enabled global patching, it will already be applied in the new environment.</p>
+<p>Intel® processors provide better performance then other CPUs.
+Read more about hardware comparison in our <a class="reference internal" href="index.html#blogs"><span class="std std-ref">blogs</span></a>.</p>
 </div>
+</section>
+<section id="for-gpu-users">
+<h3>For GPU users<a class="headerlink" href="#for-gpu-users" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you are using accelerators, please refer to the DPC++ compiler system
+requirements <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html">here</a></p>
+</div>
+<p><strong>Operating systems</strong></p>
+<p>The last two versions of the following operating systems:</p>
+<ul class="simple">
+<li><p><strong>Linux</strong>*</p></li>
+<li><p><strong>Windows</strong>* and <strong>Windows* Server</strong></p></li>
+</ul>
+<p><strong>Hardware platforms</strong></p>
+<ul class="simple">
+<li><p>All Intel® integrated and discrete GPUs</p></li>
+<li><p><a class="reference external" href="https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver">Intel® GPU drivers</a></p></li>
+</ul>
+</section>
+</section>
 </section>
 
 
@@ -258,8 +417,7 @@ argument in the <code class="docutils literal notranslate"><span class="pre">unp
         
         <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="verbose.html" title="previous page">Intel(R) Extension for Scikit-learn* verbose</a>
-    <a class='right-next' id="next-link" href="oneapi_gpu.html" title="next page">oneAPI and GPU support in Intel(R) Extension for Scikit-learn*</a>
+    <a class='left-prev' id="prev-link" href="oneapi_gpu.html" title="previous page">oneAPI and GPU support in Intel(R) Extension for Scikit-learn*</a>
 
         </div>
         

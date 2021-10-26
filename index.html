@@ -1,178 +1,236 @@
 
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Intel(R) Extension for Scikit-learn* &mdash; Intel(R) Extension for Scikit-learn* 2021.2.1 documentation</title>
-  
 
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/style.css" type="text/css" />
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  
-  
-
-  
-  
-
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
+    <title>Intel(R) Extension for Scikit-learn* &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
     
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
+  <link href="_static/css/theme.css" rel="stylesheet" />
+  <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
 
     
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinx-book-theme.5f77b4aec8189eecf79907ce328c390d.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <link rel="shortcut icon" href="_static/favicons.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Getting Intel(R) Extension for Scikit-learn*" href="get_started.html" />
-    <link rel="prev" title="Intel(R) Extension for Scikit-learn*" href="contents.html" /> 
-</head>
-
-<body class="wy-body-for-nav">
-
-   
-  <div class="wy-grid-for-nav">
+    <link rel="prev" title="Intel(R) Extension for Scikit-learn*" href="contents.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
     
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-          
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
 
-          
-            <a href="contents.html" class="icon icon-home"> Intel(R) Extension for Scikit-learn*
-          
+    
 
+    <div class="container-xl">
+      <div class="row">
           
-          </a>
-
-          
-            
-            
-              <div class="version">
-                2021
-              </div>
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">About Intel(R) Extension for Scikit-learn*</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#designed-for-data-scientists-and-framework-designers">Designed for Data Scientists and Framework Designers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#follow-us-on-medium">Follow us on Medium</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#important-links">Important links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#support">Support</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Supported Algorithms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="verbose.html">Intel(R) Extension for Scikit-learn* Verbose</a></li>
-<li class="toctree-l1"><a class="reference internal" href="global_patching.html">Global patching</a></li>
-<li class="toctree-l1"><a class="reference internal" href="oneapi_gpu.html">oneAPI and GPU support</a></li>
-</ul>
-
-            
-          
-        </div>
-        
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="#">
       
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="contents.html">Intel(R) Extension for Scikit-learn*</a>
-        
-      </nav>
+      <img src="_static/oneAPI-rgb-rev-100.png" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">Intel(R) Extension for Scikit-learn* 2021.4 documentation</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <div class="bd-toc-item active">
+        <p class="caption">
+ <span class="caption-text">
+  Contents:
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   About Intel(R) Extension for Scikit-learn*
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="get_started.html">
+   Get started
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="algorithms.html">
+   Supported Algorithms
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="verbose.html">
+   Intel(R) Extension for Scikit-learn* Verbose
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="global_patching.html">
+   Global patching
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="oneapi_gpu.html">
+   oneAPI and GPU support
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="system_requirements.html">
+   System requirements
+  </a>
+ </li>
+</ul>
 
+    </div>
+</nav> <!-- To handle the deprecated key -->
 
-      <div class="wy-nav-content">
-        
-        <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
-  <ul class="wy-breadcrumbs">
-    
-      <li><a href="contents.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li>Intel(R) Extension for Scikit-learn*</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
-        
-          
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-    
-  </ul>
-
-  
-  <hr/>
+<div class="navbar_extra_footer">
+  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
             
-  <div class="section" id="intel-r-extension-for-scikit-learn">
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/index.rst.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.rst</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        
+        <a class="issues-button"
+            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/index.rst"><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#designed-for-data-scientists-and-framework-designers">
+   Designed for Data Scientists and Framework Designers
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#usage">
+   Usage
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#follow-us-on-medium">
+   Follow us on Medium
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#important-links">
+   Important links
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#support">
+   Support
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <section id="intel-r-extension-for-scikit-learn">
 <span id="index"></span><h1>Intel(R) Extension for Scikit-learn*<a class="headerlink" href="#intel-r-extension-for-scikit-learn" title="Permalink to this headline">¶</a></h1>
 <p>Intel(R) Extension for Scikit-learn is a seamless way to speed up your Scikit-learn application.
 The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library
@@ -184,13 +242,13 @@ well-suited machine learning framework for dealing with real-life problems.</p>
 <li><p>HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket</p></li>
 <li><p>SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8</p></li>
 </ul>
-<div class="section" id="designed-for-data-scientists-and-framework-designers">
+<section id="designed-for-data-scientists-and-framework-designers">
 <h2>Designed for Data Scientists and Framework Designers<a class="headerlink" href="#designed-for-data-scientists-and-framework-designers" title="Permalink to this headline">¶</a></h2>
 <p>Intel(R) Extension for Scikit-learn* was created to give data scientists the easiest way to get a better performance
 while using the familiar scikit-learn package.</p>
 <p>Intel(R) Extension for Scikit-learn* depends on Intel(R) daal4py. You can learn more in <a class="reference external" href="https://intelpython.github.io/daal4py">daal4py documentation</a>.</p>
-</div>
-<div class="section" id="usage">
+</section>
+<section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p>Intel(R) Extension for Scikit-learn* dynamically patches scikit-learn estimators to use Intel(R) oneAPI Data Analytics Library
 as the underlying solver, while getting the same solution faster.</p>
@@ -254,9 +312,9 @@ You can find the <a class="reference internal" href="algorithms.html#sklearn-alg
 <p>Intel(R) Extension for Scikit-learn supports optimizations for the last four versions of scikit-learn.
 The latest release of scikit-learn-intelex-2021.3.X supports scikit-learn 0.22.X, 0.23.X, 0.24.X and 1.0.X.</p>
 </div>
-</div>
-<div class="section" id="follow-us-on-medium">
-<h2>Follow us on Medium<a class="headerlink" href="#follow-us-on-medium" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="follow-us-on-medium">
+<span id="blogs"></span><h2>Follow us on Medium<a class="headerlink" href="#follow-us-on-medium" title="Permalink to this headline">¶</a></h2>
 <p>We publish blogs on Medium, so <a class="reference external" href="https://medium.com/intel-analytics-software/tagged/machine-learning">follow us</a>
 to learn tips and tricks for more efficient data analysis the help of Intel(R) Extension for Scikit-learn.
 Here are our latest blogs:</p>
@@ -272,8 +330,8 @@ Here are our latest blogs:</p>
 <li><p><a class="reference external" href="https://medium.com/intel-analytics-software/accelerating-linear-models-for-machine-learning-5a75ff50a0fe">Accelerate Linear Models for Machine Learning</a>,</p></li>
 <li><p><a class="reference external" href="https://medium.com/intel-analytics-software/accelerate-k-means-clustering-6385088788a1">Accelerate K-Means Clustering</a>.</p></li>
 </ul>
-</div>
-<div class="section" id="important-links">
+</section>
+<section id="important-links">
 <h2>Important links<a class="headerlink" href="#important-links" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/intel/scikit-learn-intelex">GitHub</a></p></li>
@@ -282,8 +340,8 @@ Here are our latest blogs:</p>
 <li><p><a class="reference external" href="https://github.com/oneapi-src/oneDAL">About Intel(R) oneAPI Data Analytics Library</a></p></li>
 <li><p><a class="reference external" href="https://github.com/intel/scikit-learn-intelex/tree/master/daal4py">About Intel(R) daal4py</a></p></li>
 </ul>
-</div>
-<div class="section" id="support">
+</section>
+<section id="support">
 <h2>Support<a class="headerlink" href="#support" title="Permalink to this headline">¶</a></h2>
 <p>Report issues, ask questions, and provide suggestions using:</p>
 <ul class="simple">
@@ -292,55 +350,43 @@ Here are our latest blogs:</p>
 <li><p><a class="reference external" href="https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python">Forum</a>.</p></li>
 </ul>
 <p>You may reach out to project maintainers privately at <a class="reference external" href="mailto:onedal&#46;maintainers&#37;&#52;&#48;intel&#46;com">onedal<span>&#46;</span>maintainers<span>&#64;</span>intel<span>&#46;</span>com</a></p>
-</div>
-</div>
+</section>
+</section>
 
 
-           </div>
-           
-          </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="get_started.html" class="btn btn-neutral float-right" title="Getting Intel(R) Extension for Scikit-learn*" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="contents.html" class="btn btn-neutral float-left" title="Intel(R) Extension for Scikit-learn*" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-    </div>
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="contents.html" title="previous page">Intel(R) Extension for Scikit-learn*</a>
+    <a class='right-next' id="next-link" href="get_started.html" title="next page">Getting Intel(R) Extension for Scikit-learn*</a>
 
-  <hr/>
-
-  <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, Intel.
-
-    </p>
-  </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
-
-</footer>
         </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By Intel<br/>
+        
+            &copy; Copyright 2021, Intel.<br/>
+          <div class="extra_footer">
+            <p align="right"><a href="https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">Cookies</a></p>
+          </div>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
       </div>
-
-    </section>
-
-  </div>
+    </div>
   
-
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script>
+  <script src="_static/js/index.1c5a1a01449ed65a7b51.js"></script>
 
   
-  
-    
-   
-
-</body>
+  </body>
 </html>
