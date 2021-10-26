@@ -16,7 +16,7 @@
 
 # daal4py Scikit-Learn examples for GPU
 # run like this:
-#    python -m daal4py ./sklearn_sycl.py
+#    python -m sklearnex ./sklearn_sycl.py
 
 import numpy as np
 
@@ -27,30 +27,28 @@ from sklearn.cluster import DBSCAN
 
 from sklearn.datasets import load_iris
 
-dpctx_available = False
+dpctl_available = False
 try:
-    from dpctx import device_context, device_type
-    dpctx_available = True
+    import dpctl
+    from sklearnex._config import config_context
+    dpctl_available = True
 except ImportError:
     try:
         from daal4py.oneapi import sycl_context
-        sycl_extention_available = True
-    except:
-        sycl_extention_available = False
+        print("*" * 80)
+        print("\ndpctl package not found, switched to daal4py package\n")
+        print("*" * 80)
+    except ImportError:
+        print("\nRequired packages not found, aborting...\n")
+        exit()
+
 
 gpu_available = False
-if dpctx_available:
-    try:
-        with device_context(device_type.gpu, 0):
-            gpu_available = True
-    except:
-        gpu_available = False
-
-elif sycl_extention_available:
+if not dpctl_available:
     try:
         with sycl_context('gpu'):
             gpu_available = True
-    except:
+    except Exception:
         gpu_available = False
 
 
@@ -136,11 +134,23 @@ def dbscan():
 
 
 def get_context(device):
-    if dpctx_available:
-        return device_context(device, 0)
-    if sycl_extention_available:
-        return sycl_context(device)
-    return None
+    if dpctl_available:
+        return config_context(target_offload=device)
+    return sycl_context(device)
+
+
+def device_type_to_str(queue):
+    if queue is None:
+        return 'host'
+
+    from dpctl import device_type
+    if queue.sycl_device.device_type == device_type.cpu:
+        return 'cpu'
+    if queue.sycl_device.device_type == device_type.gpu:
+        return 'gpu'
+    if queue.sycl_device.device_type == device_type.host:
+        return 'host'
+    return 'unknown'
 
 
 if __name__ == "__main__":
@@ -154,13 +164,13 @@ if __name__ == "__main__":
     ]
     devices = []
 
-    if dpctx_available:
-        devices.append(device_type.host)
-        devices.append(device_type.cpu)
-        if gpu_available:
-            devices.append(device_type.gpu)
+    if dpctl_available:
+        devices.append(None)
+        devices.append(dpctl.SyclQueue('cpu'))
+        if dpctl.has_gpu_devices:
+            devices.append(dpctl.SyclQueue('gpu'))
 
-    elif sycl_extention_available:
+    else:
         devices.append('host')
         devices.append('cpu')
         if gpu_available:
@@ -169,7 +179,10 @@ if __name__ == "__main__":
     for device in devices:
         for e in examples:
             print("*" * 80)
-            print("device context:", device)
+            if(dpctl_available):
+                print("device context:", device_type_to_str(device))
+            else:
+                print("device context:", device)
             with get_context(device):
                 e()
             print("*" * 80)
