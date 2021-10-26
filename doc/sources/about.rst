@@ -14,3 +14,22 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
+<<<<<<< HEAD:doc/sources/about.rst
+=======
+.. _contents:
+
+####################################
+Intel(R) Extension for Scikit-learn*
+####################################
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   About Intel(R) Extension for Scikit-learn* <index>
+   Get started <get_started>
+   Supported Algorithms <algorithms>
+   Intel(R) Extension for Scikit-learn* Verbose <verbose>
+   Global patching <global_patching>
+   oneAPI and GPU support <oneapi_gpu>
+   System requirements <system_requirements>
+>>>>>>> 933fa25a2c64ca15f26ce686e93cbcf5f244a863:doc/sources/contents.rst

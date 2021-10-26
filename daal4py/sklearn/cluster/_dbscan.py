@@ -23,10 +23,12 @@ from sklearn.utils.validation import _check_sample_weight
 from sklearn.cluster import DBSCAN as DBSCAN_original
 
 import daal4py
-from daal4py.sklearn._utils import (make2d, getFPType, get_patch_message)
+from daal4py.sklearn._utils import (
+    make2d, getFPType, get_patch_message, PatchingConditionsChain)
 import logging
 
 from .._device_offload import support_usm_ndarray
+from .._utils import sklearn_check_version
 
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
@@ -234,17 +236,26 @@ class DBSCAN(DBSCAN_original):
         if self.eps <= 0.0:
             raise ValueError("eps must be positive.")
 
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
+
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
 
-        _daal_ready = self.algorithm in ['auto', 'brute'] and \
-            (self.metric == 'euclidean' or (
-             self.metric == 'minkowski' and self.p == 2)) and \
-            not sp.issparse(X)
-        if _daal_ready:
-            logging.info(
-                "sklearn.cluster.DBSCAN."
-                "fit: " + get_patch_message("daal"))
+        _patching_status = PatchingConditionsChain(
+            "sklearn.cluster.DBSCAN.fit")
+        _dal_ready = _patching_status.and_conditions([
+            (self.algorithm in ['auto', 'brute'],
+                f"'{self.algorithm}' algorithm is not supported. "
+                "Only 'auto' and 'brute' algorithms are supported"),
+            (self.metric == 'euclidean' or (self.metric == 'minkowski' and self.p == 2),
+                f"'{self.metric}' (p={self.p}) metric is not supported. "
+                "Only 'euclidean' or 'minkowski' with p=2 metrics are supported."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")
+        ])
+
+        _patching_status.write_log()
+        if _dal_ready:
             X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
             core_ind, assignments = _daal_dbscan(
                 X,
@@ -257,9 +268,6 @@ class DBSCAN(DBSCAN_original):
             self.components_ = np.take(X, core_ind, axis=0)
             self.n_features_in_ = X.shape[1]
             return self
-        logging.info(
-            "sklearn.cluster.DBSCAN."
-            "fit: " + get_patch_message("sklearn"))
         return super().fit(X, y, sample_weight=sample_weight)
 
     @support_usm_ndarray()

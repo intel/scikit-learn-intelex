@@ -33,6 +33,8 @@ while using the familiar scikit-learn package.
 Intel(R) Extension for Scikit-learn* depends on Intel(R) daal4py. You can learn more in `daal4py documentation <https://intelpython.github.io/daal4py>`_.
 
 
+.. _blogs:
+
 Follow us on Medium
 --------------------
 We publish blogs on Medium, so `follow us <https://medium.com/intel-analytics-software/tagged/machine-learning>`_

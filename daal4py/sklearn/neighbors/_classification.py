@@ -22,7 +22,8 @@ from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from .._utils import (
     getFPType,
     sklearn_check_version,
-    get_patch_message)
+    get_patch_message,
+    PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
 from sklearn.utils.validation import check_array
 import numpy as np
@@ -44,6 +45,8 @@ else:
 
 
 def daal4py_classifier_predict(estimator, X, base_predict):
+    if sklearn_check_version('1.0'):
+        estimator._check_feature_names(X, reset=False)
     X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
     daal_model = getattr(estimator, '_daal_model', None)
     n_features = getattr(estimator, 'n_features_in_', None)
@@ -58,11 +61,15 @@ def daal4py_classifier_predict(estimator, X, base_predict):
     except ValueError:
         fptype = None
 
-    if daal_model is not None and fptype is not None and not sp.issparse(X):
-        logging.info(
-            "sklearn.neighbors.KNeighborsClassifier"
-            ".predict: " + get_patch_message("daal"))
+    _patching_status = PatchingConditionsChain(
+        "sklearn.neighbors.KNeighborsClassifier.predict")
+    _dal_ready = _patching_status.and_conditions([
+        (daal_model is not None, "oneDAL model was not trained."),
+        (fptype is not None, "Unable to get dtype."),
+        (not sp.issparse(X), "X is sparse. Sparse input is not supported.")])
+    _patching_status.write_log()
 
+    if _dal_ready:
         params = {
             'method': 'defaultDense',
             'k': estimator.n_neighbors,
@@ -80,9 +87,6 @@ def daal4py_classifier_predict(estimator, X, base_predict):
         result = estimator.classes_.take(
             np.asarray(prediction_result.prediction.ravel(), dtype=np.intp))
     else:
-        logging.info(
-            "sklearn.neighbors.KNeighborsClassifier"
-            ".predict: " + get_patch_message("sklearn"))
         result = base_predict(estimator, X)
 
     return result

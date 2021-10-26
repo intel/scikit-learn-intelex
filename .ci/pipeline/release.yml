@@ -40,6 +40,10 @@ jobs:
       pip install scikit-learn-intelex pandas pytest
     displayName: 'Install scikit-learn-intelex'
   - script: |
+      install_name_tool -add_rpath "@loader_path/../../../" /Users/runner/hostedtoolcache/Python/3.*/x64/lib/python3.*/site-packages/onedal/_onedal_py_host*
+    condition: eq( variables['Agent.OS'], 'Darwin')
+    displayName: 'Patch rpath (temporary)'
+  - script: |
       cd ..
       python -c "import sklearnex"
     displayName: 'Testing of import'
