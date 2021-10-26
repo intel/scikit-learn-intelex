@@ -121,7 +121,7 @@ html_theme_options = {
     'use_edit_page_button': True,
     'repository_branch': 'master',
     'extra_footer': cookie_link
-    }
+}
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
