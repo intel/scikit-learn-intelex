@@ -105,14 +105,23 @@ html_favicon = '_static/favicons.png'
 # documentation.
 #
 
+cookie_link = '''
+    <p align="right">
+        <a href=
+            "https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">
+            Cookies
+        </a>
+    </p>
+'''
+
 html_theme_options = {
     'repository_url': 'https://github.com/intel/scikit-learn-intelex',
     'path_to_docs': 'doc/sources',
     'use_issues_button': True,
     'use_edit_page_button': True,
     'repository_branch': 'master',
-    'extra_footer': '<p align="right"><a href="https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">Cookies</a></p>'
-}
+    'extra_footer': cookie_link
+    }
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
