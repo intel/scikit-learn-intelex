@@ -25,6 +25,9 @@ You may enable patching in different ways:
 
     from sklearnex import patch_sklearn
     patch_sklearn()
+- Through global patching to enable this for your scikit-learn installation for all further runs::
+
+    python sklearnex.glob patch_sklearn
 
 .. rubric:: Example
 
