@@ -14,22 +14,12 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-<<<<<<< HEAD:doc/sources/about.rst
-=======
-.. _contents:
+Support
+--------------------
+Report issues, ask questions, and provide suggestions using:
 
-####################################
-Intel(R) Extension for Scikit-learn*
-####################################
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+- `GitHub Issues <https://github.com/intel/scikit-learn-intelex/issues>`_
+- `GitHub Discussions <https://github.com/intel/scikit-learn-intelex/discussions>`_
+- `Forum <https://community.intel.com/t5/Intel-Distribution-for-Python/bd-p/distribution-python>`_
 
-   About Intel(R) Extension for Scikit-learn* <index>
-   Get started <get_started>
-   Supported Algorithms <algorithms>
-   Intel(R) Extension for Scikit-learn* Verbose <verbose>
-   Global patching <global_patching>
-   oneAPI and GPU support <oneapi_gpu>
-   System requirements <system_requirements>
->>>>>>> 933fa25a2c64ca15f26ce686e93cbcf5f244a863:doc/sources/contents.rst
+You may reach out to project maintainers privately at onedal.maintainers@intel.com

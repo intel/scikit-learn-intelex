@@ -14,42 +14,62 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
+.. |intelex_repo| replace:: |intelex| repository
+.. _intelex_repo: https://github.com/intel/scikit-learn-intelex
 
 #############
 Installation
 #############
 
-Installation from distribution channels
----------------------------------------
+|intelex| is available at the `Python Package Index <https://pypi.org/project/scikit-learn-intelex/>`_,
+on Anaconda Cloud in `Conda-Forge channel <https://anaconda.org/conda-forge/scikit-learn-intelex>`_ and
+in `Intel channel <https://anaconda.org/intel/scikit-learn-intelex>`_. 
 
-Intel(R) Extension for Scikit-learn is available at the `Python Package Index <https://pypi.org/project/scikit-learn-intelex/>`_, on Anaconda Cloud in `Conda-Forge channel <https://anaconda.org/conda-forge/scikit-learn-intelex>`_ and in `Intel channel <https://anaconda.org/intel/scikit-learn-intelex>`_. 
-Also Intel(R) Extension for Scikit-learn is available available as a part of `Intel oneAPI AI Analytics Toolkit <https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3>`_ (AI Kit). 
-Sources and build instructions are available in `Intel(R) Extension for Scikit-learn repository <https://github.com/intel/scikit-learn-intelex>`_.
+|intelex| is also available as a part of `Intel oneAPI AI Analytics Toolkit
+<https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3>`_ (AI Kit).
+If you already have AI Kit installed, you do not need to separately install the extension.
 
-- Install from **PyPI** (Recommended)::
+You can also build the extension from :ref:`sources <build_from_sources>`.
+
+Install from distribution channels
+-----------------------------------
+
+- Install from **PyPI** (recommended by default)::
 
      pip install scikit-learn-intelex
 
-- Install from Anaconda Cloud: Conda-Forge channel::
+- Install from **Anaconda Cloud: Conda-Forge channel** (recommended by default for conda users)::
 
      conda install scikit-learn-intelex -c conda-forge
 
-- Install from Anaconda Cloud: Intel channel::
+- Install from **Anaconda Cloud: Intel channel** (recommended for the users of Intel® Distribution for Python)::
 
     conda install scikit-learn-intelex -c intel
 
-Building from Sources
+.. seealso:: :ref:`system_requirements`
+
+.. _build_from_sources:
+
+Build from Sources
 ---------------------
 
-**Prerequisites**::
+Sources are available in |intelex_repo|_.
+
+.. rubric:: Prerequisites
+
+::
 
     Python version >= 3.6
 
-**Configuring the build with environment variables**::
+Configure the build with environment variables
+==============================================
+
+::
 
     SKLEARNEX_VERSION: sets package version
 
-**Building Intel(R) Extension for Scikit-learn**
+Build |intelex|
+===============
 
 To install the package::
 
@@ -76,20 +96,8 @@ To install scikit-learn-intelex without downloading daal4py in the development m
     back to the project source code directory. That way you can edit the source code and see the changes
     without having to reinstall the package every time you make a small change.
 
-⚠️ Keys ``--single-version-externally-managed`` and ``--no-deps`` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
+⚠️ Keys ``--single-version-externally-managed`` and ``--no-deps`` are required so that daal4py is not downloaded after installation of |intelex|
 
 .. note::
     ``--single-version-externally-managed`` is an option used for Python packages instructing the setuptools module
     to create a Python package that can be easily managed by the package manager on the host
-
-**Building documentation for Intel(R) Extension for Scikit-learn**
-
-Prerequisites for creating documentation
-
-- sphinx
-- sphinx_rtd_theme
-
-Building documentation
-
-1. ```cd doc && make html```
-2. The documentation will be in ```doc/_build/html```

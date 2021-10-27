@@ -16,24 +16,26 @@
 
 .. _verbose:
 
-############################################
-Intel(R) Extension for Scikit-learn* verbose
-############################################
+############
+Verbose Mode
+############
 
-To find out which implementation of the algorithm is currently used,
-set the environment variable.
+Use |intelex| in verbose mode to find out which implementation of the algorithm is currently used,
+|intelex| or original Scikit-learn.
 
-On Linux and Mac OS::
+To enable verbose mode, set the ``SKLEARNEX_VERBOSE`` environment variable as shown below:
 
-    export SKLEARNEX_VERBOSE=INFO
+- On Linux and MacOS::
 
-On Windows::
+     export SKLEARNEX_VERBOSE=INFO
 
-    set SKLEARNEX_VERBOSE=INFO
+- On Windows::
+
+     set SKLEARNEX_VERBOSE=INFO
 
 During the calls that use Intel-optimized scikit-learn, you will receive additional print statements
 that indicate which implementation is being called.
-These print statements are only available for :ref:`scikit-learn algorithms with daal4py patches <sklearn_algorithms>`.
+These print statements are only available for :ref:`supported algorithms <sklearn_algorithms>`.
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used::
 

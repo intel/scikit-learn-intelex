@@ -17,11 +17,10 @@
 .. _sklearn_algorithms:
 
 ####################
-Supported algorithms
+Supported Algorithms
 ####################
 
-Applying Intel(R) Extension for Scikit-learn will impact the following existing scikit-learn
-algorithms:
+Applying |intelex| will impact the following scikit-learn algorithms:
 
 on CPU
 ------
@@ -124,14 +123,6 @@ on CPU
      - Parameters ``average``, ``sample_weight``, ``max_fpr`` and ``multi_class`` are not supported.
      - No limitations.
 
-
-Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
-suite, with few exceptions, specified in `deselected_tests.yaml
-<https://github.com/intel/scikit-learn-intelex/blob/master/deselected_tests.yaml>`__.
-
-The results of the entire latest scikit-learn test suite with Intel(R) Extension for Scikit-learn: `CircleCI
-<https://circleci.com/gh/intel/scikit-learn-intelex>`_.
-
 on GPU
 ------
 
@@ -184,3 +175,15 @@ on GPU
      - PCA
      - All parameters except ``svd_solver`` != 'full'.
      - Sparse data is not supported.
+
+.. seealso:: :ref:`oneapi_gpu`
+
+Scikit-learn tests
+------------------
+
+Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
+suite, with few exceptions, specified in `deselected_tests.yaml
+<https://github.com/intel/scikit-learn-intelex/blob/master/deselected_tests.yaml>`__.
+
+The results of the entire latest scikit-learn test suite with |intelex|: `CircleCI
+<https://circleci.com/gh/intel/scikit-learn-intelex>`_.

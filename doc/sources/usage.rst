@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2020-2021 Intel Corporation
+.. * Copyright 2021 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -14,29 +14,21 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-.. _get_started:
 
-############################################
-Quick Start
-############################################
+You may enable patching in different ways:
 
-Usage
---------------------
-Intel(R) Extension for Scikit-learn* dynamically patches scikit-learn estimators to use Intel(R) oneAPI Data Analytics Library
-as the underlying solver, while getting the same solution faster.
-
-- It is possible to enable those patches without editing the code of a scikit-learn application by
-  using the following commandline flag::
+- Without editing the code of a scikit-learn application by using the following commandline flag::
 
     python -m sklearnex my_application.py
 
-- Or from your script::
+- Directly from the script::
 
     from sklearnex import patch_sklearn
     patch_sklearn()
 
+.. rubric:: Example
 
-For example::
+::
 
     import numpy as np
     from sklearnex import patch_sklearn
@@ -72,11 +64,3 @@ You may specify which algorithms to patch:
     from sklearnex import patch_sklearn
     # The names match scikit-learn estimators
     patch_sklearn(["SVC", "DBSCAN"])
-
-Intel(R) Extension for Scikit-learn does not patch all scikit-learn algorithms and parameters.
-You can find the :ref:`full patching map here <sklearn_algorithms>`.
-
-.. note::
-    Intel(R) Extension for Scikit-learn supports optimizations for the last four versions of scikit-learn.
-    The latest release of scikit-learn-intelex-2021.3.X supports scikit-learn 0.22.X, 0.23.X, 0.24.X and 1.0.X.
-
