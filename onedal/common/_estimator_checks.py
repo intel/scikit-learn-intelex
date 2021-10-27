@@ -41,4 +41,3 @@ def _is_classifier(estimator):
 
 def _is_regressor(estimator):
     return getattr(estimator, "_estimator_type", None) == "regressor"
-

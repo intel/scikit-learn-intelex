@@ -65,6 +65,7 @@ def get_patch_map():
         # kNN
         mapping.pop('knn_classifier')
         mapping.pop('kneighborsclassifier')
+        # TODO: make kNN regression patching through onedal ifaces
         # mapping.pop('knn_regressor')
         # mapping.pop('kneighborsregressor')
         mapping.pop('nearest_neighbors')

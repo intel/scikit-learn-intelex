@@ -35,7 +35,6 @@ struct method2t {
         ONEDAL_PARAM_DISPATCH_VALUE(method, "brute", ops, Float, method::brute_force);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "kd_tree", ops, Float, method::kd_tree);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
-
     }
 
     Ops ops;
