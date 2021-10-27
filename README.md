@@ -7,13 +7,16 @@
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/intel/scikit-learn-intelex/discussions)
 [![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-learn-intelex)](https://anaconda.org/conda-forge/scikit-learn-intelex)
+[![python version](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)
 
 With Intel(R) Extension for Scikit-learn you can accelerate your Scikit-learn applications and still have full conformance with all Scikit-Learn APIs and algorithms. This is a **free software AI accelerator** that brings over **10-100X** acceleration across a variety of applications. And you do not even need to change the existing code!
 
 ## How it works?
 
 Intel(R) Extension for Scikit-learn offers you a way to accelerate existing scikit-learn code.
-The acceleration is achieved through **patching**: you import an additional Python package (`sklearnex`) and enable optimizations via `sklearnex.patch_sklearn()`.
+The acceleration is achieved through **patching**: replacing the stock scikit-learn algorithms with their optimized versions provided by the extension.
+
+One of the ways to patch scikit-learn is by modifying the code. You import an additional Python package (`sklearnex`) and enable optimizations via `sklearnex.patch_sklearn()`:
 
 - **Enable Intel CPU optimizations**
 
@@ -45,10 +48,8 @@ The acceleration is achieved through **patching**: you import an additional Pyth
         clustering = DBSCAN(eps=3, min_samples=2).fit(X)
     ```
 
----
+👀 Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage) and [other methods for offloading to GPU devices](https://intel.github.io/scikit-learn-intelex/oneapi_gpu.html).
 Check out available [notebooks](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks) for more examples.
-
----
 
 This software acceleration is achieved through the use of vector instructions, IA hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel platforms at launch time.
 
