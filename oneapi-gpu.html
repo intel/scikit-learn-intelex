@@ -4,9 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-    <title>oneAPI and GPU support in Intel(R) Extension for Scikit-learn* &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>oneAPI and GPU support in Intel® Extension for Scikit-learn* &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet" />
   <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -24,7 +23,7 @@
 
     
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinx-book-theme.5f77b4aec8189eecf79907ce328c390d.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
     
   <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
 
@@ -32,12 +31,13 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <link rel="shortcut icon" href="_static/favicons.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="System requirements" href="system_requirements.html" />
-    <link rel="prev" title="Global patching" href="global_patching.html" />
+    <link rel="next" title="Support" href="support.html" />
+    <link rel="prev" title="Verbose Mode" href="verbose.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -56,6 +56,10 @@
         <div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="index.html">
       
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
       <img src="_static/oneAPI-rgb-rev-100.png" class="logo" alt="logo">
       
       
@@ -65,37 +69,108 @@
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
         <p class="caption">
  <span class="caption-text">
-  Contents:
+  About
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="acceleration.html">
+   Acceleration
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="what-is-patching.html">
+   Patching
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="blogs.html">
+   Medium Blogs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="system-requirements.html">
+   System Requirements
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Get Started
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="quick-start.html">
+   Quick Start
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="samples.html">
+   Samples
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/knn_mnist.html">
+     k-Nearest Neighbors (kNN) for MNIST dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/logistictic_regression_cifar.html">
+     Logistic Regression for Cifar dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/nusvr_medical_charges.html">
+     Nu-Support Vector Regression (NuSVR) for Medical Charges dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/random_forest_yolanda.html">
+     Random Forest for Yolanda dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/svc_adult.html">
+     Support Vector Classification (SVC) for Adult dataset
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Developer Guide
  </span>
 </p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="index.html">
-   About Intel(R) Extension for Scikit-learn*
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="get_started.html">
-   Get started
-  </a>
- </li>
  <li class="toctree-l1">
   <a class="reference internal" href="algorithms.html">
    Supported Algorithms
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="verbose.html">
-   Intel(R) Extension for Scikit-learn* Verbose
+  <a class="reference internal" href="global-patching.html">
+   Global Patching
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="global_patching.html">
-   Global patching
+  <a class="reference internal" href="verbose.html">
+   Verbose Mode
   </a>
  </li>
  <li class="toctree-l1 current active">
@@ -103,9 +178,16 @@
    oneAPI and GPU support
   </a>
  </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Community
+ </span>
+</p>
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="system_requirements.html">
-   System requirements
+  <a class="reference internal" href="support.html">
+   Support
   </a>
  </li>
 </ul>
@@ -149,7 +231,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/oneapi_gpu.rst.txt"><button type="button"
+        <a class="dropdown-buttons" href="_sources/oneapi-gpu.rst.txt"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.rst</button></a>
         <!-- Download PDF via print -->
@@ -166,10 +248,10 @@
     <div class="dropdown-buttons sourcebuttons">
         
         <a class="issues-button"
-            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Foneapi_gpu.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Foneapi-gpu.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/oneapi_gpu.rst"><button
+        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/oneapi-gpu.rst"><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
     </div>
@@ -192,7 +274,7 @@
             <div class="tocsection onthispage pt-5 pb-3">
                 <i class="fas fa-list"></i> Contents
             </div>
-            <nav id="bd-toc-nav">
+            <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#prerequisites">
@@ -220,14 +302,14 @@
         
               <div>
                 
-  <section id="oneapi-and-gpu-support-in-intel-r-extension-for-scikit-learn">
-<span id="oneapi-gpu"></span><h1>oneAPI and GPU support in Intel(R) Extension for Scikit-learn*<a class="headerlink" href="#oneapi-and-gpu-support-in-intel-r-extension-for-scikit-learn" title="Permalink to this headline">¶</a></h1>
-<p>Intel(R) Extension for Scikit-learn* supports oneAPI concepts, which
+  <div class="section" id="oneapi-and-gpu-support-in-intelex">
+<span id="oneapi-gpu"></span><h1>oneAPI and GPU support in Intel® Extension for Scikit-learn*<a class="headerlink" href="#oneapi-and-gpu-support-in-intelex" title="Permalink to this headline">¶</a></h1>
+<p>Intel® Extension for Scikit-learn* supports oneAPI concepts, which
 means that algorithms can be executed on different devices: CPUs and GPUs.
 This is done via integration with
 <a class="reference external" href="https://intelpython.github.io/dpctl/latest/index.html">dpctl</a> package that
 implements core oneAPI concepts like queues and devices.</p>
-<section id="prerequisites">
+<div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <p>For execution on GPU, DPC++ compiler runtime and driver are required. Refer to <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html">DPC++ system
 requirements</a> for details.</p>
@@ -244,15 +326,14 @@ requirements</a> for details.</p>
 </div>
 </li>
 </ul>
-</section>
-<section id="device-offloading">
+</div>
+<div class="section" id="device-offloading">
 <h2>Device offloading<a class="headerlink" href="#device-offloading" title="Permalink to this headline">¶</a></h2>
-<p>Intel(R) Extension for Scikit-learn* offers two options for running an algorithm on a
+<p>Intel® Extension for Scikit-learn* offers two options for running an algorithm on a
 specific device with the help of dpctl:</p>
 <ul>
 <li><p>Pass input data as <a class="reference external" href="https://intelpython.github.io/dpctl/latest/docfiles/dpctl.tensor_api.html#dpctl.tensor.usm_ndarray">dpctl.tensor.usm_ndarray</a> to the algorithm.</p>
-<blockquote>
-<div><p>The computation will run on the device where the input data is
+<p>The computation will run on the device where the input data is
 located, and the result will be returned as <code class="code docutils literal notranslate"><span class="pre">usm_ndarray</span></code> to the same
 device.</p>
 <div class="admonition note">
@@ -263,14 +344,13 @@ device.</p>
 <p class="admonition-title">Warning</p>
 <p>The <code class="code docutils literal notranslate"><span class="pre">usm_ndarray</span></code> can only be consumed by the base methods
 like <code class="code docutils literal notranslate"><span class="pre">fit</span></code>, <code class="code docutils literal notranslate"><span class="pre">predict</span></code>, and <code class="code docutils literal notranslate"><span class="pre">transform</span></code>.
-Note that only the algorithms in Intel(R) Extension for Scikit-learn* support
+Note that only the algorithms in Intel® Extension for Scikit-learn* support
 <code class="code docutils literal notranslate"><span class="pre">usm_ndarray</span></code>. The algorithms from the stock version of scikit-learn
 do not support this feature.</p>
 </div>
-</div></blockquote>
 </li>
-<li><dl class="simple">
-<dt>Use global configurations of Intel(R) Extension for Scikit-learn*:</dt><dd><ol class="arabic simple">
+<li><p>Use global configurations of Intel® Extension for Scikit-learn**:</p>
+<ol class="arabic simple">
 <li><p>The <code class="code docutils literal notranslate"><span class="pre">target_offload</span></code> option can be used to set the device primarily
 used to perform computations. Accepted data types are <code class="code docutils literal notranslate"><span class="pre">str</span></code> and
 <code class="code docutils literal notranslate"><span class="pre">dpctl.SyclQueue</span></code>. If you pass a string to <code class="code docutils literal notranslate"><span class="pre">target_offload</span></code>,
@@ -282,8 +362,6 @@ is a Boolean flag. If set to <code class="code docutils literal notranslate"><sp
 to fallback to the host device when a particular estimator does not support
 the selected device. The default value is <code class="code docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 </ol>
-</dd>
-</dl>
 </li>
 </ul>
 <p>These options can be set using <code class="code docutils literal notranslate"><span class="pre">sklearnex.set_config()</span></code> function or
@@ -295,12 +373,11 @@ call <code class="code docutils literal notranslate"><span class="pre">sklearnex
 are always patched after the <code class="code docutils literal notranslate"><span class="pre">sklearnex.patch_sklearn()</span></code> call.</p>
 </div>
 <p class="rubric">Compatibility considerations</p>
-<p>For compatibility reasons, algorithms in Intel(R) Extension for
-Scikit-learn* may be offloaded to the device using
+<p>For compatibility reasons, algorithms in Intel® Extension for Scikit-learn* may be offloaded to the device using
 <code class="code docutils literal notranslate"><span class="pre">daal4py.oneapi.sycl_context</span></code>. However, it is recommended to use one of the options
 described above for device offloading instead of using <code class="code docutils literal notranslate"><span class="pre">sycl_context</span></code>.</p>
-</section>
-<section id="example">
+</div>
+<div class="section" id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <p>An example on how to patch your code with Intel CPU/GPU optimizations:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span><span class="p">,</span> <span class="n">config_context</span>
@@ -314,23 +391,43 @@ described above for device offloading instead of using <code class="code docutil
    <span class="n">clustering</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
               </div>
               
         
-        <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="global_patching.html" title="previous page">Global patching</a>
-    <a class='right-next' id="next-link" href="system_requirements.html" title="next page">System requirements</a>
 
-        </div>
+
+
+<div class='prev-next-bottom'>
+    
+    <div id="prev">
+        <a class="left-prev" href="verbose.html" title="previous page">
+            <i class="prevnext-label fas fa-angle-left"></i>
+            <div class="prevnext-info">
+                <p class="prevnext-label">previous</p>
+                <p class="prevnext-title">Verbose Mode</p>
+            </div>
+        </a>
+    </div>
+     <div id="next">
+        <a class="right-next" href="support.html" title="next page">
+            <div class="prevnext-info">
+                <p class="prevnext-label">next</p>
+                <p class="prevnext-title">Support</p>
+            </div>
+            <i class="prevnext-label fas fa-angle-right"></i>
+        </a>
+     </div>
+
+</div>
         
         </div>
     </div>
-    <footer class="footer mt-5 mt-md-0">
+    <footer class="footer">
     <div class="container">
       <p>
         
@@ -338,7 +435,14 @@ described above for device offloading instead of using <code class="code docutil
         
             &copy; Copyright 2021, Intel.<br/>
           <div class="extra_footer">
-            <p align="right"><a href="https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">Cookies</a></p>
+            
+    <p align="right">
+        <a href=
+            "https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">
+            Cookies
+        </a>
+    </p>
+
           </div>
       </p>
     </div>

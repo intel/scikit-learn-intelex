@@ -4,9 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-    <title>Intel(R) Extension for Scikit-learn* verbose &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verbose Mode &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet" />
   <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -24,7 +23,7 @@
 
     
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinx-book-theme.5f77b4aec8189eecf79907ce328c390d.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
     
   <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
 
@@ -32,12 +31,13 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <link rel="shortcut icon" href="_static/favicons.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Global patching" href="global_patching.html" />
-    <link rel="prev" title="Supported algorithms" href="algorithms.html" />
+    <link rel="next" title="oneAPI and GPU support in Intel® Extension for Scikit-learn*" href="oneapi-gpu.html" />
+    <link rel="prev" title="Global Patching" href="global-patching.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -56,6 +56,10 @@
         <div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="index.html">
       
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
       <img src="_static/oneAPI-rgb-rev-100.png" class="logo" alt="logo">
       
       
@@ -65,47 +69,125 @@
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
         <p class="caption">
  <span class="caption-text">
-  Contents:
+  About
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="acceleration.html">
+   Acceleration
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="what-is-patching.html">
+   Patching
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="blogs.html">
+   Medium Blogs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="system-requirements.html">
+   System Requirements
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Get Started
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="quick-start.html">
+   Quick Start
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="samples.html">
+   Samples
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/knn_mnist.html">
+     k-Nearest Neighbors (kNN) for MNIST dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/logistictic_regression_cifar.html">
+     Logistic Regression for Cifar dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/nusvr_medical_charges.html">
+     Nu-Support Vector Regression (NuSVR) for Medical Charges dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/random_forest_yolanda.html">
+     Random Forest for Yolanda dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/svc_adult.html">
+     Support Vector Classification (SVC) for Adult dataset
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Developer Guide
  </span>
 </p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="index.html">
-   About Intel(R) Extension for Scikit-learn*
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="get_started.html">
-   Get started
-  </a>
- </li>
  <li class="toctree-l1">
   <a class="reference internal" href="algorithms.html">
    Supported Algorithms
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="global-patching.html">
+   Global Patching
+  </a>
+ </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   Intel(R) Extension for Scikit-learn* Verbose
+   Verbose Mode
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="global_patching.html">
-   Global patching
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="oneapi_gpu.html">
+  <a class="reference internal" href="oneapi-gpu.html">
    oneAPI and GPU support
   </a>
  </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Community
+ </span>
+</p>
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="system_requirements.html">
-   System requirements
+  <a class="reference internal" href="support.html">
+   Support
   </a>
  </li>
 </ul>
@@ -197,21 +279,26 @@
         
               <div>
                 
-  <section id="intel-r-extension-for-scikit-learn-verbose">
-<span id="verbose"></span><h1>Intel(R) Extension for Scikit-learn* verbose<a class="headerlink" href="#intel-r-extension-for-scikit-learn-verbose" title="Permalink to this headline">¶</a></h1>
-<p>To find out which implementation of the algorithm is currently used,
-set the environment variable.</p>
-<p>On Linux and Mac OS:</p>
+  <div class="section" id="verbose-mode">
+<span id="verbose"></span><h1>Verbose Mode<a class="headerlink" href="#verbose-mode" title="Permalink to this headline">¶</a></h1>
+<p>Use Intel® Extension for Scikit-learn* in verbose mode to find out which implementation of the algorithm is currently used,
+Intel® Extension for Scikit-learn* or original Scikit-learn.</p>
+<p>To enable verbose mode, set the <code class="docutils literal notranslate"><span class="pre">SKLEARNEX_VERBOSE</span></code> environment variable as shown below:</p>
+<ul>
+<li><p>On Linux and MacOS:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">SKLEARNEX_VERBOSE</span><span class="o">=</span><span class="n">INFO</span>
 </pre></div>
 </div>
-<p>On Windows:</p>
+</li>
+<li><p>On Windows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">SKLEARNEX_VERBOSE</span><span class="o">=</span><span class="n">INFO</span>
 </pre></div>
 </div>
+</li>
+</ul>
 <p>During the calls that use Intel-optimized scikit-learn, you will receive additional print statements
 that indicate which implementation is being called.
-These print statements are only available for <a class="reference internal" href="algorithms.html#sklearn-algorithms"><span class="std std-ref">scikit-learn algorithms with daal4py patches</span></a>.</p>
+These print statements are only available for <a class="reference internal" href="algorithms.html#sklearn-algorithms"><span class="std std-ref">supported algorithms</span></a>.</p>
 <p>For example, for DBSCAN you get one of these print statements depending on which implementation is used:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SKLEARNEX</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">DBSCAN</span><span class="o">.</span><span class="n">fit</span><span class="p">:</span> <span class="n">running</span> <span class="n">accelerated</span> <span class="n">version</span> <span class="n">on</span> <span class="n">CPU</span>
 </pre></div>
@@ -219,22 +306,42 @@ These print statements are only available for <a class="reference internal" href
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SKLEARNEX</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">DBSCAN</span><span class="o">.</span><span class="n">fit</span><span class="p">:</span> <span class="n">fallback</span> <span class="n">to</span> <span class="n">original</span> <span class="n">Scikit</span><span class="o">-</span><span class="n">learn</span>
 </pre></div>
 </div>
-</section>
+</div>
 
 
               </div>
               
         
-        <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="algorithms.html" title="previous page">Supported algorithms</a>
-    <a class='right-next' id="next-link" href="global_patching.html" title="next page">Global patching</a>
 
-        </div>
+
+
+<div class='prev-next-bottom'>
+    
+    <div id="prev">
+        <a class="left-prev" href="global-patching.html" title="previous page">
+            <i class="prevnext-label fas fa-angle-left"></i>
+            <div class="prevnext-info">
+                <p class="prevnext-label">previous</p>
+                <p class="prevnext-title">Global Patching</p>
+            </div>
+        </a>
+    </div>
+     <div id="next">
+        <a class="right-next" href="oneapi-gpu.html" title="next page">
+            <div class="prevnext-info">
+                <p class="prevnext-label">next</p>
+                <p class="prevnext-title">oneAPI and GPU support in Intel® Extension for Scikit-learn*</p>
+            </div>
+            <i class="prevnext-label fas fa-angle-right"></i>
+        </a>
+     </div>
+
+</div>
         
         </div>
     </div>
-    <footer class="footer mt-5 mt-md-0">
+    <footer class="footer">
     <div class="container">
       <p>
         
@@ -242,7 +349,14 @@ These print statements are only available for <a class="reference internal" href
         
             &copy; Copyright 2021, Intel.<br/>
           <div class="extra_footer">
-            <p align="right"><a href="https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">Cookies</a></p>
+            
+    <p align="right">
+        <a href=
+            "https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">
+            Cookies
+        </a>
+    </p>
+
           </div>
       </p>
     </div>

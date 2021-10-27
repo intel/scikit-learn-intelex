@@ -4,9 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-    <title>Getting Intel(R) Extension for Scikit-learn* &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Installation &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet" />
   <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -24,7 +23,7 @@
 
     
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinx-book-theme.5f77b4aec8189eecf79907ce328c390d.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
     
   <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
 
@@ -32,12 +31,13 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <link rel="shortcut icon" href="_static/favicons.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Supported algorithms" href="algorithms.html" />
-    <link rel="prev" title="Intel(R) Extension for Scikit-learn*" href="index.html" />
+    <link rel="next" title="Quick Start" href="quick-start.html" />
+    <link rel="prev" title="System requirements and supported configurations" href="system-requirements.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -56,6 +56,10 @@
         <div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="index.html">
       
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
       <img src="_static/oneAPI-rgb-rev-100.png" class="logo" alt="logo">
       
       
@@ -65,47 +69,125 @@
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
         <p class="caption">
  <span class="caption-text">
-  Contents:
+  About
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="acceleration.html">
+   Acceleration
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="what-is-patching.html">
+   Patching
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="blogs.html">
+   Medium Blogs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="system-requirements.html">
+   System Requirements
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Get Started
  </span>
 </p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="index.html">
-   About Intel(R) Extension for Scikit-learn*
-  </a>
- </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   Get started
+   Installation
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="quick-start.html">
+   Quick Start
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="samples.html">
+   Samples
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/knn_mnist.html">
+     k-Nearest Neighbors (kNN) for MNIST dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/logistictic_regression_cifar.html">
+     Logistic Regression for Cifar dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/nusvr_medical_charges.html">
+     Nu-Support Vector Regression (NuSVR) for Medical Charges dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/random_forest_yolanda.html">
+     Random Forest for Yolanda dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/svc_adult.html">
+     Support Vector Classification (SVC) for Adult dataset
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Developer Guide
+ </span>
+</p>
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="algorithms.html">
    Supported Algorithms
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="global-patching.html">
+   Global Patching
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="verbose.html">
-   Intel(R) Extension for Scikit-learn* Verbose
+   Verbose Mode
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="global_patching.html">
-   Global patching
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="oneapi_gpu.html">
+  <a class="reference internal" href="oneapi-gpu.html">
    oneAPI and GPU support
   </a>
  </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Community
+ </span>
+</p>
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="system_requirements.html">
-   System requirements
+  <a class="reference internal" href="support.html">
+   Support
   </a>
  </li>
 </ul>
@@ -149,7 +231,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/get_started.rst.txt"><button type="button"
+        <a class="dropdown-buttons" href="_sources/installation.rst.txt"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.rst</button></a>
         <!-- Download PDF via print -->
@@ -166,10 +248,10 @@
     <div class="dropdown-buttons sourcebuttons">
         
         <a class="issues-button"
-            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fget_started.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Finstallation.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/get_started.rst"><button
+        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/installation.rst"><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
     </div>
@@ -192,17 +274,29 @@
             <div class="tocsection onthispage pt-5 pb-3">
                 <i class="fas fa-list"></i> Contents
             </div>
-            <nav id="bd-toc-nav">
+            <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#installation-from-distribution-channels">
-   Installation from distribution channels
+  <a class="reference internal nav-link" href="#install-from-distribution-channels">
+   Install from distribution channels
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#building-from-sources">
-   Building from Sources
+  <a class="reference internal nav-link" href="#build-from-sources">
+   Build from Sources
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#configure-the-build-with-environment-variables">
+     Configure the build with environment variables
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#build-intelex">
+     Build Intel® Extension for Scikit-learn*
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -215,42 +309,53 @@
         
               <div>
                 
-  <section id="getting-intel-r-extension-for-scikit-learn">
-<span id="get-started"></span><h1>Getting Intel(R) Extension for Scikit-learn*<a class="headerlink" href="#getting-intel-r-extension-for-scikit-learn" title="Permalink to this headline">¶</a></h1>
-<section id="installation-from-distribution-channels">
-<h2>Installation from distribution channels<a class="headerlink" href="#installation-from-distribution-channels" title="Permalink to this headline">¶</a></h2>
-<p>Intel(R) Extension for Scikit-learn is available at the <a class="reference external" href="https://pypi.org/project/scikit-learn-intelex/">Python Package Index</a>, on Anaconda Cloud in <a class="reference external" href="https://anaconda.org/conda-forge/scikit-learn-intelex">Conda-Forge channel</a> and in <a class="reference external" href="https://anaconda.org/intel/scikit-learn-intelex">Intel channel</a>.
-Also Intel(R) Extension for Scikit-learn is available available as a part of <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3">Intel oneAPI AI Analytics Toolkit</a> (AI Kit).
-Sources and build instructions are available in <a class="reference external" href="https://github.com/intel/scikit-learn-intelex">Intel(R) Extension for Scikit-learn repository</a>.</p>
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>Intel® Extension for Scikit-learn* is available at the <a class="reference external" href="https://pypi.org/project/scikit-learn-intelex/">Python Package Index</a>,
+on Anaconda Cloud in <a class="reference external" href="https://anaconda.org/conda-forge/scikit-learn-intelex">Conda-Forge channel</a> and
+in <a class="reference external" href="https://anaconda.org/intel/scikit-learn-intelex">Intel channel</a>.</p>
+<p>Intel® Extension for Scikit-learn* is also available as a part of <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3">Intel oneAPI AI Analytics Toolkit</a> (AI Kit).
+If you already have AI Kit installed, you do not need to separately install the extension.</p>
+<p>You can also build the extension from <a class="reference internal" href="#build-from-sources"><span class="std std-ref">sources</span></a>.</p>
+<div class="section" id="install-from-distribution-channels">
+<h2>Install from distribution channels<a class="headerlink" href="#install-from-distribution-channels" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p>Install from <strong>PyPI</strong> (Recommended):</p>
+<li><p>Install from <strong>PyPI</strong> (recommended by default):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span>
 </pre></div>
 </div>
 </li>
-<li><p>Install from Anaconda Cloud: Conda-Forge channel:</p>
+<li><p>Install from <strong>Anaconda Cloud: Conda-Forge channel</strong> (recommended by default for conda users):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
 </pre></div>
 </div>
 </li>
-<li><p>Install from Anaconda Cloud: Intel channel:</p>
+<li><p>Install from <strong>Anaconda Cloud: Intel channel</strong> (recommended for the users of Intel® Distribution for Python):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span>
 </pre></div>
 </div>
 </li>
 </ul>
-</section>
-<section id="building-from-sources">
-<h2>Building from Sources<a class="headerlink" href="#building-from-sources" title="Permalink to this headline">¶</a></h2>
-<p><strong>Prerequisites</strong>:</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="system-requirements.html#system-requirements"><span class="std std-ref">System requirements and supported configurations</span></a></p>
+</div>
+</div>
+<div class="section" id="build-from-sources">
+<span id="id1"></span><h2>Build from Sources<a class="headerlink" href="#build-from-sources" title="Permalink to this headline">¶</a></h2>
+<p>Sources are available in <a class="reference external" href="https://github.com/intel/scikit-learn-intelex">Intel® Extension for Scikit-learn* repository</a>.</p>
+<p class="rubric">Prerequisites</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Python</span> <span class="n">version</span> <span class="o">&gt;=</span> <span class="mf">3.6</span>
 </pre></div>
 </div>
-<p><strong>Configuring the build with environment variables</strong>:</p>
+<div class="section" id="configure-the-build-with-environment-variables">
+<h3>Configure the build with environment variables<a class="headerlink" href="#configure-the-build-with-environment-variables" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SKLEARNEX_VERSION</span><span class="p">:</span> <span class="n">sets</span> <span class="n">package</span> <span class="n">version</span>
 </pre></div>
 </div>
-<p><strong>Building Intel(R) Extension for Scikit-learn</strong></p>
+</div>
+<div class="section" id="build-intelex">
+<h3>Build Intel® Extension for Scikit-learn*<a class="headerlink" href="#build-intelex" title="Permalink to this headline">¶</a></h3>
 <p>To install the package:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">checkout</span><span class="o">-</span><span class="nb">dir</span><span class="o">&gt;</span>
 <span class="n">python</span> <span class="n">setup_sklearnex</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
@@ -277,40 +382,50 @@ Sources and build instructions are available in <a class="reference external" hr
 back to the project source code directory. That way you can edit the source code and see the changes
 without having to reinstall the package every time you make a small change.</p>
 </div>
-<p>⚠️ Keys <code class="docutils literal notranslate"><span class="pre">--single-version-externally-managed</span></code> and <code class="docutils literal notranslate"><span class="pre">--no-deps</span></code> are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn</p>
+<p>⚠️ Keys <code class="docutils literal notranslate"><span class="pre">--single-version-externally-managed</span></code> and <code class="docutils literal notranslate"><span class="pre">--no-deps</span></code> are required so that daal4py is not downloaded after installation of Intel® Extension for Scikit-learn*</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">--single-version-externally-managed</span></code> is an option used for Python packages instructing the setuptools module
 to create a Python package that can be easily managed by the package manager on the host</p>
 </div>
-<p><strong>Building documentation for Intel(R) Extension for Scikit-learn</strong></p>
-<p>Prerequisites for creating documentation</p>
-<ul class="simple">
-<li><p>sphinx</p></li>
-<li><p>sphinx_rtd_theme</p></li>
-</ul>
-<p>Building documentation</p>
-<ol class="arabic simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">`cd</span> <span class="pre">doc</span> <span class="pre">&amp;&amp;</span> <span class="pre">make</span> <span class="pre">html`</span></code></p></li>
-<li><p>The documentation will be in <code class="docutils literal notranslate"><span class="pre">`doc/_build/html`</span></code></p></li>
-</ol>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
               </div>
               
         
-        <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="index.html" title="previous page">Intel(R) Extension for Scikit-learn*</a>
-    <a class='right-next' id="next-link" href="algorithms.html" title="next page">Supported algorithms</a>
 
-        </div>
+
+
+<div class='prev-next-bottom'>
+    
+    <div id="prev">
+        <a class="left-prev" href="system-requirements.html" title="previous page">
+            <i class="prevnext-label fas fa-angle-left"></i>
+            <div class="prevnext-info">
+                <p class="prevnext-label">previous</p>
+                <p class="prevnext-title">System requirements and supported configurations</p>
+            </div>
+        </a>
+    </div>
+     <div id="next">
+        <a class="right-next" href="quick-start.html" title="next page">
+            <div class="prevnext-info">
+                <p class="prevnext-label">next</p>
+                <p class="prevnext-title">Quick Start</p>
+            </div>
+            <i class="prevnext-label fas fa-angle-right"></i>
+        </a>
+     </div>
+
+</div>
         
         </div>
     </div>
-    <footer class="footer mt-5 mt-md-0">
+    <footer class="footer">
     <div class="container">
       <p>
         
@@ -318,7 +433,14 @@ to create a Python package that can be easily managed by the package manager on 
         
             &copy; Copyright 2021, Intel.<br/>
           <div class="extra_footer">
-            <p align="right"><a href="https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">Cookies</a></p>
+            
+    <p align="right">
+        <a href=
+            "https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">
+            Cookies
+        </a>
+    </p>
+
           </div>
       </p>
     </div>

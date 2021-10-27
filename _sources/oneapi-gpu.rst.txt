@@ -17,10 +17,10 @@
 .. _oneapi_gpu:
 
 ##############################################################
-oneAPI and GPU support in Intel(R) Extension for Scikit-learn*
+oneAPI and GPU support in |intelex|
 ##############################################################
 
-Intel(R) Extension for Scikit-learn* supports oneAPI concepts, which
+|intelex| supports oneAPI concepts, which
 means that algorithms can be executed on different devices: CPUs and GPUs.
 This is done via integration with
 `dpctl <https://intelpython.github.io/dpctl/latest/index.html>`_ package that
@@ -45,35 +45,37 @@ DPC++ compiler runtime can be installed either from PyPI or Anaconda:
 Device offloading
 -----------------
 
-Intel(R) Extension for Scikit-learn* offers two options for running an algorithm on a
+|intelex| offers two options for running an algorithm on a
 specific device with the help of dpctl:
 
 - Pass input data as `dpctl.tensor.usm_ndarray <https://intelpython.github.io/dpctl/latest/docfiles/dpctl.tensor_api.html#dpctl.tensor.usm_ndarray>`_ to the algorithm.
 
-   The computation will run on the device where the input data is
-   located, and the result will be returned as :code:`usm_ndarray` to the same
-   device.
+  The computation will run on the device where the input data is
+  located, and the result will be returned as :code:`usm_ndarray` to the same
+  device.
 
-   .. note::
-     All the input data for an algorithm must reside on the same device.
+  .. note::
+    All the input data for an algorithm must reside on the same device.
 
-   .. warning::
-     The :code:`usm_ndarray` can only be consumed by the base methods
-     like :code:`fit`, :code:`predict`, and :code:`transform`.
-     Note that only the algorithms in Intel(R) Extension for Scikit-learn* support
-     :code:`usm_ndarray`. The algorithms from the stock version of scikit-learn
-     do not support this feature.
-- Use global configurations of Intel(R) Extension for Scikit-learn\*:
-     1. The :code:`target_offload` option can be used to set the device primarily
-        used to perform computations. Accepted data types are :code:`str` and
-        :code:`dpctl.SyclQueue`. If you pass a string to :code:`target_offload`,
-        it should either be ``"auto"``, which means that the execution
-        context is deduced from the location of input data, or a string
-        with SYCL* filter selector. The default value is ``"auto"``.
-     2. The :code:`allow_fallback_to_host` option
-        is a Boolean flag. If set to :code:`True`, the computation is allowed 
-        to fallback to the host device when a particular estimator does not support
-        the selected device. The default value is :code:`False`.
+  .. warning::
+    The :code:`usm_ndarray` can only be consumed by the base methods
+    like :code:`fit`, :code:`predict`, and :code:`transform`.
+    Note that only the algorithms in |intelex| support
+    :code:`usm_ndarray`. The algorithms from the stock version of scikit-learn
+    do not support this feature.
+- Use global configurations of |intelex|\*:
+  
+  1. The :code:`target_offload` option can be used to set the device primarily
+     used to perform computations. Accepted data types are :code:`str` and
+     :code:`dpctl.SyclQueue`. If you pass a string to :code:`target_offload`,
+     it should either be ``"auto"``, which means that the execution
+     context is deduced from the location of input data, or a string
+     with SYCL* filter selector. The default value is ``"auto"``.
+  
+  2. The :code:`allow_fallback_to_host` option
+     is a Boolean flag. If set to :code:`True`, the computation is allowed 
+     to fallback to the host device when a particular estimator does not support
+     the selected device. The default value is :code:`False`.
 
 These options can be set using :code:`sklearnex.set_config()` function or
 :code:`sklearnex.config_context`. To obtain the current values of these options,
@@ -85,8 +87,7 @@ call :code:`sklearnex.get_config()`.
 
 .. rubric:: Compatibility considerations
 
-For compatibility reasons, algorithms in Intel(R) Extension for
-Scikit-learn* may be offloaded to the device using
+For compatibility reasons, algorithms in |intelex| may be offloaded to the device using
 :code:`daal4py.oneapi.sycl_context`. However, it is recommended to use one of the options
 described above for device offloading instead of using :code:`sycl_context`.
 
