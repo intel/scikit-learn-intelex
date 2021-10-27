@@ -134,7 +134,7 @@ deselected_tests:
   - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=1.0
 
   # Patched and unpatched kmeans belong same values to different clusters. Need to investigate.
-  - /preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0
+  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0, >=1.0.1
 
   # OOB scores in sklearn and oneDAL are different because of different random nuber generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
