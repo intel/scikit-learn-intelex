@@ -124,7 +124,8 @@ See [requirements-doc.txt](requirements-doc.txt).
 Run:
 
 ```
-cd doc && make html
+cd doc
+./build-doc.sh
 ```
 
 The documentation will be in ```doc/_build/html```.
