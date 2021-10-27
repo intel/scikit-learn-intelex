@@ -251,7 +251,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             sv = self.support_vectors_
             if not self._sparse and sv.size > 0 and self._n_support.sum() != sv.shape[0]:
                 raise ValueError("The internal representation "
-                                f"of {self.__class__.__name__} was altered")
+                                 f"of {self.__class__.__name__} was altered")
 
         if self.break_ties and self.decision_function_shape == 'ovr' and \
                 len(self.classes_) > 2:
@@ -320,7 +320,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             sv = self.support_vectors_
             if not self._sparse and sv.size > 0 and self._n_support.sum() != sv.shape[0]:
                 raise ValueError("The internal representation "
-                                f"of {self.__class__.__name__} was altered")
+                                 f"of {self.__class__.__name__} was altered")
 
         policy = _get_policy(queue, X)
         params = self._get_onedal_params(X)
