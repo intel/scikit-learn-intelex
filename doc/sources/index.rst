@@ -72,7 +72,7 @@ Important Links
    algorithms.rst
    global-patching.rst
    verbose.rst
-   oneAPI and GPU support <oneapi_gpu>
+   oneAPI and GPU support <oneapi-gpu.rst>
 
 .. toctree::
    :caption: Community
