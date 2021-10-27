@@ -117,24 +117,21 @@ class NeighborsCommonBase(metaclass=ABCMeta):
                 "'distance', or a callable function"
             )
 
-    def _onedal_fit(self, X, y, queue):
-        policy = _get_policy(queue, X, y)
-        params = self._get_onedal_params(X)
-        train_alg = _backend.neighbors.classification.train(policy, params,
-                                *to_table(X, y))
-
-        return train_alg
-
-    def _onedal_predict(self, model, X, params, queue):
-        policy = _get_policy(queue, X)
-
-        if hasattr(self, '_onedal_model'):
-            model = self._onedal_model
-        else:
-            model = self._create_model(_backend.neighbors.classification)
-        result = _backend.neighbors.classification.infer(policy, params, model, to_table(X))
-
-        return result
+    def _get_onedal_params(self, data):
+        class_count = 0 if self.classes_ is None else len(self.classes_)
+        weights = getattr(self, 'weights', 'uniform')
+        return {
+            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'vote_weights': 'uniform' if weights == 'uniform' else 'distance',
+            'method': self._fit_method,
+            'radius': self.radius,
+            'class_count': class_count,
+            'neighbor_count': self.n_neighbors,
+            'metric': self.metric,
+            'p': self.p,
+            'metric_params': self.metric_params,
+            'result_option': 'indices|distances',
+        }
 
 class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
     def __init__(self, n_neighbors=None, radius=None,
@@ -155,23 +152,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         try:
             return arr.astype(dtype, copy=False)
         except ValueError:
-            return arr 
-
-    def _get_onedal_params(self, data):
-        class_count = 0 if self.classes_ is None else len(self.classes_)
-        weights = getattr(self, 'weights', 'uniform')
-        return {
-            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
-            'vote_weights': 'uniform' if weights == 'uniform' else 'distance',
-            'method': self._fit_method,
-            'radius': self.radius,
-            'class_count': class_count,
-            'neighbor_count': self.n_neighbors,
-            'metric': self.metric,
-            'p': self.p,
-            'metric_params': self.metric_params,
-            'result_option': 'all',
-        }
+            return arr
 
     def _validate_n_classes(self):
         if len(self.classes_) < 2:
@@ -220,7 +201,6 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
         if y is not None or self.requires_y:
             X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])
-            y = self._validate_targets(y, X.dtype)
             self.shape = y.shape
 
             if _is_classifier(self) or _is_regressor(self):
@@ -242,6 +222,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
                 if not self.outputs_2d_:
                     self.classes_ = self.classes_[0]
                     self._y = self._y.ravel()
+                self._validate_n_classes()
             else:
                 self._y = y
         else:
@@ -263,16 +244,13 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
                     "enter integer value" %
                     type(self.n_neighbors))
 
-        self._validate_n_classes()
-
-        method = super()._parse_auto_method(
+        self._fit_method = super()._parse_auto_method(
             self.algorithm,
             self.n_samples_fit_, self.n_features_in_)
-        self._fit_method = method
 
         if _is_classifier(self) and y.dtype not in [np.float64, np.float32]:
             y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
-        result = super()._onedal_fit(X, y, queue)
+        result = self._onedal_fit(X, y, queue)
 
         if y is not None and _is_regressor(self):
             self._y = y if self.shape is None else y.reshape(self.shape)
@@ -329,11 +307,9 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         method = super()._parse_auto_method(
             self._fit_method, self.n_samples_fit_, n_features)
 
-        params = self._get_onedal_params(X)
-        # In case we call kneighbors during classification
-        params['result_option'] = 'indices|distances'
+        params = super()._get_onedal_params(X)
 
-        prediction_results = super()._onedal_predict(self._onedal_model, X, params, queue=queue)
+        prediction_results = self._onedal_predict(self._onedal_model, X, params, queue=queue)
 
         distances = from_table(prediction_results.distances)
         indices = from_table(prediction_results.indices)
@@ -402,6 +378,24 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         params['result_option'] = 'responses'
         return params
 
+    def _onedal_fit(self, X, y, queue):
+        policy = _get_policy(queue, X, y)
+        params = self._get_onedal_params(X)
+        train_alg = _backend.neighbors.classification.train(policy, params,
+                                *to_table(X, y))
+
+        return train_alg
+
+    def _onedal_predict(self, model, X, params, queue):
+        policy = _get_policy(queue, X)
+
+        if hasattr(self, '_onedal_model'):
+            model = self._onedal_model
+        else:
+            model = self._create_model(_backend.neighbors.classification)
+        result = _backend.neighbors.classification.infer(policy, params, model, to_table(X))
+
+        return result
 
     def fit(self, X, y, queue=None):
         return super()._fit(X, y, queue=queue)
@@ -419,16 +413,15 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         
         _check_is_fitted(self)
 
-        method = super()._parse_auto_method(
+        self._fit_method = super()._parse_auto_method(
             self.algorithm,
             n_samples_fit_, n_features)
-        self._fit_method = method
 
         self._validate_n_classes()
 
         params = self._get_onedal_params(X)
 
-        prediction_result = super()._onedal_predict(onedal_model, X, params, queue=queue)
+        prediction_result = self._onedal_predict(onedal_model, X, params, queue=queue)
         responses = from_table(prediction_result.responses)
         result = self.classes_.take(
             np.asarray(responses.ravel(), dtype=np.intp))
@@ -492,6 +485,25 @@ class NearestNeighbors(NeighborsBase):
         params = super()._get_onedal_params(data)
         params['result_option'] = 'indices|distances'
         return params
+
+    def _onedal_fit(self, X, y, queue):
+        policy = _get_policy(queue, X, y)
+        params = self._get_onedal_params(X)
+        train_alg = _backend.neighbors.search.train(policy, params,
+                                to_table(X))
+
+        return train_alg
+
+    def _onedal_predict(self, model, X, params, queue):
+        policy = _get_policy(queue, X)
+
+        if hasattr(self, '_onedal_model'):
+            model = self._onedal_model
+        else:
+            model = self._create_model(_backend.neighbors.search)
+        result = _backend.neighbors.search.infer(policy, params, model, to_table(X))
+
+        return result
 
     def fit(self, X, y, queue=None):
         return super()._fit(X, y, queue=queue)

@@ -34,7 +34,7 @@ if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P',
 
     from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
     # from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
-    # from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
+    from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
     new_patching_available = True
 else:
@@ -67,11 +67,11 @@ def get_patch_map():
         mapping.pop('kneighborsclassifier')
         # mapping.pop('knn_regressor')
         # mapping.pop('kneighborsregressor')
-        # mapping.pop('nearest_neighbors')
-        # mapping.pop('nearestneighbors')
+        mapping.pop('nearest_neighbors')
+        mapping.pop('nearestneighbors')
         mapping['knn_classifier'] = [[(neighbors_module, 'KNeighborsClassifier', KNeighborsClassifier_sklearnex), None]]
         # mapping['knn_regressor'] = [[(neighbors_module, 'KNeighborsRegressor', KNeighborsRegressor_sklearnex), None]]
-        # mapping['nearest_neighbors'] = [[(neighbors_module, 'NearestNeighbors', NearestNeighbors_sklearnex), None]]
+        mapping['nearest_neighbors'] = [[(neighbors_module, 'NearestNeighbors', NearestNeighbors_sklearnex), None]]
 
         ## Configs
         mapping['set_config'] = [[(base_module,

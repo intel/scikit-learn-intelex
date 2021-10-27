@@ -18,6 +18,10 @@
 from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
 
+from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
+from sklearn.neighbors._ball_tree import BallTree
+from sklearn.neighbors._kd_tree import KDTree
+from sklearn.neighbors._base import VALID_METRICS
 from sklearn.neighbors._unsupervised import NearestNeighbors as \
     sklearn_NearestNeighbors
 
@@ -73,7 +77,51 @@ class NearestNeighbors(NearestNeighbors_):
     def fit(self, X, y=None):
         if hasattr(self, '_onedal_estimator'):
             delattr(self, '_onedal_estimator')
+        # To cover test case when we pass patched
+        # estimator as an input for other estimator
+        if hasattr(X, '_onedal_estimator'):
+            self._fit_method = self.algorithm
 
+            if self._fit_method == "auto":
+                # A tree approach is better for small number of neighbors or small
+                # number of features, with KDTree generally faster when available
+                if (
+                    self.metric == "precomputed"
+                    or self._fit_X.shape[1] > 15
+                    or (
+                        self.n_neighbors is not None
+                        and self.n_neighbors >= self._fit_X.shape[0] // 2
+                    )
+                ):
+                    self._fit_method = "brute"
+                else:
+                    if self.effective_metric_ in VALID_METRICS["kd_tree"]:
+                        self._fit_method = "kd_tree"
+                    elif (
+                        callable(self.effective_metric_)
+                        or self.effective_metric_ in VALID_METRICS["ball_tree"]
+                    ):
+                        self._fit_method = "ball_tree"
+                    else:
+                        self._fit_method = "brute"
+            if self._fit_method == "ball_tree":
+                self._tree = BallTree(
+                    X,
+                    self.leaf_size,
+                    metric=self.effective_metric_,
+                    **self.effective_metric_params_,
+                )
+            elif self._fit_method == "kd_tree":
+                self._tree = KDTree(
+                    X,
+                    self.leaf_size,
+                    metric=self.effective_metric_,
+                    **self.effective_metric_params_,
+                )
+            elif self._fit_method == "brute":
+                self._tree = None
+            else:
+                raise ValueError("algorithm = '%s' not recognized" % self.algorithm)
         dispatch(self, 'neighbors.NearestNeighbors.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_NearestNeighbors.fit,
@@ -90,31 +138,26 @@ class NearestNeighbors(NearestNeighbors_):
 
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'neighbors.NearestNeighbors.fit':
+            X_incorrect_type = isinstance(
+                data[0], (KDTree, BallTree, sklearn_NeighborsBase))
             is_sparse = sp.isspmatrix(data[0])
-            class_count = None
-            if len(data) > 1:
-                class_count = len(np.unique(data[1]))
-            return self.weights in ['uniform', 'distance'] and \
-                self.algorithm in ['brute', 'auto'] and \
+            return self.algorithm in ['brute', 'auto'] and \
                 self.metric in ['minkowski', 'euclidean'] and \
-                self.class_weight is None and \
-                class_count >= 2 and \
-                not is_sparse
+                not is_sparse and \
+                not X_incorrect_type
         if method_name in ['neighbors.NearestNeighbors.kneighbors']:
             return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'neighbors.NearestNeighbors.fit':
+            X_incorrect_type = isinstance(
+                data[0], (KDTree, BallTree, sklearn_NeighborsBase))
             is_sparse = sp.isspmatrix(data[0])
-            class_count = None
-            if len(data) > 1:
-                class_count = len(np.unique(data[1]))
-            return self.weights in ['uniform', 'distance'] \
-                    and self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
+            return self.algorithm in ['brute', 'kd_tree', 'auto', 'ball_tree'] \
                     and self.metric in ['minkowski', 'euclidean', 'chebyshev', 'cosine'] \
-                    and class_count >= 2 \
-                    and not is_sparse
+                    and not is_sparse \
+                    and not X_incorrect_type
         if method_name in ['neighbors.NearestNeighbors.kneighbors']:
             print("_onedal_estimator ", hasattr(self, '_onedal_estimator'))
             print("sparse ", not sp.isspmatrix(data[0]))
@@ -124,7 +167,6 @@ class NearestNeighbors(NearestNeighbors_):
     def _onedal_fit(self, X, y=None, queue=None):
         onedal_params = {
             'n_neighbors': self.n_neighbors,
-            'weights': self.weights,
             'algorithm': self.algorithm,
             'metric': self.metric,
             'p': self.p,
@@ -153,11 +195,9 @@ class NearestNeighbors(NearestNeighbors_):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
         self._fit_X = self._onedal_estimator._fit_X
-        self._y = self._onedal_estimator._y
         self.shape = self._onedal_estimator.shape
         self.effective_metric_ = self._onedal_estimator.effective_metric_
         self.effective_metric_params_ = self._onedal_estimator.effective_metric_params_
         self._fit_method = self._onedal_estimator._fit_method
-        self.outputs_2d_ = self._onedal_estimator.outputs_2d_
         self._tree = self._onedal_estimator._tree
 

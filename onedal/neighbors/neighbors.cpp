@@ -107,25 +107,39 @@ struct params2desc {
         constexpr bool is_srch = std::is_same_v<Task, task::search>;
 
         constexpr bool is_bf = std::is_same_v<Method, method::brute_force>;
-        constexpr bool is_kd = std::is_same_v<Method, method::kd_tree>;
 
         const auto class_count = params["class_count"].cast<std::int64_t>();
         const auto neighbor_count = params["neighbor_count"].cast<std::int64_t>();
 
-        auto desc = descriptor<Float, Method, Task, Distance>(class_count, neighbor_count)
+        if constexpr (is_cls) {
+            auto desc = descriptor<Float, Method, Task, Distance>(class_count, neighbor_count)
                         .set_voting_mode(get_onedal_voting_mode(params))
                         .set_result_options(get_onedal_result_options(params));
-
-        if constexpr (is_bf) {
-            desc.set_distance(get_distance_descriptor<Distance>(params));
+            if constexpr (is_bf) {
+                desc.set_distance(get_distance_descriptor<Distance>(params));
+            }
+            return desc;
         }
-
-        return desc;
+        
+        else if constexpr (is_srch) {
+            auto desc = descriptor<Float, Method, Task, Distance>(neighbor_count)
+                        .set_voting_mode(get_onedal_voting_mode(params))
+                        .set_result_options(get_onedal_result_options(params));
+            if constexpr (is_bf) {
+                desc.set_distance(get_distance_descriptor<Distance>(params));
+            }
+            return desc;
+        }
     }
 };
 
-template <typename Policy, typename Task>
-void init_train_ops(py::module_& m) {
+template<typename Policy, typename Task>
+struct init_train_ops_dispatcher {};
+
+template <typename Policy>
+struct init_train_ops_dispatcher<Policy, knn::task::classification> {
+void operator()(py::module_& m) {
+    using Task = knn::task::classification;
     m.def("train",
           [](const Policy& policy,
              const py::dict& params,
@@ -137,6 +151,27 @@ void init_train_ops(py::module_& m) {
               train_ops ops(policy, input_t{ data, responses }, params2desc{} );
               return fptype2t { method2t { Task{}, metric2t{ ops } } }(params);
           });
+}};
+
+template <typename Policy>
+struct init_train_ops_dispatcher<Policy, knn::task::search> {
+void operator()(py::module_& m) {
+    using Task = knn::task::search;
+    m.def("train",
+          [](const Policy& policy,
+             const py::dict& params,
+             const table& data) {
+              using namespace knn;
+              using input_t = train_input<Task>;
+
+              train_ops ops(policy, input_t{ data }, params2desc{} );
+              return fptype2t { method2t { Task{}, metric2t{ ops } } }(params);
+          });
+}};
+
+template <typename Policy, typename Task>
+void init_train_ops(py::module& m) {
+    init_train_ops_dispatcher<Policy, Task>{}(m);
 }
 
 template <typename Policy, typename Task>
