@@ -117,7 +117,8 @@ to create a Python package that can be easily managed by the package manager on 
 ## Build documentation for Intel(R) Extension for Scikit-learn
 ### Prerequisites for creating documentation
 
-See [requirements-doc.txt](requirements-doc.txt).
+- [requirements-doc.txt](requirements-doc.txt)
+- [pandoc](https://pandoc.org/installing.html)
 
 ### Build documentation
 
