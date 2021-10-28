@@ -199,11 +199,7 @@ deselected_tests:
   - tests/test_config.py::test_config_context
 
   #Need to fix.
-  - tests/test_common.py::test_pandas_column_name_consistency[HalvingGridSearchCV(cv=2,estimator=Ridge(),min_resources='smallest',param_grid={'alpha':[0.1,1.0]},random_state=0)0] >=1.0.1
-  - tests/test_common.py::test_pandas_column_name_consistency[HalvingGridSearchCV(cv=2,estimator=Ridge(),min_resources='smallest',param_grid={'alpha':[0.1,1.0]},random_state=0)1] >=1.0.1
-  - tests/test_common.py::test_pandas_column_name_consistency[HalvingGridSearchCV(cv=2,error_score='raise',estimator=Pipeline(steps=[('pca',PCA()),('ridge',Ridge())]),min_resources='smallest',param_grid={'ridge__alpha':[0.1,1.0]},random_state=0)] >=1.0.1
-  - tests/test_common.py::test_pandas_column_name_consistency[HalvingRandomSearchCV(cv=2,error_score='raise',estimator=Pipeline(steps=[('pca',PCA()),('ridge',Ridge())]),param_distributions={'ridge__alpha':[0.1,1.0]},random_state=0)] >=1.0.1
-
+  - tests/test_common.py::test_pandas_column_name_consistency[HalvingGridSearchCV] >=1.0.1
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
 reduced_tests:
