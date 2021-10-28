@@ -17,53 +17,25 @@
 
 You may enable patching in different ways:
 
-- Without editing the code of a scikit-learn application by using the following commandline flag::
-
-    python -m sklearnex my_application.py
-
-- Directly from the script::
-
-    from sklearnex import patch_sklearn
-    patch_sklearn()
-- Through global patching to enable this for your scikit-learn installation for all further runs::
-
-    python sklearnex.glob patch_sklearn
+.. include:: /patching/patching-options.rst
 
 .. rubric:: Example
 
-::
-
-    import numpy as np
-    from sklearnex import patch_sklearn
-    patch_sklearn()
-
-    # You need to re-import scikit-learn algorithms after the patch
-    from sklearn.cluster import KMeans
-
-    X = np.array([[1,  2], [1,  4], [1,  0],
-                  [10, 2], [10, 4], [10, 0]])
-    kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
-    print(f"kmeans.labels_ = {kmeans.labels_}")
+.. include:: /patching/patch-kmeans-example.rst
 
 In the example above, you can see that the use of the original Scikit-learn
 has not changed. This behavior is achieved through drop-in patching.
 
-To undo the patch, run::
+To undo the patch, run:
 
-    sklearnex.unpatch_sklearn()
-    # You need to re-import scikit-learn algorithms after the unpatch:
-    from sklearn.cluster import KMeans
+.. include:: /patching/undo-patch.rst
 
 You may specify which algorithms to patch:
 
-- Patching only one algorithm::
+- Patching only one algorithm:
 
-    from sklearnex import patch_sklearn
-    # The names match scikit-learn estimators
-    patch_sklearn("SVC")
+  .. include:: /patching/patch-one-algorithm.rst
 
-- Patching several algorithms::
+- Patching several algorithms:
 
-    from sklearnex import patch_sklearn
-    # The names match scikit-learn estimators
-    patch_sklearn(["SVC", "DBSCAN"])
+  .. include:: /patching/patch-several-algorithms.rst
