@@ -99,7 +99,7 @@ class TSNE(BaseTSNE):
         # * final optimization with momentum at 0.8
 
         size_iter = np.array([[n_samples], [P.nnz], [self.n_iter_without_progress], [self.n_iter]], dtype=P.dtype) # N, nnz, n_iter_without_progress, n_iter
-        params = np.array([[self.early_exaggeration], [self.learning_rate], [self.min_grad_norm], [self.angle]], dtype=P.dtype)
+        params = np.array([[self.early_exaggeration], [self._learning_rate], [self.min_grad_norm], [self.angle]], dtype=P.dtype)
         results = np.zeros((3, 1), dtype=P.dtype) # curIter, error, gradNorm
 
         if P.dtype == np.float64:
@@ -122,8 +122,6 @@ class TSNE(BaseTSNE):
              )
         else:
             raise ValueError("unsupported dtype of 'P' matrix")
-
-        print(results)
 
         # Save the final number of iterations
         self.n_iter_ = int(results[0][0])
