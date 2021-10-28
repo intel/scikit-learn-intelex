@@ -313,7 +313,7 @@ while using the familiar scikit-learn package and getting the same results.</p>
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p>You may enable patching in different ways:</p>
 <ul>
-<li><p>Without editing the code of a scikit-learn application by using the following commandline flag:</p>
+<li><p>Without editing the code of a scikit-learn application by using the following command line flag:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">sklearnex</span> <span class="n">my_application</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
@@ -321,6 +321,11 @@ while using the familiar scikit-learn package and getting the same results.</p>
 <li><p>Directly from the script:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
 <span class="n">patch_sklearn</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+<li><p>Through <a class="reference internal" href="global-patching.html#global-patching"><span class="std std-ref">global patching</span></a> to enable patching for your scikit-learn installation for all further runs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span>
 </pre></div>
 </div>
 </li>

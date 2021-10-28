@@ -25,4 +25,16 @@ Patching
       To patch scikit-learn with |intelex| is to replace stock scikit-learn algorithms
       with their optimized versions provided by the extension.
 
+      There are different ways to patch scikit-learn:
+
+      .. include:: /patching/patching-options.rst
+
+      .. seealso:: :ref:`get_started`
+
+   global pathcing
+      One of the patching options available in |intelex|.
+      With global patching, you can patch all scikit-learn applications at once::
+
+         python sklearnex.glob patch_sklearn
+      
       .. seealso:: :ref:`global_patching`
