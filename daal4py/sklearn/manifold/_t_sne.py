@@ -30,7 +30,6 @@ from sklearn.utils.validation import check_non_negative
 from sklearn.utils import check_random_state, check_array
 
 from ..neighbors import NearestNeighbors
-from .._utils import sklearn_check_version
 from .._device_offload import support_usm_ndarray
 
 if sklearn_check_version('0.22'):
@@ -337,8 +336,8 @@ class TSNE(BaseTSNE):
         # Laurens van der Maaten, 2009.
         degrees_of_freedom = max(self.n_components - 1, 1)
 
-        daal_ready = (self.method == 'barnes_hut' and self.n_components == 2 and
-                      self.verbose == 0 and daal_check_version((2021, 'P', 500)))
+        daal_ready = self.method == 'barnes_hut' and self.n_components == 2 and \
+                     self.verbose == 0 and daal_check_version((2021, 'P', 500))
 
         if daal_ready:
             X_embedded = check_array(X_embedded, dtype=[np.float32, np.float64])
