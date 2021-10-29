@@ -98,9 +98,12 @@ class TSNE(BaseTSNE):
         # * initial optimization with early exaggeration and momentum at 0.5
         # * final optimization with momentum at 0.8
 
-        size_iter = np.array([[n_samples], [P.nnz], [self.n_iter_without_progress], [self.n_iter]], dtype=P.dtype) # N, nnz, n_iter_without_progress, n_iter
-        params = np.array([[self.early_exaggeration], [self._learning_rate], [self.min_grad_norm], [self.angle]], dtype=P.dtype)
-        results = np.zeros((3, 1), dtype=P.dtype) # curIter, error, gradNorm
+        # N, nnz, n_iter_without_progress, n_iter
+        size_iter = np.array([[n_samples], [P.nnz], [self.n_iter_without_progress],
+                             [self.n_iter]], dtype=P.dtype)
+        params = np.array([[self.early_exaggeration], [self._learning_rate],
+                          [self.min_grad_norm], [self.angle]], dtype=P.dtype)
+        results = np.zeros((3, 1), dtype=P.dtype)  # curIter, error, gradNorm
 
         if P.dtype == np.float64:
             daal4py.daal_tsne_gradient_descent(
@@ -109,8 +112,7 @@ class TSNE(BaseTSNE):
                 size_iter,
                 params,
                 results,
-                0
-             )
+                0)
         elif P.dtype == np.float32:
             daal4py.daal_tsne_gradient_descent(
                 X_embedded,
@@ -118,8 +120,7 @@ class TSNE(BaseTSNE):
                 size_iter,
                 params,
                 results,
-                1
-             )
+                1)
         else:
             raise ValueError("unsupported dtype of 'P' matrix")
 
@@ -336,8 +337,8 @@ class TSNE(BaseTSNE):
         # Laurens van der Maaten, 2009.
         degrees_of_freedom = max(self.n_components - 1, 1)
 
-        daal_ready = self.method == 'barnes_hut' and self.n_components == 2 and self.verbose == 0 and \
-            daal_check_version((2021, 'P', 500))
+        daal_ready = (self.method == 'barnes_hut' and self.n_components == 2 and
+                      self.verbose == 0 and daal_check_version((2021, 'P', 500)))
 
         if daal_ready:
             X_embedded = check_array(X_embedded, dtype=[np.float32, np.float64])
