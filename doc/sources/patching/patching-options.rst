@@ -1,3 +1,8 @@
+.. important::
+
+    These patching methods are interchangeable.
+    They support different enabling scenarios while producing the same result.
+
 - Without editing the code of a scikit-learn application by using the following command line flag::
 
     python -m sklearnex my_application.py
