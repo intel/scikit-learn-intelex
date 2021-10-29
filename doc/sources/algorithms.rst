@@ -149,7 +149,7 @@ on GPU
      - Only dense data is supported.
    * - Classification
      - LogisticRegression
-     - All parameters except ``solver`` != 'newton-cg', ``class_weight`` != None, ``sample_weight`` != None, ``penalty`` != 'l2'
+     - All parameters except ``solver`` != 'newton-cg', ``class_weight`` != None, ``sample_weight`` != None, ``penalty`` != 'l2'
      - Only dense data is supported.
    * - Regression
      - RandomForestRegressor
@@ -165,11 +165,11 @@ on GPU
      - Only dense data is supported, #observations should be >= #features.
    * - Clustering
      - KMeans
-     - All parameters except ``precompute_distances`` and ``sample_weight`` != None.
-     - No limitations.
+     - All parameters except ``precompute_distances`` and ``sample_weight`` != None. Init = 'k-means++' fallbacks to CPU.
+     - Sparse data is not supported.
    * - Clustering
      - DBSCAN
-     - 
+     - All parameters except ``metric`` != 'euclidean', ``algorithm`` != 'brute', ``algorithm`` != 'auto'.
      - Only dense data is supported.
    * - Dimensionality reduction
      - PCA
