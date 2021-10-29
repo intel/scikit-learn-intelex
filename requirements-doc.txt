@@ -12,7 +12,6 @@ importlib-resources==3.3.1
 Jinja2==3.0.2
 MarkupSafe==2.0.1
 packaging==21.0
-pkg-resources==0.0.0
 pydata-sphinx-theme==0.6.3
 Pygments==2.10.0
 pyparsing==2.4.7
