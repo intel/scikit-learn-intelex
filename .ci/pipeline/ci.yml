@@ -84,12 +84,14 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      pip install -r requirements-doc.txt
       cd doc/daal4py
       make html
     displayName: 'Build daal4py documentation'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      pip install -r requirements-doc.txt
       cd doc
       make html
     displayName: 'Build scikit-learn-intelex documentation'
