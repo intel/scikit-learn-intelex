@@ -16,16 +16,23 @@
 
 .. _system_requirements:
 
-###################
-System requirements
-###################
+#################################################
+System requirements and supported configurations
+#################################################
 
-This page provides details about hardware, operating system, and software prerequisites for Intel® Extension for Scikit-learn.
+This page provides details about hardware, operating system, and software prerequisites for |intelex|.
 
 Supported configurations
 ------------------------
 
-**PyPi channel**
+|intelex| supports optimizations for the last four versions of scikit-learn.
+The latest release of scikit-learn-intelex-2021.3.X supports scikit-learn 0.22.X, 0.23.X, 0.24.X and 1.0.X.
+
+|intelex| is available for installation from different channels. 
+There is a difference in supported configurations for each distribution channel.
+
+PyPI channel
+=============
 
 .. list-table::
    :widths: 25 8 8 8 8
@@ -38,25 +45,23 @@ Supported configurations
      - Python 3.8
      - Python 3.9
    * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
    * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
    * - macOS
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
+     - [CPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
 
-.. note::
-    It supports CPUs and GPUs
-
-**Anaconda Cloud: Conda-Forge channel**
+Anaconda Cloud: Conda-Forge channel
+===================================
 
 .. list-table::
    :widths: 25 8 8 8 8
@@ -69,26 +74,23 @@ Supported configurations
      - Python 3.8
      - Python 3.9
    * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
+     - [CPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
    * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
+     - [CPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
    * - macOS
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
+     - [CPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
 
-.. note::
-    It supports only CPUs.
-    Recommended for conda users by default
-
-**Anaconda Cloud: Intel channel**
+Anaconda Cloud: Intel channel
+==============================
 
 .. list-table::
    :widths: 25 8 8 8 8
@@ -101,32 +103,28 @@ Supported configurations
      - Python 3.8
      - Python 3.9
    * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
    * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
    * - macOS
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-
-.. note::
-    It supports CPUs and GPUs.
-    Recommended for conda users who use other components from Intel(R) Distribution for Python
+     - [CPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
 
 System Requirements
 -------------------
 
-For CPU users
-=============
+For CPU
+=======
 
-**Operating systems**
+.. rubric:: Operating systems
 
 The last two versions of the following operating systems:
 
@@ -134,7 +132,7 @@ The last two versions of the following operating systems:
 - **Windows**\* and **Windows\* Server**
 - **macOS**\*
 
-**Hardware platforms**
+.. rubric:: Hardware platforms
 
 - All processors with x86 architecture
 
@@ -148,21 +146,23 @@ The last two versions of the following operating systems:
     Intel® processors provide better performance then other CPUs.
     Read more about hardware comparison in our :ref:`blogs <blogs>`.
 
-For GPU users
-=============
+For GPU
+=======
 
-.. warning::
+.. important::
     If you are using accelerators, please refer to the DPC++ compiler system
     requirements `here <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_
 
-**Operating systems**
+.. rubric:: Operating systems
 
 The last two versions of the following operating systems:
 
 - **Linux**\*
 - **Windows**\* and **Windows\* Server**
 
-**Hardware platforms**
+.. rubric:: Hardware platforms
 
 - All Intel® integrated and discrete GPUs
 - `Intel® GPU drivers <https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver>`__
+
+.. seealso:: :ref:`oneapi_gpu`

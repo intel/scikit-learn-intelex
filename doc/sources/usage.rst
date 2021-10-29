@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2020-2021 Intel Corporation
+.. * Copyright 2021 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -14,19 +14,28 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-.. _contents:
 
-####################################
-Intel(R) Extension for Scikit-learn*
-####################################
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+You may enable patching in different ways:
 
-   About Intel(R) Extension for Scikit-learn* <index>
-   Get started <get_started>
-   Supported Algorithms <algorithms>
-   Intel(R) Extension for Scikit-learn* Verbose <verbose>
-   Global patching <global_patching>
-   oneAPI and GPU support <oneapi_gpu>
-   System requirements <system_requirements>
+.. include:: /patching/patching-options.rst
+
+.. rubric:: Example
+
+.. include:: /patching/patch-kmeans-example.rst
+
+In the example above, you can see that the use of the original Scikit-learn
+has not changed. This behavior is achieved through drop-in patching.
+
+To undo the patch, run:
+
+.. include:: /patching/undo-patch.rst
+
+You may specify which algorithms to patch:
+
+- Patching only one algorithm:
+
+  .. include:: /patching/patch-one-algorithm.rst
+
+- Patching several algorithms:
+
+  .. include:: /patching/patch-several-algorithms.rst
