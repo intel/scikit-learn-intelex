@@ -95,7 +95,7 @@ pygments_style = 'sphinx'
 
 rst_prolog = """
 .. |reg| unicode:: U+000AE
-.. |intelex| replace:: Intel\ |reg|\  Extension for Scikit-learn* 
+.. |intelex| replace:: Intel\ |reg|\  Extension for Scikit-learn*
 """
 
 # -- Options for HTML output -------------------------------------------------
