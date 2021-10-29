@@ -4,9 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-    <title>Global patching &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Global Patching &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet" />
   <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -24,7 +23,7 @@
 
     
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinx-book-theme.5f77b4aec8189eecf79907ce328c390d.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
     
   <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
 
@@ -32,12 +31,13 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <link rel="shortcut icon" href="_static/favicons.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="oneAPI and GPU support in Intel(R) Extension for Scikit-learn*" href="oneapi_gpu.html" />
-    <link rel="prev" title="Intel(R) Extension for Scikit-learn* verbose" href="verbose.html" />
+    <link rel="next" title="Verbose Mode" href="verbose.html" />
+    <link rel="prev" title="Supported Algorithms" href="algorithms.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -56,6 +56,10 @@
         <div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="index.html">
       
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
       <img src="_static/oneAPI-rgb-rev-100.png" class="logo" alt="logo">
       
       
@@ -65,47 +69,125 @@
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
         <p class="caption">
  <span class="caption-text">
-  Contents:
+  About
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="acceleration.html">
+   Acceleration
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="what-is-patching.html">
+   Patching
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="blogs.html">
+   Medium Blogs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="system-requirements.html">
+   System Requirements
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Get Started
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="quick-start.html">
+   Quick Start
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="samples.html">
+   Samples
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/knn_mnist.html">
+     k-Nearest Neighbors (kNN) for MNIST dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/logistictic_regression_cifar.html">
+     Logistic Regression for Cifar dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/nusvr_medical_charges.html">
+     Nu-Support Vector Regression (NuSVR) for Medical Charges dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/random_forest_yolanda.html">
+     Random Forest for Yolanda dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/svc_adult.html">
+     Support Vector Classification (SVC) for Adult dataset
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Developer Guide
  </span>
 </p>
 <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="index.html">
-   About Intel(R) Extension for Scikit-learn*
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="get_started.html">
-   Get started
-  </a>
- </li>
  <li class="toctree-l1">
   <a class="reference internal" href="algorithms.html">
    Supported Algorithms
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="verbose.html">
-   Intel(R) Extension for Scikit-learn* Verbose
-  </a>
- </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   Global patching
+   Global Patching
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="oneapi_gpu.html">
+  <a class="reference internal" href="verbose.html">
+   Verbose Mode
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="oneapi-gpu.html">
    oneAPI and GPU support
   </a>
  </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Community
+ </span>
+</p>
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="system_requirements.html">
-   System requirements
+  <a class="reference internal" href="support.html">
+   Support
   </a>
  </li>
 </ul>
@@ -149,7 +231,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/global_patching.rst.txt"><button type="button"
+        <a class="dropdown-buttons" href="_sources/global-patching.rst.txt"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.rst</button></a>
         <!-- Download PDF via print -->
@@ -166,10 +248,10 @@
     <div class="dropdown-buttons sourcebuttons">
         
         <a class="issues-button"
-            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fglobal_patching.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fglobal-patching.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/global_patching.rst"><button
+        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/global-patching.rst"><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
     </div>
@@ -189,6 +271,44 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#patch-all-supported-algorithms">
+   Patch all supported algorithms
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#patch-selected-algorithms">
+   Patch selected algorithms
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#disable-patching-notifications">
+   Disable patching notifications
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#disable-global-patching">
+   Disable global patching
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#enable-global-patching-via-code">
+   Enable global patching via code
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#disable-global-patching-via-code">
+   Disable global patching via code
+  </a>
+ </li>
+</ul>
+
+            </nav>
         </div>
     </div>
 </div>
@@ -197,27 +317,33 @@
         
               <div>
                 
-  <section id="global-patching">
-<span id="id1"></span><h1>Global patching<a class="headerlink" href="#global-patching" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="global-patching">
+<span id="id1"></span><h1>Global Patching<a class="headerlink" href="#global-patching" title="Permalink to this headline">¶</a></h1>
 <p>Use global patching to patch all your scikit-learn applications without any additional actions.</p>
-<p><strong>Prerequisites for global patching</strong>:</p>
+<p class="rubric">Prerequisites</p>
 <ul class="simple">
-<li><p>Intel(R) Extension for Scikit-learn</p></li>
+<li><p>Intel® Extension for Scikit-learn*</p></li>
 <li><p>Scikit-learn</p></li>
+<li><p>read and write permissions to Scikit-learn files</p></li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For global patching to work, you need read and write permissions to Scikit-learn files.</p>
-</div>
+<div class="section" id="patch-all-supported-algorithms">
+<h2>Patch all supported algorithms<a class="headerlink" href="#patch-all-supported-algorithms" title="Permalink to this headline">¶</a></h2>
 <p>To patch all <a class="reference internal" href="algorithms.html#sklearn-algorithms"><span class="std std-ref">supported algorithms</span></a>, run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="patch-selected-algorithms">
+<h2>Patch selected algorithms<a class="headerlink" href="#patch-selected-algorithms" title="Permalink to this headline">¶</a></h2>
 <p>If you want to patch only some algorithms, use <code class="docutils literal notranslate"><span class="pre">--algorithm</span></code> or <code class="docutils literal notranslate"><span class="pre">-a</span></code> keys
-with a list of algorithms to patch. For example, to patch only SVC and RandomForestClassifier estimators, run:</p>
+with a list of algorithms to patch.</p>
+<p>For example, to patch only SVC and RandomForestClassifier estimators, run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span> <span class="o">-</span><span class="n">a</span> <span class="n">svc</span> <span class="n">random_forest_classifier</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="disable-patching-notifications">
+<h2>Disable patching notifications<a class="headerlink" href="#disable-patching-notifications" title="Permalink to this headline">¶</a></h2>
 <p>If you do not want to receive patching notifications, then use <code class="docutils literal notranslate"><span class="pre">--no-verbose</span></code> or <code class="docutils literal notranslate"><span class="pre">-nv</span></code> keys:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span> <span class="o">-</span><span class="n">a</span> <span class="n">svc</span> <span class="n">random_forest_classifier</span> <span class="o">-</span><span class="n">nv</span>
 </pre></div>
@@ -227,10 +353,16 @@ with a list of algorithms to patch. For example, to patch only SVC and RandomFor
 <p>If you run the global patching command several times with different parameters,
 then only the last configuration will be applied.</p>
 </div>
+</div>
+<div class="section" id="disable-global-patching">
+<h2>Disable global patching<a class="headerlink" href="#disable-global-patching" title="Permalink to this headline">¶</a></h2>
 <p>To disable global patching, use the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">unpatch_sklearn</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="enable-global-patching-via-code">
+<h2>Enable global patching via code<a class="headerlink" href="#enable-global-patching-via-code" title="Permalink to this headline">¶</a></h2>
 <p>You can also enable global patching in your code. To do this,
 use the <code class="docutils literal notranslate"><span class="pre">patch_sklearn</span></code> function with the <code class="docutils literal notranslate"><span class="pre">global_patch</span></code> argument:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
@@ -240,6 +372,9 @@ use the <code class="docutils literal notranslate"><span class="pre">patch_sklea
 </div>
 <p>After that, Scikit-learn patches will be enabled in the current application and
 in all others that use the same environment.</p>
+</div>
+<div class="section" id="disable-global-patching-via-code">
+<h2>Disable global patching via code<a class="headerlink" href="#disable-global-patching-via-code" title="Permalink to this headline">¶</a></h2>
 <p>To disable global patching via code, use the <code class="docutils literal notranslate"><span class="pre">global_patch</span></code>
 argument in the <code class="docutils literal notranslate"><span class="pre">unpatch_sklearn</span></code> function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">unpatch_sklearn</span>
@@ -250,22 +385,43 @@ argument in the <code class="docutils literal notranslate"><span class="pre">unp
 <p class="admonition-title">Note</p>
 <p>If you clone an environment with enabled global patching, it will already be applied in the new environment.</p>
 </div>
-</section>
+</div>
+</div>
 
 
               </div>
               
         
-        <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="verbose.html" title="previous page">Intel(R) Extension for Scikit-learn* verbose</a>
-    <a class='right-next' id="next-link" href="oneapi_gpu.html" title="next page">oneAPI and GPU support in Intel(R) Extension for Scikit-learn*</a>
 
-        </div>
+
+
+<div class='prev-next-bottom'>
+    
+    <div id="prev">
+        <a class="left-prev" href="algorithms.html" title="previous page">
+            <i class="prevnext-label fas fa-angle-left"></i>
+            <div class="prevnext-info">
+                <p class="prevnext-label">previous</p>
+                <p class="prevnext-title">Supported Algorithms</p>
+            </div>
+        </a>
+    </div>
+     <div id="next">
+        <a class="right-next" href="verbose.html" title="next page">
+            <div class="prevnext-info">
+                <p class="prevnext-label">next</p>
+                <p class="prevnext-title">Verbose Mode</p>
+            </div>
+            <i class="prevnext-label fas fa-angle-right"></i>
+        </a>
+     </div>
+
+</div>
         
         </div>
     </div>
-    <footer class="footer mt-5 mt-md-0">
+    <footer class="footer">
     <div class="container">
       <p>
         
@@ -273,7 +429,14 @@ argument in the <code class="docutils literal notranslate"><span class="pre">unp
         
             &copy; Copyright 2021, Intel.<br/>
           <div class="extra_footer">
-            <p align="right"><a href="https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">Cookies</a></p>
+            
+    <p align="right">
+        <a href=
+            "https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">
+            Cookies
+        </a>
+    </p>
+
           </div>
       </p>
     </div>

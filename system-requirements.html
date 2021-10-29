@@ -4,9 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-    <title>System requirements &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>System requirements and supported configurations &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet" />
   <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -24,7 +23,7 @@
 
     
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinx-book-theme.5f77b4aec8189eecf79907ce328c390d.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
     
   <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
 
@@ -32,11 +31,13 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <link rel="shortcut icon" href="_static/favicons.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="oneAPI and GPU support in Intel(R) Extension for Scikit-learn*" href="oneapi_gpu.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="Follow us on Medium" href="blogs.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -55,6 +56,10 @@
         <div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="index.html">
       
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
       <img src="_static/oneAPI-rgb-rev-100.png" class="logo" alt="logo">
       
       
@@ -64,47 +69,125 @@
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
         <p class="caption">
  <span class="caption-text">
-  Contents:
+  About
  </span>
 </p>
 <ul class="current nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="index.html">
-   About Intel(R) Extension for Scikit-learn*
+  <a class="reference internal" href="acceleration.html">
+   Acceleration
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="get_started.html">
-   Get started
+  <a class="reference internal" href="what-is-patching.html">
+   Patching
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="blogs.html">
+   Medium Blogs
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   System Requirements
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Get Started
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="quick-start.html">
+   Quick Start
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="samples.html">
+   Samples
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/knn_mnist.html">
+     k-Nearest Neighbors (kNN) for MNIST dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/logistictic_regression_cifar.html">
+     Logistic Regression for Cifar dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/nusvr_medical_charges.html">
+     Nu-Support Vector Regression (NuSVR) for Medical Charges dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/random_forest_yolanda.html">
+     Random Forest for Yolanda dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/svc_adult.html">
+     Support Vector Classification (SVC) for Adult dataset
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Developer Guide
+ </span>
+</p>
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="algorithms.html">
    Supported Algorithms
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="global-patching.html">
+   Global Patching
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="verbose.html">
-   Intel(R) Extension for Scikit-learn* Verbose
+   Verbose Mode
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="global_patching.html">
-   Global patching
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="oneapi_gpu.html">
+  <a class="reference internal" href="oneapi-gpu.html">
    oneAPI and GPU support
   </a>
  </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   System requirements
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Community
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="support.html">
+   Support
   </a>
  </li>
 </ul>
@@ -148,7 +231,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/system_requirements.rst.txt"><button type="button"
+        <a class="dropdown-buttons" href="_sources/system-requirements.rst.txt"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.rst</button></a>
         <!-- Download PDF via print -->
@@ -165,10 +248,10 @@
     <div class="dropdown-buttons sourcebuttons">
         
         <a class="issues-button"
-            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fsystem_requirements.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fsystem-requirements.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/system_requirements.rst"><button
+        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/system-requirements.rst"><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
     </div>
@@ -191,26 +274,43 @@
             <div class="tocsection onthispage pt-5 pb-3">
                 <i class="fas fa-list"></i> Contents
             </div>
-            <nav id="bd-toc-nav">
+            <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#supported-configurations">
    Supported configurations
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#pypi-channel">
+     PyPI channel
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#anaconda-cloud-conda-forge-channel">
+     Anaconda Cloud: Conda-Forge channel
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#anaconda-cloud-intel-channel">
+     Anaconda Cloud: Intel channel
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id2">
+  <a class="reference internal nav-link" href="#id1">
    System Requirements
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#for-cpu-users">
-     For CPU users
+    <a class="reference internal nav-link" href="#for-cpu">
+     For CPU
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#for-gpu-users">
-     For GPU users
+    <a class="reference internal nav-link" href="#for-gpu">
+     For GPU
     </a>
    </li>
   </ul>
@@ -226,12 +326,17 @@
         
               <div>
                 
-  <section id="system-requirements">
-<span id="id1"></span><h1>System requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline">¶</a></h1>
-<p>This page provides details about hardware, operating system, and software prerequisites for Intel® Extension for Scikit-learn.</p>
-<section id="supported-configurations">
+  <div class="section" id="system-requirements-and-supported-configurations">
+<span id="system-requirements"></span><h1>System requirements and supported configurations<a class="headerlink" href="#system-requirements-and-supported-configurations" title="Permalink to this headline">¶</a></h1>
+<p>This page provides details about hardware, operating system, and software prerequisites for Intel® Extension for Scikit-learn*.</p>
+<div class="section" id="supported-configurations">
 <h2>Supported configurations<a class="headerlink" href="#supported-configurations" title="Permalink to this headline">¶</a></h2>
-<p><strong>PyPi channel</strong></p>
+<p>Intel® Extension for Scikit-learn* supports optimizations for the last four versions of scikit-learn.
+The latest release of scikit-learn-intelex-2021.3.X supports scikit-learn 0.22.X, 0.23.X, 0.24.X and 1.0.X.</p>
+<p>Intel® Extension for Scikit-learn* is available for installation from different channels.
+There is a difference in supported configurations for each distribution channel.</p>
+<div class="section" id="pypi-channel">
+<h3>PyPI channel<a class="headerlink" href="#pypi-channel" title="Permalink to this headline">¶</a></h3>
 <table class="colwidths-given table">
 <colgroup>
 <col style="width: 44%" />
@@ -250,30 +355,28 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Linux</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
 </tr>
 <tr class="row-odd"><td><p>Windows</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
 </tr>
 <tr class="row-even"><td><p>macOS</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It supports CPUs and GPUs</p>
 </div>
-<p><strong>Anaconda Cloud: Conda-Forge channel</strong></p>
+<div class="section" id="anaconda-cloud-conda-forge-channel">
+<h3>Anaconda Cloud: Conda-Forge channel<a class="headerlink" href="#anaconda-cloud-conda-forge-channel" title="Permalink to this headline">¶</a></h3>
 <table class="colwidths-given table">
 <colgroup>
 <col style="width: 44%" />
@@ -292,31 +395,28 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Linux</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
 </tr>
 <tr class="row-odd"><td><p>Windows</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
 </tr>
 <tr class="row-even"><td><p>macOS</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It supports only CPUs.
-Recommended for conda users by default</p>
 </div>
-<p><strong>Anaconda Cloud: Intel channel</strong></p>
+<div class="section" id="anaconda-cloud-intel-channel">
+<h3>Anaconda Cloud: Intel channel<a class="headerlink" href="#anaconda-cloud-intel-channel" title="Permalink to this headline">¶</a></h3>
 <table class="colwidths-given table">
 <colgroup>
 <col style="width: 44%" />
@@ -335,43 +435,39 @@ Recommended for conda users by default</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Linux</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
 </tr>
 <tr class="row-odd"><td><p>Windows</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
+<td><p>[CPU, GPU]</p></td>
 </tr>
 <tr class="row-even"><td><p>macOS</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
-<td><p>✔️</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
+<td><p>[CPU]</p></td>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It supports CPUs and GPUs.
-Recommended for conda users who use other components from Intel(R) Distribution for Python</p>
 </div>
-</section>
-<section id="id2">
-<h2>System Requirements<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
-<section id="for-cpu-users">
-<h3>For CPU users<a class="headerlink" href="#for-cpu-users" title="Permalink to this headline">¶</a></h3>
-<p><strong>Operating systems</strong></p>
+</div>
+<div class="section" id="id1">
+<h2>System Requirements<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="for-cpu">
+<h3>For CPU<a class="headerlink" href="#for-cpu" title="Permalink to this headline">¶</a></h3>
+<p class="rubric">Operating systems</p>
 <p>The last two versions of the following operating systems:</p>
 <ul class="simple">
 <li><p><strong>Linux</strong>*</p></li>
 <li><p><strong>Windows</strong>* and <strong>Windows* Server</strong></p></li>
 <li><p><strong>macOS</strong>*</p></li>
 </ul>
-<p><strong>Hardware platforms</strong></p>
+<p class="rubric">Hardware platforms</p>
 <ul class="simple">
 <li><p>All processors with x86 architecture</p></li>
 </ul>
@@ -386,44 +482,69 @@ Recommended for conda users who use other components from Intel(R) Distribution 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Intel® processors provide better performance then other CPUs.
-Read more about hardware comparison in our <a class="reference internal" href="index.html#blogs"><span class="std std-ref">blogs</span></a>.</p>
+Read more about hardware comparison in our <a class="reference internal" href="blogs.html#blogs"><span class="std std-ref">blogs</span></a>.</p>
 </div>
-</section>
-<section id="for-gpu-users">
-<h3>For GPU users<a class="headerlink" href="#for-gpu-users" title="Permalink to this headline">¶</a></h3>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
+</div>
+<div class="section" id="for-gpu">
+<h3>For GPU<a class="headerlink" href="#for-gpu" title="Permalink to this headline">¶</a></h3>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
 <p>If you are using accelerators, please refer to the DPC++ compiler system
 requirements <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html">here</a></p>
 </div>
-<p><strong>Operating systems</strong></p>
+<p class="rubric">Operating systems</p>
 <p>The last two versions of the following operating systems:</p>
 <ul class="simple">
 <li><p><strong>Linux</strong>*</p></li>
 <li><p><strong>Windows</strong>* and <strong>Windows* Server</strong></p></li>
 </ul>
-<p><strong>Hardware platforms</strong></p>
+<p class="rubric">Hardware platforms</p>
 <ul class="simple">
 <li><p>All Intel® integrated and discrete GPUs</p></li>
 <li><p><a class="reference external" href="https://www.intel.com/content/www/us/en/develop/articles/installation-guide-for-intel-oneapi-toolkits.html#installGPUdriver">Intel® GPU drivers</a></p></li>
 </ul>
-</section>
-</section>
-</section>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="oneapi-gpu.html#oneapi-gpu"><span class="std std-ref">oneAPI and GPU support in Intel® Extension for Scikit-learn*</span></a></p>
+</div>
+</div>
+</div>
+</div>
 
 
               </div>
               
         
-        <div class='prev-next-bottom'>
             
-    <a class='left-prev' id="prev-link" href="oneapi_gpu.html" title="previous page">oneAPI and GPU support in Intel(R) Extension for Scikit-learn*</a>
 
-        </div>
+
+
+<div class='prev-next-bottom'>
+    
+    <div id="prev">
+        <a class="left-prev" href="blogs.html" title="previous page">
+            <i class="prevnext-label fas fa-angle-left"></i>
+            <div class="prevnext-info">
+                <p class="prevnext-label">previous</p>
+                <p class="prevnext-title">Follow us on Medium</p>
+            </div>
+        </a>
+    </div>
+     <div id="next">
+        <a class="right-next" href="installation.html" title="next page">
+            <div class="prevnext-info">
+                <p class="prevnext-label">next</p>
+                <p class="prevnext-title">Installation</p>
+            </div>
+            <i class="prevnext-label fas fa-angle-right"></i>
+        </a>
+     </div>
+
+</div>
         
         </div>
     </div>
-    <footer class="footer mt-5 mt-md-0">
+    <footer class="footer">
     <div class="container">
       <p>
         
@@ -431,7 +552,14 @@ requirements <a class="reference external" href="https://software.intel.com/cont
         
             &copy; Copyright 2021, Intel.<br/>
           <div class="extra_footer">
-            <p align="right"><a href="https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">Cookies</a></p>
+            
+    <p align="right">
+        <a href=
+            "https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">
+            Cookies
+        </a>
+    </p>
+
           </div>
       </p>
     </div>

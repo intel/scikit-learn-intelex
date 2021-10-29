@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
+    <title>Patching &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet" />
   <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -34,8 +34,10 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <link rel="shortcut icon" href="_static/favicons.png"/>
-    <link rel="index" title="Index" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Follow us on Medium" href="blogs.html" />
+    <link rel="prev" title="Acceleration" href="acceleration.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -74,14 +76,14 @@
   About
  </span>
 </p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="acceleration.html">
    Acceleration
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="what-is-patching.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Patching
   </a>
  </li>
@@ -221,6 +223,23 @@
             </button>
             
             
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/what-is-patching.rst.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.rst</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
             <!-- Source interaction buttons -->
 
 <div class="dropdown-buttons-trigger">
@@ -229,10 +248,12 @@
     <div class="dropdown-buttons sourcebuttons">
         
         <a class="issues-button"
-            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fgenindex.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fwhat-is-patching.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        
+        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/what-is-patching.rst"><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
     </div>
 </div>
 
@@ -258,30 +279,52 @@
         
               <div>
                 
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- <a href="#G"><strong>G</strong></a>
- | <a href="#P"><strong>P</strong></a>
- 
+  <div class="section" id="patching">
+<h1>Patching<a class="headerlink" href="#patching" title="Permalink to this headline">¶</a></h1>
+<dl class="glossary">
+<dt id="term-patching">patching<a class="headerlink" href="#term-patching" title="Permalink to this term">¶</a></dt><dd><p>To patch scikit-learn with Intel® Extension for Scikit-learn* is to replace stock scikit-learn algorithms
+with their optimized versions provided by the extension.</p>
+<p>There are different ways to patch scikit-learn:</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>These patching methods are interchangeable.
+They support different enabling scenarios while producing the same result.</p>
 </div>
-<h2 id="G">G</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="what-is-patching.html#term-global-pathcing"><strong>global pathcing</strong></a>
+<ul>
+<li><p>Without editing the code of a scikit-learn application by using the following command line flag:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">sklearnex</span> <span class="n">my_application</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
 </li>
-  </ul></td>
-</tr></table>
-
-<h2 id="P">P</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="what-is-patching.html#term-patching"><strong>patching</strong></a>
+<li><p>Directly from the script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
+<span class="n">patch_sklearn</span><span class="p">()</span>
+</pre></div>
+</div>
 </li>
-  </ul></td>
-</tr></table>
-
+<li><p>Through <a class="reference internal" href="global-patching.html#global-patching"><span class="std std-ref">global patching</span></a> to enable patching for your scikit-learn installation for all further runs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="quick-start.html#get-started"><span class="std std-ref">Quick Start</span></a></p>
+</div>
+</dd>
+<dt id="term-global-pathcing">global pathcing<a class="headerlink" href="#term-global-pathcing" title="Permalink to this term">¶</a></dt><dd><p>One of the patching options available in Intel® Extension for Scikit-learn*.
+With global patching, you can patch all scikit-learn applications at once:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="global-patching.html#global-patching"><span class="std std-ref">Global Patching</span></a></p>
+</div>
+</dd>
+</dl>
+</div>
 
 
               </div>
@@ -293,6 +336,24 @@
 
 <div class='prev-next-bottom'>
     
+    <div id="prev">
+        <a class="left-prev" href="acceleration.html" title="previous page">
+            <i class="prevnext-label fas fa-angle-left"></i>
+            <div class="prevnext-info">
+                <p class="prevnext-label">previous</p>
+                <p class="prevnext-title">Acceleration</p>
+            </div>
+        </a>
+    </div>
+     <div id="next">
+        <a class="right-next" href="blogs.html" title="next page">
+            <div class="prevnext-info">
+                <p class="prevnext-label">next</p>
+                <p class="prevnext-title">Follow us on Medium</p>
+            </div>
+            <i class="prevnext-label fas fa-angle-right"></i>
+        </a>
+     </div>
 
 </div>
         
