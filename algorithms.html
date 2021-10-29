@@ -469,7 +469,7 @@
 </tr>
 <tr class="row-odd"><td><p>Classification</p></td>
 <td><p>LogisticRegression</p></td>
-<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">solver</span></code> != ‘newton-cg’, <code class="docutils literal notranslate"><span class="pre">class_weight</span></code> != None, <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None, <code class="docutils literal notranslate"><span class="pre">penalty</span></code> != ‘l2’</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">solver</span></code> != ‘newton-cg’, <code class="docutils literal notranslate"><span class="pre">class_weight</span></code> != None, <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None, <code class="docutils literal notranslate"><span class="pre">penalty</span></code> != ‘l2’</p></td>
 <td><p>Only dense data is supported.</p></td>
 </tr>
 <tr class="row-even"><td><p>Regression</p></td>
@@ -489,12 +489,12 @@
 </tr>
 <tr class="row-odd"><td><p>Clustering</p></td>
 <td><p>KMeans</p></td>
-<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">precompute_distances</span></code> and <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None.</p></td>
-<td><p>No limitations.</p></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">precompute_distances</span></code> and <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> != None. Init = ‘k-means++’ fallbacks to CPU.</p></td>
+<td><p>Sparse data is not supported.</p></td>
 </tr>
 <tr class="row-even"><td><p>Clustering</p></td>
 <td><p>DBSCAN</p></td>
-<td></td>
+<td><p>All parameters except <code class="docutils literal notranslate"><span class="pre">metric</span></code> != ‘euclidean’, <code class="docutils literal notranslate"><span class="pre">algorithm</span></code> != ‘brute’, <code class="docutils literal notranslate"><span class="pre">algorithm</span></code> != ‘auto’.</p></td>
 <td><p>Only dense data is supported.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Dimensionality reduction</p></td>
