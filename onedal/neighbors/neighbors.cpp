@@ -50,6 +50,7 @@ struct metric2t {
         using namespace knn;
 
         auto metric = params["metric"].cast<std::string>();
+        ONEDAL_PARAM_DISPATCH_VALUE(metric, "manhattan", ops, Float, Method, minkowski_distance::descriptor<Float>);
         ONEDAL_PARAM_DISPATCH_VALUE(metric, "minkowski", ops, Float, Method, minkowski_distance::descriptor<Float>);
         ONEDAL_PARAM_DISPATCH_VALUE(metric, "euclidean", ops, Float, Method, minkowski_distance::descriptor<Float>);
         ONEDAL_PARAM_DISPATCH_VALUE(metric, "chebyshev", ops, Float, Method, chebyshev_distance::descriptor<Float>);
@@ -227,7 +228,6 @@ void init_infer_result(py::module_& m) {
                    .DEF_ONEDAL_PY_PROPERTY(result_options, result_t);
 
     constexpr bool is_cls = std::is_same_v<Task, task::classification>;
-    constexpr bool is_srch = std::is_same_v<Task, task::search>;
 
     if constexpr (is_cls) {
         // workaround for gcc which cannot deduce setters directly passed to def_property()

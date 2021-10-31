@@ -127,9 +127,9 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             'radius': self.radius,
             'class_count': class_count,
             'neighbor_count': self.n_neighbors,
-            'metric': self.metric,
+            'metric': self.effective_metric_,
             'p': self.p,
-            'metric_params': self.metric_params,
+            'metric_params': self.effective_metric_params_,
             'result_option': 'indices|distances',
         }
 
@@ -159,39 +159,6 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
                 " class" % len(self.classes_))
 
     def _fit(self, X, y, queue):
-        if self.metric_params is not None and 'p' in self.metric_params:
-            if self.p is not None:
-                warnings.warn("Parameter p is found in metric_params. "
-                              "The corresponding parameter from __init__ "
-                              "is ignored.", SyntaxWarning, stacklevel=2)
-            self.effective_metric_params_ = self.metric_params.copy()
-            effective_p = self.metric_params["p"]
-        else:
-            self.effective_metric_params_ = {}
-            effective_p = self.p
-
-        if self.metric in ["minkowski"]:
-            if effective_p < 1:
-                raise ValueError("p must be greater or equal to one for minkowski metric")
-            self.effective_metric_params_["p"] = effective_p
-
-        self.effective_metric_ = self.metric
-        # For minkowski distance, use more efficient methods where available
-        if self.metric == "minkowski":
-            p = self.effective_metric_params_.pop("p", 2)
-            if p < 1:
-                raise ValueError(
-                    "p must be greater or equal to one for minkowski metric"
-                )
-            elif p == 1:
-                self.effective_metric_ = "manhattan"
-            elif p == 2:
-                self.effective_metric_ = "euclidean"
-            elif p == np.inf:
-                self.effective_metric_ = "chebyshev"
-            else:
-                self.effective_metric_params_["p"] = p
-
         self._onedal_model = None
         self._tree = None
         self.shape = None
@@ -291,6 +258,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             # Include an extra neighbor to account for the sample itself being
             # returned, which is removed later
             n_neighbors += 1
+        self.n_neighbors = n_neighbors
 
         n_samples_fit = self.n_samples_fit_
         if n_neighbors > n_samples_fit:
@@ -301,12 +269,9 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             )
 
         chunked_results = None
-
         method = super()._parse_auto_method(
             self._fit_method, self.n_samples_fit_, n_features)
-
         params = super()._get_onedal_params(X)
-
         prediction_results = self._onedal_predict(self._onedal_model, X, params, queue=queue)
 
         distances = from_table(prediction_results.distances)
@@ -335,6 +300,9 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         # If the query data is the same as the indexed data, we would like
         # to ignore the first nearest neighbor of every sample, i.e
         # the sample itself.
+        distances = distances[:,1:]
+        indices = indices[:,1:]
+
         if return_distance:
             neigh_dist, neigh_ind = results
         else:
@@ -350,6 +318,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         # In that case mask the first duplicate.
         dup_gr_nbrs = np.all(sample_mask, axis=1)
         sample_mask[:, 0][dup_gr_nbrs] = False
+
         neigh_ind = np.reshape(
             neigh_ind[sample_mask], (n_queries, n_neighbors - 1))
 
