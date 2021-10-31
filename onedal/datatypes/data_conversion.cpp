@@ -225,6 +225,7 @@ static PyObject *convert_to_numpy_impl(const dal::array<T> &array,
     if (!obj)
         throw std::invalid_argument("Conversion to numpy array failed");
 
+
     void *opaque_value = static_cast<void *>(new dal::array<T>(host_array));
     PyObject *cap = PyCapsule_New(opaque_value, NULL, free_capsule);
     PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), cap);
