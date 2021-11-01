@@ -22,8 +22,8 @@ import os
 
 
 def get_context(device):
-    from daal4py.oneapi import sycl_context
-    return sycl_context(device, host_offload_on_fail=True)
+    from sklearnex._config import config_context
+    return config_context(target_offload=device, allow_fallback_to_host=True)
 
 
 if __name__ == '__main__':

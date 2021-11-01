@@ -43,7 +43,8 @@ static dal::array<T> transfer_to_host(const dal::array<T>& array) {
             }
             if (memory_kind == sycl::usm::alloc::device) {
                 auto host_array = dal::array<T>::empty(array.get_count());
-                opt_queue->memcpy(host_array.get_mutable_data(), device_data, array.get_size());
+                opt_queue->memcpy(host_array.get_mutable_data(), device_data, array.get_size())
+                    .wait_and_throw();
                 return host_array;
             }
         }
