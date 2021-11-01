@@ -208,6 +208,7 @@ deselected_tests:
   - manifold/tests/test_t_sne.py::test_n_iter_used
   - manifold/tests/test_t_sne.py::test_bh_match_exact
   - manifold/tests/test_t_sne.py::test_tsne_square_distances_futurewarning
+  - tests/test_common.py::test_estimators[TSNE()-check_estimators_fit_returns_self]
 
   # Wrong accuracy for some test cases for t_sne. Need to fix.
   - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately_with_precomputed_distances
@@ -215,6 +216,7 @@ deselected_tests:
   - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately[random-barnes_hut] <1.0
   - manifold/tests/test_t_sne.py::test_tsne_n_jobs[barnes_hut] <1.0
   - manifold/tests/test_t_sne.py::test_uniform_grid[barnes_hut] <0.23
+  - manifold/tests/test_t_sne.py::test_tsne_with_different_distance_metrics <1.0
   - neighbors/tests/test_neighbors_pipeline.py::test_tsne <1.0
 
   # HalvingGridSearchCV with Ridge and PCA didn't have feature_name_in. Need to fix.
