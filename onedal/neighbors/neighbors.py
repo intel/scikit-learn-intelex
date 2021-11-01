@@ -283,9 +283,9 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
                 distances[i] = distances[i][seq]
 
         if return_distance:
-            results = distances, indices.astype(int)
+            results = distances, indices
         else:
-            results = indices.astype(int)
+            results = indices
 
         if chunked_results is not None:
             if return_distance:
