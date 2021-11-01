@@ -311,6 +311,7 @@ def _num_features(X):
     except Exception as err:
         raise TypeError(message) from err
 
+
 def _num_samples(x):
     message = "Expected sequence or array-like, got %s" % type(x)
     if hasattr(x, "fit") and callable(x.fit):

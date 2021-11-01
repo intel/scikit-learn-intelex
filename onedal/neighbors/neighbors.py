@@ -58,7 +58,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
         return result_method
 
     def _validate_data(self, X, y=None, reset=True,
-                    validate_separately=False, **check_params):
+                       validate_separately=False, **check_params):
         if y is None:
             if self.requires_y:
                 raise ValueError(
@@ -132,16 +132,17 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             'result_option': 'indices|distances',
         }
 
+
 class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
     def __init__(self, n_neighbors=None, radius=None,
                  algorithm='auto', metric='minkowski',
                  p=2, metric_params=None):
         self.n_neighbors = n_neighbors
-        self.radius=radius
-        self.algorithm=algorithm
-        self.metric=metric
-        self.p=p
-        self.metric_params=metric_params
+        self.radius = radius
+        self.algorithm = algorithm
+        self.metric = metric
+        self.p = p
+        self.metric_params = metric_params
 
     def _validate_targets(self, y, dtype):
         arr = _column_or_1d(y, warn=True)
@@ -163,7 +164,8 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         self.shape = None
         self.classes_ = None
         self.effective_metric_ = getattr(self, 'effective_metric_', self.metric)
-        self.effective_metric_params_ = getattr(self, 'effective_metric_params_', self.metric_params)
+        self.effective_metric_params_ = getattr(
+            self, 'effective_metric_params_', self.metric_params)
 
         if y is not None or self.requires_y:
             X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])
@@ -220,19 +222,20 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
         if y is not None and _is_regressor(self):
             self._y = y if self.shape is None else y.reshape(self.shape)
-        
+
         self._onedal_model = result.model
         result = self
 
         return result
 
     def _kneighbors(self, X=None, n_neighbors=None,
-                        return_distance=True, queue=None):
+                    return_distance=True, queue=None):
         n_features = getattr(self, 'n_features_in_', None)
         shape = getattr(X, 'shape', None)
         if n_features and shape and len(shape) > 1 and shape[1] != n_features:
             raise ValueError((f'X has {X.shape[1]} features, '
-                            f'but kneighbors is expecting {n_features} features as input'))
+                              f'but kneighbors is expecting '
+                              f'{n_features} features as input'))
 
         _check_is_fitted(self)
 
@@ -273,7 +276,8 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         method = super()._parse_auto_method(
             self._fit_method, self.n_samples_fit_, n_features)
         params = super()._get_onedal_params(X)
-        prediction_results = self._onedal_predict(self._onedal_model, X, params, queue=queue)
+        prediction_results = self._onedal_predict(
+            self._onedal_model, X, params, queue=queue)
 
         distances = from_table(prediction_results.distances)
         indices = from_table(prediction_results.indices)
@@ -301,8 +305,8 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         # If the query data is the same as the indexed data, we would like
         # to ignore the first nearest neighbor of every sample, i.e
         # the sample itself.
-        distances = distances[:,1:]
-        indices = indices[:,1:]
+        distances = distances[:, 1:]
+        indices = indices[:, 1:]
 
         if return_distance:
             neigh_dist, neigh_ind = results
@@ -329,6 +333,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             return neigh_dist, neigh_ind
         return neigh_ind
 
+
 class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
     def __init__(self, n_neighbors=5, *,
                  weights='uniform', algorithm='auto',
@@ -350,7 +355,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         policy = _get_policy(queue, X, y)
         params = self._get_onedal_params(X)
         train_alg = _backend.neighbors.classification.train(policy, params,
-                                *to_table(X, y))
+                                                            *to_table(X, y))
 
         return train_alg
 
@@ -361,7 +366,8 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             model = self._onedal_model
         else:
             model = self._create_model(_backend.neighbors.classification)
-        result = _backend.neighbors.classification.infer(policy, params, model, to_table(X))
+        result = _backend.neighbors.classification.infer(
+            policy, params, model, to_table(X))
 
         return result
 
@@ -376,9 +382,9 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         shape = getattr(X, 'shape', None)
         if n_features and shape and len(shape) > 1 and shape[1] != n_features:
             raise ValueError((f'X has {X.shape[1]} features, '
-                            f'but KNNClassifier is expecting '
-                            f'{n_features} features as input'))
-        
+                              f'but KNNClassifier is expecting '
+                              f'{n_features} features as input'))
+
         _check_is_fitted(self)
 
         self._fit_method = super()._parse_auto_method(
@@ -434,8 +440,9 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         return probabilities
 
     def kneighbors(self, X=None, n_neighbors=None,
-                        return_distance=True, queue=None):
+                   return_distance=True, queue=None):
         return super()._kneighbors(X, n_neighbors, return_distance, queue=queue)
+
 
 class NearestNeighbors(NeighborsBase):
     def __init__(self, n_neighbors=5, *,
@@ -458,7 +465,7 @@ class NearestNeighbors(NeighborsBase):
         policy = _get_policy(queue, X, y)
         params = self._get_onedal_params(X)
         train_alg = _backend.neighbors.search.train(policy, params,
-                                to_table(X))
+                                                    to_table(X))
 
         return train_alg
 
@@ -477,5 +484,5 @@ class NearestNeighbors(NeighborsBase):
         return super()._fit(X, y, queue=queue)
 
     def kneighbors(self, X=None, n_neighbors=None,
-                        return_distance=True, queue=None):
+                   return_distance=True, queue=None):
         return super()._kneighbors(X, n_neighbors, return_distance, queue=queue)
