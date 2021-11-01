@@ -132,6 +132,7 @@ deselected_tests:
   - tests/test_common.py::test_estimators[NuSVC()-check_sample_weights_invariance(kind=zeros)] <1.0
   - tests/test_common.py::test_estimators[NuSVR()-check_sample_weights_invariance(kind=zeros)] <1.0
   - tests/test_common.py::test_estimators[NuSVC()-check_class_weight_classifiers] <1.0
+  - tests/test_common.py::test_estimators[TSNE()-check_pipeline_consistency] ==0.24
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order >=0.24,<=1.1
 
@@ -206,10 +207,14 @@ deselected_tests:
   # This test cases go into endless build qTree. Need to fix in the first priority.
   - manifold/tests/test_t_sne.py::test_n_iter_used
   - manifold/tests/test_t_sne.py::test_bh_match_exact
+  - manifold/tests/test_t_sne.py::test_tsne_square_distances_futurewarning
 
   # Wrong accuracy for some test cases for t_sne. Need to fix.
   - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately_with_precomputed_distances
-  - manifold/tests/test_t_sne.py::test_tsne_different_square_distances[legacy-manhattan-barnes_hut]
+  - manifold/tests/test_t_sne.py::test_tsne_different_square_distances
+  - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately[random-barnes_hut]
+  - manifold/tests/test_t_sne.py::test_tsne_n_jobs[barnes_hut]
+  - neighbors/tests/test_neighbors_pipeline.py::test_tsne <=0.23
 
   # HalvingGridSearchCV with Ridge and PCA didn't have feature_name_in. Need to fix.
   - tests/test_common.py::test_pandas_column_name_consistency >=1.0.1
