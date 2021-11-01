@@ -85,5 +85,5 @@ if __name__ == '__main__':
             )
     else:
         pytest.main(
-            pytest_params + [ "-vv" ,"--pyargs", "sklearn"] + deselected_tests
+            pytest_params + ["--pyargs", "sklearn"] + deselected_tests
         )
