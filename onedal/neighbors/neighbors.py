@@ -46,7 +46,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
 
         if (method in ['auto', 'ball_tree']):
             condition = self.n_neighbors is not None and \
-                self.n_neighbors >= self.n_samples_fit_ // 2
+                self.n_neighbors >= n_samples // 2
             if self.metric == 'precomputed' or n_features > 11 or condition:
                 result_method = 'brute'
             else:
@@ -162,6 +162,8 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         self._tree = None
         self.shape = None
         self.classes_ = None
+        self.effective_metric_ = getattr(self, 'effective_metric_', self.metric)
+        self.effective_metric_params_ = getattr(self, 'effective_metric_params_', self.metric_params)
 
         if y is not None or self.requires_y:
             X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])

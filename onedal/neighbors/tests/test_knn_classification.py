@@ -16,18 +16,13 @@
 
 import pytest
 import numpy as np
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_equal
 
 from onedal.neighbors import KNeighborsClassifier
 from onedal.tests.utils._device_selection import (get_queues,
                                                   pass_if_not_implemented_for_gpu)
 
-from sklearn.utils.estimator_checks import check_estimator
-import sklearn.utils.estimator_checks
 from sklearn import datasets
-from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.datasets import make_blobs
-from sklearn.model_selection import train_test_split
 
 
 @pass_if_not_implemented_for_gpu(reason="will be checked later")
