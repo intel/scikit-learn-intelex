@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 import sys
 from numbers import Number, Integral
-import warnings
 
 from distutils.version import LooseVersion
 

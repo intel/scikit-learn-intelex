@@ -17,7 +17,7 @@
 
 from distutils.version import LooseVersion
 from sklearn import __version__ as sklearn_version
-
+import warnings
 
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._ball_tree import BallTree
@@ -179,21 +179,21 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             self.n_features_in_ = X.n_features_in_
             if hasattr(X, '_onedal_estimator'):
                 if self._fit_method == "ball_tree":
-                    self._tree = BallTree(
+                    X._tree = BallTree(
                         X._fit_X,
                         self.leaf_size,
                         metric=self.effective_metric_,
                         **self.effective_metric_params_,
                     )
                 elif self._fit_method == "kd_tree":
-                    self._tree = KDTree(
+                    X._tree = KDTree(
                         X._fit_X,
                         self.leaf_size,
                         metric=self.effective_metric_,
                         **self.effective_metric_params_,
                     )
                 elif self._fit_method == "brute":
-                    self._tree = None
+                    X._tree = None
                 else:
                     raise ValueError("algorithm = '%s' not recognized" % self.algorithm)
 
