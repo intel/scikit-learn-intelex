@@ -291,6 +291,9 @@ class NeighborsBase(BaseNeighborsBase):
         if hasattr(self, 'weights') and sklearn_check_version("1.0"):
             self.weights = _check_weights(self.weights)
 
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
+
         X_incorrect_type = isinstance(
             X, (KDTree, BallTree, NeighborsBase, BaseNeighborsBase))
         single_output = True
@@ -412,7 +415,7 @@ class NeighborsBase(BaseNeighborsBase):
 class KNeighborsMixin(BaseKNeighborsMixin):
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         daal_model = getattr(self, '_daal_model', None)
-        if X is not None:
+        if X is not None and self.metric != "precomputed":
             X = check_array(
                 X, accept_sparse='csr', dtype=[
                     np.float64, np.float32])
