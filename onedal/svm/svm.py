@@ -217,7 +217,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             self.support_vectors_ = from_table(result.support_vectors)
 
         self.intercept_ = from_table(result.biases).ravel()
-        self.support_ = from_table(result.support_indices).ravel().astype('int')
+        self.support_ = from_table(result.support_indices).ravel()
         self.n_features_in_ = X.shape[1]
         self.shape_fit_ = X.shape
 
