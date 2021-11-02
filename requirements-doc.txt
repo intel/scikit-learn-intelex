@@ -20,7 +20,7 @@ PyYAML==6.0
 requests==2.26.0
 snowballstemmer==2.1.0
 soupsieve==2.2.1
-Sphinx==3.5.4
+Sphinx==4.2.0
 sphinx-book-theme==0.1.6
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
