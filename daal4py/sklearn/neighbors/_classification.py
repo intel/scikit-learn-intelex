@@ -169,4 +169,6 @@ class KNeighborsClassifier(KNeighborsClassifier_):
 
     @support_usm_ndarray()
     def predict_proba(self, X):
+        if sklearn_check_version('1.0'):
+            self._check_feature_names(X, reset=False)
         return BaseKNeighborsClassifier.predict_proba(self, X)

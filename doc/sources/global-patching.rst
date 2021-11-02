@@ -17,27 +17,36 @@
 .. _global_patching:
 
 ###############
-Global patching
+Global Patching
 ###############
 
 Use global patching to patch all your scikit-learn applications without any additional actions.
 
-**Prerequisites for global patching**:
+.. rubric:: Prerequisites
 
-- Intel(R) Extension for Scikit-learn
+- |intelex|
 - Scikit-learn
+- read and write permissions to Scikit-learn files
 
-.. note::
-    For global patching to work, you need read and write permissions to Scikit-learn files.
+Patch all supported algorithms
+===============================
 
 To patch all :ref:`supported algorithms <sklearn_algorithms>`, run::
 
     python sklearnex.glob patch_sklearn
 
+Patch selected algorithms
+=========================
+
 If you want to patch only some algorithms, use ``--algorithm`` or ``-a`` keys
-with a list of algorithms to patch. For example, to patch only SVC and RandomForestClassifier estimators, run::
+with a list of algorithms to patch.
+
+For example, to patch only SVC and RandomForestClassifier estimators, run::
 
     python sklearnex.glob patch_sklearn -a svc random_forest_classifier
+
+Disable patching notifications
+==============================
 
 If you do not want to receive patching notifications, then use ``--no-verbose`` or ``-nv`` keys::
 
@@ -47,9 +56,15 @@ If you do not want to receive patching notifications, then use ``--no-verbose`` 
     If you run the global patching command several times with different parameters,
     then only the last configuration will be applied.
 
+Disable global patching
+=======================
+
 To disable global patching, use the following command::
 
     python sklearnex.glob unpatch_sklearn
+
+Enable global patching via code
+===============================
 
 You can also enable global patching in your code. To do this,
 use the ``patch_sklearn`` function with the ``global_patch`` argument::
@@ -60,6 +75,9 @@ use the ``patch_sklearn`` function with the ``global_patch`` argument::
 
 After that, Scikit-learn patches will be enabled in the current application and
 in all others that use the same environment.
+
+Disable global patching via code
+================================
 
 To disable global patching via code, use the ``global_patch``
 argument in the ``unpatch_sklearn`` function::

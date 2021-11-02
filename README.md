@@ -48,7 +48,7 @@ One of the ways to patch scikit-learn is by modifying the code. You import an ad
         clustering = DBSCAN(eps=3, min_samples=2).fit(X)
     ```
 
-👀 Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage) and [other methods for offloading to GPU devices](https://intel.github.io/scikit-learn-intelex/oneapi_gpu.html).
+👀 Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage) and [other methods for offloading to GPU devices](https://intel.github.io/scikit-learn-intelex/oneapi-gpu.html).
 Check out available [notebooks](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks) for more examples.
 
 This software acceleration is achieved through the use of vector instructions, IA hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel platforms at launch time.
@@ -70,7 +70,7 @@ Configurations:
 
 ## 🛠 Installation
 
-[System Requirements](https://intel.github.io/scikit-learn-intelex/system_requirements.html)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; [Install via pip or conda](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Build from sources](INSTALL.md#build-from-sources)
+[System Requirements](https://intel.github.io/scikit-learn-intelex/system-requirements.html)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; [Install via pip or conda](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Build from sources](INSTALL.md#build-from-sources)
 
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex). You can also build the extension from [sources](INSTALL.md#build-from-sources).
