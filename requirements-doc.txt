@@ -22,7 +22,7 @@ jedi==0.18.0
 Jinja2==3.0.2
 jsonschema==4.0.0
 jupyter-client==7.0.6
-jupyter-core==4.9.0
+jupyter-core==4.9.1
 jupyterlab-pygments==0.1.2
 MarkupSafe==2.0.1
 mistune==0.8.4
