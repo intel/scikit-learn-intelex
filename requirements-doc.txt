@@ -7,7 +7,7 @@ beautifulsoup4==4.10.0
 bleach==4.1.0
 certifi==2021.10.8
 charset-normalizer==2.0.7
-click==8.0.3
+click
 decorator==5.1.0
 defusedxml==0.7.1
 docutils==0.16
@@ -36,7 +36,6 @@ pandocfilters==1.5.0
 parso==0.8.2
 pexpect==4.8.0
 pickleshare==0.7.5
-pkg-resources==0.0.0
 prompt-toolkit==3.0.21
 ptyprocess==0.7.0
 pydata-sphinx-theme==0.6.3
@@ -53,6 +52,7 @@ snowballstemmer==2.1.0
 soupsieve==2.2.1
 Sphinx==3.5.4
 sphinx-book-theme==0.1.6
+sphinx_rtd_theme
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==2.0.0
