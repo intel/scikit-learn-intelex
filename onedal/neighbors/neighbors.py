@@ -88,7 +88,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
     def _get_weights(self, dist, weights):
         if weights in (None, "uniform"):
             return None
-        elif weights == "distance":
+        if weights == "distance":
             # if user attempts to classify a point that was zero distance from one
             # or more training points, those training points are weighted as 1.0
             # and the other points as 0.0

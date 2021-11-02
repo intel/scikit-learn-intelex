@@ -99,7 +99,7 @@ class NearestNeighbors(NearestNeighbors_):
                 raise ValueError(
                     "p must be greater or equal to one for minkowski metric"
                 )
-            elif p == 1:
+            if p == 1:
                 self.effective_metric_ = "manhattan"
             elif p == 2:
                 self.effective_metric_ = "euclidean"
