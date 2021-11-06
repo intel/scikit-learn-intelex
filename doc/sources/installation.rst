@@ -59,7 +59,7 @@ Sources are available in |intelex_repo|_.
 
 ::
 
-    Python version >= 3.6
+    Python version >= 3.6, < 3.10
 
 Configure the build with environment variables
 ==============================================
