@@ -32,7 +32,7 @@ def set_sklearn_ex_verbose():
                       '"WARNING", "INFO", "DEBUG".'.format(logLevel))
 
 
-def get_patch_message(s, queue=None):
+def get_patch_message(s, queue=None, cpu_fallback=False):
     import sys
     if s == "onedal":
         message = "running accelerated version on "
@@ -50,7 +50,10 @@ def get_patch_message(s, queue=None):
             if dev == 'cpu' or dev == 'host' or dev is None:
                 message += 'CPU'
             elif dev == 'gpu':
-                message += 'GPU'
+                if cpu_fallback:
+                    message += 'CPU'
+                else:
+                    message += 'GPU'
             else:
                 raise ValueError(f"Unexpected device name {dev}."
                                  " Supported types are host, cpu and gpu")
