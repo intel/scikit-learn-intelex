@@ -61,7 +61,7 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 testpath==0.5.0
 tornado==6.1
-traitlets==4.3.3
+traitlets==5.1.1
 typing-extensions==3.10.0.2
 urllib3==1.26.7
 wcwidth==0.2.5
