@@ -32,7 +32,7 @@ def set_sklearn_ex_verbose():
                       '"WARNING", "INFO", "DEBUG".'.format(logLevel))
 
 
-def get_patch_message(s, queue=None, fallback_to_cpu=False):
+def get_patch_message(s, queue=None, cpu_fallback=False):
     import sys
     if s == "onedal":
         message = "running accelerated version on "
@@ -50,8 +50,8 @@ def get_patch_message(s, queue=None, fallback_to_cpu=False):
             if dev == 'cpu' or dev == 'host' or dev is None:
                 message += 'CPU'
             elif dev == 'gpu':
-                if fallback_to_cpu:
-                    message = "failed to run accelerated version on GPU, fallback to accelerated version on CPU"
+                if cpu_fallback:
+                    message += 'CPU'
                 else:
                     message += 'GPU'
             else:
