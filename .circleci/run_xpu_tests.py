@@ -21,6 +21,11 @@ import pytest
 import os
 
 
+def get_context(device):
+    from sklearnex._config import config_context
+    return config_context(target_offload=device, allow_fallback_to_host=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Script to run scikit-learn tests with device context manager')
