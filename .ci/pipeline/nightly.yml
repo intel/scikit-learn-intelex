@@ -65,7 +65,7 @@ jobs:
       pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
       pip install -r requirements-test.txt
-      pip install xgboost lightgbm catboost
+      pip install xgboost lightgbm catboost requests
     displayName: 'Install requirements'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
