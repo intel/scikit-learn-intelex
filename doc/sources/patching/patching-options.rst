@@ -28,6 +28,10 @@
     from sklearnex import patch_sklearn
     patch_sklearn()
 
+- Through importing the desired estimator from the sklearnex module in your script::
+
+    from sklearnex.neighbors import NearestNeighbors
+
 - Through :ref:`global patching <global_patching>` to enable patching for your scikit-learn installation for all further runs::
 
     python sklearnex.glob patch_sklearn
