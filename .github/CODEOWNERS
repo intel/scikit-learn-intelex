@@ -12,6 +12,7 @@ doc/                          @outoftardis
 
 # Examples 
 examples/                     @Pahandrovich @vlad-nazarov
+examples/notebooks/           @outoftardis
 
 # Dependencies
 setup.py                      @Pahandrovich @vmeshche

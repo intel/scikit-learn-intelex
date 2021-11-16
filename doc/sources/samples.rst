@@ -20,13 +20,33 @@
 Samples
 #######
 
+.. rubric:: Classification Tasks
+
 .. toctree::
+   :maxdepth: 1
 
    k-Nearest Neighbors (kNN) for MNIST dataset <samples/knn_mnist.ipynb>
    Logistic Regression for Cifar dataset <samples/logistictic_regression_cifar.ipynb>
+   Support Vector Classification (SVC) for Adult dataset <samples/svc_adult.ipynb>
+
+.. rubric:: Regression Tasks
+
+.. toctree::
+   :maxdepth: 1
+
+   ElasticNet for Airlines DepDelay dataset <samples/ElasticNet.ipynb>
+   Lasso Regression for YearPredictionMSD dataset <samples/lasso_regression.ipynb>
+   Linear Regression for YearPredictionMSD dataset <samples/linear_regression.ipynb>
    Nu-Support Vector Regression (NuSVR) for Medical Charges dataset <samples/nusvr_medical_charges.ipynb>
    Random Forest for Yolanda dataset <samples/random_forest_yolanda.ipynb>
-   Support Vector Classification (SVC) for Adult dataset <samples/svc_adult.ipynb>
+   Rigde Regression for Airlines DepDelay dataset <samples/ridge_regression.ipynb>
+
+.. rubric:: Clustering Tasks
+
+.. toctree::
+   :maxdepth: 1
+
+   Kmeans for spoken arabic digit dataset <samples/kmeans.ipynb>
 
 .. seealso:: 
 
