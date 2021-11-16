@@ -30,6 +30,7 @@ cdef extern from "oneapi/oneapi.h":
     void * to_daal_sycl_nt(void*, int, int*)
     void * to_daal_host_nt(void*, int, int*)
     void delete_device_data(void *, int)
+    bool has_float64_support()
 
     std_string to_std_string(PyObject * o) except +
 
@@ -104,6 +105,8 @@ def _get_sycl_ctxt_params():
 def is_in_sycl_ctxt():
     return _get_in_sycl_ctxt()
 
+def _get_device_double_support():
+    return has_float64_support()
 
 from contextlib import contextmanager
 

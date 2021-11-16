@@ -200,6 +200,14 @@ void * fromdaalnt(daal::data_management::NumericTablePtr * ptr)
     return NULL;
 }
 
+bool has_float64_support() {
+    const auto queue = get_current_queue();
+    const auto device = queue.get_device();
+    const auto fp_config = device.get_info<sycl::info::device::double_fp_config>();
+    const bool float64_support = !fp_config.empty();
+    return float64_support;
+}
+
 template void * to_device(double * ptr, int * shape);
 template void * to_device(float * ptr, int * shape);
 template void * to_device(int * ptr, int * shape);

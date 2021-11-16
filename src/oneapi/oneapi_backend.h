@@ -52,4 +52,6 @@ _ONEAPI_BACKEND_EXPORT daal::data_management::NumericTablePtr * to_daal_nt(void 
 template <typename T>
 _ONEAPI_BACKEND_EXPORT void * fromdaalnt(daal::data_management::NumericTablePtr * ptr);
 
+_ONEAPI_BACKEND_EXPORT bool has_float64_support();
+
 #endif // __ONEAPI_BACKEND_H_INCLUDED__
