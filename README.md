@@ -16,7 +16,7 @@ With Intel(R) Extension for Scikit-learn you can accelerate your Scikit-learn ap
 Intel(R) Extension for Scikit-learn offers you a way to accelerate existing scikit-learn code.
 The acceleration is achieved through **patching**: replacing the stock scikit-learn algorithms with their optimized versions provided by the extension.
 
-One of the ways to patch scikit-learn is by modifying the code. You import an additional Python package (`sklearnex`) and enable optimizations via `sklearnex.patch_sklearn()`:
+One of the ways to patch scikit-learn is by modifying the code. You import an additional Python package (`sklearnex`) and enable optimizations via `sklearnex.patch_sklearn()` (Pay attention: need to import scikit-learn estimators after patching lines):
 
 - **Enable Intel CPU optimizations**
 
