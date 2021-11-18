@@ -152,17 +152,16 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             if self.algorithm == "auto":
                 # A tree approach is better for small number of neighbors or small
                 # number of features, with KDTree generally faster when available
-                if (self._fit_X.shape[1] > 15 or
-                    (self.n_neighbors is not None and
-                     self.n_neighbors >= self._fit_X.shape[0] // 2)):
+                is_n_neighbors_valid_for_brute = self.n_neighbors is not None and \
+                    self.n_neighbors >= self._fit_X.shape[0] // 2
+                if self._fit_X.shape[1] > 15 or is_n_neighbors_valid_for_brute:
                     self._fit_method = "brute"
                 else:
                     if self.effective_metric_ in VALID_METRICS["kd_tree"]:
                         self._fit_method = "kd_tree"
-                    elif (
-                        callable(self.effective_metric_) or
-                        self.effective_metric_ in VALID_METRICS["ball_tree"]
-                    ):
+                    elif callable(self.effective_metric_) or \
+                        self.effective_metric_ in \
+                            VALID_METRICS["ball_tree"]:
                         self._fit_method = "ball_tree"
                     else:
                         self._fit_method = "brute"
@@ -328,14 +327,16 @@ class KNeighborsClassifier(KNeighborsClassifier_):
                 # To check multioutput, might be overhead
                 y = np.asarray(data[1])
                 is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
-            return ((result_method in ['kd_tree'] and
-                     self.effective_metric_ in ['euclidean']) or
-                    (result_method in ['brute'] and
-                     self.effective_metric_ in ['manhattan',
-                                                'minkowski',
-                                                'euclidean',
-                                                'chebyshev',
-                                                'cosine'])) and \
+            is_valid_for_kd_tree = \
+                result_method in ['kd_tree'] and self.effective_metric_ in ['euclidean']
+            is_valid_for_brute = result_method in ['brute'] and \
+                self.effective_metric_ in ['manhattan',
+                                           'minkowski',
+                                           'euclidean',
+                                           'chebyshev',
+                                           'cosine']
+            return is_valid_for_kd_tree or \
+                is_valid_for_brute and \
                 class_count >= 2 and \
                 not is_sparse and \
                 is_single_output
