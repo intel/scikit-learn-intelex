@@ -38,3 +38,12 @@ Patching
          python sklearnex.glob patch_sklearn
       
       .. seealso:: :ref:`global_patching`
+   
+How it works
+------------
+
+The extension replaces the original estimators in scikit-learn modules with the optimized ones.
+If the desired algorithm parameters are not supported by the |intelex|,
+then the result of the original scikit-learn is returned.
+
+.. seealso:: :ref:`verbose`

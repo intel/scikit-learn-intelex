@@ -2,9 +2,10 @@
 daal4py is easily built from sources with the majority of the necessary prerequisites available on conda. The instructions below detail how to gather the prerequisites, set your build environment, and finally build and install the completed package. daal4py can be built for all three major platforms (Windows, Linux, macOS). Multi-node (distributed) and streaming support can be disabled if needed.
 
 The build-process (using setup.py) happens in 3 stages:
-1. Creating C++ and cython sources from oneDAL C++ headers
-2. Running cython on generated source
-3. Compiling and linking
+1. Creating C++ and Cython sources from oneDAL C++ headers
+2. Building oneDAL Python interfaces via cmake and pybind11
+3. Running Cython on generated sources
+4. Compiling and linking them
 
 To build with oneAPI support, additional steps are required:
 1. Point to DPC++ compiler by defining ``DPCPPROOT`` variable.
@@ -18,7 +19,7 @@ export DPCPPROOT=/opt/intel/oneapi/compiler/latest
     - From oneAPI packages repository (pass the path to oneDAL via ``DALROOT`` variable)
 
 ```bash
-export DALROOT=/opt/intel/oneapi/daal/latest
+export DALROOT=/opt/intel/oneapi/dal/latest
 ```
 
 ## Building daal4py using conda-build
@@ -50,11 +51,11 @@ To actually use your daal4py, dependent packages need to be installed. To ensure
 
 Linux and Windows:
 ```
-conda install -c intel impi_rt daal numpy
+conda install -c intel impi_rt dal numpy
 ```
 OsX:
 ```
-conda install -c intel -c conda-forge mpich daal numpy
+conda install -c intel -c conda-forge mpich dal numpy
 ```
 
 ## Building daal4py without conda-build
@@ -65,6 +66,8 @@ Without conda-build you have to manually setup your environment before building 
 * Jinja2
 * Cython
 * Numpy
+* cmake and pybind11
+  * Needed for oneDAL interfaces. You can disable the support for oneDAL interfaces by setting OFF_ONEDAL_IFACE to '1'.
 * A C++ compiler with C++11 support
 * [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
   * You can use the pre-built conda package from Intel channel on anaconda.org
@@ -74,12 +77,12 @@ Without conda-build you have to manually setup your environment before building 
 For oneAPI support
 * A DPC++ compiler
 * [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
-  * You can use the [pre-built conda package](https://anaconda.org/intel/daal) from Intel channel on anaconda.org.
+  * You can use the [pre-built conda package](https://anaconda.org/intel/dal) from Intel channel on anaconda.org.
 
 ### Setting up a build environment
 The easiest path for getting cython, oneDAL, MPI etc. is by creating a conda environment and setting environment variables:
 ```
-conda create -n DAAL4PY python=3.7 impi-devel daal daal-include cython jinja2 numpy clang-tools -c intel -c conda-forge
+conda create -n DAAL4PY python=3.7 impi-devel dal dal-include cython jinja2 numpy clang-tools cmake pybind11 -c intel -c conda-forge
 conda activate DAAL4PY
 export DALROOT=$CONDA_PREFIX
 export MPIROOT=$CONDA_PREFIX
@@ -89,6 +92,7 @@ export MPIROOT=$CONDA_PREFIX
 * DAAL4PY_VERSION: sets package version
 * NO_DIST: set to '1', 'yes' or alike to build without support for distributed mode
 * NO_STREAM: set to '1', 'yes' or alike to build without support for streaming mode
+* OFF_ONEDAL_IFACE: set to '1' to build without the support of oneDAL interfaces
 
 ### Notes on building for macOS
 If building in High Sierra or higher, one may have to run into C++ build errors related to platform targets. Utilize ```export MACOSX_DEPLOYMENT_TARGET="10.9"``` if running into platform target issues.
