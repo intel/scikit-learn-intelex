@@ -30,7 +30,7 @@
 
 .. important::
 
-    Scikit learn import must be done **after** these lines, otherwise the patching will not affect the original scikit-learn estimators.
+    You have to import scikit-learn **after** these lines. Otherwise, the patching will not affect the original scikit-learn estimators.
 
 - Through importing the desired estimator from the sklearnex module in your script::
 
