@@ -38,9 +38,19 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Quick Start" href="quick-start.html" />
     <link rel="prev" title="System requirements and supported configurations" href="system-requirements.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="en" />
-    
+    <script defer type="text/javascript" src="https://www.intel.com/content/dam/www/global/wap/performance-config.js" ></script>
+    <script type="text/javascript">
+        // Configure TMS settings
+        var wapLocalCode = 'us-en'; // Dynamically set per localized site, see mapping table for values
+        var wapSection = "scikit-learn"; // WAP team will give you a unique section for your site
+        // Load TMS
+        (function () {
+          var url = 'https://www.intel.com/content/dam/www/global/wap/tms-loader.js'; // WAP file URL
+          var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true; po.src = url;
+          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+        })();
+      </script>
+
   </head>
   <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
     
@@ -135,6 +145,26 @@
     </a>
    </li>
    <li class="toctree-l2">
+    <a class="reference internal" href="samples/svc_adult.html">
+     Support Vector Classification (SVC) for Adult dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/ElasticNet.html">
+     ElasticNet for Airlines DepDelay dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/lasso_regression.html">
+     Lasso Regression for YearPredictionMSD dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/linear_regression.html">
+     Linear Regression for YearPredictionMSD dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
     <a class="reference internal" href="samples/nusvr_medical_charges.html">
      Nu-Support Vector Regression (NuSVR) for Medical Charges dataset
     </a>
@@ -145,8 +175,13 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="samples/svc_adult.html">
-     Support Vector Classification (SVC) for Adult dataset
+    <a class="reference internal" href="samples/ridge_regression.html">
+     Rigde Regression for Airlines DepDelay dataset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/kmeans.html">
+     Kmeans for spoken arabic digit dataset
     </a>
    </li>
   </ul>
@@ -345,7 +380,7 @@ If you already have AI Kit installed, you do not need to separately install the 
 <span id="id1"></span><h2>Build from Sources<a class="headerlink" href="#build-from-sources" title="Permalink to this headline">¶</a></h2>
 <p>Sources are available in <a class="reference external" href="https://github.com/intel/scikit-learn-intelex">Intel® Extension for Scikit-learn* repository</a>.</p>
 <p class="rubric">Prerequisites</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Python</span> <span class="n">version</span> <span class="o">&gt;=</span> <span class="mf">3.6</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Python</span> <span class="n">version</span> <span class="o">&gt;=</span> <span class="mf">3.6</span><span class="p">,</span> <span class="o">&lt;</span> <span class="mf">3.10</span>
 </pre></div>
 </div>
 <div class="section" id="configure-the-build-with-environment-variables">
