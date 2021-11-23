@@ -28,5 +28,3 @@ Distributed Mode
 
 While daal4py is available in `distribued mode <https://intelpython.github.io/daal4py/scaling.html>`_,
 |intelex| does not currently offer this functionality.
-
-.. seealso: `Release Notes <https://github.com/intel/scikit-learn-intelex/releases>`
