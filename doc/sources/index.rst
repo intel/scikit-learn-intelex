@@ -72,6 +72,7 @@ Important Links
    algorithms.rst
    global-patching.rst
    verbose.rst
+   distributed-mode.rst
    oneAPI and GPU support <oneapi-gpu.rst>
 
 .. toctree::

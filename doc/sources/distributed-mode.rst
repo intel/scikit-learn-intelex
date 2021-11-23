@@ -14,28 +14,19 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
+.. _distributed:
 
-You may enable patching in different ways:
+Distributed Mode
+================
 
-.. include:: /patching/patching-options.rst
+.. note::
 
-.. rubric:: Example
+   |intelex| contains scikit-learn patching functionality that was originally available in 
+   `daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_ package.
+   We recommend you to use scikit-learn-intelex package instead of daal4py.
+   You can learn more about daal4py in `daal4py documentation <https://intelpython.github.io/daal4py>`_.
 
-.. include:: /patching/patch-kmeans-example.rst
+While daal4py is available in `distribued mode <https://intelpython.github.io/daal4py/scaling.html>`_,
+|intelex| does not currently offer this functionality.
 
-In the example above, you can see that the use of the original Scikit-learn
-has not changed. This behavior is achieved through drop-in patching.
-
-To :term:`undo the patch <unpatching>`, run:
-
-.. include:: /patching/undo-patch.rst
-
-You may specify which algorithms to patch:
-
-- Patching only one algorithm:
-
-  .. include:: /patching/patch-one-algorithm.rst
-
-- Patching several algorithms:
-
-  .. include:: /patching/patch-several-algorithms.rst
+.. seealso: `Release Notes <https://github.com/intel/scikit-learn-intelex/releases>`

@@ -47,6 +47,7 @@ Samples
    :maxdepth: 1
 
    Kmeans for spoken arabic digit dataset <samples/kmeans.ipynb>
+   DBSCAN for spoken arabic digit dataset <samples/dbscan.ipynb>
 
 .. seealso:: 
 
