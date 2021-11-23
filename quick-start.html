@@ -184,6 +184,11 @@
      Kmeans for spoken arabic digit dataset
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/dbscan.html">
+     DBSCAN for spoken arabic digit dataset
+    </a>
+   </li>
   </ul>
  </li>
 </ul>
@@ -206,6 +211,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="verbose.html">
    Verbose Mode
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="distributed-mode.html">
+   Distributed Mode
   </a>
  </li>
  <li class="toctree-l1">
@@ -334,6 +344,17 @@ They support different enabling scenarios while producing the same result.</p>
 </pre></div>
 </div>
 </li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>You have to import scikit-learn <strong>after</strong> these lines. Otherwise, the patching will not affect the original scikit-learn estimators.</p>
+</div>
+<ul>
+<li><p>Through importing the desired estimator from the sklearnex module in your script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex.neighbors</span> <span class="kn">import</span> <span class="n">NearestNeighbors</span>
+</pre></div>
+</div>
+</li>
 <li><p>Through <a class="reference internal" href="global-patching.html#global-patching"><span class="std std-ref">global patching</span></a> to enable patching for your scikit-learn installation for all further runs:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span>
 </pre></div>
@@ -356,9 +377,9 @@ They support different enabling scenarios while producing the same result.</p>
 </div>
 <p>In the example above, you can see that the use of the original Scikit-learn
 has not changed. This behavior is achieved through drop-in patching.</p>
-<p>To undo the patch, run:</p>
+<p>To <a class="reference internal" href="what-is-patching.html#term-unpatching"><span class="xref std std-term">undo the patch</span></a>, run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sklearnex</span><span class="o">.</span><span class="n">unpatch_sklearn</span><span class="p">()</span>
-<span class="c1"># You need to re-import scikit-learn algorithms after the unpatch:</span>
+<span class="c1"># Re-import scikit-learn algorithms after the unpatch:</span>
 <span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
 </pre></div>
 </div>

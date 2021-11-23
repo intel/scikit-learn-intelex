@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Intel® Extension for Scikit-learn* &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
+    <title>Distributed Mode &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet" />
   <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -36,7 +36,8 @@
     <link rel="shortcut icon" href="_static/favicons.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Acceleration" href="acceleration.html" />
+    <link rel="next" title="oneAPI and GPU support in Intel® Extension for Scikit-learn*" href="oneapi-gpu.html" />
+    <link rel="prev" title="Verbose Mode" href="verbose.html" />
     <script defer type="text/javascript" src="https://www.intel.com/content/dam/www/global/wap/performance-config.js" ></script>
     <script type="text/javascript">
         // Configure TMS settings
@@ -63,7 +64,7 @@
 <div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
     
         <div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="#">
+    <a class="navbar-brand text-wrap" href="index.html">
       
         <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
         
@@ -196,7 +197,7 @@
   Developer Guide
  </span>
 </p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="algorithms.html">
    Supported Algorithms
@@ -212,8 +213,8 @@
    Verbose Mode
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="distributed-mode.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Distributed Mode
   </a>
  </li>
@@ -275,7 +276,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="_sources/index.rst.txt"><button type="button"
+        <a class="dropdown-buttons" href="_sources/distributed-mode.rst.txt"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.rst</button></a>
         <!-- Download PDF via print -->
@@ -292,10 +293,10 @@
     <div class="dropdown-buttons sourcebuttons">
         
         <a class="issues-button"
-            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here."><button
+            href="https://github.com/intel/scikit-learn-intelex/issues/new?title=Issue%20on%20page%20%2Fdistributed-mode.html&body=Your%20issue%20content%20here."><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
-        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/index.rst"><button
+        <a class="edit-button" href="https://github.com/intel/scikit-learn-intelex/edit/master/doc/sources/distributed-mode.rst"><button
                 type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
                 title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
     </div>
@@ -315,26 +316,6 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
-            </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#usage">
-   Usage
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#important-links">
-   Important Links
-  </a>
-  <ul class="nav section-nav flex-column">
-  </ul>
- </li>
-</ul>
-
-            </nav>
         </div>
     </div>
 </div>
@@ -343,111 +324,17 @@
         
               <div>
                 
-  <div class="section" id="intelex">
-<span id="index"></span><h1>Intel® Extension for Scikit-learn*<a class="headerlink" href="#intelex" title="Permalink to this headline">¶</a></h1>
-<p>With Intel® Extension for Scikit-learn* you can accelerate your Scikit-learn applications and
-still have full conformance with all Scikit-Learn APIs and algorithms.
-Intel® Extension for Scikit-learn* is a free software AI accelerator that brings over 10-100X acceleration across a variety of applications.</p>
-<p>Intel® Extension for Scikit-learn* offers you a way to accelerate existing scikit-learn code.
-The acceleration is achieved through <a class="reference internal" href="what-is-patching.html#term-patching"><span class="xref std std-term">patching</span></a>:
-replacing the stock scikit-learn algorithms with their optimized versions provided by the extension.</p>
-<p class="rubric">Designed for Data Scientists and Framework Designers</p>
-<p>Intel® Extension for Scikit-learn* was created to provide data scientists with a way to get a better performance
-while using the familiar scikit-learn package and getting the same results.</p>
-<div class="section" id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>You may enable patching in different ways:</p>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
-<p>These patching methods are interchangeable.
-They support different enabling scenarios while producing the same result.</p>
+  <div class="section" id="distributed-mode">
+<span id="distributed"></span><h1>Distributed Mode<a class="headerlink" href="#distributed-mode" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Intel® Extension for Scikit-learn* contains scikit-learn patching functionality that was originally available in
+<a class="reference external" href="https://github.com/intel/scikit-learn-intelex/tree/master/daal4py">daal4py</a> package.
+We recommend you to use scikit-learn-intelex package instead of daal4py.
+You can learn more about daal4py in <a class="reference external" href="https://intelpython.github.io/daal4py">daal4py documentation</a>.</p>
 </div>
-<ul>
-<li><p>Without editing the code of a scikit-learn application by using the following command line flag:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">sklearnex</span> <span class="n">my_application</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-</div>
-</li>
-<li><p>Directly from the script:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
-<span class="n">patch_sklearn</span><span class="p">()</span>
-</pre></div>
-</div>
-</li>
-</ul>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
-<p>You have to import scikit-learn <strong>after</strong> these lines. Otherwise, the patching will not affect the original scikit-learn estimators.</p>
-</div>
-<ul>
-<li><p>Through importing the desired estimator from the sklearnex module in your script:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex.neighbors</span> <span class="kn">import</span> <span class="n">NearestNeighbors</span>
-</pre></div>
-</div>
-</li>
-<li><p>Through <a class="reference internal" href="global-patching.html#global-patching"><span class="std std-ref">global patching</span></a> to enable patching for your scikit-learn installation for all further runs:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sklearnex</span><span class="o">.</span><span class="n">glob</span> <span class="n">patch_sklearn</span>
-</pre></div>
-</div>
-</li>
-</ul>
-<p class="rubric">Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
-<span class="n">patch_sklearn</span><span class="p">()</span>
-
-<span class="c1"># You need to re-import scikit-learn algorithms after the patch</span>
-<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
-
-<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">0</span><span class="p">],</span>
-              <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
-<span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kmeans.labels_ = </span><span class="si">{</span><span class="n">kmeans</span><span class="o">.</span><span class="n">labels_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>In the example above, you can see that the use of the original Scikit-learn
-has not changed. This behavior is achieved through drop-in patching.</p>
-<p>To <a class="reference internal" href="what-is-patching.html#term-unpatching"><span class="xref std std-term">undo the patch</span></a>, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sklearnex</span><span class="o">.</span><span class="n">unpatch_sklearn</span><span class="p">()</span>
-<span class="c1"># Re-import scikit-learn algorithms after the unpatch:</span>
-<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
-</pre></div>
-</div>
-<p>You may specify which algorithms to patch:</p>
-<ul>
-<li><p>Patching only one algorithm:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
-<span class="c1"># The names match scikit-learn estimators</span>
-<span class="n">patch_sklearn</span><span class="p">(</span><span class="s2">&quot;SVC&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</li>
-<li><p>Patching several algorithms:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
-<span class="c1"># The names match scikit-learn estimators</span>
-<span class="n">patch_sklearn</span><span class="p">([</span><span class="s2">&quot;SVC&quot;</span><span class="p">,</span> <span class="s2">&quot;DBSCAN&quot;</span><span class="p">])</span>
-</pre></div>
-</div>
-</li>
-</ul>
-</div>
-<div class="section" id="important-links">
-<h2>Important Links<a class="headerlink" href="#important-links" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/intel/scikit-learn-intelex">Intel® Extension for Scikit-learn* repository</a></p></li>
-<li><p><a class="reference external" href="https://github.com/IntelPython/scikit-learn_bench">Machine Learning Benchmarks</a></p></li>
-<li><p><a class="reference external" href="https://github.com/oneapi-src/oneDAL">About Intel(R) oneAPI Data Analytics Library</a></p></li>
-<li><p><a class="reference external" href="https://github.com/intel/scikit-learn-intelex/tree/master/daal4py">About daal4py</a></p></li>
-</ul>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-</div>
-</div>
+<p>While daal4py is available in <a class="reference external" href="https://intelpython.github.io/daal4py/scaling.html">distribued mode</a>,
+Intel® Extension for Scikit-learn* does not currently offer this functionality.</p>
 </div>
 
 
@@ -460,11 +347,20 @@ has not changed. This behavior is achieved through drop-in patching.</p>
 
 <div class='prev-next-bottom'>
     
+    <div id="prev">
+        <a class="left-prev" href="verbose.html" title="previous page">
+            <i class="prevnext-label fas fa-angle-left"></i>
+            <div class="prevnext-info">
+                <p class="prevnext-label">previous</p>
+                <p class="prevnext-title">Verbose Mode</p>
+            </div>
+        </a>
+    </div>
      <div id="next">
-        <a class="right-next" href="acceleration.html" title="next page">
+        <a class="right-next" href="oneapi-gpu.html" title="next page">
             <div class="prevnext-info">
                 <p class="prevnext-label">next</p>
-                <p class="prevnext-title">Acceleration</p>
+                <p class="prevnext-title">oneAPI and GPU support in Intel® Extension for Scikit-learn*</p>
             </div>
             <i class="prevnext-label fas fa-angle-right"></i>
         </a>

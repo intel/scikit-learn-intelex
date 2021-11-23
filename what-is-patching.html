@@ -184,6 +184,11 @@
      Kmeans for spoken arabic digit dataset
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="samples/dbscan.html">
+     DBSCAN for spoken arabic digit dataset
+    </a>
+   </li>
   </ul>
  </li>
 </ul>
@@ -206,6 +211,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="verbose.html">
    Verbose Mode
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="distributed-mode.html">
+   Distributed Mode
   </a>
  </li>
  <li class="toctree-l1">
@@ -306,6 +316,19 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-it-works">
+   How it works
+  </a>
+ </li>
+</ul>
+
+            </nav>
         </div>
     </div>
 </div>
@@ -318,7 +341,7 @@
 <h1>Patching<a class="headerlink" href="#patching" title="Permalink to this headline">¶</a></h1>
 <dl class="glossary">
 <dt id="term-patching">patching<a class="headerlink" href="#term-patching" title="Permalink to this term">¶</a></dt><dd><p>To patch scikit-learn with Intel® Extension for Scikit-learn* is to replace stock scikit-learn algorithms
-with their optimized versions provided by the extension.</p>
+with their optimized versions provided by the extension. You can always <a class="reference internal" href="#term-unpatching"><span class="xref std std-term">undo the patch</span></a>.</p>
 <p>There are different ways to patch scikit-learn:</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
@@ -334,6 +357,17 @@ They support different enabling scenarios while producing the same result.</p>
 <li><p>Directly from the script:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex</span> <span class="kn">import</span> <span class="n">patch_sklearn</span>
 <span class="n">patch_sklearn</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>You have to import scikit-learn <strong>after</strong> these lines. Otherwise, the patching will not affect the original scikit-learn estimators.</p>
+</div>
+<ul>
+<li><p>Through importing the desired estimator from the sklearnex module in your script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearnex.neighbors</span> <span class="kn">import</span> <span class="n">NearestNeighbors</span>
 </pre></div>
 </div>
 </li>
@@ -358,7 +392,26 @@ With global patching, you can patch all scikit-learn applications at once:</p>
 <p><a class="reference internal" href="global-patching.html#global-patching"><span class="std std-ref">Global Patching</span></a></p>
 </div>
 </dd>
+<dt id="term-unpatching">unpatching<a class="headerlink" href="#term-unpatching" title="Permalink to this term">¶</a></dt><dd><p>To undo the patch is to return to the use of original scikit-learn implementation and
+replace patched algorithms with the stock scikit-learn algorithms.
+Unpatching requires scikit-learn to be re-imported again:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sklearnex</span><span class="o">.</span><span class="n">unpatch_sklearn</span><span class="p">()</span>
+<span class="c1"># Re-import scikit-learn algorithms after the unpatch:</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+</pre></div>
+</div>
+</dd>
 </dl>
+<div class="section" id="how-it-works">
+<h2>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h2>
+<p>The extension replaces the original estimators in scikit-learn modules with the optimized ones.
+If the desired algorithm parameters are not supported by the Intel® Extension for Scikit-learn*,
+then the result of the original scikit-learn is returned.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="verbose.html#verbose"><span class="std std-ref">Verbose Mode</span></a></p>
+</div>
+</div>
 </div>
 
 
