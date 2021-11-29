@@ -78,7 +78,13 @@ if __name__ == '__main__':
         from sklearnex import patch_sklearn
         patch_sklearn()
 
-    with get_context(args.device):
+    if args.device == "gpu":
+        from daal4py.oneapi import sycl_context
+        with sycl_context(args.device, host_offload_on_fail=True)
+            pytest.main(
+                pytest_params + ["--pyargs", "sklearn"] + deselected_tests + yml_deselected_tests
+            )
+    else:
         pytest.main(
             pytest_params + ["--pyargs", "sklearn"] + deselected_tests + yml_deselected_tests
         )
