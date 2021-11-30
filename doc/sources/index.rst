@@ -56,6 +56,7 @@ Important Links
    what-is-patching.rst
    Medium Blogs <blogs.rst>
    System Requirements <system-requirements.rst>
+   memory-requirements.rst
 
 .. toctree::
    :caption: Get Started
