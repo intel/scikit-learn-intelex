@@ -126,7 +126,7 @@ jobs:
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
   - script: |
-      conda update -y -q conda
+      conda update -y -q conda=4.10.3
       conda create -q -y -n CB -c conda-forge python=$(python.version) conda-build=3.21.1 conda-verify
     displayName: Create Anaconda environment
   - script: |
