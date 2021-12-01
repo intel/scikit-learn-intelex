@@ -64,6 +64,7 @@ Important Links
    installation.rst
    quick-start.rst
    samples.rst
+   kaggle.rst
 
 .. toctree::
    :caption: Developer Guide
