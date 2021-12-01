@@ -57,6 +57,12 @@ def _get_device_info_from_daal4py():
         return _get_device_name_sycl_ctxt(), _get_sycl_ctxt_params()
     return None, dict()
 
+def _get_device_float64_support_from_daal4py():
+    import sys
+    if 'daal4py.oneapi' in sys.modules:
+        from daal4py.oneapi import _get_device_float64_support
+        return _get_device_float64_support()
+    return None
 
 def _get_global_queue():
     target = get_config()['target_offload']
@@ -119,6 +125,41 @@ def _transfer_to_host(queue, *data):
     return queue, host_data
 
 
+def _check_input_dtypes(queue, *data):
+    gpu_device = queue is not None and queue.sycl_device.is_gpu
+    if gpu_device:
+        has_native_float64_support = False
+        import os
+        if not os.getenv("OverrideDefaultFP64Settings", False) and os.getenv("IGC_ForceDPEmulation", False) and \
+               os.getenv("IGC_EnableDPEmulation", False):
+            if dpctl_available:
+                has_native_float64_support = queue.sycl_device.has_aspect_fp64
+            else:
+                has_native_float64_support = _get_device_float64_support_from_daal4py()
+        
+        _, d4p_options = _get_device_info_from_daal4py()
+        allow_cast = get_config()['allow_cast_to_float32'] or \
+            d4p_options.get('allow_cast_to_float32', False)
+
+        if has_native_float64_support:
+            return data
+        elif not has_native_float64_support and not allow_cast:
+            raise RuntimeError("Target device does not support float64 input data type")
+        else:
+            cast_data = []
+            import logging
+            # TODO: move this logging message to print this one time when script run
+            logging.info(f"Input data casted from float64 to float32")
+            for item in data:
+                dtype = getattr(item, 'dtype', None)
+                if dtype == np.float64:
+                    item = item.astype(np.float32)
+                cast_data.append(item)
+            return cast_data
+    else: 
+        return data
+
+
 def _get_backend(obj, queue, method_name, *data):
     cpu_device = queue is None or queue.sycl_device.is_cpu
     gpu_device = queue is not None and queue.sycl_device.is_gpu
@@ -149,6 +190,8 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     q = _get_global_queue()
     q, hostargs = _transfer_to_host(q, *args)
     q, hostvalues = _transfer_to_host(q, *kwargs.values())
+    hostargs = _check_input_dtypes(q, *args)
+    hostvalues = _check_input_dtypes(q, *kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
 
     backend, q, cpu_fallback = _get_backend(obj, q, method_name, *hostargs)
@@ -183,3 +226,4 @@ def wrap_output_data(func):
             return _copy_to_usm(usm_iface['syclobj'], result)
         return result
     return wrapper
+

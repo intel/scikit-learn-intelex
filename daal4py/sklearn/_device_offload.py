@@ -20,6 +20,7 @@ try:
     from sklearnex._config import get_config
     from sklearnex._device_offload import (_get_global_queue,
                                            _transfer_to_host,
+                                           _check_input_dtypes,
                                            _copy_to_usm)
     _sklearnex_available = True
 except ImportError:
@@ -34,6 +35,8 @@ def _get_host_inputs(*args, **kwargs):
     q = _get_global_queue()
     q, hostargs = _transfer_to_host(q, *args)
     q, hostvalues = _transfer_to_host(q, *kwargs.values())
+    hostargs = _check_input_dtypes(q, *args)
+    hostvalues = _check_input_dtypes(q, *kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
     return q, hostargs, hostkwargs
 

@@ -47,7 +47,7 @@ try:
         _get_device_name_sycl_ctxt,
         _get_sycl_ctxt_params,
         _get_in_sycl_ctxt,
-        _get_device_double_support
+        _get_device_float64_support
     )
 except ModuleNotFoundError:
     raise

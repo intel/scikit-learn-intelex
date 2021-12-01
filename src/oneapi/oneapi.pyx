@@ -105,18 +105,18 @@ def _get_sycl_ctxt_params():
 def is_in_sycl_ctxt():
     return _get_in_sycl_ctxt()
 
-def _get_device_double_support():
+def _get_device_float64_support():
     return has_float64_support()
 
 from contextlib import contextmanager
 
 @contextmanager
-def sycl_context(dev='host', host_offload_on_fail=False):
+def sycl_context(dev='host', host_offload_on_fail=False, allow_cast_to_float32=False):
     # Code to acquire resource
     prev_ctxt = _get_sycl_ctxt()
     prev_params = _get_sycl_ctxt_params()
     ctxt = sycl_execution_context(dev)
-    _set_in_sycl_ctxt(ctxt, host_offload_on_fail=host_offload_on_fail)
+    _set_in_sycl_ctxt(ctxt, host_offload_on_fail=host_offload_on_fail, allow_cast_to_float32=allow_cast_to_float32)
     try:
         yield ctxt
     finally:

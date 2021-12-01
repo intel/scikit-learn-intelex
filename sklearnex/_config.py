@@ -23,6 +23,7 @@ from sklearn import set_config as skl_set_config
 _default_global_config = {
     "target_offload": "auto",
     "allow_fallback_to_host": False,
+    "allow_cast_to_float32": False,
 }
 
 _threadlocal = threading.local()
@@ -50,7 +51,7 @@ def get_config():
     return {**sklearn, **sklearnex}
 
 
-def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_configs):
+def set_config(target_offload=None, allow_fallback_to_host=None, allow_cast_to_float32=None, **sklearn_configs):
     """Set global configuration
     Parameters
     ----------
@@ -62,6 +63,10 @@ def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_confi
     allow_fallback_to_host : bool, default=None
         If True, allows to fallback computation to host device
         in case particular estimator does not support the selected one.
+        Global default: False.
+    allow_cast_to_float32 : bool, default=None
+        If True, allows to cast input data from float64 to float32 
+        in case target_offload device does not have native float64 support.
         Global default: False.
     See Also
     --------
@@ -76,6 +81,8 @@ def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_confi
         local_config["target_offload"] = target_offload
     if allow_fallback_to_host is not None:
         local_config["allow_fallback_to_host"] = allow_fallback_to_host
+    if allow_cast_to_float32 is not None:
+        local_config["allow_cast_to_float32"] = allow_cast_to_float32
 
 
 @contextmanager
