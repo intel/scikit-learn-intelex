@@ -21,10 +21,6 @@ import pytest
 import os
 
 
-def get_context(device):
-    from daal4py.oneapi import sycl_context
-    return sycl_context(device, host_offload_on_fail=True)
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Script to run scikit-learn tests with device context manager')
@@ -58,7 +54,8 @@ if __name__ == '__main__':
         fn = args.deselected_yml_file[0]
         if os.path.exists(fn):
             from deselect_tests import create_pytest_switches
-            yml_deselected_tests = create_pytest_switches(fn, args.absolute, args.reduced, args.public, args.gpu)
+            yml_deselected_tests = create_pytest_switches(fn, args.absolute, args.reduced,
+                                                          args.public, args.gpu)
 
     deselected_tests = []
     if args.deselect is not None:
@@ -66,6 +63,8 @@ if __name__ == '__main__':
             element for test in args.deselect
             for element in ('--deselect', test)
         ]
+
+    yml_deselected_tests = yml_deselected_tests + deselected_tests
 
     pytest_params = [
         "-ra", "--disable-warnings"
@@ -82,9 +81,9 @@ if __name__ == '__main__':
         from daal4py.oneapi import sycl_context
         with sycl_context(args.device, host_offload_on_fail=True):
             pytest.main(
-                pytest_params + ["--pyargs", "sklearn"] + deselected_tests + yml_deselected_tests
+                pytest_params + ["--pyargs", "sklearn"] + yml_deselected_tests
             )
     else:
         pytest.main(
-            pytest_params + ["--pyargs", "sklearn"] + deselected_tests + yml_deselected_tests
+            pytest_params + ["--pyargs", "sklearn"] + yml_deselected_tests
         )

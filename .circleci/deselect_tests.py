@@ -59,6 +59,7 @@ def filter_by_version(entry, sk_ver):
         return test_name
     return None
 
+
 def create_pytest_switches(filename, absolute, reduced, public, gpu):
     pytest_switches = []
     if os.path.exists(filename):
@@ -109,4 +110,5 @@ if __name__ == '__main__':
 
     fn = args.conf_file[0]
     if os.path.exists(fn):
-        print(" ".join(create_pytest_switches(fn, args.absolute, args.reduced, args.public, args.gpu)))
+        print(" ".join(create_pytest_switches(fn, args.absolute, args.reduced,
+                                              args.public, args.gpu)))
