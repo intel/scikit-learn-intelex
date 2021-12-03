@@ -1,5 +1,5 @@
 # build artefacts
-*.so
+*.sos
 *.egg
 *.pyc
 build
