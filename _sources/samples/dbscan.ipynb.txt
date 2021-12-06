@@ -5,7 +5,7 @@
    "id": "3768ec43",
    "metadata": {},
    "source": [
-    "# Intel® Extension for Scikit-learn Kmeans for spoken arabic digit dataset"
+    "# Intel® Extension for Scikit-learn DBSCAN for spoken arabic digit dataset"
    ]
   },
   {
@@ -17,6 +17,7 @@
    "source": [
     "from timeit import default_timer as timer\n",
     "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.metrics import davies_bouldin_score\n",
     "from sklearn.datasets import fetch_openml\n",
     "from IPython.display import HTML\n",
     "import warnings\n",
@@ -43,7 +44,7 @@
   },
   {
    "cell_type": "markdown",
-   "id": "0cdcb77d",
+   "id": "246f819f",
    "metadata": {},
    "source": [
     "### Preprocessing\n",
@@ -53,28 +54,16 @@
   {
    "cell_type": "code",
    "execution_count": 3,
-   "id": "0d332789",
+   "id": "6fd95eeb",
    "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "((236930, 14), (26326, 14), (236930,), (26326,))"
-      ]
-     },
-     "execution_count": 3,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
+   "outputs": [],
    "source": [
-    "x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.1, random_state=123)\n",
-    "x_train.shape, x_test.shape, y_train.shape, y_test.shape"
+    "x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=0)"
    ]
   },
   {
    "cell_type": "markdown",
-   "id": "246f819f",
+   "id": "33da61da",
    "metadata": {},
    "source": [
     "Normalize the data"
@@ -144,7 +133,7 @@
    "id": "f80273e7",
    "metadata": {},
    "source": [
-    "Training of the KMeans algorithm with Intel® Extension for Scikit-learn for spoken arabic digit dataset"
+    "Training of the DBSCAN algorithm with Intel® Extension for Scikit-learn for spoken arabic digit dataset"
    ]
   },
   {
@@ -156,7 +145,7 @@
     {
      "data": {
       "text/plain": [
-       "'Intel® extension for Scikit-learn time: 7.36 s'"
+       "'Intel® extension for Scikit-learn time: 6.37 s'"
       ]
      },
      "execution_count": 7,
@@ -165,15 +154,13 @@
     }
    ],
    "source": [
-    "from sklearn.cluster import KMeans\n",
+    "from sklearn.cluster import DBSCAN\n",
     "\n",
     "params = {\n",
-    "    \"n_clusters\": 128,    \n",
-    "    \"random_state\": 123,\n",
-    "    \"copy_x\": False,\n",
+    "    'n_jobs': -1,\n",
     "}\n",
     "start = timer()\n",
-    "model = KMeans(**params).fit(x_train, y_train)\n",
+    "y_pred = DBSCAN(**params).fit_predict(x_train)\n",
     "train_patched = timer() - start\n",
     "f\"Intel® extension for Scikit-learn time: {train_patched:.2f} s\""
    ]
@@ -183,7 +170,7 @@
    "id": "f10b51fc",
    "metadata": {},
    "source": [
-    "Let's take a look at inertia and number of iterations of the KMeans algorithm with Intel® Extension for Scikit-learn"
+    "Let's take a look at Davies-Bouldin score of the DBSCAN algorithm with Intel® Extension for Scikit-learn"
    ]
   },
   {
@@ -193,19 +180,19 @@
    "metadata": {},
    "outputs": [
     {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Intel® extension for Scikit-learn inertia: 13346.641333761074\n",
-      "Intel® extension for Scikit-learn number of iterations: 274\n"
-     ]
+     "data": {
+      "text/plain": [
+       "'Intel® extension for Scikit-learn Davies-Bouldin score: 0.8542652084275848'"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
     }
    ],
    "source": [
-    "inertia_opt = model.inertia_\n",
-    "n_iter_opt = model.n_iter_\n",
-    "print(f\"Intel® extension for Scikit-learn inertia: {inertia_opt}\")\n",
-    "print(f\"Intel® extension for Scikit-learn number of iterations: {n_iter_opt}\")"
+    "score_opt = davies_bouldin_score(x_train, y_pred)\n",
+    "f\"Intel® extension for Scikit-learn Davies-Bouldin score: {score_opt}\""
    ]
   },
   {
@@ -214,7 +201,7 @@
    "metadata": {},
    "source": [
     "### Train the same algorithm with original Scikit-learn\n",
-    "In order to cancel optimizations, we use *unpatch_sklearn* and reimport the class KMeans"
+    "In order to cancel optimizations, we use *unpatch_sklearn* and reimport the class DBSCAN"
    ]
   },
   {
@@ -233,7 +220,7 @@
    "id": "f242c6da",
    "metadata": {},
    "source": [
-    "Training of the KMeans algorithm with original Scikit-learn library for spoken arabic digit dataset"
+    "Training of the DBSCAN algorithm with original Scikit-learn library for spoken arabic digit dataset"
    ]
   },
   {
@@ -245,7 +232,7 @@
     {
      "data": {
       "text/plain": [
-       "'Original Scikit-learn time: 192.14 s'"
+       "'Original Scikit-learn time: 469.21 s'"
       ]
      },
      "execution_count": 10,
@@ -254,10 +241,10 @@
     }
    ],
    "source": [
-    "from sklearn.cluster import KMeans\n",
+    "from sklearn.cluster import DBSCAN\n",
     "\n",
     "start = timer()\n",
-    "model = KMeans(**params).fit(x_train, y_train)\n",
+    "y_pred = DBSCAN(**params).fit_predict(x_train)\n",
     "train_unpatched = timer() - start\n",
     "f\"Original Scikit-learn time: {train_unpatched:.2f} s\""
    ]
@@ -267,7 +254,7 @@
    "id": "c85a125c",
    "metadata": {},
    "source": [
-    "Let's take a look at inertia and number of iterations of the KMeans algorithm with original Scikit-learn"
+    "Let's take a look Davies-Bouldin score of the DBSCAN algorithm with original Scikit-learn"
    ]
   },
   {
@@ -277,19 +264,19 @@
    "metadata": {},
    "outputs": [
     {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Original Scikit-learn inertia: 13352.813785961785\n",
-      "Original Scikit-learn number of iterations: 212\n"
-     ]
+     "data": {
+      "text/plain": [
+       "'Original Scikit-learn Davies-Bouldin score: 0.8542652084275848'"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
     }
    ],
    "source": [
-    "inertia_original = model.inertia_\n",
-    "n_iter_original = model.n_iter_\n",
-    "print(f\"Original Scikit-learn inertia: {inertia_original}\")\n",
-    "print(f\"Original Scikit-learn number of iterations: {n_iter_original}\")"
+    "score_original = davies_bouldin_score(x_train, y_pred)\n",
+    "f\"Original Scikit-learn Davies-Bouldin score: {score_opt}\""
    ]
   },
   {
@@ -301,7 +288,7 @@
     {
      "data": {
       "text/html": [
-       "<h3>Compare inertia and number of iterations of patched Scikit-learn and original</h3><br><strong>Inertia:</strong><br>Patched Scikit-learn: 13346.641333761074 <br>Unpatched Scikit-learn: 13352.813785961785 <br>Ratio: 0.9995377414603653 <br><br><strong>Number of iterations:</strong><br>Patched Scikit-learn: 274 <br>Unpatched Scikit-learn: 212 <br>Ratio: 1.29 <br><br>Number of iterations is bigger but algorithm is much faster and inertia is lower<h3>With Scikit-learn-intelex patching you can:</h3><ul><li>Use your Scikit-learn code for training and prediction with minimal changes (a couple of lines of code);</li><li>Fast execution training and prediction of Scikit-learn models;</li><li>Get speedup in <strong>26.1</strong> times.</li></ul>"
+       "<h3>Compare Davies-Bouldin score of patched Scikit-learn and original</h3>Davies-Bouldin score of patched Scikit-learn: 0.8542652084275848 <br>Davies-Bouldin score of unpatched Scikit-learn: 0.8542652084275848 <br>Metrics ratio: 1.0 <br><h3>With Scikit-learn-intelex patching you can:</h3><ul><li>Use your Scikit-learn code for training and prediction with minimal changes (a couple of lines of code);</li><li>Fast execution training and prediction of Scikit-learn models;</li><li>Get the similar quality</li><li>Get speedup in <strong>73.6</strong> times.</li></ul>"
       ],
       "text/plain": [
        "<IPython.core.display.HTML object>"
@@ -313,20 +300,15 @@
     }
    ],
    "source": [
-    "HTML(f\"<h3>Compare inertia and number of iterations of patched Scikit-learn and original</h3><br>\"\n",
-    "     f\"<strong>Inertia:</strong><br>\"\n",
-    "     f\"Patched Scikit-learn: {inertia_opt} <br>\"\n",
-    "     f\"Unpatched Scikit-learn: {inertia_original} <br>\"\n",
-    "     f\"Ratio: {inertia_opt/inertia_original} <br><br>\"\n",
-    "     f\"<strong>Number of iterations:</strong><br>\"\n",
-    "     f\"Patched Scikit-learn: {n_iter_opt} <br>\"\n",
-    "     f\"Unpatched Scikit-learn: {n_iter_original} <br>\"\n",
-    "     f\"Ratio: {(n_iter_opt/n_iter_original):.2f} <br><br>\"\n",
-    "     f\"Number of iterations is bigger but algorithm is much faster and inertia is lower\"\n",
+    "HTML(f\"<h3>Compare Davies-Bouldin score of patched Scikit-learn and original</h3>\"\n",
+    "     f\"Davies-Bouldin score of patched Scikit-learn: {score_opt} <br>\"\n",
+    "     f\"Davies-Bouldin score of unpatched Scikit-learn: {score_original} <br>\"\n",
+    "     f\"Metrics ratio: {score_opt/score_original} <br>\"\n",
     "     f\"<h3>With Scikit-learn-intelex patching you can:</h3>\"\n",
     "     f\"<ul>\"\n",
     "     f\"<li>Use your Scikit-learn code for training and prediction with minimal changes (a couple of lines of code);</li>\"\n",
     "     f\"<li>Fast execution training and prediction of Scikit-learn models;</li>\"\n",
+    "     f\"<li>Get the similar quality</li>\"\n",
     "     f\"<li>Get speedup in <strong>{(train_unpatched/train_patched):.1f}</strong> times.</li>\"\n",
     "     f\"</ul>\")"
    ]

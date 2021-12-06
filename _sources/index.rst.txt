@@ -64,6 +64,7 @@ Important Links
    installation.rst
    quick-start.rst
    samples.rst
+   kaggle.rst
 
 .. toctree::
    :caption: Developer Guide
@@ -72,6 +73,7 @@ Important Links
    algorithms.rst
    global-patching.rst
    verbose.rst
+   distributed-mode.rst
    oneAPI and GPU support <oneapi-gpu.rst>
 
 .. toctree::

@@ -23,7 +23,7 @@ Patching
 
    patching
       To patch scikit-learn with |intelex| is to replace stock scikit-learn algorithms
-      with their optimized versions provided by the extension.
+      with their optimized versions provided by the extension. You can always :term:`undo the patch <unpatching>`.
 
       There are different ways to patch scikit-learn:
 
@@ -38,3 +38,19 @@ Patching
          python sklearnex.glob patch_sklearn
       
       .. seealso:: :ref:`global_patching`
+   
+   unpatching
+      To undo the patch is to return to the use of original scikit-learn implementation and
+      replace patched algorithms with the stock scikit-learn algorithms.
+      Unpatching requires scikit-learn to be re-imported again:
+
+      .. include:: /patching/undo-patch.rst
+
+How it works
+------------
+
+The extension replaces the original estimators in scikit-learn modules with the optimized ones.
+If the desired algorithm parameters are not supported by the |intelex|,
+then the result of the original scikit-learn is returned.
+
+.. seealso:: :ref:`verbose`
