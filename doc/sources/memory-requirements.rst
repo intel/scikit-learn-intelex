@@ -20,7 +20,7 @@
 Memory requirements 
 ###################
 
-By default, algorithms in |intelex| run in multi-threaded mode, which uses all available threads. 
+By default, algorithms in |intelex| run in multi-thread mode, which uses all available threads. 
 This may lead to optimized algorithms consuming more RAM than the corresponding stock scikit-learn algorithms.
 
 .. list-table::
@@ -29,14 +29,14 @@ This may lead to optimized algorithms consuming more RAM than the corresponding 
    :align: left
 
    * - Algorithm
-     - Single-threaded
-     - Multi-threaded
+     - Single-thread mode
+     - Multi-thread mode
    * - SVM
      - Both Scikit-learn and |intelex| consume approximately the same amount of RAM.
-     - In |intelex|, an algorithm with ``N`` number of threads will consume in ``N`` times more RAM.
+     - In |intelex|, an algorithm with ``N`` threads will consume ``N`` times more RAM.
 
 Memory consumption on GPU
-----------------------
+-------------------------
 In all |intelex| algorithms with GPU support, computations run on device memory. 
 The device memory must be large enough to store a copy of the entire dataset.
 Additional device memory may also be required for internal arrays used in computation.
