@@ -23,7 +23,7 @@ Patching
 
    patching
       To patch scikit-learn with |intelex| is to replace stock scikit-learn algorithms
-      with their optimized versions provided by the extension.
+      with their optimized versions provided by the extension. You can always :term:`undo the patch <unpatching>`.
 
       There are different ways to patch scikit-learn:
 
@@ -39,6 +39,13 @@ Patching
       
       .. seealso:: :ref:`global_patching`
    
+   unpatching
+      To undo the patch is to return to the use of original scikit-learn implementation and
+      replace patched algorithms with the stock scikit-learn algorithms.
+      Unpatching requires scikit-learn to be re-imported again:
+
+      .. include:: /patching/undo-patch.rst
+
 How it works
 ------------
 
