@@ -14,28 +14,20 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
+.. _kaggle:
 
-You may enable patching in different ways:
+Kaggle Kernels
+--------------------
 
-.. include:: /patching/patching-options.rst
+Kaggle kernels that use scikit-learn and |intelex|:
 
-.. rubric:: Example
+.. toctree::
 
-.. include:: /patching/patch-kmeans-example.rst
+   Classification Tasks <kaggle/classification.rst>
+   Regression Tasks <kaggle/regression.rst>
 
-In the example above, you can see that the use of the original Scikit-learn
-has not changed. This behavior is achieved through drop-in patching.
+Kaggle kernels that use AutoML with |intelex|:
 
-To :term:`undo the patch <unpatching>`, run:
+.. toctree::
 
-.. include:: /patching/undo-patch.rst
-
-You may specify which algorithms to patch:
-
-- Patching only one algorithm:
-
-  .. include:: /patching/patch-one-algorithm.rst
-
-- Patching several algorithms:
-
-  .. include:: /patching/patch-several-algorithms.rst
+   AutoML Workflows <kaggle/automl.rst>

@@ -15,27 +15,4 @@
 .. *******************************************************************************/
 
 
-You may enable patching in different ways:
-
-.. include:: /patching/patching-options.rst
-
-.. rubric:: Example
-
-.. include:: /patching/patch-kmeans-example.rst
-
-In the example above, you can see that the use of the original Scikit-learn
-has not changed. This behavior is achieved through drop-in patching.
-
-To :term:`undo the patch <unpatching>`, run:
-
-.. include:: /patching/undo-patch.rst
-
-You may specify which algorithms to patch:
-
-- Patching only one algorithm:
-
-  .. include:: /patching/patch-one-algorithm.rst
-
-- Patching several algorithms:
-
-  .. include:: /patching/patch-several-algorithms.rst
+TPS stands for Tabular Playground Series, which is a series of beginner-friendly Kaggle competitions.
