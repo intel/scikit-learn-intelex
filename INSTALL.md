@@ -24,9 +24,27 @@ The extension is also available as a part of [Intel® oneAPI AI Analytics Toolki
 
 ### Install from PyPI channel (recommended by default)
 
-```bash
-pip install scikit-learn-intelex
-```
+1. **[Optional step] [Recommended]** To prevent version conflicts, create and activate a new environment:
+
+   - On Linux:
+
+     ```bash
+     python -m venv env
+     source env/bin/activate
+     ```
+
+   - On Windows:
+
+     ```bash
+     python -m venv env
+     .\env\Scripts\activate
+     ```
+
+2. Install `scikit-learn-intelex`:
+
+   ```bash
+   pip install scikit-learn-intelex
+   ```
 
 #### 📦 Supported configurations for PyPI <!-- omit in toc -->
 
@@ -39,11 +57,21 @@ pip install scikit-learn-intelex
 
 ### Install from Anaconda Cloud
 
+To prevent version conflicts, we recommend installing `scikit-learn-intelex` into a new conda environment.
+
 #### Install via Anaconda Cloud from Conda-Forge channel
 
-```bash
-conda install scikit-learn-intelex -c conda-forge
-```
+- Install into a newly created environment (recommended):
+
+  ```bash
+  conda create -n env -c conda-forge python scikit-learn-intelex
+  ```
+
+- Install into your current environment:
+
+  ```bash
+  conda install scikit-learn-intelex -c conda-forge
+  ```
 
 ##### 📦 Supported configurations for  Anaconda Cloud from Conda-Forge channel <!-- omit in toc -->
 
@@ -57,9 +85,17 @@ conda install scikit-learn-intelex -c conda-forge
 
 We recommend this installation for the users of Intel® Distribution for Python.
 
-```bash
-conda install scikit-learn-intelex -c intel
-```
+- Install into a newly created environment (recommended):
+
+  ```bash
+  conda create -n env -c intel python scikit-learn-intelex
+  ```
+
+- Install into your current environment:
+
+  ```bash
+  conda install scikit-learn-intelex -c intel
+  ```
 
 ##### 📦 Supported configurations for Anaconda Cloud from Intel channel <!-- omit in toc -->
 

@@ -34,17 +34,57 @@ You can also build the extension from :ref:`sources <build_from_sources>`.
 Install from distribution channels
 -----------------------------------
 
-- Install from **PyPI** (recommended by default)::
+.. rubric:: Install from PyPI (recommended by default)
 
-     pip install scikit-learn-intelex
+#. [Optional step] [Recommended] To prevent version conflicts, create and activate a new environment:
 
-- Install from **Anaconda Cloud: Conda-Forge channel** (recommended by default for conda users)::
+   .. tabs::
 
-     conda install scikit-learn-intelex -c conda-forge
+      .. tab:: Linux
 
-- Install from **Anaconda Cloud: Intel channel** (recommended for the users of Intel® Distribution for Python)::
+         ::
+            
+            python -m venv env
+            source env/bin/activate
 
-    conda install scikit-learn-intelex -c intel
+      .. tab:: Windows
+
+         ::
+
+            python -m venv env
+            .\env\Scripts\activate
+
+#. Install `scikit-learn-intelex`:
+
+   ::
+
+      pip install scikit-learn-intelex
+
+.. rubric:: Install from Anaconda Cloud
+
+To prevent version conflicts, we recommend installing `scikit-learn-intelex` into a new conda environment.
+For each distribution channel, there are two installation options: with and without a creation of a new environment.
+
+
+- Install from **Anaconda Cloud: Conda-Forge channel** (recommended by default for conda users):
+
+  - into a newly created environment::
+
+       conda create -n env -c conda-forge python scikit-learn-intelex
+
+  - into your current environment::
+    
+       conda install scikit-learn-intelex -c conda-forge
+
+- Install from **Anaconda Cloud: Intel channel** (recommended for the users of Intel® Distribution for Python):
+
+  - into a newly created environment::
+    
+       conda create -n env -c intel python scikit-learn-intelex
+
+  - into your current environment::
+    
+       conda install scikit-learn-intelex -c intel
 
 .. seealso:: :ref:`system_requirements`
 
