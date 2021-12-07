@@ -31,12 +31,17 @@ If you already have AI Kit installed, you do not need to separately install the 
 
 You can also build the extension from :ref:`sources <build_from_sources>`.
 
+.. seealso:: Check out :ref:`system_requirements` before you start the installation process.
+
 Install from distribution channels
 -----------------------------------
 
-.. rubric:: Install from PyPI (recommended by default)
+.. contents:: :local:
 
-#. [Optional step] [Recommended] To prevent version conflicts, create and activate a new environment:
+Install from PyPI (recommended by default)
+===========================================
+
+#. **[Optional step] [Recommended]** To prevent version conflicts, create and activate a new environment:
 
    .. tabs::
 
@@ -60,7 +65,8 @@ Install from distribution channels
 
       pip install scikit-learn-intelex
 
-.. rubric:: Install from Anaconda Cloud
+Install from Anaconda Cloud
+============================
 
 To prevent version conflicts, we recommend installing `scikit-learn-intelex` into a new conda environment.
 For each distribution channel, there are two installation options: with and without a creation of a new environment.
@@ -68,7 +74,7 @@ For each distribution channel, there are two installation options: with and with
 
 - Install from **Anaconda Cloud: Conda-Forge channel** (recommended by default for conda users):
 
-  - into a newly created environment::
+  - into a newly created environment (recommended)::
 
        conda create -n env -c conda-forge python scikit-learn-intelex
 
@@ -78,15 +84,13 @@ For each distribution channel, there are two installation options: with and with
 
 - Install from **Anaconda Cloud: Intel channel** (recommended for the users of Intel® Distribution for Python):
 
-  - into a newly created environment::
+  - into a newly created environment (recommended)::
     
        conda create -n env -c intel python scikit-learn-intelex
 
   - into your current environment::
     
        conda install scikit-learn-intelex -c intel
-
-.. seealso:: :ref:`system_requirements`
 
 .. _build_from_sources:
 
