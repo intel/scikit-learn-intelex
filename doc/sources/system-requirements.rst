@@ -31,6 +31,8 @@ The latest release of scikit-learn-intelex-2021.3.X supports scikit-learn 0.22.X
 |intelex| is available for installation from different channels. 
 There is a difference in supported configurations for each distribution channel.
 
+.. _sys_req_pip:
+
 PyPI channel
 =============
 
@@ -59,6 +61,8 @@ PyPI channel
      - [CPU]
      - [CPU]
      - [CPU]
+
+.. _sys_req_conda_forge:
 
 Anaconda Cloud: Conda-Forge channel
 ===================================
@@ -89,7 +93,40 @@ Anaconda Cloud: Conda-Forge channel
      - [CPU]
      - [CPU]
 
+.. _sys_req_conda_intel:
+
 Anaconda Cloud: Intel channel
+==============================
+
+.. list-table::
+   :widths: 25 8 8 8 8
+   :header-rows: 1
+   :align: left
+
+   * - OS / Python version
+     - Python 3.6
+     - Python 3.7
+     - Python 3.8
+     - Python 3.9
+   * - Linux
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
+   * - Windows
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
+   * - macOS
+     - [CPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
+
+.. _sys_req_conda_main:
+
+Anaconda Cloud: Main channel
 ==============================
 
 .. list-table::
