@@ -186,13 +186,13 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     def predict(self, X):
         """
         Predict the class labels for the provided data.
-        
+
         Parameters
         ----------
         X : array-like of shape (n_queries, n_features), \
                 or (n_queries, n_indexed) if metric == 'precomputed'
             Test samples.
-        
+
         Returns
         -------
         y : ndarray of shape (n_queries,) or (n_queries, n_outputs)
@@ -204,13 +204,13 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     def predict_proba(self, X):
         """
         Return probability estimates for the test data X.
-        
+
         Parameters
         ----------
         X : array-like of shape (n_queries, n_features), \
                 or (n_queries, n_indexed) if metric == 'precomputed'
             Test samples.
-        
+
         Returns
         -------
         p : ndarray of shape (n_queries, n_classes), or a list of n_outputs \

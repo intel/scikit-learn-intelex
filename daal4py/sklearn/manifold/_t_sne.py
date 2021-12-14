@@ -44,7 +44,7 @@ class TSNE(BaseTSNE):
     def fit_transform(self, X, y=None):
         """
         Fit X into an embedded space and return that transformed output.
-        
+
         Parameters
         ----------
         X : ndarray of shape (n_samples, n_features) or (n_samples, n_samples)
@@ -53,10 +53,10 @@ class TSNE(BaseTSNE):
             is 'exact', X may be a sparse matrix of type 'csr', 'csc'
             or 'coo'. If the method is 'barnes_hut' and the metric is
             'precomputed', X may be a precomputed sparse graph.
-        
+
         y : None
             Ignored.
-        
+
         Returns
         -------
         X_new : ndarray of shape (n_samples, n_components)
@@ -68,7 +68,7 @@ class TSNE(BaseTSNE):
     def fit(self, X, y=None):
         """
         Fit X into an embedded space.
-        
+
         Parameters
         ----------
         X : ndarray of shape (n_samples, n_features) or (n_samples, n_samples)
@@ -77,10 +77,10 @@ class TSNE(BaseTSNE):
             is 'exact', X may be a sparse matrix of type 'csr', 'csc'
             or 'coo'. If the method is 'barnes_hut' and the metric is
             'precomputed', X may be a precomputed sparse graph.
-        
+
         y : None
             Ignored.
-        
+
         Returns
         -------
         X_new : array of shape (n_samples, n_components)

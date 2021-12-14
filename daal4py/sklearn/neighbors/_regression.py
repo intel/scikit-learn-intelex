@@ -93,7 +93,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
     def fit(self, X, y):
         """
         Fit the k-nearest neighbors regressor from the training dataset.
-        
+
         Parameters
         ----------
         X : {array-like, sparse matrix} of shape (n_samples, n_features) or \
@@ -102,7 +102,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
         y : {array-like, sparse matrix} of shape (n_samples,) or \
                 (n_samples, n_outputs)
             Target values.
-        
+
         Returns
         -------
         self : KNeighborsRegressor
@@ -114,13 +114,13 @@ class KNeighborsRegressor(KNeighborsRegressor_):
     def predict(self, X):
         """
         Predict the target for the provided data.
-        
+
         Parameters
         ----------
         X : array-like of shape (n_queries, n_features), \
                 or (n_queries, n_indexed) if metric == 'precomputed'
             Test samples.
-        
+
         Returns
         -------
         y : ndarray of shape (n_queries,) or (n_queries, n_outputs), dtype=int
