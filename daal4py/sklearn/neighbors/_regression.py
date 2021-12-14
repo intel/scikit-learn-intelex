@@ -71,7 +71,7 @@ else:
 
 
 class KNeighborsRegressor(KNeighborsRegressor_):
-    __doc__ =  BaseKNeighborsRegressor.__doc__
+    __doc__ = BaseKNeighborsRegressor.__doc__
 
     @_deprecate_positional_args
     def __init__(self, n_neighbors=5, *, weights='uniform',
