@@ -705,6 +705,8 @@ if sklearn_check_version('0.24'):
         )
 
     class LogisticRegression(LogisticRegression_original):
+        __doc__ = LogisticRegression_original.__doc__
+
         def __init__(
             self,
             penalty='l2',
@@ -741,6 +743,34 @@ if sklearn_check_version('0.24'):
 
         @support_usm_ndarray()
         def fit(self, X, y, sample_weight=None):
+            """
+            Fit the model according to the given training data.
+
+            Parameters
+            ----------
+            X : {array-like, sparse matrix} of shape (n_samples, n_features)
+                Training vector, where `n_samples` is the number of samples and
+                `n_features` is the number of features.
+            
+            y : array-like of shape (n_samples,)
+                Target vector relative to X.
+            
+            sample_weight : array-like of shape (n_samples,) default=None
+                Array of weights that are assigned to individual samples.
+                If not provided, then each sample is given unit weight.
+                
+                .. versionadded:: 0.17
+                   *sample_weight* support to LogisticRegression.
+            
+            Returns
+            -------
+            self
+                Fitted estimator.
+            
+            Notes
+            -----
+            The SAGA solver supports both float64 and float32 bit arrays.
+            """
             if sklearn_check_version('1.0'):
                 self._check_feature_names(X, reset=True)
             which, what = logistic_module, '_logistic_regression_path'
@@ -753,14 +783,70 @@ if sklearn_check_version('0.24'):
 
         @support_usm_ndarray()
         def predict(self, X):
+            """
+            Predict class labels for samples in X.
+
+            Parameters
+            ----------
+            X : array-like or sparse matrix, shape (n_samples, n_features)
+                Samples.
+
+            Returns
+            -------
+            C : array, shape [n_samples]
+                Predicted class label per sample.
+            """
             return daal4py_predict(self, X, 'computeClassLabels')
 
         @support_usm_ndarray()
         def predict_log_proba(self, X):
+            """
+            Predict logarithm of probability estimates.
+
+            The returned estimates for all classes are ordered by the
+            label of classes.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Vector to be scored, where `n_samples` is the number of samples and
+                `n_features` is the number of features.
+                
+            Returns
+            -------
+            T : array-like of shape (n_samples, n_classes)
+                Returns the log-probability of the sample for each class in the
+                model, where classes are ordered as they are in ``self.classes_``.
+            """
             return daal4py_predict(self, X, 'computeClassLogProbabilities')
 
         @support_usm_ndarray()
         def predict_proba(self, X):
+            """
+            Probability estimates.
+
+            The returned estimates for all classes are ordered by the
+            label of classes.
+
+            For a multi_class problem, if multi_class is set to be "multinomial"
+            the softmax function is used to find the predicted probability of
+            each class.
+            Else use a one-vs-rest approach, i.e calculate the probability
+            of each class assuming it to be positive using the logistic function.
+            and normalize these values across all the classes.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Vector to be scored, where `n_samples` is the number of samples and
+                `n_features` is the number of features.
+
+            Returns
+            -------
+            T : array-like of shape (n_samples, n_classes)
+                Returns the probability of the sample for each class in the model,
+                where classes are ordered as they are in ``self.classes_``.
+            """
             return daal4py_predict(self, X, 'computeClassProbabilities')
 
 
@@ -805,6 +891,8 @@ else:
         )
 
     class LogisticRegression(LogisticRegression_original):
+        __doc__ = LogisticRegression_original.__doc__
+
         def __init__(
             self,
             penalty='l2',
@@ -842,6 +930,34 @@ else:
 
         @support_usm_ndarray()
         def fit(self, X, y, sample_weight=None):
+            """
+            Fit the model according to the given training data.
+
+            Parameters
+            ----------
+            X : {array-like, sparse matrix} of shape (n_samples, n_features)
+                Training vector, where `n_samples` is the number of samples and
+                `n_features` is the number of features.
+            
+            y : array-like of shape (n_samples,)
+                Target vector relative to X.
+            
+            sample_weight : array-like of shape (n_samples,) default=None
+                Array of weights that are assigned to individual samples.
+                If not provided, then each sample is given unit weight.
+                
+                .. versionadded:: 0.17
+                   *sample_weight* support to LogisticRegression.
+            
+            Returns
+            -------
+            self
+                Fitted estimator.
+            
+            Notes
+            -----
+            The SAGA solver supports both float64 and float32 bit arrays.
+            """
             which, what = logistic_module, '_logistic_regression_path'
             replacer = logistic_regression_path
             descriptor = getattr(which, what, None)
@@ -852,12 +968,68 @@ else:
 
         @support_usm_ndarray()
         def predict(self, X):
+            """
+            Predict class labels for samples in X.
+
+            Parameters
+            ----------
+            X : array-like or sparse matrix, shape (n_samples, n_features)
+                Samples.
+
+            Returns
+            -------
+            C : array, shape [n_samples]
+                Predicted class label per sample.
+            """
             return daal4py_predict(self, X, 'computeClassLabels')
 
         @support_usm_ndarray()
         def predict_log_proba(self, X):
+            """
+            Predict logarithm of probability estimates.
+
+            The returned estimates for all classes are ordered by the
+            label of classes.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Vector to be scored, where `n_samples` is the number of samples and
+                `n_features` is the number of features.
+                
+            Returns
+            -------
+            T : array-like of shape (n_samples, n_classes)
+                Returns the log-probability of the sample for each class in the
+                model, where classes are ordered as they are in ``self.classes_``.
+            """
             return daal4py_predict(self, X, 'computeClassLogProbabilities')
 
         @support_usm_ndarray()
         def predict_proba(self, X):
+            """
+            Probability estimates.
+
+            The returned estimates for all classes are ordered by the
+            label of classes.
+
+            For a multi_class problem, if multi_class is set to be "multinomial"
+            the softmax function is used to find the predicted probability of
+            each class.
+            Else use a one-vs-rest approach, i.e calculate the probability
+            of each class assuming it to be positive using the logistic function.
+            and normalize these values across all the classes.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Vector to be scored, where `n_samples` is the number of samples and
+                `n_features` is the number of features.
+
+            Returns
+            -------
+            T : array-like of shape (n_samples, n_classes)
+                Returns the probability of the sample for each class in the model,
+                where classes are ordered as they are in ``self.classes_``.
+            """
             return daal4py_predict(self, X, 'computeClassProbabilities')

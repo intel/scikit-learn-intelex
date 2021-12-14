@@ -270,6 +270,27 @@ class LinearRegression(LinearRegression_original):
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
+        """
+        Fit linear model.
+        
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training data.
+        
+        y : array-like of shape (n_samples,) or (n_samples, n_targets)
+            Target values. Will be cast to X's dtype if necessary.
+       
+        sample_weight : array-like of shape (n_samples,), default=None
+            Individual weights for each sample.
+            .. versionadded:: 0.17
+               parameter *sample_weight* support to LinearRegression.
+        
+        Returns
+        -------
+        self : object
+            Fitted Estimator.
+        """
         if sklearn_check_version('1.0'):
             self._normalize = _deprecate_normalize(
                 self.normalize,
@@ -293,4 +314,17 @@ class LinearRegression(LinearRegression_original):
 
     @support_usm_ndarray()
     def predict(self, X):
+        """
+        Predict using the linear model.
+        
+        Parameters
+        ----------
+        X : array-like or sparse matrix, shape (n_samples, n_features)
+            Samples.
+        
+        Returns
+        -------
+        C : array, shape (n_samples,)
+            Returns predicted values.
+        """
         return _predict_linear(self, X)
