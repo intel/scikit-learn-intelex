@@ -19,6 +19,7 @@ import types
 import tracemalloc
 from sklearnex import get_patch_map
 from sklearnex.model_selection import train_test_split
+from sklearnex.utils import assert_all_finite
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.datasets import make_classification, make_regression
@@ -36,8 +37,18 @@ class TrainTestSplitEstimator:
         train_test_split(x, y)
 
 
+class FiniteCheckEstimator:
+    def __init__(self):
+        pass
+
+    def fit(self, x, y):
+        assert_all_finite(x)
+        assert_all_finite(y)
+
+
 ESTIMATORS = [
     TrainTestSplitEstimator,
+    FiniteCheckEstimator
 ]
 
 
@@ -67,7 +78,7 @@ def ndarray_f(x, y):
 
 
 def dataframe_c(x, y):
-    return pd.DataFrame(x), pd.Series(y)
+    return pd.DataFrame(np.ascontiguousarray(x)), pd.Series(y)
 
 
 def dataframe_f(x, y):
@@ -80,6 +91,7 @@ DATA_TRANSFORMS = [
     dataframe_c,
     dataframe_f
 ]
+EXTRA_MEMORY_THRESHOLD = 0.1
 
 
 def gen_clsf_data():
@@ -115,9 +127,9 @@ def _kfold_function_template(estimator, data_transform_function):
     del alg, x_train, x_test, y_train, y_test
     mem_before_gc, _ = tracemalloc.get_traced_memory()
     mem_diff = mem_before_gc - mem_before
-    if mem_diff >= 0.27 * data_memory_size:
+    if mem_diff >= EXTRA_MEMORY_THRESHOLD * data_memory_size:
         logging.info('Size of extra allocated memory before using garbage collector'
-                     'is greater than 27% of input data:'
+                     f'is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data:'
                      f'\n\tAlgorithm: {estimator.__name__}'
                      f'\n\tInput data size: {data_memory_size} bytes'
                      f'\n\tExtra allocated memory size: {mem_diff} bytes'
@@ -127,8 +139,9 @@ def _kfold_function_template(estimator, data_transform_function):
     tracemalloc.stop()
     mem_diff = mem_after - mem_before
 
-    assert mem_diff < 0.27 * data_memory_size, \
-        'Size of extra allocated memory is greater than 27% of input data:' \
+    assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, \
+        'Size of extra allocated memory is greater than ' \
+        f'{EXTRA_MEMORY_THRESHOLD * 100}% of input data:' \
         f'\n\tInput data size: {data_memory_size} bytes' \
         f'\n\tExtra allocated memory size: {mem_diff} bytes' \
         f' / {round((mem_diff) / data_memory_size * 100, 2)} %'
