@@ -91,7 +91,7 @@ DATA_TRANSFORMS = [
     dataframe_c,
     dataframe_f
 ]
-EXTRA_MEMORY_THRESHOLD = 0.1
+EXTRA_MEMORY_THRESHOLD = 0.20
 
 
 def gen_clsf_data():
@@ -127,24 +127,22 @@ def _kfold_function_template(estimator, data_transform_function):
     del alg, x_train, x_test, y_train, y_test
     mem_before_gc, _ = tracemalloc.get_traced_memory()
     mem_diff = mem_before_gc - mem_before
+    message = 'Size of extra allocated memory {} using garbage collector' \
+        f'is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data:' \
+        f'\n\tAlgorithm: {estimator.__name__}' \
+        f'\n\tInput data size: {data_memory_size} bytes' \
+        f'\n\tExtra allocated memory size: {mem_diff} bytes' \
+        ' / {} %'
     if mem_diff >= EXTRA_MEMORY_THRESHOLD * data_memory_size:
-        logging.info('Size of extra allocated memory before using garbage collector'
-                     f'is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data:'
-                     f'\n\tAlgorithm: {estimator.__name__}'
-                     f'\n\tInput data size: {data_memory_size} bytes'
-                     f'\n\tExtra allocated memory size: {mem_diff} bytes'
-                     f' / {round((mem_diff) / data_memory_size * 100, 2)} %')
+        logging.warning(message.format(
+            'before', round((mem_diff) / data_memory_size * 100, 2)))
     gc.collect()
     mem_after, _ = tracemalloc.get_traced_memory()
     tracemalloc.stop()
     mem_diff = mem_after - mem_before
 
     assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, \
-        'Size of extra allocated memory is greater than ' \
-        f'{EXTRA_MEMORY_THRESHOLD * 100}% of input data:' \
-        f'\n\tInput data size: {data_memory_size} bytes' \
-        f'\n\tExtra allocated memory size: {mem_diff} bytes' \
-        f' / {round((mem_diff) / data_memory_size * 100, 2)} %'
+        message.format('after', round((mem_diff) / data_memory_size * 100, 2))
 
 
 @pytest.mark.parametrize('data_transform_function', DATA_TRANSFORMS)
