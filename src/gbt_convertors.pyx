@@ -122,10 +122,10 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             self.position = position
 
     # Release Note for XGBoost 1.5.0: Python interface now supports configuring 
-    # constraints using feature names instead of feature indices.
-    if booster.feature_names is None:
-        lst = [*range(booster.num_features())]
-        booster.feature_names = [str(i) for i in lst]
+    # constraints using feature names instead of feature indices. This also
+    # helps with pandas input with set feature names.
+    lst = [*range(booster.num_features())]
+    booster.feature_names = [str(i) for i in lst]
 
     trees_arr = booster.get_dump(dump_format="json")
     xgb_config = json.loads(booster.save_config())
