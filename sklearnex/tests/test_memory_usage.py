@@ -131,18 +131,18 @@ def _kfold_function_template(estimator, data_transform_function):
         f'is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data:' \
         f'\n\tAlgorithm: {estimator.__name__}' \
         f'\n\tInput data size: {data_memory_size} bytes' \
-        f'\n\tExtra allocated memory size: {mem_diff} bytes' \
+        '\n\tExtra allocated memory size: {} bytes' \
         ' / {} %'
     if mem_diff >= EXTRA_MEMORY_THRESHOLD * data_memory_size:
         logging.warning(message.format(
-            'before', round((mem_diff) / data_memory_size * 100, 2)))
+            'before', mem_diff, round((mem_diff) / data_memory_size * 100, 2)))
     gc.collect()
     mem_after, _ = tracemalloc.get_traced_memory()
     tracemalloc.stop()
     mem_diff = mem_after - mem_before
 
     assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, \
-        message.format('after', round((mem_diff) / data_memory_size * 100, 2))
+        message.format('after', mem_diff, round((mem_diff) / data_memory_size * 100, 2))
 
 
 @pytest.mark.parametrize('data_transform_function', DATA_TRANSFORMS)
