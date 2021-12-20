@@ -331,12 +331,82 @@ class KMeans(KMeans_original):
 
     @support_usm_ndarray()
     def fit(self, X, y=None, sample_weight=None):
+        """
+        Compute k-means clustering.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training instances to cluster. It must be noted that the data
+            will be converted to C ordering, which will cause a memory
+            copy if the given data is not C-contiguous.
+            If a sparse matrix is passed, a copy will be made if it's not in
+            CSR format.
+
+        y : Ignored
+            Not used, present here for API consistency by convention.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            The weights for each observation in X. If None, all observations
+            are assigned equal weight.
+
+            .. versionadded:: 0.20
+
+        Returns
+        -------
+        self : object
+            Fitted estimator.
+        """
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
     def predict(self, X, sample_weight=None):
+        """
+        Predict the closest cluster each sample in X belongs to.
+
+        In the vector quantization literature, `cluster_centers_` is called
+        the code book and each value returned by `predict` is the index of
+        the closest code in the code book.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            New data to predict.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            The weights for each observation in X. If None, all observations
+            are assigned equal weight.
+
+        Returns
+        -------
+        labels : ndarray of shape (n_samples,)
+            Index of the cluster each sample belongs to.
+        """
         return _predict(self, X, sample_weight=sample_weight)
 
     @support_usm_ndarray()
     def fit_predict(self, X, y=None, sample_weight=None):
+        """
+        Compute cluster centers and predict cluster index for each sample.
+
+        Convenience method; equivalent to calling fit(X) followed by
+        predict(X).
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            New data to transform.
+
+        y : Ignored
+            Not used, present here for API consistency by convention.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            The weights for each observation in X. If None, all observations
+            are assigned equal weight.
+
+        Returns
+        -------
+        labels : ndarray of shape (n_samples,)
+            Index of the cluster each sample belongs to.
+        """
         return super().fit_predict(X, y, sample_weight)
