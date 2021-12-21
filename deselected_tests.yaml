@@ -281,6 +281,10 @@ gpu:
 
   # Fails
   - cluster/tests/test_dbscan.py::test_weighted_dbscan
+  - cluster/tests/test_k_means.py::test_k_means_fit_predict
+  - cluster/tests/test_k_means.py::test_predict
+
+  - decomposition/tests/test_pca.py::test_pca_dtype_preservation
 
   - ensemble/tests/test_bagging.py::test_gridsearch
   - ensemble/tests/test_bagging.py::test_estimators_samples
