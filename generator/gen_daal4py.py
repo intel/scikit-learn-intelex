@@ -1048,7 +1048,8 @@ def gen_daal4py(daalroot, outdir, version, warn_all=False,
     copytree(orig_path, head_path)
     for (dirpath, dirnames, filenames) in os.walk(algo_path):
         for filename in filenames:
-            call([shutil.which("clang-format"), "-i", jp(dirpath, filename)])
+            #call([shutil.which("clang-format"), "-i", jp(dirpath, filename)])
+            call(["C:\\Users\\pyakovle\\Miniconda3\\envs\\python310\\Library\\bin\\clang-format.exe", "-i", jp(dirpath, filename)])
     iface = cython_interface(algo_path)
     iface.read()
     print('Generating sources...')

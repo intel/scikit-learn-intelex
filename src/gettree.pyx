@@ -31,12 +31,12 @@ cdef extern from "daal4py.h":
 
 cdef extern from "tree_visitor.h":
     cdef struct skl_tree_node:
-        ssize_t left_child
-        ssize_t right_child
-        ssize_t feature
+        Py_ssize_t left_child
+        Py_ssize_t right_child
+        Py_ssize_t feature
         double threshold
         double impurity
-        ssize_t n_node_samples
+        Py_ssize_t n_node_samples
         double weighted_n_node_samples
 
     cdef struct TreeState:
