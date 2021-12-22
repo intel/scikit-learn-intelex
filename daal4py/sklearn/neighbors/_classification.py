@@ -146,7 +146,6 @@ else:
 
 
 class KNeighborsClassifier(KNeighborsClassifier_):
-    __doc__ = BaseKNeighborsClassifier.__doc__
 
     @_deprecate_positional_args
     def __init__(self, n_neighbors=5, *,
@@ -163,61 +162,14 @@ class KNeighborsClassifier(KNeighborsClassifier_):
 
     @support_usm_ndarray()
     def fit(self, X, y):
-        """
-        Fit the k-nearest neighbors classifier from the training dataset.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features) or \
-                (n_samples, n_samples) if metric='precomputed'
-            Training data.
-        y : {array-like, sparse matrix} of shape (n_samples,) or \
-                (n_samples, n_outputs)
-            Target values.
-
-        Returns
-        -------
-        self : KNeighborsClassifier
-            The fitted k-nearest neighbors classifier.
-        """
         return NeighborsBase._fit(self, X, y)
 
     @support_usm_ndarray()
     def predict(self, X):
-        """
-        Predict the class labels for the provided data.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_queries, n_features), \
-                or (n_queries, n_indexed) if metric == 'precomputed'
-            Test samples.
-
-        Returns
-        -------
-        y : ndarray of shape (n_queries,) or (n_queries, n_outputs)
-            Class labels for each data sample.
-        """
         return daal4py_classifier_predict(self, X, BaseKNeighborsClassifier.predict)
 
     @support_usm_ndarray()
     def predict_proba(self, X):
-        """
-        Return probability estimates for the test data X.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_queries, n_features), \
-                or (n_queries, n_indexed) if metric == 'precomputed'
-            Test samples.
-
-        Returns
-        -------
-        p : ndarray of shape (n_queries, n_classes), or a list of n_outputs \
-                of such arrays if n_outputs > 1.
-            The class probabilities of the input samples. Classes are ordered
-            by lexicographic order.
-        """
         if sklearn_check_version('1.0'):
             self._check_feature_names(X, reset=False)
         return BaseKNeighborsClassifier.predict_proba(self, X)

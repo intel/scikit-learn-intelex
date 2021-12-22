@@ -71,7 +71,6 @@ else:
 
 
 class KNeighborsRegressor(KNeighborsRegressor_):
-    __doc__ = BaseKNeighborsRegressor.__doc__
 
     @_deprecate_positional_args
     def __init__(self, n_neighbors=5, *, weights='uniform',
@@ -91,41 +90,10 @@ class KNeighborsRegressor(KNeighborsRegressor_):
 
     @support_usm_ndarray()
     def fit(self, X, y):
-        """
-        Fit the k-nearest neighbors regressor from the training dataset.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features) or \
-                (n_samples, n_samples) if metric='precomputed'
-            Training data.
-        y : {array-like, sparse matrix} of shape (n_samples,) or \
-                (n_samples, n_outputs)
-            Target values.
-
-        Returns
-        -------
-        self : KNeighborsRegressor
-            The fitted k-nearest neighbors regressor.
-        """
         return NeighborsBase._fit(self, X, y)
 
     @support_usm_ndarray()
     def predict(self, X):
-        """
-        Predict the target for the provided data.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_queries, n_features), \
-                or (n_queries, n_indexed) if metric == 'precomputed'
-            Test samples.
-
-        Returns
-        -------
-        y : ndarray of shape (n_queries,) or (n_queries, n_outputs), dtype=int
-            Target values.
-        """
         if sklearn_check_version('1.0'):
             self._check_feature_names(X, reset=False)
         return BaseKNeighborsRegressor.predict(self, X)
