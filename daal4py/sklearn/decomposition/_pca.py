@@ -43,6 +43,8 @@ else:
 
 
 class PCA(PCA_original):
+    __doc__ = PCA_original.__doc__
+
     def __init__(
         self,
         n_components=None,
@@ -291,6 +293,24 @@ class PCA(PCA_original):
 
     @support_usm_ndarray()
     def transform(self, X):
+        """
+        Apply dimensionality reduction to X.
+
+        X is projected on the first principal components previously extracted
+        from a training set.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples
+            and `n_features` is the number of features.
+
+        Returns
+        -------
+        X_new : array-like of shape (n_samples, n_components)
+            Projection of X in the first principal components, where `n_samples`
+            is the number of samples and `n_components` is the number of the components.
+        """
         _patching_status = PatchingConditionsChain(
             "sklearn.decomposition.PCA.transform")
         _dal_ready = _patching_status.and_conditions([
@@ -305,6 +325,28 @@ class PCA(PCA_original):
 
     @support_usm_ndarray()
     def fit_transform(self, X, y=None):
+        """
+        Fit the model with X and apply the dimensionality reduction on X.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples
+            and `n_features` is the number of features.
+
+        y : Ignored
+            Ignored.
+
+        Returns
+        -------
+        X_new : ndarray of shape (n_samples, n_components)
+            Transformed values.
+
+        Notes
+        -----
+        This method returns a Fortran-ordered array. To convert it to a
+        C-ordered array, use 'np.ascontiguousarray'.
+        """
         U, S, _ = self._fit(X)
 
         _patching_status = PatchingConditionsChain(
