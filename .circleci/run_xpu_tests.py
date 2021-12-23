@@ -21,11 +21,6 @@ import pytest
 import os
 
 
-def get_context(device):
-    from daal4py.oneapi import sycl_context
-    return sycl_context(device, host_offload_on_fail=True)
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Script to run scikit-learn tests with device context manager')
@@ -43,14 +38,33 @@ if __name__ == '__main__':
         '--deselect',
         help='The list of deselect commands passed directly to pytest',
         action='append',
-        required=True
+        required=False
     )
+    parser.add_argument('--no-intel-optimized', default=False, action='store_true',
+                        help='Use Scikit-learn without Intel optimizations')
+    parser.add_argument('--deselected_yml_file', action='append', type=str)
+    parser.add_argument('--absolute', action='store_true')
+    parser.add_argument('--reduced', action='store_true')
+    parser.add_argument('--public', action='store_true')
+    parser.add_argument('--gpu', action='store_true')
     args = parser.parse_args()
 
-    deselected_tests = [
-        element for test in args.deselect
-        for element in ('--deselect', test)
-    ]
+    yml_deselected_tests = []
+    if args.deselected_yml_file is not None:
+        fn = args.deselected_yml_file[0]
+        if os.path.exists(fn):
+            from deselect_tests import create_pytest_switches
+            yml_deselected_tests = create_pytest_switches(fn, args.absolute, args.reduced,
+                                                          args.public, args.gpu)
+
+    deselected_tests = []
+    if args.deselect is not None:
+        deselected_tests = [
+            element for test in args.deselect
+            for element in ('--deselect', test)
+        ]
+
+    yml_deselected_tests = yml_deselected_tests + deselected_tests
 
     pytest_params = [
         "-ra", "--disable-warnings"
@@ -59,7 +73,17 @@ if __name__ == '__main__':
     if not args.quiet:
         pytest_params.append("-q")
 
-    with get_context(args.device):
+    if not args.no_intel_optimized:
+        from sklearnex import patch_sklearn
+        patch_sklearn()
+
+    if args.device == "gpu":
+        from daal4py.oneapi import sycl_context
+        with sycl_context(args.device, host_offload_on_fail=True):
+            pytest.main(
+                pytest_params + ["--pyargs", "sklearn"] + yml_deselected_tests
+            )
+    else:
         pytest.main(
-            pytest_params + ["--pyargs", "sklearn"] + deselected_tests
+            pytest_params + ["--pyargs", "sklearn"] + yml_deselected_tests
         )

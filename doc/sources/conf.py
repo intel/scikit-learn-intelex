@@ -61,7 +61,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.autodoc',
-    'nbsphinx'
+    'nbsphinx',
+    'sphinx_tabs.tabs'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -86,7 +87,9 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'usage.rst', 'patching/*']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store',
+                    'usage.rst', 'patching/*',
+                    'kaggle/note-about-tps.rst']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'

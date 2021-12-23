@@ -12,10 +12,12 @@ doc/                          @outoftardis
 
 # Examples 
 examples/                     @Pahandrovich @vlad-nazarov
+examples/notebooks/           @outoftardis
 
 # Dependencies
 setup.py                      @Pahandrovich @vmeshche
 requirements*                 @Pahandrovich @vmeshche
+requirements-doc.txt          @outoftardis
 conda-recipe/                 @Pahandrovich @vmeshche
 
 # Testing

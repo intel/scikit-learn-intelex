@@ -28,6 +28,14 @@
     from sklearnex import patch_sklearn
     patch_sklearn()
 
+.. important::
+
+    You have to import scikit-learn **after** these lines. Otherwise, the patching will not affect the original scikit-learn estimators.
+
+- Through importing the desired estimator from the sklearnex module in your script::
+
+    from sklearnex.neighbors import NearestNeighbors
+
 - Through :ref:`global patching <global_patching>` to enable patching for your scikit-learn installation for all further runs::
 
     python sklearnex.glob patch_sklearn
