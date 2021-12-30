@@ -13,10 +13,11 @@
     "automerge": true
     }
   ],
-  "pip_requirements":
+  "pip_requirements": [
     {
     "fileMatch": [
       "(^|/)requirements.*\\.txt$"
     ]
     }
+  ]
 }
