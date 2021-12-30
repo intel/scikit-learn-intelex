@@ -3,21 +3,9 @@
     "config:base",
     ":preserveSemverRanges"
   ],
-  "pip_doc_requirements": [
-    {
-    "fileMatch": [
-      "(^|/)requirements-doc.txt$"
-    ],
-    "matchUpdateTypes": ["minor", "patch"],
-    "matchCurrentVersion": "!/^0/",
-    "automerge": true
-    }
-  ],
-  "pip_requirements": [
-    {
+  "pip_requirements": {
     "fileMatch": [
       "(^|/)requirements.*\\.txt$"
     ]
-    }
-  ]
+  }
 }
