@@ -39,4 +39,4 @@ pull_request_rules:
       - "#files=1"
     actions:
       merge:
-        method: merge
+        method: squash
