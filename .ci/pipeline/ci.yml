@@ -201,7 +201,7 @@ jobs:
       python s/.ci/scripts/test_global_patch.py
     displayName: global patching testing
 
-- job: Windows_DPCPP
+- job: Windows
   pool:
     vmImage: 'windows-latest'
   steps:
