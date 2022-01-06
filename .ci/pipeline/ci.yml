@@ -121,6 +121,8 @@ jobs:
           intel-oneapi-dev-utilities-2021.4.0           \
           intel-oneapi-compiler-dpcpp-cpp-2021.4.0      \
           intel-oneapi-dev-utilities-eclipse-cfg=2021.4.0-847        \
+          intel-oneapi-compiler-dpcpp-cpp-common-2021.4.0    \
+          intel-oneapi-compiler-shared-2021.4.0     \
           intel-oneapi-common-vars=2021.4.0-327         \
           intel-oneapi-common-licensing=2021.4.0-327    \
           intel-oneapi-compiler-dpcpp-cpp=2021.4.0-3561      \
