@@ -119,7 +119,7 @@ jobs:
       sudo apt-get install                              \
           intel-oneapi-common-vars=2021.4.0-327         \
           intel-oneapi-common-licensing=2021.4.0-327    \
-          intel-oneapi-compiler-dpcpp-cpp=2021.4.0      \
+          intel-oneapi-compiler-dpcpp-cpp=2021.4.0-3561      \
           intel-oneapi-dev-utilities=2021.4.0-847       \
           intel-oneapi-libdpstd-devel=2021.5.0-445
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
