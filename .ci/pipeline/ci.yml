@@ -116,15 +116,31 @@ jobs:
       echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
       sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
       sudo apt-get update
-      sudo apt-get install                  \
-          intel-oneapi-common-vars          \
-          intel-oneapi-common-licensing     \
-          intel-oneapi-dpcpp-cpp-compiler   \
-          intel-oneapi-dev-utilities        \
-          intel-oneapi-libdpstd-devel
+      sudo apt-get install                                      \
+          intel-oneapi-dpcpp-cpp-2021.4.0                       \
+          intel-oneapi-dev-utilities-2021.4.0                   \
+          intel-oneapi-compiler-dpcpp-cpp-2021.4.0              \
+          intel-oneapi-dev-utilities-eclipse-cfg=2021.4.0-847   \
+          intel-oneapi-compiler-dpcpp-eclipse-cfg=2021.4.0-3561 \
+          intel-oneapi-compiler-cpp-eclipse-cfg=2021.4.0-3561   \
+          intel-oneapi-compiler-dpcpp-cpp-common-2021.4.0       \
+          intel-oneapi-dpcpp-debugger-eclipse-cfg=10.2.4-56     \
+          intel-oneapi-dpcpp-debugger-10.2.4                    \
+          intel-oneapi-compiler-shared-2021.4.0                 \
+          intel-oneapi-common-vars=2021.4.0-327                 \
+          intel-oneapi-common-licensing=2021.4.0-327            \
+          intel-oneapi-compiler-dpcpp-cpp=2021.4.0-3561         \
+          intel-oneapi-dev-utilities=2021.4.0-847               \
+          intel-oneapi-libdpstd-devel=2021.5.0-445
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
+# After 2021.6 version need to left only following packages:
+# intel-oneapi-common-vars
+# intel-oneapi-common-licensing
+# intel-oneapi-dpcpp-cpp-compiler
+# intel-oneapi-dev-utilities
+# intel-oneapi-libdpstd-devel
   - script: |
       conda create -q -y -n CB -c conda-forge conda=4.10 python=$(python.version) conda-build=3.21.1 conda-verify
     displayName: Create Anaconda environment
@@ -185,7 +201,7 @@ jobs:
       python s/.ci/scripts/test_global_patch.py
     displayName: global patching testing
 
-- job: Windows_DPCPP
+- job: Windows
   pool:
     vmImage: 'windows-latest'
   steps:

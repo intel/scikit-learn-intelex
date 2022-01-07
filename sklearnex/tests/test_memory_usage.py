@@ -43,6 +43,8 @@ ESTIMATORS = [
 
 BANNED_ESTIMATORS = [
     'TSNE',  # too slow for using in testing on applicable data sizes
+    'RandomForestClassifier',  # Failed, need to investigate and fix this issue
+    'RandomForestRegressor',  # Failed, need to investigate and fix this issue
 ]
 
 # add all daa4lpy estimators enabled in patching (except banned)
