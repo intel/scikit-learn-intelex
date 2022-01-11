@@ -140,6 +140,9 @@ Intel(R) Extension for Scikit-learn is easily built from sources with the majori
 
 ### Prerequisites
 * Python version >= 3.6
+* daal4py >= 2021.4
+
+**NOTE:** You can [build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/master/daal4py/INSTALL.md) or get it from [distribution channels](https://intelpython.github.io/daal4py/#getting-daal4py).
 
 ### Configure the build with environment variables
 * SKLEARNEX_VERSION: sets package version
