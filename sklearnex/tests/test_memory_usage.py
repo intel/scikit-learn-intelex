@@ -45,28 +45,28 @@ class FiniteCheckEstimator:
         assert_all_finite(x)
         assert_all_finite(y)
 
-
-ESTIMATORS = [
-    TrainTestSplitEstimator,
-    FiniteCheckEstimator
-]
+# add all daa4lpy estimators enabled in patching (except banned)
+def get_patched_estimators(ban_list, output_list):
+    patched_estimators = get_patch_map().values()
+    for listing in patched_estimators:
+        estimator, name = listing[0][0][2], listing[0][0][1]
+        if not isinstance(estimator, types.FunctionType):
+            if name not in ban_list:
+                if isinstance(estimator(), BaseEstimator):
+                    if hasattr(estimator, 'fit'):
+                        output_list.append(estimator)
 
 
 BANNED_ESTIMATORS = [
-    'TSNE',  # too slow for using in testing on applicable data sizes
+    'TSNE',  # too slow for using in testing on common data size
     'RandomForestClassifier',  # Failed, need to investigate and fix this issue
     'RandomForestRegressor',  # Failed, need to investigate and fix this issue
 ]
-
-# add all daa4lpy estimators enabled in patching (except banned)
-patched_estimators = get_patch_map().values()
-for listing in patched_estimators:
-    estimator, name = listing[0][0][2], listing[0][0][1]
-    if not isinstance(estimator, types.FunctionType):
-        if name not in BANNED_ESTIMATORS:
-            if isinstance(estimator(), BaseEstimator):
-                if hasattr(estimator, 'fit'):
-                    ESTIMATORS.append(estimator)
+estimators = [
+    TrainTestSplitEstimator,
+    FiniteCheckEstimator
+]
+get_patched_estimators(BANNED_ESTIMATORS, estimators)
 
 
 def ndarray_c(x, y):
@@ -85,30 +85,24 @@ def dataframe_f(x, y):
     return pd.DataFrame(np.asfortranarray(x)), pd.Series(y)
 
 
-DATA_TRANSFORMS = [
+data_transforms = [
     ndarray_c,
     ndarray_f,
     dataframe_c,
     dataframe_f
 ]
-EXTRA_MEMORY_THRESHOLD = 0.20
+
+EXTRA_MEMORY_THRESHOLD = 0.15
 
 
-def gen_clsf_data():
+def gen_clsf_data(n_samples=2000, n_features=50):
     data, label = make_classification(
-        n_samples=2000, n_features=50, random_state=777)
+        n_samples=n_samples, n_features=n_features, random_state=777)
     return data, label, \
         data.size * data.dtype.itemsize + label.size * label.dtype.itemsize
 
 
-def _kfold_function_template(estimator, data_transform_function):
-    tracemalloc.start()
-
-    x, y, data_memory_size = gen_clsf_data()
-    kf = KFold(n_splits=10)
-    x, y = data_transform_function(x, y)
-
-    mem_before, _ = tracemalloc.get_traced_memory()
+def split_train_inference(kf, x, y, estimator):
     for train_index, test_index in kf.split(x):
         if isinstance(x, np.ndarray):
             x_train, x_test = x[train_index], x[test_index]
@@ -125,10 +119,21 @@ def _kfold_function_template(estimator, data_transform_function):
         elif hasattr(alg, 'kneighbors'):
             alg.kneighbors(x_test)
     del alg, x_train, x_test, y_train, y_test
+
+
+def _kfold_function_template(estimator, data_transform_function):
+    tracemalloc.start()
+
+    x, y, data_memory_size = gen_clsf_data()
+    kf = KFold(n_splits=10)
+    x, y = data_transform_function(x, y)
+
+    mem_before, _ = tracemalloc.get_traced_memory()
+    split_train_inference(kf, x, y, estimator)
     mem_before_gc, _ = tracemalloc.get_traced_memory()
     mem_diff = mem_before_gc - mem_before
     message = 'Size of extra allocated memory {} using garbage collector' \
-        f'is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data:' \
+        f'is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data' \
         f'\n\tAlgorithm: {estimator.__name__}' \
         f'\n\tInput data size: {data_memory_size} bytes' \
         '\n\tExtra allocated memory size: {} bytes' \
@@ -145,11 +150,7 @@ def _kfold_function_template(estimator, data_transform_function):
         message.format('after', mem_diff, round((mem_diff) / data_memory_size * 100, 2))
 
 
-@pytest.mark.parametrize('data_transform_function', DATA_TRANSFORMS)
-@pytest.mark.parametrize('estimator', ESTIMATORS)
+@pytest.mark.parametrize('data_transform_function', data_transforms)
+@pytest.mark.parametrize('estimator', estimators)
 def test_memory_leaks(estimator, data_transform_function):
     _kfold_function_template(estimator, data_transform_function)
-
-
-if __name__ == '__main__':
-    test_memory_leaks()
