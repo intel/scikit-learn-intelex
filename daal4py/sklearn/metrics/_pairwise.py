@@ -159,7 +159,7 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
         raise ValueError("Unknown metric %s. Valid metrics are %s, or 'precomputed', "
                          "or a callable" % (metric, _VALID_METRICS))
 
-    X = _daal_check_array(X)
+    X = _daal_check_array(X, accept_sparse=['csr', 'csc', 'coo'])
 
     _patching_status = PatchingConditionsChain(
         "sklearn.metrics.pairwise_distances")
