@@ -45,6 +45,7 @@ class FiniteCheckEstimator:
         assert_all_finite(x)
         assert_all_finite(y)
 
+
 # add all daa4lpy estimators enabled in patching (except banned)
 def get_patched_estimators(ban_list, output_list):
     patched_estimators = get_patch_map().values()
