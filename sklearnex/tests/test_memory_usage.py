@@ -20,6 +20,7 @@ import tracemalloc
 from sklearnex import get_patch_map
 from sklearnex.model_selection import train_test_split
 from sklearnex.utils import assert_all_finite
+from sklearnex.metrics import pairwise_distances
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.datasets import make_classification, make_regression
@@ -46,6 +47,21 @@ class FiniteCheckEstimator:
         assert_all_finite(y)
 
 
+class PairwiseDistancesEstimator:
+    def fit(self, x, y):
+        pairwise_distances(x, metric=self.metric)
+
+
+class CosineDistancesEstimator(PairwiseDistancesEstimator):
+    def __init__(self):
+        self.metric = 'cosine'
+
+
+class CorrelationDistancesEstimator(PairwiseDistancesEstimator):
+    def __init__(self):
+        self.metric = 'correlation'
+
+
 # add all daa4lpy estimators enabled in patching (except banned)
 def get_patched_estimators(ban_list, output_list):
     patched_estimators = get_patch_map().values()
@@ -65,7 +81,9 @@ BANNED_ESTIMATORS = [
 ]
 estimators = [
     TrainTestSplitEstimator,
-    FiniteCheckEstimator
+    FiniteCheckEstimator,
+    CosineDistancesEstimator,
+    CorrelationDistancesEstimator
 ]
 get_patched_estimators(BANNED_ESTIMATORS, estimators)
 
