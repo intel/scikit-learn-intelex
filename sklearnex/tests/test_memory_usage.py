@@ -110,17 +110,16 @@ data_transforms = [
     dataframe_c,
     dataframe_f
 ]
-n_features_range = [
-    50
-]
-n_samples_range = [
-    2000
+
+data_shapes = [
+    (1000, 100)
+    (2000, 50)
 ]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
 
 
-def gen_clsf_data(n_samples=2000, n_features=50):
+def gen_clsf_data(n_samples, n_features):
     data, label = make_classification(
         n_samples=n_samples, n_features=n_features, random_state=777)
     return data, label, \
@@ -146,9 +145,10 @@ def split_train_inference(kf, x, y, estimator):
     del alg, x_train, x_test, y_train, y_test
 
 
-def _kfold_function_template(estimator, data_transform_function, n_features, n_samples):
+def _kfold_function_template(estimator, data_transform_function, data_shape):
     tracemalloc.start()
 
+    n_samples, n_features = data_shape
     x, y, data_memory_size = gen_clsf_data(n_samples, n_features)
     kf = KFold(n_splits=10)
     x, y = data_transform_function(x, y)
@@ -157,7 +157,7 @@ def _kfold_function_template(estimator, data_transform_function, n_features, n_s
     split_train_inference(kf, x, y, estimator)
     mem_before_gc, _ = tracemalloc.get_traced_memory()
     mem_diff = mem_before_gc - mem_before
-    message = 'Size of extra allocated memory {} using garbage collector' \
+    message = 'Size of extra allocated memory {} using garbage collector ' \
         f'is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data' \
         f'\n\tAlgorithm: {estimator.__name__}' \
         f'\n\tInput data size: {data_memory_size} bytes' \
@@ -177,7 +177,6 @@ def _kfold_function_template(estimator, data_transform_function, n_features, n_s
 
 @pytest.mark.parametrize('data_transform_function', data_transforms)
 @pytest.mark.parametrize('estimator', estimators)
-@pytest.mark.parametrize('n_features', n_features_range)
-@pytest.mark.parametrize('n_samples', n_samples_range)
-def test_memory_leaks(estimator, data_transform_function, n_features, n_samples):
-    _kfold_function_template(estimator, data_transform_function, n_features, n_samples)
+@pytest.mark.parametrize('data_shape', data_shapes)
+def test_memory_leaks(estimator, data_transform_function, data_shape):
+    _kfold_function_template(estimator, data_transform_function, data_shape)
