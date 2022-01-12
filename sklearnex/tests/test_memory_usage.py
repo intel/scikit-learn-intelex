@@ -111,10 +111,10 @@ data_transforms = [
     dataframe_f
 ]
 n_features_range = [
-    5, 50
+    50
 ]
 n_samples_range = [
-    200, 2000
+    2000
 ]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
