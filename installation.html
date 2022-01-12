@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Installation &#8212; Intel(R) Extension for Scikit-learn* 2021.4 documentation</title>
+    <title>Installation &#8212; Intel(R) Extension for Scikit-learn* 2021.5 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet" />
   <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -24,6 +24,7 @@
     
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/tabs.css" />
     
   <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
 
@@ -31,13 +32,14 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/tabs.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
     <link rel="shortcut icon" href="_static/favicons.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Quick Start" href="quick-start.html" />
-    <link rel="prev" title="System requirements and supported configurations" href="system-requirements.html" />
+    <link rel="prev" title="Memory Requirements" href="memory-requirements.html" />
     <script defer type="text/javascript" src="https://www.intel.com/content/dam/www/global/wap/performance-config.js" ></script>
     <script type="text/javascript">
         // Configure TMS settings
@@ -73,7 +75,7 @@
       <img src="_static/oneAPI-rgb-rev-100.png" class="logo" alt="logo">
       
       
-      <h1 class="site-logo" id="site-title">Intel(R) Extension for Scikit-learn* 2021.4 documentation</h1>
+      <h1 class="site-logo" id="site-title">Intel(R) Extension for Scikit-learn* 2021.5 documentation</h1>
       
     </a>
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
@@ -105,6 +107,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="system-requirements.html">
    System Requirements
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="memory-requirements.html">
+   Memory Requirements
   </a>
  </li>
 </ul>
@@ -352,6 +359,18 @@
   <a class="reference internal nav-link" href="#install-from-distribution-channels">
    Install from distribution channels
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#install-from-pypi-recommended-by-default">
+     Install from PyPI (recommended by default)
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#install-from-anaconda-cloud">
+     Install from Anaconda Cloud
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#build-from-sources">
@@ -389,28 +408,106 @@ in <a class="reference external" href="https://anaconda.org/intel/scikit-learn-i
 <p>Intel® Extension for Scikit-learn* is also available as a part of <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3">Intel oneAPI AI Analytics Toolkit</a> (AI Kit).
 If you already have AI Kit installed, you do not need to separately install the extension.</p>
 <p>You can also build the extension from <a class="reference internal" href="#build-from-sources"><span class="std std-ref">sources</span></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Check out <a class="reference internal" href="system-requirements.html#system-requirements"><span class="std std-ref">System requirements and supported configurations</span></a> before you start the installation process.</p>
+</div>
 <div class="section" id="install-from-distribution-channels">
 <h2>Install from distribution channels<a class="headerlink" href="#install-from-distribution-channels" title="Permalink to this headline">¶</a></h2>
-<ul>
-<li><p>Install from <strong>PyPI</strong> (recommended by default):</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#install-from-pypi-recommended-by-default" id="id2">Install from PyPI (recommended by default)</a></p></li>
+<li><p><a class="reference internal" href="#install-from-anaconda-cloud" id="id3">Install from Anaconda Cloud</a></p></li>
+</ul>
+</div>
+<div class="section" id="install-from-pypi-recommended-by-default">
+<h3><a class="toc-backref" href="#id2">Install from PyPI (recommended by default)</a><a class="headerlink" href="#install-from-pypi-recommended-by-default" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p><strong>[Optional step] [Recommended]</strong> To prevent version conflicts, create and activate a new environment:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">Linux</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">Windows</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="n">env</span>
+<span class="n">source</span> <span class="n">env</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-0-0-1" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-1" name="0-1" role="tabpanel" tabindex="0"><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="n">env</span>
+<span class="o">.</span>\<span class="n">env</span>\<span class="n">Scripts</span>\<span class="n">activate</span>
+</pre></div>
+</div>
+</div></div>
+</li>
+<li><p>Install <cite>scikit-learn-intelex</cite>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span>
 </pre></div>
 </div>
 </li>
+</ol>
+</div>
+<div class="section" id="install-from-anaconda-cloud">
+<h3><a class="toc-backref" href="#id3">Install from Anaconda Cloud</a><a class="headerlink" href="#install-from-anaconda-cloud" title="Permalink to this headline">¶</a></h3>
+<p>To prevent version conflicts, we recommend installing <cite>scikit-learn-intelex</cite> into a new conda environment.
+For each distribution channel, there are two installation options: with and without a creation of a new environment.</p>
+<ul>
 <li><p>Install from <strong>Anaconda Cloud: Conda-Forge channel</strong> (recommended by default for conda users):</p>
+<ul>
+<li><p>into a newly created environment (recommended):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">env</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.9</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>If you do not specify the version of Python (<code class="docutils literal notranslate"><span class="pre">python=3.9</span></code> in the example above), then Python 3.10 is downloaded by default,
+which is not supported.</p>
+<p>See <a class="reference internal" href="system-requirements.html#sys-req-conda-forge"><span class="std std-ref">supported configurations for Conda-Forge channel</span></a>.</p>
+</div>
+</li>
+<li><p>into your current environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
 </pre></div>
 </div>
 </li>
+</ul>
+</li>
 <li><p>Install from <strong>Anaconda Cloud: Intel channel</strong> (recommended for the users of Intel® Distribution for Python):</p>
+<ul>
+<li><p>into a newly created environment (recommended):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">env</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span> <span class="n">python</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span>
+</pre></div>
+</div>
+<p>Note that you may also specify the version of Python to download
+(see <a class="reference internal" href="system-requirements.html#sys-req-conda-intel"><span class="std std-ref">supported configurations for Anaconda Intel channel</span></a>).
+For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">env</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.7</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span>
+</pre></div>
+</div>
+</li>
+<li><p>into your current environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span>
 </pre></div>
 </div>
 </li>
 </ul>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><a class="reference internal" href="system-requirements.html#system-requirements"><span class="std std-ref">System requirements and supported configurations</span></a></p>
+</li>
+<li><p>Install from <strong>Anaconda Cloud: Main channel</strong>:</p>
+<ul>
+<li><p>into a newly created environment (recommended):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">env</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.9</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>If you do not specify the version of Python (<code class="docutils literal notranslate"><span class="pre">python=3.9</span></code> in the example above), then Python 3.10 is downloaded by default,
+which is not supported.</p>
+<p>See <a class="reference internal" href="system-requirements.html#sys-req-conda-main"><span class="std std-ref">supported configurations for Anaconda main channel</span></a>.</p>
+</div>
+</li>
+<li><p>into your current environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span><span class="o">-</span><span class="n">intelex</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 <div class="section" id="build-from-sources">
@@ -475,11 +572,11 @@ to create a Python package that can be easily managed by the package manager on 
 <div class='prev-next-bottom'>
     
     <div id="prev">
-        <a class="left-prev" href="system-requirements.html" title="previous page">
+        <a class="left-prev" href="memory-requirements.html" title="previous page">
             <i class="prevnext-label fas fa-angle-left"></i>
             <div class="prevnext-info">
                 <p class="prevnext-label">previous</p>
-                <p class="prevnext-title">System requirements and supported configurations</p>
+                <p class="prevnext-title">Memory Requirements</p>
             </div>
         </a>
     </div>

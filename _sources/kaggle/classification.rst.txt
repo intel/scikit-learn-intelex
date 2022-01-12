@@ -138,7 +138,7 @@ Classification Tasks in Computer Vision
    * - Kernel
      - Goal
      - Content
-   * - `Support Vector Classification (SVC) for MultiClass Classification (Computer Vision task)
+   * - `Support Vector Classification (SVC) for MultiClass Classification (CV task)
        <https://www.kaggle.com/kppetrov/fast-svc-using-scikit-learn-intelex-for-mnist?scriptVersionId=58739300>`_
        
        **Data:** Digit Recognizer (MNIST)
@@ -148,7 +148,7 @@ Classification Tasks in Computer Vision
        - data preprocessing
        - training and prediction using scikit-learn-intelex
        - performance comparison to scikit-learn
-   * - `k-Nearest Neighbors (kNN) for MultiClass Classification (Computer Vision task)
+   * - `k-Nearest Neighbors (kNN) for MultiClass Classification (CV task)
        <https://www.kaggle.com/kppetrov/fast-knn-using-scikit-learn-intelex-for-mnist?scriptVersionId=58738635>`_
        
        **Data:** Digit Recognizer (MNIST)
