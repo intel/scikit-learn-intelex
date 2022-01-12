@@ -17,7 +17,7 @@
 .. _memory_requirements:
 
 ###################
-Memory requirements 
+Memory Requirements 
 ###################
 
 By default, algorithms in |intelex| run in multi-thread mode, which uses all available threads. 
