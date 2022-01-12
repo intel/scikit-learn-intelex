@@ -20,7 +20,7 @@ import tracemalloc
 from sklearnex import get_patch_map
 from sklearnex.model_selection import train_test_split
 from sklearnex.utils import assert_all_finite
-from sklearnex.metrics import pairwise_distances
+from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.datasets import make_classification, make_regression
@@ -62,6 +62,14 @@ class CorrelationDistancesEstimator(PairwiseDistancesEstimator):
         self.metric = 'correlation'
 
 
+class RocAucEstimator:
+    def __init__(self):
+        pass
+
+    def fit(self, x, y):
+        print(roc_auc_score(y, np.zeros(shape=y.shape, dtype=np.int32)))
+
+
 # add all daa4lpy estimators enabled in patching (except banned)
 def get_patched_estimators(ban_list, output_list):
     patched_estimators = get_patch_map().values()
@@ -83,7 +91,8 @@ estimators = [
     TrainTestSplitEstimator,
     FiniteCheckEstimator,
     CosineDistancesEstimator,
-    CorrelationDistancesEstimator
+    CorrelationDistancesEstimator,
+    RocAucEstimator
 ]
 get_patched_estimators(BANNED_ESTIMATORS, estimators)
 
@@ -121,7 +130,7 @@ EXTRA_MEMORY_THRESHOLD = 0.15
 
 def gen_clsf_data(n_samples, n_features):
     data, label = make_classification(
-        n_samples=n_samples, n_features=n_features, random_state=777)
+        n_classes=2, n_samples=n_samples, n_features=n_features, random_state=777)
     return data, label, \
         data.size * data.dtype.itemsize + label.size * label.dtype.itemsize
 
