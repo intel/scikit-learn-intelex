@@ -74,11 +74,11 @@ def get_patched_estimators(ban_list, output_list):
                         output_list.append(estimator)
 
 
-BANNED_ESTIMATORS = [
+BANNED_ESTIMATORS = (
     'TSNE',  # too slow for using in testing on common data size
     'RandomForestClassifier',  # Failed, need to investigate and fix this issue
     'RandomForestRegressor',  # Failed, need to investigate and fix this issue
-]
+)
 estimators = [
     TrainTestSplitEstimator,
     FiniteCheckEstimator,
@@ -110,6 +110,12 @@ data_transforms = [
     dataframe_c,
     dataframe_f
 ]
+n_features_range = [
+    5, 50
+]
+n_samples_range = [
+    200, 2000
+]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
 
@@ -140,10 +146,10 @@ def split_train_inference(kf, x, y, estimator):
     del alg, x_train, x_test, y_train, y_test
 
 
-def _kfold_function_template(estimator, data_transform_function):
+def _kfold_function_template(estimator, data_transform_function, n_features, n_samples):
     tracemalloc.start()
 
-    x, y, data_memory_size = gen_clsf_data()
+    x, y, data_memory_size = gen_clsf_data(n_samples, n_features)
     kf = KFold(n_splits=10)
     x, y = data_transform_function(x, y)
 
@@ -171,5 +177,7 @@ def _kfold_function_template(estimator, data_transform_function):
 
 @pytest.mark.parametrize('data_transform_function', data_transforms)
 @pytest.mark.parametrize('estimator', estimators)
-def test_memory_leaks(estimator, data_transform_function):
-    _kfold_function_template(estimator, data_transform_function)
+@pytest.mark.parametrize('n_features', n_features_range)
+@pytest.mark.parametrize('n_samples', n_samples_range)
+def test_memory_leaks(estimator, data_transform_function, n_features, n_samples):
+    _kfold_function_template(estimator, data_transform_function, n_features, n_samples)
