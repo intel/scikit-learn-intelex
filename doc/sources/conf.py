@@ -43,7 +43,7 @@ author = 'Intel'
 # The short X.Y version
 version = '2021'
 # The full version, including alpha/beta/rc tags
-release = '2021.4'
+release = '2021.5'
 
 
 # -- General configuration ---------------------------------------------------
@@ -62,7 +62,8 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.autodoc',
     'nbsphinx',
-    'sphinx_tabs.tabs'
+    'sphinx_tabs.tabs',
+    'notfound.extension'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -209,3 +210,8 @@ texinfo_documents = [
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+
+# not found 404 page
+
+notfound_urls_prefix = '/scikit-learn-intelex/'
