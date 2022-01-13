@@ -61,7 +61,7 @@ Using a Single Regressor
        <https://www.kaggle.com/alexeykolobyanin/house-prices-nusvr-sklearn-intelex-4x-speedup>`__
        
        **Data:** House Prices dataset
-     - Presict sale prices for a property based on its characteristics
+     - Predict sale prices for a property based on its characteristics
      -
 
        - data preprocessing
