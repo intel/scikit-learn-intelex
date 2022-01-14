@@ -32,4 +32,4 @@ except ImportError:
     import onedal._onedal_py_host as _backend
     _is_dpc_backend = False
 
-__all__ = ['primitives', 'svm', 'neighbors']
+__all__ = ['neighbors', 'primitives', 'svm']
