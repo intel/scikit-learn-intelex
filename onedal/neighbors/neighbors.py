@@ -50,7 +50,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             if self.metric == 'precomputed' or n_features > 11 or condition:
                 result_method = 'brute'
             else:
-                if self.metric in 'euclidean':
+                if self.metric == 'euclidean':
                     result_method = 'kd_tree'
                 else:
                     result_method = 'brute'
@@ -216,7 +216,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             self.algorithm,
             self.n_samples_fit_, self.n_features_in_)
 
-        if _is_classifier(self) and y.dtype not in [np.float64, np.float32]:
+        if _is_classifier(self) and y.dtype != X.dtype:
             y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
         result = self._onedal_fit(X, y, queue)
 
