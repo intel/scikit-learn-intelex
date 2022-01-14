@@ -19,13 +19,11 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 from onedal.neighbors import KNeighborsClassifier
-from onedal.tests.utils._device_selection import (get_queues,
-                                                  pass_if_not_implemented_for_gpu)
+from onedal.tests.utils._device_selection import get_queues
 
 from sklearn import datasets
 
 
-@pass_if_not_implemented_for_gpu(reason="will be checked later")
 @pytest.mark.parametrize('queue', get_queues())
 def test_iris(queue):
     iris = datasets.load_iris()
@@ -34,7 +32,6 @@ def test_iris(queue):
     assert_array_equal(clf.classes_, np.sort(clf.classes_))
 
 
-@pass_if_not_implemented_for_gpu(reason="will be checked later")
 @pytest.mark.parametrize('queue', get_queues())
 def test_pickle(queue):
     iris = datasets.load_iris()
