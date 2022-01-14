@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2021-2022 Intel Corporation
+.. * Copyright 2022 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -14,8 +14,15 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-::
+:orphan:
+:nosearch:
 
-    sklearnex.unpatch_sklearn()
-    # Re-import scikit-learn algorithms after the unpatch:
-    from sklearn.cluster import KMeans
+Page not found
+==============
+
+Unfortunately, we could not find the page you were looking for. Try:
+
+- using :ref:`search <search>` to browse documentation
+- checking the table of contents on the left
+- filing an `issue <https://github.com/intel/scikit-learn-intelex/issues>`_ or
+  starting a `discussion <https://github.com/intel/scikit-learn-intelex/discussions>`_ on GitHub

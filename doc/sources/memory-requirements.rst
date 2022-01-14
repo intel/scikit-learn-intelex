@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2021 Intel Corporation
+.. * Copyright 2021-2022 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 .. _memory_requirements:
 
 ###################
-Memory requirements 
+Memory Requirements 
 ###################
 
 By default, algorithms in |intelex| run in multi-thread mode, which uses all available threads. 

@@ -19,7 +19,7 @@ importlib-resources==5.4.0
 ipython==7.29.0
 ipython-genutils==0.2.0
 jedi==0.18.1
-Jinja2==3.0.2
+Jinja2==3.0.3
 jsonschema==4.2.1
 jupyter-client==7.1.0
 jupyter-core==4.9.1
@@ -52,6 +52,7 @@ snowballstemmer==2.1.0
 soupsieve==2.3.1
 Sphinx==3.5.4
 sphinx-book-theme==0.1.6
+sphinx-notfound-page==0.8
 sphinx-tabs==3.2.0
 sphinx_rtd_theme
 sphinxcontrib-applehelp==1.0.2

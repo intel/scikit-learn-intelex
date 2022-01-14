@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2020-2021 Intel Corporation
+.. * Copyright 2020-2022 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -133,6 +133,11 @@ Sources are available in |intelex_repo|_.
 ::
 
     Python version >= 3.6, < 3.10
+    daal4py >= 2021.4
+
+.. note::
+    You can `build daal4py from sources <https://github.com/intel/scikit-learn-intelex/blob/master/daal4py/INSTALL.md>`_ or get it from `distribution channels
+    <https://intelpython.github.io/daal4py/#getting-daal4py>`_.
 
 Configure the build with environment variables
 ==============================================
