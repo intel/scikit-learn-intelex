@@ -24,7 +24,7 @@ def test_sklearnex_import_knn_classifier():
     X = [[0], [1], [2], [3]]
     y = [0, 0, 1, 1]
     neigh = KNeighborsClassifier(n_neighbors=3).fit(X, y)
-    assert 'daal4py' in neigh.__module__
+    assert 'sklearnex' in neigh.__module__
     assert_allclose(neigh.predict([[1.1]]), [0])
 
 
@@ -41,6 +41,6 @@ def test_sklearnex_import_nn():
     from sklearnex.neighbors import NearestNeighbors
     X = [[0, 0, 2], [1, 0, 0], [0, 0, 1]]
     neigh = NearestNeighbors(n_neighbors=2).fit(X)
-    assert 'daal4py' in neigh.__module__
+    assert 'sklearnex' in neigh.__module__
     result = neigh.kneighbors([[0, 0, 1.3]], 2, return_distance=False)
     assert_allclose(result, [[2, 0]])

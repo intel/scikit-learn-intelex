@@ -25,13 +25,13 @@ from ..datatypes import (
     _validate_targets,
     _check_X_y,
     _check_array,
-    _check_is_fitted,
     _column_or_1d,
     _check_n_features
 )
 
 from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..common._policy import _get_policy
+from ..common._estimator_checks import _check_is_fitted
 from ..datatypes._data_conversion import from_table, to_table
 from onedal import _backend
 
