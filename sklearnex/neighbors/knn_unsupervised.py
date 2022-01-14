@@ -271,9 +271,7 @@ class NearestNeighbors(NearestNeighbors_):
                                            'euclidean',
                                            'chebyshev',
                                            'cosine']
-            return is_valid_for_kd_tree or \
-                is_valid_for_brute and \
-                not is_sparse
+            return (is_valid_for_kd_tree or is_valid_for_brute) and not is_sparse
         if method_name in ['neighbors.NearestNeighbors.kneighbors']:
             return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')

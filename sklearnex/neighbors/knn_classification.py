@@ -335,8 +335,7 @@ class KNeighborsClassifier(KNeighborsClassifier_):
                                            'euclidean',
                                            'chebyshev',
                                            'cosine']
-            return is_valid_for_kd_tree or \
-                is_valid_for_brute and \
+            return (is_valid_for_kd_tree or is_valid_for_brute) and \
                 class_count >= 2 and \
                 not is_sparse and \
                 is_single_output
