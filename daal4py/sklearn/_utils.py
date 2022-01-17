@@ -19,7 +19,7 @@ import sys
 
 from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+from packaging.version import Version
 import logging
 
 
@@ -56,7 +56,7 @@ def daal_check_version(rule):
 
 
 def sklearn_check_version(ver):
-    return bool(LooseVersion(sklearn_version) >= LooseVersion(ver))
+    return bool(Version(sklearn_version) >= Version(ver))
 
 
 def get_daal_version():

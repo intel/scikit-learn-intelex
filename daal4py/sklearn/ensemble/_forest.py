@@ -97,6 +97,12 @@ def _get_n_samples_bootstrap(n_samples, max_samples):
 
 
 def _check_parameters(self):
+    if not self.bootstrap and self.max_samples is not None:
+        raise ValueError(
+            "`max_sample` cannot be set if `bootstrap=False`. "
+            "Either switch to `bootstrap=True` or set "
+            "`max_sample=None`."
+        )
     if isinstance(self.min_samples_leaf, numbers.Integral):
         if not 1 <= self.min_samples_leaf:
             raise ValueError("min_samples_leaf must be at least 1 "
