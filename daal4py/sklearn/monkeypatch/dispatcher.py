@@ -41,7 +41,7 @@ from sklearn import metrics
 from sklearn.utils import validation
 import sys
 from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+from packaging.version import Version
 from functools import lru_cache
 
 import sklearn.cluster as cluster_module

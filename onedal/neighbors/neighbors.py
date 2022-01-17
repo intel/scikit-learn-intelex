@@ -19,7 +19,7 @@ from enum import Enum
 import sys
 from numbers import Number, Integral
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 import numpy as np
 from scipy import sparse as sp

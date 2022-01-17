@@ -16,7 +16,7 @@
 
 from abc import ABC
 import numpy as np
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
@@ -83,7 +83,7 @@ class BaseSVC(ABC):
                     n_splits=n_splits,
                     shuffle=True,
                     random_state=self.random_state)
-                if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+                if Version(sklearn_version) >= Version("0.24"):
                     self.clf_prob = CalibratedClassifierCV(
                         clf_base, ensemble=False, cv=cv, method='sigmoid',
                         n_jobs=n_jobs)

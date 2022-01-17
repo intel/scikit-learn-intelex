@@ -15,7 +15,7 @@
 # limitations under the License.
 #===============================================================================
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 from sklearn import __version__ as sklearn_version
 import warnings
 
@@ -38,7 +38,7 @@ import numpy as np
 from scipy import sparse as sp
 
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+if Version(sklearn_version) >= Version("0.24"):
     class KNeighborsClassifier_(sklearn_KNeighborsClassifier):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
@@ -52,9 +52,9 @@ if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
                 metric_params=metric_params,
                 n_jobs=n_jobs, **kwargs)
             self.weights = \
-                weights if LooseVersion(sklearn_version) >= LooseVersion("1.0") \
+                weights if Version(sklearn_version) >= Version("1.0") \
                 else _check_weights(weights)
-elif LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+elif Version(sklearn_version) >= Version("0.22"):
     from sklearn.neighbors._base import SupervisedIntegerMixin as \
         BaseSupervisedIntegerMixin
 
@@ -249,11 +249,11 @@ class KNeighborsClassifier(KNeighborsClassifier_):
 
         if _onedal_estimator is not None or getattr(self, '_tree', 0) is None and \
                 self._fit_method == 'kd_tree':
-            if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+            if Version(sklearn_version) >= Version("0.24"):
                 sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, '_y', None))
             else:
                 sklearn_NearestNeighbors.fit(self, self._fit_X)
-        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+        if Version(sklearn_version) >= Version("0.22"):
             result = sklearn_NearestNeighbors.radius_neighbors(
                 self, X, radius, return_distance, sort_results)
         else:

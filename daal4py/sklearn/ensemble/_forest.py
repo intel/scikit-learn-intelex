@@ -41,7 +41,7 @@ from sklearn.base import clone
 from sklearn.exceptions import DataConversionWarning
 
 from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+from packaging.version import Version
 from math import ceil
 from scipy import sparse as sp
 

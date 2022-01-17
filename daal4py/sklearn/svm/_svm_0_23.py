@@ -33,7 +33,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.utils.multiclass import _ovr_decision_function
 from sklearn.model_selection import StratifiedKFold
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 from sklearn import __version__ as sklearn_version
 
 import daal4py
@@ -502,7 +502,7 @@ def fit(self, X, y, sample_weight=None):
                     n_splits=n_splits,
                     shuffle=True,
                     random_state=self.random_state)
-                if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+                if Version(sklearn_version) >= Version("0.24"):
                     self.clf_prob = CalibratedClassifierCV(
                         clf_base, ensemble=False, cv=cv, method='sigmoid',
                         n_jobs=n_splits)
