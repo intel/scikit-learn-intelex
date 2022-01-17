@@ -24,6 +24,7 @@ from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.datasets import make_classification, make_regression
+from scipy.stats import pearsonr
 import pandas as pd
 import numpy as np
 import gc
@@ -126,6 +127,7 @@ data_shapes = [
 ]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
+N_SPLITS = 10
 
 
 def gen_clsf_data(n_samples, n_features):
@@ -136,6 +138,7 @@ def gen_clsf_data(n_samples, n_features):
 
 
 def split_train_inference(kf, x, y, estimator):
+    mem_tracks = []
     for train_index, test_index in kf.split(x):
         if isinstance(x, np.ndarray):
             x_train, x_test = x[train_index], x[test_index]
@@ -151,7 +154,10 @@ def split_train_inference(kf, x, y, estimator):
             alg.transform(x_test)
         elif hasattr(alg, 'kneighbors'):
             alg.kneighbors(x_test)
-    del alg, x_train, x_test, y_train, y_test
+        del alg, x_train, x_test, y_train, y_test
+        mem_tracks.append(tracemalloc.get_traced_memory()[0])
+
+    return mem_tracks
 
 
 def _kfold_function_template(estimator, data_transform_function, data_shape):
@@ -159,11 +165,21 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
 
     n_samples, n_features = data_shape
     x, y, data_memory_size = gen_clsf_data(n_samples, n_features)
-    kf = KFold(n_splits=10)
+    kf = KFold(n_splits=N_SPLITS)
     x, y = data_transform_function(x, y)
 
     mem_before, _ = tracemalloc.get_traced_memory()
-    split_train_inference(kf, x, y, estimator)
+    mem_tracks = split_train_inference(kf, x, y, estimator)
+    mem_iter_diffs = (np.array(mem_tracks[1:]) - np.array(mem_tracks[:-1]))
+    mem_incr_mean, mem_incr_std = mem_iter_diffs.mean(), mem_iter_diffs.std()
+    mem_incr_mean, mem_incr_std = round(mem_incr_mean), round(mem_incr_std)
+    mem_iter_corr, _ = pearsonr(mem_tracks, list(range(len(mem_tracks))))
+    if mem_iter_corr > 0.95:
+        logging.warning('Memory usage is steadily increasing with iterations '
+                        '(Pearson correlation coefficient between '
+                        f'memory tracks and iterations is {mem_iter_corr})\n'
+                        'Memory usage increase per iteration: '
+                        f'{mem_incr_mean}±{mem_incr_std} bytes')
     mem_before_gc, _ = tracemalloc.get_traced_memory()
     mem_diff = mem_before_gc - mem_before
     message = 'Size of extra allocated memory {} using garbage collector ' \
