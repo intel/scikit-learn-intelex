@@ -200,6 +200,10 @@ deselected_tests:
 
   # HalvingGridSearchCV with Ridge and PCA didn't have feature_name_in. Need to fix.
   - tests/test_common.py::test_pandas_column_name_consistency >=1.0.1
+
+  # some sklearnex docstrings differ from scikit-learn.
+  - tests/test_docstrings.py >=1.0.2
+
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
 reduced_tests:
