@@ -171,7 +171,7 @@ struct data_or_file
     mutable daal::data_management::NumericTablePtr table;
     std::string                                    file;
     template<typename T>
-    inline data_or_file(T * ptr, size_t ncols, size_t nrows, ssize_t layout)
+    inline data_or_file(T * ptr, size_t ncols, size_t nrows, Py_ssize_t layout)
         : table(), file()
     {
         if(layout > 0) throw std::invalid_argument("Supporting only homogeneous, contiguous arrays.");

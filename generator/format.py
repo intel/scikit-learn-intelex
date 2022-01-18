@@ -163,7 +163,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                 # they are passed as (ptr, dim1, dim2)
                 if typ_cy == 'data_or_file':
                     decl_c = "double* {0}_p, size_t {0}_nrows,"\
-                        " size_t {0}_ncols, ssize_t {0}_layout".format(d4pname)
+                        " size_t {0}_ncols, Py_ssize_t {0}_layout".format(d4pname)
                     arg_c = "data_or_file({0}_p, {0}_ncols,"\
                         " {0}_nrows, {0}_layout)".format(d4pname)
                 # default values (see above pydefaults)
