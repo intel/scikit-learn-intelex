@@ -29,12 +29,12 @@
 // cython will convert this struct into an numpy structured array
 // This is the layout that sklearn expects for its tree traversal mechanics
 struct skl_tree_node {
-    ssize_t left_child;
-    ssize_t right_child;
-    ssize_t feature;
+    Py_ssize_t left_child;
+    Py_ssize_t right_child;
+    Py_ssize_t feature;
     double threshold;
     double impurity;
-    ssize_t n_node_samples;
+    Py_ssize_t n_node_samples;
     double weighted_n_node_samples;
 
     skl_tree_node()
@@ -128,7 +128,7 @@ protected:
 
     size_t  node_id;
     size_t  max_n_classes;
-    std::vector<ssize_t> parents;
+    std::vector<Py_ssize_t> parents;
 };
 
 // This is the function for getting the tree state from a forest which we use in cython
@@ -199,7 +199,7 @@ bool NodeDepthCountNodeVisitor<M>::onSplitNode(const typename TNVT<M>::split_des
 template<typename M>
 toSKLearnTreeObjectVisitor<M>::toSKLearnTreeObjectVisitor(size_t _depth, size_t _n_nodes, size_t _n_leafs, size_t _max_n_classes)
     : node_id(0),
-      parents(arange<ssize_t>(-1, _depth-1))
+      parents(arange<Py_ssize_t>(-1, _depth-1))
 {
     max_n_classes = _max_n_classes;
     node_count = _n_nodes;
@@ -216,7 +216,7 @@ bool toSKLearnTreeObjectVisitor<M>::onSplitNode(const typename TNVT<M>::split_de
 {
     if(desc.level > 0) {
         // has parents
-        ssize_t parent = parents[desc.level - 1];
+        Py_ssize_t parent = parents[desc.level - 1];
         if(node_ar[parent].left_child > 0) {
             assert(node_ar[node_id].right_child < 0);
             node_ar[parent].right_child = node_id;
@@ -254,7 +254,7 @@ template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const daal::algorithms::tree_utils::NodeDescriptor &desc)
 {
     if(desc.level) {
-        ssize_t parent = parents[desc.level - 1];
+        Py_ssize_t parent = parents[desc.level - 1];
         if(node_ar[parent].left_child > 0) {
             assert(node_ar[node_id].right_child < 0);
             node_ar[parent].right_child = node_id;
