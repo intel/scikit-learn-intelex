@@ -34,6 +34,7 @@ from scipy.sparse import issparse
 from scipy.spatial import distance
 
 import daal4py
+from daal4py.sklearn.utils.validation import _daal_check_array
 from .._utils import (getFPType, get_patch_message, PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
 import logging
@@ -157,6 +158,9 @@ def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
     if metric not in _VALID_METRICS and not callable(metric) and metric != "precomputed":
         raise ValueError("Unknown metric %s. Valid metrics are %s, or 'precomputed', "
                          "or a callable" % (metric, _VALID_METRICS))
+
+    X = _daal_check_array(X, accept_sparse=['csr', 'csc', 'coo'],
+                          force_all_finite=force_all_finite)
 
     _patching_status = PatchingConditionsChain(
         "sklearn.metrics.pairwise_distances")
