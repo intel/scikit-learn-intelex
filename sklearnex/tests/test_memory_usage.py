@@ -23,7 +23,7 @@ from sklearnex.utils import assert_all_finite
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
-from sklearn.datasets import make_classification, make_regression
+from sklearn.datasets import make_classification
 from scipy.stats import pearsonr
 import pandas as pd
 import numpy as np
