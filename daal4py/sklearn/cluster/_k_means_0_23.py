@@ -37,11 +37,9 @@ from sklearn.cluster import KMeans as KMeans_original
 import daal4py
 from .._utils import (
     getFPType,
-    get_patch_message,
     sklearn_check_version,
     PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
-import logging
 
 
 def _validate_center_shape(X, n_centers, centers):

@@ -48,9 +48,8 @@ from sklearn.linear_model._logistic import (
     LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import LabelEncoder, LabelBinarizer
 from .._utils import (
-    getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
+    getFPType, sklearn_check_version, PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
-import logging
 
 
 # Code adapted from sklearn.linear_model.logistic version 0.21

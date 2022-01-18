@@ -25,9 +25,8 @@ from sklearn.utils.extmath import stable_cumsum
 
 import daal4py
 from .._utils import (
-    getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
+    getFPType, sklearn_check_version, PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
-import logging
 
 if sklearn_check_version('0.22'):
     from sklearn.decomposition._pca import PCA as PCA_original

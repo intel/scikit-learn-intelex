@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn._utils import daal_check_version, set_idp_sklearn_verbose
+from daal4py.sklearn._utils import set_idp_sklearn_verbose
 from ..neighbors import KNeighborsRegressor as KNeighborsRegressor_daal4py
 from ..neighbors import NearestNeighbors as NearestNeighbors_daal4py
 from ..neighbors import KNeighborsClassifier as KNeighborsClassifier_daal4py
@@ -40,8 +40,6 @@ from sklearn import model_selection
 from sklearn import metrics
 from sklearn.utils import validation
 import sys
-from sklearn import __version__ as sklearn_version
-from packaging.version import Version
 from functools import lru_cache
 
 import sklearn.cluster as cluster_module

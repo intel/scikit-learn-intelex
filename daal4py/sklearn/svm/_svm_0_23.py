@@ -38,8 +38,7 @@ from sklearn import __version__ as sklearn_version
 
 import daal4py
 from .._utils import (
-    make2d, getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
-import logging
+    make2d, getFPType, sklearn_check_version, PatchingConditionsChain)
 
 
 def _get_libsvm_impl():

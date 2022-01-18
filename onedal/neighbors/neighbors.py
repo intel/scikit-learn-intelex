@@ -14,15 +14,11 @@
 # limitations under the License.
 #===============================================================================
 
-from abc import ABCMeta, abstractmethod
-from enum import Enum
-import sys
-from numbers import Number, Integral
+from abc import ABCMeta
 
-from packaging.version import Version
+from numbers import Integral
 
 import numpy as np
-from scipy import sparse as sp
 from ..datatypes import (
     _check_X_y,
     _check_array,
@@ -34,7 +30,7 @@ from ..datatypes import (
 
 from onedal import _backend
 
-from ..common._mixin import ClassifierMixin, RegressorMixin
+from ..common._mixin import ClassifierMixin
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted, _is_classifier, _is_regressor
 from ..datatypes._data_conversion import from_table, to_table
