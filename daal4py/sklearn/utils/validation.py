@@ -24,17 +24,21 @@ import scipy.sparse as sp
 from numpy.core.numeric import ComplexWarning
 from sklearn.utils.validation import (_num_samples, _ensure_no_complex_data,
                                       _ensure_sparse_format, column_or_1d,
-                                      check_consistent_length)
+                                      check_consistent_length, _assert_all_finite)
+from sklearn.utils.extmath import _safe_accumulator_op
 from .._utils import is_DataFrame, get_dtype, get_number_of_types
 
 
 def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
-    """Like assert_all_finite, but only for ndarray."""
-    # validation is also imported in extmath
-    from sklearn.utils.extmath import _safe_accumulator_op
-
     if _get_config()['assume_finite']:
         return
+
+    # Data with small size has too big relative overhead
+    # TODO: tune threshold size
+    if hasattr(X, 'size'):
+        if X.size < 32768:
+            _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype)
+            return
 
     is_df = is_DataFrame(X)
     num_of_types = get_number_of_types(X)
