@@ -30,10 +30,8 @@ import daal4py
 from .._utils import (
     make2d,
     getFPType,
-    get_patch_message,
     sklearn_check_version,
     PatchingConditionsChain)
-import logging
 
 
 def _get_libsvm_impl():

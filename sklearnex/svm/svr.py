@@ -21,7 +21,7 @@ from sklearn.svm import SVR as sklearn_SVR
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn import __version__ as sklearn_version
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 from onedal.svm import SVR as onedal_SVR
 
 
@@ -71,7 +71,7 @@ class SVR(sklearn_SVR, BaseSVR):
         If X is a dense array, then the other methods will not support sparse
         matrices as input.
         """
-        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+        if Version(sklearn_version) >= Version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.SVR.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -98,7 +98,7 @@ class SVR(sklearn_SVR, BaseSVR):
         y_pred : ndarray of shape (n_samples,)
             The predicted values.
         """
-        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+        if Version(sklearn_version) >= Version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVR.predict', {
             'onedal': self.__class__._onedal_predict,

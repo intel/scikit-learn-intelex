@@ -26,7 +26,7 @@ import daal4py as d4p
 from .._utils import getFPType
 
 from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 
 class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
@@ -129,7 +129,7 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         # Check is fit had been called
-        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+        if Version(sklearn_version) >= Version("0.22"):
             check_is_fitted(self)
         else:
             check_is_fitted(self, ['n_features_in_', 'n_classes_'])

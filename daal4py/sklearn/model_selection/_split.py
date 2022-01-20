@@ -21,10 +21,8 @@ from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from sklearn.model_selection._split import _validate_shuffle_split
 import daal4py as d4p
 import numpy as np
-from daal4py.sklearn._utils import (
-    daal_check_version, get_patch_message, PatchingConditionsChain)
+from daal4py.sklearn._utils import PatchingConditionsChain
 import platform
-import logging
 from .._device_offload import support_usm_ndarray
 
 try:

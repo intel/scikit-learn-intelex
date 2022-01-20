@@ -21,7 +21,7 @@ from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
 from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 from onedal.svm import NuSVC as onedal_NuSVC
 
@@ -76,7 +76,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         If X is a dense array, then the other methods will not support sparse
         matrices as input.
         """
-        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+        if Version(sklearn_version) >= Version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.NuSVC.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -103,7 +103,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         y_pred : ndarray of shape (n_samples,)
             The predicted values.
         """
-        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+        if Version(sklearn_version) >= Version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.NuSVC.predict', {
             'onedal': self.__class__._onedal_predict,
@@ -143,10 +143,10 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def _predict_proba(self, X):
-        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+        if Version(sklearn_version) >= Version("1.0"):
             self._check_feature_names(X, reset=False)
         sklearn_pred_proba = (sklearn_NuSVC.predict_proba
-                              if LooseVersion(sklearn_version) >= LooseVersion("1.0")
+                              if Version(sklearn_version) >= Version("1.0")
                               else sklearn_NuSVC._predict_proba)
 
         return dispatch(self, 'svm.NuSVC.predict_proba', {
@@ -156,7 +156,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
-        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+        if Version(sklearn_version) >= Version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.NuSVC.decision_function', {
             'onedal': self.__class__._onedal_decision_function,
