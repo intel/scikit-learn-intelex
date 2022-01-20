@@ -285,6 +285,17 @@ bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_des
 template<typename M>
 bool toSKLearnTreeObjectVisitor<M>::_onLeafNode(const typename TNVT<M>::leaf_desc_type  &desc, std::true_type)
 {
+    size_t depth = desc.level - 1;
+    while (depth >= 0)
+    {
+        size_t id = parents[depth];
+        value_ar[id*1*class_count + desc.label] += desc.nNodeSampleCount;
+        if (depth == 0)
+        {
+            break;
+        }
+        --depth;
+    }
     _onLeafNode(desc);
     DAAL4PY_OVERFLOW_CHECK_BY_ADDING(int, node_id*1*class_count, desc.label);
     value_ar[node_id*1*class_count + desc.label] += desc.nNodeSampleCount;
