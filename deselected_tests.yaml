@@ -205,10 +205,10 @@ deselected_tests:
   - tests/test_config.py::test_config_context
 
   # This test cases go into endless build qTree. Need to fix in the first priority.
-  - manifold/tests/test_t_sne.py::test_n_iter_used
-  - manifold/tests/test_t_sne.py::test_bh_match_exact
-  - manifold/tests/test_t_sne.py::test_tsne_square_distances_futurewarning
-  - tests/test_common.py::test_estimators[TSNE()-check_estimators_fit_returns_self]
+  # - manifold/tests/test_t_sne.py::test_n_iter_used
+  # - manifold/tests/test_t_sne.py::test_bh_match_exact
+  # - manifold/tests/test_t_sne.py::test_tsne_square_distances_futurewarning
+  # - tests/test_common.py::test_estimators[TSNE()-check_estimators_fit_returns_self]
 
   # Wrong accuracy for some test cases for t_sne. Need to fix.
   # - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately_with_precomputed_distances
