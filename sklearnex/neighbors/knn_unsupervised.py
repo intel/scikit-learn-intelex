@@ -15,7 +15,7 @@
 # limitations under the License.
 #===============================================================================
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 from sklearn import __version__ as sklearn_version
 import warnings
 
@@ -36,8 +36,8 @@ import numpy as np
 from scipy import sparse as sp
 
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.22") and \
-   LooseVersion(sklearn_version) < LooseVersion("0.23"):
+if Version(sklearn_version) >= Version("0.22") and \
+   Version(sklearn_version) < Version("0.23"):
     class NearestNeighbors_(sklearn_NearestNeighbors):
         def __init__(self, n_neighbors=5, radius=1.0,
                      algorithm='auto', leaf_size=30, metric='minkowski',
@@ -201,11 +201,11 @@ class NearestNeighbors(NearestNeighbors_):
 
         if _onedal_estimator is not None or getattr(self, '_tree', 0) is None and \
                 self._fit_method == 'kd_tree':
-            if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+            if Version(sklearn_version) >= Version("0.24"):
                 sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, '_y', None))
             else:
                 sklearn_NearestNeighbors.fit(self, self._fit_X)
-        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+        if Version(sklearn_version) >= Version("0.22"):
             result = sklearn_NearestNeighbors.radius_neighbors(
                 self, X, radius, return_distance, sort_results)
         else:

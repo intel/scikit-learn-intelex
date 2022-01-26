@@ -35,9 +35,8 @@ from scipy.spatial import distance
 
 import daal4py
 from daal4py.sklearn.utils.validation import _daal_check_array
-from .._utils import (getFPType, get_patch_message, PatchingConditionsChain)
+from .._utils import (getFPType, PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
-import logging
 
 
 def _daal4py_cosine_distance_dense(X):
