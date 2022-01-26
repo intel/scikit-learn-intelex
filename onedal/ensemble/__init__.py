@@ -14,4 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-# TODO:
+# from .forest import RandomForestClassifier
+#
+# __all__ = ['RandomForestClassifier']
