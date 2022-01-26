@@ -26,7 +26,10 @@ import daal4py as d4p
 from .._utils import getFPType
 
 from sklearn import __version__ as sklearn_version
-from packaging.version import Version
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 
 
 class AdaBoostClassifier(BaseEstimator, ClassifierMixin):

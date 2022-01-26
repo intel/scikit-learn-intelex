@@ -19,7 +19,10 @@
 import argparse
 import os.path
 from yaml import FullLoader, load as yaml_load
-from packaging.version import Version
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 import sklearn
 from sklearn import __version__ as sklearn_version
 import warnings

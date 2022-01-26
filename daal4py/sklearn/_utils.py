@@ -19,7 +19,10 @@ import sys
 
 from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
-from packaging.version import Version
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 import logging
 
 
