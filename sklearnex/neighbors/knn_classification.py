@@ -15,7 +15,10 @@
 # limitations under the License.
 #===============================================================================
 
-from packaging.version import Version
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 from sklearn import __version__ as sklearn_version
 import warnings
 

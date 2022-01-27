@@ -21,7 +21,10 @@ from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
 from sklearn import __version__ as sklearn_version
-from packaging.version import Version
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 
 from onedal.svm import SVC as onedal_SVC
 

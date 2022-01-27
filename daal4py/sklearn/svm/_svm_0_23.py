@@ -33,7 +33,10 @@ from sklearn.exceptions import NotFittedError
 from sklearn.utils.multiclass import _ovr_decision_function
 from sklearn.model_selection import StratifiedKFold
 
-from packaging.version import Version
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 from sklearn import __version__ as sklearn_version
 
 import daal4py
