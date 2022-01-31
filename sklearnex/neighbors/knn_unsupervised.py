@@ -216,64 +216,71 @@ class NearestNeighbors(NearestNeighbors_):
 
     def _onedal_gpu_supported(self, method_name, *data):
         X_incorrect_type = isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase))
-        if not X_incorrect_type:
-            if self._fit_method in ['auto', 'ball_tree']:
-                condition = self.n_neighbors is not None and \
-                    self.n_neighbors >= self.n_samples_fit_ // 2
-                if self.n_features_in_ > 11 or condition:
-                    result_method = 'brute'
-                else:
-                    if self.metric in ['euclidean']:
-                        result_method = 'kd_tree'
-                    else:
-                        result_method = 'brute'
+
+        if X_incorrect_type:
+            return False
+
+        if self._fit_method in ['auto', 'ball_tree']:
+            condition = self.n_neighbors is not None and \
+                self.n_neighbors >= self.n_samples_fit_ // 2
+            if self.n_features_in_ > 11 or condition:
+                result_method = 'brute'
             else:
-                result_method = self._fit_method
+                if self.effective_metric_ in ['euclidean']:
+                    result_method = 'kd_tree'
+                else:
+                    result_method = 'brute'
+        else:
+            result_method = self._fit_method
+
+        is_sparse = sp.isspmatrix(data[0])
+        is_valid_for_brute = result_method in ['brute'] and \
+            self.effective_metric_ in ['manhattan',
+                                        'minkowski',
+                                        'euclidean',
+                                        'chebyshev',
+                                        'cosine']
+        main_condition = is_valid_for_brute and not is_sparse
+
         if method_name == 'neighbors.NearestNeighbors.fit':
-            if X_incorrect_type:
-                return False
-            is_sparse = sp.isspmatrix(data[0])
-            return result_method in ['brute'] and \
-                self.effective_metric_ in ['manhattan',
-                                           'minkowski',
-                                           'euclidean',
-                                           'chebyshev',
-                                           'cosine'] and \
-                not is_sparse
+            return main_condition
         if method_name in ['neighbors.NearestNeighbors.kneighbors']:
-            return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
+            return main_condition and hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_cpu_supported(self, method_name, *data):
         X_incorrect_type = isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase))
-        if not X_incorrect_type:
-            if self._fit_method in ['auto', 'ball_tree']:
-                condition = self.n_neighbors is not None and \
-                    self.n_neighbors >= self.n_samples_fit_ // 2
-                if self.n_features_in_ > 11 or condition:
-                    result_method = 'brute'
-                else:
-                    if self.metric in ['euclidean']:
-                        result_method = 'kd_tree'
-                    else:
-                        result_method = 'brute'
+
+        if X_incorrect_type:
+            return False
+
+        if self._fit_method in ['auto', 'ball_tree']:
+            condition = self.n_neighbors is not None and \
+                self.n_neighbors >= self.n_samples_fit_ // 2
+            if self.n_features_in_ > 11 or condition:
+                result_method = 'brute'
             else:
-                result_method = self._fit_method
+                if self.effective_metric_ in ['euclidean']:
+                    result_method = 'kd_tree'
+                else:
+                    result_method = 'brute'
+        else:
+            result_method = self._fit_method
+
+        is_sparse = sp.isspmatrix(data[0])
+        is_valid_for_kd_tree = \
+            result_method in ['kd_tree'] and self.effective_metric_ in ['euclidean']
+        is_valid_for_brute = result_method in ['brute'] and \
+            self.effective_metric_ in ['manhattan',
+                                        'minkowski',
+                                        'euclidean',
+                                        'chebyshev',
+                                        'cosine']
+        main_condition = (is_valid_for_kd_tree or is_valid_for_brute) and not is_sparse
         if method_name == 'neighbors.NearestNeighbors.fit':
-            if X_incorrect_type:
-                return False
-            is_sparse = sp.isspmatrix(data[0])
-            is_valid_for_kd_tree = \
-                result_method in ['kd_tree'] and self.effective_metric_ in ['euclidean']
-            is_valid_for_brute = result_method in ['brute'] and \
-                self.effective_metric_ in ['manhattan',
-                                           'minkowski',
-                                           'euclidean',
-                                           'chebyshev',
-                                           'cosine']
-            return (is_valid_for_kd_tree or is_valid_for_brute) and not is_sparse
+            return main_condition
         if method_name in ['neighbors.NearestNeighbors.kneighbors']:
-            return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
+            return main_condition and hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y=None, queue=None):
@@ -310,6 +317,5 @@ class NearestNeighbors(NearestNeighbors_):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
         self._fit_X = self._onedal_estimator._fit_X
-        self.shape = self._onedal_estimator.shape
         self._fit_method = self._onedal_estimator._fit_method
         self._tree = self._onedal_estimator._tree

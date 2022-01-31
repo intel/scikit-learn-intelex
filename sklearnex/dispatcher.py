@@ -33,7 +33,7 @@ if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P',
     from .svm import NuSVC as NuSVC_sklearnex
 
     from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
-    # from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
+    from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
     from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
     new_patching_available = True
@@ -65,17 +65,16 @@ def get_patch_map():
         # kNN
         mapping.pop('knn_classifier')
         mapping.pop('kneighborsclassifier')
-        # TODO: make kNN regression patching through onedal ifaces
-        # mapping.pop('knn_regressor')
-        # mapping.pop('kneighborsregressor')
+        mapping.pop('knn_regressor')
+        mapping.pop('kneighborsregressor')
         mapping.pop('nearest_neighbors')
         mapping.pop('nearestneighbors')
         mapping['knn_classifier'] = [[(neighbors_module,
                                        'KNeighborsClassifier',
                                        KNeighborsClassifier_sklearnex), None]]
-        # mapping['knn_regressor'] = [[(neighbors_module,
-        #                               'KNeighborsRegressor',
-        #                               KNeighborsRegressor_sklearnex), None]]
+        mapping['knn_regressor'] = [[(neighbors_module,
+                                      'KNeighborsRegressor',
+                                      KNeighborsRegressor_sklearnex), None]]
         mapping['nearest_neighbors'] = [[(neighbors_module,
                                           'NearestNeighbors',
                                           NearestNeighbors_sklearnex), None]]

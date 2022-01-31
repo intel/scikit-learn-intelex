@@ -14,6 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-from .neighbors import KNeighborsClassifier, NearestNeighbors
+from .neighbors import KNeighborsClassifier, KNeighborsRegressor, NearestNeighbors
 
-__all__ = ['KNeighborsClassifier', 'NearestNeighbors']
+__all__ = ['KNeighborsClassifier', 'KNeighborsRegressor', 'NearestNeighbors']
