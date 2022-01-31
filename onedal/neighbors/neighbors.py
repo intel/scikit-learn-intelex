@@ -15,6 +15,7 @@
 #===============================================================================
 
 from abc import ABCMeta
+
 from numbers import Integral
 
 import numpy as np
@@ -29,7 +30,7 @@ from ..datatypes import (
 
 from onedal import _backend
 
-from ..common._mixin import ClassifierMixin, RegressorMixin
+from ..common._mixin import ClassifierMixin
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted, _is_classifier, _is_regressor
 from ..datatypes._data_conversion import from_table, to_table

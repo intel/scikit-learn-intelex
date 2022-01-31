@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-from .dispatcher import patch_sklearn
-from .dispatcher import unpatch_sklearn
-from .dispatcher import get_patch_names
-from .dispatcher import get_patch_map
-from ._config import get_config, set_config, config_context
+from .validation import assert_all_finite
 
-__all__ = [
-    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "get_patch_map", "get_config", "set_config", "config_context",
-    "cluster", "decomposition", "ensemble", "linear_model",
-    "manifold", "neighbors", "svm", "metrics", "utils"
-]
-
-from ._utils import set_sklearn_ex_verbose
-
-set_sklearn_ex_verbose()
+__all__ = ['assert_all_finite']

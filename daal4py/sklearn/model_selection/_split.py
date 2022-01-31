@@ -21,10 +21,8 @@ from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from sklearn.model_selection._split import _validate_shuffle_split
 import daal4py as d4p
 import numpy as np
-from daal4py.sklearn._utils import (
-    daal_check_version, get_patch_message, PatchingConditionsChain)
+from daal4py.sklearn._utils import PatchingConditionsChain
 import platform
-import logging
 from .._device_offload import support_usm_ndarray
 
 try:
@@ -227,13 +225,13 @@ def _daal_train_test_split(*arrays, **options):
 
             if pandas_is_imported:
                 if isinstance(arr, pd.core.frame.DataFrame):
-                    train_arr, test_arr = \
-                        pd.DataFrame(train_arr), pd.DataFrame(test_arr)
+                    train_arr, test_arr = pd.DataFrame(train_arr, columns=arr.columns), \
+                        pd.DataFrame(test_arr, columns=arr.columns)
                 if isinstance(arr, pd.core.series.Series):
                     train_arr, test_arr = \
                         train_arr.reshape(n_train), test_arr.reshape(n_test)
-                    train_arr, test_arr = pd.Series(
-                        train_arr), pd.Series(test_arr)
+                    train_arr, test_arr = pd.Series(train_arr, name=arr.name), \
+                        pd.Series(test_arr, name=arr.name)
 
             if hasattr(arr, 'index'):
                 train_arr.index = train

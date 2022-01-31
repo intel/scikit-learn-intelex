@@ -22,13 +22,11 @@ from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from .._utils import (
     getFPType,
     sklearn_check_version,
-    get_patch_message,
     PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
 from sklearn.utils.validation import check_array
 import numpy as np
 from scipy import sparse as sp
-import logging
 
 if sklearn_check_version("0.22"):
     from sklearn.neighbors._classification import KNeighborsClassifier as \

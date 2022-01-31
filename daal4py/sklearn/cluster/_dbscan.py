@@ -24,8 +24,7 @@ from sklearn.cluster import DBSCAN as DBSCAN_original
 
 import daal4py
 from daal4py.sklearn._utils import (
-    make2d, getFPType, get_patch_message, PatchingConditionsChain)
-import logging
+    make2d, getFPType, PatchingConditionsChain)
 
 from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version

@@ -20,14 +20,14 @@ import numbers
 import warnings
 
 import daal4py
-from .._utils import (getFPType, get_patch_message)
+from .._utils import getFPType
 from .._device_offload import support_usm_ndarray
 from daal4py.sklearn._utils import (
     daal_check_version, sklearn_check_version,
     PatchingConditionsChain)
 import logging
 
-from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree._tree import Tree
 from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_original
 from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
@@ -40,8 +40,6 @@ from ..utils.validation import _daal_num_features
 from sklearn.base import clone
 from sklearn.exceptions import DataConversionWarning
 
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
 from math import ceil
 from scipy import sparse as sp
 
@@ -97,6 +95,12 @@ def _get_n_samples_bootstrap(n_samples, max_samples):
 
 
 def _check_parameters(self):
+    if not self.bootstrap and self.max_samples is not None:
+        raise ValueError(
+            "`max_sample` cannot be set if `bootstrap=False`. "
+            "Either switch to `bootstrap=True` or set "
+            "`max_sample=None`."
+        )
     if isinstance(self.min_samples_leaf, numbers.Integral):
         if not 1 <= self.min_samples_leaf:
             raise ValueError("min_samples_leaf must be at least 1 "
