@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,10 @@ from sklearn.exceptions import NotFittedError
 from sklearn.utils.multiclass import _ovr_decision_function
 from sklearn.model_selection import StratifiedKFold
 
-from packaging.version import Version
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 from sklearn import __version__ as sklearn_version
 
 import daal4py
