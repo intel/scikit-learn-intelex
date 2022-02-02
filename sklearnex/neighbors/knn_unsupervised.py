@@ -78,6 +78,7 @@ class NearestNeighbors(NearestNeighbors_):
             metric_params=metric_params, n_jobs=n_jobs)
 
     def fit(self, X, y=None):
+        self._check_feature_names(X, reset=True)
         if self.metric_params is not None and 'p' in self.metric_params:
             if self.p is not None:
                 warnings.warn("Parameter p is found in metric_params. "
@@ -192,6 +193,7 @@ class NearestNeighbors(NearestNeighbors_):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
+        self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.NearestNeighbors.kneighbors', {
             'onedal': self.__class__._onedal_kneighbors,
             'sklearn': sklearn_NearestNeighbors.kneighbors,

@@ -33,7 +33,7 @@ def test_sklearnex_import_knn_regression():
     X = [[0], [1], [2], [3]]
     y = [0, 0, 1, 1]
     neigh = KNeighborsRegressor(n_neighbors=2).fit(X, y)
-    assert 'daal4py' in neigh.__module__
+    assert 'sklearnex' in neigh.__module__
     assert_allclose(neigh.predict([[1.5]]), [0.5])
 
 

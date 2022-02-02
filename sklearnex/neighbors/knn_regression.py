@@ -110,6 +110,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
             n_jobs=n_jobs, **kwargs)
 
     def fit(self, X, y):
+        self._check_feature_names(X, reset=True)
         if self.metric_params is not None and 'p' in self.metric_params:
             if self.p is not None:
                 warnings.warn("Parameter p is found in metric_params. "
@@ -224,6 +225,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
     @wrap_output_data
     def predict(self, X):
         check_is_fitted(self)
+        self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsRegressor.predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_KNeighborsRegressor.predict,
@@ -232,6 +234,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
+        self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsRegressor.kneighbors', {
             'onedal': self.__class__._onedal_kneighbors,
             'sklearn': sklearn_KNeighborsRegressor.kneighbors,
