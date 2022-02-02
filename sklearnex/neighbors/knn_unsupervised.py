@@ -239,10 +239,8 @@ class NearestNeighbors(NearestNeighbors_):
         is_sparse = sp.isspmatrix(data[0])
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
-                                        'minkowski',
-                                        'euclidean',
-                                        'chebyshev',
-                                        'cosine']
+                                       'minkowski',
+                                       'euclidean']
         main_condition = is_valid_for_brute and not is_sparse
 
         if method_name == 'neighbors.NearestNeighbors.fit':
@@ -275,11 +273,12 @@ class NearestNeighbors(NearestNeighbors_):
             result_method in ['kd_tree'] and self.effective_metric_ in ['euclidean']
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
-                                        'minkowski',
-                                        'euclidean',
-                                        'chebyshev',
-                                        'cosine']
+                                       'minkowski',
+                                       'euclidean',
+                                       'chebyshev',
+                                       'cosine']
         main_condition = (is_valid_for_kd_tree or is_valid_for_brute) and not is_sparse
+
         if method_name == 'neighbors.NearestNeighbors.fit':
             return main_condition
         if method_name in ['neighbors.NearestNeighbors.kneighbors']:

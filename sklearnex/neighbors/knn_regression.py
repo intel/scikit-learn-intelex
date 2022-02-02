@@ -15,7 +15,10 @@
 # limitations under the License.
 #===============================================================================
 
-from distutils.version import LooseVersion
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 from sklearn import __version__ as sklearn_version
 import warnings
 
@@ -38,7 +41,7 @@ import numpy as np
 from scipy import sparse as sp
 
 
-if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+if Version(sklearn_version) >= Version("0.24"):
     class KNeighborsRegressor_(sklearn_KNeighborsRegressor):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
@@ -52,14 +55,14 @@ if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
                 metric_params=metric_params,
                 n_jobs=n_jobs, **kwargs)
             self.weights = \
-                weights if LooseVersion(sklearn_version) >= LooseVersion("1.0") \
+                weights if Version(sklearn_version) >= Version("1.0") \
                 else _check_weights(weights)
-elif LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+elif Version(sklearn_version) >= Version("0.22"):
     from sklearn.neighbors._base import SupervisedFloatMixin as \
         BaseSupervisedFloatMixin
 
     class KNeighborsRegressor_(sklearn_KNeighborsRegressor,
-                                BaseSupervisedFloatMixin):
+                               BaseSupervisedFloatMixin):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
                      weights='uniform', algorithm='auto', leaf_size=30,
@@ -77,7 +80,7 @@ else:
         BaseSupervisedFloatMixin
 
     class KNeighborsRegressor_(sklearn_KNeighborsRegressor,
-                                BaseSupervisedFloatMixin):
+                               BaseSupervisedFloatMixin):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
                      weights='uniform', algorithm='auto', leaf_size=30,
@@ -241,11 +244,11 @@ class KNeighborsRegressor(KNeighborsRegressor_):
 
         if _onedal_estimator is not None or getattr(self, '_tree', 0) is None and \
                 self._fit_method == 'kd_tree':
-            if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+            if Version(sklearn_version) >= Version("0.24"):
                 sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, '_y', None))
             else:
                 sklearn_NearestNeighbors.fit(self, self._fit_X)
-        if LooseVersion(sklearn_version) >= LooseVersion("0.22"):
+        if Version(sklearn_version) >= Version("0.22"):
             result = sklearn_NearestNeighbors.radius_neighbors(
                 self, X, radius, return_distance, sort_results)
         else:
@@ -284,11 +287,11 @@ class KNeighborsRegressor(KNeighborsRegressor_):
             is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
-                                        'minkowski',
-                                        'euclidean',
-                                        'chebyshev',
-                                        'cosine']
-        main_condition = is_valid_for_brute and not is_sparse and is_single_output
+                                       'minkowski',
+                                       'euclidean']
+        is_valid_weights = self.weights in ['uniform', "distance"]
+        main_condition = is_valid_for_brute and not is_sparse and \
+            is_single_output and is_valid_weights
 
         if method_name == 'neighbors.KNeighborsRegressor.fit':
             return main_condition
@@ -332,13 +335,14 @@ class KNeighborsRegressor(KNeighborsRegressor_):
             result_method in ['kd_tree'] and self.effective_metric_ in ['euclidean']
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
-                                        'minkowski',
-                                        'euclidean',
-                                        'chebyshev',
-                                        'cosine']
+                                       'minkowski',
+                                       'euclidean',
+                                       'chebyshev',
+                                       'cosine']
+        is_valid_weights = self.weights in ['uniform', "distance"]
         main_condition = (is_valid_for_kd_tree or is_valid_for_brute) and \
-            not is_sparse and \
-            is_single_output
+            not is_sparse and is_single_output and is_valid_weights
+
         if method_name == 'neighbors.KNeighborsRegressor.fit':
             return main_condition and class_count >= 2
         if method_name in ['neighbors.KNeighborsRegressor.predict',
@@ -370,7 +374,8 @@ class KNeighborsRegressor(KNeighborsRegressor_):
 
     def _onedal_predict(self, X, queue=None):
         gpu_device = queue is not None and queue.sycl_device.is_gpu
-        return self._onedal_estimator.predict_gpu(X, queue=queue) if gpu_device else super().predict(X)
+        return self._onedal_estimator.predict_gpu(X, queue=queue) if gpu_device \
+            else super().predict(X)
 
     def _onedal_kneighbors(self, X=None, n_neighbors=None,
                            return_distance=True, queue=None):

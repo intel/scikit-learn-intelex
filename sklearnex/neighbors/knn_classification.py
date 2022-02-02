@@ -297,11 +297,12 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
-                                        'minkowski',
-                                        'euclidean',
-                                        'chebyshev',
-                                        'cosine']
-        main_condition = is_valid_for_brute and not is_sparse and is_single_output
+                                       'minkowski',
+                                       'euclidean']
+        is_valid_weights = self.weights in ['uniform', "distance"]
+        main_condition = is_valid_for_brute and not is_sparse and \
+            is_single_output and is_valid_weights
+
         if method_name == 'neighbors.KNeighborsClassifier.fit':
             return main_condition and class_count >= 2
         if method_name in ['neighbors.KNeighborsClassifier.predict',
@@ -344,12 +345,14 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             result_method in ['kd_tree'] and self.effective_metric_ in ['euclidean']
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
-                                        'minkowski',
-                                        'euclidean',
-                                        'chebyshev',
-                                        'cosine']
+                                       'minkowski',
+                                       'euclidean',
+                                       'chebyshev',
+                                       'cosine']
+        is_valid_weights = self.weights in ['uniform', "distance"]
         main_condition = (is_valid_for_kd_tree or is_valid_for_brute) and \
-            not is_sparse and is_single_output
+            not is_sparse and is_single_output and is_valid_weights
+
         if method_name == 'neighbors.KNeighborsClassifier.fit':
             return main_condition and class_count >= 2
         if method_name in ['neighbors.KNeighborsClassifier.predict',
