@@ -16,4 +16,23 @@
 
 import pytest
 import numpy as np
-from numpy.testing import assert_array_equal
+from numpy.testing import (assert_array_equal, assert_allclose)
+
+from onedal.ensemble import RandomForestClassifier
+from onedal.tests.utils._device_selection import get_queues
+
+from sklearn import datasets
+from sklearn.datasets import make_classification, make_regression
+
+
+@pytest.mark.parametrize('queue', get_queues())
+def test_rf_classifier(queue):
+    X, y = make_classification(n_samples=1000, n_features=4,
+                               n_informative=2, n_redundant=0,
+                               random_state=0, shuffle=False)
+    rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
+    assert_allclose([1], rf.predict([[0, 0, 0, 0]]))
+
+# TODO:
+# more tests
+# test naming

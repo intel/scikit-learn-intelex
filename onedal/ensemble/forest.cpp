@@ -280,13 +280,15 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 
-ONEDAL_PY_INIT_MODULE(decision_forest) {
+ONEDAL_PY_INIT_MODULE(ensemble) {
     using namespace decision_forest;
     using namespace dal::detail;
 
     using task_list =
         types<task::classification, task::regression>;
-    auto sub = m.def_submodule("decision_forest");
+    // TODO:
+    // naming
+    auto sub = m.def_submodule("ensemble");
 
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
