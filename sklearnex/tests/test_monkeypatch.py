@@ -85,8 +85,7 @@ def test_patch_by_list_simple():
     from sklearn.svm import SVC
 
     assert RandomForestRegressor.__module__.startswith('sklearn')
-    assert KNeighborsRegressor.__module__.startswith('sklearn') or \
-        KNeighborsRegressor.__module__.startswith('sklearnex')
+    assert KNeighborsRegressor.__module__.startswith('sklearn')
     assert LogisticRegression.__module__.startswith('daal4py')
     assert SVC.__module__.startswith('sklearn')
 
@@ -102,8 +101,7 @@ def test_patch_by_list_many_estimators():
     from sklearn.svm import SVC
 
     assert RandomForestRegressor.__module__.startswith('sklearn')
-    assert KNeighborsRegressor.__module__.startswith('sklearn') or \
-        KNeighborsRegressor.__module__.startswith('sklearnex')
+    assert KNeighborsRegressor.__module__.startswith('sklearn')
     assert LogisticRegression.__module__.startswith('daal4py')
     assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')
 
@@ -132,7 +130,6 @@ def test_unpatch_by_list_many_estimators():
     from sklearn.svm import SVC
 
     assert RandomForestRegressor.__module__.startswith('sklearn')
-    assert KNeighborsRegressor.__module__.startswith('sklearn') or \
-        KNeighborsRegressor.__module__.startswith('sklearnex')
+    assert KNeighborsRegressor.__module__.startswith('sklearn')
     assert LogisticRegression.__module__.startswith('daal4py')
     assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')
