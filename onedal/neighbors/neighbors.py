@@ -157,7 +157,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
     def _fit(self, X, y, queue):
         self._onedal_model = None
         self._tree = None
-        self.shape = None
+        self._shape = None
         self.classes_ = None
         self.effective_metric_ = getattr(self, 'effective_metric_', self.metric)
         self.effective_metric_params_ = getattr(
@@ -165,7 +165,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
         if y is not None or self.requires_y:
             X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])
-            self.shape = y.shape
+            self._shape = y.shape
 
             if _is_classifier(self) or _is_regressor(self):
                 if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
@@ -186,7 +186,8 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
                 if not self.outputs_2d_:
                     self.classes_ = self.classes_[0]
                     self._y = self._y.ravel()
-                self._validate_n_classes()
+                if _is_classifier(self):
+                    self._validate_n_classes()
             else:
                 self._y = y
         else:
@@ -212,12 +213,12 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             self.algorithm,
             self.n_samples_fit_, self.n_features_in_)
 
-        if _is_classifier(self) and y.dtype != X.dtype:
+        if (_is_classifier(self) or _is_regressor(self)) and y.dtype != X.dtype:
             y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
         result = self._onedal_fit(X, y, queue)
 
         if y is not None and _is_regressor(self):
-            self._y = y if self.shape is None else y.reshape(self.shape)
+            self._y = y if self._shape is None else y.reshape(self._shape)
 
         self._onedal_model = result.model
         result = self
