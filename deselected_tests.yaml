@@ -209,6 +209,9 @@ deselected_tests:
   # Some sklearnex docstrings differ from scikit-learn.
   - tests/test_docstrings.py >=1.0.2
 
+  # Temporary deselected up to 2021.6 release. Need to fix
+  - ensemble/tests/test_bagging.py::test_classification
+
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
 reduced_tests:

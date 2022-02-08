@@ -110,7 +110,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             n_jobs=n_jobs, **kwargs)
 
     def fit(self, X, y):
-        self._check_feature_names(X, reset=True)
+        if Version(sklearn_version) >= Version("1.0"):
+            self._check_feature_names(X, reset=True)
         if self.metric_params is not None and 'p' in self.metric_params:
             if self.p is not None:
                 warnings.warn("Parameter p is found in metric_params. "
@@ -225,7 +226,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     @wrap_output_data
     def predict(self, X):
         check_is_fitted(self)
-        self._check_feature_names(X, reset=False)
+        if Version(sklearn_version) >= Version("1.0"):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsClassifier.predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_KNeighborsClassifier.predict,
@@ -234,7 +236,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     @wrap_output_data
     def predict_proba(self, X):
         check_is_fitted(self)
-        self._check_feature_names(X, reset=False)
+        if Version(sklearn_version) >= Version("1.0"):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsClassifier.predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_KNeighborsClassifier.predict_proba,
@@ -243,7 +246,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        self._check_feature_names(X, reset=False)
+        if Version(sklearn_version) >= Version("1.0"):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsClassifier.kneighbors', {
             'onedal': self.__class__._onedal_kneighbors,
             'sklearn': sklearn_KNeighborsClassifier.kneighbors,
