@@ -40,17 +40,6 @@ struct method2t {
     Ops ops;
 };
 
-template <typename Ops>
-struct kernel2t {
-    kernel2t(const Ops& ops)
-        : ops(ops) {}
-
-    template <typename Float, typename Method>
-    auto operator()(const py::dict& params) {}
-
-    Ops ops;
-};
-
 std::vector<std::string> split(const std::string & str) {
     const std::int64_t size = str.size();
     std::vector<std::string> result;
@@ -171,13 +160,14 @@ struct params2desc {
                         .set_min_bin_size(params["min_bin_size"].cast<std::int64_t>())
                         .set_memory_saving_mode(params["memory_saving_mode"].cast<bool>())
                         .set_bootstrap(params["bootstrap"].cast<bool>())
-                        .set_error_metric_mode(get_error_metric_mode(params))
-                        .set_variable_importance_mode(get_variable_importance_mode(params));
+                        // .set_error_metric_mode(get_error_metric_mode(params))
+                        // .set_variable_importance_mode(get_variable_importance_mode(params))
+                        ;
 
         if constexpr (is_cls) {
-            desc.set_class_count(params["class_count"].cast<std::int64_t>());
-            desc.set_infer_mode(get_infer_mode(params));
-            desc.set_voting_mode(get_voting_mode(params));
+            //desc.set_class_count(params["class_count"].cast<std::int64_t>());
+            //desc.set_infer_mode(get_infer_mode(params));
+            //desc.set_voting_mode(get_voting_mode(params));
         }
 
         return desc;
@@ -195,7 +185,7 @@ void init_train_ops(py::module_& m) {
               using input_t = train_input<Task>;
 
               train_ops ops(policy, input_t{ data, responses }, params2desc{} );
-              return fptype2t { method2t { Task{}, kernel2t{ ops } } }(params);
+              return fptype2t { method2t { Task{}, ops } }(params);
           });
 }
 
@@ -210,7 +200,7 @@ void init_infer_ops(py::module_& m) {
               using input_t = infer_input<Task>;
 
               infer_ops ops(policy, input_t{ model, data }, params2desc{} );
-              return fptype2t { method2t { Task{}, kernel2t{ ops } } }(params);
+              return fptype2t { method2t { Task{}, ops } }(params);
           });
 }
 
@@ -288,7 +278,7 @@ ONEDAL_PY_INIT_MODULE(ensemble) {
         types<task::classification, task::regression>;
     // TODO:
     // naming
-    auto sub = m.def_submodule("ensemble");
+    auto sub = m.def_submodule("decision_forest");
 
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);

@@ -71,7 +71,7 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
         self.variable_importance_mode = variable_importance_mode
         self.algorithm = algorithm
 
-    def _to_absolute_max_features(max_features, n_features, is_classification=False):
+    def _to_absolute_max_features(self, max_features, n_features, is_classification=False):
         if max_features is None:
             return n_features
         elif isinstance(max_features, str):
@@ -93,7 +93,7 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
                 return max(1, int(max_features * n_features))
             return 0
 
-    def _get_observations_per_tree_fraction(n_samples, max_samples):
+    def _get_observations_per_tree_fraction(self, n_samples, max_samples):
         if max_samples is None:
             return 1.
 
@@ -134,7 +134,7 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
         return {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
             'method': self.algorithm,
-            'class_count': 0 if self.classes_ is None else len(self.classes_),
+            'class_count': 0, #if self.classes_ is None else len(self.classes_), # TODO
             'infer_mode': self.infer_mode,
             'voting_mode': self.voting_mode,
             'observations_per_tree_fraction': observations_per_tree_fraction,
@@ -217,10 +217,27 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
                              "%r" % self.min_bin_size)
 
     def _fit(self, X, y, sample_weight, module, queue):
-        pass
+        # policy = _get_policy(queue, X, y, sample_weight)
+        policy = _get_policy(queue, X)
+        params = self._get_onedal_params(X)
+        # ~~~
+        self._check_parameters()
+        # TODO
+        # sample_weight
+        # result = module.train(policy, params, *to_table(X, y, sample_weight))
+        result = module.train(policy, params, *to_table(X, y))
+        self._onedal_model = result.model
+        return self
 
     def _predict(self, X, module, queue):
-        pass
+        #_check_is_fitted(self)
+        # policy = _get_policy(queue, X, y, sample_weight)
+        policy = _get_policy(queue, X)
+        params = self._get_onedal_params(X)
+        model = self._onedal_model
+        result = module.infer(policy, params, model, to_table(X))
+        y = from_table(result.responses)
+        return y
 
     def _predict_proba(self, X, module, queue):
         pass
@@ -267,10 +284,10 @@ class RandomForestClassifier(ClassifierMixin, BaseForest):
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return super()._fit(X, y, sample_weight,
-                            _backend.ensemble.classification, queue)
+                            _backend.decision_forest.classification, queue)
 
     def predict(self, X, queue=None):
-        pred = super()._predict(X, _backend.ensemble.classification, queue)
+        pred = super()._predict(X, _backend.decision_forest.classification, queue)
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting='unsafe'))
 
     def predict_proba(self, X, queue=None):
@@ -318,7 +335,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest):
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return super()._fit(X, y, sample_weight,
-                            _backend.ensemble.regression, queue)
+                            _backend.decision_forest.regression, queue)
 
     def predict(self, X, queue=None):
-        return super()._predict(X, _backend.ensemble.regression, queue).ravel()
+        return super()._predict(X, _backend.decision_forest.regression, queue).ravel()
