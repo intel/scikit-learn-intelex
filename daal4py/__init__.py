@@ -20,13 +20,16 @@ if "Windows" in platform.system():
     import os
     import sys
     import site
+    current_path = os.path.dirname(__file__)
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
+    path_to_oneapi_backend = os.path.join(current_path, "oneapi")
     if sys.version_info.minor >= 8:
         if 'DALROOT' in os.environ:
             dat_root_redist = os.path.join(os.environ['DALROOT'], "redist", "intel64")
             os.add_dll_directory(dat_root_redist)
         os.add_dll_directory(path_to_libs)
+        os.add_dll_directory(path_to_oneapi_backend)
     else:
         os.environ['PATH'] += os.pathsep + path_to_libs
 
