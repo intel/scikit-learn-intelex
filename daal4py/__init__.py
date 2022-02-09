@@ -23,8 +23,12 @@ if "Windows" in platform.system():
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
     if sys.version_info.minor >= 8:
+        if 'DALROOT' in os.environ:
+            dat_root_redist = os.path.join(os.environ['DALROOT'], "redist", "intel64")
+            os.add_dll_directory(dat_root_redist)
         os.add_dll_directory(path_to_libs)
-    os.environ['PATH'] += os.pathsep + path_to_libs
+    else:
+        os.environ['PATH'] += os.pathsep + path_to_libs
 
 try:
     from daal4py._daal4py import *
