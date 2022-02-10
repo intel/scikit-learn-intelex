@@ -26,8 +26,17 @@ if "Windows" in platform.system():
     path_to_oneapi_backend = os.path.join(current_path, "oneapi")
     if sys.version_info.minor >= 8:
         if 'DALROOT' in os.environ:
-            dat_root_redist = os.path.join(os.environ['DALROOT'], "redist", "intel64")
-            os.add_dll_directory(dat_root_redist)
+            dal_root_redist = os.path.join(os.environ['DALROOT'], "redist", "intel64")
+            try:
+                os.add_dll_directory(dal_root_redist)
+            except FileNotFoundError:
+                pass
+        if 'DPCPPROOT' in os.environ:
+            dpcpp_rt_root_redist = os.path.join(os.environ['DPCPPROOT'], "windows", "bin")
+            try:
+                os.add_dll_directory(dpcpp_rt_root_redist)
+            except FileNotFoundError:
+                pass
         os.add_dll_directory(path_to_libs)
         os.add_dll_directory(path_to_oneapi_backend)
     else:
