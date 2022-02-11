@@ -337,7 +337,7 @@ class TSNE(BaseTSNE):
         degrees_of_freedom = max(self.n_components - 1, 1)
 
         daal_ready = self.method == 'barnes_hut' and self.n_components == 2 and \
-            self.verbose == 0 and daal_check_version((2021, 'P', 500))
+            self.verbose == 0 and daal_check_version((2021, 'P', 600))
 
         if daal_ready:
             X_embedded = check_array(X_embedded, dtype=[np.float32, np.float64])
