@@ -121,7 +121,7 @@ jobs:
           intel-oneapi-common-licensing                         \
           intel-oneapi-dpcpp-cpp-compiler                       \
           intel-oneapi-dev-utilities                            \
-          intel-oneapi-libdpstd-devel         
+          intel-oneapi-libdpstd-devel
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
