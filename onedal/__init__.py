@@ -24,10 +24,8 @@ if "Windows" in platform.system():
     if sys.version_info.minor >= 8:
         if 'DALROOT' in os.environ:
             dal_root_redist = os.path.join(os.environ['DALROOT'], "redist", "intel64")
-            try:
+            if os.path.exists(dal_root_redist):
                 os.add_dll_directory(dal_root_redist)
-            except FileNotFoundError:
-                pass
         os.add_dll_directory(path_to_libs)
     else:
         os.environ['PATH'] += os.pathsep + path_to_libs

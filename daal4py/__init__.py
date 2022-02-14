@@ -24,21 +24,27 @@ if "Windows" in platform.system():
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
     path_to_oneapi_backend = os.path.join(current_path, "oneapi")
+
+    print(f"path_to_oneapi_backend = {path_to_oneapi_backend}")
+    print(f"path_to_libs = {path_to_libs}")
+    print(f"path_to_env = {path_to_env}")
+
     if sys.version_info.minor >= 8:
         if 'DALROOT' in os.environ:
             dal_root_redist = os.path.join(os.environ['DALROOT'], "redist", "intel64")
-            try:
+            print(f"dal_root_redist = {dal_root_redist}")
+            if os.path.exists(dal_root_redist):
+                print(f"dal_root_redist EXISTS")
                 os.add_dll_directory(dal_root_redist)
-            except FileNotFoundError:
-                pass
         if 'DPCPPROOT' in os.environ:
             dpcpp_rt_root_redist = os.path.join(os.environ['DPCPPROOT'], "windows", "bin")
-            try:
+            print(f"dpcpp_rt_root_redist = {dpcpp_rt_root_redist}")
+            if os.path.exists(dpcpp_rt_root_redist):
+                print(f"dpcpp_rt_root_redist EXISTS")
                 os.add_dll_directory(dpcpp_rt_root_redist)
-            except FileNotFoundError:
-                pass
         os.add_dll_directory(path_to_libs)
         os.add_dll_directory(path_to_oneapi_backend)
+        print(f"PATH = {os.environ['PATH']}")
     else:
         os.environ['PATH'] += os.pathsep + path_to_libs
 
