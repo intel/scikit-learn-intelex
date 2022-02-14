@@ -54,7 +54,8 @@ requirements:
         - make
     run:
         - python
-        - dpcpp_cpp_rt ==2022.0
+        - dpcpp_cpp_rt ==2022.0.1  # [linux]
+        - dpcpp_cpp_rt ==2022.0.0  # [win or osx]
         - dal ==2021.5.1  # [linux]
         - dal ==2021.5.0  # [win or osx]
     ignore_run_exports:
