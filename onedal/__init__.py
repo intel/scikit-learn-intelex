@@ -27,8 +27,7 @@ if "Windows" in platform.system():
             if os.path.exists(dal_root_redist):
                 os.add_dll_directory(dal_root_redist)
         os.add_dll_directory(path_to_libs)
-    else:
-        os.environ['PATH'] += os.pathsep + path_to_libs
+    os.environ['PATH'] = path_to_libs + os.pathsep + os.environ['PATH']
 
 try:
     import onedal._onedal_py_dpc as _backend
