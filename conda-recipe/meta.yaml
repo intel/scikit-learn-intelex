@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-{% set version = '2021.4' %}
+{% set version = '2021.5' %}
 {% set buildnumber = 0 %}
 
 package:
@@ -31,7 +31,6 @@ build:
     - DPCPPROOT
     - DAALROOT
     - DALROOT
-    - OFF_ONEDAL_IFACE
     ignore_run_exports:
        - python
        - mpich
@@ -44,16 +43,18 @@ requirements:
         - python
         - setuptools
         - numpy {{ numpy }}
-        - dal-devel ==2021.3
+        - dal-devel ==2021.5
         - cython
         - jinja2
         - mpich  # [osx]
         - impi-devel  # [not osx]
         - clang-tools
+        - pybind11
+        - make
     run:
         - python
-        - dpcpp_cpp_rt ==2021.3
-        - dal ==2021.3
+        - dpcpp_cpp_rt ==2022.0
+        - dal ==2021.5
     ignore_run_exports:
         - numpy
 
