@@ -29,7 +29,7 @@ if "Windows" in platform.system():
         if 'DPCPPROOT' in os.environ:
             dpcpp_rt_root_bin = os.path.join(os.environ['DPCPPROOT'], "windows", "bin")
             dpcpp_rt_root_redist = os.path.join(os.environ['DPCPPROOT'], "windows",
-                                                "redist","intel64_win","compiler")
+                                                "redist", "intel64_win", "compiler")
             if os.path.exists(dpcpp_rt_root_bin):
                 os.add_dll_directory(dpcpp_rt_root_bin)
             if os.path.exists(dpcpp_rt_root_redist):
