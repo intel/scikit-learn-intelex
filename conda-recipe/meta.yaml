@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-{% set version = '2021.5' %}
+{% set version = '2021.6' %}
 {% set buildnumber = 0 %}
 
 package:
