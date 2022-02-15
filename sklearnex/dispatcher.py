@@ -36,6 +36,9 @@ if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P',
     # from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
     from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
+    from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
+    from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+
     new_patching_available = True
 else:
     new_patching_available = False
@@ -43,6 +46,7 @@ else:
 # Scikit-learn* modules
 
 import sklearn as base_module
+import sklearn.ensemble as ensemble_module
 import sklearn.svm as svm_module
 import sklearn.neighbors as neighbors_module
 
@@ -54,6 +58,20 @@ def get_patch_map():
 
     if new_patching_available:
         # Algorithms
+        # Ensemble
+        mapping.pop('random_forest_classifier')
+        mapping.pop('random_forest_regressor')
+        mapping.pop('randomrorestclassifier')
+        mapping.pop('randomforestregressor')
+        mapping['random_forest_classifier'] = [[(ensemble_module,
+                                                 'RandomForestClassifier',
+                                                 RandomForestClassifier_sklearnex),
+                                                 None]]
+        mapping['random_forest_regressor'] = [[(ensemble_module,
+                                                'RandomForestRegressor',
+                                                RandomForestRegressor_sklearnex),
+                                                None]]
+
         # SVM
         mapping.pop('svm')
         mapping.pop('svc')

@@ -15,4 +15,4 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from onedal.ensemble import RandomForestClassifier, RandomForestRegressor
