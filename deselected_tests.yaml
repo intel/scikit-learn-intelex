@@ -213,10 +213,7 @@ deselected_tests:
   - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately_with_precomputed_distances
   - manifold/tests/test_t_sne.py::test_bh_match_exact
   - manifold/tests/test_t_sne.py::test_uniform_grid[barnes_hut]
-  - manifold/tests/test_t_sne.py::test_tsne_different_square_distances[True-manhattan-barnes_hut] >=0.24
-
-  # Results with scikit-learn are different for KNN in new ifaces. Need to fix.
-  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
+  - manifold/tests/test_t_sne.py::test_tsne_different_square_distances >=0.24
 
   # Temporary deselected up to 2021.6 release. Need to fix
   - ensemble/tests/test_bagging.py::test_classification
