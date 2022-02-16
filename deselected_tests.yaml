@@ -213,6 +213,7 @@ deselected_tests:
   - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately_with_precomputed_distances
   - manifold/tests/test_t_sne.py::test_bh_match_exact
   - manifold/tests/test_t_sne.py::test_uniform_grid[barnes_hut]
+  - manifold/tests/test_t_sne.py::test_sparse_precomputed_distance
   - manifold/tests/test_t_sne.py::test_tsne_different_square_distances >=0.24
 
   # Temporary deselected up to 2021.6 release. Need to fix
