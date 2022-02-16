@@ -448,10 +448,10 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                         PyArrayObject * slice = reinterpret_cast<PyArrayObject *>(PyArray_SimpleNewFromData(1, &column_len, ary_numtype, static_cast<void *>(PyArray_ITER_DATA(it))));
                         PyArray_SetBaseObject(slice, reinterpret_cast<PyObject *>(ary));
                         Py_INCREF(ary);
-#define SETARRAY_(_T)                                                                                         \
-    {                                                                                                         \
-        daal::services::SharedPtr<_T> _tmp(reinterpret_cast<_T *>(PyArray_DATA(slice)), NumpyDeleter(slice)); \
-        soatbl->setArray(_tmp, i);                                                                            \
+#define SETARRAY_(_T)                                                                                           \
+    {                                                                                                           \
+        daal::services::SharedPtr<_T> _tmp(reinterpret_cast<_T *>(PyArray_DATA(slice)), NumpyDeleter(slice));   \
+        soatbl->setArray(_tmp, i);                                                                              \
     }
                         SET_NPY_FEATURE(PyArray_DESCR(ary)->type, SETARRAY_, throw std::invalid_argument("Found unsupported array type"));
 #undef SETARRAY_
@@ -825,7 +825,10 @@ extern "C"
 #endif
     }
 
-    void c_enable_thread_pinning(bool enabled) { daal::services::Environment::getInstance()->enableThreadPinning(enabled); }
+    void c_enable_thread_pinning(bool enabled)
+    {
+        daal::services::Environment::getInstance()->enableThreadPinning(enabled);
+    }
 } // extern "C"
 
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)
@@ -868,7 +871,12 @@ double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
     auto table_true = get_table(y_true);
     auto table_test = get_table(y_test);
     auto type       = (*table_test->getDictionary())[0].indexType;
-    if (type == daal::data_management::data_feature_utils::DAAL_FLOAT64 || type == daal::data_management::data_feature_utils::DAAL_INT64_S || type == daal::data_management::data_feature_utils::DAAL_INT64_U || type == daal::data_management::data_feature_utils::DAAL_FLOAT32 || type == daal::data_management::data_feature_utils::DAAL_INT32_S || type == daal::data_management::data_feature_utils::DAAL_INT32_U)
+    if (type == daal::data_management::data_feature_utils::DAAL_FLOAT64 ||
+        type == daal::data_management::data_feature_utils::DAAL_INT64_S ||
+        type == daal::data_management::data_feature_utils::DAAL_INT64_U ||
+        type == daal::data_management::data_feature_utils::DAAL_FLOAT32 ||
+        type == daal::data_management::data_feature_utils::DAAL_INT32_S ||
+        type == daal::data_management::data_feature_utils::DAAL_INT32_U)
     {
         return daal::data_management::internal::rocAucScore(table_true, table_test);
     }
@@ -892,7 +900,7 @@ void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state
 
 void c_tsne_gradient_descent(data_or_file & init, data_or_file & p, data_or_file & size_iter, data_or_file & params, data_or_file & results, char dtype)
 {
-#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210400
+#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210600
     auto initTable                                     = get_table(init);
     auto pTable                                        = get_table(p);
     auto sizeIterTable                                 = get_table(size_iter);
