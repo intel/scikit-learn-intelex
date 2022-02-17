@@ -306,7 +306,9 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
                                        'minkowski',
-                                       'euclidean']
+                                       'euclidean',
+                                       'chebyshev',
+                                       'cosine']
         is_valid_weights = self.weights in ['uniform', "distance"]
         main_condition = is_valid_for_brute and not is_sparse and \
             is_single_output and is_valid_weights

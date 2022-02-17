@@ -244,7 +244,9 @@ class NearestNeighbors(NearestNeighbors_):
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
                                        'minkowski',
-                                       'euclidean']
+                                       'euclidean',
+                                       'chebyshev',
+                                       'cosine']
         main_condition = is_valid_for_brute and not is_sparse
 
         if method_name == 'neighbors.NearestNeighbors.fit':
