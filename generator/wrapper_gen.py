@@ -260,6 +260,20 @@ def daal_generate_shuffled_indices(idx, random_state):
     c_generate_shuffled_indices(data_or_file(<PyObject*>idx),
                                 data_or_file(<PyObject*>random_state))
 
+
+cdef extern from "daal4py.h":
+    cdef void c_tsne_gradient_descent(data_or_file & init, data_or_file & p,
+                                      data_or_file & size_iter, data_or_file & params,
+                                      data_or_file & results, char dtype) except +
+
+
+def daal_tsne_gradient_descent(init, p, size_iter, params, results, dtype=0):
+    c_tsne_gradient_descent(data_or_file(<PyObject*>init), data_or_file(<PyObject*>p),
+                            data_or_file(<PyObject*>size_iter),
+                            data_or_file(<PyObject*>params),
+                            data_or_file(<PyObject*>results), dtype)
+
+
 def _execute_with_context(func):
     def exec_func(*args, **keyArgs):
         if 'daal4py.oneapi' in sys.modules:

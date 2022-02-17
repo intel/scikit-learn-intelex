@@ -110,6 +110,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             n_jobs=n_jobs, **kwargs)
 
     def fit(self, X, y):
+        if Version(sklearn_version) >= Version("1.0"):
+            self._check_feature_names(X, reset=True)
         if self.metric_params is not None and 'p' in self.metric_params:
             if self.p is not None:
                 warnings.warn("Parameter p is found in metric_params. "
@@ -224,6 +226,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     @wrap_output_data
     def predict(self, X):
         check_is_fitted(self)
+        if Version(sklearn_version) >= Version("1.0"):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsClassifier.predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_KNeighborsClassifier.predict,
@@ -232,6 +236,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     @wrap_output_data
     def predict_proba(self, X):
         check_is_fitted(self)
+        if Version(sklearn_version) >= Version("1.0"):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsClassifier.predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_KNeighborsClassifier.predict_proba,
@@ -240,6 +246,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
+        if Version(sklearn_version) >= Version("1.0"):
+            self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsClassifier.kneighbors', {
             'onedal': self.__class__._onedal_kneighbors,
             'sklearn': sklearn_KNeighborsClassifier.kneighbors,
@@ -267,85 +275,98 @@ class KNeighborsClassifier(KNeighborsClassifier_):
 
     def _onedal_gpu_supported(self, method_name, *data):
         X_incorrect_type = isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase))
-        if not X_incorrect_type:
-            if self._fit_method in ['auto', 'ball_tree']:
-                condition = self.n_neighbors is not None and \
-                    self.n_neighbors >= self.n_samples_fit_ // 2
-                if self.n_features_in_ > 11 or condition:
-                    result_method = 'brute'
-                else:
-                    if self.metric in ['euclidean']:
-                        result_method = 'kd_tree'
-                    else:
-                        result_method = 'brute'
+
+        if X_incorrect_type:
+            return False
+
+        if self._fit_method in ['auto', 'ball_tree']:
+            condition = self.n_neighbors is not None and \
+                self.n_neighbors >= self.n_samples_fit_ // 2
+            if self.n_features_in_ > 11 or condition:
+                result_method = 'brute'
             else:
-                result_method = self._fit_method
-        if method_name == 'neighbors.KNeighborsClassifier.fit':
-            if X_incorrect_type:
-                return False
-            is_sparse = sp.isspmatrix(data[0])
-            class_count = None
+                if self.effective_metric_ in ['euclidean']:
+                    result_method = 'kd_tree'
+                else:
+                    result_method = 'brute'
+        else:
+            result_method = self._fit_method
+
+        is_sparse = sp.isspmatrix(data[0])
+        is_single_output = False
+        class_count = 1
+        if len(data) > 1 or hasattr(self, '_onedal_estimator'):
+            # To check multioutput, might be overhead
             if len(data) > 1:
-                class_count = len(np.unique(data[1]))
-                # To check multioutput, might be overhead
                 y = np.asarray(data[1])
-                is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
-            return result_method in ['brute'] and \
-                self.effective_metric_ in ['manhattan',
-                                           'minkowski',
-                                           'euclidean',
-                                           'chebyshev',
-                                           'cosine'] and \
-                class_count >= 2 and \
-                not is_sparse and \
-                is_single_output
+                class_count = len(np.unique(y))
+            if hasattr(self, '_onedal_estimator'):
+                y = self._onedal_estimator._y
+            is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
+        is_valid_for_brute = result_method in ['brute'] and \
+            self.effective_metric_ in ['manhattan',
+                                       'minkowski',
+                                       'euclidean']
+        is_valid_weights = self.weights in ['uniform', "distance"]
+        main_condition = is_valid_for_brute and not is_sparse and \
+            is_single_output and is_valid_weights
+
+        if method_name == 'neighbors.KNeighborsClassifier.fit':
+            return main_condition and class_count >= 2
         if method_name in ['neighbors.KNeighborsClassifier.predict',
                            'neighbors.KNeighborsClassifier.predict_proba',
                            'neighbors.KNeighborsClassifier.kneighbors']:
-            return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
+            return main_condition and hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_cpu_supported(self, method_name, *data):
         X_incorrect_type = isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase))
-        if not X_incorrect_type:
-            if self._fit_method in ['auto', 'ball_tree']:
-                condition = self.n_neighbors is not None and \
-                    self.n_neighbors >= self.n_samples_fit_ // 2
-                if self.n_features_in_ > 11 or condition:
-                    result_method = 'brute'
-                else:
-                    if self.metric in ['euclidean']:
-                        result_method = 'kd_tree'
-                    else:
-                        result_method = 'brute'
+
+        if X_incorrect_type:
+            return False
+
+        if self._fit_method in ['auto', 'ball_tree']:
+            condition = self.n_neighbors is not None and \
+                self.n_neighbors >= self.n_samples_fit_ // 2
+            if self.n_features_in_ > 11 or condition:
+                result_method = 'brute'
             else:
-                result_method = self._fit_method
-        if method_name == 'neighbors.KNeighborsClassifier.fit':
-            if X_incorrect_type:
-                return False
-            is_sparse = sp.isspmatrix(data[0])
-            class_count = None
+                if self.effective_metric_ in ['euclidean']:
+                    result_method = 'kd_tree'
+                else:
+                    result_method = 'brute'
+        else:
+            result_method = self._fit_method
+
+        is_sparse = sp.isspmatrix(data[0])
+        is_single_output = False
+        class_count = 1
+        if len(data) > 1 or hasattr(self, '_onedal_estimator'):
+            # To check multioutput, might be overhead
             if len(data) > 1:
-                class_count = len(np.unique(data[1]))
-                # To check multioutput, might be overhead
                 y = np.asarray(data[1])
-                is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
-            is_valid_for_kd_tree = \
-                result_method in ['kd_tree'] and self.effective_metric_ in ['euclidean']
-            is_valid_for_brute = result_method in ['brute'] and \
-                self.effective_metric_ in ['manhattan',
-                                           'minkowski',
-                                           'euclidean',
-                                           'chebyshev',
-                                           'cosine']
-            return (is_valid_for_kd_tree or is_valid_for_brute) and \
-                class_count >= 2 and \
-                not is_sparse and \
-                is_single_output
+                class_count = len(np.unique(y))
+            if hasattr(self, '_onedal_estimator'):
+                y = self._onedal_estimator._y
+            is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
+        is_valid_for_kd_tree = \
+            result_method in ['kd_tree'] and self.effective_metric_ in ['euclidean']
+        is_valid_for_brute = result_method in ['brute'] and \
+            self.effective_metric_ in ['manhattan',
+                                       'minkowski',
+                                       'euclidean',
+                                       'chebyshev',
+                                       'cosine']
+        is_valid_weights = self.weights in ['uniform', "distance"]
+        main_condition = (is_valid_for_kd_tree or is_valid_for_brute) and \
+            not is_sparse and is_single_output and is_valid_weights
+
+        if method_name == 'neighbors.KNeighborsClassifier.fit':
+            return main_condition and class_count >= 2
         if method_name in ['neighbors.KNeighborsClassifier.predict',
                            'neighbors.KNeighborsClassifier.predict_proba',
                            'neighbors.KNeighborsClassifier.kneighbors']:
-            return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
+            return main_condition and hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, queue=None):
@@ -387,7 +408,6 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
         self._fit_X = self._onedal_estimator._fit_X
         self._y = self._onedal_estimator._y
-        self.shape = self._onedal_estimator.shape
         self._fit_method = self._onedal_estimator._fit_method
         self.outputs_2d_ = self._onedal_estimator.outputs_2d_
         self._tree = self._onedal_estimator._tree
