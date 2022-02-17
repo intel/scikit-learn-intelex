@@ -41,7 +41,8 @@ def wrap_algo(algo, ver):
                                       'algorithms::classification::training',
                                       'algorithms::tree_utils',
                                       'algorithms::tree_utils::classification',
-                                      'algorithms::tree_utils::regression']):
+                                      'algorithms::tree_utils::regression',
+                                      'algorithms::internal']):
         return False
     # ignore unsupported algos
     if any(x in algo for x in ['quality_metric', '::interface']):
