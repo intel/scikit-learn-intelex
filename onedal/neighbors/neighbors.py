@@ -28,6 +28,12 @@ from ..datatypes import (
     _num_samples
 )
 
+from daal4py import (
+    bf_knn_classification_training,
+    bf_knn_classification_prediction,
+    kdtree_knn_classification_training,
+    kdtree_knn_classification_prediction
+)
 from onedal import _backend
 
 from ..common._mixin import ClassifierMixin
@@ -128,6 +134,20 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             'result_option': 'indices|distances',
         }
 
+    def _get_daal_params(self, data):
+        class_count = 0 if self.classes_ is None else len(self.classes_)
+        weights = getattr(self, 'weights', 'uniform')
+        return {
+            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'nClasses': class_count,
+            'method': 'defaultDense',
+            'k': self.n_neighbors,
+            'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
+            'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
+            'resultsToEvaluate': 'none' if getattr(self, '_y', None) is None
+                else 'computeClassLabels'
+        }
+
 
 class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
     def __init__(self, n_neighbors=None, radius=None,
@@ -220,7 +240,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         if y is not None and _is_regressor(self):
             self._y = y if self._shape is None else y.reshape(self._shape)
 
-        self._onedal_model = result.model
+        self._onedal_model = result
         result = self
 
         return result
@@ -272,12 +292,22 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         chunked_results = None
         method = super()._parse_auto_method(
             self._fit_method, self.n_samples_fit_, n_features)
-        params = super()._get_onedal_params(X)
+
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            params = super()._get_daal_params(X)
+        else:
+            params = super()._get_onedal_params(X)
+
         prediction_results = self._onedal_predict(
             self._onedal_model, X, params, queue=queue)
 
-        distances = from_table(prediction_results.distances)
-        indices = from_table(prediction_results.indices)
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            distances = prediction_results.distances
+            indices = prediction_results.indices
+        else:
+            distances = from_table(prediction_results.distances)
+            indices = from_table(prediction_results.indices)
 
         if method == 'kd_tree':
             for i in range(distances.shape[0]):
@@ -348,15 +378,41 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         params['result_option'] = 'responses'
         return params
 
+    def _get_daal_params(self, data):
+        params = super()._get_daal_params(data)
+        params['resultsToEvaluate'] = 'computeClassLabels'
+        params['resultsToCompute'] = ''
+        return params
+
     def _onedal_fit(self, X, y, queue):
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            params = self._get_daal_params(X)
+            if self._fit_method == 'brute':
+                train_alg = bf_knn_classification_training
+
+            else:
+                train_alg = kdtree_knn_classification_training
+
+            return train_alg(**params).compute(X, y).model
+
         policy = _get_policy(queue, X, y)
         params = self._get_onedal_params(X)
         train_alg = _backend.neighbors.classification.train(policy, params,
                                                             *to_table(X, y))
 
-        return train_alg
+        return train_alg.model
 
     def _onedal_predict(self, model, X, params, queue):
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            if self._fit_method == 'brute':
+                predict_alg = bf_knn_classification_prediction
+
+            else:
+                predict_alg = kdtree_knn_classification_prediction
+
+            return predict_alg(**params).compute(X, model)
         policy = _get_policy(queue, X)
 
         if hasattr(self, '_onedal_model'):
@@ -390,10 +446,17 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
         self._validate_n_classes()
 
-        params = self._get_onedal_params(X)
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            params = self._get_daal_params(X)
+        else:
+            params = self._get_onedal_params(X)
 
         prediction_result = self._onedal_predict(onedal_model, X, params, queue=queue)
-        responses = from_table(prediction_result.responses)
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            responses = prediction_result.responses
+        else:
+            responses = from_table(prediction_result.responses)
         result = self.classes_.take(
             np.asarray(responses.ravel(), dtype=np.intp))
 
@@ -458,15 +521,43 @@ class NearestNeighbors(NeighborsBase):
         params['result_option'] = 'indices|distances'
         return params
 
+    def _get_daal_params(self, data):
+        params = super()._get_daal_params(data)
+        params['resultsToCompute'] = 'computeIndicesOfNeighbors|computeDistances'
+        params['resultsToCompute'] = 'none' if getattr(self, '_y', None) is None \
+            else 'computeClassLabels'
+        return params
+
     def _onedal_fit(self, X, y, queue):
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            params = self._get_daal_params(X)
+            if self._fit_method == 'brute':
+                train_alg = bf_knn_classification_training
+
+            else:
+                train_alg = kdtree_knn_classification_training
+
+            return train_alg(**params).compute(X, y).model
+
         policy = _get_policy(queue, X, y)
         params = self._get_onedal_params(X)
         train_alg = _backend.neighbors.search.train(policy, params,
                                                     to_table(X))
 
-        return train_alg
+        return train_alg.model
 
     def _onedal_predict(self, model, X, params, queue):
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            if self._fit_method == 'brute':
+                predict_alg = bf_knn_classification_prediction
+
+            else:
+                predict_alg = kdtree_knn_classification_prediction
+
+            return predict_alg(**params).compute(X, model)
+
         policy = _get_policy(queue, X)
 
         if hasattr(self, '_onedal_model'):
