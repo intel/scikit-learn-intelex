@@ -144,7 +144,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
             'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
             'resultsToEvaluate': 'none' if getattr(self, '_y', None) is None
-                else 'computeClassLabels'
+            else 'computeClassLabels'
         }
         if class_count != 0:
             params['nClasses'] = class_count
