@@ -134,7 +134,7 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
         return {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
             'method': self.algorithm,
-            'class_count': 0, #if self.classes_ is None else len(self.classes_), # TODO
+            'class_count': 0 if self.classes_ is None else len(self.classes_),
             'infer_mode': self.infer_mode,
             'voting_mode': self.voting_mode,
             'observations_per_tree_fraction': observations_per_tree_fraction,
@@ -217,21 +217,29 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
                              "%r" % self.min_bin_size)
 
     def _fit(self, X, y, sample_weight, module, queue):
-        # policy = _get_policy(queue, X, y, sample_weight)
-        policy = _get_policy(queue, X)
+        self.classes_ = None
+        X, y = _check_X_y(
+            X, y, dtype=[np.float64, np.float32],
+            force_all_finite=True, accept_sparse='csr')
+        # y = _validate_targets(y, None, X.dtype)
+        # self.n_features = X.shape[1]
+        policy = _get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
-        # ~~~
         self._check_parameters()
-        # TODO
-        # sample_weight
-        # result = module.train(policy, params, *to_table(X, y, sample_weight))
-        result = module.train(policy, params, *to_table(X, y))
+        # TODO:
+        y = y.astype(X.dtype.type)
+        # something like this
+        # if _is_classifier(self) and y.dtype != X.dtype:
+        #     y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
+        result = module.train(policy, params, *to_table(X, y, sample_weight))
         self._onedal_model = result.model
         return self
 
     def _predict(self, X, module, queue):
-        #_check_is_fitted(self)
-        # policy = _get_policy(queue, X, y, sample_weight)
+        _check_is_fitted(self)
+        X = _check_array(X, dtype=[np.float64, np.float32],
+                             force_all_finite=True, accept_sparse='csr')
+        _check_n_features(self, X, False)
         policy = _get_policy(queue, X)
         params = self._get_onedal_params(X)
         model = self._onedal_model
@@ -281,6 +289,12 @@ class RandomForestClassifier(ClassifierMixin, BaseForest):
             voting_mode=voting_mode, error_metric_mode=error_metric_mode,
             variable_importance_mode=variable_importance_mode, algorithm=algorithm)
         self.is_classification = True
+    # TODO:
+    # not used
+    def _validate_targets(self, y, dtype):
+        y, self.class_weight_, self.classes_ = _validate_targets(
+            y, self.class_weight, dtype)
+        return y
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return super()._fit(X, y, sample_weight,
@@ -288,10 +302,15 @@ class RandomForestClassifier(ClassifierMixin, BaseForest):
 
     def predict(self, X, queue=None):
         pred = super()._predict(X, _backend.decision_forest.classification, queue)
-        return np.take(self.classes_, pred.ravel().astype(np.int64, casting='unsafe'))
+        # return np.take(self.classes_, pred.ravel().astype(np.int64, casting='unsafe'))
+        #if len(self.classes_) == 2:
+        #    y = y.ravel()
+        #return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
+
+        return pred.ravel().astype(np.int64, casting='unsafe')
 
     def predict_proba(self, X, queue=None):
-        return super()._predict_proba(X, queue)
+        return super()._predict_proba(X, _backend.decision_forest.classification, queue)
 
 
 class RandomForestRegressor(RegressorMixin, BaseForest):

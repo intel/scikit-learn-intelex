@@ -160,11 +160,13 @@ struct params2desc {
                         .set_min_bin_size(params["min_bin_size"].cast<std::int64_t>())
                         .set_memory_saving_mode(params["memory_saving_mode"].cast<bool>())
                         .set_bootstrap(params["bootstrap"].cast<bool>())
+                        // TODO:
                         // .set_error_metric_mode(get_error_metric_mode(params))
                         // .set_variable_importance_mode(get_variable_importance_mode(params))
                         ;
 
         if constexpr (is_cls) {
+            // TODO:
             //desc.set_class_count(params["class_count"].cast<std::int64_t>());
             //desc.set_infer_mode(get_infer_mode(params));
             //desc.set_voting_mode(get_voting_mode(params));
@@ -180,11 +182,12 @@ void init_train_ops(py::module_& m) {
           [](const Policy& policy,
              const py::dict& params,
              const table& data,
-             const table& responses) {
+             const table& responses,
+             const table& weights) {
               using namespace decision_forest;
               using input_t = train_input<Task>;
 
-              train_ops ops(policy, input_t{ data, responses }, params2desc{} );
+              train_ops ops(policy, input_t{ data, responses, weights }, params2desc{} );
               return fptype2t { method2t { Task{}, ops } }(params);
           });
 }

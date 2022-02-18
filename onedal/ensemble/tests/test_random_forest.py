@@ -30,8 +30,7 @@ def test_rf_classifier(queue):
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y, queue=queue)
-    # assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
-    assert_allclose([1], rf.predict(np.array([[0, 0, 0, 0]], dtype=np.float32), queue=queue))
+    assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
 
 
 @pytest.mark.parametrize('queue', get_queues())
@@ -39,5 +38,4 @@ def test_rf_regression(queue):
     X, y = make_regression(n_samples=100, n_features=4, n_informative=2,
                            random_state=0, shuffle=False)
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y, queue=queue)
-    # assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
-    assert_allclose([-6.83], rf.predict(np.array([[0, 0, 0, 0]], dtype=np.float32), queue=queue), rtol=1e-03, atol=1e-2)
+    assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
