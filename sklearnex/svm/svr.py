@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ from sklearn.svm import SVR as sklearn_SVR
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn import __version__ as sklearn_version
 
-from packaging.version import Version
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 from onedal.svm import SVR as onedal_SVR
 
 

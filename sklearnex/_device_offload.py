@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,10 +69,14 @@ def _get_global_queue():
 
     if target != 'auto':
         if d4p_target is not None and \
-           d4p_target != target and \
-           d4p_target not in target.sycl_device.get_filter_string():
-            raise RuntimeError("Cannot use target offload option "
-                               "inside daal4py.oneapi.sycl_context")
+           d4p_target != target:
+            if not isinstance(target, str):
+                if d4p_target not in target.sycl_device.get_filter_string():
+                    raise RuntimeError("Cannot use target offload option "
+                                       "inside daal4py.oneapi.sycl_context")
+            else:
+                raise RuntimeError("Cannot use target offload option "
+                                   "inside daal4py.oneapi.sycl_context")
         if isinstance(target, QueueClass):
             return target
         return QueueClass(target)
