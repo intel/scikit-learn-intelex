@@ -282,7 +282,7 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         if self._fit_method in ['auto', 'ball_tree']:
             condition = self.n_neighbors is not None and \
                 self.n_neighbors >= self.n_samples_fit_ // 2
-            if self.n_features_in_ > 11 or condition:
+            if self.n_features_in_ > 15 or condition:
                 result_method = 'brute'
             else:
                 if self.effective_metric_ in ['euclidean']:
@@ -330,7 +330,7 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         if self._fit_method in ['auto', 'ball_tree']:
             condition = self.n_neighbors is not None and \
                 self.n_neighbors >= self.n_samples_fit_ // 2
-            if self.n_features_in_ > 11 or condition:
+            if self.n_features_in_ > 15 or condition:
                 result_method = 'brute'
             else:
                 if self.effective_metric_ in ['euclidean']:

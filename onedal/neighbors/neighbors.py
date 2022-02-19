@@ -49,7 +49,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
         if (method in ['auto', 'ball_tree']):
             condition = self.n_neighbors is not None and \
                 self.n_neighbors >= n_samples // 2
-            if self.metric == 'precomputed' or n_features > 11 or condition:
+            if self.metric == 'precomputed' or n_features > 15 or condition:
                 result_method = 'brute'
             else:
                 if self.metric == 'euclidean':
