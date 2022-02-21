@@ -815,7 +815,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
         for i in range(self.n_estimators):
-            # print("Tree #{}".format(i))
             est_i = clone(est)
             est_i.set_params(
                 random_state=random_state_checked.randint(np.iinfo(np.int32).max))
