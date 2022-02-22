@@ -21,9 +21,10 @@ import os
 from functools import lru_cache
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
+
 def _is_new_patching_available():
     return os.environ.get('OFF_ONEDAL_IFACE') is None \
-           and daal_check_version((2021, 'P', 300))
+        and daal_check_version((2021, 'P', 300))
 
 
 @lru_cache(maxsize=None)
@@ -32,7 +33,7 @@ def get_patch_map():
     mapping = _get_map_of_algorithms().copy()
 
     if _is_new_patching_available():
-       # Classes for patching
+        # Classes for patching
 
         from ._config import set_config as set_config_sklearnex
         from ._config import get_config as get_config_sklearnex
