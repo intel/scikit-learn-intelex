@@ -29,7 +29,8 @@ from sklearn.utils.extmath import _safe_accumulator_op
 from .._utils import is_DataFrame, get_dtype, get_number_of_types, sklearn_check_version
 
 
-def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None, estimator_name=None, input_name=""):
+def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
+                            estimator_name=None, input_name=""):
     if _get_config()['assume_finite']:
         return
 
@@ -38,7 +39,8 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None, estimator_name=N
     if hasattr(X, 'size'):
         if X.size < 32768:
             if sklearn_check_version("1.1"):
-                _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype, estimator_name=None, input_name="")
+                _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype,
+                                   estimator_name=estimator_name, input_name=input_name)
             else:
                 _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype)
             return

@@ -331,20 +331,6 @@ def __logistic_regression_path_1_1(
             if Y_multi.shape[1] == 1:
                 Y_multi = np.hstack([1 - Y_multi, Y_multi])
 
-
-        # if solver not in ['sag', 'saga']:
-        #     if _dal_ready:
-        #         Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
-        #     else:
-        #         lbin = LabelBinarizer()
-        #         Y_multi = lbin.fit_transform(y)
-        #         if Y_multi.shape[1] == 1:
-        #             Y_multi = np.hstack([1 - Y_multi, Y_multi])
-        # else:
-        #     # SAG multinomial solver needs LabelEncoder, not LabelBinarizer
-        #     le = LabelEncoder()
-        #     Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
-
         if _dal_ready:
             w0 = np.zeros((classes.size, n_features + 1),
                           order='C', dtype=X.dtype)
@@ -485,7 +471,6 @@ def __logistic_regression_path_1_1(
                 )
             else:
                 l2_reg_strength = 1.0 / C
-                #extra_args = (X, target, 1. / C, sample_weight)
                 extra_args = (X, target, sample_weight, l2_reg_strength, n_threads)
 
             iprint = [-1, 50, 1, 100, 101][
@@ -539,10 +524,6 @@ def __logistic_regression_path_1_1(
                 w0, n_iter_i = _newton_cg(
                     hess, func, grad, w0, args=args, maxiter=max_iter, tol=tol
                 )
-                # args = (X, target, 1. / C, sample_weight)
-                # w0, n_iter_i = _newton_cg(
-                #     hess, func, grad, w0, args=args, maxiter=max_iter, tol=tol
-                # )
         elif solver == 'liblinear':
             coef_, intercept_, n_iter_i, = _fit_liblinear(
                 X,
@@ -618,10 +599,6 @@ def __logistic_regression_path_1_1(
                     multi_w0 = w0
                 if n_classes == 2:
                     multi_w0 = multi_w0[1][np.newaxis, :]
-                # n_classes = max(2, classes.size)
-                # multi_w0 = np.reshape(w0, (n_classes, -1))
-                # if n_classes == 2:
-                #     multi_w0 = multi_w0[1][np.newaxis, :]
             coefs.append(multi_w0.copy())
         else:
             coefs.append(w0.copy())
