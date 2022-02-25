@@ -36,7 +36,7 @@ from sklearn.utils import (check_array,
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 from sklearn.linear_model._sag import sag_solver
 from sklearn.utils.optimize import _newton_cg, _check_optimize_result
-if sklearn_check_version("1.1"):
+if sklearn_check_version('1.1'):
     from sklearn.linear_model._linear_loss import LinearModelLoss
     from sklearn._loss.loss import HalfBinomialLoss, HalfMultinomialLoss
     from sklearn.linear_model._logistic import (
@@ -60,7 +60,6 @@ else:
         LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import LabelEncoder, LabelBinarizer
 from .._device_offload import support_usm_ndarray
-from sklearn.linear_model._linear_loss import LinearModelLoss
 
 
 # Code adapted from sklearn.linear_model.logistic version 1.1
