@@ -230,7 +230,7 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
         y = y.astype(X.dtype.type)
         # something like this
         # if _is_classifier(self) and y.dtype != X.dtype:
-        #     y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
+        #     y = _validate_targets(y, self.class_weight, X.dtype).reshape((-1, 1))
         result = module.train(policy, params, *to_table(X, y, sample_weight))
         self._onedal_model = result.model
         return self
