@@ -394,9 +394,9 @@ def __logistic_regression_path_1_1(
             w0 = w0.ravel(order="F")
         target = Y_multi
         loss = LinearModelLoss(
-                base_loss=HalfMultinomialLoss(n_classes=classes.size),
-                fit_intercept=fit_intercept,
-            )
+            base_loss=HalfMultinomialLoss(n_classes=classes.size),
+            fit_intercept=fit_intercept,
+        )
         if solver == 'lbfgs':
             if _dal_ready:
                 if classes.size == 2:
