@@ -26,7 +26,7 @@ from sklearn.utils.validation import (_num_samples, _ensure_no_complex_data,
                                       _ensure_sparse_format, column_or_1d,
                                       check_consistent_length, _assert_all_finite)
 from sklearn.utils.extmath import _safe_accumulator_op
-from .._utils import is_DataFrame, get_dtype, get_number_of_types
+from .._utils import is_DataFrame, get_dtype, get_number_of_types, sklearn_check_version
 
 
 def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
@@ -37,7 +37,10 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
     # TODO: tune threshold size
     if hasattr(X, 'size'):
         if X.size < 32768:
-            _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype)
+            if sklearn_check_version("1.1"):
+                _assert_all_finite(X, allow_nan=allow_nan, estimator_name=None, input_name="")
+            else:
+                _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype)
             return
 
     is_df = is_DataFrame(X)
