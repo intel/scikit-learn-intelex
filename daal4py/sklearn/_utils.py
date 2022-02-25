@@ -60,11 +60,8 @@ def daal_check_version(rule):
 
 def sklearn_check_version(ver):
     if hasattr(Version(ver), 'base_version'):
-        print(f"sklearn_version = {Version(sklearn_version).base_version}")
-        print(f"ver = {Version(ver).base_version}")
-        print(f"bool = {bool(Version(sklearn_version).base_version >= Version(ver).base_version)}")
-
-        return bool(Version(sklearn_version).base_version >= Version(ver).base_version)
+        base_sklearn_version = Version(sklearn_version).base_version
+        return bool(Version(base_sklearn_version) >= Version(ver))
     # packaging module not available
     return bool(Version(sklearn_version) >= Version(ver))
 

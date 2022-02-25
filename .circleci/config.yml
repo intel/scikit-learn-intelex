@@ -26,12 +26,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Checkout master
-          command: |
-            git fetch --all
-            git checkout master
-            git reset --hard origin/master
-      - run:
           name: Setting up build environment
           command: |
             ls -la
