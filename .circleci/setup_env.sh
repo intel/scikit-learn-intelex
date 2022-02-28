@@ -21,9 +21,9 @@ export PATH=~/miniconda/bin:$PATH
 hash -r
 conda config --set always_yes yes --set changeps1 no
 conda update -q conda
-conda create -n bld -c conda-forge python=3.9 conda-build
+conda create -n bld python=3.7 conda-build
 source activate bld
-conda install -q -c conda-forge scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools pybind11 cmake
+conda install -q scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools pybind11 cmake
 conda install -q --override-channels -c intel dal dal-include
 gcc -v
 g++ -v
