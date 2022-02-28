@@ -242,13 +242,20 @@ def __logistic_regression_path(
 
     # Preprocessing.
     if check_input:
-        X = check_array(
-            X,
-            accept_sparse='csr',
-            dtype=np.float64,
-            accept_large_sparse=solver not in ["liblinear", "sag", "saga"] \
-                if sklearn_check_version('1.1') else solver != 'liblinear',
-        )
+        if sklearn_check_version('1.1'):
+            X = check_array(
+                X,
+                accept_sparse='csr',
+                dtype=np.float64,
+                accept_large_sparse=solver not in ["liblinear", "sag", "saga"],
+            )
+        else:
+            X = check_array(
+                X,
+                accept_sparse='csr',
+                dtype=np.float64,
+                accept_large_sparse=solver != 'liblinear',
+            )
         y = check_array(y, ensure_2d=False, dtype=None)
         check_consistent_length(X, y)
     _, n_features = X.shape
@@ -312,7 +319,7 @@ def __logistic_regression_path(
 
             if class_weight == "balanced" and not _dal_ready:
                 class_weight_ = compute_class_weight(class_weight, classes=mask_classes,
-                                                    y=y_bin)
+                                                     y=y_bin)
                 if not np.allclose(class_weight_, np.ones_like(class_weight_)):
                     sample_weight *= class_weight_[le.fit_transform(y_bin)]
         else:
@@ -323,7 +330,7 @@ def __logistic_regression_path(
 
             if class_weight == "balanced" and not _dal_ready:
                 class_weight_ = compute_class_weight(class_weight, classes=mask_classes,
-                                                    y=y_bin)
+                                                     y=y_bin)
                 if not np.allclose(class_weight_, np.ones_like(class_weight_)):
                     sample_weight *= class_weight_[le.fit_transform(y_bin)]
 
@@ -503,6 +510,7 @@ def __logistic_regression_path(
                     hess = loss.gradient_hessian_product  # hess = [gradient, hessp]
                 else:
                     func = _logistic_loss
+
                     def grad(x, *args):
                         return _logistic_loss_and_grad(x, *args)[1]
                     hess = _logistic_grad_hess
@@ -787,7 +795,7 @@ if sklearn_check_version('0.24'):
         n_threads=1,
     ):
         if sklearn_check_version('1.1'):
-            return __logistic_regression_path_1_1(
+            return __logistic_regression_path(
                 X, y, pos_class=pos_class,
                 Cs=Cs, fit_intercept=fit_intercept,
                 max_iter=max_iter, tol=tol, verbose=verbose,
