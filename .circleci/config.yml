@@ -44,7 +44,6 @@ jobs:
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
-
       - run:
           name: Testing sklearn patches with sklearnex
           no_output_timeout: 20m
