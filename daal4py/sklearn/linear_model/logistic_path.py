@@ -445,7 +445,7 @@ def __logistic_regression_path(
                     daal_extra_args_func = _daal4py_cross_entropy_loss_extra_args
                 func = _daal4py_loss_and_grad
             else:
-                if sklearn_check_version('1.1'):
+                if sklearn_check_version('1.1') and loss is not None:
                     func = loss.loss_gradient
                 else:
                     def func(x, *args):
@@ -463,7 +463,7 @@ def __logistic_regression_path(
                 grad = _daal4py_grad_
                 hess = _daal4py_grad_hess_
             else:
-                if sklearn_check_version('1.1'):
+                if sklearn_check_version('1.1') and loss is not None:
                     func = loss.loss
                     grad = loss.gradient
                     hess = loss.gradient_hessian_product  # hess = [gradient, hessp]
