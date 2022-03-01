@@ -316,23 +316,17 @@ def __logistic_regression_path(
             else:
                 mask_classes = np.array([-1, 1])
                 y_bin[~mask] = -1.0
-
-            if class_weight == "balanced" and not _dal_ready:
-                class_weight_ = compute_class_weight(class_weight, classes=mask_classes,
-                                                     y=y_bin)
-                if not np.allclose(class_weight_, np.ones_like(class_weight_)):
-                    sample_weight *= class_weight_[le.fit_transform(y_bin)]
         else:
             mask_classes = np.array([-1, 1])
             mask = (y == pos_class)
             y_bin[~mask] = -1.
             # for compute_class_weight
 
-            if class_weight == "balanced" and not _dal_ready:
-                class_weight_ = compute_class_weight(class_weight, classes=mask_classes,
-                                                     y=y_bin)
-                if not np.allclose(class_weight_, np.ones_like(class_weight_)):
-                    sample_weight *= class_weight_[le.fit_transform(y_bin)]
+        if class_weight == "balanced" and not _dal_ready:
+            class_weight_ = compute_class_weight(class_weight, classes=mask_classes,
+                                                 y=y_bin)
+            if not np.allclose(class_weight_, np.ones_like(class_weight_)):
+                sample_weight *= class_weight_[le.fit_transform(y_bin)]
 
         if _dal_ready:
             w0 = np.zeros(n_features + 1, dtype=X.dtype)
@@ -434,6 +428,7 @@ def __logistic_regression_path(
             else:
                 w0 = w0.ravel()
         target = Y_multi
+        loss = None
         if sklearn_check_version('1.1'):
             loss = LinearModelLoss(
                 base_loss=HalfMultinomialLoss(n_classes=classes.size),
