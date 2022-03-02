@@ -48,9 +48,10 @@ on CPU
      - Multi-output and sparse data are not supported.
    * - Classification
      - KNeighborsClassifier
-     - For ``algorithm`` == 'kd_tree':
+     - 
+       - For ``algorithm`` == 'kd_tree':
          | all parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
-       For ``algorithm`` == 'brute':
+       - For ``algorithm`` == 'brute':
          | all parameters except ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine'].
      - Multi-output and sparse data is not supported.
    * - Classification
@@ -107,9 +108,10 @@ on CPU
      - Sparse data is not supported.
    * - Unsupervised
      - NearestNeighbors
-     - For ``algorithm`` == 'kd_tree':
+     - 
+       - For ``algorithm`` == 'kd_tree':
          | all parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
-       For ``algorithm`` == 'brute':
+       - For ``algorithm`` == 'brute':
          | all parameters except ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine'].
      - Sparse data is not supported.
    * - Other
