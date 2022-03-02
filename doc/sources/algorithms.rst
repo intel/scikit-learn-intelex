@@ -28,6 +28,7 @@ on CPU
 .. list-table::
    :widths: 10 10 30 15
    :header-rows: 1
+   :align: left
 
    * - Task
      - Functionality
@@ -49,10 +50,10 @@ on CPU
      - KNeighborsClassifier
      - 
        | For ``algorithm`` == 'kd_tree':
-       |   all parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
+       |     all parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
        |
        | For ``algorithm`` == 'brute':
-       |   all parameters except ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine'].
+       |     all parameters except ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine'].
      - Multi-output and sparse data is not supported.
    * - Classification
      - LogisticRegression
