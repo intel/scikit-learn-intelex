@@ -49,7 +49,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
         if (method in ['auto', 'ball_tree']):
             condition = self.n_neighbors is not None and \
                 self.n_neighbors >= n_samples // 2
-            if self.metric == 'precomputed' or n_features > 11 or condition:
+            if self.metric == 'precomputed' or n_features > 15 or condition:
                 result_method = 'brute'
             else:
                 if self.metric == 'euclidean':
@@ -137,16 +137,18 @@ class NeighborsCommonBase(metaclass=ABCMeta):
     def _get_daal_params(self, data):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, 'weights', 'uniform')
-        return {
+        params = {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
-            'nClasses': class_count,
             'method': 'defaultDense',
             'k': self.n_neighbors,
             'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
             'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
             'resultsToEvaluate': 'none' if getattr(self, '_y', None) is None
-                else 'computeClassLabels'
+            else 'computeClassLabels'
         }
+        if class_count != 0:
+            params['nClasses'] = class_count
+        return params
 
 
 class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
@@ -454,7 +456,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
         prediction_result = self._onedal_predict(onedal_model, X, params, queue=queue)
         if self.effective_metric_ == 'euclidean' and not gpu_device:
-            responses = prediction_result.responses
+            responses = prediction_result.prediction
         else:
             responses = from_table(prediction_result.responses)
         result = self.classes_.take(
@@ -602,7 +604,7 @@ class NearestNeighbors(NeighborsBase):
     def _get_daal_params(self, data):
         params = super()._get_daal_params(data)
         params['resultsToCompute'] = 'computeIndicesOfNeighbors|computeDistances'
-        params['resultsToCompute'] = 'none' if getattr(self, '_y', None) is None \
+        params['resultsToEvaluate'] = 'none' if getattr(self, '_y', None) is None \
             else 'computeClassLabels'
         return params
 

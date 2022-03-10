@@ -230,7 +230,7 @@ class NearestNeighbors(NearestNeighbors_):
         if self._fit_method in ['auto', 'ball_tree']:
             condition = self.n_neighbors is not None and \
                 self.n_neighbors >= self.n_samples_fit_ // 2
-            if self.n_features_in_ > 11 or condition:
+            if self.n_features_in_ > 15 or condition:
                 result_method = 'brute'
             else:
                 if self.effective_metric_ in ['euclidean']:
@@ -244,7 +244,9 @@ class NearestNeighbors(NearestNeighbors_):
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
                                        'minkowski',
-                                       'euclidean']
+                                       'euclidean',
+                                       'chebyshev',
+                                       'cosine']
         main_condition = is_valid_for_brute and not is_sparse
 
         if method_name == 'neighbors.NearestNeighbors.fit':
@@ -262,7 +264,7 @@ class NearestNeighbors(NearestNeighbors_):
         if self._fit_method in ['auto', 'ball_tree']:
             condition = self.n_neighbors is not None and \
                 self.n_neighbors >= self.n_samples_fit_ // 2
-            if self.n_features_in_ > 11 or condition:
+            if self.n_features_in_ > 15 or condition:
                 result_method = 'brute'
             else:
                 if self.effective_metric_ in ['euclidean']:

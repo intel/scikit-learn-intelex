@@ -209,6 +209,13 @@ deselected_tests:
   # Some sklearnex docstrings differ from scikit-learn.
   - tests/test_docstrings.py >=1.0.2
 
+  # Accuracy of sklearnex and sklearn may differ due to different approaches
+  - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately_with_precomputed_distances
+  - manifold/tests/test_t_sne.py::test_bh_match_exact
+  - manifold/tests/test_t_sne.py::test_uniform_grid[barnes_hut]
+  - manifold/tests/test_t_sne.py::test_sparse_precomputed_distance
+  - manifold/tests/test_t_sne.py::test_tsne_different_square_distances >=0.24
+
   # Temporary deselected up to 2021.6 release. Need to fix
   - ensemble/tests/test_bagging.py::test_classification
 
@@ -374,6 +381,14 @@ gpu:
 
   - model_selection/tests/test_validation.py::test_cross_val_predict_sparse_prediction
   - model_selection/tests/test_validation.py::test_fit_and_score_verbosity
+
+  - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors
+
+  - neighbors/tests/test_neighbors.py::test_kneighbors_classifier
+  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
+  - neighbors/tests/test_neighbors.py::test_neighbors_metrics
+
+  - neighbors/tests/test_neighbors.py::test_neighbors_iris
 
   - semi_supervised/tests/test_self_training.py::test_early_stopping
 

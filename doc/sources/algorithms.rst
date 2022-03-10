@@ -26,7 +26,7 @@ on CPU
 ------
 
 .. list-table::
-   :widths: 10 10 30 15
+   :widths: 10 10 35 15
    :header-rows: 1
    :align: left
 
@@ -48,7 +48,13 @@ on CPU
      - Multi-output and sparse data are not supported.
    * - Classification
      - KNeighborsClassifier
-     - All parameters except ``metric`` != 'euclidean' or ``minkowski`` with ``p`` != 2.
+     - 
+       - For ``algorithm`` == 'kd_tree':
+       
+         all parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2
+       - For ``algorithm`` == 'brute':
+         
+         all parameters except ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine']
      - Multi-output and sparse data is not supported.
    * - Classification
      - LogisticRegression
@@ -104,7 +110,13 @@ on CPU
      - Sparse data is not supported.
    * - Unsupervised
      - NearestNeighbors
-     - All parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
+     - 
+       - For ``algorithm`` == 'kd_tree':
+         
+         all parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2
+       - For ``algorithm`` == 'brute':
+         
+         all parameters except ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine']
      - Sparse data is not supported.
    * - Other
      - train_test_split
@@ -145,7 +157,7 @@ on GPU
      - Multi-output, sparse data, out-of-bag score and sample_weight are not supported.
    * - Classification
      - KNeighborsClassifier
-     - All parameters except ``algorithm`` != 'brute', ``weights`` = 'callable'
+     - All parameters except ``algorithm`` != 'brute', ``weights`` = 'callable', ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine'].
      - Only dense data is supported.
    * - Classification
      - LogisticRegression
@@ -157,7 +169,7 @@ on GPU
      - Multi-output, sparse data, out-of-bag score and sample_weight are not supported.
    * - Regression
      - KNeighborsRegressor
-     - All parameters except ``algorithm`` != 'brute', ``weights`` = 'callable'
+     - All parameters except ``algorithm`` != 'brute', ``weights`` = 'callable', ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
      - Only dense data is supported.
    * - Regression
      - LinearRegression
@@ -175,6 +187,10 @@ on GPU
      - PCA
      - All parameters except ``svd_solver`` != 'full'.
      - Sparse data is not supported.
+   * - Unsupervised
+     - NearestNeighbors
+     - All parameters except ``algorithm`` != 'brute', ``weights`` = 'callable', ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine'].
+     - Only dense data is supported.
 
 .. seealso:: :ref:`oneapi_gpu`
 
