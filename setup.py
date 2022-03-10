@@ -430,6 +430,7 @@ setup(
         'onedal',
         'onedal.svm',
         'onedal.neighbors',
+        'onedal.kmeans',
         'onedal.primitives',
         'onedal.datatypes',
         'onedal.common'

@@ -17,7 +17,7 @@
 import pytest
 import numpy as np
 
-from onedal.kmeans import Kmeans
+from onedal.kmeans import KMeans
 from onedal.tests.utils._device_selection import get_queues
 
 from sklearn import datasets
@@ -26,4 +26,4 @@ from sklearn import datasets
 @pytest.mark.parametrize('queue', get_queues())
 def test_iris(queue):
     iris = datasets.load_iris()
-    clf = Kmeans().fit(iris.data, iris.target, queue=queue)
+    clf = KMeans().fit(iris.data, queue=queue)

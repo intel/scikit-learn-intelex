@@ -47,11 +47,25 @@ class KMeans(metaclass=ABCMeta):
         self.copy_x = copy_x
         self.algorithm = algorithm
 
-    def fit(self, X, y, queue):
-        self._onedal_model = None
+    def _get_onedal_params(self, data):
+        return {
+            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'method': 'lloyd_dense',
+            'cluster_count': 2,
+            'max_iteration_count': 100,
+            'accuracy_threshold': 0.1
+        }
 
-        policy = _get_policy(queue, X, y)
+    def _get_initial_centroids(self):
+        centroids = np.asarray([[1, 1, 1, 1], [1, 1, 1, 1]], dtype=np.float64)
+        return centroids
+
+    def fit(self, X, queue):
+        module = _backend.kmeans.clustering
+
+        policy = _get_policy(queue, X)
         params = self._get_onedal_params(X)
-        result = module.train(policy, params, *to_table(X, y))
+        centroids = self._get_initial_centroids()
+        result = module.train(policy, params, *to_table(X, centroids))
 
         return result

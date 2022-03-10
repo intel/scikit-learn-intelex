@@ -18,7 +18,6 @@
 #include "oneapi/dal/algo/kmeans_init.hpp"
 
 #include "onedal/common.hpp"
-#include <regex>
 
 namespace py = pybind11;
 
@@ -54,20 +53,18 @@ struct params2desc {
     }
 };
 
-template <typename Policy>
-struct init_train_ops_dispatcher<Policy, kmeans::task::clustering> {
+template <typename Policy, typename Task>
+struct init_train_ops_dispatcher {
     void operator()(py::module_& m) {
-        using Task = kmeans::task::clustering;
         m.def("train",
               [](const Policy& policy,
                  const py::dict& params,
                  const table& data,
-                 const table& responses,
                  const table& centroids) {
                   using namespace kmeans;
                   using input_t = train_input<Task>;
 
-                  train_ops ops(policy, input_t{ data, responses, centroids }, params2desc{});
+                  train_ops ops(policy, input_t{ data, centroids }, params2desc{});
                   return fptype2t { method2t { Task{}, ops } }(params);
               });
     }
@@ -84,14 +81,7 @@ void init_model(py::module_& m) {
     using model_t = model<Task>;
 
     auto cls = py::class_<model_t>(m, "model")
-                   .def(py::init())
-                   .def(py::pickle(
-                       [](const model_t& m) {
-                           return serialize(m);
-                       },
-                       [](const py::bytes& bytes) {
-                           return deserialize<model_t>(bytes);
-                       }));
+                   .def(py::init());
 }
 
 template <typename Task>
@@ -102,7 +92,7 @@ void init_train_result(py::module_& m) {
     py::class_<result_t>(m, "train_result").def(py::init()).DEF_ONEDAL_PY_PROPERTY(model, result_t);
 }
 
-ONEDAL_PY_TYPE2STR(knn::task::clustering, "clustering");
+ONEDAL_PY_TYPE2STR(kmeans::task::clustering, "clustering");
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
