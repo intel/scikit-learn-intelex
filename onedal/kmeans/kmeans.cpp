@@ -15,8 +15,6 @@
 *******************************************************************************/
 
 #include "oneapi/dal/algo/kmeans.hpp"
-#include "oneapi/dal/algo/kmeans_init.hpp"
-
 #include "onedal/common.hpp"
 
 namespace py = pybind11;
