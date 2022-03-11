@@ -185,11 +185,15 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         self.effective_metric_params_ = getattr(
             self, 'effective_metric_params_', self.metric_params)
 
-        if y is not None or self.requires_y:
-            X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])
-            self._shape = y.shape
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
 
-            if _is_classifier(self) or _is_regressor(self):
+        if y is not None or self.requires_y:
+            shape = getattr(y, 'shape', None)
+            X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])
+            self._shape = shape if shape is not None else y.shape
+
+            condition = _is_classifier(self) or (_is_regressor(self) and not gpu_device)
+            if condition:
                 if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
                     self.outputs_2d_ = False
                     y = y.reshape((-1, 1))
@@ -207,14 +211,14 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
                 if not self.outputs_2d_:
                     self.classes_ = self.classes_[0]
-                    self._y = self._y.ravel()
+                    self._y = self._y.ravel() if _is_classifier(self) else y
                 if _is_classifier(self):
                     self._validate_n_classes()
             else:
                 self._y = y
         else:
             X, _ = super()._validate_data(X, dtype=[np.float64, np.float32])
-
+        
         self.n_samples_fit_ = X.shape[0]
         self.n_features_in_ = X.shape[1]
         self._fit_X = X
@@ -415,8 +419,8 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
                 predict_alg = kdtree_knn_classification_prediction
 
             return predict_alg(**params).compute(X, model)
-        policy = _get_policy(queue, X)
 
+        policy = _get_policy(queue, X)
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:
@@ -523,10 +527,26 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         params['result_option'] = 'responses'
         return params
 
+    def _get_daal_params(self, data):
+        params = super()._get_daal_params(data)
+        params['resultsToEvaluate'] = 'computeClassLabels'
+        params['resultsToCompute'] = ''
+        return params
+
     def _onedal_fit(self, X, y, queue):
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            params = self._get_daal_params(X)
+            if self._fit_method == 'brute':
+                train_alg = bf_knn_classification_training
+
+            else:
+                train_alg = kdtree_knn_classification_training
+
+            return train_alg(**params).compute(X, y).model
+
         policy = _get_policy(queue, X, y)
         params = self._get_onedal_params(X)
-        gpu_device = queue is not None and queue.sycl_device.is_gpu
         train_alg_regr = _backend.neighbors.regression.train
         train_alg_cls = _backend.neighbors.classification.train
         train_alg = train_alg_regr if gpu_device else train_alg_cls
@@ -534,9 +554,17 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         return train_alg(policy, params, *to_table(X, y))
 
     def _onedal_predict(self, model, X, params, queue):
-        policy = _get_policy(queue, X)
-
         gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            if self._fit_method == 'brute':
+                predict_alg = bf_knn_classification_prediction
+
+            else:
+                predict_alg = kdtree_knn_classification_prediction
+
+            return predict_alg(**params).compute(X, model)
+
+        policy = _get_policy(queue, X)
         backend = _backend.neighbors.regression if gpu_device \
             else _backend.neighbors.classification
 
@@ -639,7 +667,6 @@ class NearestNeighbors(NeighborsBase):
             return predict_alg(**params).compute(X, model)
 
         policy = _get_policy(queue, X)
-
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:
