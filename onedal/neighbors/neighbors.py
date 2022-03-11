@@ -218,7 +218,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
                 self._y = y
         else:
             X, _ = super()._validate_data(X, dtype=[np.float64, np.float32])
-        
+
         self.n_samples_fit_ = X.shape[0]
         self.n_features_in_ = X.shape[1]
         self._fit_X = X
