@@ -20,34 +20,32 @@
 Supported Algorithms
 ####################
 
-Applying |intelex| will impact the following scikit-learn algorithms:
+Applying |intelex| impacts the following scikit-learn algorithms:
 
 on CPU
 ------
 
+Classification
+**************
+
 .. list-table::
-   :widths: 10 10 35 15
+   :widths: 10 30 20
    :header-rows: 1
    :align: left
 
-   * - Task
-     - Functionality
+   * - Algorithm
      - Parameters support
      - Data support
-   * - Classification
-     - SVC
+   * - SVC
      - All parameters are supported
      - No limitations.
-   * - Classification
-     - NuSVC
+   * - NuSVC
      - All parameters are supported
      - No limitations.
-   * - Classification
-     - RandomForestClassifier
+   * - RandomForestClassifier
      - All parameters except ``warm_start`` = True, ``cpp_alpha`` != 0, ``criterion`` != 'gini'.
      - Multi-output and sparse data are not supported.
-   * - Classification
-     - KNeighborsClassifier
+   * - KNeighborsClassifier
      - 
        - For ``algorithm`` == 'kd_tree':
        
@@ -56,60 +54,96 @@ on CPU
          
          all parameters except ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine']
      - Multi-output and sparse data is not supported.
-   * - Classification
-     - LogisticRegression
+   * - LogisticRegression
      - All parameters except ``solver`` != 'lbfgs' or 'newton-cg', ``class_weight`` != None, ``sample_weight`` != None.
      - Only dense data is supported.
-   * - Regression
-     - SVR
+
+Regression
+**********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters support
+     - Data support
+   * - SVR
      - All parameters are supported
      - No limitations.
-   * - Regression
-     - NuSVR
+   * - NuSVR
      - All parameters are supported
      - No limitations.
-   * - Regression
-     - RandomForestRegressor
+   * - RandomForestRegressor
      - All parameters except ``warm_start`` = True, ``cpp_alpha`` != 0, ``criterion`` != 'mse'.
      - Multi-output and sparse data are not supported.
-   * - Regression
-     - KNeighborsRegressor
+   * - KNeighborsRegressor
      - All parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
      - Multi-output and sparse data is not supported.
-   * - Regression
-     - LinearRegression
+   * - LinearRegression
      - All parameters except ``normalize`` != False and ``sample_weight`` != None.
      - Only dense data is supported, #observations should be >= #features.
-   * - Regression
-     - Ridge
+   * - Ridge
      - All parameters except ``normalize`` != False, ``solver`` != 'auto' and ``sample_weight`` != None.
      - Only dense data is supported, #observations should be >= #features.
-   * - Regression
-     - ElasticNet
+   * - ElasticNet
      - All parameters except ``sample_weight`` != None.
      - Multi-output and sparse data is not supported, #observations should be >= #features.
-   * - Regression
-     - Lasso
+   * - Lasso
      - All parameters except ``sample_weight`` != None.
      - Multi-output and sparse data is not supported, #observations should be >= #features.
-   * - Clustering
-     - KMeans
+
+Clustering
+**********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters support
+     - Data support
+   * - KMeans
      - All parameters except ``precompute_distances`` and ``sample_weight`` != None.
      - No limitations.
-   * - Clustering
-     - DBSCAN
+   * - DBSCAN
      - All parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2, ``algorithm`` != 'brute' or 'auto'.
      - Only dense data is supported.
-   * - Dimensionality reduction
-     - PCA
+
+Dimensionality reduction
+************************
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters support
+     - Data support
+   * - PCA
      - All parameters except ``svd_solver`` != 'full'.
      - Sparse data is not supported.
-   * - Dimensionality reduction
-     - TSNE
+   * - TSNE
      - All parameters except ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
+
+       .. note:: Refer to :ref:`TSNE acceleration details <acceleration_tsne>`.
      - Sparse data is not supported.
-   * - Unsupervised
-     - NearestNeighbors
+
+Other tasks
+***********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters support
+     - Data support
+   * - NearestNeighbors
      - 
        - For ``algorithm`` == 'kd_tree':
          
@@ -118,77 +152,112 @@ on CPU
          
          all parameters except ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine']
      - Sparse data is not supported.
-   * - Other
-     - train_test_split
+   * - train_test_split
      - All parameters are supported.
      - Only dense data is supported.
-   * - Other
-     - assert_all_finite
+   * - assert_all_finite
      - All parameters are supported.
      - Only dense data is supported.
-   * - Other
-     - pairwise_distance
+   * - pairwise_distance
      - With ``metric`` = 'cosine' or 'correlation'.
      - Only dense data is supported.
-   * - Other
-     - roc_auc_score
+   * - roc_auc_score
      - Parameters ``average``, ``sample_weight``, ``max_fpr`` and ``multi_class`` are not supported.
      - No limitations.
 
 on GPU
 ------
 
+Classification
+**************
+
 .. list-table::
-   :widths: 10 10 30 15
+   :widths: 10 30 20
    :header-rows: 1
    :align: left
 
-   * - Task
-     - Functionality
+   * - Algorithm
      - Parameters support
      - Data support
-   * - Classification
-     - SVC
+   * - SVC
      - All parameters except ``kernel`` = 'sigmoid_poly', ``class_weight`` != None.
      - Only binary dense data is supported.
-   * - Classification
-     - RandomForestClassifier
+   * - RandomForestClassifier
      - All parameters except ``warm_start`` = True, ``cpp_alpha`` != 0, ``criterion`` != 'gini', ``oob_score`` = True.
      - Multi-output, sparse data, out-of-bag score and sample_weight are not supported.
-   * - Classification
-     - KNeighborsClassifier
+   * - KNeighborsClassifier
      - All parameters except ``algorithm`` != 'brute', ``weights`` = 'callable', ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine'].
      - Only dense data is supported.
-   * - Classification
-     - LogisticRegression
+   * - LogisticRegression
      - All parameters except ``solver`` != 'newton-cg', ``class_weight`` != None, ``sample_weight`` != None, ``penalty`` != 'l2'
      - Only dense data is supported.
-   * - Regression
-     - RandomForestRegressor
+
+Regression
+**********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters support
+     - Data support
+   * - RandomForestRegressor
      - All parameters except ``warm_start`` = True, ``cpp_alpha`` != 0, ``criterion`` != 'mse', ``oob_score`` = True.
      - Multi-output, sparse data, out-of-bag score and sample_weight are not supported.
-   * - Regression
-     - KNeighborsRegressor
+   * - KNeighborsRegressor
      - All parameters except ``algorithm`` != 'brute', ``weights`` = 'callable', ``metric`` != 'euclidean' or 'minkowski' with ``p`` != 2.
      - Only dense data is supported.
-   * - Regression
-     - LinearRegression
+   * - LinearRegression
      - All parameters except ``normalize`` != False and ``sample_weight`` != None.
      - Only dense data is supported, #observations should be >= #features.
-   * - Clustering
-     - KMeans
+
+Clustering
+**********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters support
+     - Data support
+   * - KMeans
      - All parameters except ``precompute_distances`` and ``sample_weight`` != None. Init = 'k-means++' fallbacks to CPU.
      - Sparse data is not supported.
-   * - Clustering
-     - DBSCAN
+   * - DBSCAN
      - All parameters except ``metric`` != 'euclidean', ``algorithm`` != 'brute', ``algorithm`` != 'auto'.
      - Only dense data is supported.
-   * - Dimensionality reduction
-     - PCA
+
+Dimensionality reduction
+************************
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters support
+     - Data support
+   * - PCA
      - All parameters except ``svd_solver`` != 'full'.
      - Sparse data is not supported.
-   * - Unsupervised
-     - NearestNeighbors
+
+Other tasks
+***********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters support
+     - Data support
+   * - NearestNeighbors
      - All parameters except ``algorithm`` != 'brute', ``weights`` = 'callable', ``metric`` not in ['euclidean', 'manhattan', 'minkowski', 'chebyshev', 'cosine'].
      - Only dense data is supported.
 
