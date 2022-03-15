@@ -239,9 +239,10 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             self.algorithm,
             self.n_samples_fit_, self.n_features_in_)
 
-        if (_is_classifier(self) or _is_regressor(self)) and y.dtype != X.dtype:
-            y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
-        result = self._onedal_fit(X, y, queue)
+        _fit_y = None
+        if _is_classifier(self) or _is_regressor(self):
+            _fit_y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
+        result = self._onedal_fit(X, _fit_y, queue)
 
         if y is not None and _is_regressor(self):
             self._y = y if self._shape is None else y.reshape(self._shape)
