@@ -211,7 +211,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
                 if not self.outputs_2d_:
                     self.classes_ = self.classes_[0]
-                    self._y = self._y.ravel() if _is_classifier(self) else y
+                    self._y = self._y.ravel()
                 if _is_classifier(self):
                     self._validate_n_classes()
             else:
