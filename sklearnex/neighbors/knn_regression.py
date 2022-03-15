@@ -395,5 +395,4 @@ class KNeighborsRegressor(KNeighborsRegressor_):
         self._fit_X = self._onedal_estimator._fit_X
         self._y = self._onedal_estimator._y
         self._fit_method = self._onedal_estimator._fit_method
-        self.outputs_2d_ = self._onedal_estimator.outputs_2d_
         self._tree = self._onedal_estimator._tree
