@@ -80,6 +80,9 @@ def get_patch_map():
         mapping['nearest_neighbors'] = [[(neighbors_module,
                                           'NearestNeighbors',
                                           NearestNeighbors_sklearnex), None]]
+        mapping['kneighborsclassifier'] = mapping['knn_classifier']
+        mapping['kneighborsregressor'] = mapping['knn_regressor']
+        mapping['nearestneighbors'] = mapping['nearest_neighbors']
 
         # Configs
         mapping['set_config'] = [[(base_module,
