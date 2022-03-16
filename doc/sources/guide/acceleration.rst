@@ -14,26 +14,30 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-############
-Acceleration
-############
+####################
+Acceleration Details
+####################
 
 The performance of some algorithms changes based on the parameters that were used.
 This section denotes the details of such cases.
 
-Refer to :ref:`sklearn_algorithms` to learn which algorithms, parameters, and data formats are supported in |intelex|.
+Refer to :ref:`sklearn_algorithms` to see the full list of algorithms, parameters, and data formats supported in |intelex|.
 
 .. _acceleration_tsne:
 
 TSNE
 ----
 
-T-SNE algorithm consists of two components: KNN and Gradient Descent.
+TSNE algorithm consists of two components: KNN and Gradient Descent.
 The overall accelration of TSNE depends on the acceleration of each of these algorithms.
 
-Supported paramters:
-
-- For KNN: all parameters except metric != ‘euclidean’ or ‘minkowski’ with p != 2.
-- For Gradient Descent: all parameters except: n_components=3, method='exact', verbose != 0.
+- The KNN part of the algorithm supports all parameters except:
+ 
+  - ``metric`` != `'euclidean'` or `'minkowski'` with ``p`` != `2`
+- The Gradient Descent part of the algorithm supports all parameters except:
+ 
+  - ``n_components`` = `3`
+  - ``method`` = `'exact'`
+  - ``verbose`` != `0`
 
 To get better performance, use parameters supported by both components.
