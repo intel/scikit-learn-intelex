@@ -25,8 +25,15 @@ if "Windows" in platform.system():
 
     sitepackages_path = sysconfig.get_paths()['purelib']
     installed_package_path = os.path.join(sitepackages_path, 'daal4py', 'oneapi')
-
     if sys.version_info.minor >= 8:
+        if 'DPCPPROOT' in os.environ:
+            dpcpp_rt_root_bin = os.path.join(os.environ['DPCPPROOT'], "windows", "bin")
+            dpcpp_rt_root_redist = os.path.join(os.environ['DPCPPROOT'], "windows",
+                                                "redist", "intel64_win", "compiler")
+            if os.path.exists(dpcpp_rt_root_bin):
+                os.add_dll_directory(dpcpp_rt_root_bin)
+            if os.path.exists(dpcpp_rt_root_redist):
+                os.add_dll_directory(dpcpp_rt_root_redist)
         os.add_dll_directory(current_path)
         if os.path.exists(installed_package_path):
             os.add_dll_directory(installed_package_path)

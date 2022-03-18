@@ -396,6 +396,8 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
   - neighbors/tests/test_neighbors.py::test_neighbors_metrics
 
+  - neighbors/tests/test_neighbors.py::test_neighbors_iris
+
   - semi_supervised/tests/test_self_training.py::test_early_stopping
 
   - svm/tests/test_sparse.py::test_svc

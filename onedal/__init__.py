@@ -22,8 +22,12 @@ if "Windows" in platform.system():
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
     if sys.version_info.minor >= 8:
+        if 'DALROOT' in os.environ:
+            dal_root_redist = os.path.join(os.environ['DALROOT'], "redist", "intel64")
+            if os.path.exists(dal_root_redist):
+                os.add_dll_directory(dal_root_redist)
         os.add_dll_directory(path_to_libs)
-    os.environ['PATH'] += os.pathsep + path_to_libs
+    os.environ['PATH'] = path_to_libs + os.pathsep + os.environ['PATH']
 
 try:
     import onedal._onedal_py_dpc as _backend

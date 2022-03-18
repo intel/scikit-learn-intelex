@@ -282,7 +282,7 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         if self._fit_method in ['auto', 'ball_tree']:
             condition = self.n_neighbors is not None and \
                 self.n_neighbors >= self.n_samples_fit_ // 2
-            if self.n_features_in_ > 11 or condition:
+            if self.n_features_in_ > 15 or condition:
                 result_method = 'brute'
             else:
                 if self.effective_metric_ in ['euclidean']:
@@ -306,7 +306,9 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         is_valid_for_brute = result_method in ['brute'] and \
             self.effective_metric_ in ['manhattan',
                                        'minkowski',
-                                       'euclidean']
+                                       'euclidean',
+                                       'chebyshev',
+                                       'cosine']
         is_valid_weights = self.weights in ['uniform', "distance"]
         main_condition = is_valid_for_brute and not is_sparse and \
             is_single_output and is_valid_weights
@@ -328,7 +330,7 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         if self._fit_method in ['auto', 'ball_tree']:
             condition = self.n_neighbors is not None and \
                 self.n_neighbors >= self.n_samples_fit_ // 2
-            if self.n_features_in_ > 11 or condition:
+            if self.n_features_in_ > 15 or condition:
                 result_method = 'brute'
             else:
                 if self.effective_metric_ in ['euclidean']:
