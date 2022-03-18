@@ -61,7 +61,7 @@ Classification
    * - `LogisticRegression`
      - All parameters are supported except:
 
-       - ``solver`` != `'lbfgs'` or `'newton-cg'`
+       - ``solver`` not in [`'lbfgs'`, `'newton-cg'`]
        - ``class_weight`` != `None`
        - ``sample_weight`` != `None`
      - Only dense data is supported
@@ -140,7 +140,7 @@ Clustering
      - All parameters are supported except:
 
        - ``metric`` != `'euclidean'` or `'minkowski'` with ``p`` != `2`
-       - ``algorithm`` != `'brute'` or `'auto'`
+       - ``algorithm`` not in [`'brute'`, `'auto'`]
      - Only dense data is supported
 
 Dimensionality reduction
@@ -194,13 +194,15 @@ Other tasks
      - All parameters are supported
      - Only dense data is supported
    * - `pairwise_distance`
-     - With ``metric`` = `'cosine'` or `'correlation'`.
+     - All parameters are supported except:
+     
+       - ``metric`` not in [`'cosine'`, `'correlation'`]
      - Only dense data is supported
    * - `roc_auc_score`
      - All parameters are supported except:
        
        - ``average``
-       - ``sample_weight``
+       - ``sample_weight`` != `None`
        - ``max_fpr``
        - ``multi_class``
      - No limitations
@@ -232,7 +234,7 @@ Classification
        - ``cpp_alpha`` != `0`
        - ``criterion`` != `'gini'`
        - ``oob_score`` = `True`
-       - ``sample_weight``
+       - ``sample_weight`` != `None`
      - Multi-output and sparse data are not supported
    * - `KNeighborsClassifier`
      - All parameters are supported except:
@@ -268,7 +270,7 @@ Regression
        - ``cpp_alpha`` != `0`
        - ``criterion`` != `'mse'`
        - ``oob_score`` = `True`
-       - ``sample_weight``
+       - ``sample_weight`` != `None`
      - Multi-output and sparse data are not supported
    * - `KNeighborsRegressor`
      - All parameters are supported except:
@@ -307,7 +309,7 @@ Clustering
      - All parameters are supported except:
 
        - ``metric`` != `'euclidean'`
-       - ``algorithm`` != `'brute'` or `'auto'`
+       - ``algorithm`` not in [`'brute'`, `'auto'`]
      - Only dense data is supported
 
 Dimensionality reduction
