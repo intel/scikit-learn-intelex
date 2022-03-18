@@ -79,7 +79,8 @@ void init_model(py::module_& m) {
     using model_t = model<Task>;
 
     auto cls = py::class_<model_t>(m, "model")
-                   .def(py::init());
+                   .def(py::init())
+                   .DEF_ONEDAL_PY_PROPERTY(centroids, model_t);
 }
 
 template <typename Task>
@@ -87,8 +88,14 @@ void init_train_result(py::module_& m) {
     using namespace kmeans;
     using result_t = train_result<Task>;
 
-    py::class_<result_t>(m, "train_result").def(py::init()).DEF_ONEDAL_PY_PROPERTY(model, result_t);
+    py::class_<result_t>(m, "train_result")
+        .def(py::init())
+        .DEF_ONEDAL_PY_PROPERTY(model, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(responses, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(iteration_count, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(objective_function_value, result_t);
 }
+
 
 ONEDAL_PY_TYPE2STR(kmeans::task::clustering, "clustering");
 
