@@ -167,8 +167,8 @@ Dimensionality reduction
        Refer to :ref:`TSNE acceleration details <acceleration_tsne>` to learn more.
      - Sparse data is not supported
 
-Other tasks
-***********
+Nearest Neighbors
+*****************
 
 .. list-table::
    :widths: 10 30 20
@@ -187,6 +187,18 @@ Other tasks
          
          all parameters except ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
      - Sparse data is not supported
+
+Other tasks
+***********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters
+     - Data formats
    * - `train_test_split`
      - All parameters are supported
      - Only dense data is supported
@@ -209,6 +221,8 @@ Other tasks
 
 on GPU
 ------
+
+.. seealso:: :ref:`oneapi_gpu`
 
 Classification
 **************
@@ -329,8 +343,8 @@ Dimensionality reduction
        - ``svd_solver`` != `'full'`
      - Sparse data is not supported
 
-Other tasks
-***********
+Nearest Neighbors
+*****************
 
 .. list-table::
    :widths: 10 30 20
@@ -347,8 +361,6 @@ Other tasks
        - ``weights`` = `'callable'`
        - ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
      - Only dense data is supported
-
-.. seealso:: :ref:`oneapi_gpu`
 
 Scikit-learn tests
 ------------------
