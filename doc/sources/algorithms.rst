@@ -213,10 +213,10 @@ Other tasks
    * - `roc_auc_score`
      - All parameters are supported except:
        
-       - ``average``
+       - ``average`` != `None`
        - ``sample_weight`` != `None`
-       - ``max_fpr``
-       - ``multi_class``
+       - ``max_fpr`` != `None`
+       - ``multi_class`` != `None`
      - No limitations
 
 on GPU
