@@ -185,23 +185,19 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         self.effective_metric_params_ = getattr(
             self, 'effective_metric_params_', self.metric_params)
 
-        gpu_device = queue is not None and queue.sycl_device.is_gpu
-
         if y is not None or self.requires_y:
             shape = getattr(y, 'shape', None)
             X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])
             self._shape = shape if shape is not None else y.shape
 
-            condition = _is_classifier(self) or (_is_regressor(self) and not gpu_device)
-            if condition:
+            if _is_classifier(self):
                 if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
                     self.outputs_2d_ = False
                     y = y.reshape((-1, 1))
                 else:
                     self.outputs_2d_ = True
 
-                if _is_classifier(self):
-                    _check_classification_targets(y)
+                _check_classification_targets(y)
                 self.classes_ = []
                 self._y = np.empty(y.shape, dtype=int)
                 for k in range(self._y.shape[1]):
@@ -212,8 +208,8 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
                 if not self.outputs_2d_:
                     self.classes_ = self.classes_[0]
                     self._y = self._y.ravel()
-                if _is_classifier(self):
-                    self._validate_n_classes()
+
+                self._validate_n_classes()
             else:
                 self._y = y
         else:
@@ -240,7 +236,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             self.n_samples_fit_, self.n_features_in_)
 
         _fit_y = None
-        if _is_classifier(self) or _is_regressor(self):
+        if _is_classifier(self):
             _fit_y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
         result = self._onedal_fit(X, _fit_y, queue)
 
@@ -530,8 +526,9 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
     def _get_daal_params(self, data):
         params = super()._get_daal_params(data)
-        params['resultsToEvaluate'] = 'computeClassLabels'
-        params['resultsToCompute'] = ''
+        params['resultsToCompute'] = 'computeIndicesOfNeighbors|computeDistances'
+        params['resultsToEvaluate'] = 'none' if getattr(self, '_y', None) is None \
+            else 'computeClassLabels'
         return params
 
     def _onedal_fit(self, X, y, queue):
@@ -605,8 +602,9 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
         prediction_result = self._onedal_predict(onedal_model, X, params, queue=queue)
         responses = from_table(prediction_result.responses)
+        result = responses.ravel()
 
-        return responses
+        return result
 
 
 class NearestNeighbors(NeighborsBase):
