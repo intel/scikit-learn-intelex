@@ -93,7 +93,7 @@ if Version(sklearn_version) >= Version("1.0"):
                 The fitted local outlier factor detector.
             """
             logging.info("sklearn.neighbors.LocalOutlierFactor."
-                        "fit: " + get_patch_message("onedal"))
+                         "fit: " + get_patch_message("onedal"))
             NearestNeighbors.fit(self, X)
 
             if self.contamination != "auto":
@@ -112,7 +112,8 @@ if Version(sklearn_version) >= Version("1.0"):
                 )
             self.n_neighbors_ = max(1, min(self.n_neighbors, n_samples - 1))
 
-            self._distances_fit_X_, _neighbors_indices_fit_X_ = NearestNeighbors.kneighbors(
+            self._distances_fit_X_, _neighbors_indices_fit_X_ =
+            NearestNeighbors.kneighbors(
                 self, n_neighbors=self.n_neighbors_
             )
 
@@ -136,7 +137,7 @@ if Version(sklearn_version) >= Version("1.0"):
                 )
 
             return self
-        
+
         @available_if(_check_novelty_score_samples)
         def score_samples(self, X):
             """Opposite of the Local Outlier Factor of X.
@@ -162,7 +163,7 @@ if Version(sklearn_version) >= Version("1.0"):
                 The lower, the more abnormal.
             """
             logging.info("sklearn.neighbors.LocalOutlierFactor."
-                        "score_samples: " + get_patch_message("onedal"))
+                         "score_samples: " + get_patch_message("onedal"))
             check_is_fitted(self)
             X = check_array(X, accept_sparse="csr")
 
@@ -219,7 +220,7 @@ else:
                 The fitted local outlier factor detector.
             """
             logging.info("sklearn.neighbors.LocalOutlierFactor."
-                        "fit: " + get_patch_message("onedal"))
+                         "fit: " + get_patch_message("onedal"))
             NearestNeighbors.fit(self, X)
 
             if self.contamination != "auto":
@@ -238,7 +239,8 @@ else:
                 )
             self.n_neighbors_ = max(1, min(self.n_neighbors, n_samples - 1))
 
-            self._distances_fit_X_, _neighbors_indices_fit_X_ = NearestNeighbors.kneighbors(
+            self._distances_fit_X_, _neighbors_indices_fit_X_ =
+            NearestNeighbors.kneighbors(
                 self, n_neighbors=self.n_neighbors_
             )
 
@@ -262,7 +264,7 @@ else:
                 )
 
             return self
-        
+
         def _score_samples(self, X):
             """Opposite of the Local Outlier Factor of X.
             It is the opposite as bigger is better, i.e. large values correspond
@@ -287,7 +289,7 @@ else:
                 The lower, the more abnormal.
             """
             logging.info("sklearn.neighbors.LocalOutlierFactor."
-                        "score_samples: " + get_patch_message("onedal"))
+                         "score_samples: " + get_patch_message("onedal"))
             check_is_fitted(self)
             X = check_array(X, accept_sparse="csr")
 
