@@ -94,6 +94,7 @@ if Version(sklearn_version) >= Version("1.0"):
             """
             logging.info("sklearn.neighbors.LocalOutlierFactor."
                          "fit: " + get_patch_message("onedal"))
+            
             NearestNeighbors.fit(self, X)
 
             if self.contamination != "auto":
@@ -222,6 +223,7 @@ else:
             """
             logging.info("sklearn.neighbors.LocalOutlierFactor."
                          "fit: " + get_patch_message("onedal"))
+            
             NearestNeighbors.fit(self, X)
 
             if self.contamination != "auto":
