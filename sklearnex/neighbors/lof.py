@@ -243,7 +243,7 @@ else:
 
             self._distances_fit_X_, _neighbors_indices_fit_X_ =\
                 NearestNeighbors.kneighbors(
-                                 self, n_neighbors=self.n_neighbors_
+                                self, n_neighbors=self.n_neighbors_
                 )
 
             self._lrd = self._local_reachability_density(
