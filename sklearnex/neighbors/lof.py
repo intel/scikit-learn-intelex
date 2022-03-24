@@ -11,8 +11,8 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_array
 
 import logging
-
 from .._utils import get_patch_message
+
 
 class LocalOutlierFactor(sklearn_LocalOutlierFactor, NearestNeighbors):
     def __init__(
