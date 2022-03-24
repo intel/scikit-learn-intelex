@@ -94,7 +94,7 @@ if Version(sklearn_version) >= Version("1.0"):
             """
             logging.info("sklearn.neighbors.LocalOutlierFactor."
                          "fit: " + get_patch_message("onedal"))
-            
+
             NearestNeighbors.fit(self, X)
 
             if self.contamination != "auto":
@@ -114,10 +114,9 @@ if Version(sklearn_version) >= Version("1.0"):
             self.n_neighbors_ = max(1, min(self.n_neighbors, n_samples - 1))
 
             self._distances_fit_X_, _neighbors_indices_fit_X_ =\
-                                    NearestNeighbors.kneighbors(
-                                                     self, n_neighbors=self.n_neighbors_
-                                    )
-
+                NearestNeighbors.kneighbors(
+                                self, n_neighbors=self.n_neighbors_
+                )
 
             self._lrd = self._local_reachability_density(
                 self._distances_fit_X_, _neighbors_indices_fit_X_
@@ -223,7 +222,7 @@ else:
             """
             logging.info("sklearn.neighbors.LocalOutlierFactor."
                          "fit: " + get_patch_message("onedal"))
-            
+
             NearestNeighbors.fit(self, X)
 
             if self.contamination != "auto":
@@ -243,9 +242,9 @@ else:
             self.n_neighbors_ = max(1, min(self.n_neighbors, n_samples - 1))
 
             self._distances_fit_X_, _neighbors_indices_fit_X_ =\
-                                    NearestNeighbors.kneighbors(
-                                                     self, n_neighbors=self.n_neighbors_
-                                    )
+                NearestNeighbors.kneighbors(
+                                 self, n_neighbors=self.n_neighbors_
+                )
 
             self._lrd = self._local_reachability_density(
                 self._distances_fit_X_, _neighbors_indices_fit_X_
