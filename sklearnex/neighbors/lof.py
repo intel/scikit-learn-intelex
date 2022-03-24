@@ -137,6 +137,8 @@ class LocalOutlierFactor(sklearn_LocalOutlierFactor, NearestNeighbors):
             The opposite of the Local Outlier Factor of each input samples.
             The lower, the more abnormal.
         """
+        logging.info("sklearn.neighbors.LocalOutlierFactor."
+                     "score_samples: " + get_patch_message("onedal"))
         check_is_fitted(self)
         X = check_array(X, accept_sparse="csr")
 
