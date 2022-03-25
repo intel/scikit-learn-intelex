@@ -58,8 +58,8 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_algo = d4p.kdtree_knn_classification_prediction(nClasses=nClasses)
     predict_result = predict_algo.compute(predict_data, train_result.model)
 
-    # We expect less than 170 mispredicted values
-    assert np.count_nonzero(predict_labels != predict_result.prediction) < 170
+    # We expect less than 180 mispredicted values
+    assert np.count_nonzero(predict_labels != predict_result.prediction) < 180
 
     return (train_result, predict_result, predict_labels)
 
