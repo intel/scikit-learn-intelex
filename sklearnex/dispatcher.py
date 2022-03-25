@@ -132,8 +132,8 @@ def get_patch_map():
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
 
         mapping['lof'] = [[(neighbors_module,
-                                      'LocalOutlierFactor',
-                                      LocalOutlierFactor_sklearnex), None]]
+                            'LocalOutlierFactor',
+                            LocalOutlierFactor_sklearnex), None]]
 
         # Configs
         mapping['set_config'] = [[(base_module,
