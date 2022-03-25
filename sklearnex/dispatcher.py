@@ -131,7 +131,7 @@ def get_patch_map():
         mapping['kneighborsregressor'] = mapping['knn_regressor']
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
 
-        mapping['local_outlier'] = [[(neighbors_module,
+        mapping['lof'] = [[(neighbors_module,
                                       'LocalOutlierFactor',
                                       LocalOutlierFactor_sklearnex), None]]
 
