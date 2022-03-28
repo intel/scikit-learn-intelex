@@ -143,7 +143,8 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             'k': self.n_neighbors,
             'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
             'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
-            'resultsToEvaluate': 'none' if getattr(self, '_y', None) is None
+            'resultsToEvaluate': 'none'
+            if getattr(self, '_y', None) is None or _is_regressor(self)
             else 'computeClassLabels'
         }
         if class_count != 0:
@@ -527,8 +528,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
     def _get_daal_params(self, data):
         params = super()._get_daal_params(data)
         params['resultsToCompute'] = 'computeIndicesOfNeighbors|computeDistances'
-        params['resultsToEvaluate'] = 'none' if getattr(self, '_y', None) is None \
-            else 'computeClassLabels'
+        params['resultsToEvaluate'] = 'none'
         return params
 
     def _onedal_fit(self, X, y, queue):

@@ -327,13 +327,10 @@ class KNeighborsRegressor(KNeighborsRegressor_):
 
         is_sparse = sp.isspmatrix(data[0])
         is_single_output = False
-        # Class count is needed here until we use classification task for CPU
-        class_count = 1
         if len(data) > 1 or hasattr(self, '_onedal_estimator'):
             # To check multioutput, might be overhead
             if len(data) > 1:
                 y = np.asarray(data[1])
-                class_count = len(np.unique(y))
             if hasattr(self, '_onedal_estimator'):
                 y = self._onedal_estimator._y
             is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
@@ -350,7 +347,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
             not is_sparse and is_single_output and is_valid_weights
 
         if method_name == 'neighbors.KNeighborsRegressor.fit':
-            return main_condition and class_count >= 2
+            return main_condition
         if method_name in ['neighbors.KNeighborsRegressor.predict',
                            'neighbors.KNeighborsRegressor.kneighbors']:
             return main_condition and hasattr(self, '_onedal_estimator')
