@@ -52,25 +52,33 @@ struct params2desc {
 };
 
 template <typename Policy, typename Task>
-struct init_train_ops_dispatcher {
-    void operator()(py::module_& m) {
-        m.def("train",
-              [](const Policy& policy,
-                 const py::dict& params,
-                 const table& data,
-                 const table& centroids) {
-                  using namespace kmeans;
-                  using input_t = train_input<Task>;
+void init_infer_ops(py::module_& m) {
+    m.def("infer",
+          [](const Policy& policy,
+             const py::dict& params,
+             const kmeans::model<Task>& model,
+             const table& data) {
+             using namespace kmeans;
+             using input_t = infer_input<Task>;
 
-                  train_ops ops(policy, input_t{ data, centroids }, params2desc{});
-                  return fptype2t { method2t { Task{}, ops } }(params);
-              });
-    }
-};
+             infer_ops ops(policy, input_t{ model, data }, params2desc{} );
+             return fptype2t { method2t { Task{}, ops } }(params);
+          });
+}
 
 template <typename Policy, typename Task>
 void init_train_ops(py::module& m) {
-    init_train_ops_dispatcher<Policy, Task>{}(m);
+    m.def("train",
+          [](const Policy& policy,
+             const py::dict& params,
+             const table& data,
+             const table& centroids) {
+             using namespace kmeans;
+             using input_t = train_input<Task>;
+
+             train_ops ops(policy, input_t{ data, centroids }, params2desc{});
+             return fptype2t { method2t { Task{}, ops } }(params);
+          });
 }
 
 template <typename Task>
@@ -96,12 +104,24 @@ void init_train_result(py::module_& m) {
         .DEF_ONEDAL_PY_PROPERTY(objective_function_value, result_t);
 }
 
+template <typename Task>
+void init_infer_result(py::module_& m) {
+    using namespace kmeans;
+    using result_t = infer_result<Task>;
+
+    auto cls = py::class_<result_t>(m, "infer_result")
+                   .def(py::init())
+                   .DEF_ONEDAL_PY_PROPERTY(responses, result_t)
+                   .DEF_ONEDAL_PY_PROPERTY(objective_function_value, result_t);
+}
 
 ONEDAL_PY_TYPE2STR(kmeans::task::clustering, "clustering");
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 
 ONEDAL_PY_INIT_MODULE(kmeans) {
     using namespace kmeans;
@@ -111,8 +131,10 @@ ONEDAL_PY_INIT_MODULE(kmeans) {
     auto sub = m.def_submodule("kmeans");
 
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
+    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
 
     ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
+    ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
 }
 

@@ -20,7 +20,10 @@ from .validation import (
     _check_X_y,
     _check_array,
     _check_classification_targets,
+    _check_random_state,
     _type_of_target,
+    _is_arraylike,
+    _is_arraylike_not_scalar,
     _is_integral_float,
     _is_multilabel,
     _check_n_features,
@@ -29,7 +32,7 @@ from .validation import (
 )
 
 __all__ = ['_column_or_1d', '_validate_targets', '_check_X_y',
-           '_check_array', '_check_classification_targets',
-           '_type_of_target', '_is_integral_float',
+           '_check_array', '_check_classification_targets', '_check_random_state',
+           '_type_of_target', '_is_arraylike', '_is_arraylike_not_scalar','_is_integral_float',
            '_is_multilabel', '_check_n_features', '_num_features',
            '_num_samples']

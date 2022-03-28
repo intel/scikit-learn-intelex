@@ -149,6 +149,18 @@ def _check_classification_targets(y):
         raise ValueError("Unknown label type: %r" % y_type)
 
 
+def _check_random_state(seed):
+    if seed is None or seed is np.random:
+        return np.random.mtrand._rand
+    if isinstance(seed, numbers.Integral):
+        return np.random.RandomState(seed)
+    if isinstance(seed, np.random.RandomState):
+        return seed
+    raise ValueError(
+        "%r cannot be used to seed a numpy.random.RandomState instance" % seed
+    )
+
+
 def _type_of_target(y):
     valid = (isinstance(y, (Sequence, spmatrix)) or hasattr(y, '__array__')) \
         and not isinstance(y, str)
@@ -211,6 +223,12 @@ def _type_of_target(y):
         return 'multiclass' + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
     return 'binary'  # [1, 2] or [["a"], ["b"]]
 
+def _is_arraylike(x):
+    return hasattr(x, "__len__") or hasattr(x, "shape") or hasattr(x, "__array__")
+
+
+def _is_arraylike_not_scalar(array):
+    return _is_arraylike(array) and not np.isscalar(array)
 
 def _is_integral_float(y):
     return y.dtype.kind == 'f' and np.all(y.astype(int) == y)
