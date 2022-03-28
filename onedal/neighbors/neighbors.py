@@ -237,8 +237,12 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             self.n_samples_fit_, self.n_features_in_)
 
         _fit_y = None
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+
         if _is_classifier(self):
             _fit_y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
+        if _is_regressor(self) and gpu_device:
+            _fit_y = self._y
         result = self._onedal_fit(X, _fit_y, queue)
 
         if y is not None and _is_regressor(self):
