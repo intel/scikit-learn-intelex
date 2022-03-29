@@ -93,6 +93,17 @@ Using a Single Regressor
        - search for optimal parameters using Optuna
        - training and prediction using scikit-learn-intelex
        - performance comparison to scikit-learn
+   * - `Random Forest Regression with Feature Importance Computation
+       <https://www.kaggle.com/code/lordozvlad/tps-mar-fast-workflow-using-scikit-learn-intelex>`_
+
+       **Data:** [TPS Mar 2022] Spatio-temporal traffic data
+     - Forecast twelve-hours of traffic flow in a major U.S. metropolitan area
+     -
+
+       - feature engineering
+       - computing feature importance with ELI5
+       - training and prediction using scikit-learn-intelex
+       - performance comparison to scikit-learn
    * - `Ridge Regression
        <https://www.kaggle.com/alexeykolobyanin/tps-sep-ridge-with-sklearn-intelex-2x-speedup>`_
      
