@@ -204,18 +204,6 @@ else:
             self.contamination = contamination
             self.novelty = novelty
 
-        def _check_novelty_score_samples(self):
-            if not self.novelty:
-                msg = (
-                    "score_samples is not available when novelty=False. The "
-                    "scores of the training samples are always available "
-                    "through the negative_outlier_factor_ attribute. Use "
-                    "novelty=True if you want to use LOF for novelty detection "
-                    "and compute score_samples for new unseen data."
-                )
-                raise AttributeError(msg)
-            return True
-
         def fit(self, X, y=None):
             """Fit the local outlier factor detector from the training dataset.
             Parameters
@@ -275,7 +263,7 @@ else:
 
             return self
 
-        def score_samples(self, X):
+        def _score_samples(self, X):
             """Opposite of the Local Outlier Factor of X.
             It is the opposite as bigger is better, i.e. large values correspond
             to inliers.
