@@ -583,7 +583,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
                    return_distance=True, queue=None):
         return super()._kneighbors(X, n_neighbors, return_distance, queue=queue)
 
-    def predict_gpu(self, X, queue=None):
+    def _predict_gpu(self, X, queue=None):
         X = _check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
         onedal_model = getattr(self, '_onedal_model', None)
         n_features = getattr(self, 'n_features_in_', None)
@@ -607,6 +607,36 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         result = responses.ravel()
 
         return result
+
+    def _predict_skl(self, X, queue=None):
+        neigh_dist, neigh_ind = self.kneighbors(X, queue=queue)
+
+        weights = self._get_weights(neigh_dist, self.weights)
+
+        _y = self._y
+        if _y.ndim == 1:
+            _y = _y.reshape((-1, 1))
+
+        if weights is None:
+            y_pred = np.mean(_y[neigh_ind], axis=1)
+        else:
+            y_pred = np.empty((X.shape[0], _y.shape[1]), dtype=np.float64)
+            denom = np.sum(weights, axis=1)
+
+            for j in range(_y.shape[1]):
+                num = np.sum(_y[neigh_ind, j] * weights, axis=1)
+                y_pred[:, j] = num / denom
+
+        if self._y.ndim == 1:
+            y_pred = y_pred.ravel()
+
+        return y_pred
+
+    def predict(self, X, queue=None):
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        is_uniform_weights = getattr(self, 'weights', 'uniform') == 'uniform'
+        return self._predict_gpu(X, queue=queue) \
+            if gpu_device and is_uniform_weights else self._predict_skl(X, queue=queue)
 
 
 class NearestNeighbors(NeighborsBase):

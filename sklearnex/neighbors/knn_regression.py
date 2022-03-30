@@ -376,10 +376,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
-        gpu_device = queue is not None and queue.sycl_device.is_gpu
-        is_uniform_weights = getattr(self, 'weights', 'uniform') == 'uniform'
-        return self._onedal_estimator.predict_gpu(X, queue=queue) \
-            if gpu_device and is_uniform_weights else super().predict(X)
+        return self._onedal_estimator.predict(X, queue=queue)
 
     def _onedal_kneighbors(self, X=None, n_neighbors=None,
                            return_distance=True, queue=None):
