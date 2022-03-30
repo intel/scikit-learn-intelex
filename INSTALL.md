@@ -39,6 +39,11 @@ The extension is also available as a part of [Intel® oneAPI AI Analytics Toolki
   - [Prerequisites for creating documentation](#prerequisites-for-creating-documentation)
   - [Build documentation](#build-documentation)
 
+Next steps after installation:
+
+- [Learn what patching is and how to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/what-is-patching.html)
+- [Start using scikit-learn-intelex](https://intel.github.io/scikit-learn-intelex/quick-start.html)
+
 ## Install via pip or conda
 
 ### Install from PyPI channel (recommended by default)
@@ -199,6 +204,8 @@ without having to reinstall package every time you make a small change.
 
 ⚠️ `--single-version-externally-managed` is an option used for Python packages instructing the setuptools module 
 to create a Python package that can be easily managed by the package manager on the host.
+
+
 
 ## Build documentation for Intel(R) Extension for Scikit-learn
 ### Prerequisites for creating documentation
