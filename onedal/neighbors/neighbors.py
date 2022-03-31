@@ -554,7 +554,6 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         else:
             return train_alg_srch(policy, params, to_table(X)).model
 
-
     def _onedal_predict(self, model, X, params, queue):
         gpu_device = queue is not None and queue.sycl_device.is_gpu
         if self.effective_metric_ == 'euclidean' and not gpu_device:
