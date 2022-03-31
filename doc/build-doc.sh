@@ -15,9 +15,17 @@
 # limitations under the License.
 #===============================================================================
 
+SAMPLES_DIR=sources/samples
+
+# remove the samples folder if it exists
+if [ -d "$SAMPLES_DIR" ]; then rm -Rf $SAMPLES_DIR; fi
+
+# create a samples folder
+mkdir $SAMPLES_DIR
+
 # copy jupyter notebooks
 cd ..
-cp examples/notebooks/*.ipynb doc/sources/samples
+cp examples/notebooks/*.ipynb doc/$SAMPLES_DIR
 
 # build the documentation
 cd doc
