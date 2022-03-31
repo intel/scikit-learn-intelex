@@ -548,10 +548,12 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         policy = _get_policy(queue, X, y)
         params = self._get_onedal_params(X)
         train_alg_regr = _backend.neighbors.regression.train
-        train_alg_cls = _backend.neighbors.classification.train
-        train_alg = train_alg_regr if gpu_device else train_alg_cls
+        train_alg_srch = _backend.neighbors.search.train
+        if gpu_device:
+            return train_alg_regr(policy, params, *to_table(X, y)).model
+        else:
+            return train_alg_srch(policy, params, to_table(X)).model
 
-        return train_alg(policy, params, *to_table(X, y)).model
 
     def _onedal_predict(self, model, X, params, queue):
         gpu_device = queue is not None and queue.sycl_device.is_gpu
@@ -566,7 +568,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
         policy = _get_policy(queue, X)
         backend = _backend.neighbors.regression if gpu_device \
-            else _backend.neighbors.classification
+            else _backend.neighbors.search
 
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
