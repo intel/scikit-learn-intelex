@@ -551,8 +551,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         train_alg_srch = _backend.neighbors.search.train
         if gpu_device:
             return train_alg_regr(policy, params, *to_table(X, y)).model
-        else:
-            return train_alg_srch(policy, params, to_table(X)).model
+        return train_alg_srch(policy, params, to_table(X)).model
 
     def _onedal_predict(self, model, X, params, queue):
         gpu_device = queue is not None and queue.sycl_device.is_gpu
