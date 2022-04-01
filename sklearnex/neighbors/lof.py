@@ -36,6 +36,8 @@ from sklearn.utils import check_array
 
 import logging
 from .._utils import get_patch_message
+from .._device_offload import dispatch, wrap_output_data
+from .._config import config_context
 
 if Version(sklearn_version) >= Version("1.0"):
     class LocalOutlierFactor(sklearn_LocalOutlierFactor, NearestNeighbors):
@@ -78,6 +80,50 @@ if Version(sklearn_version) >= Version("1.0"):
                 raise AttributeError(msg)
             return True
 
+        def _fit(self, X, y, queue=None):
+            with config_context(target_offload=queue):
+                NearestNeighbors.fit(self, X)
+
+                if self.contamination != "auto":
+                    if not (0.0 < self.contamination <= 0.5):
+                        raise ValueError(
+                            "contamination must be in (0, 0.5], got: %f" % self.contamination
+                        )
+
+                n_samples = self.n_samples_fit_
+                if self.n_neighbors > n_samples:
+                    warnings.warn(
+                        "n_neighbors (%s) is greater than the "
+                        "total number of samples (%s). n_neighbors "
+                        "will be set to (n_samples - 1) for estimation."
+                        % (self.n_neighbors, n_samples)
+                    )
+                self.n_neighbors_ = max(1, min(self.n_neighbors, n_samples - 1))
+
+                self._distances_fit_X_, _neighbors_indices_fit_X_ =\
+                    NearestNeighbors.kneighbors(self, n_neighbors=self.n_neighbors_)
+
+                self._lrd = self._local_reachability_density(
+                    self._distances_fit_X_, _neighbors_indices_fit_X_
+                )
+
+                # Compute lof score over training samples to define offset_:
+                lrd_ratios_array = (
+                    self._lrd[_neighbors_indices_fit_X_] / self._lrd[:, np.newaxis]
+                )
+
+                self.negative_outlier_factor_ = -np.mean(lrd_ratios_array, axis=1)
+
+                if self.contamination == "auto":
+                    # inliers score around -1 (the higher, the less abnormal).
+                    self.offset_ = -1.5
+                else:
+                    self.offset_ = np.percentile(
+                        self.negative_outlier_factor_, 100.0 * self.contamination
+                    )
+                
+                return self
+
         def fit(self, X, y=None):
             """Fit the local outlier factor detector from the training dataset.
             Parameters
@@ -92,52 +138,62 @@ if Version(sklearn_version) >= Version("1.0"):
             self : LocalOutlierFactor
                 The fitted local outlier factor detector.
             """
-            logging.info("sklearn.neighbors.LocalOutlierFactor."
-                         "fit: " + get_patch_message("onedal"))
+            return dispatch(self, 'neighbors.LocalOutlierFactor.fit', {
+                'onedal': self.__class__._fit,
+                'sklearn': None,
+            }, X, y)
 
-            NearestNeighbors.fit(self, X)
+        def _onedal_predict(self, X, queue=None):
+            with config_context(target_offload=queue):
+                check_is_fitted(self)
 
-            if self.contamination != "auto":
-                if not (0.0 < self.contamination <= 0.5):
-                    raise ValueError(
-                        "contamination must be in (0, 0.5], got: %f" % self.contamination
-                    )
+                if X is not None:
+                    X = check_array(X, accept_sparse="csr")
+                    is_inlier = np.ones(X.shape[0], dtype=int)
+                    is_inlier[self.decision_function(X) < 0] = -1
+                else:
+                    is_inlier = np.ones(self.n_samples_fit_, dtype=int)
+                    is_inlier[self.negative_outlier_factor_ < self.offset_] = -1
 
-            n_samples = self.n_samples_fit_
-            if self.n_neighbors > n_samples:
-                warnings.warn(
-                    "n_neighbors (%s) is greater than the "
-                    "total number of samples (%s). n_neighbors "
-                    "will be set to (n_samples - 1) for estimation."
-                    % (self.n_neighbors, n_samples)
+                return is_inlier
+
+        @wrap_output_data
+        def _predict(self, X=None):
+            """Predict the labels (1 inlier, -1 outlier) of X according to LOF.
+            If X is None, returns the same as fit_predict(X_train).
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features), default=None
+                The query sample or samples to compute the Local Outlier Factor
+                w.r.t. to the training samples. If None, makes prediction on the
+                training data without considering them as their own neighbors.
+            Returns
+            -------
+            is_inlier : ndarray of shape (n_samples,)
+                Returns -1 for anomalies/outliers and +1 for inliers.
+            """
+            return dispatch(self, 'neighbors.LocalOutlierFactor.predict', {
+                'onedal': self.__class__._onedal_predict,
+                'sklearn': None,
+            }, X)
+
+        def _score_samples(self, X, queue=None):
+            with config_context(target_offload=queue):
+                check_is_fitted(self)
+                X = check_array(X, accept_sparse="csr")
+
+                distances_X, neighbors_indices_X = NearestNeighbors.kneighbors(
+                    self, X, n_neighbors=self.n_neighbors_
                 )
-            self.n_neighbors_ = max(1, min(self.n_neighbors, n_samples - 1))
+                X_lrd = self._local_reachability_density(distances_X, neighbors_indices_X)
 
-            self._distances_fit_X_, _neighbors_indices_fit_X_ =\
-                NearestNeighbors.kneighbors(self, n_neighbors=self.n_neighbors_)
+                lrd_ratios_array = self._lrd[neighbors_indices_X] / X_lrd[:, np.newaxis]
 
-            self._lrd = self._local_reachability_density(
-                self._distances_fit_X_, _neighbors_indices_fit_X_
-            )
-
-            # Compute lof score over training samples to define offset_:
-            lrd_ratios_array = (
-                self._lrd[_neighbors_indices_fit_X_] / self._lrd[:, np.newaxis]
-            )
-
-            self.negative_outlier_factor_ = -np.mean(lrd_ratios_array, axis=1)
-
-            if self.contamination == "auto":
-                # inliers score around -1 (the higher, the less abnormal).
-                self.offset_ = -1.5
-            else:
-                self.offset_ = np.percentile(
-                    self.negative_outlier_factor_, 100.0 * self.contamination
-                )
-
-            return self
+                # as bigger is better:
+                return -np.mean(lrd_ratios_array, axis=1)
 
         @available_if(_check_novelty_score_samples)
+        @wrap_output_data
         def score_samples(self, X):
             """Opposite of the Local Outlier Factor of X.
             It is the opposite as bigger is better, i.e. large values correspond
@@ -161,20 +217,57 @@ if Version(sklearn_version) >= Version("1.0"):
                 The opposite of the Local Outlier Factor of each input samples.
                 The lower, the more abnormal.
             """
-            logging.info("sklearn.neighbors.LocalOutlierFactor."
-                         "score_samples: " + get_patch_message("onedal"))
-            check_is_fitted(self)
-            X = check_array(X, accept_sparse="csr")
+            return dispatch(self, 'neighbors.LocalOutlierFactor.score_samples', {
+                'onedal': self.__class__._score_samples,
+                'sklearn': None,
+            }, X)
 
-            distances_X, neighbors_indices_X = NearestNeighbors.kneighbors(
-                self, X, n_neighbors=self.n_neighbors_
-            )
-            X_lrd = self._local_reachability_density(distances_X, neighbors_indices_X)
+        def _check_novelty_fit_predict(self):
+            if self.novelty:
+                msg = (
+                    "fit_predict is not available when novelty=True. Use "
+                    "novelty=False if you want to predict on the training set."
+                )
+                raise AttributeError(msg)
+            return True
 
-            lrd_ratios_array = self._lrd[neighbors_indices_X] / X_lrd[:, np.newaxis]
+        def _fit_predict(self, X, y, queue=None):
+            with config_context(target_offload=queue):
+                return self.fit(X)._predict()
 
-            # as bigger is better:
-            return -np.mean(lrd_ratios_array, axis=1)
+        @available_if(_check_novelty_fit_predict)
+        @wrap_output_data
+        def fit_predict(self, X, y=None):
+            """Fit the model to the training set X and return the labels.
+            **Not available for novelty detection (when novelty is set to True).**
+            Label is 1 for an inlier and -1 for an outlier according to the LOF
+            score and the contamination parameter.
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features), default=None
+                The query sample or samples to compute the Local Outlier Factor
+                w.r.t. to the training samples.
+            y : Ignored
+                Not used, present for API consistency by convention.
+            Returns
+            -------
+            is_inlier : ndarray of shape (n_samples,)
+                Returns -1 for anomalies/outliers and 1 for inliers.
+            """
+
+            # As fit_predict would be different from fit.predict, fit_predict is
+            # only available for outlier detection (novelty=False)
+
+            return dispatch(self, 'neighbors.LocalOutlierFactor.fit_predict', {
+                'onedal': self.__class__._fit_predict,
+                'sklearn': None,
+            }, X, y)            
+
+        def _onedal_gpu_supported(self, method_name, *data):
+            return True
+
+        def _onedal_cpu_supported(self, method_name, *data):
+            return True
 else:
     class LocalOutlierFactor(sklearn_LocalOutlierFactor, NearestNeighbors):
         def __init__(
