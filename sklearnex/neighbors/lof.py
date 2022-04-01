@@ -298,7 +298,7 @@ else:
             self.contamination = contamination
             self.novelty = novelty
 
-        def _fit(self, X, y=None):
+        def _fit(self, X, y=None, queue=None):
             """Fit the local outlier factor detector from the training dataset.
             Parameters
             ----------

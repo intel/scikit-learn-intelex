@@ -451,8 +451,6 @@ gpu:
 
   - neighbors/tests/test_neighbors.py::test_neighbors_iris
 
-  - neighbors/tests/test_lof.py::test_novelty_true_common_tests[LocalOutlierFactor(novelty=True)-check_methods_subset_invariance]
-
   - semi_supervised/tests/test_self_training.py::test_early_stopping
 
   - svm/tests/test_sparse.py::test_svc
@@ -548,7 +546,6 @@ gpu:
   - tests/test_common.py::test_search_cv[RandomizedSearchCV(estimator=LogisticRegression(),param_distributions={'C':[0.1,1.0]})-check_decision_proba_consistency]
   - tests/test_common.py::test_search_cv[RandomizedSearchCV(error_score='raise',estimator=Pipeline(steps=[('pca',PCA()),('logisticregression',LogisticRegression())]),param_distributions={'logisticregression__C':[0.1,1.0]})-check_decision_proba_consistency]
   - tests/test_common.py::test_check_n_features_in_after_fitting[TSNE()]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_dtype_object]
 
   - tests/test_multiclass.py::test_ovr_fit_predict_sparse
   - tests/test_multiclass.py::test_ovr_binary
