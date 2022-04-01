@@ -30,7 +30,6 @@ if "Windows" in platform.system():
     os.environ['PATH'] = path_to_libs + os.pathsep + os.environ['PATH']
 
 try:
-    print("Trying to load DPC backend")
     import onedal._onedal_py_dpc as _backend
     _is_dpc_backend = True
 except ImportError:

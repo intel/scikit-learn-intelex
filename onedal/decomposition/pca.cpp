@@ -54,7 +54,6 @@ void init_model(py::module_& m) {
                            return deserialize<model_t>(bytes);
                        }))
                     .DEF_ONEDAL_PY_PROPERTY(eigenvectors, model_t);
-
 }
 
 template <typename Task>

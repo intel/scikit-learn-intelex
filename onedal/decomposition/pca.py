@@ -4,13 +4,14 @@ from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
 
 import numpy as np
- 
+
+
 class PCA():
     def __init__(
         self,
         n_components=None,
-        is_deterministic= True,
-        method = 'svd',
+        is_deterministic=True,
+        method='svd',
         copy=True
     ):
         self.n_components = n_components
@@ -33,7 +34,7 @@ class PCA():
         policy = _get_policy(queue, X, y)
         params = self.get_onedal_params(X)
         result = _backend.decomposition.dim_reduction.train(policy, params, to_table(X))
-        
+
         self.variances_ = from_table(result.variances)
         eigenvectors = from_table(result.eigenvectors)
         eigenvalues = from_table(result.eigenvalues)
@@ -63,7 +64,7 @@ class PCA():
         self.feature_names_in_ = "Not supported yet"
 
         return self
-    
+
     def _create_model(self):
         m = _backend.decomposition.dim_reduction.model()
         #TODO: another parameters are not needed but we need to check if they exist
@@ -74,5 +75,8 @@ class PCA():
         policy = _get_policy(queue, X)
         params = self.get_onedal_params(X)
         model = self._create_model()
-        result = _backend.decomposition.dim_reduction.infer(policy, params, model, to_table(X))
+        result = _backend.decomposition.dim_reduction.infer(policy,
+                                                            params,
+                                                            model,
+                                                            to_table(X))
         return from_table(result.transformed_data)
