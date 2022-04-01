@@ -22,7 +22,6 @@ from scipy.sparse import issparse
 import numpy as np
 
 from onedal.datatypes import _check_array
-from onedal.decomposition import PCA as onedal_PCA
 
 from .._device_offload import dispatch, wrap_output_data
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
@@ -34,6 +33,7 @@ except ImportError:
 
 from onedal.decomposition import PCA as onedal_PCA
 from sklearn.decomposition import PCA as sklearn_PCA
+
 
 class PCA(sklearn_PCA):
     #@_deprecate_positional_args
@@ -86,7 +86,7 @@ class PCA(sklearn_PCA):
 
         # Handle svd_solver
         self._fit_svd_solver = self.svd_solver
-        #TODO: Look at parameters sets conditions at daal4py interface 
+        #TODO: Look at parameters sets conditions at daal4py interface
         if self._fit_svd_solver == "auto":
             # Small problem or n_components == 'mle', just call full PCA
             if max(X.shape) <= 500 or n_components == "mle":
@@ -100,11 +100,13 @@ class PCA(sklearn_PCA):
         # Call different fits for either full or truncated SVD
         if self._fit_svd_solver == "full":
             return dispatch(self, 'decomposition.PCA.fit', {
-            'onedal': self.__class__._onedal_fit,
-            'sklearn': sklearn_PCA._fit_full,}, X)
+                'onedal': self.__class__._onedal_fit,
+                'sklearn': sklearn_PCA._fit_full,
+            }, X)
         elif self._fit_svd_solver == "cov":
             return dispatch(self, 'decomposition.PCA.fit', {
-            'onedal': self.__class__._onedal_fit,}, X)
+                'onedal': self.__class__._onedal_fit,
+            }, X)
         elif self._fit_svd_solver in ["arpack", "randomized"]:
             #return self._fit_truncated(X, n_components, self._fit_svd_solver)
             return sklearn_PCA._fit_truncated(X, n_components, self._fit_svd_solver)
@@ -118,21 +120,20 @@ class PCA(sklearn_PCA):
         if method_name == 'decomposition.PCA.fit':
             return self._fit_svd_solver == 'cov'
         elif method_name == 'decomposition.PCA.transform':
-            return hasattr(self, _onedal_estimator)
+            return hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
-
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'decomposition.PCA.fit':
             return self._fit_svd_solver in ['cov', 'full']
         elif method_name == 'decomposition.PCA.transform':
-            return hasattr(self, _onedal_estimator)
+            return hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y=None, queue=None):
-        if self.svd_solver == "full" :
+        if self.svd_solver == "full":
             method = "svd"
-        elif self.svd_solver == "cov" :
+        elif self.svd_solver == "cov":
             method = "cov"
         else :
             raise ValueError(
@@ -141,7 +142,7 @@ class PCA(sklearn_PCA):
         onedal_params = {
             'n_components': self.n_components,
             'is_deterministic': True,
-            'method' : method,
+            'method': method,
             'copy': self.copy
         }
         self._onedal_estimator = onedal_PCA(**onedal_params)
@@ -186,8 +187,9 @@ class PCA(sklearn_PCA):
             X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
         )
         return dispatch(self, 'decomposition.PCA.transform', {
-                    'onedal': self.__class__._onedal_predict,
-                    'sklearn': sklearn_PCA.transform,}, X)
+            'onedal': self.__class__._onedal_predict,
+            'sklearn': sklearn_PCA.transform,
+        }, X)
 
     def _save_attributes(self):
         self.components_ = self._onedal_estimator.components_
