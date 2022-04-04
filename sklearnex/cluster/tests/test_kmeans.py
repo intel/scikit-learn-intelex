@@ -24,8 +24,18 @@ def test_sklearnex_import():
     X = np.array([[1, 2], [1, 4], [1, 0],
                   [10, 2], [10, 4], [10, 0]])
     kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
-    assert 'daal4py' in kmeans.__module__
+    assert 'sklearnex' in kmeans.__module__
 
     result = kmeans.predict([[0, 0], [12, 3]])
     expected = np.array([1, 0], dtype=np.int32)
     assert_allclose(expected, result)
+
+def test_sklearnex_cluster():
+    from sklearnex.cluster import KMeans
+    X = np.array([[1, 1], [1, 1], [1, 1]])
+    kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
+    assert 'sklearnex' in kmeans.__module__
+
+    result = kmeans.predict([[0, 0], [12, 3]])
+    expected = np.array([1, 0], dtype=np.int32)
+#    assert_allclose(expected, result)

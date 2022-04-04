@@ -35,6 +35,8 @@ if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P',
     from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
     from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
+    from .cluster import KMeans as KMeans_sklearnex
+
     new_patching_available = True
 else:
     new_patching_available = False
@@ -44,6 +46,7 @@ else:
 import sklearn as base_module
 import sklearn.svm as svm_module
 import sklearn.neighbors as neighbors_module
+import sklearn.cluster as cluster_module
 
 
 @lru_cache(maxsize=None)
@@ -72,6 +75,11 @@ def get_patch_map():
         mapping['nearest_neighbors'] = [[(neighbors_module,
                                           'NearestNeighbors',
                                           NearestNeighbors_sklearnex), None]]
+
+        # Cluster
+
+        mapping.pop('kmeans')
+        mapping['kmeans'] = [[(cluster_module, 'KMeans', KMeans_sklearnex), None]]
 
         # Configs
         mapping['set_config'] = [[(base_module,

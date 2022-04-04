@@ -15,9 +15,13 @@
 #===============================================================================
 
 from abc import ABCMeta
+from scipy import sparse as sp
 
-from numbers import Integral
 from ..common._estimator_checks import _check_is_fitted
+
+import warnings # move warnings to sklearnex?????
+from sklearn.utils.sparsefuncs import mean_variance_axis # tmp
+from sklearn.exceptions import ConvergenceWarning # move???
 
 import numpy as np
 from ..datatypes import (
@@ -50,8 +54,75 @@ class KMeans(metaclass=ABCMeta):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
-        mean_var = np.var(X, axis=0).mean()
+        if sp.issparse(X):
+            variances = mean_variance_axis(X, axis=0)[1]
+            mean_var = np.mean(variances)
+        else:
+            mean_var = np.var(X, axis=0).mean()
         return mean_var * rtol
+
+    def _validate_center_shape(self, X, centers):
+        """Check if centers is compatible with X and n_clusters."""
+        if centers.shape[0] != self.n_clusters:
+            raise ValueError(
+                f"The shape of the initial centers {centers.shape} does not "
+                f"match the number of clusters {self.n_clusters}."
+            )
+        if centers.shape[1] != X.shape[1]:
+            raise ValueError(
+                f"The shape of the initial centers {centers.shape} does not "
+                f"match the number of features of the data {X.shape[1]}."
+            )
+    
+    def _check_params(self, X): #refactor this method
+        if self.n_init <= 0:
+            raise ValueError(f"n_init should be > 0, got {self.n_init} instead.")
+        self._n_init = self.n_init
+
+        if self.max_iter <= 0:
+            raise ValueError(f"max_iter should be > 0, got {self.max_iter} instead.")
+
+        if X.shape[0] < self.n_clusters:
+            raise ValueError(
+                f"n_samples={X.shape[0]} should be >= n_clusters={self.n_clusters}."
+            )
+
+        self._tol = self._tolerance(X, self.tol)
+
+        if not (
+            _is_arraylike_not_scalar(self.init)
+            or callable(self.init)
+            or (isinstance(self.init, str) and self.init in ["k-means++", "random"])
+        ):
+            raise ValueError(
+                "init should be either 'k-means++', 'random', a ndarray or a "
+                f"callable, got '{self.init}' instead."
+            )
+
+        if _is_arraylike_not_scalar(self.init) and self._n_init != 1:
+            warnings.warn(
+                "Explicit initial center position passed: performing only"
+                f" one init in {self.__class__.__name__} instead of "
+                f"n_init={self._n_init}.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            self._n_init = 1
+
+#split??
+
+        algorithm = self.algorithm
+        if algorithm == "elkan" and self.n_clusters == 1:
+            warnings.warn("algorithm='elkan' doesn't make sense for a single "
+                        "cluster. Using 'full' instead.", RuntimeWarning)
+            algorithm = "full"
+
+        if algorithm == "auto":
+            algorithm = "full" if self.n_clusters == 1 else "elkan"
+
+        if algorithm not in ["full", "elkan"]:
+            raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
+                            " {}".format(str(algorithm)))
 
     def _check_test_data(self, X):
         X = _check_array(
@@ -101,15 +172,29 @@ class KMeans(metaclass=ABCMeta):
         if isinstance(self.init, str):
             centers = self._init_centroids_onedal(X, queue)
         elif _is_arraylike_not_scalar(self.init):
-            centers = to_table(self.init) # should convert here?
+            init = self.init
+            init = _check_array(init, dtype=X.dtype, copy=False, order="C")
+            self._validate_center_shape(X, init)
+            centers = to_table(init) # should convert here?
         elif callable(self.init):
-            centers = to_table(self.init(X, self.n_clusters, random_state=self.random_state))
-            #some checks in stock
+            init = self.init(X, self.n_clusters, random_state=self.random_state)
+            init = _check_array(init, dtype=X.dtype, copy=False, order="C")
+            self._validate_center_shape(X, init)
+            centers = to_table(init)
         return centers
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
-        module = _backend.kmeans.clustering
+        X = _check_array(
+            X,
+            accept_sparse='csr',
+            dtype=[np.float64, np.float32],
+            accept_large_sparse=False
+        )
+        self._check_params(X)
 
+        ##what about _n_threads????
+
+        module = _backend.kmeans.clustering
         policy = _get_policy(queue, X)
         params = self._get_onedal_params(X)
         self.random_state = _check_random_state(self.random_state)
@@ -117,7 +202,7 @@ class KMeans(metaclass=ABCMeta):
         best_inertia, best_result = None, None
         for i in range(self.n_init): # getting centroids can be optimized
             centroids = self._init_centroids(X, queue)
-            result = module.train(policy, params, to_table(X), centroids)#extra convert 
+            result = module.train(policy, params, to_table(X), centroids) #extra convert 
             inertia = result.objective_function_value
             if self.verbose:
                 print(f"Iteration {i}, inertia {inertia}.")
@@ -131,6 +216,7 @@ class KMeans(metaclass=ABCMeta):
         self.inertia_ = best_inertia
         self.n_iter_ = best_result.iteration_count
         self._onedal_model = best_result.model
+
         return result
 
     def predict(self, X, sample_weight=None, queue=None):

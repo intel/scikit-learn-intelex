@@ -152,7 +152,7 @@ def _check_classification_targets(y):
 def _check_random_state(seed):
     if seed is None or seed is np.random:
         return np.random.mtrand._rand
-    if isinstance(seed, numbers.Integral):
+    if isinstance(seed, Integral):
         return np.random.RandomState(seed)
     if isinstance(seed, np.random.RandomState):
         return seed
