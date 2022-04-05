@@ -32,7 +32,7 @@ struct method2t {
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "random_dense", ops, Float, method::random_dense);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "plus_plus_dense", ops, Float, method::plus_plus_dense);
-//        ONEDAL_PARAM_DISPATCH_VALUE(method, "parallel_plus_dense", ops, Float, method::parallel_plus_dense);
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "parallel_plus_dense", ops, Float, method::parallel_plus_dense);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 

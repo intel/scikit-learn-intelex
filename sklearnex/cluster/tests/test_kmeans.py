@@ -38,4 +38,4 @@ def test_sklearnex_cluster():
 
     result = kmeans.predict([[0, 0], [12, 3]])
     expected = np.array([1, 0], dtype=np.int32)
-#    assert_allclose(expected, result)
+    assert_allclose(expected, result)

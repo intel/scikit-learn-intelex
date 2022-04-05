@@ -21,6 +21,7 @@ except ImportError:
     from distutils.version import LooseVersion as Version
 
 import numpy as np
+from scipy import sparse as sp
 import numbers
 
 from .._device_offload import dispatch, wrap_output_data
@@ -62,9 +63,18 @@ class KMeans(sklearn_KMeans):
 
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'kmeans.KMeans.fit':
-            return True #TODO check this
+            sample_weight = data[2]
+            X_len = _num_samples(data[0])
+            enabled_weights = True
+            if sample_weight is not None:
+                if isinstance(sample_weight, numbers.Number):
+                    sample_weight = np.full(X_len, sample_weight, dtype=np.float64)
+                else:
+                    sample_weight = np.asarray(sample_weight)
+                enabled_weights = sample_weight.shape == (X_len,) and np.allclose(sample_weight, np.ones_like(sample_weight))
+            return enabled_weights and self.init != "k-means++" and not sp.isspmatrix(data[0])
         if method_name == 'kmeans.KMeans.predict':
-            return self._onedal_gpu_supported('kmeans.KMeans.fit', *data)
+            return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_cpu_supported(self, method_name, *data):
@@ -79,7 +89,7 @@ class KMeans(sklearn_KMeans):
                 return sample_weight.shape == (X_len,) and np.allclose(sample_weight, np.ones_like(sample_weight))
             return True #TODO check this
         if method_name == 'kmeans.KMeans.predict':
-            return hasattr(self, '_onedal_estimator')
+            return hasattr(self, '_onedal_estimator') and not sp.isspmatrix(data[0])
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
@@ -109,3 +119,4 @@ class KMeans(sklearn_KMeans):
         self.cluster_centers_ = self._onedal_estimator.cluster_centers_
         self.n_iter_ = self._onedal_estimator.n_iter_
         self.inertia_ = self._onedal_estimator.inertia_
+        self._n_threads = self._onedal_estimator._n_threads

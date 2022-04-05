@@ -21,6 +21,7 @@ from ..common._estimator_checks import _check_is_fitted
 
 import warnings # move warnings to sklearnex?????
 from sklearn.utils.sparsefuncs import mean_variance_axis # tmp
+from sklearn.utils._openmp_helpers import _openmp_effective_n_threads #move???
 from sklearn.exceptions import ConvergenceWarning # move???
 
 import numpy as np
@@ -181,6 +182,8 @@ class KMeans(metaclass=ABCMeta):
             init = _check_array(init, dtype=X.dtype, copy=False, order="C")
             self._validate_center_shape(X, init)
             centers = to_table(init)
+        if self.verbose:
+            print("Initialization complete")
         return centers
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
@@ -192,7 +195,18 @@ class KMeans(metaclass=ABCMeta):
         )
         self._check_params(X)
 
-        ##what about _n_threads????
+        self._n_threads = None
+        if hasattr(self, 'n_jobs'):
+            if self.n_jobs != 'deprecated':
+            ## n_jobs handling
+                if sklearn_check_version('0.24'):
+                    warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
+                                " removed in 1.0 (renaming of 0.25).", FutureWarning)
+                elif sklearn_check_version('0.23'):
+                    warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
+                                " removed in 0.25.", FutureWarning)
+                self._n_threads = self.n_jobs
+        self._n_threads = _openmp_effective_n_threads(self._n_threads)
 
         module = _backend.kmeans.clustering
         policy = _get_policy(queue, X)
