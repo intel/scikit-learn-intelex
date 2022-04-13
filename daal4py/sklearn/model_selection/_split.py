@@ -237,12 +237,12 @@ def _daal_train_test_split(*arrays, **options):
                 train_arr.index = train
                 test_arr.index = test
 
-            if hasattr(arr, 'columns'): 
-                train_arr.columns = arr.columns 
-                test_arr.columns = arr.columns 
- 
-            if hasattr(arr, 'name'): 
-                train_arr.name = arr.name 
+            if hasattr(arr, 'columns'):
+                train_arr.columns = arr.columns
+                test_arr.columns = arr.columns
+
+            if hasattr(arr, 'name'):
+                train_arr.name = arr.name
                 test_arr.name = arr.name
 
             res.append(train_arr)
