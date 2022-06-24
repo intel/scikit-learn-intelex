@@ -36,7 +36,7 @@ from daal4py import (
 )
 from onedal import _backend
 
-from ..common._mixin import ClassifierMixin
+from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted, _is_classifier, _is_regressor
 from ..datatypes._data_conversion import from_table, to_table
@@ -143,7 +143,8 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             'k': self.n_neighbors,
             'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
             'resultsToCompute': 'computeIndicesOfNeighbors|computeDistances',
-            'resultsToEvaluate': 'none' if getattr(self, '_y', None) is None
+            'resultsToEvaluate': 'none'
+            if getattr(self, '_y', None) is None or _is_regressor(self)
             else 'computeClassLabels'
         }
         if class_count != 0:
@@ -186,18 +187,18 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             self, 'effective_metric_params_', self.metric_params)
 
         if y is not None or self.requires_y:
+            shape = getattr(y, 'shape', None)
             X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])
-            self._shape = y.shape
+            self._shape = shape if shape is not None else y.shape
 
-            if _is_classifier(self) or _is_regressor(self):
+            if _is_classifier(self):
                 if y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1:
                     self.outputs_2d_ = False
                     y = y.reshape((-1, 1))
                 else:
                     self.outputs_2d_ = True
 
-                if _is_classifier(self):
-                    _check_classification_targets(y)
+                _check_classification_targets(y)
                 self.classes_ = []
                 self._y = np.empty(y.shape, dtype=int)
                 for k in range(self._y.shape[1]):
@@ -208,8 +209,8 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
                 if not self.outputs_2d_:
                     self.classes_ = self.classes_[0]
                     self._y = self._y.ravel()
-                if _is_classifier(self):
-                    self._validate_n_classes()
+
+                self._validate_n_classes()
             else:
                 self._y = y
         else:
@@ -235,9 +236,12 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             self.algorithm,
             self.n_samples_fit_, self.n_features_in_)
 
-        if (_is_classifier(self) or _is_regressor(self)) and y.dtype != X.dtype:
-            y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
-        result = self._onedal_fit(X, y, queue)
+        _fit_y = None
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+
+        if _is_classifier(self) or (_is_regressor(self) and gpu_device):
+            _fit_y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
+        result = self._onedal_fit(X, _fit_y, queue)
 
         if y is not None and _is_regressor(self):
             self._y = y if self._shape is None else y.reshape(self._shape)
@@ -415,8 +419,8 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
                 predict_alg = kdtree_knn_classification_prediction
 
             return predict_alg(**params).compute(X, model)
-        policy = _get_policy(queue, X)
 
+        policy = _get_policy(queue, X)
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:
@@ -506,6 +510,135 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         return super()._kneighbors(X, n_neighbors, return_distance, queue=queue)
 
 
+class KNeighborsRegressor(NeighborsBase, RegressorMixin):
+    def __init__(self, n_neighbors=5, *,
+                 weights='uniform', algorithm='auto',
+                 p=2, metric='minkowski', metric_params=None, **kwargs):
+        super().__init__(
+            n_neighbors=n_neighbors,
+            algorithm=algorithm,
+            metric=metric, p=p,
+            metric_params=metric_params,
+            **kwargs)
+        self.weights = weights
+
+    def _get_onedal_params(self, data):
+        params = super()._get_onedal_params(data)
+        params['result_option'] = 'responses'
+        return params
+
+    def _get_daal_params(self, data):
+        params = super()._get_daal_params(data)
+        params['resultsToCompute'] = 'computeIndicesOfNeighbors|computeDistances'
+        params['resultsToEvaluate'] = 'none'
+        return params
+
+    def _onedal_fit(self, X, y, queue):
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            params = self._get_daal_params(X)
+            if self._fit_method == 'brute':
+                train_alg = bf_knn_classification_training
+
+            else:
+                train_alg = kdtree_knn_classification_training
+
+            return train_alg(**params).compute(X, y).model
+
+        policy = _get_policy(queue, X, y)
+        params = self._get_onedal_params(X)
+        train_alg_regr = _backend.neighbors.regression.train
+        train_alg_srch = _backend.neighbors.search.train
+        if gpu_device:
+            return train_alg_regr(policy, params, *to_table(X, y)).model
+        return train_alg_srch(policy, params, to_table(X)).model
+
+    def _onedal_predict(self, model, X, params, queue):
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        if self.effective_metric_ == 'euclidean' and not gpu_device:
+            if self._fit_method == 'brute':
+                predict_alg = bf_knn_classification_prediction
+
+            else:
+                predict_alg = kdtree_knn_classification_prediction
+
+            return predict_alg(**params).compute(X, model)
+
+        policy = _get_policy(queue, X)
+        backend = _backend.neighbors.regression if gpu_device \
+            else _backend.neighbors.search
+
+        if hasattr(self, '_onedal_model'):
+            model = self._onedal_model
+        else:
+            model = self._create_model(backend)
+        result = backend.infer(policy, params, model, to_table(X))
+
+        return result
+
+    def fit(self, X, y, queue=None):
+        return super()._fit(X, y, queue=queue)
+
+    def kneighbors(self, X=None, n_neighbors=None,
+                   return_distance=True, queue=None):
+        return super()._kneighbors(X, n_neighbors, return_distance, queue=queue)
+
+    def _predict_gpu(self, X, queue=None):
+        X = _check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
+        onedal_model = getattr(self, '_onedal_model', None)
+        n_features = getattr(self, 'n_features_in_', None)
+        n_samples_fit_ = getattr(self, 'n_samples_fit_', None)
+        shape = getattr(X, 'shape', None)
+        if n_features and shape and len(shape) > 1 and shape[1] != n_features:
+            raise ValueError((f'X has {X.shape[1]} features, '
+                              f'but KNNClassifier is expecting '
+                              f'{n_features} features as input'))
+
+        _check_is_fitted(self)
+
+        self._fit_method = super()._parse_auto_method(
+            self.algorithm,
+            n_samples_fit_, n_features)
+
+        params = self._get_onedal_params(X)
+
+        prediction_result = self._onedal_predict(onedal_model, X, params, queue=queue)
+        responses = from_table(prediction_result.responses)
+        result = responses.ravel()
+
+        return result
+
+    def _predict_skl(self, X, queue=None):
+        neigh_dist, neigh_ind = self.kneighbors(X, queue=queue)
+
+        weights = self._get_weights(neigh_dist, self.weights)
+
+        _y = self._y
+        if _y.ndim == 1:
+            _y = _y.reshape((-1, 1))
+
+        if weights is None:
+            y_pred = np.mean(_y[neigh_ind], axis=1)
+        else:
+            y_pred = np.empty((X.shape[0], _y.shape[1]), dtype=np.float64)
+            denom = np.sum(weights, axis=1)
+
+            for j in range(_y.shape[1]):
+                num = np.sum(_y[neigh_ind, j] * weights, axis=1)
+                y_pred[:, j] = num / denom
+
+        if self._y.ndim == 1:
+            y_pred = y_pred.ravel()
+
+        return y_pred
+
+    def predict(self, X, queue=None):
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
+        is_uniform_weights = getattr(self, 'weights', 'uniform') == 'uniform'
+        return self._predict_gpu(X, queue=queue) \
+            if gpu_device and is_uniform_weights else self._predict_skl(X, queue=queue)
+
+
 class NearestNeighbors(NeighborsBase):
     def __init__(self, n_neighbors=5, *,
                  weights='uniform', algorithm='auto',
@@ -561,7 +694,6 @@ class NearestNeighbors(NeighborsBase):
             return predict_alg(**params).compute(X, model)
 
         policy = _get_policy(queue, X)
-
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:

@@ -144,6 +144,13 @@ struct descriptor_creator<Float, Method, knn::task::classification, Distance> {
 };
 
 template <typename Float, typename Method, typename Distance>
+struct descriptor_creator<Float, Method, knn::task::regression, Distance> {
+    static auto get(const std::int64_t, const std::int64_t neighbor_count) {
+        return knn::descriptor<Float, Method, knn::task::regression, Distance>(neighbor_count);
+    }
+};
+
+template <typename Float, typename Method, typename Distance>
 struct descriptor_creator<Float, Method, knn::task::search, Distance> {
     static auto get(const std::int64_t, const std::int64_t neighbor_count) {
         return knn::descriptor<Float, Method, knn::task::search, Distance>(neighbor_count);
@@ -177,6 +184,24 @@ template <typename Policy>
 struct init_train_ops_dispatcher<Policy, knn::task::classification> {
     void operator()(py::module_& m) {
         using Task = knn::task::classification;
+        m.def("train",
+              [](const Policy& policy,
+                 const py::dict& params,
+                 const table& data,
+                 const table& responses) {
+                  using namespace knn;
+                  using input_t = train_input<Task>;
+
+                  train_ops ops(policy, input_t{ data, responses }, params2desc{});
+                  return fptype2t{ method2t{ Task{}, metric2t{ ops } } }(params);
+              });
+    }
+};
+
+template <typename Policy>
+struct init_train_ops_dispatcher<Policy, knn::task::regression> {
+    void operator()(py::module_& m) {
+        using Task = knn::task::regression;
         m.def("train",
               [](const Policy& policy,
                  const py::dict& params,
@@ -260,9 +285,9 @@ void init_infer_result(py::module_& m) {
                    .DEF_ONEDAL_PY_PROPERTY(distances, result_t)
                    .DEF_ONEDAL_PY_PROPERTY(result_options, result_t);
 
-    constexpr bool is_cls = std::is_same_v<Task, task::classification>;
+    constexpr bool is_not_srch = !std::is_same_v<Task, task::search>;
 
-    if constexpr (is_cls) {
+    if constexpr (is_not_srch) {
         // workaround for gcc which cannot deduce setters directly passed to def_property()
         auto setter = &result_t::template set_responses<>;
         cls.def_property("responses", &result_t::get_responses, setter);
@@ -270,6 +295,7 @@ void init_infer_result(py::module_& m) {
 }
 
 ONEDAL_PY_TYPE2STR(knn::task::classification, "classification");
+ONEDAL_PY_TYPE2STR(knn::task::regression, "regression");
 ONEDAL_PY_TYPE2STR(knn::task::search, "search");
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
@@ -282,7 +308,7 @@ ONEDAL_PY_INIT_MODULE(neighbors) {
     using namespace knn;
     using namespace dal::detail;
 
-    using task_list = types<task::classification, task::search>;
+    using task_list = types<task::classification, task::regression, task::search>;
     auto sub = m.def_submodule("neighbors");
 
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);

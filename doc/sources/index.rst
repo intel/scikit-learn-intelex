@@ -72,6 +72,7 @@ Important Links
    :hidden:
 
    algorithms.rst
+   guide/acceleration.rst
    global-patching.rst
    verbose.rst
    distributed-mode.rst

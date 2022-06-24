@@ -37,13 +37,13 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'Intel(R) Extension for Scikit-learn*'
-copyright = '2021, Intel'
+copyright = '2022, Intel'
 author = 'Intel'
 
 # The short X.Y version
 version = '2021'
 # The full version, including alpha/beta/rc tags
-release = '2021.5'
+release = '2021.6'
 
 
 # -- General configuration ---------------------------------------------------

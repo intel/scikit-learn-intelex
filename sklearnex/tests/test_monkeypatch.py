@@ -117,7 +117,8 @@ def test_unpatch_by_list_many_estimators():
     from sklearn.svm import SVC
 
     assert RandomForestRegressor.__module__.startswith('daal4py')
-    assert KNeighborsRegressor.__module__.startswith('daal4py')
+    assert KNeighborsRegressor.__module__.startswith('daal4py') or \
+        KNeighborsRegressor.__module__.startswith('sklearnex')
     assert LogisticRegression.__module__.startswith('daal4py')
     assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')
 
