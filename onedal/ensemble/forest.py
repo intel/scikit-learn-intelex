@@ -44,7 +44,7 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
                  min_weight_fraction_leaf, max_features, max_leaf_nodes,
                  min_impurity_decrease, min_impurity_split, bootstrap, oob_score,
                  random_state, warm_start, class_weight, ccp_alpha, max_samples,
-                 max_bins, min_bin_size, infer_mode, voting_mode, error_metric_mode,
+                 maxBins, minBinSize, infer_mode, voting_mode, error_metric_mode,
                  variable_importance_mode, algorithm):
         self.n_estimators = n_estimators
         self.bootstrap = bootstrap
@@ -63,8 +63,8 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
         self.min_impurity_decrease = min_impurity_decrease
         self.min_impurity_split = min_impurity_split
         self.ccp_alpha = ccp_alpha
-        self.max_bins = max_bins
-        self.min_bin_size = min_bin_size
+        self.maxBins = maxBins
+        self.minBinSize = minBinSize
         self.infer_mode = infer_mode
         self.voting_mode = voting_mode
         self.error_metric_mode = error_metric_mode
@@ -148,8 +148,8 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
             'min_observations_in_leaf_node': min_observations_in_leaf_node,
             'min_observations_in_split_node': min_observations_in_split_node,
             'max_leaf_nodes': (0 if self.max_leaf_nodes is None else self.max_leaf_nodes),
-            'max_bins': self.max_bins,
-            'min_bin_size': self.min_bin_size,
+            'maxBins': self.maxBins,
+            'minBinSize': self.minBinSize,
             'memory_saving_mode': False,
             'bootstrap': bool(self.bootstrap),
             'error_metric_mode': self.error_metric_mode,
@@ -201,20 +201,20 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
             if self.max_leaf_nodes < 2:
                 raise ValueError(("max_leaf_nodes {0} must be either None "
                                   "or larger than 1").format(self.max_leaf_nodes))
-        if isinstance(self.max_bins, numbers.Integral):
-            if not 2 <= self.max_bins:
+        if isinstance(self.maxBins, numbers.Integral):
+            if not 2 <= self.maxBins:
                 raise ValueError("maxBins must be at least 2, got %s"
                                  % self.maxBins)
         else:
-            raise ValueError("max_bins must be integral number but was "
-                             "%r" % self.max_bins)
-        if isinstance(self.min_bin_size, numbers.Integral):
-            if not 1 <= self.min_bin_size:
-                raise ValueError("min_bin_size must be at least 1, got %s"
-                                 % self.min_bin_size)
+            raise ValueError("maxBins must be integral number but was "
+                             "%r" % self.maxBins)
+        if isinstance(self.minBinSize, numbers.Integral):
+            if not 1 <= self.minBinSize:
+                raise ValueError("minBinSize must be at least 1, got %s"
+                                 % self.minBinSize)
         else:
-            raise ValueError("min_bin_size must be integral number but was "
-                             "%r" % self.min_bin_size)
+            raise ValueError("minBinSize must be integral number but was "
+                             "%r" % self.minBinSize)
 
     def _fit(self, X, y, sample_weight, module, queue):
         self.classes_ = None
@@ -270,8 +270,8 @@ class RandomForestClassifier(ClassifierMixin, BaseForest):
                  class_weight=None,
                  ccp_alpha=0.0,
                  max_samples=None,
-                 max_bins=256,
-                 min_bin_size=1,
+                 maxBins=256,
+                 minBinSize=1,
                  infer_mode='class_responses',
                  voting_mode='weighted',
                  error_metric_mode='none',
@@ -285,7 +285,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest):
             min_impurity_split=min_impurity_split, bootstrap=bootstrap,
             oob_score=oob_score, random_state=random_state, warm_start=warm_start,
             class_weight=class_weight, ccp_alpha=ccp_alpha, max_samples=max_samples,
-            max_bins=max_bins, min_bin_size=min_bin_size, infer_mode=infer_mode,
+            maxBins=maxBins, minBinSize=minBinSize, infer_mode=infer_mode,
             voting_mode=voting_mode, error_metric_mode=error_metric_mode,
             variable_importance_mode=variable_importance_mode, algorithm=algorithm)
         self.is_classification = True
@@ -332,8 +332,8 @@ class RandomForestRegressor(RegressorMixin, BaseForest):
                  class_weight=None,
                  ccp_alpha=0.0,
                  max_samples=None,
-                 max_bins=256,
-                 min_bin_size=1,
+                 maxBins=256,
+                 minBinSize=1,
                  infer_mode='class_responses',
                  voting_mode='weighted',
                  error_metric_mode='none',
@@ -347,7 +347,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest):
             min_impurity_split=min_impurity_split, bootstrap=bootstrap,
             oob_score=oob_score, random_state=random_state, warm_start=warm_start,
             class_weight=class_weight, ccp_alpha=ccp_alpha, max_samples=max_samples,
-            max_bins=max_bins, min_bin_size=min_bin_size, infer_mode=infer_mode,
+            maxBins=maxBins, minBinSize=minBinSize, infer_mode=infer_mode,
             voting_mode=voting_mode, error_metric_mode=error_metric_mode,
             variable_importance_mode=variable_importance_mode, algorithm=algorithm)
         self.is_classification = False
