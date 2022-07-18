@@ -76,6 +76,7 @@ auto get_error_metric_mode(const py::dict& params) {
         else
             ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(mode);
     }
+    return result_mode;
 }
 
 auto get_infer_mode(const py::dict& params) {
@@ -101,6 +102,7 @@ auto get_infer_mode(const py::dict& params) {
         else
             ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(mode);
     }
+    return result_mode;
 }
 
 auto get_variable_importance_mode(const py::dict& params) {
@@ -160,16 +162,13 @@ struct params2desc {
                         .set_min_bin_size(params["min_bin_size"].cast<std::int64_t>())
                         .set_memory_saving_mode(params["memory_saving_mode"].cast<bool>())
                         .set_bootstrap(params["bootstrap"].cast<bool>())
-                        // TODO:
-                        // .set_error_metric_mode(get_error_metric_mode(params))
-                        // .set_variable_importance_mode(get_variable_importance_mode(params))
-                        ;
+                        .set_error_metric_mode(get_error_metric_mode(params))
+                        .set_variable_importance_mode(get_variable_importance_mode(params));
 
         if constexpr (is_cls) {
-            // TODO:
-            //desc.set_class_count(params["class_count"].cast<std::int64_t>());
-            //desc.set_infer_mode(get_infer_mode(params));
-            //desc.set_voting_mode(get_voting_mode(params));
+            desc.set_class_count(params["class_count"].cast<std::int64_t>());
+            desc.set_infer_mode(get_infer_mode(params));
+            desc.set_voting_mode(get_voting_mode(params));
         }
 
         return desc;
