@@ -33,7 +33,7 @@ Patch all supported algorithms
 
 To patch all :ref:`supported algorithms <sklearn_algorithms>`, run::
 
-    python sklearnex.glob patch_sklearn
+    python -m sklearnex.glob patch_sklearn
 
 Patch selected algorithms
 =========================
@@ -43,14 +43,14 @@ with a list of algorithms to patch.
 
 For example, to patch only SVC and RandomForestClassifier estimators, run::
 
-    python sklearnex.glob patch_sklearn -a svc random_forest_classifier
+    python -m sklearnex.glob patch_sklearn -a svc random_forest_classifier
 
 Disable patching notifications
 ==============================
 
 If you do not want to receive patching notifications, then use ``--no-verbose`` or ``-nv`` keys::
 
-    python sklearnex.glob patch_sklearn -a svc random_forest_classifier -nv
+    python -m sklearnex.glob patch_sklearn -a svc random_forest_classifier -nv
 
 .. note::
     If you run the global patching command several times with different parameters,
@@ -61,7 +61,7 @@ Disable global patching
 
 To disable global patching, use the following command::
 
-    python sklearnex.glob unpatch_sklearn
+    python -m sklearnex.glob unpatch_sklearn
 
 Enable global patching via code
 ===============================
