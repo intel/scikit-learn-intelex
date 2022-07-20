@@ -34,7 +34,7 @@ One of the ways to patch scikit-learn is by modifying the code. First, you impor
     ```
 
 - **Enable Intel GPU optimizations**
-  
+
     ```py
     import numpy as np
     import dpctl
@@ -56,7 +56,7 @@ This software acceleration is achieved through the use of vector instructions, I
 
 ## Supported Algorithms
 
-❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
+❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html).
 
 You may still use algorithms and parameters not supported by Intel(R) Extension for Scikit-learn in your code. You will not get an error if you do this. When you use algorithms or parameters not supported by the extension, the package fallbacks into original stock version of scikit-learn.
 
@@ -83,6 +83,34 @@ Installation via `pip` package manager is recommended by default:
 ```bash
 pip install scikit-learn-intelex
 ```
+
+## Styles for Contributing to Documentation
+
+
+Keeping consistent styles enables Sphinx to be able to create a proper
+hierarchy of headings in output files such as PDFs and HTML. Use the styles
+below when editing your ReST files.
+
+.. code-block::
+
+   ##############
+   Document title
+   ##############
+
+   Heading 1
+   ---------
+
+   Heading 2
+   *********
+
+   Heading 3
+   =========
+
+   Heading 4
+   ^^^^^^^^^
+
+For a more comprehensive list of styles including code blocks and
+hyperlinks, see [RST Documentation Guidelines](https://reimagined-disco-469c7a36.pages.github.io/conventions.html).
 
 ## 🔗 Important Links
 - [Notebook examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)
@@ -111,7 +139,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 
 ### ❓ Are all algorithms affected by patching?
 
-> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
+> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html).
 
 ### ❓ What happens if I use parameters not supported by the extension?
 
