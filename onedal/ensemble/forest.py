@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-from sklearn.base import BaseEstimator
+from sklearn.ensemble import BaseEnsemble
 from abc import ABCMeta, abstractmethod
 import numbers
 import warnings
@@ -36,8 +36,10 @@ from ..common._estimator_checks import _check_is_fitted
 from ..datatypes._data_conversion import from_table, to_table
 from onedal import _backend
 
+from sklearn.tree import DecisionTreeClassifier
 
-class BaseForest(BaseEstimator, metaclass=ABCMeta):
+
+class BaseForest(BaseEnsemble, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self,
                  n_estimators, criterion, max_depth, min_samples_split, min_samples_leaf,
@@ -45,7 +47,7 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
                  min_impurity_decrease, min_impurity_split, bootstrap, oob_score,
                  random_state, warm_start, class_weight, ccp_alpha, max_samples,
                  maxBins, minBinSize, infer_mode, voting_mode, error_metric_mode,
-                 variable_importance_mode, algorithm):
+                 variable_importance_mode, algorithm, **kwargs):
         self.n_estimators = n_estimators
         self.bootstrap = bootstrap
         self.oob_score = oob_score
@@ -148,8 +150,8 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
             'min_observations_in_leaf_node': min_observations_in_leaf_node,
             'min_observations_in_split_node': min_observations_in_split_node,
             'max_leaf_nodes': (0 if self.max_leaf_nodes is None else self.max_leaf_nodes),
-            'maxBins': self.maxBins,
-            'minBinSize': self.minBinSize,
+            'max_bins': self.maxBins,
+            'min_bin_size': self.minBinSize,
             'memory_saving_mode': False,
             'bootstrap': bool(self.bootstrap),
             'error_metric_mode': self.error_metric_mode,
@@ -216,23 +218,57 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
             raise ValueError("minBinSize must be integral number but was "
                              "%r" % self.minBinSize)
 
+    def _validate_targets(self, y, dtype):
+        y, self.class_weight_, self.classes_ = _validate_targets(
+            y, self.class_weight, dtype)
+        return y
+
+    def _validate_y_class_weight(self, y):
+        # Default implementation
+        return y, None
+
     def _fit(self, X, y, sample_weight, module, queue):
         self.classes_ = None
         X, y = _check_X_y(
             X, y, dtype=[np.float64, np.float32],
             force_all_finite=True, accept_sparse='csr')
-        # y = _validate_targets(y, None, X.dtype)
-        # self.n_features = X.shape[1]
+        if self.is_classification:
+            y = self._validate_targets(y, X.dtype)
+        if y.ndim == 2 and y.shape[1] == 1:
+            warnings.warn(
+                "A column-vector y was passed when a 1d array was"
+                " expected. Please change the shape of y to "
+                "(n_samples,), for example using ravel()."
+            )
+
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
+        self.n_outputs_ = y.shape[1]
+        self.n_features = X.shape[1]
+        self.n_features_in_ = X.shape[1]
+        self.n_features_ = self.n_features_in_
+        # TODO:
+        # use expanded_class_weight
+        y, expanded_class_weight = self._validate_y_class_weight(y)
+        # TODO:
+        # use _is_classifier(self)
+        if self.is_classification:
+            y = self._validate_targets(y, X.dtype)
         policy = _get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
         self._check_parameters()
-        # TODO:
-        y = y.astype(X.dtype.type)
-        # something like this
-        # if _is_classifier(self) and y.dtype != X.dtype:
-        #     y = _validate_targets(y, self.class_weight, X.dtype).reshape((-1, 1))
+        self._cached_estimators_ = None
         result = module.train(policy, params, *to_table(X, y, sample_weight))
         self._onedal_model = result.model
+
+        # TODO:
+        # if self.oob_score:
+        #     self.oob_score_ = self._onedal_model.outOfBagErrorAccuracy[0][0]
+        #     self.oob_decision_function_ = self._onedal_model.outOfBagErrorDecisionFunction
+        #     if self.oob_decision_function_.shape[-1] == 1:
+        #         self.oob_decision_function_ = self.oob_decision_function_.squeeze(axis=-1)
         return self
 
     def _predict(self, X, module, queue):
@@ -248,10 +284,15 @@ class BaseForest(BaseEstimator, metaclass=ABCMeta):
         return y
 
     def _predict_proba(self, X, module, queue):
+        # TODO:
         pass
 
+    def fit(self, X, y, sample_weight=None, queue=None):
+        return self._fit(X, y, sample_weight,
+                            _backend.decision_forest.classification, queue)
 
-class RandomForestClassifier(ClassifierMixin, BaseForest):
+
+class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def __init__(self,
                  n_estimators=100,
                  criterion="gini",
@@ -276,7 +317,8 @@ class RandomForestClassifier(ClassifierMixin, BaseForest):
                  voting_mode='weighted',
                  error_metric_mode='none',
                  variable_importance_mode='none',
-                 algorithm='hist'):
+                 algorithm='hist',
+                 **kwargs):
         super().__init__(
             n_estimators=n_estimators, criterion=criterion, max_depth=max_depth,
             min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
@@ -289,16 +331,60 @@ class RandomForestClassifier(ClassifierMixin, BaseForest):
             voting_mode=voting_mode, error_metric_mode=error_metric_mode,
             variable_importance_mode=variable_importance_mode, algorithm=algorithm)
         self.is_classification = True
-    # TODO:
-    # not used
-    def _validate_targets(self, y, dtype):
-        y, self.class_weight_, self.classes_ = _validate_targets(
-            y, self.class_weight, dtype)
-        return y
 
-    def fit(self, X, y, sample_weight=None, queue=None):
-        return super()._fit(X, y, sample_weight,
-                            _backend.decision_forest.classification, queue)
+    def _validate_y_class_weight(self, y):
+        # check_classification_targets(y)
+
+        y = np.copy(y)
+        expanded_class_weight = None
+
+        if self.class_weight is not None:
+            y_original = np.copy(y)
+
+        self.classes_ = []
+        self.n_classes_ = []
+
+        y_store_unique_indices = np.zeros(y.shape, dtype=int)
+        for k in range(self.n_outputs_):
+            classes_k, y_store_unique_indices[:, k] = np.unique(
+                y[:, k], return_inverse=True
+            )
+            self.classes_.append(classes_k)
+            self.n_classes_.append(classes_k.shape[0])
+        y = y_store_unique_indices
+
+        if self.class_weight is not None:
+            valid_presets = ("balanced", "balanced_subsample")
+            if isinstance(self.class_weight, str):
+                if self.class_weight not in valid_presets:
+                    raise ValueError(
+                        "Valid presets for class_weight include "
+                        '"balanced" and "balanced_subsample".'
+                        'Given "%s".'
+                        % self.class_weight
+                    )
+                if self.warm_start:
+                    warnings.warn(
+                        'class_weight presets "balanced" or '
+                        '"balanced_subsample" are '
+                        "not recommended for warm_start if the fitted data "
+                        "differs from the full dataset. In order to use "
+                        '"balanced" weights, use compute_class_weight '
+                        '("balanced", classes, y). In place of y you can use '
+                        "a large enough sample of the full training set "
+                        "target to properly estimate the class frequency "
+                        "distributions. Pass the resulting weights as the "
+                        "class_weight parameter."
+                    )
+
+            if self.class_weight != "balanced_subsample" or not self.bootstrap:
+                if self.class_weight == "balanced_subsample":
+                    class_weight = "balanced"
+                else:
+                    class_weight = self.class_weight
+                expanded_class_weight = compute_sample_weight(class_weight, y_original)
+
+        return y, expanded_class_weight
 
     def predict(self, X, queue=None):
         pred = super()._predict(X, _backend.decision_forest.classification, queue)
@@ -311,6 +397,9 @@ class RandomForestClassifier(ClassifierMixin, BaseForest):
 
     def predict_proba(self, X, queue=None):
         return super()._predict_proba(X, _backend.decision_forest.classification, queue)
+
+    def _more_tags(self):
+        return {"multilabel": True}
 
 
 class RandomForestRegressor(RegressorMixin, BaseForest):
