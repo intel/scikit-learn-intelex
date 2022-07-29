@@ -23,7 +23,7 @@ Verbose Mode
 Use |intelex| in verbose mode to find out which implementation of the algorithm is currently used,
 |intelex| or original Scikit-learn.
 
-**Note:** verbose mode is only available for :ref:`supported algorithms <sklearn_algorithms>`.
+.. note:: Verbose mode is only available for :ref:`supported algorithms <sklearn_algorithms>`.
 
 To enable verbose mode, set the ``SKLEARNEX_VERBOSE`` environment variable as shown below:
 
