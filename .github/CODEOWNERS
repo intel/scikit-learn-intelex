@@ -4,20 +4,20 @@
 .circleci/                    @Pahandrovich @vmeshche
 
 # Docs
-*.md                          @outoftardis
-doc/                          @outoftardis
+*.md                          @maria-Petrova
+doc/                          @maria-Petrova
 
 # DPC++
 **/oneapi/                    @vlad-nazarov
 
 # Examples 
 examples/                     @Pahandrovich @vlad-nazarov
-examples/notebooks/           @outoftardis
+examples/notebooks/           @maria-Petrova
 
 # Dependencies
 setup.py                      @Pahandrovich @vmeshche
 requirements*                 @Pahandrovich @vmeshche
-requirements-doc.txt          @outoftardis
+requirements-doc.txt          @maria-Petrova
 conda-recipe/                 @Pahandrovich @vmeshche
 
 # Testing
