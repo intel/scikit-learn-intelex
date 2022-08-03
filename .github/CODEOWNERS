@@ -1,7 +1,7 @@
 # Infra and tools
-.ci/                          @napetrov @vmeshche
-.github/                      @napetrov @vmeshche
-.circleci/                    @Pahandrovich @vmeshche
+.ci/                          @napetrov
+.github/                      @napetrov
+.circleci/                    @Pahandrovich
 
 # Docs
 *.md                          @maria-Petrova
@@ -15,10 +15,10 @@ examples/                     @Pahandrovich @vlad-nazarov
 examples/notebooks/           @maria-Petrova
 
 # Dependencies
-setup.py                      @Pahandrovich @vmeshche
-requirements*                 @Pahandrovich @vmeshche
+setup.py                      @Pahandrovich
+requirements*                 @Pahandrovich
 requirements-doc.txt          @maria-Petrova
-conda-recipe/                 @Pahandrovich @vmeshche
+conda-recipe/                 @Pahandrovich
 
 # Testing
 **/test*.py                   @Pahandrovich
@@ -27,5 +27,5 @@ conda-recipe/                 @Pahandrovich @vmeshche
 daal4py/sklearn/              @Pahandrovich @vlad-nazarov
 
 # Core
-src/                          @Pahandrovich @vlad-nazarov @vmeshche
-generator/                    @Pahandrovich @vlad-nazarov @vmeshche
+src/                          @Pahandrovich @vlad-nazarov
+generator/                    @Pahandrovich @vlad-nazarov
