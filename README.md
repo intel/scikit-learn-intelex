@@ -34,7 +34,7 @@ One of the ways to patch scikit-learn is by modifying the code. First, you impor
     ```
 
 - **Enable Intel GPU optimizations**
-  
+
     ```py
     import numpy as np
     import dpctl
@@ -56,7 +56,7 @@ This software acceleration is achieved through the use of vector instructions, I
 
 ## Supported Algorithms
 
-❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
+❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html).
 
 You may still use algorithms and parameters not supported by Intel(R) Extension for Scikit-learn in your code. You will not get an error if you do this. When you use algorithms or parameters not supported by the extension, the package fallbacks into original stock version of scikit-learn.
 
@@ -76,7 +76,7 @@ Configurations:
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex). You can also build the extension from [sources](INSTALL.md#build-from-sources).
 
-The extension is also available as a part of [Intel® oneAPI AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit). If you already have AI Kit installed, you do not need to install the extension.
+The extension is also available as a part of [Intel® AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit). If you already have AI Kit installed, you do not need to install the extension.
 
 Installation via `pip` package manager is recommended by default:
 
@@ -111,7 +111,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 
 ### ❓ Are all algorithms affected by patching?
 
-> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html). 
+> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html).
 
 ### ❓ What happens if I use parameters not supported by the extension?
 
@@ -147,7 +147,7 @@ You may reach out to project maintainers privately at onedal.maintainers@intel.c
 
 ## oneAPI
 
-Intel(R) Extension for Scikit-learn is part of [oneAPI](https://oneapi.io) and [Intel® oneAPI AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit).
+Intel(R) Extension for Scikit-learn is part of [oneAPI](https://oneapi.io) and [Intel® AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit).
 
 ## daalpy and oneDAL
 
