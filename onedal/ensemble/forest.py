@@ -18,6 +18,9 @@ from sklearn.ensemble import BaseEnsemble
 from abc import ABCMeta, abstractmethod
 import numbers
 import warnings
+from sklearn.exceptions import DataConversionWarning
+from sklearn.utils import (compute_sample_weight, check_array, deprecated)
+from sklearn.utils.validation import (_num_samples)
 from math import ceil
 
 import numpy as np
@@ -37,6 +40,32 @@ from ..datatypes._data_conversion import from_table, to_table
 from onedal import _backend
 
 from sklearn.tree import DecisionTreeClassifier
+
+
+def check_sample_weight(sample_weight, X, dtype=None):
+    n_samples = _num_samples(X)
+
+    if dtype is not None and dtype not in [np.float32, np.float64]:
+        dtype = np.float64
+
+    if sample_weight is None:
+        sample_weight = np.ones(n_samples, dtype=dtype)
+    elif isinstance(sample_weight, numbers.Number):
+        sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
+    else:
+        if dtype is None:
+            dtype = [np.float64, np.float32]
+        sample_weight = check_array(
+            sample_weight, accept_sparse=False, ensure_2d=False, dtype=dtype,
+            order="C"
+        )
+        if sample_weight.ndim != 1:
+            raise ValueError("Sample weights must be 1D array or scalar")
+
+        if sample_weight.shape != (n_samples,):
+            raise ValueError("sample_weight.shape == {}, expected {}!"
+                             .format(sample_weight.shape, (n_samples,)))
+    return sample_weight
 
 
 class BaseForest(BaseEnsemble, metaclass=ABCMeta):
@@ -228,18 +257,27 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         return y, None
 
     def _fit(self, X, y, sample_weight, module, queue):
+        # TODO:
+        # remove sp using
+        # if sp.issparse(y):
+        #     raise ValueError(
+        #         "sparse multilabel-indicator for y is not supported."
+        #         )
+        self._check_parameters()
         self.classes_ = None
+        if sample_weight is not None:
+            sample_weight = check_sample_weight(sample_weight, X)
         X, y = _check_X_y(
             X, y, dtype=[np.float64, np.float32],
-            force_all_finite=True, accept_sparse='csr')
+            force_all_finite=True, accept_sparse=['csr', 'csc', 'coo'],)
         if self.is_classification:
             y = self._validate_targets(y, X.dtype)
         if y.ndim == 2 and y.shape[1] == 1:
             warnings.warn(
                 "A column-vector y was passed when a 1d array was"
                 " expected. Please change the shape of y to "
-                "(n_samples,), for example using ravel()."
-            )
+                "(n_samples,), for example using ravel().",
+                DataConversionWarning, stacklevel=2)
 
         if y.ndim == 1:
             # reshape is necessary to preserve the data contiguity against vs
@@ -258,7 +296,6 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             y = self._validate_targets(y, X.dtype)
         policy = _get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
-        self._check_parameters()
         self._cached_estimators_ = None
         result = module.train(policy, params, *to_table(X, y, sample_weight))
         self._onedal_model = result.model
