@@ -39,6 +39,8 @@ from sklearn.tree._tree import Tree
 from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 
+from scipy import sparse as sp
+
 
 class BaseRandomForest(ABC):
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
@@ -111,7 +113,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self.minBinSize = minBinSize
         self.min_impurity_split = None
 
-
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
@@ -144,7 +145,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         }, X, y, sample_weight)
         return self
 
-
     def predict(self, X):
         """
         Predict class for X.
@@ -170,7 +170,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_RandomForestClassifier.predict,
         }, X)
-
 
     def predict_proba(self, X):
         """
@@ -275,13 +274,18 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
-        #if method_name in ['ensemble.RandomForestClassifier.predict',
-        #                   'ensemble.RandomForestClassifier.predict_proba']:
-        #    return hasattr(self, '_onedal_estimator')
-        return True
+        if method_name == 'ensemble.RandomForestClassifier.fit':
+            return self.criterion == "gini" and not self.oob_score and \
+                not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
+                self.warm_start is False
+        if method_name in ['ensemble.RandomForestClassifier.predict',
+                           'ensemble.RandomForestClassifier.predict_proba']:
+            return hasattr(self, '_onedal_estimator')
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        pass
+        # TODO:
+        return True
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
@@ -310,7 +314,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if hasattr(self, "classes_") and self.n_outputs_ == 1:
             self.n_classes_ = self.n_classes_[0]
             self.classes_ = self.classes_[0]
-
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):

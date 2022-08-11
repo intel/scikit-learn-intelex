@@ -256,6 +256,39 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # Default implementation
         return y, None
 
+    @abstractmethod
+    def _set_oob_score_and_attributes(self, X, y):
+        """Compute and set the OOB score and attributes.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data matrix.
+        y : ndarray of shape (n_samples, n_outputs)
+            The target matrix.
+        """
+        # TODO:
+        pass
+
+    def _compute_oob_predictions(self, X, y):
+        """Compute and set the OOB score.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data matrix.
+        y : ndarray of shape (n_samples, n_outputs)
+            The target matrix.
+
+        Returns
+        -------
+        oob_pred : ndarray of shape (n_samples, n_classes, n_outputs) or \
+                (n_samples, 1, n_outputs)
+            The OOB predictions.
+        """
+        # TODO:
+        pass
+
     def _fit(self, X, y, sample_weight, module, queue):
         # TODO:
         # remove sp using
@@ -368,6 +401,19 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             voting_mode=voting_mode, error_metric_mode=error_metric_mode,
             variable_importance_mode=variable_importance_mode, algorithm=algorithm)
         self.is_classification = True
+
+    def _set_oob_score_and_attributes(self, X, y):
+        """Compute and set the OOB score and attributes.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data matrix.
+        y : ndarray of shape (n_samples, n_outputs)
+            The target matrix.
+        """
+        # TODO:
+        pass
 
     def _validate_y_class_weight(self, y):
         # check_classification_targets(y)
