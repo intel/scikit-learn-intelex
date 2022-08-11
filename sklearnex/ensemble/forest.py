@@ -142,10 +142,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_RandomForestClassifier.fit,
         }, X, y, sample_weight)
-        self.estimators_ = self._estimators_
-        # Decapsulate classes_ attributes
-        self.n_classes_ = self.n_classes_[0]
-        self.classes_ = self.classes_[0]
         return self
 
 
@@ -199,8 +195,13 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
-        self._check_proba()
-        return self._predict_proba
+        # TODO:
+        # _check_proba()
+        # self._check_proba()
+        return dispatch(self, 'ensemble.RandomForestClassifier.predict_proba', {
+            'onedal': self.__class__._onedal_predict_proba,
+            'sklearn': sklearn_RandomForestClassifier.predict_proba,
+        }, X)
 
     def _estimators_(self):
         if hasattr(self, '_cached_estimators_'):
@@ -273,12 +274,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self._cached_estimators_ = estimators_
         return estimators_
 
-    def _predict_proba(self, X):
-        return dispatch(self, 'ensemble.RandomForestClassifier.predict_proba', {
-            'onedal': self.__class__._onedal_predict_proba,
-            'sklearn': sklearn_RandomForestClassifier._predict_proba,
-        }, X)
-
     def _onedal_cpu_supported(self, method_name, *data):
         #if method_name in ['ensemble.RandomForestClassifier.predict',
         #                   'ensemble.RandomForestClassifier.predict_proba']:
@@ -309,6 +304,12 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         }
         self._onedal_estimator = onedal_RandomForestClassifier(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
+
+        self.estimators_ = self._estimators_
+        # Decapsulate classes_ attributes
+        if hasattr(self, "classes_") and self.n_outputs_ == 1:
+            self.n_classes_ = self.n_classes_[0]
+            self.classes_ = self.classes_[0]
 
         self._save_attributes()
 
