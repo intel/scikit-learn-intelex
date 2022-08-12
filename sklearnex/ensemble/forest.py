@@ -60,6 +60,7 @@ class BaseRandomForest(ABC):
         self.classes_ = self._onedal_estimator.classes_
         self.n_classes_ = self._onedal_estimator.n_classes_
         self.n_outputs_ = self._onedal_estimator.n_outputs_
+        # Decapsulate classes_ attributes
         if hasattr(self, "classes_") and self.n_outputs_ == 1:
             self.n_classes_ = self.n_classes_[0]
             self.classes_ = self.classes_[0]
@@ -142,6 +143,25 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         -------
         self : object
         """
+        # TODO:
+        # correct comment
+        # We have to get `n_outputs_` before dispatching
+        # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
+        y = np.asarray(y)
+        y = np.atleast_1d(y)
+
+        if y.ndim == 2 and y.shape[1] == 1:
+            warnings.warn("A column-vector y was passed when a 1d array was"
+                          " expected. Please change the shape of y to "
+                          "(n_samples,), for example using ravel().",
+                          DataConversionWarning, stacklevel=2)
+
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
+        self.n_outputs_ = y.shape[1]
+
         dispatch(self, 'ensemble.RandomForestClassifier.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_RandomForestClassifier.fit,
@@ -233,6 +253,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         }
         # if not sklearn_check_version('1.0'):
         #     params['min_impurity_split'] = self.min_impurity_split
+        # params['min_impurity_split'] = self.min_impurity_split
         est = DecisionTreeClassifier(**params)
         # TODO:
         # we need to set est.tree_ field with Trees constructed from Intel(R)
@@ -283,7 +304,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if method_name == 'ensemble.RandomForestClassifier.fit':
             return self.criterion == "gini" and not self.oob_score and \
                 not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
-                self.warm_start is False
+                self.warm_start is False and self.n_outputs_ == 1
         if method_name in ['ensemble.RandomForestClassifier.predict',
                            'ensemble.RandomForestClassifier.predict_proba']:
             return hasattr(self, '_onedal_estimator')
@@ -315,8 +336,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self._onedal_estimator = onedal_RandomForestClassifier(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
-        self.estimators_ = self._estimators_
-        # Decapsulate classes_ attributes
+        # self.estimators_ = self._estimators_
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
