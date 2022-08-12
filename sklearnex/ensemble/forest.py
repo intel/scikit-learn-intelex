@@ -60,6 +60,9 @@ class BaseRandomForest(ABC):
         self.classes_ = self._onedal_estimator.classes_
         self.n_classes_ = self._onedal_estimator.n_classes_
         self.n_outputs_ = self._onedal_estimator.n_outputs_
+        if hasattr(self, "classes_") and self.n_outputs_ == 1:
+            self.n_classes_ = self.n_classes_[0]
+            self.classes_ = self.classes_[0]
 
 
 class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
@@ -203,9 +206,12 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         }, X)
 
     def _estimators_(self):
-        if hasattr(self, '_cached_estimators_'):
-            if self._cached_estimators_:
-                return self._cached_estimators_
+        # TODO
+        # check
+        if hasattr(self, '_onedal_estimator'):
+            if hasattr(self._onedal_estimator, '_cached_estimators_'):
+                if self._onedal_estimator._cached_estimators_:
+                    return self._onedal_estimator._cached_estimators_
 
         # if sklearn_check_version('0.22'):
         #     check_is_fitted(self)
@@ -311,9 +317,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
         self.estimators_ = self._estimators_
         # Decapsulate classes_ attributes
-        if hasattr(self, "classes_") and self.n_outputs_ == 1:
-            self.n_classes_ = self.n_classes_[0]
-            self.classes_ = self.classes_[0]
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
