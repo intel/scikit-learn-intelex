@@ -219,14 +219,6 @@ deselected_tests:
   # Temporary deselected up to 2021.6 release. Need to fix
   - ensemble/tests/test_bagging.py::test_classification
 
-  # TODO:
-  # working on RF onedal
-  # SIGSEV
-  # will be fixed
-  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_regression_target]
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-sparse_csr-RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob
-
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
 reduced_tests:
