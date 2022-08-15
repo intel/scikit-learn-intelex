@@ -158,6 +158,7 @@ def _daal_roc_auc_score(
         if _dal_ready:
             if not np.array_equal(labels, [0, 1]) or labels.dtype == bool:
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
+                y_score = label_binarize(y_score, classes=labels)[:, 0]
             result = d4p.daal_roc_auc_score(y_true.reshape(-1, 1),
                                             y_score.reshape(-1, 1))
             if result != -1:
