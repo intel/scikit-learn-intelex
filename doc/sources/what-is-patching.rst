@@ -34,7 +34,7 @@ Patching
       One of the patching options available in |intelex|.
       With global patching, you can patch all scikit-learn applications at once::
 
-         python sklearnex.glob patch_sklearn
+         python -m sklearnex.glob patch_sklearn
       
       .. seealso:: :ref:`global_patching`
    

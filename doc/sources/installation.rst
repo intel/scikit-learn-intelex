@@ -23,9 +23,9 @@ Installation
 
 |intelex| is available at the `Python Package Index <https://pypi.org/project/scikit-learn-intelex/>`_,
 on Anaconda Cloud in `Conda-Forge channel <https://anaconda.org/conda-forge/scikit-learn-intelex>`_ and
-in `Intel channel <https://anaconda.org/intel/scikit-learn-intelex>`_. 
+in `Intel channel <https://anaconda.org/intel/scikit-learn-intelex>`_.
 
-|intelex| is also available as a part of `Intel oneAPI AI Analytics Toolkit
+|intelex| is also available as a part of `Intel AI Analytics Toolkit
 <https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html#gs.3lkbv3>`_ (AI Kit).
 If you already have AI Kit installed, you do not need to separately install the extension.
 
@@ -48,7 +48,7 @@ Install from PyPI (recommended by default)
       .. tab:: Linux
 
          ::
-            
+
             python -m venv env
             source env/bin/activate
 
@@ -77,21 +77,21 @@ For each distribution channel, there are two installation options: with and with
 
        conda create -n env -c conda-forge python=3.9 scikit-learn-intelex
 
-    .. important:: 
-    
+    .. important::
+
        If you do not specify the version of Python (``python=3.9`` in the example above), then Python 3.10 is downloaded by default,
        which is not supported.
 
        See :ref:`supported configurations for Conda-Forge channel <sys_req_conda_forge>`.
 
   - into your current environment::
-    
+
        conda install scikit-learn-intelex -c conda-forge
 
 - Install from **Anaconda Cloud: Intel channel** (recommended for the users of Intel® Distribution for Python):
 
   - into a newly created environment (recommended)::
-    
+
        conda create -n env -c intel python scikit-learn-intelex
 
     Note that you may also specify the version of Python to download
@@ -101,24 +101,24 @@ For each distribution channel, there are two installation options: with and with
        conda create -n env -c intel python=3.7 scikit-learn-intelex
 
   - into your current environment::
-    
+
        conda install scikit-learn-intelex -c intel
 
 - Install from **Anaconda Cloud: Main channel**:
 
   - into a newly created environment (recommended)::
-    
+
        conda create -n env python=3.9 scikit-learn-intelex
 
-    .. important:: 
-    
+    .. important::
+
        If you do not specify the version of Python (``python=3.9`` in the example above), then Python 3.10 is downloaded by default,
        which is not supported.
-       
+
        See :ref:`supported configurations for Anaconda main channel <sys_req_conda_main>`.
 
   - into your current environment::
-    
+
        conda install scikit-learn-intelex
 
 .. _build_from_sources:
