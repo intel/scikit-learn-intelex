@@ -405,7 +405,10 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
     else:
         self.fit_shape_good_for_daal_ = False
 
-    _function_name = f"sklearn.linear_model.{self.__class__.__name__}.fit"
+    class_name = self.__class__.__name__
+    class_inst = ElasticNet if class_name == 'ElasticNet' else Lasso
+
+    _function_name = f"sklearn.linear_model.{class_name}.fit"
     _patching_status = PatchingConditionsChain(
         _function_name)
     _dal_ready = _patching_status.and_conditions([
@@ -423,10 +426,10 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         if hasattr(self, 'daal_model_'):
             del self.daal_model_
         if sklearn_check_version('0.23'):
-            res_new = super(ElasticNet, self).fit(
+            res_new = super(class_inst, self).fit(
                 X, y, sample_weight=sample_weight, check_input=check_input)
         else:
-            res_new = super(ElasticNet, self).fit(
+            res_new = super(class_inst, self).fit(
                 X, y, check_input=check_input)
         self._gap = res_new.dual_gap_
         return res_new
@@ -447,7 +450,7 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         self._normalize = _deprecate_normalize(
             self.normalize,
             default=False,
-            estimator_name=self.__class__.__name__)
+            estimator_name=class_name)
 
     # only for pass tests
     # "check_estimators_fit_returns_self(readonly_memmap=True) and
@@ -457,7 +460,7 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
     if not y.flags.writeable:
         y = np.copy(y)
 
-    if self.__class__.__name__ == "ElasticNet":
+    if class_name == "ElasticNet":
         res = _daal4py_fit_enet(self, X, y, check_input=check_input)
     else:
         res = _daal4py_fit_lasso(self, X, y, check_input=check_input)
@@ -468,10 +471,10 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
             _function_name + ": " + get_patch_message("sklearn_after_daal")
         )
         if sklearn_check_version('0.23'):
-            res_new = super(ElasticNet, self).fit(
+            res_new = super(class_inst, self).fit(
                 X, y, sample_weight=sample_weight, check_input=check_input)
         else:
-            res_new = super(ElasticNet, self).fit(
+            res_new = super(class_inst, self).fit(
                 X, y, check_input=check_input)
         self._gap = res_new.dual_gap_
         return res_new
@@ -688,7 +691,7 @@ class ElasticNet(ElasticNet_original):
         self._gap = None
 
 
-class Lasso(ElasticNet):
+class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 
     def __init__(
@@ -705,9 +708,9 @@ class Lasso(ElasticNet):
         random_state=None,
         selection='cyclic',
     ):
+        self.l1_ratio = 1.0
         super().__init__(
             alpha=alpha,
-            l1_ratio=1.0,
             fit_intercept=fit_intercept,
             normalize=normalize,
             precompute=precompute,

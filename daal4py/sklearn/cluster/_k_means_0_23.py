@@ -41,6 +41,10 @@ from .._utils import (
     PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
 
+if sklearn_check_version('1.1'):
+    from sklearn.utils.validation import (
+        _check_sample_weight, _is_arraylike_not_scalar)
+
 
 def _validate_center_shape(X, n_centers, centers):
     """Check if centers is compatible with X and n_centers"""
@@ -324,6 +328,66 @@ def _fit(self, X, y=None, sample_weight=None):
     return self
 
 
+def _fit_1_1(self, X, y=None, sample_weight=None):
+    self._validate_params()
+
+    X = self._validate_data(
+        X,
+        accept_sparse="csr",
+        dtype=[np.float64, np.float32],
+        order="C",
+        copy=self.copy_x,
+        accept_large_sparse=False,
+    )
+
+    self._check_params_vs_input(X)
+
+    random_state = check_random_state(self.random_state)
+    sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
+    self._n_threads = _openmp_effective_n_threads()
+
+    # Validate init array
+    init = self.init
+    init_is_array_like = _is_arraylike_not_scalar(init)
+    if init_is_array_like:
+        init = check_array(init, dtype=X.dtype, copy=True, order="C")
+        self._validate_center_shape(X, init)
+
+    X_len = _num_samples(X)
+
+    _patching_status = PatchingConditionsChain(
+        "sklearn.cluster.KMeans.fit")
+    _dal_ready = _patching_status.and_conditions([
+        (self.n_clusters <= X_len,
+            "The number of clusters is larger than the number of samples in X.")
+    ])
+
+    if _dal_ready and sample_weight is not None:
+        if isinstance(sample_weight, numbers.Number):
+            sample_weight = np.full(X_len, sample_weight, dtype=np.float64)
+        else:
+            sample_weight = np.asarray(sample_weight)
+        _dal_ready = _patching_status.and_conditions([
+            (sample_weight.shape == (X_len,),
+                "Sample weights do not have the same length as X."),
+            (np.allclose(sample_weight, np.ones_like(sample_weight)),
+                "Sample weights are not ones.")
+        ])
+
+    _patching_status.write_log()
+    if _dal_ready:
+        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
+        self.n_features_in_ = X.shape[1]
+        self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
+            _daal4py_k_means_fit(
+                X, self.n_clusters, self.max_iter, self.tol, init, self._n_init,
+                self.verbose, random_state)
+        self._n_features_out = self.cluster_centers_.shape[0]
+    else:
+        super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
+    return self
+
+
 def _daal4py_check_test_data(self, X):
     if sklearn_check_version("1.0"):
         self._check_feature_names(X, reset=False)
@@ -472,7 +536,10 @@ class KMeans(KMeans_original):
         self : object
             Fitted estimator.
         """
-        return _fit(self, X, y=y, sample_weight=sample_weight)
+        if sklearn_check_version('1.1'):
+            return _fit_1_1(self, X, y=y, sample_weight=sample_weight)
+        else:
+            return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
     def predict(self, X, sample_weight=None):

@@ -658,13 +658,13 @@ def __logistic_regression_path(
                 else:
                     multi_w0 = np.reshape(w0, (classes.size, -1))
             else:
+                n_classes = max(2, classes.size)
                 if sklearn_check_version('1.1'):
                     if solver in ["lbfgs", "newton-cg"]:
                         multi_w0 = np.reshape(w0, (n_classes, -1), order="F")
                     else:
                         multi_w0 = w0
                 else:
-                    n_classes = max(2, classes.size)
                     multi_w0 = np.reshape(w0, (n_classes, -1))
                 if n_classes == 2:
                     multi_w0 = multi_w0[1][np.newaxis, :]

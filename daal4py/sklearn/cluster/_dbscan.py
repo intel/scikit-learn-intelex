@@ -233,7 +233,7 @@ class DBSCAN(DBSCAN_original):
             Returns a fitted instance of self.
         """
         if self.eps <= 0.0:
-            raise ValueError("eps must be positive.")
+            raise ValueError(f"eps == {self.eps}, must be > 0.0.")
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)

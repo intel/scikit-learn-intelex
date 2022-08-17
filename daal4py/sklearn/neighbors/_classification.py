@@ -31,7 +31,8 @@ from scipy import sparse as sp
 if sklearn_check_version("0.22"):
     from sklearn.neighbors._classification import KNeighborsClassifier as \
         BaseKNeighborsClassifier
-    from sklearn.neighbors._base import _check_weights
+    if not sklearn_check_version("1.2"):
+        from sklearn.neighbors._base import _check_weights
     from sklearn.utils.validation import _deprecate_positional_args
 else:
     from sklearn.neighbors.classification import KNeighborsClassifier as \

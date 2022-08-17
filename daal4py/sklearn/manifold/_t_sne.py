@@ -164,7 +164,7 @@ class TSNE(BaseTSNE):
                                  "or 'auto'.")
 
         if hasattr(self, 'square_distances'):
-            if self.square_distances not in [True, 'legacy']:
+            if self.square_distances not in [True, 'legacy', 'deprecated']:
                 raise ValueError("'square_distances' must be True or 'legacy'.")
             if self.metric != "euclidean" and self.square_distances is not True:
                 warnings.warn(("'square_distances' has been introduced in 0.24"
