@@ -179,7 +179,7 @@ if __name__ == "__main__":
     for device in devices:
         for e in examples:
             print("*" * 80)
-            if(dpctl_available):
+            if dpctl_available:
                 print("device context:", device_type_to_str(device))
             else:
                 print("device context:", device)

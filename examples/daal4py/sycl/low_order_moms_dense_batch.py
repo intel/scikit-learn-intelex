@@ -112,9 +112,9 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    assert(all(getattr(result_classic, name).shape == (1, data.shape[1]) for name in
+    assert all(getattr(result_classic, name).shape == (1, data.shape[1]) for name in
            ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-            'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']))
+            'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation'])
 
     for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
                  'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
