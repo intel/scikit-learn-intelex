@@ -53,7 +53,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     presult = palgo.compute(pdata, tresult.model)
 
     # Prediction result provides prediction
-    assert(presult.prediction.shape == (pdata.shape[0], 1))
+    assert presult.prediction.shape == (pdata.shape[0], 1)
 
     return (presult, plabels)
 
