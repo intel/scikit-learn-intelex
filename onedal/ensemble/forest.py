@@ -357,10 +357,6 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # TODO:
         pass
 
-    def fit(self, X, y, sample_weight=None, queue=None):
-        return self._fit(X, y, sample_weight,
-                            _backend.decision_forest.classification, queue)
-
 
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def __init__(self,
@@ -469,6 +465,10 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
         return y, expanded_class_weight
 
+    def fit(self, X, y, sample_weight=None, queue=None):
+        return self._fit(X, y, sample_weight,
+                            _backend.decision_forest.classification, queue)
+
     def predict(self, X, queue=None):
         pred = super()._predict(X, _backend.decision_forest.classification, queue)
         # return np.take(self.classes_, pred.ravel().astype(np.int64, casting='unsafe'))
@@ -485,7 +485,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         return {"multilabel": True}
 
 
-class RandomForestRegressor(RegressorMixin, BaseForest):
+class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
     def __init__(self,
                  n_estimators=100,
                  criterion="squared_error",

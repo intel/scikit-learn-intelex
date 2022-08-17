@@ -15,18 +15,14 @@
 # limitations under the License.
 #===============================================================================
 
-# TODO:
-# will be replaced
-# from daal4py.sklearn.ensemble import RandomForestClassifier
-from daal4py.sklearn.ensemble import RandomForestRegressor
-# from onedal.ensemble import RandomForestClassifier
-
-import daal4py
+# import daal4py
 
 from sklearn import __version__ as sklearn_version
 import numpy as np
 
 from abc import ABC
+import warnings
+from sklearn.exceptions import DataConversionWarning
 
 from .._device_offload import dispatch, wrap_output_data
 
@@ -75,7 +71,8 @@ class BaseRandomForest(ABC):
         if hasattr(self, "classes_") and self.n_outputs_ == 1:
             self.n_classes_ = self.n_classes_[0]
             self.classes_ = self.classes_[0]
-
+        # TODO:
+        # update for regression
 
 class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     __doc__ = sklearn_RandomForestClassifier.__doc__
@@ -364,56 +361,171 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         pass
 
 
-# class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
-#     __doc__ = sklearn_RandomForestRegressor.__doc__
-# 
-#     def __init__(self,
-#                  n_estimators=100, *,
-#                  criterion="squared_error",
-#                  max_depth=None,
-#                  min_samples_split=2,
-#                  min_samples_leaf=1,
-#                  min_weight_fraction_leaf=0.,
-#                  max_features="auto",
-#                  max_leaf_nodes=None,
-#                  min_impurity_decrease=0.,
-#                  bootstrap=True,
-#                  oob_score=False,
-#                  n_jobs=None,
-#                  random_state=None,
-#                  verbose=0,
-#                  warm_start=False,
-#                  ccp_alpha=0.0,
-#                  max_samples=None,
-#                  maxBins=256,
-#                  minBinSize=1):
-#         super().__init__(
-#             n_estimators=n_estimators,
-#             criterion=criterion,
-#             max_depth=max_depth,
-#             min_samples_split=min_samples_split,
-#             min_samples_leaf=min_samples_leaf,
-#             min_weight_fraction_leaf=min_weight_fraction_leaf,
-#             max_features=max_features,
-#             max_leaf_nodes=max_leaf_nodes,
-#             min_impurity_decrease=min_impurity_decrease,
-#             bootstrap=bootstrap,
-#             oob_score=oob_score,
-#             n_jobs=n_jobs,
-#             random_state=random_state,
-#             verbose=verbose,
-#             warm_start=warm_start
-#         )
-#         self.ccp_alpha = ccp_alpha
-#         self.max_samples = max_samples
-#         self.maxBins = maxBins
-#         self.minBinSize = minBinSize
-#         self.min_impurity_split = None
-# 
-# 
-#     def fit(self, X, y, sample_weight=None):
-#         pass
-# 
-# 
-#     def predict(self, X):
-#         pass
+class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
+    __doc__ = sklearn_RandomForestRegressor.__doc__
+
+    def __init__(self,
+                 n_estimators=100, *,
+                 criterion="squared_error",
+                 max_depth=None,
+                 min_samples_split=2,
+                 min_samples_leaf=1,
+                 min_weight_fraction_leaf=0.,
+                 max_features="auto",
+                 max_leaf_nodes=None,
+                 min_impurity_decrease=0.,
+                 bootstrap=True,
+                 oob_score=False,
+                 n_jobs=None,
+                 random_state=None,
+                 verbose=0,
+                 warm_start=False,
+                 ccp_alpha=0.0,
+                 max_samples=None,
+                 maxBins=256,
+                 minBinSize=1):
+        super().__init__(
+            n_estimators=n_estimators,
+            criterion=criterion,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_weight_fraction_leaf=min_weight_fraction_leaf,
+            max_features=max_features,
+            max_leaf_nodes=max_leaf_nodes,
+            min_impurity_decrease=min_impurity_decrease,
+            bootstrap=bootstrap,
+            oob_score=oob_score,
+            n_jobs=n_jobs,
+            random_state=random_state,
+            verbose=verbose,
+            warm_start=warm_start
+        )
+        self.ccp_alpha = ccp_alpha
+        self.max_samples = max_samples
+        self.maxBins = maxBins
+        self.minBinSize = minBinSize
+        self.min_impurity_split = None
+
+    def _estimators_(self):
+        # TODO
+        pass
+
+    def _onedal_cpu_supported(self, method_name, *data):
+        if method_name == 'ensemble.RandomForestRegressor.fit':
+            return self.criterion == "gini" and not self.oob_score and \
+                not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
+                self.warm_start is False and self.n_outputs_ == 1
+        if method_name ==  'ensemble.RandomForestRegressor.predict':
+            return hasattr(self, '_onedal_estimator')
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+
+    def _onedal_gpu_supported(self, method_name, *data):
+        # TODO:
+        return True
+
+    def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        onedal_params = {
+            'n_estimators': self.n_estimators,
+            'criterion': self.criterion,
+            'max_depth': self.max_depth,
+            'min_samples_split': self.min_samples_split,
+            'min_samples_leaf': self.min_samples_leaf,
+            'min_weight_fraction_leaf':self.min_weight_fraction_leaf,
+            'max_features': self.max_features,
+            'max_leaf_nodes': self.max_leaf_nodes,
+            'min_impurity_decrease': self.min_impurity_decrease,
+            'bootstrap': self.bootstrap,
+            'oob_score': self.oob_score,
+            'n_jobs': self.n_jobs,
+            'random_state': self.random_state,
+            'verbose': self.verbose,
+            'warm_start': self.warm_start
+        }
+        self._onedal_estimator = onedal_RandomForestRegressor(**onedal_params)
+        self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
+
+        self._save_attributes()
+        # TODO:
+        # self.estimators_ = self._estimators_()
+        # self._save_attributes()
+
+    def _onedal_predict(self, X, queue=None):
+        return self._onedal_estimator.predict(X, queue=queue)
+
+    def fit(self, X, y, sample_weight=None):
+        """
+        Build a forest of trees from the training set (X, y).
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The training input samples. Internally, its dtype will be converted
+            to ``dtype=np.float32``. If a sparse matrix is provided, it will be
+            converted into a sparse ``csc_matrix``.
+
+        y : array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The target values (class labels in classification, real numbers in
+            regression).
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights. If None, then samples are equally weighted. Splits
+            that would create child nodes with net zero or negative weight are
+            ignored while searching for a split in each node. In the case of
+            classification, splits are also ignored if they would result in any
+            single class carrying a negative weight in either child node.
+
+        Returns
+        -------
+        self : object
+        """
+        # TODO:
+        # correct comment
+        # We have to get `n_outputs_` before dispatching
+        # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
+        y = np.asarray(y)
+        y = np.atleast_1d(y)
+
+        if y.ndim == 2 and y.shape[1] == 1:
+            warnings.warn("A column-vector y was passed when a 1d array was"
+                          " expected. Please change the shape of y to "
+                          "(n_samples,), for example using ravel().",
+                          DataConversionWarning, stacklevel=2)
+
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
+        self.n_outputs_ = y.shape[1]
+
+        dispatch(self, 'ensemble.RandomForestRegressor.fit', {
+            'onedal': self.__class__._onedal_fit,
+            'sklearn': sklearn_RandomForestRegressor.fit,
+        }, X, y, sample_weight)
+        return self
+
+    def predict(self, X):
+        """
+        Predict class for X.
+
+        The predicted class of an input sample is a vote by the trees in
+        the forest, weighted by their probability estimates. That is,
+        the predicted class is the one with highest mean probability
+        estimate across the trees.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples. Internally, its dtype will be converted to
+            ``dtype=np.float32``. If a sparse matrix is provided, it will be
+            converted into a sparse ``csr_matrix``.
+
+        Returns
+        -------
+        y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
+            The predicted classes.
+        """
+        return dispatch(self, 'ensemble.RandomForestRegressor.predict', {
+            'onedal': self.__class__._onedal_predict,
+            'sklearn': sklearn_RandomForestRegressor.predict,
+        }, X)
