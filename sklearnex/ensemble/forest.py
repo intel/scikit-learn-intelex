@@ -21,6 +21,8 @@
 from daal4py.sklearn.ensemble import RandomForestRegressor
 # from onedal.ensemble import RandomForestClassifier
 
+import daal4py
+
 from sklearn import __version__ as sklearn_version
 import numpy as np
 
@@ -32,6 +34,15 @@ from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClass
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
 
 from sklearn.utils.validation import _deprecate_positional_args
+
+from sklearn.utils.validation import (
+    check_is_fitted,
+    check_consistent_length,
+    _num_samples)
+
+from sklearn.utils import check_random_state
+
+from sklearn.base import clone
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree._tree import Tree
@@ -232,13 +243,15 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             if hasattr(self._onedal_estimator, '_cached_estimators_'):
                 if self._onedal_estimator._cached_estimators_:
                     return self._onedal_estimator._cached_estimators_
-
         # if sklearn_check_version('0.22'):
         #     check_is_fitted(self)
         # else:
         #     check_is_fitted(self, 'daal_model_')
-        classes_ = self.classes_[0]
-        n_classes_ = self.n_classes_[0]
+        check_is_fitted(self)
+        # classes_ = self.classes_[0]
+        # n_classes_ = self.n_classes_[0]
+        classes_ = self.classes_
+        n_classes_ = self.n_classes_
         # convert model to estimators
         params = {
             'criterion': self.criterion,
@@ -259,45 +272,48 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
-#        random_state_checked = check_random_state(self.random_state)
-#        for i in range(self.n_estimators):
-#            est_i = clone(est)
-#            est_i.set_params(
-#                random_state=random_state_checked.randint(np.iinfo(np.int32).max))
-#            if sklearn_check_version('1.0'):
-#                est_i.n_features_in_ = self.n_features_in_
-#            else:
-#                est_i.n_features_ = self.n_features_in_
-#            est_i.n_outputs_ = self.n_outputs_
-#            est_i.classes_ = classes_
-#            est_i.n_classes_ = n_classes_
-#            # treeState members: 'class_count', 'leaf_count', 'max_depth',
-#            # 'node_ar', 'node_count', 'value_ar'
-#            tree_i_state_class = daal4py.getTreeState(
-#                self.daal_model_, i, n_classes_)
-#
-#            # node_ndarray = tree_i_state_class.node_ar
-#            # value_ndarray = tree_i_state_class.value_ar
-#            # value_shape = (node_ndarray.shape[0], self.n_outputs_,
-#            #                n_classes_)
-#            # assert np.allclose(
-#            #     value_ndarray, value_ndarray.astype(np.intc, casting='unsafe')
-#            # ), "Value array is non-integer"
-#            tree_i_state_dict = {
-#                'max_depth': tree_i_state_class.max_depth,
-#                'node_count': tree_i_state_class.node_count,
-#                'nodes': tree_i_state_class.node_ar,
-#                'values': tree_i_state_class.value_ar}
-#            est_i.tree_ = Tree(
-#                self.n_features_in_,
-#                np.array(
-#                    [n_classes_],
-#                    dtype=np.intp),
-#                self.n_outputs_)
-#            est_i.tree_.__setstate__(tree_i_state_dict)
-#            estimators_.append(est_i)
+        random_state_checked = check_random_state(self.random_state)
+        for i in range(self.n_estimators):
+            est_i = clone(est)
+            est_i.set_params(
+                random_state=random_state_checked.randint(np.iinfo(np.int32).max))
+            # if sklearn_check_version('1.0'):
+            #     est_i.n_features_in_ = self.n_features_in_
+            # else:
+            #     est_i.n_features_ = self.n_features_in_
+            est_i.n_features_in_ = self.n_features_in_
+            # est_i.n_features_ = self.n_features_in_
 
-        self._cached_estimators_ = estimators_
+            est_i.n_outputs_ = self.n_outputs_
+            est_i.classes_ = classes_
+            est_i.n_classes_ = n_classes_
+            # treeState members: 'class_count', 'leaf_count', 'max_depth',
+            # 'node_ar', 'node_count', 'value_ar'
+            tree_i_state_class = daal4py.getTreeState(
+                self._onedal_estimator._onedal_model, i, n_classes_)
+
+            # node_ndarray = tree_i_state_class.node_ar
+            # value_ndarray = tree_i_state_class.value_ar
+            # value_shape = (node_ndarray.shape[0], self.n_outputs_,
+            #                n_classes_)
+            # assert np.allclose(
+            #     value_ndarray, value_ndarray.astype(np.intc, casting='unsafe')
+            # ), "Value array is non-integer"
+            tree_i_state_dict = {
+                'max_depth': tree_i_state_class.max_depth,
+                'node_count': tree_i_state_class.node_count,
+                'nodes': tree_i_state_class.node_ar,
+                'values': tree_i_state_class.value_ar}
+            est_i.tree_ = Tree(
+                self.n_features_in_,
+                np.array(
+                    [n_classes_],
+                    dtype=np.intp),
+                self.n_outputs_)
+            est_i.tree_.__setstate__(tree_i_state_dict)
+            estimators_.append(est_i)
+
+        self._onedal_estimator._cached_estimators_ = estimators_
         return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
@@ -336,8 +352,10 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self._onedal_estimator = onedal_RandomForestClassifier(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
-        # self.estimators_ = self._estimators_
         self._save_attributes()
+        # TODO:
+        # self.estimators_ = self._estimators_()
+        # self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)
