@@ -224,8 +224,9 @@ class PCA(PCA_original):
                     n, p, k = X.shape[0], X.shape[1], n_components
                     # These coefficients are result of training of Logistic Regression
                     # (max_iter=10000, solver="liblinear", fit_intercept=False)
-                    # on different datasets and number of components. X is a dataset with
-                    # npk, np^2, and n^2 columns. And y is speedup of patched scikit-learn's
+                    # on different datasets and number of components.
+                    # X is a dataset with npk, np^2, and n^2 columns.
+                    # And y is speedup of patched scikit-learn's
                     # full PCA against stock scikit-learn's randomized PCA.
                     regression_coefs = np.array([
                         [9.779873e-11, n * p * k],
@@ -233,8 +234,8 @@ class PCA(PCA_original):
                         [1.127905e-09, n ** 2],
                     ])
 
-                    if n_components >= 1 \
-                            and np.dot(regression_coefs[:, 0], regression_coefs[:, 1]) <= 0:
+                    if n_components >= 1 and np.dot(
+                            regression_coefs[:, 0], regression_coefs[:, 1]) <= 0:
                         self._fit_svd_solver = 'randomized'
                     else:
                         self._fit_svd_solver = 'full'
