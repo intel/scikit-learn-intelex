@@ -40,10 +40,6 @@ elif sklearn_check_version('0.22'):
 else:
     from sklearn.decomposition.pca import _infer_dimension_
 
-if sklearn_check_version('1.1'):
-    from sklearn.utils._param_validation import Interval, StrOptions
-    from numbers import Integral, Real
-
 
 class PCA(PCA_original):
     __doc__ = PCA_original.__doc__
@@ -366,7 +362,7 @@ class PCA(PCA_original):
         C-ordered array, use 'np.ascontiguousarray'.
         """
 
-        if sklearn_check_version('1.1'):
+        if sklearn_check_version('1.2'):
             self._validate_params()
 
         U, S, Vt = self._fit(X)
