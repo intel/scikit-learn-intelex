@@ -329,7 +329,8 @@ def _fit(self, X, y=None, sample_weight=None):
 
 
 def _fit_1_1(self, X, y=None, sample_weight=None):
-    self._validate_params()
+    if sklearn_check_version('1.2'):
+        self._validate_params()
 
     X = self._validate_data(
         X,
@@ -340,7 +341,10 @@ def _fit_1_1(self, X, y=None, sample_weight=None):
         accept_large_sparse=False,
     )
 
-    self._check_params_vs_input(X)
+    if sklearn_check_version('1.2'):
+        self._check_params_vs_input(X)
+    else:
+        self._check_params(X)
 
     random_state = check_random_state(self.random_state)
     sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
