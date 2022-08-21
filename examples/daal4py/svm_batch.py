@@ -55,7 +55,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    assert(predict_result.prediction.shape == (pdata.shape[0], 1))
+    assert predict_result.prediction.shape == (pdata.shape[0], 1)
 
     # result of classification
     decision_result = predict_result.prediction
