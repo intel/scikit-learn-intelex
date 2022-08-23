@@ -225,22 +225,22 @@ MODELS_INFO = [
         'dataset': 'classifier',
     },
     {
-        'model': KMeans(random_state=0, init="k-means++"),
+        'model': KMeans(random_state=0, algorithm='lloyd', init="k-means++"),
         'methods': ['predict'],
         'dataset': 'blobs',
     },
     {
-        'model': KMeans(random_state=0, init="random"),
+        'model': KMeans(random_state=0, algorithm='lloyd', init="random"),
         'methods': ['predict'],
         'dataset': 'blobs',
     },
     {
-        'model': KMeans(random_state=0, init="k-means++"),
+        'model': KMeans(random_state=0, algorithm='lloyd', init="k-means++"),
         'methods': ['predict'],
         'dataset': 'sparse',
     },
     {
-        'model': KMeans(random_state=0, init="random"),
+        'model': KMeans(random_state=0, algorithm='lloyd', init="random"),
         'methods': ['predict'],
         'dataset': 'sparse',
     },

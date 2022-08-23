@@ -18,7 +18,7 @@ import daal4py as d4p
 import numpy as np
 from functools import partial
 from collections.abc import Sequence
-from scipy.sparse.base import spmatrix
+from scipy import sparse as sp
 
 from sklearn.utils import check_array
 from sklearn.utils.multiclass import is_multilabel
@@ -47,7 +47,7 @@ except ImportError:
 def _daal_type_of_target(y):
     valid = (
         isinstance(
-            y, (Sequence, spmatrix)) or hasattr(
+            y, Sequence) or sp.isspmatrix(y) or hasattr(
             y, '__array__')) and not isinstance(
                 y, str)
 
