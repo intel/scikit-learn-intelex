@@ -331,7 +331,7 @@ def _num_samples(x):
             )
     # Check that shape is returning an integer or default to len
     # Dask dataframes may not return numeric shape[0] value
-    if isinstance(x.shape[0], Integral):
+    if hasattr(x, "shape") and isinstance(x.shape[0], Integral):
         return x.shape[0]
 
     try:
