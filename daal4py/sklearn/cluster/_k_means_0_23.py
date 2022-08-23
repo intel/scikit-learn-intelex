@@ -246,116 +246,82 @@ def _fit(self, X, y=None, sample_weight=None):
         are assigned equal weight (default: None)
 
     """
-    if hasattr(self, 'precompute_distances'):
-        if self.precompute_distances != 'deprecated':
-            if sklearn_check_version('0.24'):
-                warnings.warn("'precompute_distances' was deprecated in version "
-                              "0.23 and will be removed in 1.0 (renaming of 0.25)."
-                              " It has no effect", FutureWarning)
-            elif sklearn_check_version('0.23'):
-                warnings.warn("'precompute_distances' was deprecated in version "
-                              "0.23 and will be removed in 0.25. It has no "
-                              "effect", FutureWarning)
-
-    self._n_threads = None
-    if hasattr(self, 'n_jobs'):
-        if self.n_jobs != 'deprecated':
-            if sklearn_check_version('0.24'):
-                warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
-                              " removed in 1.0 (renaming of 0.25).", FutureWarning)
-            elif sklearn_check_version('0.23'):
-                warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
-                              " removed in 0.25.", FutureWarning)
-            self._n_threads = self.n_jobs
-    self._n_threads = _openmp_effective_n_threads(self._n_threads)
-
-    if self.n_init <= 0:
-        raise ValueError(
-            f"n_init should be > 0, got {self.n_init} instead.")
-
-    random_state = check_random_state(self.random_state)
-    if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=True)
-
-    if self.max_iter <= 0:
-        raise ValueError(
-            f"max_iter should be > 0, got {self.max_iter} instead.")
-
-    algorithm = self.algorithm
-    if algorithm == "elkan" and self.n_clusters == 1:
-        warnings.warn("algorithm='elkan' doesn't make sense for a single "
-                      "cluster. Using 'full' instead.", RuntimeWarning)
-        algorithm = "full"
-
-    if algorithm == "auto":
-        algorithm = "full" if self.n_clusters == 1 else "elkan"
-
-    if algorithm not in ["full", "elkan"]:
-        raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
-                         " {}".format(str(algorithm)))
-
-    X_len = _num_samples(X)
-
-    _patching_status = PatchingConditionsChain(
-        "sklearn.cluster.KMeans.fit")
-    _dal_ready = _patching_status.and_conditions([
-        (self.n_clusters <= X_len,
-            "The number of clusters is larger than the number of samples in X.")
-    ])
-
-    if _dal_ready and sample_weight is not None:
-        if isinstance(sample_weight, numbers.Number):
-            sample_weight = np.full(X_len, sample_weight, dtype=np.float64)
-        else:
-            sample_weight = np.asarray(sample_weight)
-        _dal_ready = _patching_status.and_conditions([
-            (sample_weight.shape == (X_len,),
-                "Sample weights do not have the same length as X."),
-            (np.allclose(sample_weight, np.ones_like(sample_weight)),
-                "Sample weights are not ones.")
-        ])
-
-    _patching_status.write_log()
-    if _dal_ready:
-        X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
-        self.n_features_in_ = X.shape[1]
-        self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
-            _daal4py_k_means_fit(
-                X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
-                self.verbose, random_state)
-    else:
-        super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
-    return self
-
-
-def _fit_1_1(self, X, y=None, sample_weight=None):
-    if sklearn_check_version('1.2'):
-        self._validate_params()
-
-    X = self._validate_data(
-        X,
-        accept_sparse="csr",
-        dtype=[np.float64, np.float32],
-        order="C",
-        copy=self.copy_x,
-        accept_large_sparse=False,
-    )
-
-    if sklearn_check_version('1.2'):
-        self._check_params_vs_input(X)
-    else:
-        self._check_params(X)
-
-    random_state = check_random_state(self.random_state)
-    sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
-    self._n_threads = _openmp_effective_n_threads()
-
-    # Validate init array
     init = self.init
-    init_is_array_like = _is_arraylike_not_scalar(init)
-    if init_is_array_like:
-        init = check_array(init, dtype=X.dtype, copy=True, order="C")
-        self._validate_center_shape(X, init)
+    if sklearn_check_version('1.1'):
+        if sklearn_check_version('1.2'):
+            self._validate_params()
+
+        X = self._validate_data(
+            X,
+            accept_sparse="csr",
+            dtype=[np.float64, np.float32],
+            order="C",
+            copy=self.copy_x,
+            accept_large_sparse=False,
+        )
+
+        if sklearn_check_version('1.2'):
+            self._check_params_vs_input(X)
+        else:
+            self._check_params(X)
+
+        random_state = check_random_state(self.random_state)
+        sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
+        self._n_threads = _openmp_effective_n_threads()
+
+        # Validate init array
+        init_is_array_like = _is_arraylike_not_scalar(init)
+        if init_is_array_like:
+            init = check_array(init, dtype=X.dtype, copy=True, order="C")
+            self._validate_center_shape(X, init)
+    else:
+        if hasattr(self, 'precompute_distances'):
+            if self.precompute_distances != 'deprecated':
+                if sklearn_check_version('0.24'):
+                    warnings.warn("'precompute_distances' was deprecated in version "
+                                  "0.23 and will be removed in 1.0 (renaming of 0.25)."
+                                  " It has no effect", FutureWarning)
+                elif sklearn_check_version('0.23'):
+                    warnings.warn("'precompute_distances' was deprecated in version "
+                                  "0.23 and will be removed in 0.25. It has no "
+                                  "effect", FutureWarning)
+
+        self._n_threads = None
+        if hasattr(self, 'n_jobs'):
+            if self.n_jobs != 'deprecated':
+                if sklearn_check_version('0.24'):
+                    warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
+                                  " removed in 1.0 (renaming of 0.25).", FutureWarning)
+                elif sklearn_check_version('0.23'):
+                    warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
+                                  " removed in 0.25.", FutureWarning)
+                self._n_threads = self.n_jobs
+        self._n_threads = _openmp_effective_n_threads(self._n_threads)
+
+        if self.n_init <= 0:
+            raise ValueError(
+                f"n_init should be > 0, got {self.n_init} instead.")
+
+        random_state = check_random_state(self.random_state)
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
+
+        if self.max_iter <= 0:
+            raise ValueError(
+                f"max_iter should be > 0, got {self.max_iter} instead.")
+
+        algorithm = self.algorithm
+        if algorithm == "elkan" and self.n_clusters == 1:
+            warnings.warn("algorithm='elkan' doesn't make sense for a single "
+                          "cluster. Using 'full' instead.", RuntimeWarning)
+            algorithm = "full"
+
+        if algorithm == "auto":
+            algorithm = "full" if self.n_clusters == 1 else "elkan"
+
+        if algorithm not in ["full", "elkan"]:
+            raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
+                             " {}".format(str(algorithm)))
 
     X_len = _num_samples(X)
 
@@ -384,9 +350,10 @@ def _fit_1_1(self, X, y=None, sample_weight=None):
         self.n_features_in_ = X.shape[1]
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_fit(
-                X, self.n_clusters, self.max_iter, self.tol, init, self._n_init,
+                X, self.n_clusters, self.max_iter, self.tol, init, self.n_init,
                 self.verbose, random_state)
-        self._n_features_out = self.cluster_centers_.shape[0]
+        if sklearn_check_version('1.1'):
+            self._n_features_out = self.cluster_centers_.shape[0]
     else:
         super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
     return self
@@ -540,10 +507,7 @@ class KMeans(KMeans_original):
         self : object
             Fitted estimator.
         """
-        if sklearn_check_version('1.1'):
-            return _fit_1_1(self, X, y=y, sample_weight=sample_weight)
-        else:
-            return _fit(self, X, y=y, sample_weight=sample_weight)
+        return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
     def predict(self, X, sample_weight=None):
