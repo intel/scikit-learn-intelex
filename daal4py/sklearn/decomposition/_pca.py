@@ -52,6 +52,8 @@ class PCA(PCA_original):
         svd_solver='auto',
         tol=0.0,
         iterated_power='auto',
+        n_oversamples=10,
+        power_iteration_normalizer="auto",
         random_state=None
     ):
         self.n_components = n_components
@@ -60,6 +62,8 @@ class PCA(PCA_original):
         self.svd_solver = svd_solver
         self.tol = tol
         self.iterated_power = iterated_power
+        self.n_oversamples = n_oversamples
+        self.power_iteration_normalizer = power_iteration_normalizer
         self.random_state = random_state
 
     def _validate_n_components(self, n_components, n_samples, n_features):
@@ -200,26 +204,37 @@ class PCA(PCA_original):
         shape_good_for_daal = X.shape[1] / X.shape[0] < 2
 
         if self._fit_svd_solver == 'auto':
-            if n_components == 'mle':
-                self._fit_svd_solver = 'full'
-            else:
-                n, p, k = X.shape[0], X.shape[1], n_components
-                # These coefficients are result of training of Logistic Regression
-                # (max_iter=10000, solver="liblinear", fit_intercept=False)
-                # on different datasets and number of components. X is a dataset with
-                # npk, np^2, and n^2 columns. And y is speedup of patched scikit-learn's
-                # full PCA against stock scikit-learn's randomized PCA.
-                regression_coefs = np.array([
-                    [9.779873e-11, n * p * k],
-                    [-1.122062e-11, n * p * p],
-                    [1.127905e-09, n ** 2],
-                ])
-
-                if n_components >= 1 \
-                        and np.dot(regression_coefs[:, 0], regression_coefs[:, 1]) <= 0:
-                    self._fit_svd_solver = 'randomized'
+            if sklearn_check_version('1.1'):
+                # Small problem or n_components == 'mle', just call full PCA
+                if max(X.shape) <= 500 or n_components == "mle":
+                    self._fit_svd_solver = "full"
+                elif 1 <= n_components < 0.8 * min(X.shape):
+                    self._fit_svd_solver = "randomized"
+                # This is also the case of n_components in (0,1)
                 else:
+                    self._fit_svd_solver = "full"
+            else:
+                if n_components == 'mle':
                     self._fit_svd_solver = 'full'
+                else:
+                    n, p, k = X.shape[0], X.shape[1], n_components
+                    # These coefficients are result of training of Logistic Regression
+                    # (max_iter=10000, solver="liblinear", fit_intercept=False)
+                    # on different datasets and number of components.
+                    # X is a dataset with npk, np^2, and n^2 columns.
+                    # And y is speedup of patched scikit-learn's
+                    # full PCA against stock scikit-learn's randomized PCA.
+                    regression_coefs = np.array([
+                        [9.779873e-11, n * p * k],
+                        [-1.122062e-11, n * p * p],
+                        [1.127905e-09, n ** 2],
+                    ])
+
+                    if n_components >= 1 and np.dot(
+                            regression_coefs[:, 0], regression_coefs[:, 1]) <= 0:
+                        self._fit_svd_solver = 'randomized'
+                    else:
+                        self._fit_svd_solver = 'full'
 
         if not shape_good_for_daal or self._fit_svd_solver != 'full':
             if sklearn_check_version('0.23'):
@@ -346,7 +361,11 @@ class PCA(PCA_original):
         This method returns a Fortran-ordered array. To convert it to a
         C-ordered array, use 'np.ascontiguousarray'.
         """
-        U, S, _ = self._fit(X)
+
+        if sklearn_check_version('1.2'):
+            self._validate_params()
+
+        U, S, Vt = self._fit(X)
 
         _patching_status = PatchingConditionsChain(
             "sklearn.decomposition.PCA.fit_transform")

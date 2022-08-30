@@ -18,7 +18,6 @@ import numpy as np
 import warnings
 from scipy import sparse as sp
 from scipy.sparse import issparse, dok_matrix, lil_matrix
-from scipy.sparse.base import spmatrix
 from collections.abc import Sequence
 from numbers import Integral
 
@@ -150,7 +149,7 @@ def _check_classification_targets(y):
 
 
 def _type_of_target(y):
-    valid = (isinstance(y, (Sequence, spmatrix)) or hasattr(y, '__array__')) \
+    valid = (isinstance(y, Sequence) or sp.isspmatrix(y) or hasattr(y, '__array__')) \
         and not isinstance(y, str)
 
     if not valid:

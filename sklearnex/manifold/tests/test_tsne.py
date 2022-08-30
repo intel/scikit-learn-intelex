@@ -22,5 +22,5 @@ from numpy.testing import assert_allclose
 def test_sklearnex_import():
     from sklearnex.manifold import TSNE
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
-    tsne = TSNE(n_components=2).fit(X)
+    tsne = TSNE(n_components=2, perplexity=2.0).fit(X)
     assert 'daal4py' in tsne.__module__
