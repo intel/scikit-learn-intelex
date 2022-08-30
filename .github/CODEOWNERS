@@ -1,31 +1,30 @@
 # Infra and tools
-.ci/                          @napetrov
-.github/                      @napetrov
-.circleci/                    @Pahandrovich
+.ci/                          @napetrov @Alexsandruss
+.github/                      @napetrov @Alexsandruss
+.circleci/                    @napetrov @Alexsandruss
 
 # Docs
 *.md                          @maria-Petrova
 doc/                          @maria-Petrova
 
 # DPC++
-**/oneapi/                    @vlad-nazarov
+**/oneapi/                    @Alexsandruss
 
 # Examples 
-examples/                     @Pahandrovich @vlad-nazarov
-examples/notebooks/           @maria-Petrova
+examples/                     @maria-Petrova @Alexsandruss
+examples/notebooks/           @maria-Petrova @Alexsandruss
 
 # Dependencies
-setup.py                      @Pahandrovich
-requirements*                 @Pahandrovich
-requirements-doc.txt          @maria-Petrova
-conda-recipe/                 @Pahandrovich
+setup.py                      @Alexsandruss
+requirements*                 @maria-Petrova @Alexsandruss
+conda-recipe/                 @Alexsandruss
 
 # Testing
-**/test*.py                   @Pahandrovich
+**/test*.py                   @Alexsandruss
 
 # Scikit-learn patching
-daal4py/sklearn/              @Pahandrovich @vlad-nazarov
+daal4py/sklearn/              @Alexsandruss
 
 # Core
-src/                          @Pahandrovich @vlad-nazarov
-generator/                    @Pahandrovich @vlad-nazarov
+src/                          @Alexsandruss
+generator/                    @Alexsandruss
