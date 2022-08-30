@@ -146,6 +146,8 @@ def split_train_inference(kf, x, y, estimator):
         elif isinstance(x, pd.core.frame.DataFrame):
             x_train, x_test = x.iloc[train_index], x.iloc[test_index]
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        # TODO: add parameters for all estimators to prevent
+        # fallback to stock scikit-learn with default parameters
         alg = estimator()
         alg.fit(x_train, y_train)
         if hasattr(alg, 'predict'):

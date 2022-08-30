@@ -20,6 +20,7 @@ try:
 except ImportError:
     from distutils.version import LooseVersion as Version
 from sklearn import __version__ as sklearn_version
+from daal4py.sklearn._utils import sklearn_check_version
 import warnings
 
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
@@ -39,7 +40,7 @@ import numpy as np
 from scipy import sparse as sp
 
 
-if Version(sklearn_version) >= Version("0.22") and \
+if sklearn_check_version("0.22") and \
    Version(sklearn_version) < Version("0.23"):
     class NearestNeighbors_(sklearn_NearestNeighbors):
         def __init__(self, n_neighbors=5, radius=1.0,
@@ -78,7 +79,7 @@ class NearestNeighbors(NearestNeighbors_):
             metric_params=metric_params, n_jobs=n_jobs)
 
     def fit(self, X, y=None):
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         if self.metric_params is not None and 'p' in self.metric_params:
             if self.p is not None:
@@ -194,7 +195,7 @@ class NearestNeighbors(NearestNeighbors_):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.NearestNeighbors.kneighbors', {
             'onedal': self.__class__._onedal_kneighbors,
@@ -208,11 +209,11 @@ class NearestNeighbors(NearestNeighbors_):
 
         if _onedal_estimator is not None or getattr(self, '_tree', 0) is None and \
                 self._fit_method == 'kd_tree':
-            if Version(sklearn_version) >= Version("0.24"):
+            if sklearn_check_version("0.24"):
                 sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, '_y', None))
             else:
                 sklearn_NearestNeighbors.fit(self, self._fit_X)
-        if Version(sklearn_version) >= Version("0.22"):
+        if sklearn_check_version("0.22"):
             result = sklearn_NearestNeighbors.radius_neighbors(
                 self, X, radius, return_distance, sort_results)
         else:
