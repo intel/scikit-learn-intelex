@@ -8,10 +8,12 @@
 doc/                          @maria-Petrova
 
 # DPC++
-**/oneapi/                    @Alexsandruss
+**/oneapi/                    @Alexsandruss @samir-nasibli @KulikovNikita
+onedal/                       @Alexsandruss @samir-nasibli @KulikovNikita
+sklearnex/                    @Alexsandruss @samir-nasibli @KulikovNikita
 
 # Examples 
-examples/                     @maria-Petrova @Alexsandruss
+examples/daal4py/             @maria-Petrova @Alexsandruss @samir-nasibli
 examples/notebooks/           @maria-Petrova @Alexsandruss
 
 # Dependencies
@@ -20,10 +22,10 @@ requirements*                 @maria-Petrova @Alexsandruss
 conda-recipe/                 @Alexsandruss
 
 # Testing
-**/test*.py                   @Alexsandruss
+**/test*.py                   @Alexsandruss @samir-nasibli
 
 # Scikit-learn patching
-daal4py/sklearn/              @Alexsandruss
+daal4py/sklearn/              @Alexsandruss @samir-nasibli
 
 # Core
 src/                          @Alexsandruss
