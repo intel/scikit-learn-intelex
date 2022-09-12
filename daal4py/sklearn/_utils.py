@@ -16,6 +16,8 @@
 
 import numpy as np
 import sys
+import os
+import warnings
 
 from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
@@ -25,10 +27,21 @@ except ImportError:
     from distutils.version import LooseVersion as Version
 import logging
 
+try:
+    from pandas import DataFrame
+    from pandas.core.dtypes.cast import find_common_type
+    pandas_is_imported = True
+except (ImportError, ModuleNotFoundError):
+    pandas_is_imported = False
+
+try:
+    from daal4py.oneapi import is_in_sycl_ctxt as is_in_ctx
+    ctx_imported = True
+except (ImportError, ModuleNotFoundError):
+    ctx_imported = False
+
 
 def set_idp_sklearn_verbose():
-    import warnings
-    import os
     logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
     try:
         if logLevel is not None:
@@ -79,14 +92,10 @@ def parse_dtype(dt):
 
 
 def getFPType(X):
-    try:
-        from pandas import DataFrame
-        from pandas.core.dtypes.cast import find_common_type
+    if pandas_is_imported:
         if isinstance(X, DataFrame):
             dt = find_common_type(X.dtypes.tolist())
             return parse_dtype(dt)
-    except ImportError:
-        pass
 
     dt = getattr(X, 'dtype', None)
     return parse_dtype(dt)
@@ -128,26 +137,24 @@ def get_patch_message(s):
 
 
 def is_in_sycl_ctxt():
-    try:
-        from daal4py.oneapi import is_in_sycl_ctxt as is_in_ctx
+    if ctx_imported:
         return is_in_ctx()
-    except ModuleNotFoundError:
+    else:
         return False
 
 
 def is_DataFrame(X):
-    try:
+    if pandas_is_imported:
         from pandas import DataFrame
         return isinstance(X, DataFrame)
-    except ImportError:
+    else:
         return False
 
 
 def get_dtype(X):
-    try:
-        from pandas.core.dtypes.cast import find_common_type
+    if pandas_is_imported:
         return find_common_type(list(X.dtypes)) if is_DataFrame(X) else X.dtype
-    except ImportError:
+    else:
         return getattr(X, "dtype", None)
 
 
