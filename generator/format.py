@@ -178,7 +178,7 @@ def mk_var(name='', typ='', const='', dflt=None, inpt=False, algo=None, doc=None
                     pydefault = ''
                     cppdefault = ''
                     sphinx_default = ''
-                assert(' ' not in typ), 'Error in parsing variable "{}"'.format(decl_c)
+                assert ' ' not in typ, 'Error in parsing variable "{}"'.format(decl_c)
 
             self.name = d4pname
             self.daalname = name

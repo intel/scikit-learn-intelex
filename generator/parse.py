@@ -323,7 +323,7 @@ class setget_parser(object):
                 # map input-enum to object-type and optional arg
                 if mgs.group(4) == 'get':  # a getter
                     name = mgs.group(6).strip()
-                    if(',' in mgs.group(3)):
+                    if (',' in mgs.group(3)):
                         arg = mgs.group(3).strip(')').split(',')[1].strip().split(' ')
                         ctxt.gdict['classes'][ctxt.curr_class].arg_gets[name] = \
                             (mgs.group(2).strip(), arg)

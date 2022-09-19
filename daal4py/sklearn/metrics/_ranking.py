@@ -18,7 +18,7 @@ import daal4py as d4p
 import numpy as np
 from functools import partial
 from collections.abc import Sequence
-from scipy.sparse.base import spmatrix
+from scipy import sparse as sp
 
 from sklearn.utils import check_array
 from sklearn.utils.multiclass import is_multilabel
@@ -47,7 +47,7 @@ except ImportError:
 def _daal_type_of_target(y):
     valid = (
         isinstance(
-            y, (Sequence, spmatrix)) or hasattr(
+            y, Sequence) or sp.isspmatrix(y) or hasattr(
             y, '__array__')) and not isinstance(
                 y, str)
 
@@ -158,6 +158,8 @@ def _daal_roc_auc_score(
         if _dal_ready:
             if not np.array_equal(labels, [0, 1]) or labels.dtype == bool:
                 y_true = label_binarize(y_true, classes=labels)[:, 0]
+                if hasattr(y_score, 'dtype') and y_score.dtype == bool:
+                    y_score = label_binarize(y_score, classes=labels)[:, 0]
             result = d4p.daal_roc_auc_score(y_true.reshape(-1, 1),
                                             y_score.reshape(-1, 1))
             if result != -1:
