@@ -43,8 +43,7 @@ requirements:
         - python
         - setuptools
         - numpy {{ numpy }}
-        - dal-devel ==2021.6.0  # [linux]
-        - dal-devel ==2021.6.0  # [win or osx]
+        - dal-devel ==2021.6.0
         - cython
         - jinja2
         - mpich  # [osx]
@@ -56,8 +55,7 @@ requirements:
         - python
         - dpcpp_cpp_rt ==2022.0.1  # [linux]
         - dpcpp_cpp_rt ==2022.0.0  # [win or osx]
-        - dal ==2021.6.0  # [linux]
-        - dal ==2021.6.0  # [win or osx]
+        - dal ==2021.6.0
     ignore_run_exports:
         - numpy
 
