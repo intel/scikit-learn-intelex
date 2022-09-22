@@ -174,6 +174,15 @@ def _daal4py_k_means_fit(X, nClusters, numIterations,
     if numIterations < 0:
         raise ValueError("Wrong iterations number")
 
+    def is_string(s, target_str):
+        return isinstance(s, str) and s == target_str
+
+    if is_string(n_init , 'auto'):
+        if is_string(cluster_centers_0, 'random'):
+            n_init = 10
+        elif is_string(cluster_centers_0, 'k-means++'):
+            n_init = 1
+    
     X_fptype = getFPType(X)
     abs_tol = _tolerance(X, tol)  # tol is relative tolerance
     is_sparse = sp.isspmatrix(X)
