@@ -322,13 +322,15 @@ def _fit(self, X, y=None, sample_weight=None):
         if algorithm == "elkan" and self.n_clusters == 1:
             warnings.warn("algorithm='elkan' doesn't make sense for a single "
                           "cluster. Using 'full' instead.", RuntimeWarning)
-            algorithm = "full"
+            algorithm = "lloyd"
 
-        if algorithm == "auto":
-            algorithm = "full" if self.n_clusters == 1 else "elkan"
+        if algorithm == "auto" or algorithm == "full":
+            warnings.warn("algorithm={'auto','full'} is deprecated"
+                          "Using 'lloyd' instead.", RuntimeWarning)
+            algorithm = "lloyd" if self.n_clusters == 1 else "elkan"
 
-        if algorithm not in ["full", "elkan"]:
-            raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
+        if algorithm not in ["lloyd","full", "elkan"]:
+            raise ValueError("Algorithm must be 'auto','lloyd', 'full' or 'elkan', got"
                              " {}".format(str(algorithm)))
 
     X_len = _num_samples(X)
@@ -430,7 +432,33 @@ def _predict(self, X, sample_weight=None):
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
-    if sklearn_check_version('1.0'):
+    if sklearn_check_version('1.2'):
+        @_deprecate_positional_args
+        def __init__(
+            self,
+            n_clusters=8,
+            *,
+            init='k-means++',
+            n_init=10,
+            max_iter=300,
+            tol=1e-4,
+            verbose=0,
+            random_state=None,
+            copy_x=True,
+            algorithm='lloyd',
+        ):
+            super(KMeans, self).__init__(
+                n_clusters=n_clusters,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+                n_init=n_init,
+                verbose=verbose,
+                random_state=random_state,
+                copy_x=copy_x,
+                algorithm=algorithm,
+            )
+    elif sklearn_check_version('1.0'):
         @_deprecate_positional_args
         def __init__(
             self,
