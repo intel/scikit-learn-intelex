@@ -331,7 +331,8 @@ def _fit(self, X, y=None, sample_weight=None):
                 algorithm = "lloyd" if self.n_clusters == 1 else "elkan"
 
             if algorithm not in ["lloyd", "full", "elkan"]:
-                raise ValueError("Algorithm must be 'auto','lloyd', 'full' or 'elkan', got {}".format(str(algorithm)))
+                raise ValueError("Algorithm must be 'auto','lloyd', 'full' or 'elkan'," 
+                                "got {}".format(str(algorithm)))
         else:
             if algorithm == "elkan" and self.n_clusters == 1:
                 warnings.warn("algorithm='elkan' doesn't make sense for a single "
