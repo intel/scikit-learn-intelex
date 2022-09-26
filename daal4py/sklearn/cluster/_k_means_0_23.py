@@ -325,11 +325,11 @@ def _fit(self, X, y=None, sample_weight=None):
             algorithm = "lloyd"
 
         if algorithm == "auto" or algorithm == "full":
-            warnings.warn("algorithm={'auto','full'} is deprecated"
+            warnings.warn("algorithm= {'auto','full'} is deprecated"
                           "Using 'lloyd' instead.", RuntimeWarning)
             algorithm = "lloyd" if self.n_clusters == 1 else "elkan"
 
-        if algorithm not in ["lloyd","full", "elkan"]:
+        if algorithm not in ["lloyd", "full", "elkan"]:
             raise ValueError("Algorithm must be 'auto','lloyd', 'full' or 'elkan', got"
                              " {}".format(str(algorithm)))
 
