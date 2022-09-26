@@ -319,19 +319,31 @@ def _fit(self, X, y=None, sample_weight=None):
                 f"max_iter should be > 0, got {self.max_iter} instead.")
 
         algorithm = self.algorithm
-        if algorithm == "elkan" and self.n_clusters == 1:
-            warnings.warn("algorithm='elkan' doesn't make sense for a single "
-                          "cluster. Using 'full' instead.", RuntimeWarning)
-            algorithm = "lloyd"
+        if sklearn_check_version('1.2'):
+            if algorithm == "elkan" and self.n_clusters == 1:
+                warnings.warn("algorithm='elkan' doesn't make sense for a single "
+                            "cluster. Using 'full' instead.", RuntimeWarning)
+                algorithm = "lloyd"
 
-        if algorithm == "auto" or algorithm == "full":
-            warnings.warn("algorithm= {'auto','full'} is deprecated"
-                          "Using 'lloyd' instead.", RuntimeWarning)
-            algorithm = "lloyd" if self.n_clusters == 1 else "elkan"
+            if algorithm == "auto" or algorithm == "full":
+                warnings.warn("algorithm= {'auto','full'} is deprecated"
+                            "Using 'lloyd' instead.", RuntimeWarning)
+                algorithm = "lloyd" if self.n_clusters == 1 else "elkan"
 
-        if algorithm not in ["lloyd", "full", "elkan"]:
-            raise ValueError("Algorithm must be 'auto','lloyd', 'full' or 'elkan', got"
-                             " {}".format(str(algorithm)))
+            if algorithm not in ["lloyd", "full", "elkan"]:
+                raise ValueError("Algorithm must be 'auto','lloyd', 'full' or 'elkan', got {}".format(str(algorithm)))
+        else:
+            if algorithm == "elkan" and self.n_clusters == 1:
+                warnings.warn("algorithm='elkan' doesn't make sense for a single "
+                            "cluster. Using 'full' instead.", RuntimeWarning)
+                algorithm = "full"
+
+            if algorithm == "auto":
+                algorithm = "full" if self.n_clusters == 1 else "elkan"
+
+            if algorithm not in ["full", "elkan"]:
+                raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
+                                " {}".format(str(algorithm)))
 
     X_len = _num_samples(X)
 
