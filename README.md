@@ -8,7 +8,7 @@
 [![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-learn-intelex)](https://anaconda.org/conda-forge/scikit-learn-intelex)
 [![python version](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)
-[![scikit-learn supported versions](https://img.shields.io/badge/sklern-0.22%20%7C%200.23%20%7C%200.24%20%7C%201.0-blue)](https://img.shields.io/badge/sklern-0.22%20%7C%200.23%20%7C%200.24%20%7C%201.0-blue)
+[![scikit-learn supported versions](https://img.shields.io/badge/sklearn-0.22%20%7C%200.23%20%7C%200.24%20%7C%201.0-blue)](https://img.shields.io/badge/sklearn-0.22%20%7C%200.23%20%7C%200.24%20%7C%201.0-blue)
 
 With Intel(R) Extension for Scikit-learn you can accelerate your Scikit-learn applications and still have full conformance with all Scikit-Learn APIs and algorithms. This is a **free software AI accelerator** that brings over **10-100X** acceleration across a variety of applications. And you do not even need to change the existing code!
 
@@ -160,3 +160,4 @@ The acceleration is achieved through the use of the Intel(R) oneAPI Data Analyti
 You can learn more about daal4py in [daal4py documentation](https://intelpython.github.io/daal4py).
 
 ---
+
