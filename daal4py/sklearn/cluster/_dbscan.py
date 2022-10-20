@@ -28,7 +28,9 @@ from daal4py.sklearn._utils import (
 
 from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
+
 import numbers
+
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     ww = make2d(sample_weight) if sample_weight is not None else None
@@ -247,7 +249,7 @@ class DBSCAN(DBSCAN_original):
                                  "must be >= 1.")
         elif isinstance(self.min_samples, float):
             raise TypeError("min_samples must be an instance of int, "
-                             "not float.")
+                            "not float.")
 
         if isinstance(self.leaf_size, int):
             if self.leaf_size < 1:
