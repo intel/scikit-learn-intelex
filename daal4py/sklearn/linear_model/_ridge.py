@@ -33,20 +33,17 @@ def _daal4py_check(self, X, y):
     
     # does not check for array of alphas in case of multi-target
     if isinstance(self.alpha, numbers.Number) and self.alpha < 0.0:
-        raise ValueError(f"alpha == {self.alpha}, "
-                        "must be >= 0.0")
+        raise ValueError(f"alpha == {self.alpha}, must be >= 0.0")
     elif isinstance(self.alpha, str):
         raise TypeError("alpha must be an instance of float, not str")
 
     if isinstance(self.max_iter, int) and self.max_iter < 1:
-        raise ValueError(f"max_iter == {self.max_iter}, "
-                        "must be >= 1.")
+        raise ValueError(f"max_iter == {self.max_iter}, must be >= 1.")
     elif isinstance(self.max_iter, str):
         raise TypeError("max_iter must be an instance of int, not str")
     
     if isinstance(self.tol, numbers.Number) and self.tol < 0.0:
-        raise ValueError(f"tol == {self.tol}, "
-                        "must be >= 0.0")
+        raise ValueError(f"tol == {self.tol}, must be >= 0.0")
     elif isinstance(self.tol, str):
         raise TypeError("tol must be an instance of float, not str")
 
