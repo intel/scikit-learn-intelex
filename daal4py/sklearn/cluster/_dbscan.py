@@ -29,6 +29,7 @@ from daal4py.sklearn._utils import (
 from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
 
+import numbers
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     ww = make2d(sample_weight) if sample_weight is not None else None
@@ -240,6 +241,27 @@ class DBSCAN(DBSCAN_original):
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
+
+        if isinstance(self.min_samples, int):
+            if self.min_samples < 1:
+                raise ValueError(f"min_samples == {self.min_samples}, "
+                                 "must be >= 1.")
+        elif isinstance(self.min_samples, float):
+            raise TypeError("min_samples must be an instance of int, "
+                             "not float.")
+
+        if isinstance(self.leaf_size, int):
+            if self.leaf_size < 1:
+                raise ValueError(f"leaf_size == {self.leaf_size}, "
+                                 "must be >= 1.")
+        elif isinstance(self.leaf_size, float):
+            raise TypeError("leaf_size must be an instance of int, not float.")
+
+        if isinstance(self.n_jobs, float):
+            raise TypeError("n_jobs must be an instance of int, "
+                            "not float.")
+        if isinstance(self.p, numbers.Number) and self.p < 0:
+            raise ValueError(f"p == {self.p}, must be >= 0.0.")
 
         _patching_status = PatchingConditionsChain(
             "sklearn.cluster.DBSCAN.fit")
