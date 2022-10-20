@@ -50,6 +50,7 @@ def _daal4py_check(self, X, y):
     elif isinstance(self.tol, str):
         raise TypeError("tol must be an instance of float, not str")
 
+
 def _daal4py_fit(self, X, y_):
     _daal4py_check(self, X, y_)
     X = make2d(X)
