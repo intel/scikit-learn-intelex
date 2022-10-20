@@ -55,7 +55,7 @@ def _daal4py_check(self, X, y, check_input):
     elif isinstance(self.l1_ratio, str):
         raise TypeError("l1_ratio must be an instance of float, not str")
 
-    if isinstance(self.max_iter, int) and self.max_iter<1:
+    if isinstance(self.max_iter, int) and self.max_iter < 1:
         raise ValueError(f"max_iter == {self.max_iter}, must be >= 1.")
 
     # check precompute
