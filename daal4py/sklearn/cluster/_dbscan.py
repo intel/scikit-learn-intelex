@@ -28,8 +28,8 @@ from daal4py.sklearn._utils import (
 
 from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
-
 import numbers
+
 
 def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     ww = make2d(sample_weight) if sample_weight is not None else None
