@@ -40,16 +40,23 @@ def _daal4py_check(self, X, y, check_input):
     _fptype = getFPType(X)
 
     # check alpha
-    if self.alpha == 0:
+    if isinstance(self.alpha, numbers.Number) and self.alpha < 0:
+        raise ValueError(f"alpha == {self.alpha}, must be >= 0.0")
+    elif self.alpha == 0:
         warnings.warn("With alpha=0, this algorithm does not converge "
                       "well. You are advised to use the LinearRegression "
                       "estimator", stacklevel=2)
 
     # check l1_ratio
-    if not isinstance(self.l1_ratio, numbers.Number) or \
-            self.l1_ratio < 0 or self.l1_ratio > 1:
-        raise ValueError("l1_ratio must be between 0 and 1; "
-                         f"got l1_ratio={self.l1_ratio}")
+    if isinstance(self.l1_ratio, numbers.Number):
+        if self.l1_ratio < 0 or self.l1_ratio > 1:
+            raise ValueError("l1_ratio must be an instance of float between "
+                             f"0 and 1; got l1_ratio={self.l1_ratio}")
+    elif isinstance(self.l1_ratio, str):
+        raise TypeError("l1_ratio must be an instance of float, not str")
+
+    if isinstance(self.max_iter, int) and self.max_iter<1:
+        raise ValueError(f"max_iter == {self.max_iter}, must be >= 1.")
 
     # check precompute
     if isinstance(self.precompute, np.ndarray):
