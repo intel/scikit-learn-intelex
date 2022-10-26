@@ -48,12 +48,10 @@ def _daal4py_check(self, X, y, check_input):
                       "estimator", stacklevel=2)
 
     # check l1_ratio
-    if isinstance(self.l1_ratio, numbers.Number):
-        if self.l1_ratio < 0 or self.l1_ratio > 1:
-            raise ValueError("l1_ratio must be an instance of float between "
-                             f"0 and 1; got l1_ratio={self.l1_ratio}")
-    elif isinstance(self.l1_ratio, str):
-        raise TypeError("l1_ratio must be an instance of float, not str")
+    if not isinstance(self.l1_ratio, numbers.Number) or \
+            self.l1_ratio < 0 or self.l1_ratio > 1:
+        raise ValueError("l1_ratio must be between 0 and 1; "
+                         f"got l1_ratio={self.l1_ratio}")
 
     if isinstance(self.max_iter, int) and self.max_iter < 1:
         raise ValueError(f"max_iter == {self.max_iter}, must be >= 1.")
