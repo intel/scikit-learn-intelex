@@ -27,7 +27,7 @@ from daal4py.sklearn._utils import (
     PatchingConditionsChain)
 import logging
 
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree
 from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_original
 from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
@@ -1052,7 +1052,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
         }
         if not sklearn_check_version('1.0'):
             params['min_impurity_split'] = self.min_impurity_split
-        est = DecisionTreeClassifier(**params)
+        est = DecisionTreeRegressor(**params)
 
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution

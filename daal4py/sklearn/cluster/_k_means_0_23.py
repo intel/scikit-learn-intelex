@@ -174,6 +174,14 @@ def _daal4py_k_means_fit(X, nClusters, numIterations,
     if numIterations < 0:
         raise ValueError("Wrong iterations number")
 
+    def is_string(s, target_str):
+        return isinstance(s, str) and s == target_str
+
+    if n_init == 'auto':
+        if is_string(cluster_centers_0, 'random'):
+            n_init = 10
+        elif is_string(cluster_centers_0, 'k-means++'):
+            n_init = 1
     X_fptype = getFPType(X)
     abs_tol = _tolerance(X, tol)  # tol is relative tolerance
     is_sparse = sp.isspmatrix(X)
@@ -311,17 +319,32 @@ def _fit(self, X, y=None, sample_weight=None):
                 f"max_iter should be > 0, got {self.max_iter} instead.")
 
         algorithm = self.algorithm
-        if algorithm == "elkan" and self.n_clusters == 1:
-            warnings.warn("algorithm='elkan' doesn't make sense for a single "
-                          "cluster. Using 'full' instead.", RuntimeWarning)
-            algorithm = "full"
+        if sklearn_check_version('1.2'):
+            if algorithm == "elkan" and self.n_clusters == 1:
+                warnings.warn("algorithm='elkan' doesn't make sense for a single "
+                              "cluster. Using 'full' instead.", RuntimeWarning)
+                algorithm = "lloyd"
 
-        if algorithm == "auto":
-            algorithm = "full" if self.n_clusters == 1 else "elkan"
+            if algorithm == "auto" or algorithm == "full":
+                warnings.warn("algorithm= {'auto','full'} is deprecated"
+                              "Using 'lloyd' instead.", RuntimeWarning)
+                algorithm = "lloyd" if self.n_clusters == 1 else "elkan"
 
-        if algorithm not in ["full", "elkan"]:
-            raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
-                             " {}".format(str(algorithm)))
+            if algorithm not in ["lloyd", "full", "elkan"]:
+                raise ValueError("Algorithm must be 'auto','lloyd', 'full' or 'elkan',"
+                                 "got {}".format(str(algorithm)))
+        else:
+            if algorithm == "elkan" and self.n_clusters == 1:
+                warnings.warn("algorithm='elkan' doesn't make sense for a single "
+                              "cluster. Using 'full' instead.", RuntimeWarning)
+                algorithm = "full"
+
+            if algorithm == "auto":
+                algorithm = "full" if self.n_clusters == 1 else "elkan"
+
+            if algorithm not in ["full", "elkan"]:
+                raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
+                                 " {}".format(str(algorithm)))
 
     X_len = _num_samples(X)
 
@@ -422,7 +445,33 @@ def _predict(self, X, sample_weight=None):
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
-    if sklearn_check_version('1.0'):
+    if sklearn_check_version('1.2'):
+        @_deprecate_positional_args
+        def __init__(
+            self,
+            n_clusters=8,
+            *,
+            init='k-means++',
+            n_init=10,
+            max_iter=300,
+            tol=1e-4,
+            verbose=0,
+            random_state=None,
+            copy_x=True,
+            algorithm='lloyd',
+        ):
+            super(KMeans, self).__init__(
+                n_clusters=n_clusters,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+                n_init=n_init,
+                verbose=verbose,
+                random_state=random_state,
+                copy_x=copy_x,
+                algorithm=algorithm,
+            )
+    elif sklearn_check_version('1.0'):
         @_deprecate_positional_args
         def __init__(
             self,
