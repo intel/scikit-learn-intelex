@@ -312,7 +312,7 @@ def build_oneapi_backend():
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',
         targetsuffix='.dll' if IS_WIN else '.so',
-        libs=get_libs('daal') + ['OpenCL', 'onedal_sycl'],
+        libs=get_libs('daal') + ['OpenCL', 'onedal_dpc', 'onedal_sycl'],
         libdirs=ONEDAL_LIBDIRS,
         includes=includes,
         eca=eca,
