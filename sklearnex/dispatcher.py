@@ -39,6 +39,8 @@ def get_patch_map():
         from ._config import get_config as get_config_sklearnex
         from ._config import config_context as config_context_sklearnex
 
+        from .decomposition import PCA as PCA_sklearnex
+
         from .svm import SVR as SVR_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
@@ -47,17 +49,19 @@ def get_patch_map():
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
-        from .decomposition import PCA as PCA_sklearnex
-
         # Scikit-learn* modules
 
         import sklearn as base_module
+        import sklearn.decomposition as decomposition_module
         import sklearn.svm as svm_module
         import sklearn.neighbors as neighbors_module
-        import sklearn.decomposition as decomposition_module
 
         # Patch for mapping
         # Algorithms
+        # decomposition
+        mapping.pop('pca')
+        mapping['PCA'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
+
         # SVM
         mapping.pop('svm')
         mapping.pop('svc')
@@ -65,10 +69,6 @@ def get_patch_map():
         mapping['svc'] = [[(svm_module, 'SVC', SVC_sklearnex), None]]
         mapping['nusvr'] = [[(svm_module, 'NuSVR', NuSVR_sklearnex), None]]
         mapping['nusvc'] = [[(svm_module, 'NuSVC', NuSVC_sklearnex), None]]
-
-        #decomposition
-        mapping.pop('pca')
-        mapping['PCA'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
 
         # kNN
         mapping.pop('knn_classifier')

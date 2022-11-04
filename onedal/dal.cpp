@@ -33,9 +33,9 @@ ONEDAL_PY_INIT_MODULE(polynomial_kernel);
 ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 
 /* algorithms */
+ONEDAL_PY_INIT_MODULE(decomposition);
 ONEDAL_PY_INIT_MODULE(svm);
 ONEDAL_PY_INIT_MODULE(neighbors);
-ONEDAL_PY_INIT_MODULE(decomposition);
 
 #ifdef ONEDAL_DATA_PARALLEL
 PYBIND11_MODULE(_onedal_py_dpc, m) {
@@ -50,9 +50,9 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_polynomial_kernel(m);
     init_sigmoid_kernel(m);
 
+    init_decomposition(m);
     init_svm(m);
     init_neighbors(m);
-    init_decomposition(m);
 }
 
 } // namespace oneapi::dal::python
