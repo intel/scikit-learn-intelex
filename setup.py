@@ -172,6 +172,8 @@ def get_libs(iface='daal'):
 def get_additional_libs():
     if IS_LIN:
         additional_libs = ['OpenCL', 'onedal_dpc', 'onedal_sycl']
+    elif IS_WIN:
+        additional_libs = ['OpenCL', 'onedal_core', 'onedal_sycl']
     else:
         additional_libs = ['OpenCL', 'onedal_sycl']
     return additional_libs
