@@ -173,7 +173,7 @@ def get_additional_libs():
     if IS_LIN:
         additional_libs = ['OpenCL', 'onedal_dpc', 'onedal_sycl']
     elif IS_WIN:
-        additional_libs = ['OpenCL', 'onedal_core', 'onedal_sycl']
+        additional_libs = ['OpenCL', 'onedal_sycl'] #'onedal_thread', 'onedal_sycl', 
     else:
         additional_libs = ['OpenCL', 'onedal_sycl']
     return additional_libs
@@ -320,7 +320,7 @@ def build_oneapi_backend():
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',
         targetsuffix='.dll' if IS_WIN else '.so',
-        libs=get_libs('daal') + get_additional_libs(),
+        libs= get_libs('onedal_dpc') + get_additional_libs(),
         libdirs=ONEDAL_LIBDIRS,
         includes=includes,
         eca=eca,
