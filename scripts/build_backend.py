@@ -41,6 +41,7 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     import subprocess
     from sysconfig import get_paths as gp
     from os.path import basename
+    print(sources)
 
     log.info(f'building cpp target {targetname}...')
 
@@ -88,7 +89,6 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     cmd = [cxx] + objfiles + library_dir_plat + ela + libs + additional_linker_opts
     log.info(subprocess.list2cmdline(cmd))
     subprocess.check_call(cmd)
-
     shutil.copy(f'{targetprefix}{targetname}{targetsuffix}',
                 os.path.join(d4p_dir, installpath))
     if IS_WIN:
@@ -117,7 +117,7 @@ def custom_build_cmake_clib(iface, cxx=None):
     numpy_include = np.get_include()
 
     if iface == 'dpc':
-        cxx = 'dpcpp'
+        cxx = 'icx'
     elif cxx is None:
         raise RuntimeError('CXX compiler shall be specified')
 

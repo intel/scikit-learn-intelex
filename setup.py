@@ -130,7 +130,7 @@ def get_sdl_cflags():
                               '-Wformat-security', '-fno-strict-overflow',
                               '-fno-delete-null-pointer-checks']
     if IS_WIN:
-        return DIST_CFLAGS + ['-GS', ]
+        return DIST_CFLAGS + ['-GS', '-fsycl']
 
 
 def get_sdl_ldflags():
@@ -143,7 +143,7 @@ def get_sdl_ldflags():
                 '-fno-delete-null-pointer-checks',
                 '-fwrapv']
     if IS_WIN:
-        return ['-NXCompat', '-DynamicBase']
+        return ['-NXCompat', '-DynamicBase', '-fsycl']
 
 
 def get_daal_type_defines():
@@ -314,8 +314,8 @@ def build_oneapi_backend():
     eca, ela, includes = get_build_options()
 
     return build_backend.build_cpp(
-        cc='dpcpp',
-        cxx='dpcpp',
+        cc='icx',
+        cxx='icx',
         sources=['src/oneapi/oneapi_backend.cpp'],
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',

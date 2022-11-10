@@ -16,6 +16,9 @@
 
 cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
+SET (CMAKE_C_COMPILER_WORKS 1)
+SET (CMAKE_CXX_COMPILER_WORKS 1)
+
 project("oneDAL python interface"
     LANGUAGES CXX
     HOMEPAGE_URL https://github.com/oneapi-src/oneDAL
@@ -27,7 +30,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(WIN32)
-    set(SDL_FLAGS "-GS -DynamicBase")
+    set(SDL_FLAGS "-GS -DynamicBase -fsycl")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MD")
 elseif(UNIX)
     set(SDL_FLAGS "-fstack-protector-strong -fPIC -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -fno-strict-overflow -fno-delete-null-pointer-checks")
@@ -69,7 +72,7 @@ if(IFACE STREQUAL "host")
     set(TARGET "_onedal_py_host")
 
     if(WIN32)
-        set(ONEDAL_LIBRARIES "onedal_dll" "onedal_core_dll")
+        set(ONEDAL_LIBRARIES "onedal_dll" "onedal_core_dll" "onedal_dpc_dll")
     else()
         set(ONEDAL_LIBRARIES "onedal" "onedal_core" "onedal_thread")
     endif()
