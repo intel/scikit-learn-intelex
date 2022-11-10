@@ -72,7 +72,7 @@ if(IFACE STREQUAL "host")
     set(TARGET "_onedal_py_host")
 
     if(WIN32)
-        set(ONEDAL_LIBRARIES "onedal_dll" "onedal_core_dll" "onedal_dpc_dll")
+        set(ONEDAL_LIBRARIES "onedal_dll" "onedal_core_dll")
     else()
         set(ONEDAL_LIBRARIES "onedal" "onedal_core" "onedal_thread")
     endif()

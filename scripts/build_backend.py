@@ -41,7 +41,6 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     import subprocess
     from sysconfig import get_paths as gp
     from os.path import basename
-    print(sources)
 
     log.info(f'building cpp target {targetname}...')
 
@@ -136,6 +135,7 @@ def custom_build_cmake_clib(iface, cxx=None):
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ['DALROOT'], 'include'),
         "-DoneDAL_LIBRARY_DIR=" + jp(os.environ['DALROOT'], 'lib', 'intel64'),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
+        "-DCMAKE_VERBOSE_MAKEFILE=1",
     ]
 
     import multiprocessing
