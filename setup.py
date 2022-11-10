@@ -143,7 +143,7 @@ def get_sdl_ldflags():
                 '-fno-delete-null-pointer-checks',
                 '-fwrapv']
     if IS_WIN:
-        return ['-NXCompat', '-DynamicBase', '-fsycl']
+        return ['-NXCompat', '-DynamicBase']
 
 
 def get_daal_type_defines():
@@ -185,7 +185,7 @@ def get_build_options():
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
-    using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl', 'dpcpp']
+    using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl', 'dpcpp', 'icx', 'icpx']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API',
            '-DD4P_VERSION="' + d4p_version + '"', '-DNPY_ALLOW_THREADS=1']
     ela = []
@@ -193,7 +193,7 @@ def get_build_options():
     if using_intel and IS_WIN:
         include_dir_plat.append(
             jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
-        eca += ['-std=c++17', '-w', '/MD']
+        eca += ['-std=c++17', '-w', '/MD', '-fsycl']
     elif not using_intel and IS_WIN:
         eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/std:c++17']
     else:
