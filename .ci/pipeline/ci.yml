@@ -131,6 +131,7 @@ jobs:
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
+      export CC=icx CXX=icpx
       conda activate CB
       conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
     displayName: conda build
