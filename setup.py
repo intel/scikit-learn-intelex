@@ -125,10 +125,13 @@ else:
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
-        return DIST_CFLAGS + ['-fstack-protector-strong', '-fPIC',
-                              '-D_FORTIFY_SOURCE=2', '-Wformat',
-                              '-Wformat-security', '-fno-strict-overflow',
-                              '-fno-delete-null-pointer-checks']
+        if dpcpp:
+            DIST_CFLAGS.extend(['-fsycl'])
+        DIST_CFLAGS.extend(['-fstack-protector-strong', '-fPIC',
+                            '-D_FORTIFY_SOURCE=2', '-Wformat',
+                            '-Wformat-security', '-fno-strict-overflow',
+                            '-fno-delete-null-pointer-checks'])
+        return DIST_CFLAGS
     if IS_WIN:
         return DIST_CFLAGS + ['-GS', '-fsycl']
 
