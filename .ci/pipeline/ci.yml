@@ -161,8 +161,9 @@ jobs:
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
       conda create -n CB python=$(python.version)
-      conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn mpich
+      conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn
       conda install -n CB -q --override-channels -c intel dal dal-include
+      conda install -n CB -q --override-channels -c conda-forge mpich
     displayName: Create Anaconda environment
   - script: |
       source activate CB
