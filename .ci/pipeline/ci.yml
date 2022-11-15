@@ -33,7 +33,7 @@ variables:
 jobs:
 - job: PEP8
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - task: UsePythonVersion@0
     inputs:
@@ -46,7 +46,7 @@ jobs:
     displayName: 'PEP 8 check'
 - job: Linux
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
@@ -105,7 +105,7 @@ jobs:
       targetPath: '$(Build.ArtifactStagingDirectory)/'
 - job: Linux_DPCPP
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
@@ -153,7 +153,7 @@ jobs:
 
 - job: MacOS
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macos-12'
   steps:
   - script: |
       echo "##vso[task.prependpath]$CONDA/bin"
@@ -161,8 +161,9 @@ jobs:
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
       conda create -n CB python=$(python.version)
-      conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn mpich
+      conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn
       conda install -n CB -q --override-channels -c intel dal dal-include
+      conda install -n CB -q --override-channels -c conda-forge mpich
     displayName: Create Anaconda environment
   - script: |
       source activate CB
