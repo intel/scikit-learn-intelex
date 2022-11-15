@@ -33,7 +33,7 @@ variables:
 jobs:
 - job: PEP8
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - task: UsePythonVersion@0
     inputs:
@@ -46,7 +46,7 @@ jobs:
     displayName: 'PEP 8 check'
 - job: Linux
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
@@ -105,7 +105,7 @@ jobs:
       targetPath: '$(Build.ArtifactStagingDirectory)/'
 - job: Linux_DPCPP
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
