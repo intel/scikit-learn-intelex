@@ -141,15 +141,13 @@ def get_context(device):
 
 def device_type_to_str(queue):
     if queue is None:
-        return 'host'
+        return 'cpu'
 
     from dpctl import device_type
     if queue.sycl_device.device_type == device_type.cpu:
         return 'cpu'
     if queue.sycl_device.device_type == device_type.gpu:
         return 'gpu'
-    if queue.sycl_device.device_type == device_type.host:
-        return 'host'
     return 'unknown'
 
 
