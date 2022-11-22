@@ -125,15 +125,13 @@ else:
 
 def get_sdl_cflags():
     if IS_LIN or IS_MAC:
-        if dpcpp:
-            DIST_CFLAGS.extend(['-fsycl'])
-        DIST_CFLAGS.extend(['-fstack-protector-strong', '-fPIC',
-                            '-D_FORTIFY_SOURCE=2', '-Wformat',
-                            '-Wformat-security', '-fno-strict-overflow',
-                            '-fno-delete-null-pointer-checks'])
+        return DIST_CFLAGS + ['-fstack-protector-strong', '-fPIC',
+                              '-D_FORTIFY_SOURCE=2', '-Wformat',
+                              '-Wformat-security', '-fno-strict-overflow',
+                              '-fno-delete-null-pointer-checks']
         return DIST_CFLAGS
     if IS_WIN:
-        return DIST_CFLAGS + ['-GS', '-fsycl']
+        return DIST_CFLAGS + ['-GS']
 
 
 def get_sdl_ldflags():
@@ -173,6 +171,16 @@ def get_libs(iface='daal'):
     return libraries_plat
 
 
+def get_additional_libs():
+    if IS_LIN:
+        additional_libs = ['OpenCL', 'onedal_dpc', 'onedal_sycl']
+    elif IS_WIN:
+        additional_libs = ['OpenCL', 'onedal_sycl']  # 'onedal_thread', 'onedal_sycl'
+    else:
+        additional_libs = ['OpenCL', 'onedal_sycl']
+    return additional_libs
+
+
 def get_build_options():
     include_dir_plat = [os.path.abspath('./src'),
                         os.path.abspath('.'),
@@ -180,20 +188,24 @@ def get_build_options():
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
-    using_intel = os.environ.get('cc', '') in [
+    using_intel = os.environ.get('CC', '') in [
         'icc', 'icpc', 'icl', 'dpcpp', 'icx', 'icpx']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API',
            '-DD4P_VERSION="' + d4p_version + '"', '-DNPY_ALLOW_THREADS=1']
     ela = []
 
-    if using_intel and IS_WIN:
-        include_dir_plat.append(
-            jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
-        eca += ['-std=c++17', '-w', '/MD', '-fsycl']
+    if using_intel:
+        if not IS_MAC:
+            eca += ['-fsycl']
+        if IS_WIN:
+            include_dir_plat.append(
+                jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
+            eca += ['-std=c++17', '/MD']
     elif not using_intel and IS_WIN:
         eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/std:c++17']
     else:
-        eca += ['-std=c++17', '-w', ]  # '-D_GLIBCXX_USE_CXX11_ABI=0']
+        eca += ['-std=c++17']  # '-D_GLIBCXX_USE_CXX11_ABI=0']
+    eca += ['-w']
 
     # Security flags
     eca += get_sdl_cflags()
@@ -316,7 +328,7 @@ def build_oneapi_backend():
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',
         targetsuffix='.dll' if IS_WIN else '.so',
-        libs=get_libs('daal') + ['OpenCL', 'onedal_sycl'],
+        libs=get_libs('onedal_dpc') + get_additional_libs(),
         libdirs=ONEDAL_LIBDIRS,
         includes=includes,
         eca=eca,
