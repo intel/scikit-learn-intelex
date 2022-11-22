@@ -32,7 +32,7 @@ if __name__ == '__main__':
         '-d', '--device',
         type=str,
         help='device name',
-        choices=['host', 'cpu', 'gpu']
+        choices=['cpu', 'gpu']
     )
     parser.add_argument(
         '--deselect',
