@@ -17,7 +17,7 @@
 variables:
   COVERITY_TOOL_HOME: $(Agent.BuildDirectory)/cov-analysis
   DESCRIPTION: Nightly
-  python.version: '3.10'
+  python.version: '3.9'
   PYTHON: 'python'
   ARGS: '1'
   OFF_ONEDAL_IFACE: '1'
