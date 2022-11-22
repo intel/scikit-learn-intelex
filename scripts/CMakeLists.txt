@@ -16,9 +16,6 @@
 
 cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
-SET (CMAKE_C_COMPILER_WORKS 1)
-SET (CMAKE_CXX_COMPILER_WORKS 1)
-
 project("oneDAL python interface"
     LANGUAGES CXX
     HOMEPAGE_URL https://github.com/oneapi-src/oneDAL
