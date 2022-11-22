@@ -22,7 +22,7 @@ variables:
   - name: MACOSX_DEPLOYMENT_TARGET
     value: '10.15'
   - name: python.version
-    value: '3.9'
+    value: '3.10'
   - name: 'PYTHON'
     value: python
   - name: 'ARGS'
