@@ -310,11 +310,11 @@ gen_pyx(os.path.abspath('./build'))
 
 def build_oneapi_backend():
     eca, ela, includes = get_build_options()
-    cc='icx'
+    cc = 'icx'
     if IS_WIN:
-        cxx='icx'
+        cxx = 'icx'
     else:
-        cxx='icpx'
+        cxx = 'icpx'
 
     return build_backend.build_cpp(
         cc=cc,
