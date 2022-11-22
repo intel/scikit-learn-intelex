@@ -25,7 +25,7 @@ ONEDAL_PY_INIT_MODULE(policy) {
     py::class_<detail::host_policy>(m, "host_policy")
         .def(py::init())
         .def("get_device_name", [](const detail::host_policy& self) {
-            return "host";
+            return "cpu";
         });
 
 #ifdef ONEDAL_DATA_PARALLEL
@@ -43,8 +43,6 @@ ONEDAL_PY_INIT_MODULE(policy) {
                 return "gpu";
             } else if (self.get_queue().get_device().is_cpu()) {
                 return "cpu";
-            } else if (self.get_queue().get_device().is_host()) {
-                return "host";
             }
             return "unknown";
         });
