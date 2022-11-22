@@ -43,8 +43,10 @@ else()
     message(FATAL_ERROR "Unsupported system.")
 endif()
 
-if(NOT APPLE)
-    set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
+if(CMAKE_CXX_COMPILER STREQUAL "icx" OR "icpx")
+    if(NOT APPLE)
+        set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
+    endif()
 endif()
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
