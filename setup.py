@@ -310,10 +310,15 @@ gen_pyx(os.path.abspath('./build'))
 
 def build_oneapi_backend():
     eca, ela, includes = get_build_options()
+    cc='icx'
+    if IS_WIN:
+        cxx='icx'
+    else:
+        cxx='icpx'
 
     return build_backend.build_cpp(
-        cc='icx',
-        cxx='icx',
+        cc=cc,
+        cxx=cxx,
         sources=['src/oneapi/oneapi_backend.cpp'],
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',
