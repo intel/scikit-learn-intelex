@@ -48,7 +48,7 @@ requirements:
         - jinja2
         - mpich  # [osx]
         - impi-devel  # [not osx]
-        - clang-tools
+        - clang-format
         - pybind11
         - make
     run:
