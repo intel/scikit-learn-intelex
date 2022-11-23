@@ -112,9 +112,8 @@ jobs:
   - script: |
       sudo apt-get update && sudo apt-get install -y wget libtinfo5 clinfo
       wget -q https://github.com/intel/llvm/releases/download/sycl-nightly%2F20221122/dpcpp-compiler.tar.gz
-      wget -q https://github.com/intel/llvm/releases/download/2022-09/oclcpuexp-2022.14.8.0.04_rel.tar.gz
       tar -xzf dpcpp-compiler.tar.gz
-      tar -xzf oclcpuexp-2022.14.8.0.04_rel.tar.gz
+      rm dpcpp-compiler.tar.gz
       clinfo
     displayName: 'apt-get'
   - script: |
