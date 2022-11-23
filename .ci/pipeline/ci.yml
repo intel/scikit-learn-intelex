@@ -110,12 +110,12 @@ jobs:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
   - script: |
-      sudo apt-get update && sudo apt-get install -y wget libtinfo5
+      sudo apt-get update && sudo apt-get install -y wget libtinfo5 clinfo
       wget -q https://github.com/intel/llvm/releases/download/sycl-nightly%2F20221122/dpcpp-compiler.tar.gz
       wget -q https://github.com/intel/llvm/releases/download/2022-09/oclcpuexp-2022.14.8.0.04_rel.tar.gz
       tar -xzf dpcpp-compiler.tar.gz
       tar -xzf oclcpuexp-2022.14.8.0.04_rel.tar.gz
-      sudo bash -c 'echo x64/libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
+      clinfo
     displayName: 'apt-get'
   - script: |
       conda create -q -y -n CB -c conda-forge conda=4.10 python=$(python.version) conda-build=3.21.8 conda-verify
