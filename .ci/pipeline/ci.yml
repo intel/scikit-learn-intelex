@@ -110,31 +110,25 @@ jobs:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
   - script: |
-      wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-      sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-      rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-      echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-      sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
-      sudo apt-get update
-      sudo apt-get install                                      \
-          intel-oneapi-common-vars                              \
-          intel-oneapi-common-licensing                         \
-          intel-oneapi-dpcpp-cpp-compiler                       \
-          intel-oneapi-dev-utilities                            \
-          intel-oneapi-libdpstd-devel
-      sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
-      sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
+      sudo apt-get update && sudo apt-get install -y wget libtinfo5
+      wget -q https://github.com/intel/llvm/releases/download/sycl-nightly%2F20221122/dpcpp-compiler.tar.gz
+      wget -q https://github.com/intel/llvm/releases/download/2022-09/oclcpuexp-2022.14.8.0.04_rel.tar.gz
+      tar -xzf dpcpp-compiler.tar.gz
+      tar -xzf oclcpuexp-2022.14.8.0.04_rel.tar.gz
+      sudo bash -c 'echo x64/libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
     displayName: 'apt-get'
   - script: |
       conda create -q -y -n CB -c conda-forge conda=4.10 python=$(python.version) conda-build=3.21.8 conda-verify
     displayName: Create Anaconda environment
   - script: |
-      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+      source dpcpp_compiler/startup.sh
+      export DPCPPROOT=${PWD}/dpcpp_compiler
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
     displayName: conda build
   - script: |
+      source dpcpp_compiler/startup.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       pip install daal numpy scikit-learn
@@ -145,6 +139,7 @@ jobs:
       pytest --pyargs s/sklearnex/tests/
     displayName: install sklearnex
   - script: |
+      source dpcpp_compiler/startup.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
