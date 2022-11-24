@@ -900,7 +900,7 @@ void c_generate_shuffled_indices(data_or_file & idx, data_or_file & random_state
 
 void c_tsne_gradient_descent(data_or_file & init, data_or_file & p, data_or_file & size_iter, data_or_file & params, data_or_file & results, char dtype)
 {
-#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210600
+#if __INTEL_DAAL__ >= 2021 && INTEL_DAAL_VERSION >= 20210600
     auto initTable                                     = get_table(init);
     auto pTable                                        = get_table(p);
     auto sizeIterTable                                 = get_table(size_iter);
