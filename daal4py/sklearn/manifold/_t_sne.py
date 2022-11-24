@@ -237,8 +237,9 @@ class TSNE(BaseTSNE):
                     distances = pairwise_distances(X, metric=self.metric,
                                                    squared=True)
                 else:
+                    metric_params_ = self.metric_params or {}
                     distances = pairwise_distances(X, metric=self.metric,
-                                                   n_jobs=self.n_jobs)
+                                                   n_jobs=self.n_jobs, **metric_params_)
 
             if np.any(distances < 0):
                 raise ValueError("All distances should be positive, the "
@@ -272,6 +273,7 @@ class TSNE(BaseTSNE):
                 n_jobs=self.n_jobs,
                 n_neighbors=n_neighbors,
                 metric=self.metric,
+                metric_params=self.metric_params
             )
             t0 = time()
             knn.fit(X)
