@@ -164,17 +164,12 @@ class TSNE(BaseTSNE):
                                  "or 'auto'.")
 
         if hasattr(self, 'square_distances'):
-            if self.square_distances not in [True, 'legacy', 'deprecated']:
-                raise ValueError("'square_distances' must be True or 'legacy'.")
-            if self.metric != "euclidean" and self.square_distances is not True:
-                warnings.warn(("'square_distances' has been introduced in 0.24"
-                               "to help phase out legacy squaring behavior. The "
-                               "'legacy' setting will be removed in 0.26, and the "
-                               "default setting will be changed to True. In 0.28, "
-                               "'square_distances' will be removed altogether,"
-                               "and distances will be squared by default. Set "
-                               "'square_distances'=True to silence this warning."),
-                              FutureWarning)
+            if self.square_distances != "deprecated":
+                warnings.warn(
+                    "The parameter `square_distances` has not effect and will be "
+                    "removed in version 1.3.",
+                    FutureWarning,
+                )
 
         if self.method == 'barnes_hut':
             if sklearn_check_version('0.23'):
