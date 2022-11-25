@@ -37,9 +37,8 @@ class DummySyclQueue:
             self._filter_string = filter_string
             self.is_cpu = 'cpu' in filter_string
             self.is_gpu = 'gpu' in filter_string
-            self.is_host = False
 
-            if not (self.is_cpu or self.is_host):
+            if not (self.is_cpu):
                 import logging
                 logging.warning("Device support is limited. "
                                 "Please install dpctl for full experience")
