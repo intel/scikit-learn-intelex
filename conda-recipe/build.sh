@@ -23,7 +23,9 @@ fi
 
 # if dpc++ vars path is specified
 if [ ! -z "${DPCPPROOT}" ] && [ "$(uname)" != "Darwin" ]; then
-    source ${DPCPPROOT}/env/vars.sh
+    if [ -f "${DPCPPROOT}/env/vars.sh" ]; then
+        source ${DPCPPROOT}/env/vars.sh
+    fi
     export CC=icx CXX=icpx
 fi
 
