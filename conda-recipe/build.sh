@@ -25,6 +25,8 @@ fi
 if [ ! -z "${DPCPPROOT}" ] && [ "$(uname)" != "Darwin" ]; then
     if [ -f "${DPCPPROOT}/env/vars.sh" ]; then
         source ${DPCPPROOT}/env/vars.sh
+    else
+        export CPATH=${DPCPPROOT}/include/sycl:$CPATH
     fi
     export CC=icx CXX=icpx
 fi
