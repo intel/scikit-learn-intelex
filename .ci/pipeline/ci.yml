@@ -125,7 +125,7 @@ jobs:
       export DPCPPROOT=${PWD}/dpcpp_compiler
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
+      conda build --debug --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
     displayName: 'conda build'
   - script: |
       source dpcpp_compiler/startup.sh
