@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2021-2022 Intel Corporation
+.. * Copyright 2021 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -91,6 +91,17 @@ Using a Single Regressor
        - data preprocessing
        - feature engineering
        - search for optimal parameters using Optuna
+       - training and prediction using scikit-learn-intelex
+       - performance comparison to scikit-learn
+   * - `Random Forest Regression with Feature Importance Computation
+       <https://www.kaggle.com/code/lordozvlad/tps-mar-fast-workflow-using-scikit-learn-intelex>`_
+
+       **Data:** [TPS Mar 2022] Spatio-temporal traffic data
+     - Forecast twelve-hours of traffic flow in a major U.S. metropolitan area
+     -
+
+       - feature engineering
+       - computing feature importance with ELI5
        - training and prediction using scikit-learn-intelex
        - performance comparison to scikit-learn
    * - `Ridge Regression

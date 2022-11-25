@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@
 import argparse
 import os.path
 from yaml import FullLoader, load as yaml_load
-from distutils.version import LooseVersion
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 import sklearn
 from sklearn import __version__ as sklearn_version
 import warnings
@@ -27,17 +30,17 @@ import warnings
 
 def evaluate_cond(cond, v):
     if cond.startswith(">="):
-        return LooseVersion(v) >= LooseVersion(cond[2:])
+        return Version(v) >= Version(cond[2:])
     if cond.startswith("<="):
-        return LooseVersion(v) <= LooseVersion(cond[2:])
+        return Version(v) <= Version(cond[2:])
     if cond.startswith("=="):
-        return LooseVersion(v) == LooseVersion(cond[2:])
+        return Version(v) == Version(cond[2:])
     if cond.startswith("!="):
-        return LooseVersion(v) != LooseVersion(cond[2:])
+        return Version(v) != Version(cond[2:])
     if cond.startswith("<"):
-        return LooseVersion(v) < LooseVersion(cond[1:])
+        return Version(v) < Version(cond[1:])
     if cond.startswith(">"):
-        return LooseVersion(v) > LooseVersion(cond[1:])
+        return Version(v) > Version(cond[1:])
     warnings.warn(
         'Test selection condition "{0}" should start with '
         '>=, <=, ==, !=, < or > to compare to version of scikit-learn run. '

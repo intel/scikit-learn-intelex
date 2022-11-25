@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,14 +29,14 @@ def main(readcsv=None, method='defaultDense'):
     data = np.zeros((1, 10))
     res = algorithm.compute(data)
 
-    assert(np.allclose(data, res.randomNumbers))
-    assert(np.allclose(
+    assert np.allclose(data, res.randomNumbers)
+    assert np.allclose(
         data,
         [[
             0.22933409, 0.44584412, 0.44559617, 0.9918884, 0.36859825,
             0.57550881, 0.26983509, 0.83136875, 0.33614365, 0.53768455,
         ]]
-    ))
+    )
 
     return data
 

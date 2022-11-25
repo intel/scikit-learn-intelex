@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2021-2022 Intel Corporation
+.. * Copyright 2021 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -18,6 +18,17 @@
 
 Kaggle Kernels
 --------------------
+
+Check out Kaggle notebooks created by |intelex| developers.
+
+.. rubric:: Acceleration
+
+`Introduction to scikit-learn-intelex <https://www.kaggle.com/code/lordozvlad/introduction-to-scikit-learn-intelex/notebook>`_
+provides a summary of the speedup you can achieve with |intelex|.
+
+.. rubric:: Machine Learning Workflows
+
+Browse this chapter to find Kaggle kernels that use scikit-learn-intelex for a specific type of a machine learning task.
 
 Kaggle kernels that use scikit-learn and |intelex|:
 

@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2021-2022 Intel Corporation
+.. * Copyright 2021 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -38,4 +38,4 @@
 
 - Through :ref:`global patching <global_patching>` to enable patching for your scikit-learn installation for all further runs::
 
-    python sklearnex.glob patch_sklearn
+    python -m sklearnex.glob patch_sklearn

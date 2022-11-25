@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,9 +29,14 @@ deselected_tests:
   - svm/tests/test_sparse.py::test_svc
   - svm/tests/test_sparse.py::test_svc_iris
   - svm/tests/test_sparse.py::test_sparse_realdata
+
   # decision function different 1.83697605e-06
   - ensemble/tests/test_bagging.py::test_sparse_classification
   - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
+
+  # Same results as in scikit-learn, but in a different order.
+  - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[SVC]
+  - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[NuSVC]
 
   # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with custom and precompute kernel
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
@@ -200,6 +205,20 @@ deselected_tests:
 
   # HalvingGridSearchCV with Ridge and PCA didn't have feature_name_in. Need to fix.
   - tests/test_common.py::test_pandas_column_name_consistency >=1.0.1
+
+  # Some sklearnex docstrings differ from scikit-learn.
+  - tests/test_docstrings.py >=1.0.2
+
+  # Accuracy of sklearnex and sklearn may differ due to different approaches
+  - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately_with_precomputed_distances
+  - manifold/tests/test_t_sne.py::test_bh_match_exact
+  - manifold/tests/test_t_sne.py::test_uniform_grid[barnes_hut]
+  - manifold/tests/test_t_sne.py::test_sparse_precomputed_distance
+  - manifold/tests/test_t_sne.py::test_tsne_different_square_distances >=0.24
+
+  # Temporary deselected up to 2021.6 release. Need to fix
+  - ensemble/tests/test_bagging.py::test_classification
+
   # --------------------------------------------------------
   # Not need of testing for daal4py patching
 reduced_tests:
@@ -368,6 +387,8 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_kneighbors_classifier
   - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
   - neighbors/tests/test_neighbors.py::test_neighbors_metrics
+
+  - neighbors/tests/test_neighbors.py::test_neighbors_iris
 
   - semi_supervised/tests/test_self_training.py::test_early_stopping
 

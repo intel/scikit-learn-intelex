@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ jobs:
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
-
       - run:
           name: Testing sklearn patches with sklearnex
           no_output_timeout: 20m
@@ -52,7 +51,7 @@ jobs:
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
-            pip install -q scikit-learn
+            pip install -q scikit-learn "numpydoc<1.2"
             conda list
             source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_sklearnex.tar.bz2 sklearnex skex
       - store_artifacts:

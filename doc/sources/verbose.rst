@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2020-2022 Intel Corporation
+.. * Copyright 2020 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ Verbose Mode
 
 Use |intelex| in verbose mode to find out which implementation of the algorithm is currently used,
 |intelex| or original Scikit-learn.
+
+.. note:: Verbose mode is only available for :ref:`supported algorithms <sklearn_algorithms>`.
 
 To enable verbose mode, set the ``SKLEARNEX_VERBOSE`` environment variable as shown below:
 

@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ if sklearn_check_version("0.22"):
     from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
     from sklearn.neighbors._ball_tree import BallTree
     from sklearn.neighbors._kd_tree import KDTree
-    from sklearn.neighbors._base import _check_weights
+    if not sklearn_check_version("1.2"):
+        from sklearn.neighbors._base import _check_weights
 else:
     from sklearn.neighbors.base import KNeighborsMixin as BaseKNeighborsMixin
     from sklearn.neighbors.base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
@@ -288,7 +289,8 @@ class NeighborsBase(BaseNeighborsBase):
                               "The corresponding parameter from __init__ "
                               "is ignored.", SyntaxWarning, stacklevel=2)
 
-        if hasattr(self, 'weights') and sklearn_check_version("1.0"):
+        if hasattr(self, 'weights') and sklearn_check_version("1.0") \
+                and not sklearn_check_version("1.2"):
             self.weights = _check_weights(self.weights)
 
         if sklearn_check_version("1.0"):

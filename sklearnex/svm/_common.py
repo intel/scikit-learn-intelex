@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 
 from abc import ABC
 import numpy as np
-from distutils.version import LooseVersion
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
@@ -83,7 +86,7 @@ class BaseSVC(ABC):
                     n_splits=n_splits,
                     shuffle=True,
                     random_state=self.random_state)
-                if LooseVersion(sklearn_version) >= LooseVersion("0.24"):
+                if Version(sklearn_version) >= Version("0.24"):
                     self.clf_prob = CalibratedClassifierCV(
                         clf_base, ensemble=False, cv=cv, method='sigmoid',
                         n_jobs=n_jobs)

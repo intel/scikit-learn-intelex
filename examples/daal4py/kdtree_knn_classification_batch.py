@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,8 +58,8 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_algo = d4p.kdtree_knn_classification_prediction(nClasses=nClasses)
     predict_result = predict_algo.compute(predict_data, train_result.model)
 
-    # We expect less than 170 mispredicted values
-    assert np.count_nonzero(predict_labels != predict_result.prediction) < 170
+    # We expect less than 180 mispredicted values
+    assert np.count_nonzero(predict_labels != predict_result.prediction) < 180
 
     return (train_result, predict_result, predict_labels)
 

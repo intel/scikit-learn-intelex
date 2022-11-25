@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2021-2022 Intel Corporation
+* Copyright 2021 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ static dal::array<T> transfer_to_host(const dal::array<T>& array) {
     auto opt_queue = array.get_queue();
     if (opt_queue.has_value()) {
         auto device = opt_queue->get_device();
-        if (!device.is_cpu() && !device.is_host()) {
+        if (!device.is_cpu()) {
             const auto* device_data = array.get_data();
 
             auto memory_kind = sycl::get_pointer_type(device_data, opt_queue->get_context());

@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2021-2022 Intel Corporation
+.. * Copyright 2021 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -36,3 +36,12 @@ Configurations:
 
 - HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
 - SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
+
+Kaggle Kernels
+**************
+
+Check out `Introduction to scikit-learn-intelex
+<https://www.kaggle.com/code/lordozvlad/introduction-to-scikit-learn-intelex/notebook>`_,
+a Kaggle notebook that summarizes the speedup you can achieve with |intelex|.
+
+The acceleration is measured for a variety of machine learning workflows and Kaggle datasets.

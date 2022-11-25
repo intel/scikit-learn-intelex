@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 variables:
   DESCRIPTION: ReleaseTesting
-  DESELECT: --deselect ::test_svc_clone_with_callable_kernel --deselect ::test_precomputed --deselect ::test_tweak_params --deselect ::test_custom_kernel_not_array_input --deselect ::test_svc_raises_error_internal_representation --deselect ::test_svc_ovr_tie_breaking[SVC] --deselect ::test_svc_ovr_tie_breaking[NuSVC]
+  DESELECT: --deselect ::test_svc_clone_with_callable_kernel --deselect ::test_precomputed --deselect ::test_tweak_params --deselect ::test_custom_kernel_not_array_input --deselect ::test_svc_raises_error_internal_representation --deselect ::test_svc_ovr_tie_breaking[SVC] --deselect ::test_svc_ovr_tie_breaking[NuSVC] --deselect ::test_gamma_auto --deselect ::test_gamma_scale
   TEST_COMMAND: python -m sklearnex -m pytest -ra --disable-warnings --pyargs sklearn.svm.tests.test_svm $(DESELECT)
 
 jobs:

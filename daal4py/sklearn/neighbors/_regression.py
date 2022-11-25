@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ from .._device_offload import support_usm_ndarray
 if sklearn_check_version("0.22"):
     from sklearn.neighbors._regression import KNeighborsRegressor as \
         BaseKNeighborsRegressor
-    from sklearn.neighbors._base import _check_weights
+    if not sklearn_check_version("1.2"):
+        from sklearn.neighbors._base import _check_weights
     from sklearn.utils.validation import _deprecate_positional_args
 else:
     from sklearn.neighbors.regression import KNeighborsRegressor as \

@@ -1,9 +1,27 @@
+<!--
+******************************************************************************
+* Copyright 2020 Intel Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/-->
+
+
 # Installation <!-- omit in toc -->
 
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex). You can also build the extension from sources.
 
-The extension is also available as a part of [Intel® oneAPI AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit). If you already have AI Kit installed, you do not need to separately install the extension.
+The extension is also available as a part of [Intel® AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit). If you already have AI Kit installed, you do not need to separately install the extension.
 
 ## Installation scenarios <!-- omit in toc -->
 
@@ -175,11 +193,11 @@ Intel(R) Extension for Scikit-learn is easily built from sources with the majori
 
 ⚠️ Keys `--single-version-externally-managed` and `--no-deps` are required so that daal4py is not downloaded after installation of Intel(R) Extension for Scikit-learn
 
-⚠️ The `develop` mode will not install the package but it will create a `.egg-link` in the deployment directory 
-back to the project source code directory. That way you can edit the source code and see the changes 
+⚠️ The `develop` mode will not install the package but it will create a `.egg-link` in the deployment directory
+back to the project source code directory. That way you can edit the source code and see the changes
 without having to reinstall package every time you make a small change.
 
-⚠️ `--single-version-externally-managed` is an option used for Python packages instructing the setuptools module 
+⚠️ `--single-version-externally-managed` is an option used for Python packages instructing the setuptools module
 to create a Python package that can be easily managed by the package manager on the host.
 
 ## Build documentation for Intel(R) Extension for Scikit-learn

@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,17 +24,26 @@ import scipy.sparse as sp
 from numpy.core.numeric import ComplexWarning
 from sklearn.utils.validation import (_num_samples, _ensure_no_complex_data,
                                       _ensure_sparse_format, column_or_1d,
-                                      check_consistent_length)
-from .._utils import is_DataFrame, get_dtype, get_number_of_types
+                                      check_consistent_length, _assert_all_finite)
+from sklearn.utils.extmath import _safe_accumulator_op
+from .._utils import is_DataFrame, get_dtype, get_number_of_types, sklearn_check_version
 
 
-def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
-    """Like assert_all_finite, but only for ndarray."""
-    # validation is also imported in extmath
-    from sklearn.utils.extmath import _safe_accumulator_op
-
+def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
+                            estimator_name=None, input_name=""):
     if _get_config()['assume_finite']:
         return
+
+    # Data with small size has too big relative overhead
+    # TODO: tune threshold size
+    if hasattr(X, 'size'):
+        if X.size < 32768:
+            if sklearn_check_version("1.1"):
+                _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype,
+                                   estimator_name=estimator_name, input_name=input_name)
+            else:
+                _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype)
+            return
 
     is_df = is_DataFrame(X)
     num_of_types = get_number_of_types(X)
@@ -53,9 +62,10 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
     dt = np.dtype(get_dtype(X))
     is_float = dt.kind in 'fc'
 
-    msg_err = "Input contains {} or a value too large for {!r}."
+    msg_err = "Input {} contains {} or a value too large for {!r}."
     type_err = 'infinity' if allow_nan else 'NaN, infinity'
-    err = msg_err.format(type_err, msg_dtype if msg_dtype is not None else dt)
+    err = msg_err.format(
+        input_name, type_err, msg_dtype if msg_dtype is not None else dt)
 
     if X.ndim in [1, 2] and not np.any(np.equal(X.shape, 0)) and \
             dt in [np.float32, np.float64]:
@@ -83,7 +93,7 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None):
     # for object dtype data, we only check for NaNs (GH-13254)
     elif dt == np.dtype('object') and not allow_nan:
         if _object_dtype_isnan(X).any():
-            raise ValueError("Input contains NaN")
+            raise ValueError(f"Input {input_name} contains NaN")
 
 
 def _pandas_check_array(array, array_orig, force_all_finite, ensure_min_samples,

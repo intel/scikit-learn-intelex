@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -146,6 +146,8 @@ def split_train_inference(kf, x, y, estimator):
         elif isinstance(x, pd.core.frame.DataFrame):
             x_train, x_test = x.iloc[train_index], x.iloc[test_index]
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        # TODO: add parameters for all estimators to prevent
+        # fallback to stock scikit-learn with default parameters
         alg = estimator()
         alg.fit(x_train, y_train)
         if hasattr(alg, 'predict'):

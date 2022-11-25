@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,5 +22,5 @@ from numpy.testing import assert_allclose
 def test_sklearnex_import():
     from sklearnex.manifold import TSNE
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
-    tsne = TSNE(n_components=2).fit(X)
+    tsne = TSNE(n_components=2, perplexity=2.0).fit(X)
     assert 'daal4py' in tsne.__module__

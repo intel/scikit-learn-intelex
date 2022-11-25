@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@ from sklearn.cluster import DBSCAN as DBSCAN_original
 
 import daal4py
 from daal4py.sklearn._utils import (
-    make2d, getFPType, get_patch_message, PatchingConditionsChain)
-import logging
+    make2d, getFPType, PatchingConditionsChain)
 
 from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
@@ -234,7 +233,7 @@ class DBSCAN(DBSCAN_original):
             Returns a fitted instance of self.
         """
         if self.eps <= 0.0:
-            raise ValueError("eps must be positive.")
+            raise ValueError(f"eps == {self.eps}, must be > 0.0.")
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)

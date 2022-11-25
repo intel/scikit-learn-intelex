@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2021-2022 Intel Corporation
+.. * Copyright 2021 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ Patching
       One of the patching options available in |intelex|.
       With global patching, you can patch all scikit-learn applications at once::
 
-         python sklearnex.glob patch_sklearn
+         python -m sklearnex.glob patch_sklearn
       
       .. seealso:: :ref:`global_patching`
    

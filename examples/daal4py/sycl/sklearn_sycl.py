@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -141,15 +141,13 @@ def get_context(device):
 
 def device_type_to_str(queue):
     if queue is None:
-        return 'host'
+        return 'cpu'
 
     from dpctl import device_type
     if queue.sycl_device.device_type == device_type.cpu:
         return 'cpu'
     if queue.sycl_device.device_type == device_type.gpu:
         return 'gpu'
-    if queue.sycl_device.device_type == device_type.host:
-        return 'host'
     return 'unknown'
 
 
@@ -179,7 +177,7 @@ if __name__ == "__main__":
     for device in devices:
         for e in examples:
             print("*" * 80)
-            if(dpctl_available):
+            if dpctl_available:
                 print("device context:", device_type_to_str(device))
             else:
                 print("device context:", device)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         '-d', '--device',
         type=str,
         help='device name',
-        choices=['host', 'cpu', 'gpu']
+        choices=['cpu', 'gpu']
     )
     parser.add_argument(
         '--deselect',

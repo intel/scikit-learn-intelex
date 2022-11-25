@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -72,7 +72,6 @@ if sycl_extention_available:
             availabe_devices.append("gpu")
     except RuntimeError:
         gpu_available = False
-    availabe_devices.append("host")
     availabe_devices.append("cpu")
     #validate that host and cpu devices avaialbe for logging reasons. Examples and
     #vaidaton logic assumes that host and cpu devices are always available

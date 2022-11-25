@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         presult = palgo.compute(pdata, tresult.model)
 
         # Prediction result provides prediction
-        assert(presult.prediction.shape == (pdata.shape[0], 1))
+        assert presult.prediction.shape == (pdata.shape[0], 1)
 
         print('All looks good!')
 

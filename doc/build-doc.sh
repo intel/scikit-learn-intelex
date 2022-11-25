@@ -1,6 +1,6 @@
 #!/bin/bash
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,17 @@
 # limitations under the License.
 #===============================================================================
 
+SAMPLES_DIR=sources/samples
+
+# remove the samples folder if it exists
+if [ -d "$SAMPLES_DIR" ]; then rm -Rf $SAMPLES_DIR; fi
+
+# create a samples folder
+mkdir $SAMPLES_DIR
+
 # copy jupyter notebooks
 cd ..
-cp examples/notebooks/*.ipynb doc/sources/samples
+cp examples/notebooks/*.ipynb doc/$SAMPLES_DIR
 
 # build the documentation
 cd doc

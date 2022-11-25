@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
 from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 
 from onedal.svm import SVC as onedal_SVC
 
@@ -76,7 +79,7 @@ class SVC(sklearn_SVC, BaseSVC):
         If X is a dense array, then the other methods will not support sparse
         matrices as input.
         """
-        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+        if Version(sklearn_version) >= Version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.SVC.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -102,7 +105,7 @@ class SVC(sklearn_SVC, BaseSVC):
         y_pred : ndarray of shape (n_samples,)
             The predicted values.
         """
-        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+        if Version(sklearn_version) >= Version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVC.predict', {
             'onedal': self.__class__._onedal_predict,
@@ -143,7 +146,7 @@ class SVC(sklearn_SVC, BaseSVC):
     @wrap_output_data
     def _predict_proba(self, X):
         sklearn_pred_proba = (sklearn_SVC.predict_proba
-                              if LooseVersion(sklearn_version) >= LooseVersion("1.0")
+                              if Version(sklearn_version) >= Version("1.0")
                               else sklearn_SVC._predict_proba)
 
         return dispatch(self, 'svm.SVC.predict_proba', {
@@ -153,7 +156,7 @@ class SVC(sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
-        if LooseVersion(sklearn_version) >= LooseVersion("1.0"):
+        if Version(sklearn_version) >= Version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVC.decision_function', {
             'onedal': self.__class__._onedal_decision_function,

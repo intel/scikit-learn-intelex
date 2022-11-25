@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     pred_result = pred_algo.compute(pred_data, train_result.model)
 
     # Prediction result provides prediction
-    assert(pred_result.prediction.shape == (pred_data.shape[0], 1))
+    assert pred_result.prediction.shape == (pred_data.shape[0], 1)
 
     return (pred_result, pred_labels)
 

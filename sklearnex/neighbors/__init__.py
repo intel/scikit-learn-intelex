@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,4 +19,4 @@ from .knn_classification import KNeighborsClassifier
 from .knn_unsupervised import NearestNeighbors
 from .knn_regression import KNeighborsRegressor
 
-__all__ = ['KNeighborsClassifier', 'NearestNeighbors', 'KNeighborsRegressor']
+__all__ = ['KNeighborsClassifier', 'KNeighborsRegressor', 'NearestNeighbors']

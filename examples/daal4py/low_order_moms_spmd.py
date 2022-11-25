@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,9 +44,9 @@ def main():
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    assert(all(getattr(res, name).shape == (1, data.shape[1]) for name in
+    assert all(getattr(res, name).shape == (1, data.shape[1]) for name in
                ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-                'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']))
+                'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation'])
 
     return res
 

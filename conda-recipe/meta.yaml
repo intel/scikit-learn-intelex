@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-{% set version = '2021.4' %}
+{% set version = '2021.6' %}
 {% set buildnumber = 0 %}
 
 package:
@@ -31,7 +31,6 @@ build:
     - DPCPPROOT
     - DAALROOT
     - DALROOT
-    - OFF_ONEDAL_IFACE
     ignore_run_exports:
        - python
        - mpich
@@ -44,16 +43,19 @@ requirements:
         - python
         - setuptools
         - numpy {{ numpy }}
-        - dal-devel ==2021.3
+        - dal-devel ==2021.6.0
         - cython
         - jinja2
         - mpich  # [osx]
         - impi-devel  # [not osx]
         - clang-tools
+        - pybind11
+        - make
     run:
         - python
-        - dpcpp_cpp_rt ==2021.3
-        - dal ==2021.3
+        - dpcpp_cpp_rt ==2022.0.1  # [linux]
+        - dpcpp_cpp_rt ==2022.0.0  # [win or osx]
+        - dal ==2021.6.0
     ignore_run_exports:
         - numpy
 

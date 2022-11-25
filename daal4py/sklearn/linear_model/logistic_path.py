@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import scipy.sparse as sparse
 import scipy.optimize as optimize
 import numbers
 
+from .._utils import (
+    getFPType, sklearn_check_version, PatchingConditionsChain)
 from .logistic_loss import (_daal4py_loss_and_grad,
                             _daal4py_logistic_loss_extra_args,
                             _daal4py_cross_entropy_loss_extra_args,
@@ -34,23 +36,30 @@ from sklearn.utils import (check_array,
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 from sklearn.linear_model._sag import sag_solver
 from sklearn.utils.optimize import _newton_cg, _check_optimize_result
-from sklearn.linear_model._logistic import (
-    _check_solver,
-    _check_multi_class,
-    _fit_liblinear,
-    _logistic_loss_and_grad,
-    _logistic_loss,
-    _logistic_grad_hess,
-    _multinomial_loss,
-    _multinomial_loss_grad,
-    _multinomial_grad_hess,
-    _LOGISTIC_SOLVER_CONVERGENCE_MSG,
-    LogisticRegression as LogisticRegression_original)
+if sklearn_check_version('1.1'):
+    from sklearn.linear_model._linear_loss import LinearModelLoss
+    from sklearn._loss.loss import HalfBinomialLoss, HalfMultinomialLoss
+    from sklearn.linear_model._logistic import (
+        _check_solver,
+        _check_multi_class,
+        _fit_liblinear,
+        _LOGISTIC_SOLVER_CONVERGENCE_MSG,
+        LogisticRegression as LogisticRegression_original)
+else:
+    from sklearn.linear_model._logistic import (
+        _check_solver,
+        _check_multi_class,
+        _fit_liblinear,
+        _logistic_loss_and_grad,
+        _logistic_loss,
+        _logistic_grad_hess,
+        _multinomial_loss,
+        _multinomial_loss_grad,
+        _multinomial_grad_hess,
+        _LOGISTIC_SOLVER_CONVERGENCE_MSG,
+        LogisticRegression as LogisticRegression_original)
 from sklearn.preprocessing import LabelEncoder, LabelBinarizer
-from .._utils import (
-    getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
-import logging
 
 
 # Code adapted from sklearn.linear_model.logistic version 0.21
@@ -75,6 +84,7 @@ def __logistic_regression_path(
     max_squared_sum=None,
     sample_weight=None,
     l1_ratio=None,
+    n_threads=1,
 ):
     """Compute a Logistic Regression model for a list of regularization
     parameters.
@@ -232,8 +242,20 @@ def __logistic_regression_path(
 
     # Preprocessing.
     if check_input:
-        X = check_array(X, accept_sparse='csr', dtype=np.float64,
-                        accept_large_sparse=solver != 'liblinear')
+        if sklearn_check_version('1.1'):
+            X = check_array(
+                X,
+                accept_sparse='csr',
+                dtype=np.float64,
+                accept_large_sparse=solver not in ["liblinear", "sag", "saga"],
+            )
+        else:
+            X = check_array(
+                X,
+                accept_sparse='csr',
+                dtype=np.float64,
+                accept_large_sparse=solver != 'liblinear',
+            )
         y = check_array(y, ensure_2d=False, dtype=None)
         check_consistent_length(X, y)
     _, n_features = X.shape
@@ -279,12 +301,26 @@ def __logistic_regression_path(
     # For doing a ovr, we need to mask the labels first. for the
     # multinomial case this is not necessary.
     if multi_class == 'ovr':
-        w0 = np.zeros(n_features + int(fit_intercept), dtype=X.dtype)
-        mask_classes = np.array([-1, 1])
-        mask = (y == pos_class)
         y_bin = np.ones(y.shape, dtype=X.dtype)
-        y_bin[~mask] = -1.
-        # for compute_class_weight
+
+        if sklearn_check_version('1.1'):
+            mask = (y == pos_class)
+            y_bin = np.ones(y.shape, dtype=X.dtype)
+            # for compute_class_weight
+
+            if solver in ["lbfgs", "newton-cg"]:
+                # HalfBinomialLoss, used for those solvers, represents y in [0, 1] instead
+                # of in [-1, 1].
+                mask_classes = np.array([0, 1])
+                y_bin[~mask] = 0.0
+            else:
+                mask_classes = np.array([-1, 1])
+                y_bin[~mask] = -1.0
+        else:
+            mask_classes = np.array([-1, 1])
+            mask = (y == pos_class)
+            y_bin[~mask] = -1.
+            # for compute_class_weight
 
         if class_weight == "balanced" and not _dal_ready:
             class_weight_ = compute_class_weight(class_weight, classes=mask_classes,
@@ -299,18 +335,36 @@ def __logistic_regression_path(
             w0 = np.zeros(n_features + int(fit_intercept), dtype=X.dtype)
 
     else:
-        if solver not in ['sag', 'saga']:
-            if _dal_ready:
-                Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
+        if sklearn_check_version('1.1'):
+            if solver in ["sag", "saga", "lbfgs", "newton-cg"]:
+                # SAG, lbfgs and newton-cg multinomial solvers need LabelEncoder,
+                # not LabelBinarizer, i.e. y as a 1d-array of integers.
+                # LabelEncoder also saves memory compared to LabelBinarizer, especially
+                # when n_classes is large.
+                if _dal_ready:
+                    Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
+                else:
+                    le = LabelEncoder()
+                    Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
             else:
+                # For liblinear solver, apply LabelBinarizer, i.e. y is one-hot encoded.
                 lbin = LabelBinarizer()
                 Y_multi = lbin.fit_transform(y)
                 if Y_multi.shape[1] == 1:
                     Y_multi = np.hstack([1 - Y_multi, Y_multi])
         else:
-            # SAG multinomial solver needs LabelEncoder, not LabelBinarizer
-            le = LabelEncoder()
-            Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
+            if solver not in ['sag', 'saga']:
+                if _dal_ready:
+                    Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
+                else:
+                    lbin = LabelBinarizer()
+                    Y_multi = lbin.fit_transform(y)
+                    if Y_multi.shape[1] == 1:
+                        Y_multi = np.hstack([1 - Y_multi, Y_multi])
+            else:
+                # SAG multinomial solver needs LabelEncoder, not LabelBinarizer
+                le = LabelEncoder()
+                Y_multi = le.fit_transform(y).astype(X.dtype, copy=False)
 
         if _dal_ready:
             w0 = np.zeros((classes.size, n_features + 1),
@@ -369,8 +423,17 @@ def __logistic_regression_path(
         if solver in ['lbfgs', 'newton-cg']:
             if _dal_ready and classes.size == 2:
                 w0 = w0[-1:, :]
-            w0 = w0.ravel()
+            if sklearn_check_version('1.1'):
+                w0 = w0.ravel(order="F")
+            else:
+                w0 = w0.ravel()
         target = Y_multi
+        loss = None
+        if sklearn_check_version('1.1'):
+            loss = LinearModelLoss(
+                base_loss=HalfMultinomialLoss(n_classes=classes.size),
+                fit_intercept=fit_intercept,
+            )
         if solver == 'lbfgs':
             if _dal_ready:
                 if classes.size == 2:
@@ -382,8 +445,11 @@ def __logistic_regression_path(
                     daal_extra_args_func = _daal4py_cross_entropy_loss_extra_args
                 func = _daal4py_loss_and_grad
             else:
-                def func(x, *args):
-                    return _multinomial_loss_grad(x, *args)[0:2]
+                if sklearn_check_version('1.1') and loss is not None:
+                    func = loss.loss_gradient
+                else:
+                    def func(x, *args):
+                        return _multinomial_loss_grad(x, *args)[0:2]
         elif solver == 'newton-cg':
             if _dal_ready:
                 if classes.size == 2:
@@ -397,12 +463,17 @@ def __logistic_regression_path(
                 grad = _daal4py_grad_
                 hess = _daal4py_grad_hess_
             else:
-                def func(x, *args):
-                    return _multinomial_loss(x, *args)[0]
+                if sklearn_check_version('1.1') and loss is not None:
+                    func = loss.loss
+                    grad = loss.gradient
+                    hess = loss.gradient_hessian_product  # hess = [gradient, hessp]
+                else:
+                    def func(x, *args):
+                        return _multinomial_loss(x, *args)[0]
 
-                def grad(x, *args):
-                    return _multinomial_loss_grad(x, *args)[1]
-                hess = _multinomial_grad_hess
+                    def grad(x, *args):
+                        return _multinomial_loss_grad(x, *args)[1]
+                    hess = _multinomial_grad_hess
         warm_start_sag = {'coef': w0.T}
     else:
         target = y_bin
@@ -411,7 +482,13 @@ def __logistic_regression_path(
                 func = _daal4py_loss_and_grad
                 daal_extra_args_func = _daal4py_logistic_loss_extra_args
             else:
-                func = _logistic_loss_and_grad
+                if sklearn_check_version('1.1'):
+                    loss = LinearModelLoss(
+                        base_loss=HalfBinomialLoss(), fit_intercept=fit_intercept
+                    )
+                    func = loss.loss_gradient
+                else:
+                    func = _logistic_loss_and_grad
         elif solver == 'newton-cg':
             if _dal_ready:
                 daal_extra_args_func = _daal4py_logistic_loss_extra_args
@@ -419,11 +496,19 @@ def __logistic_regression_path(
                 grad = _daal4py_grad_
                 hess = _daal4py_grad_hess_
             else:
-                func = _logistic_loss
+                if sklearn_check_version('1.1'):
+                    loss = LinearModelLoss(
+                        base_loss=HalfBinomialLoss(), fit_intercept=fit_intercept
+                    )
+                    func = loss.loss
+                    grad = loss.gradient
+                    hess = loss.gradient_hessian_product  # hess = [gradient, hessp]
+                else:
+                    func = _logistic_loss
 
-                def grad(x, *args):
-                    return _logistic_loss_and_grad(x, *args)[1]
-                hess = _logistic_grad_hess
+                    def grad(x, *args):
+                        return _logistic_loss_and_grad(x, *args)[1]
+                    hess = _logistic_grad_hess
         warm_start_sag = {'coef': np.expand_dims(w0, axis=1)}
 
     coefs = list()
@@ -444,7 +529,11 @@ def __logistic_regression_path(
                     hessian=False
                 )
             else:
-                extra_args = (X, target, 1. / C, sample_weight)
+                if sklearn_check_version('1.1'):
+                    l2_reg_strength = 1.0 / C
+                    extra_args = (X, target, sample_weight, l2_reg_strength, n_threads)
+                else:
+                    extra_args = (X, target, 1. / C, sample_weight)
 
             iprint = [-1, 50, 1, 100, 101][
                 np.searchsorted(np.array([0, 1, 2, 3]), verbose)]
@@ -492,7 +581,12 @@ def __logistic_regression_path(
                                           w0, args=extra_args,
                                           maxiter=max_iter, tol=tol)
             else:
-                args = (X, target, 1. / C, sample_weight)
+                if sklearn_check_version('1.1'):
+                    l2_reg_strength = 1.0 / C
+                    args = (X, target, sample_weight, l2_reg_strength, n_threads)
+                else:
+                    args = (X, target, 1. / C, sample_weight)
+
                 w0, n_iter_i = _newton_cg(
                     hess, func, grad, w0, args=args, maxiter=max_iter, tol=tol
                 )
@@ -565,7 +659,13 @@ def __logistic_regression_path(
                     multi_w0 = np.reshape(w0, (classes.size, -1))
             else:
                 n_classes = max(2, classes.size)
-                multi_w0 = np.reshape(w0, (n_classes, -1))
+                if sklearn_check_version('1.1'):
+                    if solver in ["lbfgs", "newton-cg"]:
+                        multi_w0 = np.reshape(w0, (n_classes, -1), order="F")
+                    else:
+                        multi_w0 = w0
+                else:
+                    multi_w0 = np.reshape(w0, (n_classes, -1))
                 if n_classes == 2:
                     multi_w0 = multi_w0[1][np.newaxis, :]
             coefs.append(multi_w0.copy())
@@ -687,7 +787,25 @@ if sklearn_check_version('0.24'):
         max_squared_sum=None,
         sample_weight=None,
         l1_ratio=None,
+        n_threads=1,
     ):
+        if sklearn_check_version('1.1'):
+            return __logistic_regression_path(
+                X, y, pos_class=pos_class,
+                Cs=Cs, fit_intercept=fit_intercept,
+                max_iter=max_iter, tol=tol, verbose=verbose,
+                solver=solver, coef=coef,
+                class_weight=class_weight,
+                dual=dual, penalty=penalty,
+                intercept_scaling=intercept_scaling,
+                multi_class=multi_class,
+                random_state=random_state,
+                check_input=check_input,
+                max_squared_sum=max_squared_sum,
+                sample_weight=sample_weight,
+                l1_ratio=l1_ratio,
+                n_threads=n_threads
+            )
         return __logistic_regression_path(
             X, y, pos_class=pos_class,
             Cs=Cs, fit_intercept=fit_intercept,

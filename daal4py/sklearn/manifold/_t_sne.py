@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import warnings
 from time import time
 import numpy as np
 from scipy.sparse import issparse
+import daal4py
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 from sklearn.manifold import TSNE as BaseTSNE
 from sklearn.decomposition import PCA
@@ -28,7 +30,6 @@ from sklearn.utils.validation import check_non_negative
 from sklearn.utils import check_random_state, check_array
 
 from ..neighbors import NearestNeighbors
-from .._utils import sklearn_check_version
 from .._device_offload import support_usm_ndarray
 
 if sklearn_check_version('0.22'):
@@ -88,6 +89,48 @@ class TSNE(BaseTSNE):
         """
         return super().fit(X, y)
 
+    def _daal_tsne(self, P, n_samples, X_embedded):
+        """Runs t-SNE."""
+        # t-SNE minimizes the Kullback-Leiber divergence of the Gaussians P
+        # and the Student's t-distributions Q. The optimization algorithm that
+        # we use is batch gradient descent with two stages:
+        # * initial optimization with early exaggeration and momentum at 0.5
+        # * final optimization with momentum at 0.8
+
+        # N, nnz, n_iter_without_progress, n_iter
+        size_iter = np.array([[n_samples], [P.nnz], [self.n_iter_without_progress],
+                             [self.n_iter]], dtype=P.dtype)
+        params = np.array([[self.early_exaggeration], [self._learning_rate],
+                          [self.min_grad_norm], [self.angle]], dtype=P.dtype)
+        results = np.zeros((3, 1), dtype=P.dtype)  # curIter, error, gradNorm
+
+        if P.dtype == np.float64:
+            daal4py.daal_tsne_gradient_descent(
+                X_embedded,
+                P,
+                size_iter,
+                params,
+                results,
+                0)
+        elif P.dtype == np.float32:
+            daal4py.daal_tsne_gradient_descent(
+                X_embedded,
+                P,
+                size_iter,
+                params,
+                results,
+                1)
+        else:
+            raise ValueError("unsupported dtype of 'P' matrix")
+
+        # Save the final number of iterations
+        self.n_iter_ = int(results[0][0])
+
+        # Save Kullback-Leiber divergence
+        self.kl_divergence_ = results[1][0]
+
+        return X_embedded
+
     def _fit(self, X, skip_num_points=0):
         """Private function to fit the model using X as training data."""
         if isinstance(self.init, str) and self.init == 'warn':
@@ -121,7 +164,7 @@ class TSNE(BaseTSNE):
                                  "or 'auto'.")
 
         if hasattr(self, 'square_distances'):
-            if self.square_distances not in [True, 'legacy']:
+            if self.square_distances not in [True, 'legacy', 'deprecated']:
                 raise ValueError("'square_distances' must be True or 'legacy'.")
             if self.metric != "euclidean" and self.square_distances is not True:
                 warnings.warn(("'square_distances' has been introduced in 0.24"
@@ -293,6 +336,16 @@ class TSNE(BaseTSNE):
         # Laurens van der Maaten, 2009.
         degrees_of_freedom = max(self.n_components - 1, 1)
 
+        daal_ready = self.method == 'barnes_hut' and self.n_components == 2 and \
+            self.verbose == 0 and daal_check_version((2021, 'P', 600))
+
+        if daal_ready:
+            X_embedded = check_array(X_embedded, dtype=[np.float32, np.float64])
+            return self._daal_tsne(
+                P,
+                n_samples,
+                X_embedded=X_embedded
+            )
         return self._tsne(
             P,
             degrees_of_freedom,

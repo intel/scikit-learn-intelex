@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,9 +35,8 @@ from sklearn.cluster import KMeans as KMeans_original
 
 import daal4py
 from .._utils import (
-    getFPType, get_patch_message, daal_check_version, PatchingConditionsChain)
+    getFPType, daal_check_version, PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
-import logging
 
 
 def _tolerance(X, rtol):

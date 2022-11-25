@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,18 +22,17 @@ from sklearn.base import ClassifierMixin as BaseClassifierMixin
 from .._utils import (
     getFPType,
     sklearn_check_version,
-    get_patch_message,
     PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
 from sklearn.utils.validation import check_array
 import numpy as np
 from scipy import sparse as sp
-import logging
 
 if sklearn_check_version("0.22"):
     from sklearn.neighbors._classification import KNeighborsClassifier as \
         BaseKNeighborsClassifier
-    from sklearn.neighbors._base import _check_weights
+    if not sklearn_check_version("1.2"):
+        from sklearn.neighbors._base import _check_weights
     from sklearn.utils.validation import _deprecate_positional_args
 else:
     from sklearn.neighbors.classification import KNeighborsClassifier as \

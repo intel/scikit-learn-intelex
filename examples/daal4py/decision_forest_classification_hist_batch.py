@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ def main(readcsv=read_csv, method='hist'):
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    assert(predict_result.prediction.shape == (pdata.shape[0], 1))
+    assert predict_result.prediction.shape == (pdata.shape[0], 1)
 
     return (train_result, predict_result, plabels)
 

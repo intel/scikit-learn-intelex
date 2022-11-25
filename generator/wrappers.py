@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,8 @@ def wrap_algo(algo, ver):
                                       'algorithms::classification::training',
                                       'algorithms::tree_utils',
                                       'algorithms::tree_utils::classification',
-                                      'algorithms::tree_utils::regression']):
+                                      'algorithms::tree_utils::regression',
+                                      'algorithms::internal']):
         return False
     # ignore unsupported algos
     if any(x in algo for x in ['quality_metric', '::interface']):

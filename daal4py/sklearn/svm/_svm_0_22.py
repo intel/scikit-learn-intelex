@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,10 +30,8 @@ import daal4py
 from .._utils import (
     make2d,
     getFPType,
-    get_patch_message,
     sklearn_check_version,
     PatchingConditionsChain)
-import logging
 
 
 def _get_libsvm_impl():

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,11 +20,19 @@ if "Windows" in platform.system():
     import os
     import sys
     import site
+    current_path = os.path.dirname(__file__)
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
+    path_to_oneapi_backend = os.path.join(current_path, "oneapi")
     if sys.version_info.minor >= 8:
+        if 'DALROOT' in os.environ:
+            dal_root_redist = os.path.join(os.environ['DALROOT'], "redist", "intel64")
+            if os.path.exists(dal_root_redist):
+                os.add_dll_directory(dal_root_redist)
+                os.environ['PATH'] = dal_root_redist + os.pathsep + os.environ['PATH']
         os.add_dll_directory(path_to_libs)
-    os.environ['PATH'] += os.pathsep + path_to_libs
+        os.add_dll_directory(path_to_oneapi_backend)
+    os.environ['PATH'] = path_to_libs + os.pathsep + os.environ['PATH']
 
 try:
     from daal4py._daal4py import *

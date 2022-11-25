@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ def test_sklearnex_import_knn_regression():
     X = [[0], [1], [2], [3]]
     y = [0, 0, 1, 1]
     neigh = KNeighborsRegressor(n_neighbors=2).fit(X, y)
-    assert 'daal4py' in neigh.__module__
+    assert 'sklearnex' in neigh.__module__
     assert_allclose(neigh.predict([[1.5]]), [0.5])
 
 

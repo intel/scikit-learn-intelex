@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,16 +16,32 @@
 
 import numpy as np
 import sys
+import os
+import warnings
 
 from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 import logging
+
+try:
+    from pandas import DataFrame
+    from pandas.core.dtypes.cast import find_common_type
+    pandas_is_imported = True
+except (ImportError, ModuleNotFoundError):
+    pandas_is_imported = False
+
+try:
+    from daal4py.oneapi import is_in_sycl_ctxt as is_in_ctx
+    ctx_imported = True
+except (ImportError, ModuleNotFoundError):
+    ctx_imported = False
 
 
 def set_idp_sklearn_verbose():
-    import warnings
-    import os
     logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
     try:
         if logLevel is not None:
@@ -56,7 +72,11 @@ def daal_check_version(rule):
 
 
 def sklearn_check_version(ver):
-    return bool(LooseVersion(sklearn_version) >= LooseVersion(ver))
+    if hasattr(Version(ver), 'base_version'):
+        base_sklearn_version = Version(sklearn_version).base_version
+        return bool(Version(base_sklearn_version) >= Version(ver))
+    # packaging module not available
+    return bool(Version(sklearn_version) >= Version(ver))
 
 
 def get_daal_version():
@@ -72,14 +92,10 @@ def parse_dtype(dt):
 
 
 def getFPType(X):
-    try:
-        from pandas import DataFrame
-        from pandas.core.dtypes.cast import find_common_type
+    if pandas_is_imported:
         if isinstance(X, DataFrame):
             dt = find_common_type(X.dtypes.tolist())
             return parse_dtype(dt)
-    except ImportError:
-        pass
 
     dt = getattr(X, 'dtype', None)
     return parse_dtype(dt)
@@ -99,13 +115,13 @@ def get_patch_message(s):
         if 'daal4py.oneapi' in sys.modules:
             from daal4py.oneapi import _get_device_name_sycl_ctxt
             dev = _get_device_name_sycl_ctxt()
-            if dev == 'cpu' or dev == 'host' or dev is None:
+            if dev == 'cpu' or dev is None:
                 message += 'CPU'
             elif dev == 'gpu':
                 message += 'GPU'
             else:
                 raise ValueError(f"Unexpected device name {dev}."
-                                 " Supported types are host, cpu and gpu")
+                                 " Supported types are cpu and gpu")
         else:
             message += 'CPU'
 
@@ -121,26 +137,24 @@ def get_patch_message(s):
 
 
 def is_in_sycl_ctxt():
-    try:
-        from daal4py.oneapi import is_in_sycl_ctxt as is_in_ctx
+    if ctx_imported:
         return is_in_ctx()
-    except ModuleNotFoundError:
+    else:
         return False
 
 
 def is_DataFrame(X):
-    try:
+    if pandas_is_imported:
         from pandas import DataFrame
         return isinstance(X, DataFrame)
-    except ImportError:
+    else:
         return False
 
 
 def get_dtype(X):
-    try:
-        from pandas.core.dtypes.cast import find_common_type
+    if pandas_is_imported:
         return find_common_type(list(X.dtypes)) if is_DataFrame(X) else X.dtype
-    except ImportError:
+    else:
         return getattr(X, "dtype", None)
 
 

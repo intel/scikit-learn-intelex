@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -182,9 +182,9 @@ gen_examples = [
     ('decision_forest_classification_hist_batch',
      None, lambda r: r[1].prediction, (2021, 'P', 200)),
     ('decision_forest_regression_default_dense_batch',
-     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2021, 'P', 400)),
+     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2021, 'P', 600)),
     ('decision_forest_regression_hist_batch',
-     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2021, 'P', 400)),
+     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2021, 'P', 600)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv',
      lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv',

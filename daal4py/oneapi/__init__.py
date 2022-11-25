@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +25,15 @@ if "Windows" in platform.system():
 
     sitepackages_path = sysconfig.get_paths()['purelib']
     installed_package_path = os.path.join(sitepackages_path, 'daal4py', 'oneapi')
-
     if sys.version_info.minor >= 8:
+        if 'DPCPPROOT' in os.environ:
+            dpcpp_rt_root_bin = os.path.join(os.environ['DPCPPROOT'], "windows", "bin")
+            dpcpp_rt_root_redist = os.path.join(os.environ['DPCPPROOT'], "windows",
+                                                "redist", "intel64_win", "compiler")
+            if os.path.exists(dpcpp_rt_root_bin):
+                os.add_dll_directory(dpcpp_rt_root_bin)
+            if os.path.exists(dpcpp_rt_root_redist):
+                os.add_dll_directory(dpcpp_rt_root_redist)
         os.add_dll_directory(current_path)
         if os.path.exists(installed_package_path):
             os.add_dll_directory(installed_package_path)

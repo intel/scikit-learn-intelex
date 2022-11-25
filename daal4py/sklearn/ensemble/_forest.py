@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import numbers
 import warnings
 
 import daal4py
-from .._utils import (getFPType, get_patch_message)
+from .._utils import getFPType
 from .._device_offload import support_usm_ndarray
 from daal4py.sklearn._utils import (
     daal_check_version, sklearn_check_version,
     PatchingConditionsChain)
 import logging
 
-from sklearn.tree import (DecisionTreeClassifier, DecisionTreeRegressor)
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree
 from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_original
 from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
@@ -40,8 +40,6 @@ from ..utils.validation import _daal_num_features
 from sklearn.base import clone
 from sklearn.exceptions import DataConversionWarning
 
-from sklearn import __version__ as sklearn_version
-from distutils.version import LooseVersion
 from math import ceil
 from scipy import sparse as sp
 
@@ -97,6 +95,12 @@ def _get_n_samples_bootstrap(n_samples, max_samples):
 
 
 def _check_parameters(self):
+    if not self.bootstrap and self.max_samples is not None:
+        raise ValueError(
+            "`max_sample` cannot be set if `bootstrap=False`. "
+            "Either switch to `bootstrap=True` or set "
+            "`max_sample=None`."
+        )
     if isinstance(self.min_samples_leaf, numbers.Integral):
         if not 1 <= self.min_samples_leaf:
             raise ValueError("min_samples_leaf must be at least 1 "
@@ -811,7 +815,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
         for i in range(self.n_estimators):
-            # print("Tree #{}".format(i))
             est_i = clone(est)
             est_i.set_params(
                 random_state=random_state_checked.randint(np.iinfo(np.int32).max))
@@ -1049,7 +1052,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
         }
         if not sklearn_check_version('1.0'):
             params['min_impurity_split'] = self.min_impurity_split
-        est = DecisionTreeClassifier(**params)
+        est = DecisionTreeRegressor(**params)
 
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution

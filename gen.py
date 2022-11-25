@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2020-2022 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@ if __name__ == "__main__":
     import argparse
     global no_warn
 
-    description = """A tool to create cython interface files for HLAPI of oneDAL (aka daal4py).
+    description = """
+    A tool to create cython interface files for HLAPI of oneDAL (aka daal4py).
     Extracting necessary data and creating internal data structures.
     See parse.py for details about C++ parsing.
     See wrappers.py for necessary configuration that can not be auto-extracted.

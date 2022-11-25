@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ def get_patch_message(s, queue=None, cpu_fallback=False):
         elif 'daal4py.oneapi' in sys.modules:
             from daal4py.oneapi import _get_device_name_sycl_ctxt
             dev = _get_device_name_sycl_ctxt()
-            if dev == 'cpu' or dev == 'host' or dev is None:
+            if dev == 'cpu' or dev is None:
                 message += 'CPU'
             elif dev == 'gpu':
                 if cpu_fallback:

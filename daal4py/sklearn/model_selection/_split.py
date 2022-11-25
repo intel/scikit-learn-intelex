@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,10 +21,8 @@ from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from sklearn.model_selection._split import _validate_shuffle_split
 import daal4py as d4p
 import numpy as np
-from daal4py.sklearn._utils import (
-    daal_check_version, get_patch_message, PatchingConditionsChain)
+from daal4py.sklearn._utils import PatchingConditionsChain
 import platform
-import logging
 from .._device_offload import support_usm_ndarray
 
 try:
@@ -238,6 +236,14 @@ def _daal_train_test_split(*arrays, **options):
             if hasattr(arr, 'index'):
                 train_arr.index = train
                 test_arr.index = test
+
+            if hasattr(arr, 'columns'):
+                train_arr.columns = arr.columns
+                test_arr.columns = arr.columns
+
+            if hasattr(arr, 'name'):
+                train_arr.name = arr.name
+                test_arr.name = arr.name
 
             res.append(train_arr)
             res.append(test_arr)

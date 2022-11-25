@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2021-2022 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,30 +21,10 @@ import os
 from functools import lru_cache
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
-# Classes for patching
-if os.environ.get('OFF_ONEDAL_IFACE') is None and daal_check_version((2021, 'P', 300)):
-    from ._config import set_config as set_config_sklearnex
-    from ._config import get_config as get_config_sklearnex
-    from ._config import config_context as config_context_sklearnex
 
-    from .svm import SVR as SVR_sklearnex
-    from .svm import SVC as SVC_sklearnex
-    from .svm import NuSVR as NuSVR_sklearnex
-    from .svm import NuSVC as NuSVC_sklearnex
-
-    from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
-    # from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
-    from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
-
-    new_patching_available = True
-else:
-    new_patching_available = False
-
-# Scikit-learn* modules
-
-import sklearn as base_module
-import sklearn.svm as svm_module
-import sklearn.neighbors as neighbors_module
+def _is_new_patching_available():
+    return os.environ.get('OFF_ONEDAL_IFACE') is None \
+        and daal_check_version((2021, 'P', 300))
 
 
 @lru_cache(maxsize=None)
@@ -52,7 +32,29 @@ def get_patch_map():
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
     mapping = _get_map_of_algorithms().copy()
 
-    if new_patching_available:
+    if _is_new_patching_available():
+        # Classes for patching
+
+        from ._config import set_config as set_config_sklearnex
+        from ._config import get_config as get_config_sklearnex
+        from ._config import config_context as config_context_sklearnex
+
+        from .svm import SVR as SVR_sklearnex
+        from .svm import SVC as SVC_sklearnex
+        from .svm import NuSVR as NuSVR_sklearnex
+        from .svm import NuSVC as NuSVC_sklearnex
+
+        from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
+        from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
+        from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
+
+        # Scikit-learn* modules
+
+        import sklearn as base_module
+        import sklearn.svm as svm_module
+        import sklearn.neighbors as neighbors_module
+
+        # Patch for mapping
         # Algorithms
         # SVM
         mapping.pop('svm')
@@ -65,20 +67,22 @@ def get_patch_map():
         # kNN
         mapping.pop('knn_classifier')
         mapping.pop('kneighborsclassifier')
-        # TODO: make kNN regression patching through onedal ifaces
-        # mapping.pop('knn_regressor')
-        # mapping.pop('kneighborsregressor')
+        mapping.pop('knn_regressor')
+        mapping.pop('kneighborsregressor')
         mapping.pop('nearest_neighbors')
         mapping.pop('nearestneighbors')
         mapping['knn_classifier'] = [[(neighbors_module,
                                        'KNeighborsClassifier',
                                        KNeighborsClassifier_sklearnex), None]]
-        # mapping['knn_regressor'] = [[(neighbors_module,
-        #                               'KNeighborsRegressor',
-        #                               KNeighborsRegressor_sklearnex), None]]
+        mapping['knn_regressor'] = [[(neighbors_module,
+                                      'KNeighborsRegressor',
+                                      KNeighborsRegressor_sklearnex), None]]
         mapping['nearest_neighbors'] = [[(neighbors_module,
                                           'NearestNeighbors',
                                           NearestNeighbors_sklearnex), None]]
+        mapping['kneighborsclassifier'] = mapping['knn_classifier']
+        mapping['kneighborsregressor'] = mapping['knn_regressor']
+        mapping['nearestneighbors'] = mapping['nearest_neighbors']
 
         # Configs
         mapping['set_config'] = [[(base_module,
@@ -108,7 +112,7 @@ def patch_sklearn(name=None, verbose=True, global_patch=False):
 
     from daal4py.sklearn import patch_sklearn as patch_sklearn_orig
 
-    if new_patching_available:
+    if _is_new_patching_available():
         for config in ['set_config', 'get_config', 'config_context']:
             patch_sklearn_orig(config, verbose=False, deprecation=False,
                                get_map=get_patch_map)
@@ -136,7 +140,7 @@ def unpatch_sklearn(name=None, global_unpatch=False):
         for algorithm in name:
             unpatch_sklearn_orig(algorithm, get_map=get_patch_map)
     else:
-        if new_patching_available:
+        if _is_new_patching_available():
             for config in ['set_config', 'get_config', 'config_context']:
                 unpatch_sklearn_orig(config, get_map=get_patch_map)
         unpatch_sklearn_orig(name, get_map=get_patch_map)

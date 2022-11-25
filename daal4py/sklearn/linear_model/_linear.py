@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014-2022 Intel Corporation
+# Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,15 +16,11 @@
 
 import numpy as np
 from scipy import sparse as sp
-from scipy import linalg
 
-from sklearn.linear_model._base import _rescale_data
 from ..utils.validation import _daal_check_array, _daal_check_X_y
 from ..utils.base import _daal_validate_data
 from .._utils import sklearn_check_version
 from .._device_offload import support_usm_ndarray
-from sklearn.utils.fixes import sparse_lsqr
-from sklearn.utils.validation import _check_sample_weight
 from sklearn.utils import check_array
 
 from sklearn.linear_model import LinearRegression as LinearRegression_original
