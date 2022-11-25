@@ -114,6 +114,7 @@ jobs:
       wget -q https://github.com/intel/llvm/releases/download/sycl-nightly%2F20221122/dpcpp-compiler.tar.gz
       tar -xzf dpcpp-compiler.tar.gz
       ln -s clang++ dpcpp_compiler/bin/icpx
+      ln -s clang dpcpp_compiler/bin/icx
       rm dpcpp-compiler.tar.gz
       clinfo
     displayName: 'DPCPP installation'
