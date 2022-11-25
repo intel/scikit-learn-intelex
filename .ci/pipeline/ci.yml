@@ -113,19 +113,20 @@ jobs:
       sudo apt-get update && sudo apt-get install -y wget libtinfo5 clinfo
       wget -q https://github.com/intel/llvm/releases/download/sycl-nightly%2F20221122/dpcpp-compiler.tar.gz
       tar -xzf dpcpp-compiler.tar.gz
+      ln -s clang++ dpcpp_compiler/bin/icpx
       rm dpcpp-compiler.tar.gz
       clinfo
-    displayName: 'apt-get'
+    displayName: 'DPCPP installation'
   - script: |
-      conda create -q -y -n CB -c conda-forge conda=4.10 python=$(python.version) conda-build=3.21.8 conda-verify
-    displayName: Create Anaconda environment
+      conda create -q -y -n CB -c conda-forge conda conda-build conda-verify python=$(python.version) 
+    displayName: 'Create Anaconda environment'
   - script: |
       source dpcpp_compiler/startup.sh
       export DPCPPROOT=${PWD}/dpcpp_compiler
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
-    displayName: conda build
+    displayName: 'conda build'
   - script: |
       source dpcpp_compiler/startup.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
