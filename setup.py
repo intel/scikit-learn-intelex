@@ -216,7 +216,7 @@ def get_build_options():
         ela.append("-Wl,-rpath,$ORIGIN/../../../")
     # intel/llvm daily build
     if dpcpp and IS_LIN and os.path.isfile(jp(dpcpp_root, 'startup.sh')):
-        include_dir_plat.append(jp(dpcpp_root, 'dpcpp_compiler', 'include', 'sycl'))
+        include_dir_plat.append(jp(dpcpp_root, 'include', 'sycl'))
     return eca, ela, include_dir_plat
 
 
