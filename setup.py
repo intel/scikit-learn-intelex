@@ -185,8 +185,6 @@ def get_build_options():
     ela = []
 
     if using_intel:
-        if not IS_MAC:
-            eca += ['-fsycl']
         if IS_WIN:
             include_dir_plat.append(
                 jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
@@ -315,6 +313,8 @@ def build_oneapi_backend():
         cxx = 'icx'
     else:
         cxx = 'icpx'
+    if not IS_MAC:
+        eca += ['-fsycl']
 
     return build_backend.build_cpp(
         cc=cc,
