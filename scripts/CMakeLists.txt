@@ -43,7 +43,7 @@ else()
     message(FATAL_ERROR "Unsupported system.")
 endif()
 
-if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR ".*icx")
+if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
     if(NOT APPLE)
         set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
     endif()
