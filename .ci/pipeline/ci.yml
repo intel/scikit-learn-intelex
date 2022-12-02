@@ -77,6 +77,7 @@ jobs:
     displayName: 'Build sklearnex'
   - script: |
       lscpu
+      uname -a
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
