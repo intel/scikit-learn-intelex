@@ -147,7 +147,8 @@ jobs:
       conda activate CB
       cd ..
       pytest --pyargs s/sklearnex/tests/
-      pytest --pyargs s/onedal/
+      # TODO: remove ignore of test_policy when device names are fixed
+      pytest --pyargs s/onedal/ --ignore=s/onedal/common/tests/test_policy.py
     displayName: test sklearnex
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
