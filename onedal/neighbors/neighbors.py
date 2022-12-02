@@ -425,6 +425,8 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             model = self._onedal_model
         else:
             model = self._create_model(_backend.neighbors.classification)
+        if 'responses' not in params['result_option']:
+            params['result_option'] += '|responses'
         result = _backend.neighbors.classification.infer(
             policy, params, model, to_table(X))
 
