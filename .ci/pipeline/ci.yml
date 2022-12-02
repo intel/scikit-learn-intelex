@@ -141,9 +141,15 @@ jobs:
       pip install -r requirements-test.txt
       conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
+    displayName: install sklearnex
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
       cd ..
       pytest --pyargs s/sklearnex/tests/
-    displayName: install sklearnex
+      # TODO: remove ignore of test_policy when device names are fixed
+      pytest --pyargs s/onedal/ --ignore=s/onedal/common/tests/test_policy.py
+    displayName: test sklearnex
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB

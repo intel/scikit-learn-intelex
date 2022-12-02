@@ -165,6 +165,9 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
     def _get_onedal_params(self, data):
         max_iter = 10000 if self.max_iter == -1 else self.max_iter
+        # TODO: remove this workaround
+        # when oneDAL SVM starts support of 'n_iterations' result
+        self.n_iter_ = 1 if max_iter < 1 else max_iter
         class_count = 0 if self.classes_ is None else len(self.classes_)
         return {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
