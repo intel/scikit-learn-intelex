@@ -76,6 +76,7 @@ jobs:
       python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build sklearnex'
   - script: |
+      lscpu
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
