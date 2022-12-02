@@ -99,7 +99,8 @@ class TSNE(BaseTSNE):
 
         # N, nnz, n_iter_without_progress, n_iter
         size_iter = np.array([[n_samples], [P.nnz], [self.n_iter_without_progress],
-                             [self.n_iter]], dtype=P.dtype)
+                             [self.n_iter], [self._EXPLORATION_N_ITER], [self._N_ITER_CHECK]],
+                             dtype=P.dtype)
         params = np.array([[self.early_exaggeration], [self._learning_rate],
                           [self.min_grad_norm], [self.angle]], dtype=P.dtype)
         results = np.zeros((3, 1), dtype=P.dtype)  # curIter, error, gradNorm
