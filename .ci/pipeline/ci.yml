@@ -227,6 +227,7 @@ jobs:
     displayName: 'Install requirements'
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
+      call activate CB
       python -c "import cpufeature; cpufeature.print_features()"
       uname -a
     displayName: System info
