@@ -20,7 +20,7 @@ variables:
   - name: WINDOWS_DPCPP_COMPONENTS
     value: intel.oneapi.win.dpcpp-compiler
   - name: SYSTEM_DESCRIPTOR_URL
-    value: https://raw.githubusercontent.com/Alexsandruss/oneDAL/dev/extra-ci-output/.ci/scripts/describe_system.sh
+    value: https://raw.githubusercontent.com/oneapi-src/oneDAL/develop/.ci/scripts/describe_system.sh
   - name: MACOSX_DEPLOYMENT_TARGET
     value: '10.15'
   - name: python.version
