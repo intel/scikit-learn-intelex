@@ -52,7 +52,8 @@ jobs:
   steps:
   - script: |
       wget -q $(SYSTEM_DESCRIPTOR_URL)
-      ./describe_system.sh
+      chmod 755 describe_system.sh
+      bash describe_system.sh
     displayName: 'System info'
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
@@ -133,7 +134,8 @@ jobs:
     displayName: 'apt-get'
   - script: |
       wget -q $(SYSTEM_DESCRIPTOR_URL)
-      ./describe_system.sh
+      chmod 755 describe_system.sh
+      bash describe_system.sh
     displayName: "System info"
   - script: |
       conda create -q -y -n CB -c conda-forge conda=4.10 python=$(python.version) conda-build=3.21.8 conda-verify
@@ -186,7 +188,7 @@ jobs:
   - script: |
       source activate CB
       wget -q $(SYSTEM_DESCRIPTOR_URL)
-      ./describe_system.sh
+      bash describe_system.sh
     displayName: "System info"
   - script: |
       source activate CB
