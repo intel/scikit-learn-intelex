@@ -19,6 +19,8 @@ variables:
     value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17768/w_BaseKit_p_2021.2.0.2871_offline.exe
   - name: WINDOWS_DPCPP_COMPONENTS
     value: intel.oneapi.win.dpcpp-compiler
+  - name: SYSTEM_DESCRIPTOR_URL
+    value: https://raw.githubusercontent.com/Alexsandruss/oneDAL/dev/extra-ci-output/.ci/scripts/describe_system.sh
   - name: MACOSX_DEPLOYMENT_TARGET
     value: '10.15'
   - name: python.version
@@ -49,9 +51,8 @@ jobs:
     vmImage: 'ubuntu-22.04'
   steps:
   - script: |
-      lscpu
-      uname -a
-      gcc --version
+      wget -q $(SYSTEM_DESCRIPTOR_URL)
+      describe_system.sh
     displayName: 'System info'
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
@@ -131,9 +132,8 @@ jobs:
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
   - script: |
-      lscpu
-      uname -a
-      /opt/intel/oneapi/compiler/latest/linux/bin/dpcpp --version
+      wget -q $(SYSTEM_DESCRIPTOR_URL)
+      describe_system.sh
     displayName: "System info"
   - script: |
       conda create -q -y -n CB -c conda-forge conda=4.10 python=$(python.version) conda-build=3.21.8 conda-verify
@@ -180,13 +180,14 @@ jobs:
       conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn
       conda install -n CB -q --override-channels -c intel dal dal-include
       conda install -n CB -q --override-channels -c conda-forge mpich
+      source activate CB
+      pip install -q cpufeature
     displayName: Create Anaconda environment
   - script: |
       source activate CB
-      pip install -q cpufeature
-      python -c "import cpufeature; cpufeature.print_features()"
-      uname -a
-    displayName: System info
+      wget -q $(SYSTEM_DESCRIPTOR_URL)
+      describe_system.sh
+    displayName: "System info"
   - script: |
       source activate CB
       export DALROOT=$CONDA_PREFIX
@@ -228,9 +229,9 @@ jobs:
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB
-      python -c "import cpufeature; cpufeature.print_features()"
-      uname -a
-    displayName: System info
+      wget -q $(SYSTEM_DESCRIPTOR_URL)
+      bash describe_system.sh
+    displayName: 'System info'
   - script: |
       call activate CB
       set PREFIX=%CONDA_PREFIX%
