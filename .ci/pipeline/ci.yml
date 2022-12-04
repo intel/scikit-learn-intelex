@@ -182,11 +182,10 @@ jobs:
       conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn
       conda install -n CB -q --override-channels -c intel dal dal-include
       conda install -n CB -q --override-channels -c conda-forge mpich
-      source activate CB
-      pip install -q cpufeature
     displayName: Create Anaconda environment
   - script: |
       source activate CB
+      pip install -q cpufeature
       wget -q $(SYSTEM_DESCRIPTOR_URL)
       bash describe_system.sh
     displayName: "System info"
