@@ -19,8 +19,6 @@ variables:
     value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17768/w_BaseKit_p_2021.2.0.2871_offline.exe
   - name: WINDOWS_DPCPP_COMPONENTS
     value: intel.oneapi.win.dpcpp-compiler
-  - name: SYSTEM_DESCRIPTOR_URL
-    value: https://raw.githubusercontent.com/oneapi-src/oneDAL/develop/.ci/scripts/describe_system.sh
   - name: MACOSX_DEPLOYMENT_TARGET
     value: '10.15'
   - name: python.version
