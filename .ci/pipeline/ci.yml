@@ -48,6 +48,9 @@ jobs:
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
+  - script: |
+      bash .ci/scripts/describe_system.sh
+    displayName: 'System info'
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
     inputs:
@@ -126,6 +129,9 @@ jobs:
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
   - script: |
+      bash .ci/scripts/describe_system.sh
+    displayName: "System info"
+  - script: |
       conda create -q -y -n CB -c conda-forge conda=4.10 python=$(python.version) conda-build=3.21.8 conda-verify
     displayName: Create Anaconda environment
   - script: |
@@ -173,6 +179,11 @@ jobs:
     displayName: Create Anaconda environment
   - script: |
       source activate CB
+      pip install -q cpufeature
+      bash .ci/scripts/describe_system.sh
+    displayName: "System info"
+  - script: |
+      source activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
       python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
@@ -205,9 +216,15 @@ jobs:
   - script: |
       call activate CB
       pip install --upgrade setuptools
+      pip install cpufeature
       pip install -r requirements-dev.txt
       pip install -r requirements-test.txt
     displayName: 'Install requirements'
+  - script: |
+      set PATH=C:\msys64\usr\bin;%PATH%
+      call activate CB
+      bash .ci/scripts/describe_system.sh
+    displayName: 'System info'
   - script: |
       call activate CB
       set PREFIX=%CONDA_PREFIX%
