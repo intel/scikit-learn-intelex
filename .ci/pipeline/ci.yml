@@ -51,9 +51,7 @@ jobs:
     vmImage: 'ubuntu-22.04'
   steps:
   - script: |
-      wget -q $(SYSTEM_DESCRIPTOR_URL)
-      chmod 755 describe_system.sh
-      bash describe_system.sh
+      bash .ci/scripts/describe_system.sh
     displayName: 'System info'
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
@@ -133,9 +131,7 @@ jobs:
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
     displayName: 'apt-get'
   - script: |
-      wget -q $(SYSTEM_DESCRIPTOR_URL)
-      chmod 755 describe_system.sh
-      bash describe_system.sh
+      bash .ci/scripts/describe_system.sh
     displayName: "System info"
   - script: |
       conda create -q -y -n CB -c conda-forge conda=4.10 python=$(python.version) conda-build=3.21.8 conda-verify
@@ -186,8 +182,7 @@ jobs:
   - script: |
       source activate CB
       pip install -q cpufeature
-      wget -q $(SYSTEM_DESCRIPTOR_URL)
-      bash describe_system.sh
+      bash .ci/scripts/describe_system.sh
     displayName: "System info"
   - script: |
       source activate CB
@@ -230,8 +225,7 @@ jobs:
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB
-      wget -q $(SYSTEM_DESCRIPTOR_URL)
-      bash describe_system.sh
+      bash .ci/scripts/describe_system.sh
     displayName: 'System info'
   - script: |
       call activate CB
