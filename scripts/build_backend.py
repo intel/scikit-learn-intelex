@@ -138,7 +138,6 @@ def custom_build_cmake_clib(iface, cxx=None):
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ['DALROOT'], 'include'),
         "-DoneDAL_LIBRARY_DIR=" + jp(os.environ['DALROOT'], 'lib', 'intel64'),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
-        "-DCMAKE_VERBOSE_MAKEFILE=1",
     ]
 
     if iface == 'dpc':
