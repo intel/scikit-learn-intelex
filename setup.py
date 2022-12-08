@@ -161,7 +161,7 @@ def get_libs(iface='daal'):
         onedal_lib = [f'onedal_dll{major_version}']
         onedal_dpc_lib = [f'onedal_dpc_dll{major_version}']
     else:
-        libraries_plat = ['onedal_core', 'onedal_thread']
+        libraries_plat = ['onedal_core', 'onedal_thread', 'sycl']
         onedal_lib = ['onedal']
         onedal_dpc_lib = ['onedal_dpc']
     if iface == 'onedal':
