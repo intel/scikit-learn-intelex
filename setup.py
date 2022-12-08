@@ -188,7 +188,7 @@ def get_build_options():
         if IS_WIN:
             include_dir_plat.append(
                 jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
-            eca += ['-std=c++17', '/MT']
+            eca += ['-std=c++17', '/MD']
     elif not using_intel and IS_WIN:
         eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/std:c++17']
     else:
