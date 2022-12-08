@@ -313,8 +313,7 @@ def build_oneapi_backend():
         cxx = 'icx'
     else:
         cxx = 'icpx'
-    if not IS_MAC:
-        eca += ['-fsycl']
+    eca += ['-fsycl']
 
     return build_backend.build_cpp(
         cc=cc,
