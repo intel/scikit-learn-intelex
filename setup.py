@@ -161,7 +161,7 @@ def get_libs(iface='daal'):
         onedal_lib = [f'onedal_dll{major_version}']
         onedal_dpc_lib = [f'onedal_dpc_dll{major_version}']
     else:
-        libraries_plat = ['onedal_core', 'onedal_thread']
+        libraries_plat = ['onedal_core', 'onedal_thread', 'sycl']
         onedal_lib = ['onedal']
         onedal_dpc_lib = ['onedal_dpc']
     if iface == 'onedal':
@@ -188,7 +188,7 @@ def get_build_options():
         if IS_WIN:
             include_dir_plat.append(
                 jp(os.environ.get('ICPP_COMPILER16', ''), 'compiler', 'include'))
-            eca += ['-std=c++17', '/MD']
+            eca += ['-std=c++17', '/MT']
     elif not using_intel and IS_WIN:
         eca += ['-wd4267', '-wd4244', '-wd4101', '-wd4996', '/std:c++17']
     else:
