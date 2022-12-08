@@ -43,18 +43,6 @@ else()
     message(FATAL_ERROR "Unsupported system.")
 endif()
 
-if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
-    if(NOT APPLE)
-        set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
-    endif()
-endif()
-
-if(CMAKE_C_COMPILER MATCHES ".*icx")
-    if(NOT APPLE)
-        set(CMAKE_C_FLAGS "-fsycl ${CMAKE_C_FLAGS}")
-    endif()
-endif()
-
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS} ${SDL_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS} ${SDL_FLAGS}")
@@ -90,6 +78,14 @@ if(IFACE STREQUAL "host")
 
 elseif(IFACE STREQUAL "dpc")
     set(TARGET "_onedal_py_dpc")
+
+    if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
+        set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
+    endif()
+    
+    if(CMAKE_C_COMPILER MATCHES ".*icx")
+        set(CMAKE_C_FLAGS "-fsycl ${CMAKE_C_FLAGS}")
+    endif()
 
     if(WIN32)
         set(ONEDAL_LIBRARIES "onedal_dpc_dll" "onedal_core_dll")
