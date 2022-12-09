@@ -24,7 +24,6 @@ fi
 # if dpc++ vars path is specified
 if [ ! -z "${DPCPPROOT}" ]; then
     source ${DPCPPROOT}/env/vars.sh
-    export CC=icx CXX=icpx
 fi
 
 # if DAALROOT not exists then provide PREFIX
