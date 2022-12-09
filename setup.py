@@ -160,7 +160,7 @@ def get_libs(iface='daal'):
         onedal_lib = [f'onedal_dll{major_version}']
         onedal_dpc_lib = [f'onedal_dpc_dll{major_version}']
     else:
-        libraries_plat = ['onedal_core', 'onedal_thread', 'sycl']
+        libraries_plat = ['onedal_core', 'onedal_thread']
         onedal_lib = ['onedal']
         onedal_dpc_lib = ['onedal_dpc']
     if iface == 'onedal':
@@ -319,7 +319,7 @@ def build_oneapi_backend():
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',
         targetsuffix='.dll' if IS_WIN else '.so',
-        libs=get_libs('daal') + ['OpenCL', 'onedal_sycl'],
+        libs=get_libs('daal') + ['OpenCL', 'onedal_sycl', 'sycl'],
         libdirs=ONEDAL_LIBDIRS,
         includes=includes,
         eca=eca,
