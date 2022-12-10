@@ -161,3 +161,12 @@ You can learn more about daal4py in [daal4py documentation](https://intelpython.
 
 ---
 
+<!---
+<html>
+<head><title>405 Not Allowed</title></head>
+<body bgcolor="white">
+<center><h1>405 Not Allowed</h1></center>
+</body>
+</html>
+--->
+
