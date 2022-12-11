@@ -118,24 +118,24 @@ jobs:
       conda activate CB
       cd doc/daal4py
       make html
-    condition: eq(variables['PYTHON_VERSION'], '3.9')
+    condition: and(eq(variables['PYTHON_VERSION'], '3.9'), eq(variables['SKLEARN_VERSION'], '1.1'))
     displayName: 'Build daal4py documentation'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd doc
       make html
-    condition: eq(variables['PYTHON_VERSION'], '3.9')
+    condition: and(eq(variables['PYTHON_VERSION'], '3.9'), eq(variables['SKLEARN_VERSION'], '1.1'))
     displayName: 'Build scikit-learn-intelex documentation'
   - script: |
       mkdir $(Build.ArtifactStagingDirectory)/html/daal4py
       mkdir $(Build.ArtifactStagingDirectory)/html/sklearnex
       cp -R doc/daal4py/_build $(Build.ArtifactStagingDirectory)/html_daal4py
       cp -R doc/_build $(Build.ArtifactStagingDirectory)/html_sklearnex
-    condition: eq(variables['PYTHON_VERSION'], '3.9')
+    condition: and(eq(variables['PYTHON_VERSION'], '3.9'), eq(variables['SKLEARN_VERSION'], '1.1'))
     displayName: 'Copy build'
   - task: PublishPipelineArtifact@0
-    condition: eq(variables['PYTHON_VERSION'], '3.9')
+    condition: and(eq(variables['PYTHON_VERSION'], '3.9'), eq(variables['SKLEARN_VERSION'], '1.1'))
     inputs:
       artifactName: 'documentation'
       targetPath: '$(Build.ArtifactStagingDirectory)/'
