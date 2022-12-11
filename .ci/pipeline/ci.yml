@@ -247,6 +247,7 @@ jobs:
       sed -i -e "s/scikit-learn/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
+      pip install scipy=1.8.*
       pip list
     displayName: 'Install testing requirements'
   - script: |
