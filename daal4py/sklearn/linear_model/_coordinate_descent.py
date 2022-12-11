@@ -549,37 +549,64 @@ def _dual_gap(self):
 class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
-    def __init__(
-        self,
-        alpha=1.0,
-        l1_ratio=0.5,
-        fit_intercept=True,
-        normalize="deprecated" if sklearn_check_version('1.0') else False,
-        precompute=False,
-        max_iter=1000,
-        copy_X=True,
-        tol=1e-4,
-        warm_start=False,
-        positive=False,
-        random_state=None,
-        selection='cyclic',
-    ):
-        super_params = {
-            "alpha": alpha,
-            "l1_ratio": l1_ratio,
-            "fit_intercept": fit_intercept,
-            "precompute": precompute,
-            "max_iter": max_iter,
-            "copy_X": copy_X,
-            "tol": tol,
-            "warm_start": warm_start,
-            "positive": positive,
-            "random_state": random_state,
-            "selection": selection,
-        }
-        if not sklearn_check_version('1.2'):
-            super_params["normalize"] = normalize
-        super(ElasticNet, self).__init__(**super_params)
+    if sklearn_check_version('1.2'):
+        def __init__(
+            self,
+            alpha=1.0,
+            l1_ratio=0.5,
+            fit_intercept=True,
+            precompute=False,
+            max_iter=1000,
+            copy_X=True,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            super(ElasticNet, self).__init__(
+                alpha=alpha,
+                l1_ratio=l1_ratio,
+                fit_intercept=fit_intercept,
+                precompute=precompute,
+                max_iter=max_iter,
+                copy_X=copy_X,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
+    else:
+        def __init__(
+            self,
+            alpha=1.0,
+            l1_ratio=0.5,
+            fit_intercept=True,
+            normalize="deprecated" if sklearn_check_version('1.0') else False,
+            precompute=False,
+            max_iter=1000,
+            copy_X=True,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            super(ElasticNet, self).__init__(
+                alpha=alpha,
+                l1_ratio=l1_ratio,
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                precompute=precompute,
+                max_iter=max_iter,
+                copy_X=copy_X,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
 
     if sklearn_check_version('0.23'):
         @support_usm_ndarray()
@@ -707,36 +734,62 @@ class ElasticNet(ElasticNet_original):
 class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 
-    def __init__(
-        self,
-        alpha=1.0,
-        fit_intercept=True,
-        normalize="deprecated" if sklearn_check_version('1.0') else False,
-        precompute=False,
-        copy_X=True,
-        max_iter=1000,
-        tol=1e-4,
-        warm_start=False,
-        positive=False,
-        random_state=None,
-        selection='cyclic',
-    ):
-        self.l1_ratio = 1.0
-        super_params = {
-            "alpha": alpha,
-            "fit_intercept": fit_intercept,
-            "precompute": precompute,
-            "copy_X": copy_X,
-            "max_iter": max_iter,
-            "tol": tol,
-            "warm_start": warm_start,
-            "positive": positive,
-            "random_state": random_state,
-            "selection": selection,
-        }
-        if not sklearn_check_version('1.2'):
-            super_params["normalize"] = normalize
-        super().__init__(**super_params)
+    if sklearn_check_version('1.2'):
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            precompute=False,
+            copy_X=True,
+            max_iter=1000,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            self.l1_ratio = 1.0
+            super().__init__(
+                alpha=alpha,
+                fit_intercept=fit_intercept,
+                precompute=precompute,
+                copy_X=copy_X,
+                max_iter=max_iter,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
+    else:
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            normalize="deprecated" if sklearn_check_version('1.0') else False,
+            precompute=False,
+            copy_X=True,
+            max_iter=1000,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            self.l1_ratio = 1.0
+            super().__init__(
+                alpha=alpha,
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                precompute=precompute,
+                copy_X=copy_X,
+                max_iter=max_iter,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
 
     if sklearn_check_version('0.23'):
         @support_usm_ndarray()

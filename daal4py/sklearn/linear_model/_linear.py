@@ -233,7 +233,21 @@ def _predict_linear(self, X):
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 
-    if sklearn_check_version('0.24'):
+    if sklearn_check_version('1.2'):
+        def __init__(
+            self,
+            fit_intercept=True,
+            copy_X=True,
+            n_jobs=None,
+            positive=False,
+        ):
+            super(LinearRegression, self).__init__(
+                fit_intercept=fit_intercept,
+                copy_X=copy_X,
+                n_jobs=n_jobs,
+                positive=positive,
+            )
+    elif sklearn_check_version('0.24'):
         def __init__(
             self,
             fit_intercept=True,
@@ -242,15 +256,13 @@ class LinearRegression(LinearRegression_original):
             n_jobs=None,
             positive=False,
         ):
-            super_params = {
-                "fit_intercept": fit_intercept,
-                "copy_X": copy_X,
-                "n_jobs": n_jobs,
-                "positive": positive,
-            }
-            if not sklearn_check_version('1.2'):
-                super_params["normalize"] = normalize
-            super(LinearRegression, self).__init__(**super_params)
+            super(LinearRegression, self).__init__(
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                copy_X=copy_X,
+                n_jobs=n_jobs,
+                positive=positive,
+            )
     else:
         def __init__(
             self,

@@ -202,7 +202,27 @@ def _predict_ridge(self, X):
 class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 
-    if sklearn_check_version('1.0'):
+    if sklearn_check_version('1.2'):
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            copy_X=True,
+            max_iter=None,
+            tol=1e-3,
+            solver="auto",
+            positive=False,
+            random_state=None,
+        ):
+            self.alpha = alpha
+            self.fit_intercept = fit_intercept
+            self.copy_X = copy_X
+            self.max_iter = max_iter
+            self.tol = tol
+            self.solver = solver
+            self.positive = positive
+            self.random_state = random_state
+    elif sklearn_check_version('1.0'):
         def __init__(
             self,
             alpha=1.0,
