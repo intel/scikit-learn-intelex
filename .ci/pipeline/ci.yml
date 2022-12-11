@@ -60,6 +60,8 @@ jobs:
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
+  - script: sudo apt-get update && sudo apt-get install -y libtinfo5
+    displayName: 'apt-get'
   - script: |
       wget "https://github.com/intel/llvm/releases/download/sycl-nightly%2F20221129/dpcpp-compiler.tar.gz"
       tar -xzf dpcpp-compiler.tar.gz
@@ -73,15 +75,14 @@ jobs:
     displayName: 'System info'
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) scikit-learn=$(SKLEARN_VERSION) dal-devel mpich pytest pandas
+      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel mpich
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
-      pip install xgboost lightgbm catboost
-    displayName: 'Install requirements'
+    displayName: 'Install develop requirements'
   - script: |
       source dpcpp_compiler/startup.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -95,6 +96,13 @@ jobs:
       conda activate CB
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: 'Build sklearnex'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      pip install -r requirements-test.txt
+      pip install xgboost lightgbm catboost
+      pip install scikit-learn==$(SKLEARN_VERSION)
+    displayName: 'Install testing requirements'
   - script: |
       source dpcpp_compiler/startup.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -147,7 +155,7 @@ jobs:
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
-      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) scikit-learn=$(SKLEARN_VERSION) cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm dal dal-include mpich
+      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich
     displayName: Create Anaconda environment
   - script: |
       source activate CB
@@ -156,10 +164,20 @@ jobs:
     displayName: "System info"
   - script: |
       source activate CB
+      pip install -r requirements-dev.txt
+    displayName: 'Install develop requirements'
+  - script: |
+      source activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: Conda build
+  - script: |
+      source activate CB
+      pip install -r requirements-test.txt
+      pip install xgboost lightgbm catboost
+      pip install scikit-learn==$(SKLEARN_VERSION)
+    displayName: 'Install testing requirements'
   - script: |
       source activate CB
       cd ..
@@ -194,7 +212,7 @@ jobs:
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) scikit-learn=$(SKLEARN_VERSION) pytest pandas dal-devel impi-devel clang-tools
+  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-tools
     displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
@@ -217,6 +235,12 @@ jobs:
       call activate CB
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: 'Build sklearnex'
+  - script: |
+      call activate CB
+      pip install -r requirements-test.txt
+      pip install xgboost lightgbm catboost
+      pip install scikit-learn==$(SKLEARN_VERSION)
+    displayName: 'Install testing requirements'
   - script: |
       call activate CB
       cd ..
