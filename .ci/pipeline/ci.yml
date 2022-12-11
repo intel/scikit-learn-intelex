@@ -102,7 +102,7 @@ jobs:
       conda activate CB
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
-      pip install scikit-learn==$(SKLEARN_VERSION)
+      pip install scikit-learn==$(SKLEARN_VERSION).*
     displayName: 'Install testing requirements'
   - script: |
       source dpcpp_compiler/startup.sh
@@ -177,7 +177,7 @@ jobs:
       source activate CB
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
-      pip install scikit-learn==$(SKLEARN_VERSION)
+      pip install scikit-learn==$(SKLEARN_VERSION).*
     displayName: 'Install testing requirements'
   - script: |
       source activate CB
@@ -240,7 +240,7 @@ jobs:
       call activate CB
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
-      pip install scikit-learn==$(SKLEARN_VERSION)
+      pip install scikit-learn==$(SKLEARN_VERSION).*
     displayName: 'Install testing requirements'
   - script: |
       call activate CB
