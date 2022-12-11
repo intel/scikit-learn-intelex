@@ -60,14 +60,15 @@ jobs:
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
-  - script: sudo apt-get update && sudo apt-get install -y libtinfo5
+  - script: sudo apt-get update && sudo apt-get install -y libtinfo5 clang-format
     displayName: 'apt-get'
   - script: |
       wget "https://github.com/intel/llvm/releases/download/sycl-nightly%2F20221129/dpcpp-compiler.tar.gz"
       tar -xzf dpcpp-compiler.tar.gz
       ln -s clang++ dpcpp_compiler/bin/icpx
       ln -s clang dpcpp_compiler/bin/icx
-      echo "export DPCPPROOT=${PWD}/dpcpp_compiler" >> dpcpp_compiler/startup.sh
+      # TODO: enable DPCPPROOT on next dal release
+      # echo "export DPCPPROOT=${PWD}/dpcpp_compiler" >> dpcpp_compiler/startup.sh
     displayName: 'dpcpp installation'
   - script: |
       source dpcpp_compiler/startup.sh
@@ -155,7 +156,7 @@ jobs:
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
-      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich
+      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich clang-format
     displayName: Create Anaconda environment
   - script: |
       source activate CB
@@ -212,7 +213,7 @@ jobs:
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-tools
+  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format
     displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
