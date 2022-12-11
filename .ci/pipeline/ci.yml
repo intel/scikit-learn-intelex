@@ -83,6 +83,7 @@ jobs:
       conda activate CB
       pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
+      pip list
     displayName: 'Install develop requirements'
   - script: |
       source dpcpp_compiler/startup.sh
@@ -100,9 +101,10 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      sed -i "s/scikit-learn/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
-      pip install scikit-learn==$(SKLEARN_VERSION).*
+      pip list
     displayName: 'Install testing requirements'
   - script: |
       source dpcpp_compiler/startup.sh
@@ -166,6 +168,7 @@ jobs:
   - script: |
       source activate CB
       pip install -r requirements-dev.txt
+      pip list
     displayName: 'Install develop requirements'
   - script: |
       source activate CB
@@ -175,9 +178,10 @@ jobs:
     displayName: Conda build
   - script: |
       source activate CB
+      sed -i "s/scikit-learn/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
-      pip install scikit-learn==$(SKLEARN_VERSION).*
+      pip list
     displayName: 'Install testing requirements'
   - script: |
       source activate CB
@@ -220,6 +224,7 @@ jobs:
       pip install --upgrade setuptools
       pip install cpufeature
       pip install -r requirements-dev.txt
+      pip list
     displayName: 'Install requirements'
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
@@ -237,10 +242,12 @@ jobs:
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: 'Build sklearnex'
   - script: |
+      set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB
+      sed -i "s/scikit-learn/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
-      pip install scikit-learn==$(SKLEARN_VERSION).*
+      pip list
     displayName: 'Install testing requirements'
   - script: |
       call activate CB
