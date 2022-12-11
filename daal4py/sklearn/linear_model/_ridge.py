@@ -27,6 +27,9 @@ from .._utils import (
 from .._device_offload import support_usm_ndarray
 import logging
 
+if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
+    from sklearn.linear_model._base import _deprecate_normalize
+
 
 def _daal4py_fit(self, X, y_):
     X = make2d(X)
@@ -104,13 +107,13 @@ def _fit_ridge(self, X, y, sample_weight=None):
     -------
     self : returns an instance of self.
     """
-    if sklearn_check_version('1.0'):
-        from sklearn.linear_model._base import _deprecate_normalize
+    if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
         self._normalize = _deprecate_normalize(
             self.normalize,
             default=False,
             estimator_name=self.__class__.__name__
         )
+    if sklearn_check_version('1.0'):
         self._check_feature_names(X, reset=True)
 
     X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=[np.float64, np.float32],
