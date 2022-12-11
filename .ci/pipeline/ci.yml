@@ -51,12 +51,18 @@ jobs:
       Python3.9_Sklearn1.1:
         PYTHON_VERSION: '3.9'
         SKLEARN_VERSION: '1.1'
+      Python3.9_Sklearn1.2:
+        PYTHON_VERSION: '3.9'
+        SKLEARN_VERSION: '1.2'
       Python3.10_Sklearn1.0:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.0'
       Python3.10_Sklearn1.1:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.1'
+      Python3.10_Sklearn1.2:
+        PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
@@ -148,12 +154,18 @@ jobs:
       Python3.9_Sklearn1.1:
         PYTHON_VERSION: '3.9'
         SKLEARN_VERSION: '1.1'
+      Python3.9_Sklearn1.2:
+        PYTHON_VERSION: '3.9'
+        SKLEARN_VERSION: '1.2'
       Python3.10_Sklearn1.0:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.0'
       Python3.10_Sklearn1.1:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.1'
+      Python3.10_Sklearn1.2:
+        PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'macos-12'
   steps:
@@ -210,12 +222,18 @@ jobs:
       Python3.9_Sklearn1.1:
         PYTHON_VERSION: '3.9'
         SKLEARN_VERSION: '1.1'
+      Python3.9_Sklearn1.2:
+        PYTHON_VERSION: '3.9'
+        SKLEARN_VERSION: '1.2'
       Python3.10_Sklearn1.0:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.0'
       Python3.10_Sklearn1.1:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.1'
+      Python3.10_Sklearn1.2:
+        PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'windows-latest'
   steps:
@@ -251,7 +269,6 @@ jobs:
       sed -i -e "s/scikit-learn/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
-      pip install scipy==1.8.*
       pip install numpy==1.22.*
       pip list
     displayName: 'Install testing requirements'
