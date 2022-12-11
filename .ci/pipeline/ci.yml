@@ -252,6 +252,7 @@ jobs:
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
       pip install scipy==1.8.*
+      pip install numpy==1.22.*
       pip list
     displayName: 'Install testing requirements'
   - script: |
