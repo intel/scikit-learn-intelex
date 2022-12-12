@@ -169,12 +169,27 @@ class TSNE(BaseTSNE):
                                  "or 'auto'.")
 
         if hasattr(self, 'square_distances'):
-            if self.square_distances != "deprecated":
-                warnings.warn(
-                    "The parameter `square_distances` has not effect "
-                    "and will be removed in version 1.3.",
-                    FutureWarning,
-                )
+            if sklearn_check_version("1.1"):
+                if self.square_distances != "deprecated":
+                    warnings.warn(
+                        "The parameter `square_distances` has not effect "
+                        "and will be removed in version 1.3.",
+                        FutureWarning,
+                    )
+            else:
+                if self.square_distances not in [True, "legacy"]:
+                    raise ValueError("'square_distances' must be True or 'legacy'.")
+                if self.metric != "euclidean" and self.square_distances is not True:
+                    warnings.warn(
+                        "'square_distances' has been introduced in 0.24 to help phase "
+                        "out legacy squaring behavior. The 'legacy' setting will be "
+                        "removed in 1.1 (renaming of 0.26), and the default setting "
+                        "will be changed to True. In 1.3, 'square_distances' will be "
+                        "removed altogether, and distances will be squared by "
+                        "default. Set 'square_distances'=True to silence this "
+                        "warning.",
+                        FutureWarning,
+                    )
 
         if self.method == 'barnes_hut':
             if sklearn_check_version('0.23'):
@@ -242,7 +257,9 @@ class TSNE(BaseTSNE):
                     distances = pairwise_distances(X, metric=self.metric,
                                                    squared=True)
                 else:
-                    metric_params_ = self.metric_params or {}
+                    metric_params_ = {}
+                    if sklearn_check_version('1.1'):
+                        metric_params = self.metric_params or {}
                     distances = pairwise_distances(X, metric=self.metric,
                                                    n_jobs=self.n_jobs,
                                                    **metric_params_)
@@ -274,13 +291,22 @@ class TSNE(BaseTSNE):
                       .format(n_neighbors))
 
             # Find the nearest neighbors for every point
-            knn = NearestNeighbors(
-                algorithm='auto',
-                n_jobs=self.n_jobs,
-                n_neighbors=n_neighbors,
-                metric=self.metric,
-                metric_params=self.metric_params
-            )
+            knn = None
+            if sklearn_check_version("1.1"):
+                knn = NearestNeighbors(
+                    algorithm='auto',
+                    n_jobs=self.n_jobs,
+                    n_neighbors=n_neighbors,
+                    metric=self.metric,
+                    metric_params=self.metric_params
+                )
+            else:
+                knn = NearestNeighbors(
+                    algorithm='auto',
+                    n_jobs=self.n_jobs,
+                    n_neighbors=n_neighbors,
+                    metric=self.metric
+                )
             t0 = time()
             knn.fit(X)
             duration = time() - t0
