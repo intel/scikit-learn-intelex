@@ -242,6 +242,7 @@ jobs:
       bash .ci/scripts/describe_system.sh
     displayName: 'System info'
   - script: |
+      call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
       call activate CB
       set PREFIX=%CONDA_PREFIX%
       set PYTHON=python
