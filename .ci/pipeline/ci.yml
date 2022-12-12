@@ -262,8 +262,8 @@ jobs:
     displayName: 'Install testing requirements'
   - script: |
       call activate CB
-      pytest --verbose --pyargs sklearnex/tests
-    displayName: sklearnex testing
+      call conda-recipe\run_test.bat
+    displayName: daal4py/sklearnex testing
   - script: |
       call activate CB
       cd ..
