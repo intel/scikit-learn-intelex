@@ -42,6 +42,36 @@ jobs:
       pip install flake8
       flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
     displayName: 'PEP 8 check'
+- job: Docs
+  pool:
+    vmImage: 'ubuntu-22.04'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.9'
+      addToPath: true
+  - script: |
+      pip install -r requirements-doc.txt
+      pip list
+    displayName: 'Install doc requirements'
+  - script: |
+      cd doc/daal4py
+      make html
+    displayName: 'Build daal4py documentation'
+  - script: |
+      cd doc
+      make html
+    displayName: 'Build scikit-learn-intelex documentation'
+  - script: |
+      mkdir $(Build.ArtifactStagingDirectory)/html/daal4py
+      mkdir $(Build.ArtifactStagingDirectory)/html/sklearnex
+      cp -R doc/daal4py/_build $(Build.ArtifactStagingDirectory)/html_daal4py
+      cp -R doc/_build $(Build.ArtifactStagingDirectory)/html_sklearnex
+    displayName: 'Copy build'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'documentation'
+      targetPath: '$(Build.ArtifactStagingDirectory)/'
 - job: Linux
   strategy:
     matrix:
@@ -88,7 +118,6 @@ jobs:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       pip install -r requirements-dev.txt
-      pip install -r requirements-doc.txt
       pip list
     displayName: 'Install develop requirements'
   - script: |
@@ -119,32 +148,6 @@ jobs:
       cd ..
       ./s/conda-recipe/run_test.sh
     displayName: 'Testing'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      cd doc/daal4py
-      make html
-    condition: and(eq(variables['PYTHON_VERSION'], '3.9'), eq(variables['SKLEARN_VERSION'], '1.1'))
-    displayName: 'Build daal4py documentation'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      cd doc
-      make html
-    condition: and(eq(variables['PYTHON_VERSION'], '3.9'), eq(variables['SKLEARN_VERSION'], '1.1'))
-    displayName: 'Build scikit-learn-intelex documentation'
-  - script: |
-      mkdir $(Build.ArtifactStagingDirectory)/html/daal4py
-      mkdir $(Build.ArtifactStagingDirectory)/html/sklearnex
-      cp -R doc/daal4py/_build $(Build.ArtifactStagingDirectory)/html_daal4py
-      cp -R doc/_build $(Build.ArtifactStagingDirectory)/html_sklearnex
-    condition: and(eq(variables['PYTHON_VERSION'], '3.9'), eq(variables['SKLEARN_VERSION'], '1.1'))
-    displayName: 'Copy build'
-  - task: PublishPipelineArtifact@0
-    condition: and(eq(variables['PYTHON_VERSION'], '3.9'), eq(variables['SKLEARN_VERSION'], '1.1'))
-    inputs:
-      artifactName: 'documentation'
-      targetPath: '$(Build.ArtifactStagingDirectory)/'
 - job: MacOS
   strategy:
     matrix:
