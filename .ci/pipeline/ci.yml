@@ -44,10 +44,20 @@ jobs:
     inputs:
       versionSpec: '3.9'
       addToPath: true
+  - script: sudo apt-get update && sudo apt-get install -y clang-format
+    displayName: 'apt-get'
   - script: |
+      pip install daal-devel impi-devel
+      pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
+      pip install -r requirements-test.txt
       pip list
-    displayName: 'Install doc requirements'
+    displayName: 'Install requirements'
+  - script: |
+      export DALROOT=$CONDA_PREFIX
+      ./conda-recipe/build.sh
+      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
+    displayName: 'Build daal4py/sklearnex'
   - script: |
       cd doc/daal4py
       make html
