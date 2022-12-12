@@ -16,7 +16,7 @@
 #===============================================================================
 
 if [ "$PY3K" == "1" ]; then
-    ARGS=" --single-version-externally-managed --record=record.txt"
+    ARGS=" --single-version-externally-managed --record=record_daal4py.txt"
 else
     ARGS="--old-and-unmanageable"
 fi
@@ -40,6 +40,8 @@ if [ "$(uname)" == "Darwin" ]; then
     export CXX=g++
 fi
 
-export DAAL4PY_VERSION=$PKG_VERSION
+if [ ! -z "${PKG_VERSION}" ]; then
+    export DAAL4PY_VERSION=$PKG_VERSION
+fi
 export MPIROOT=${PREFIX}
 ${PYTHON} setup.py install $ARGS
