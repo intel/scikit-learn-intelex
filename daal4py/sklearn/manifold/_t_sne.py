@@ -33,9 +33,11 @@ from ..neighbors import NearestNeighbors
 from .._device_offload import support_usm_ndarray
 
 if sklearn_check_version('0.22'):
-    from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
+    from sklearn.manifold._t_sne import _joint_probabilities
+    from sklearn.manifold._t_sne import _joint_probabilities_nn
 else:
-    from sklearn.manifold.t_sne import _joint_probabilities, _joint_probabilities_nn
+    from sklearn.manifold.t_sne import _joint_probabilities
+    from sklearn.manifold.t_sne import _joint_probabilities_nn
 
 
 class TSNE(BaseTSNE):
@@ -98,8 +100,10 @@ class TSNE(BaseTSNE):
         # * final optimization with momentum at 0.8
 
         # N, nnz, n_iter_without_progress, n_iter
-        size_iter = np.array([[n_samples], [P.nnz], [self.n_iter_without_progress],
-                             [self.n_iter], [self._EXPLORATION_N_ITER], [self._N_ITER_CHECK]],
+        size_iter = np.array([[n_samples], [P.nnz],
+                             [self.n_iter_without_progress],
+                             [self.n_iter], [self._EXPLORATION_N_ITER],
+                             [self._N_ITER_CHECK]],
                              dtype=P.dtype)
         params = np.array([[self.early_exaggeration], [self._learning_rate],
                           [self.min_grad_norm], [self.angle]], dtype=P.dtype)
@@ -167,8 +171,8 @@ class TSNE(BaseTSNE):
         if hasattr(self, 'square_distances'):
             if self.square_distances != "deprecated":
                 warnings.warn(
-                    "The parameter `square_distances` has not effect and will be "
-                    "removed in version 1.3.",
+                    "The parameter `square_distances` has not effect "
+                    "and will be removed in version 1.3.",
                     FutureWarning,
                 )
 
@@ -240,7 +244,8 @@ class TSNE(BaseTSNE):
                 else:
                     metric_params_ = self.metric_params or {}
                     distances = pairwise_distances(X, metric=self.metric,
-                                                   n_jobs=self.n_jobs, **metric_params_)
+                                                   n_jobs=self.n_jobs,
+                                                   **metric_params_)
 
             if np.any(distances < 0):
                 raise ValueError("All distances should be positive, the "
@@ -334,8 +339,9 @@ class TSNE(BaseTSNE):
         # Laurens van der Maaten, 2009.
         degrees_of_freedom = max(self.n_components - 1, 1)
 
-        daal_ready = self.method == 'barnes_hut' and self.n_components == 2 and \
-            self.verbose == 0 and daal_check_version((2021, 'P', 600))
+        daal_ready = self.method == 'barnes_hut' and \
+            self.n_components == 2 and self.verbose == 0 and \
+            daal_check_version((2021, 'P', 600))
 
         if daal_ready:
             X_embedded = check_array(X_embedded, dtype=[np.float32, np.float64])
