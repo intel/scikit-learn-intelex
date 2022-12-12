@@ -15,10 +15,6 @@
 #===============================================================================
 
 variables:
-  - name: WINDOWS_BASEKIT_URL
-    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17768/w_BaseKit_p_2021.2.0.2871_offline.exe
-  - name: WINDOWS_DPCPP_COMPONENTS
-    value: intel.oneapi.win.dpcpp-compiler
   - name: MACOSX_DEPLOYMENT_TARGET
     value: '10.15'
   - name: 'PYTHON'
@@ -75,15 +71,6 @@ jobs:
 - job: Linux
   strategy:
     matrix:
-      Python3.9_Sklearn1.0:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.0'
-      Python3.9_Sklearn1.1:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.1'
-      Python3.9_Sklearn1.2:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.2'
       Python3.10_Sklearn1.0:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.0'
@@ -92,6 +79,12 @@ jobs:
         SKLEARN_VERSION: '1.1'
       Python3.10_Sklearn1.2:
         PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.2'
+      Python3.11_Sklearn1.1:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.1'
+      Python3.11_Sklearn1.2:
+        PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'ubuntu-22.04'
@@ -151,15 +144,6 @@ jobs:
 - job: MacOS
   strategy:
     matrix:
-      Python3.9_Sklearn1.0:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.0'
-      Python3.9_Sklearn1.1:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.1'
-      Python3.9_Sklearn1.2:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.2'
       Python3.10_Sklearn1.0:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.0'
@@ -168,6 +152,12 @@ jobs:
         SKLEARN_VERSION: '1.1'
       Python3.10_Sklearn1.2:
         PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.2'
+      Python3.11_Sklearn1.1:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.1'
+      Python3.11_Sklearn1.2:
+        PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'macos-12'
@@ -219,15 +209,6 @@ jobs:
 - job: Windows
   strategy:
     matrix:
-      Python3.9_Sklearn1.0:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.0'
-      Python3.9_Sklearn1.1:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.1'
-      Python3.9_Sklearn1.2:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.2'
       Python3.10_Sklearn1.0:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.0'
@@ -236,6 +217,12 @@ jobs:
         SKLEARN_VERSION: '1.1'
       Python3.10_Sklearn1.2:
         PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.2'
+      Python3.11_Sklearn1.1:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.1'
+      Python3.11_Sklearn1.2:
+        PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'windows-latest'
@@ -272,13 +259,11 @@ jobs:
       sed -i -e "s/scikit-learn/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install -r requirements-test.txt
       pip install xgboost lightgbm catboost
-      pip install numpy==1.22.*
       pip list
     displayName: 'Install testing requirements'
   - script: |
       call activate CB
-      cd ..
-      pytest --pyargs s/sklearnex/tests/
+      pytest --verbose --pyargs sklearnex/tests
     displayName: sklearnex testing
   - script: |
       call activate CB

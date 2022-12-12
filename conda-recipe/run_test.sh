@@ -56,4 +56,8 @@ pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn \
     --deselect="daal4py/sklearn/ensemble/tests/test_decision_forest.py::test_mse_regressor_big_estimators_iris[8000]"
 return_code=$(($return_code + $?))
 
+echo "Pytest of sklearnex running ..."
+pytest --verbose --pyargs ${daal4py_dir}/sklearnex
+return_code=$(($return_code + $?))
+
 exit $return_code
