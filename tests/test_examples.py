@@ -27,11 +27,11 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 
-from daal4py import _get__daal_link_version__ as dv
+from daal4py.sklearn._utils import get_daal_version
 # First item is major version - 2021,
 # second is minor+patch - 0110,
 # third item is status - B
-daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
+daal_version = get_daal_version()
 print('DAAL version:', daal_version)
 
 
@@ -178,13 +178,13 @@ gen_examples = [
     ('covariance_batch', 'covariance.csv', 'covariance'),
     ('covariance_streaming', 'covariance.csv', 'covariance'),
     ('decision_forest_classification_default_dense_batch',
-     None, lambda r: r[1].prediction, (2022, 'P', 0)),
+     None, lambda r: r[1].prediction, (2023, 'P', 1)),
     ('decision_forest_classification_hist_batch',
-     None, lambda r: r[1].prediction, (2022, 'P', 0)),
+     None, lambda r: r[1].prediction, (2023, 'P', 1)),
     ('decision_forest_regression_default_dense_batch',
-     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2022, 'P', 0)),
+     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2023, 'P', 1)),
     ('decision_forest_regression_hist_batch',
-     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2022, 'P', 0)),
+     'decision_forest_regression_batch.csv', lambda r: r[1].prediction, (2023, 'P', 1)),
     ('decision_tree_classification_batch', 'decision_tree_classification_batch.csv',
      lambda r: r[1].prediction),
     ('decision_tree_regression_batch', 'decision_tree_regression_batch.csv',
