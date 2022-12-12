@@ -263,7 +263,7 @@ jobs:
   - script: |
       call activate CB
       cd ..
-      call conda-recipe\run_test.bat s
+      call s\conda-recipe\run_test.bat s
     displayName: daal4py/sklearnex testing
   - script: |
       call activate CB
