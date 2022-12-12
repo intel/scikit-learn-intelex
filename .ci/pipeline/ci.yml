@@ -100,15 +100,15 @@ jobs:
   - script: sudo apt-get update && sudo apt-get install -y libtinfo5 clang-format
     displayName: 'apt-get'
   - script: |
-      # TODO: enable DPCPPROOT on next dal release
-      # wget "https://github.com/intel/llvm/releases/download/sycl-nightly%2F20221129/dpcpp-compiler.tar.gz"
-      # tar -xzf dpcpp-compiler.tar.gz
-      # ln -s clang++ dpcpp_compiler/bin/icpx
-      # ln -s clang dpcpp_compiler/bin/icx
-      # echo "export DPCPPROOT=${PWD}/dpcpp_compiler" >> dpcpp_compiler/startup.sh
+      # TODO: update dpcpp version on next dal release
+      wget "https://github.com/intel/llvm/releases/download/sycl-nightly%2F20220614/dpcpp-compiler.tar.gz"
+      tar -xzf dpcpp-compiler.tar.gz
+      ln -s clang++ dpcpp_compiler/bin/icpx
+      ln -s clang dpcpp_compiler/bin/icx
+      echo "export DPCPPROOT=${PWD}/dpcpp_compiler" >> dpcpp_compiler/startup.sh
     displayName: 'dpcpp installation'
   - script: |
-      # source dpcpp_compiler/startup.sh
+      source dpcpp_compiler/startup.sh
       bash .ci/scripts/describe_system.sh
     displayName: 'System info'
   - script: |
@@ -122,14 +122,13 @@ jobs:
       pip list
     displayName: 'Install develop requirements'
   - script: |
-      # source dpcpp_compiler/startup.sh
+      source dpcpp_compiler/startup.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
     displayName: 'Build daal4py'
   - script: |
-      # source dpcpp_compiler/startup.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
@@ -143,7 +142,7 @@ jobs:
       pip list
     displayName: 'Install testing requirements'
   - script: |
-      # source dpcpp_compiler/startup.sh
+      source dpcpp_compiler/startup.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
