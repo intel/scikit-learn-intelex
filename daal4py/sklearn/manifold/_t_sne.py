@@ -259,7 +259,7 @@ class TSNE(BaseTSNE):
                 else:
                     metric_params_ = {}
                     if sklearn_check_version('1.1'):
-                        metric_params = self.metric_params or {}
+                        metric_params_ = self.metric_params or {}
                     distances = pairwise_distances(X, metric=self.metric,
                                                    n_jobs=self.n_jobs,
                                                    **metric_params_)
