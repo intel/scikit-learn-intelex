@@ -54,7 +54,7 @@ jobs:
       pip list
     displayName: 'Install requirements'
   - script: |
-      export DALROOT=$(dirname $(dirname $(which python)))
+      export PREFIX=$(dirname $(dirname $(which python)))
       ./conda-recipe/build.sh
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: 'Build daal4py/sklearnex'
