@@ -21,8 +21,6 @@ variables:
     value: python
   - name: 'ARGS'
     value: '1'
-  - name: 'OFF_ONEDAL_IFACE'
-    value: '1'
 
 jobs:
 - job: PEP8
