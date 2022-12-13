@@ -11,6 +11,9 @@ daal4py.egg-info
 **/.ipynb_checkpoints
 doc/_build
 doc/sources/samples/*.ipynb
+*.obj
+*.pyd
+build_oneapi_backend
 
 # Cython generated code
 src/oneapi/oneapi_api.h
@@ -21,3 +24,9 @@ src/oneapi/oneapi.cpp
 
 # sklearnex files
 scikit_learn_intelex.egg-info
+
+# record files
+record*
+
+# example .res files
+examples/daal4py/_results*

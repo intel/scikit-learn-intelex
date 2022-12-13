@@ -88,7 +88,6 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     cmd = [cxx] + objfiles + library_dir_plat + ela + libs + additional_linker_opts
     log.info(subprocess.list2cmdline(cmd))
     subprocess.check_call(cmd)
-
     shutil.copy(f'{targetprefix}{targetname}{targetsuffix}',
                 os.path.join(d4p_dir, installpath))
     if IS_WIN:
@@ -117,7 +116,10 @@ def custom_build_cmake_clib(iface, cxx=None):
     numpy_include = np.get_include()
 
     if iface == 'dpc':
-        cxx = 'dpcpp'
+        if IS_WIN:
+            cxx = 'icx'
+        else:
+            cxx = 'icpx'
     elif cxx is None:
         raise RuntimeError('CXX compiler shall be specified')
 
@@ -137,6 +139,10 @@ def custom_build_cmake_clib(iface, cxx=None):
         "-DoneDAL_LIBRARY_DIR=" + jp(os.environ['DALROOT'], 'lib', 'intel64'),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
+
+    if iface == 'dpc':
+        cmake_args += ["-DCMAKE_C_COMPILER_WORKS=1",
+                       "-DCMAKE_CXX_COMPILER_WORKS=1"]
 
     import multiprocessing
     cpu_count = multiprocessing.cpu_count()

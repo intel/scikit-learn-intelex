@@ -130,7 +130,7 @@ def get_sdl_cflags():
                               '-Wformat-security', '-fno-strict-overflow',
                               '-fno-delete-null-pointer-checks']
     if IS_WIN:
-        return DIST_CFLAGS + ['-GS', ]
+        return DIST_CFLAGS + ['-GS']
 
 
 def get_sdl_ldflags():
@@ -177,7 +177,8 @@ def get_build_options():
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
-    using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl', 'dpcpp']
+    using_intel = os.environ.get('cc', '') in [
+        'icc', 'icpc', 'icl', 'dpcpp', 'icx', 'icpx']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API',
            '-DD4P_VERSION="' + d4p_version + '"', '-DNPY_ALLOW_THREADS=1']
     ela = []
@@ -304,10 +305,17 @@ gen_pyx(os.path.abspath('./build'))
 
 def build_oneapi_backend():
     eca, ela, includes = get_build_options()
+    cc = 'icx'
+    if IS_WIN:
+        cxx = 'icx'
+    else:
+        cxx = 'icpx'
+    eca += ['-fsycl']
+    ela += ['-fsycl']
 
     return build_backend.build_cpp(
-        cc='dpcpp',
-        cxx='dpcpp',
+        cc=cc,
+        cxx=cxx,
         sources=['src/oneapi/oneapi_backend.cpp'],
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',
