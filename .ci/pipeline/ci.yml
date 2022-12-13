@@ -15,19 +15,11 @@
 #===============================================================================
 
 variables:
-  - name: WINDOWS_BASEKIT_URL
-    value: https://registrationcenter-download.intel.com/akdlm/irc_nas/17768/w_BaseKit_p_2021.2.0.2871_offline.exe
-  - name: WINDOWS_DPCPP_COMPONENTS
-    value: intel.oneapi.win.dpcpp-compiler
   - name: MACOSX_DEPLOYMENT_TARGET
     value: '10.15'
-  - name: python.version
-    value: '3.9'
   - name: 'PYTHON'
     value: python
   - name: 'ARGS'
-    value: '1'
-  - name: 'OFF_ONEDAL_IFACE'
     value: '1'
 
 jobs:
@@ -37,62 +29,41 @@ jobs:
   steps:
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '$(python.version)'
+      versionSpec: '3.9'
       addToPath: true
   - script: |
       python -m pip install --upgrade pip setuptools
       pip install flake8
       flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
     displayName: 'PEP 8 check'
-- job: Linux
+- job: Docs
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
-  - script: |
-      bash .ci/scripts/describe_system.sh
-    displayName: 'System info'
   - task: UsePythonVersion@0
-    displayName: 'Use Python $(python.version)'
     inputs:
-      versionSpec: '$(python.version)'
+      versionSpec: '3.9'
+      addToPath: true
+  - script: sudo apt-get update && sudo apt-get install -y clang-format
+    displayName: 'apt-get'
   - script: |
-      conda update -y -q conda
-      conda create -q -y -n CB -c intel python=$(python.version) dal-devel impi-devel
-    displayName: 'Conda create'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
+      pip install daal-devel impi-devel
       pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
       pip install -r requirements-test.txt
-      pip install xgboost lightgbm catboost
+      pip list
     displayName: 'Install requirements'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      export DALROOT=$CONDA_PREFIX
+      export PREFIX=$(dirname $(dirname $(which python)))
       ./conda-recipe/build.sh
-    displayName: 'Build daal4py'
+      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
+    displayName: 'Build daal4py/sklearnex'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
-    displayName: 'Build sklearnex'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      cd ..
-      ./s/conda-recipe/run_test.sh
-    displayName: 'Testing'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
+      export LD_LIBRARY_PATH=$(dirname $(dirname $(which python)))/lib:$LD_LIBRARY_PATH
       cd doc/daal4py
       make html
     displayName: 'Build daal4py documentation'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
       cd doc
       make html
     displayName: 'Build scikit-learn-intelex documentation'
@@ -106,12 +77,26 @@ jobs:
     inputs:
       artifactName: 'documentation'
       targetPath: '$(Build.ArtifactStagingDirectory)/'
-- job: Linux_DPCPP
+- job: Linux
+  strategy:
+    matrix:
+      Python3.8_Sklearn0.24:
+        PYTHON_VERSION: '3.8'
+        SKLEARN_VERSION: '0.24'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
+        SKLEARN_VERSION: '1.0'
+      Python3.10_Sklearn1.1:
+        PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.1'
+      Python3.11_Sklearn1.2:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
-  - task: UsePythonVersion@0
-    displayName: 'Use Python $(python.version)'
+  - script: sudo apt-get update && sudo apt-get install -y clang-format
+    displayName: 'apt-get'
   - script: |
       wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
       sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
@@ -119,51 +104,75 @@ jobs:
       echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
       sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
       sudo apt-get update
-      sudo apt-get install                                      \
-          intel-oneapi-common-vars                              \
-          intel-oneapi-common-licensing                         \
-          intel-oneapi-dpcpp-cpp-compiler                       \
-          intel-oneapi-dev-utilities                            \
+      sudo apt-get install -y             \
+          intel-oneapi-common-vars        \
+          intel-oneapi-common-licensing   \
+          intel-oneapi-dpcpp-cpp-compiler \
+          intel-oneapi-dev-utilities      \
           intel-oneapi-libdpstd-devel
       sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
       sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
-    displayName: 'apt-get'
+    displayName: 'dpcpp installation'
   - script: |
       bash .ci/scripts/describe_system.sh
-    displayName: "System info"
+    displayName: 'System info'
   - script: |
-      conda create -q -y -n CB -c conda-forge conda=4.10 python=$(python.version) conda-build=3.21.8 conda-verify
-    displayName: Create Anaconda environment
+      conda update -y -q conda
+      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel mpich
+    displayName: 'Conda create'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      pip install -r requirements-dev.txt
+      pip list
+    displayName: 'Install develop requirements'
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda build --override-channels -c intel -c conda-forge --numpy=1.19 conda-recipe
-    displayName: conda build
+      export DALROOT=$CONDA_PREFIX
+      ./conda-recipe/build.sh
+    displayName: 'Build daal4py'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      pip install daal numpy scikit-learn
-      pip install -r requirements-test.txt
-      conda install -y /usr/share/miniconda/envs/CB/conda-bld/linux-64/daal4py*.tar.bz2
-      python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
-    displayName: install sklearnex
+      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
+    displayName: 'Build sklearnex'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
+      pip install --upgrade -r requirements-test.txt
+      pip install xgboost lightgbm catboost
+      pip list
+    displayName: 'Install testing requirements'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      pytest --pyargs s/sklearnex/tests/
-      # TODO: remove ignore of test_policy when device names are fixed
-      pytest --pyargs s/onedal/ --ignore=s/onedal/common/tests/test_policy.py
-    displayName: test sklearnex
+      ./s/conda-recipe/run_test.sh
+    displayName: 'Testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
       python s/.ci/scripts/test_global_patch.py
     displayName: global patching testing
-
 - job: MacOS
+  strategy:
+    matrix:
+      Python3.8_Sklearn0.24:
+        PYTHON_VERSION: '3.8'
+        SKLEARN_VERSION: '0.24'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
+        SKLEARN_VERSION: '1.0'
+      Python3.10_Sklearn1.1:
+        PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.1'
+      Python3.11_Sklearn1.2:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'macos-12'
   steps:
@@ -172,10 +181,7 @@ jobs:
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
-      conda create -n CB python=$(python.version)
-      conda install -n CB -q cython scipy pytest pandas pyyaml joblib numpydoc jinja2 numpy clang-tools lightgbm scikit-learn
-      conda install -n CB -q --override-channels -c intel dal dal-include
-      conda install -n CB -q --override-channels -c conda-forge mpich
+      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich clang-format
     displayName: Create Anaconda environment
   - script: |
       source activate CB
@@ -184,10 +190,22 @@ jobs:
     displayName: "System info"
   - script: |
       source activate CB
+      pip install -r requirements-dev.txt
+      pip list
+    displayName: 'Install develop requirements'
+  - script: |
+      source activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
-      python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
+      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: Conda build
+  - script: |
+      source activate CB
+      sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
+      pip install --upgrade -r requirements-test.txt
+      pip install xgboost lightgbm catboost
+      pip list
+    displayName: 'Install testing requirements'
   - script: |
       source activate CB
       cd ..
@@ -195,30 +213,37 @@ jobs:
     displayName: Testing
   - script: |
       source activate CB
-      cd examples/daal4py && python run_examples.py
-    displayName: Examples
-  - script: |
-      source activate CB
       cd ..
       python s/.ci/scripts/test_global_patch.py
     displayName: global patching testing
-
 - job: Windows
+  strategy:
+    matrix:
+      Python3.8_Sklearn0.24:
+        PYTHON_VERSION: '3.8'
+        SKLEARN_VERSION: '0.24'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
+        SKLEARN_VERSION: '1.0'
+      Python3.10_Sklearn1.1:
+        PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.1'
+      Python3.11_Sklearn1.2:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'windows-latest'
   steps:
-  - task: UsePythonVersion@0
-    displayName: 'Use Python $(python.version)'
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c intel -c conda-forge python=$(python.version) dal-devel impi-devel clang-tools
+  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format
     displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
       pip install --upgrade setuptools
       pip install cpufeature
       pip install -r requirements-dev.txt
-      pip install -r requirements-test.txt
+      pip list
     displayName: 'Install requirements'
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
@@ -226,6 +251,7 @@ jobs:
       bash .ci/scripts/describe_system.sh
     displayName: 'System info'
   - script: |
+      call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
       call activate CB
       set PREFIX=%CONDA_PREFIX%
       set PYTHON=python
@@ -233,13 +259,21 @@ jobs:
     displayName: 'Build daal4py'
   - script: |
       call activate CB
-      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: 'Build sklearnex'
+  - script: |
+      set PATH=C:\msys64\usr\bin;%PATH%
+      call activate CB
+      sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
+      pip install --upgrade -r requirements-test.txt
+      pip install xgboost lightgbm catboost
+      pip list
+    displayName: 'Install testing requirements'
   - script: |
       call activate CB
       cd ..
-      pytest --pyargs s/sklearnex/tests/
-    displayName: sklearnex testing
+      call s\conda-recipe\run_test.bat s
+    displayName: daal4py/sklearnex testing
   - script: |
       call activate CB
       cd ..
