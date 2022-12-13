@@ -311,9 +311,7 @@ def build_oneapi_backend():
     else:
         cxx = 'icpx'
     eca += ['-fsycl']
-    libs = get_libs('daal') + ['OpenCL', 'onedal_sycl']
-    if IS_LIN:
-        libs += ['sycl']
+    ela += ['-fsycl']
 
     return build_backend.build_cpp(
         cc=cc,
@@ -322,7 +320,7 @@ def build_oneapi_backend():
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',
         targetsuffix='.dll' if IS_WIN else '.so',
-        libs=libs,
+        libs=get_libs('daal') + ['OpenCL', 'onedal_sycl'],
         libdirs=ONEDAL_LIBDIRS,
         includes=includes,
         eca=eca,
