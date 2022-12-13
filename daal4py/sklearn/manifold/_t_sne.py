@@ -104,10 +104,10 @@ class TSNE(BaseTSNE):
                      [self.n_iter_without_progress],
                      [self.n_iter]]
 
-        if daal_check_version((2023, 'P', 0)):
+        if daal_check_version((2023, 'P', 100)):
             size_iter.extend(
-                        [[self._EXPLORATION_N_ITER],
-                         [self._N_ITER_CHECK]]
+                [[self._EXPLORATION_N_ITER],
+                 [self._N_ITER_CHECK]]
             )
 
         size_iter = np.array(size_iter, dtype=P.dtype)
@@ -185,7 +185,8 @@ class TSNE(BaseTSNE):
                     )
             else:
                 if self.square_distances not in [True, "legacy"]:
-                    raise ValueError("'square_distances' must be True or 'legacy'.")
+                    raise ValueError(
+                        "'square_distances' must be True or 'legacy'.")
                 if self.metric != "euclidean" and self.square_distances is not True:
                     warnings.warn(
                         "'square_distances' has been introduced in 0.24 to help phase "
@@ -377,7 +378,8 @@ class TSNE(BaseTSNE):
             daal_check_version((2021, 'P', 600))
 
         if daal_ready:
-            X_embedded = check_array(X_embedded, dtype=[np.float32, np.float64])
+            X_embedded = check_array(
+                X_embedded, dtype=[np.float32, np.float64])
             return self._daal_tsne(
                 P,
                 n_samples,
