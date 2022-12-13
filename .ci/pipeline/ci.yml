@@ -144,7 +144,7 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      sed -i -e "s/scikit-learn/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
+      sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install --upgrade -r requirements-test.txt
       pip install xgboost lightgbm catboost
       pip list
@@ -201,7 +201,7 @@ jobs:
     displayName: Conda build
   - script: |
       source activate CB
-      sed -i.bak -e "s/scikit-learn/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
+      sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install --upgrade -r requirements-test.txt
       pip install xgboost lightgbm catboost
       pip list
@@ -271,7 +271,7 @@ jobs:
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB
-      sed -i -e "s/scikit-learn/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
+      sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install --upgrade -r requirements-test.txt
       pip install xgboost lightgbm catboost
       pip list

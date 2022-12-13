@@ -58,8 +58,6 @@ setup(name="scikit-learn-intelex",
           "Operating System :: Microsoft :: Windows",
           "Operating System :: POSIX :: Linux",
           "Programming Language :: Python :: 3",
-          "Programming Language :: Python :: 3.6",
-          "Programming Language :: Python :: 3.7",
           "Programming Language :: Python :: 3.8",
           "Programming Language :: Python :: 3.9",
           "Programming Language :: Python :: 3.10",
@@ -68,10 +66,10 @@ setup(name="scikit-learn-intelex",
           "Topic :: System",
           "Topic :: Software Development",
       ],
-      python_requires=">=3.6",
+      python_requires=">=3.8",
       install_requires=[
           "daal4py>=2021.2",
-          "scikit-learn>=0.22"
+          "scikit-learn>=0.24"
       ],
       keywords=[
           "machine learning",
