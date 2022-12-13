@@ -104,6 +104,7 @@ class TSNE(BaseTSNE):
                      [self.n_iter_without_progress],
                      [self.n_iter]]
 
+        # Pass params to daal4py backend
         if daal_check_version((2023, 'P', 100)):
             size_iter.extend(
                 [[self._EXPLORATION_N_ITER],
