@@ -139,7 +139,10 @@ class PCA(PCA_original):
         else:
             self.noise_variance_ = 0.
 
-        self.n_samples_, self.n_features_ = n_samples, n_features
+        if sklearn_check_version('1.2'):
+            self.n_samples_, self.n_features_in_ = n_samples, n_features
+        else:
+            self.n_samples_, self.n_features_ = n_samples, n_features
         self.components_ = components_[:n_components]
         self.n_components_ = n_components
         self.explained_variance_ = explained_variance_[:n_components]
@@ -172,7 +175,10 @@ class PCA(PCA_original):
         else:
             self.noise_variance_ = 0.
 
-        self.n_samples_, self.n_features_ = n_samples, n_features
+        if sklearn_check_version('1.2'):
+            self.n_samples_, self.n_features_in_ = n_samples, n_features
+        else:
+            self.n_samples_, self.n_features_ = n_samples, n_features
         self.components_ = self.components_[:n_components]
         self.n_components_ = n_components
         self.explained_variance_ = self.explained_variance_[:n_components]

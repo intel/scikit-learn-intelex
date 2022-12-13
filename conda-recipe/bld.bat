@@ -15,7 +15,8 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 rem ============================================================================
 
-set DAAL4PY_VERSION=%PKG_VERSION%
+IF DEFINED PKG_VERSION (set DAAL4PY_VERSION=%PKG_VERSION%)
+
 set MPIROOT=%PREFIX%\Library
 
 IF DEFINED DAALROOT (set DALROOT=%DAALROOT%)
@@ -33,4 +34,4 @@ set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
 
 %PYTHON% setup.py build %BUILD_ARGS%
 IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
-%PYTHON% setup.py install --single-version-externally-managed --record record.txt
+%PYTHON% setup.py install --single-version-externally-managed --record record_daal4py.txt

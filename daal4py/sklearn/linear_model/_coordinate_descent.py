@@ -23,7 +23,7 @@ from sklearn.linear_model._coordinate_descent import ElasticNet as ElasticNet_or
 from sklearn.linear_model._coordinate_descent import Lasso as Lasso_original
 from daal4py.sklearn._utils import (
     make2d, getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
-if sklearn_check_version('1.0'):
+if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
     from sklearn.linear_model._base import _deprecate_normalize
 
 import logging
@@ -96,7 +96,10 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     else:
         y_offset = np.zeros(y.shape[1], dtype=X.dtype)
 
-    _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
+    if sklearn_check_version('1.2'):
+        _normalize = False
+    else:
+        _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
     if self.fit_intercept:
         X_offset = np.average(X, axis=0)
         if _normalize:
@@ -251,7 +254,10 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     else:
         y_offset = np.zeros(y.shape[1], dtype=X.dtype)
 
-    _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
+    if sklearn_check_version('1.2'):
+        _normalize = False
+    else:
+        _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
     if self.fit_intercept:
         X_offset = np.average(X, axis=0)
         if _normalize:
@@ -446,11 +452,12 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
             # print(X.flags)
             raise ValueError("ndarray is not Fortran contiguous")
 
-    if sklearn_check_version('1.0'):
+    if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
         self._normalize = _deprecate_normalize(
             self.normalize,
             default=False,
-            estimator_name=class_name)
+            estimator_name=class_name
+        )
 
     # only for pass tests
     # "check_estimators_fit_returns_self(readonly_memmap=True) and
@@ -542,35 +549,64 @@ def _dual_gap(self):
 class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
-    def __init__(
-        self,
-        alpha=1.0,
-        l1_ratio=0.5,
-        fit_intercept=True,
-        normalize="deprecated" if sklearn_check_version('1.0') else False,
-        precompute=False,
-        max_iter=1000,
-        copy_X=True,
-        tol=1e-4,
-        warm_start=False,
-        positive=False,
-        random_state=None,
-        selection='cyclic',
-    ):
-        super(ElasticNet, self).__init__(
-            alpha=alpha,
-            l1_ratio=l1_ratio,
-            fit_intercept=fit_intercept,
-            normalize=normalize,
-            precompute=precompute,
-            max_iter=max_iter,
-            copy_X=copy_X,
-            tol=tol,
-            warm_start=warm_start,
-            positive=positive,
-            random_state=random_state,
-            selection=selection,
-        )
+    if sklearn_check_version('1.2'):
+        def __init__(
+            self,
+            alpha=1.0,
+            l1_ratio=0.5,
+            fit_intercept=True,
+            precompute=False,
+            max_iter=1000,
+            copy_X=True,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            super(ElasticNet, self).__init__(
+                alpha=alpha,
+                l1_ratio=l1_ratio,
+                fit_intercept=fit_intercept,
+                precompute=precompute,
+                max_iter=max_iter,
+                copy_X=copy_X,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
+    else:
+        def __init__(
+            self,
+            alpha=1.0,
+            l1_ratio=0.5,
+            fit_intercept=True,
+            normalize="deprecated" if sklearn_check_version('1.0') else False,
+            precompute=False,
+            max_iter=1000,
+            copy_X=True,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            super(ElasticNet, self).__init__(
+                alpha=alpha,
+                l1_ratio=l1_ratio,
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                precompute=precompute,
+                max_iter=max_iter,
+                copy_X=copy_X,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
 
     if sklearn_check_version('0.23'):
         @support_usm_ndarray()
@@ -698,34 +734,62 @@ class ElasticNet(ElasticNet_original):
 class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 
-    def __init__(
-        self,
-        alpha=1.0,
-        fit_intercept=True,
-        normalize="deprecated" if sklearn_check_version('1.0') else False,
-        precompute=False,
-        copy_X=True,
-        max_iter=1000,
-        tol=1e-4,
-        warm_start=False,
-        positive=False,
-        random_state=None,
-        selection='cyclic',
-    ):
-        self.l1_ratio = 1.0
-        super().__init__(
-            alpha=alpha,
-            fit_intercept=fit_intercept,
-            normalize=normalize,
-            precompute=precompute,
-            copy_X=copy_X,
-            max_iter=max_iter,
-            tol=tol,
-            warm_start=warm_start,
-            positive=positive,
-            random_state=random_state,
-            selection=selection,
-        )
+    if sklearn_check_version('1.2'):
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            precompute=False,
+            copy_X=True,
+            max_iter=1000,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            self.l1_ratio = 1.0
+            super().__init__(
+                alpha=alpha,
+                fit_intercept=fit_intercept,
+                precompute=precompute,
+                copy_X=copy_X,
+                max_iter=max_iter,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
+    else:
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            normalize="deprecated" if sklearn_check_version('1.0') else False,
+            precompute=False,
+            copy_X=True,
+            max_iter=1000,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            self.l1_ratio = 1.0
+            super().__init__(
+                alpha=alpha,
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                precompute=precompute,
+                copy_X=copy_X,
+                max_iter=max_iter,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
 
     if sklearn_check_version('0.23'):
         @support_usm_ndarray()
