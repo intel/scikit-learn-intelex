@@ -100,11 +100,18 @@ class TSNE(BaseTSNE):
         # * final optimization with momentum at 0.8
 
         # N, nnz, n_iter_without_progress, n_iter
-        size_iter = np.array([[n_samples], [P.nnz],
-                             [self.n_iter_without_progress],
-                             [self.n_iter], [self._EXPLORATION_N_ITER],
-                             [self._N_ITER_CHECK]],
-                             dtype=P.dtype)
+        size_iter = [[n_samples], [P.nnz],
+                    [self.n_iter_without_progress],
+                    [self.n_iter]]
+
+        if daal_check_version((2023, 'P', 0)):
+            size_iter.extend(
+                    [[self._EXPLORATION_N_ITER],
+                    [self._N_ITER_CHECK]]
+            )
+
+        size_iter = np.array(size_iter, dtype=P.dtype)
+
         params = np.array([[self.early_exaggeration], [self._learning_rate],
                           [self.min_grad_norm], [self.angle]], dtype=P.dtype)
         results = np.zeros((3, 1), dtype=P.dtype)  # curIter, error, gradNorm
