@@ -152,6 +152,12 @@ jobs:
       cd ..
       ./s/conda-recipe/run_test.sh
     displayName: 'Testing'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      cd ..
+      python s/.ci/scripts/test_global_patch.py
+    displayName: global patching testing
 - job: MacOS
   strategy:
     matrix:
@@ -205,10 +211,6 @@ jobs:
       cd ..
       ./s/conda-recipe/run_test.sh
     displayName: Testing
-  - script: |
-      source activate CB
-      cd examples/daal4py && python run_examples.py
-    displayName: Examples
   - script: |
       source activate CB
       cd ..
