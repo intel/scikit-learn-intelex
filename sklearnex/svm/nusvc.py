@@ -195,11 +195,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
         self._onedal_estimator = onedal_NuSVC(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
-
-        if self.class_weight == 'balanced':
-            self.class_weight_ = self._compute_balanced_class_weight(y)
-        else:
-            self.class_weight_ = self._onedal_estimator.class_weight_
+        self.class_weight_ = self._onedal_estimator.class_weight_
 
         if self.probability:
             self._fit_proba(X, y, sample_weight, queue=queue)
