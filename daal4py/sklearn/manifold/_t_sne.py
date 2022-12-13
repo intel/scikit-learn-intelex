@@ -101,13 +101,13 @@ class TSNE(BaseTSNE):
 
         # N, nnz, n_iter_without_progress, n_iter
         size_iter = [[n_samples], [P.nnz],
-                    [self.n_iter_without_progress],
-                    [self.n_iter]]
+                     [self.n_iter_without_progress],
+                     [self.n_iter]]
 
         if daal_check_version((2023, 'P', 0)):
             size_iter.extend(
-                    [[self._EXPLORATION_N_ITER],
-                    [self._N_ITER_CHECK]]
+                        [[self._EXPLORATION_N_ITER],
+                         [self._N_ITER_CHECK]]
             )
 
         size_iter = np.array(size_iter, dtype=P.dtype)
