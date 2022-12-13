@@ -36,4 +36,4 @@ except ImportError:
     import onedal._onedal_py_host as _backend
     _is_dpc_backend = False
 
-__all__ = ['neighbors', 'primitives', 'svm']
+__all__ = ['decomposition', 'neighbors', 'primitives', 'svm']
