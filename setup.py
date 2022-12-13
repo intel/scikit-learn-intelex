@@ -76,7 +76,7 @@ def get_win_major_version():
 
 
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
-               else time.strftime('2021.%Y%m%d.%H%M%S'))
+               else time.strftime('2023.%Y%m%d.%H%M%S'))
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
@@ -311,6 +311,7 @@ def build_oneapi_backend():
     else:
         cxx = 'icpx'
     eca += ['-fsycl']
+    ela += ['-fsycl']
 
     return build_backend.build_cpp(
         cc=cc,
@@ -370,15 +371,6 @@ project_urls = {
 with open('README.md', 'r', encoding='utf8') as f:
     long_description = f.read()
 
-install_requires = []
-with open('requirements.txt') as f:
-    install_requires.extend(f.read().splitlines())
-    if IS_MAC:
-        for r in install_requires:
-            if "dpcpp_cpp_rt" in r:
-                install_requires.remove(r)
-                break
-
 setup(
     name="daal4py",
     description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
@@ -403,16 +395,21 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         'Topic :: Scientific/Engineering',
         'Topic :: System',
         'Topic :: Software Development',
     ],
-    python_requires='>=3.6',
-    install_requires=install_requires,
+    python_requires='>=3.8',
+    install_requires=[
+        "scikit-learn>=0.24",
+        "numpy>=1.19.5 ; python_version <= '3.9'",
+        "numpy>=1.21.6 ; python_version == '3.10'",
+        "numpy>=1.23.5 ; python_version >= '3.11'"
+    ],
     keywords=[
         'machine learning',
         'scikit-learn',
