@@ -139,7 +139,7 @@ def _daal4py_compute_starting_centroids(
 
 def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype="double",
                                   method="lloydDense", accuracyThreshold=0.0,
-                                  resultsToEvaluate="computeCentroids"):
+                                  resultsToEvaluate="computeCentroids", gamma=1.0):
     kmeans_algo = daal4py.kmeans(
         nClusters=nClusters,
         maxIterations=maxIterations,
@@ -147,6 +147,7 @@ def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype="double",
         resultsToEvaluate=resultsToEvaluate,
         accuracyThreshold=accuracyThreshold,
         method=method,
+        gamma=gamma
     )
     return kmeans_algo
 
