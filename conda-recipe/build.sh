@@ -16,7 +16,7 @@
 #===============================================================================
 
 if [ "$PY3K" == "1" ]; then
-    ARGS=" --single-version-externally-managed --record=record_daal4py.txt"
+    ARGS=" --single-version-externally-managed --record=record.txt"
 else
     ARGS="--old-and-unmanageable"
 fi
