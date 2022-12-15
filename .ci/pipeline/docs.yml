@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2020 Intel Corporation
+# Copyright 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ trigger:
   paths:
     include:
     - requirements-doc.txt
+    - doc/
 
 pr:
   branches:
@@ -33,14 +34,8 @@ pr:
   paths:
     include:
     - requirements-doc.txt
+    - doc/
 
-variables:
-  - name: MACOSX_DEPLOYMENT_TARGET
-    value: '10.15'
-  - name: 'PYTHON'
-    value: python
-  - name: 'ARGS'
-    value: '1'
 
 jobs:
 - job: PEP8

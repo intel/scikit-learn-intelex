@@ -23,6 +23,7 @@ trigger:
   paths:
     exclude:
     - requirements-doc.txt
+    - doc/
 
 pr:
   branches:
@@ -33,7 +34,8 @@ pr:
   paths:
     exclude:
     - requirements-doc.txt
-  
+    - doc/
+
 variables:
   - name: MACOSX_DEPLOYMENT_TARGET
     value: '10.15'
