@@ -40,6 +40,9 @@ jobs:
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
+  - script: |
+      bash .ci/scripts/describe_system.sh
+    displayName: 'System info'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.9'
