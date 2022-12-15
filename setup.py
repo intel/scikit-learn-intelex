@@ -310,8 +310,6 @@ def build_oneapi_backend():
         cxx = 'icx'
     else:
         cxx = 'icpx'
-    eca += ['-fsycl']
-    ela += ['-fsycl']
 
     return build_backend.build_cpp(
         cc=cc,
