@@ -24,7 +24,7 @@ trigger:
     exclude:
     - requirements-doc.txt
     - doc/
-    - ci/pipeline/docs.yml
+    - .ci/pipeline/docs.yml
 
 pr:
   branches:
@@ -36,7 +36,7 @@ pr:
     exclude:
     - requirements-doc.txt
     - doc/
-    - ci/pipeline/docs.yml
+    - .ci/pipeline/docs.yml
 
 variables:
   - name: MACOSX_DEPLOYMENT_TARGET
