@@ -7,8 +7,8 @@
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/intel/scikit-learn-intelex/discussions)
 [![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-learn-intelex)](https://anaconda.org/conda-forge/scikit-learn-intelex)
-[![python version](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)
-[![scikit-learn supported versions](https://img.shields.io/badge/sklearn-0.22%20%7C%200.23%20%7C%200.24%20%7C%201.0-blue)](https://img.shields.io/badge/sklearn-0.22%20%7C%200.23%20%7C%200.24%20%7C%201.0-blue)
+[![python version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
+[![scikit-learn supported versions](https://img.shields.io/badge/sklearn-0.24%20%7C%2001.0%20%7C%201.1%20%7C%201.2-blue)](https://img.shields.io/badge/sklearn-0.24%20%7C%2001.0%20%7C%201.1%20%7C%201.2-blue)
 
 With Intel(R) Extension for Scikit-learn you can accelerate your Scikit-learn applications and still have full conformance with all Scikit-Learn APIs and algorithms. This is a **free software AI accelerator** that brings over **10-100X** acceleration across a variety of applications. And you do not even need to change the existing code!
 
