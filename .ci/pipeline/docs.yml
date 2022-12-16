@@ -36,6 +36,9 @@ pr:
     - requirements-doc.txt
     - doc/
 
+variables:
+  - name: 'PYTHON'
+    value: python
 
 jobs:
 - job: PEP8
