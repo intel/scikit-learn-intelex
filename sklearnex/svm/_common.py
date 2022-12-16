@@ -131,7 +131,8 @@ class BaseSVC(ABC):
         self._is_in_fit = False
 
         if Version(sklearn_version) >= Version("1.1"):
-            self.n_iter_ = self._onedal_estimator.n_iter_
+            length = int(len(self.classes_) * (len(self.classes_) - 1) / 2)
+            self.n_iter_ = np.full((length, ), self._onedal_estimator.n_iter_)
 
 
 class BaseSVR(ABC):
