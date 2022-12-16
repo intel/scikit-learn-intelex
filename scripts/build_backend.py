@@ -81,11 +81,14 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
             out = [f'/Fo{objfiles[i]}']
         else:
             out = ['-o', objfiles[i]]
-        cmd = [cc] + eca + include_dir_plat + [f'{d4p_dir}/{cppfile}'] + out + defines
+        cmd = [cc] + include_dir_plat + eca + [f'{d4p_dir}/{cppfile}'] + out + defines
         log.info(subprocess.list2cmdline(cmd))
         subprocess.check_call(cmd)
 
-    cmd = [cxx] + ela + objfiles + library_dir_plat + libs + additional_linker_opts
+    if IS_WIN:
+        cmd = [cxx] + ela + objfiles + library_dir_plat + libs + additional_linker_opts
+    else:
+        cmd = [cxx] + objfiles + library_dir_plat + ela + libs + additional_linker_opts
     log.info(subprocess.list2cmdline(cmd))
     subprocess.check_call(cmd)
     shutil.copy(f'{targetprefix}{targetname}{targetsuffix}',
