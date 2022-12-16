@@ -856,7 +856,7 @@ void c_train_test_split(data_or_file & orig, data_or_file & train, data_or_file 
 
 double c_roc_auc_score(data_or_file & y_true, data_or_file & y_test)
 {
-#if __INTEL_DAAL__ == 2021 && INTEL_DAAL_VERSION >= 20210200
+#if __INTEL_DAAL__ >= 2021 && INTEL_DAAL_VERSION >= 20210200
     const size_t col_true = y_true.table->getNumberOfColumns();
     const size_t row_true = y_true.table->getNumberOfRows();
     const size_t col_test = y_test.table->getNumberOfColumns();
