@@ -40,6 +40,8 @@ if [ "$(uname)" == "Darwin" ]; then
     export CXX=g++
 fi
 
-export DAAL4PY_VERSION=$PKG_VERSION
+if [ ! -z "${PKG_VERSION}" ]; then
+    export DAAL4PY_VERSION=$PKG_VERSION
+fi
 export MPIROOT=${PREFIX}
 ${PYTHON} setup.py install $ARGS
