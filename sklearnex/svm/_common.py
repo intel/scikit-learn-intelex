@@ -107,6 +107,7 @@ class BaseSVC(ABC):
         self.dual_coef_ = self._onedal_estimator.dual_coef_
         self.shape_fit_ = self._onedal_estimator.class_weight_
         self.classes_ = self._onedal_estimator.classes_
+        self.class_weight_ = self._onedal_estimator.class_weight_
         self.support_ = self._onedal_estimator.support_
 
         self._intercept_ = self._onedal_estimator.intercept_
@@ -128,6 +129,9 @@ class BaseSVC(ABC):
         self._dual_coef_ = self.dual_coef_
         self.intercept_ = self._intercept_
         self._is_in_fit = False
+
+        if Version(sklearn_version) >= Version("1.1"):
+            self.n_iter_ = self._onedal_estimator.n_iter_
 
 
 class BaseSVR(ABC):
@@ -153,3 +157,6 @@ class BaseSVR(ABC):
         self._dual_coef_ = self.dual_coef_
         self.intercept_ = self._intercept_
         self._is_in_fit = False
+
+        if Version(sklearn_version) >= Version("1.1"):
+            self.n_iter_ = self._onedal_estimator.n_iter_
