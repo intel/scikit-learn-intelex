@@ -83,3 +83,4 @@ Important Links
    :hidden:
 
    support.rst
+   contribute.rst
