@@ -19,7 +19,7 @@ version: 2.0
 jobs:
   build_pypi:
     docker:
-      - image: circleci/python:3.10.0
+      - image: circleci/python:3.10.1
 
     working_directory: ~/daal4py-ci
 
@@ -59,7 +59,7 @@ jobs:
 
   build_master:
     docker:
-      - image: circleci/python:3.10.0
+      - image: circleci/python:3.10.1
 
     working_directory: ~/daal4py-ci
 
