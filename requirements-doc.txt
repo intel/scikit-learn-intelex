@@ -8,7 +8,7 @@ bleach==4.1.0
 certifi==2022.12.7
 charset-normalizer==2.0.9
 click
-decorator==5.1.0
+decorator==5.1.1
 defusedxml==0.7.1
 docutils==0.16
 entrypoints==0.3
