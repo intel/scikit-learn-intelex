@@ -7,4 +7,4 @@ numpy==1.21.6 ; python_version == '3.10'
 numpy==1.23.5 ; python_version >= '3.11'
 pybind11==2.8.1 ; python_version <= '3.10'
 pybind11==2.10.1 ; python_version >= '3.11'
-cmake==3.21.3
+cmake==3.25.0
