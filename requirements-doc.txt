@@ -36,7 +36,7 @@ pandocfilters==1.5.0
 parso==0.8.3
 pexpect==4.8.0
 pickleshare==0.7.5
-prompt-toolkit==3.0.24
+prompt-toolkit==3.0.36
 ptyprocess==0.7.0
 pydata-sphinx-theme==0.6.3
 Pygments==2.10.0
