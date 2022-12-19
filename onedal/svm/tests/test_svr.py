@@ -165,7 +165,7 @@ def test_diabetes_compare_with_sklearn(queue, kernel):
     _test_diabetes_compare_with_sklearn(queue, kernel)
 
 
-def _test_boston_rbf_compare_with_sklearn(queue, C, gamma):
+def _test_synth_rbf_compare_with_sklearn(queue, C, gamma):
     x, y = datasets.make_regression(**synth_params)
     clf = SVR(kernel='rbf', gamma=gamma, C=C)
     clf.fit(x, y, queue=queue)
@@ -183,11 +183,11 @@ def _test_boston_rbf_compare_with_sklearn(queue, C, gamma):
 @pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('gamma', ['scale', 'auto'])
 @pytest.mark.parametrize('C', [100.0, 1000.0])
-def test_boston_rbf_compare_with_sklearn(queue, C, gamma):
-    _test_boston_rbf_compare_with_sklearn(queue, C, gamma)
+def test_synth_rbf_compare_with_sklearn(queue, C, gamma):
+    _test_synth_rbf_compare_with_sklearn(queue, C, gamma)
 
 
-def _test_boston_linear_compare_with_sklearn(queue, C):
+def _test_synth_linear_compare_with_sklearn(queue, C):
     x, y = datasets.make_regression(**synth_params)
     clf = SVR(kernel='linear', C=C)
     clf.fit(x, y, queue=queue)
@@ -206,11 +206,11 @@ def _test_boston_linear_compare_with_sklearn(queue, C):
 @pass_if_not_implemented_for_gpu(reason="svr is not implemented")
 @pytest.mark.parametrize('queue', get_queues())
 @pytest.mark.parametrize('C', [0.001, 0.1])
-def test_boston_linear_compare_with_sklearn(queue, C):
-    _test_boston_linear_compare_with_sklearn(queue, C)
+def test_synth_linear_compare_with_sklearn(queue, C):
+    _test_synth_linear_compare_with_sklearn(queue, C)
 
 
-def _test_boston_poly_compare_with_sklearn(queue, params):
+def _test_synth_poly_compare_with_sklearn(queue, params):
     x, y = datasets.make_regression(**synth_params)
     clf = SVR(kernel='poly', **params)
     clf.fit(x, y, queue=queue)
@@ -230,8 +230,8 @@ def _test_boston_poly_compare_with_sklearn(queue, params):
     {'degree': 2, 'coef0': 0.1, 'gamma': 'scale', 'C': 100},
     {'degree': 3, 'coef0': 0.0, 'gamma': 'scale', 'C': 1000}
 ])
-def test_boston_poly_compare_with_sklearn(queue, params):
-    _test_boston_poly_compare_with_sklearn(queue, params)
+def test_synth_poly_compare_with_sklearn(queue, params):
+    _test_synth_poly_compare_with_sklearn(queue, params)
 
 
 @pass_if_not_implemented_for_gpu(reason="svr is not implemented")
