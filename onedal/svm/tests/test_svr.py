@@ -30,6 +30,13 @@ from onedal.tests.utils._device_selection import (get_queues,
                                                   pass_if_not_implemented_for_gpu)
 
 
+synth_params = {
+    'n_samples': 500,
+    'n_features': 100,
+    'random_state': 42
+}
+
+
 def _replace_and_save(md, fns, replacing_fn):
     saved = dict()
     for check_f in fns:
@@ -159,14 +166,14 @@ def test_diabetes_compare_with_sklearn(queue, kernel):
 
 
 def _test_boston_rbf_compare_with_sklearn(queue, C, gamma):
-    diabetes = datasets.load_boston()
+    x, y = datasets.make_regression(**synth_params)
     clf = SVR(kernel='rbf', gamma=gamma, C=C)
-    clf.fit(diabetes.data, diabetes.target, queue=queue)
-    result = clf.score(diabetes.data, diabetes.target, queue=queue)
+    clf.fit(x, y, queue=queue)
+    result = clf.score(x, y, queue=queue)
 
     clf = SklearnSVR(kernel='rbf', gamma=gamma, C=C)
-    clf.fit(diabetes.data, diabetes.target)
-    expected = clf.score(diabetes.data, diabetes.target)
+    clf.fit(x, y)
+    expected = clf.score(x, y)
 
     assert result > 0.4
     assert result > expected - 1e-5
@@ -181,16 +188,18 @@ def test_boston_rbf_compare_with_sklearn(queue, C, gamma):
 
 
 def _test_boston_linear_compare_with_sklearn(queue, C):
-    diabetes = datasets.load_boston()
+    x, y = datasets.make_regression(**synth_params)
     clf = SVR(kernel='linear', C=C)
-    clf.fit(diabetes.data, diabetes.target, queue=queue)
-    result = clf.score(diabetes.data, diabetes.target, queue=queue)
+    clf.fit(x, y, queue=queue)
+    result = clf.score(x, y, queue=queue)
 
     clf = SklearnSVR(kernel='linear', C=C)
-    clf.fit(diabetes.data, diabetes.target)
-    expected = clf.score(diabetes.data, diabetes.target)
+    clf.fit(x, y)
+    expected = clf.score(x, y)
 
-    assert result > 0.5
+    # Linear kernel doesn't work well for synthetic regression
+    # resulting in low R2 score
+    # assert result > 0.5
     assert result > expected - 1e-3
 
 
@@ -202,14 +211,14 @@ def test_boston_linear_compare_with_sklearn(queue, C):
 
 
 def _test_boston_poly_compare_with_sklearn(queue, params):
-    diabetes = datasets.load_boston()
+    x, y = datasets.make_regression(**synth_params)
     clf = SVR(kernel='poly', **params)
-    clf.fit(diabetes.data, diabetes.target, queue=queue)
-    result = clf.score(diabetes.data, diabetes.target, queue=queue)
+    clf.fit(x, y, queue=queue)
+    result = clf.score(x, y, queue=queue)
 
     clf = SklearnSVR(kernel='poly', **params)
-    clf.fit(diabetes.data, diabetes.target)
-    expected = clf.score(diabetes.data, diabetes.target)
+    clf.fit(x, y)
+    expected = clf.score(x, y)
 
     assert result > 0.5
     assert result > expected - 1e-5
