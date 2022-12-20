@@ -209,7 +209,6 @@ class SVC(sklearn_SVC, BaseSVC):
 
         self._onedal_estimator = onedal_SVC(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
-        self.class_weight_ = self._onedal_estimator.class_weight_
 
         if self.probability:
             self._fit_proba(X, y, sample_weight, queue=queue)
