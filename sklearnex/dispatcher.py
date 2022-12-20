@@ -61,7 +61,7 @@ def get_patch_map():
         # Algorithms
         # decomposition
         mapping.pop('pca')
-        mapping['PCA'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
+        mapping['pca'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
 
         # SVM
         mapping.pop('svm')

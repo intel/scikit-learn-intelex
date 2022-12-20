@@ -131,7 +131,7 @@ class PCA(sklearn_PCA):
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y=None, queue=None):
-        if self.svd_solver == "full":
+        if self.svd_solver == "full" or self.svd_solver == "auto":
             method = "svd"
         elif self.svd_solver == "cov":
             method = "cov"
