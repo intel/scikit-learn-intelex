@@ -179,3 +179,9 @@ To install scikit-learn-intelex without downloading daal4py in the development m
 .. note::
     ``--single-version-externally-managed`` is an option used for Python packages instructing the setuptools module
     to create a Python package that can be easily managed by the package manager on the host
+
+Next Steps
+==========
+
+- :ref:`What is patching and how to patch scikit-learn <what_is_patching>`
+- :ref:`How to use scikit-learn-intelex <get_started>`
