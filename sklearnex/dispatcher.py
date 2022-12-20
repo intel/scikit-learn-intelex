@@ -39,6 +39,8 @@ def get_patch_map():
         from ._config import get_config as get_config_sklearnex
         from ._config import config_context as config_context_sklearnex
 
+        from .decomposition import PCA as PCA_sklearnex
+
         from .svm import SVR as SVR_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
@@ -51,11 +53,16 @@ def get_patch_map():
         # Scikit-learn* modules
 
         import sklearn as base_module
+        import sklearn.decomposition as decomposition_module
         import sklearn.svm as svm_module
         import sklearn.neighbors as neighbors_module
 
         # Patch for mapping
         # Algorithms
+        # decomposition
+        mapping.pop('pca')
+        mapping['PCA'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
+
         # SVM
         mapping.pop('svm')
         mapping.pop('svc')

@@ -89,6 +89,7 @@ setup(name="scikit-learn-intelex",
           'sklearnex.model_selection',
           'sklearnex.neighbors',
           'sklearnex.svm',
+          'sklearnex.decomposition',
           'sklearnex.utils'
       ]),
       )
