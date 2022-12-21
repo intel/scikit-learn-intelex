@@ -14,7 +14,6 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-
 Kaggle Kernels for Classification Tasks
 ***************************************
 
@@ -46,7 +45,18 @@ Binary Classification
        - search for optimal parameters using Optuna
        - training and prediction using scikit-learn-intelex
        - performance comparison to scikit-learn
+   * - `Feature Importance in Random Forest for Binary Classification
+       <https://www.kaggle.com/code/lordozvlad/fast-feature-importance-using-scikit-learn-intelex/notebook>`_
+     
+       **Data:** [TPS Nov 2021] Synthetic spam emails data
 
+     - Identify spam emails via features extraced from the email
+     - 
+      
+       - reducing DataFrame memory usage
+       - computing feature importance with ELI5 and the default scikit-learn permutation importance
+       - training using scikit-learn-intelex
+       - performance comparison to scikit-learn
    * - `Random Forest for Binary Classification
        <https://www.kaggle.com/andreyrus/tps-apr-rf-with-intel-extension-for-scikit-learn>`_
      
@@ -80,7 +90,6 @@ Binary Classification
        - feature engineering
        - training and prediction using scikit-learn-intelex
        - performance comparison to scikit-learn
-
 
 MultiClass Classification
 +++++++++++++++++++++++++
@@ -116,7 +125,7 @@ MultiClass Classification
    * - `Stacking Classifer with Logistic Regression, kNN, Random Forest, and Quantile Transformer
        <https://www.kaggle.com/owerbat/tps-jun-fast-stacking-with-scikit-learn-intelex>`_
       
-       **Data:** [TPS Jun 2021] synthetic eCommerce data
+       **Data:** [TPS Jun 2021] Synthetic eCommerce data
      - Predict the category of an eCommerce product
      - 
 
@@ -124,6 +133,36 @@ MultiClass Classification
        - creating a stacking classifier with logistic regression, kNN, and random forest,
          and a pipeline of Quantile Transformer and another logistic regression as a final estimator
        - searching for optimal parameters for the stacking classifier
+       - training and prediction using scikit-learn-intelex
+       - performance comparison to scikit-learn
+   * - `Support Vector Classification (SVC) for MultiClass Classification
+       <https://www.kaggle.com/code/alexeykolobyanin/tps-dec-svc-with-sklearnex-20x-speedup>`_
+       
+       **Data:** [TPS Dec 2021] Synthetic Forest Cover Type data
+     - Predict the forest cover type
+     - 
+       - data preprocessing
+       - training and prediction using scikit-learn-intelex
+       - performance comparison to scikit-learn
+   * - `Feature Importance in Random Forest for MultiClass Classification
+       <https://www.kaggle.com/code/lordozvlad/tps-dec-fast-feature-importance-with-sklearnex>`_
+     
+       **Data:** [TPS Dec 2021] Synthetic Forest Cover Type data
+
+     - Predict the forest cover type
+     - 
+      
+       - reducing DataFrame memory usage
+       - computing feature importance with ELI5
+       - training and prediction using scikit-learn-intelex
+       - performance comparison to scikit-learn
+   * - `k-Nearest Neighbors (kNN) for MultiClass Classification
+       <https://www.kaggle.com/code/alexeykolobyanin/tps-feb-knn-with-sklearnex-13x-speedup>`_
+       
+       **Data:** [TPS Feb 2022] Bacteria DNA
+     - Predict bacteria species based on repeated lossy measurements of DNA snippets
+     - 
+       - data preprocessing
        - training and prediction using scikit-learn-intelex
        - performance comparison to scikit-learn
 
@@ -191,4 +230,15 @@ Classification Tasks in Natural Language Processing
        - feature extraction using TfidfVectorizer
        - training and prediction using scikit-learn-intelex
        - performance comparison to scikit-learn
-
+   * - `Support Vector Classification (SVC) for Binary Classification with Sparse Data (NLP task)
+       <https://www.kaggle.com/code/alex97andreev/fast-svm-for-sparse-data-from-nlp-problem>`_
+       
+       **Data:** Stack Overflow questions
+     - Predict the binary quality rating for Stack Overflow questions
+     - 
+     
+       - data preprocessing
+       - TF-IDF calculation
+       - search for optimal paramters using Optuna
+       - training and prediction using scikit-learn-intelex
+       - performance comparison to scikit-learn
