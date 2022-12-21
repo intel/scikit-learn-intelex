@@ -26,6 +26,10 @@
 .. |automl_with_intelex_titanic| replace:: AutoML Binary Classification (Gradient Boosting, Random Forest, kNN) using AutoGluon with |intelex|
 .. _automl_with_intelex_titanic: https://www.kaggle.com/lordozvlad/titanic-automl-with-intel-extension-for-sklearn/notebook
 
+.. |automl_with_intelex_tps_jan| replace:: AutoML Binary Classification (Random Forest, SVR, Blending) using PyCaret with |intelex|
+.. _automl_with_intelex_tps_jan: https://www.kaggle.com/code/lordozvlad/tps-jan-fast-pycaret-with-scikit-learn-intelex/notebook
+
+
 Kaggle Kernels that use AutoML and |intelex|
 --------------------------------------------
 
@@ -56,3 +60,7 @@ The following Kaggle kernels show how to patch autoML framewokrs with |intelex|.
 
        **Data:** [TPS Nov 2021] Synthetic spam emails data
      - Identify spam emails via features extraced from the email
+   * - |automl_with_intelex_tps_jan|_
+
+       **Data:** [TPS Jan 2022] Fictional Sales data
+     - Predict the corresponding item sales for each date-country-store-item combination

@@ -5,10 +5,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Search &#8212; Intel(R) Extension for Scikit-learn* 2021.5 documentation</title>
+    <title>Search &#8212; Intel(R) Extension for Scikit-learn* 2023.0.1 documentation</title>
     
-  <link href="_static/css/theme.css" rel="stylesheet" />
-  <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
 
     
   <link rel="stylesheet"
@@ -22,14 +22,14 @@
       
 
     
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
     <link rel="stylesheet" type="text/css" href="_static/tabs.css" />
     
-  <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
 
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -49,11 +49,13 @@
         var wapLocalCode = 'us-en'; // Dynamically set per localized site, see mapping table for values
         var wapSection = "scikit-learn"; // WAP team will give you a unique section for your site
         // Load TMS
-        (function () {
-          var url = 'https://www.intel.com/content/dam/www/global/wap/tms-loader.js'; // WAP file URL
-          var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true; po.src = url;
-          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-        })();
+        if(document.location.href.contains("intel.github.io/scikit-learn-intelex")){
+          (function () {
+            var url = 'https://www.intel.com/content/dam/www/global/wap/tms-loader.js'; // WAP file URL
+            var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true; po.src = url;
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+          })();
+      }
       </script>
 
 
@@ -79,7 +81,7 @@
       <img src="_static/oneAPI-rgb-rev-100.png" class="logo" alt="logo">
       
       
-      <h1 class="site-logo" id="site-title">Intel(R) Extension for Scikit-learn* 2021.5 documentation</h1>
+      <h1 class="site-logo" id="site-title">Intel(R) Extension for Scikit-learn* 2023.0.1 documentation</h1>
       
     </a>
 </div><form class="bd-search d-flex align-items-center" action="#" method="get">
@@ -87,7 +89,7 @@
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <p class="caption">
+        <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   About
  </span>
@@ -119,7 +121,7 @@
   </a>
  </li>
 </ul>
-<p class="caption">
+<p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Get Started
  </span>
@@ -144,62 +146,7 @@
    <i class="fas fa-chevron-down">
    </i>
   </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/knn_mnist.html">
-     k-Nearest Neighbors (kNN) for MNIST dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/logistictic_regression_cifar.html">
-     Logistic Regression for Cifar dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/svc_adult.html">
-     Support Vector Classification (SVC) for Adult dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/ElasticNet.html">
-     ElasticNet for Airlines DepDelay dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/lasso_regression.html">
-     Lasso Regression for YearPredictionMSD dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/linear_regression.html">
-     Linear Regression for YearPredictionMSD dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/nusvr_medical_charges.html">
-     Nu-Support Vector Regression (NuSVR) for Medical Charges dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/random_forest_yolanda.html">
-     Random Forest for Yolanda dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/ridge_regression.html">
-     Rigde Regression for Airlines DepDelay dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/kmeans.html">
-     Kmeans for spoken arabic digit dataset
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="samples/dbscan.html">
-     DBSCAN for spoken arabic digit dataset
-    </a>
-   </li>
+  <ul class="simple">
   </ul>
  </li>
  <li class="toctree-l1 has-children">
@@ -230,7 +177,7 @@
   </ul>
  </li>
 </ul>
-<p class="caption">
+<p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Developer Guide
  </span>
@@ -239,6 +186,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="algorithms.html">
    Supported Algorithms
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="guide/acceleration.html">
+   Acceleration Details
   </a>
  </li>
  <li class="toctree-l1">
@@ -262,7 +214,7 @@
   </a>
  </li>
 </ul>
-<p class="caption">
+<p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
   Community
  </span>
@@ -271,6 +223,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="support.html">
    Support
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="contribute.html">
+   How to Contribute
   </a>
  </li>
 </ul>
@@ -344,37 +301,41 @@
               <div>
                 
   <h1 id="search-documentation">Search</h1>
-  <div id="fallback" class="admonition warning">
-  <script>$('#fallback').hide();</script>
+  
+  <noscript>
+  <div class="admonition warning">
   <p>
     Please activate JavaScript to enable the search
     functionality.
   </p>
   </div>
+  </noscript>
+  
+  
   <p>
     Searching for multiple words only shows matches that contain
     all words.
   </p>
+  
+  
   <form action="" method="get">
-    <input type="text" name="q" aria-labelledby="search-documentation" value="" />
+    <input type="text" name="q" aria-labelledby="search-documentation" value="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
     <input type="submit" value="search" />
     <span id="search-progress" style="padding-left: 10px"></span>
   </form>
   
+  
+  
   <div id="search-results">
   
   </div>
+  
 
               </div>
               
         
-            
-
-
-
-<div class='prev-next-bottom'>
-    
-
+            <!-- Previous / next buttons -->
+<div class='prev-next-area'>
 </div>
         
         </div>
@@ -385,7 +346,7 @@
         
           By Intel<br/>
         
-            &copy; Copyright 2021, Intel.<br/>
+            &copy; Copyright 2022, Intel.<br/>
           <div class="extra_footer">
             
     <p align="right">
@@ -405,8 +366,7 @@
       </div>
     </div>
   
-  <script src="_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
 
-  
   </body>
 </html>

@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2020-2021 Intel Corporation
+.. * Copyright 2020 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -72,6 +72,7 @@ Important Links
    :hidden:
 
    algorithms.rst
+   guide/acceleration.rst
    global-patching.rst
    verbose.rst
    distributed-mode.rst
@@ -82,3 +83,4 @@ Important Links
    :hidden:
 
    support.rst
+   contribute.rst
