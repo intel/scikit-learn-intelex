@@ -25,8 +25,6 @@ trigger:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
-    - *.md
-    - LICENSE
 
 pr:
   branches:
@@ -39,8 +37,6 @@ pr:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
-    - *.md
-    - LICENSE
 
 variables:
   - name: MACOSX_DEPLOYMENT_TARGET
