@@ -18,25 +18,27 @@ trigger:
   branches:
     include:
     - master
-    - releases
     - rls/*
   paths:
     exclude:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - *.md
+    - LICENSE
 
 pr:
   branches:
     include:
     - master
-    - releases
     - rls/*
   paths:
     exclude:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - *.md
+    - LICENSE
 
 variables:
   - name: MACOSX_DEPLOYMENT_TARGET
@@ -122,7 +124,7 @@ jobs:
       conda activate CB
       sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install --upgrade -r requirements-test.txt
-      pip install xgboost lightgbm catboost
+      pip install -r requirements-test-optional.txt
       pip list
     displayName: 'Install testing requirements'
   - script: |
@@ -182,7 +184,7 @@ jobs:
       source activate CB
       sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install --upgrade -r requirements-test.txt
-      pip install xgboost lightgbm catboost
+      pip install -r requirements-test-optional.txt
       pip list
     displayName: 'Install testing requirements'
   - script: |
@@ -245,7 +247,7 @@ jobs:
       call activate CB
       sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install --upgrade -r requirements-test.txt
-      pip install xgboost lightgbm catboost
+      pip install -r requirements-test-optional.txt
       pip list
     displayName: 'Install testing requirements'
   - script: |
