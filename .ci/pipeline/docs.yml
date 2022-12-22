@@ -18,6 +18,7 @@ trigger:
   branches:
     include:
     - master
+    - releases
     - rls/*
   paths:
     include:
@@ -29,6 +30,7 @@ pr:
   branches:
     include:
     - master
+    - releases
     - rls/*
   paths:
     include:
@@ -72,7 +74,6 @@ jobs:
       pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
       pip install -r requirements-test.txt
-      pip install -r requirements-test-optional.txt
       pip list
     displayName: 'Install requirements'
   - script: |
