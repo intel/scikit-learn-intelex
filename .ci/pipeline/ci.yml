@@ -18,6 +18,7 @@ trigger:
   branches:
     include:
     - master
+    - releases
     - rls/*
   paths:
     exclude:
@@ -31,6 +32,7 @@ pr:
   branches:
     include:
     - master
+    - releases
     - rls/*
   paths:
     exclude:
