@@ -61,7 +61,7 @@ pytest --verbose --pyargs ${daal4py_dir}/sklearnex
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
-pytest --verbose --pyargs ${daal4py_dir}/onedal/ --deselect="onedal/common/tests/test_policy.py"
+pytest --verbose --pyargs ${daal4py_dir}/onedal
 return_code=$(($return_code + $?))
 
 exit $return_code
