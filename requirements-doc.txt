@@ -4,7 +4,7 @@ attrs==21.4.0
 Babel==2.11.0
 backcall==0.2.0
 beautifulsoup4==4.11.1
-bleach==4.1.0
+bleach==5.0.1
 certifi==2022.12.7
 charset-normalizer==2.1.1
 click
