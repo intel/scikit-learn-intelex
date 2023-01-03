@@ -152,7 +152,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     len(np.unique(y[sample_weight > 0])) != len(self.classes_):
                 raise ValueError(
                     'Invalid input - all samples with positive weights '
-                    'have the same label.')
+                    'belong to the same class')
         ww = sample_weight
         if self.class_weight_ is not None:
             for i, v in enumerate(self.class_weight_):
