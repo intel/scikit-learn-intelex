@@ -76,7 +76,7 @@ def get_win_major_version():
 
 
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
-               else time.strftime('2023.%Y%m%d.%H%M%S'))
+               else time.strftime('%Y%m%d.%H%M%S'))
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False

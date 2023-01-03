@@ -61,7 +61,7 @@ def is_dpctl_available(targets=None):
 
 def device_type_to_str(queue):
     if queue is None:
-        return 'host'
+        return 'cpu'
 
     from dpctl import device_type
     if queue.sycl_device.device_type == device_type.cpu:
