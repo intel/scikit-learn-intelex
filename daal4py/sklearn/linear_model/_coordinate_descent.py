@@ -392,6 +392,8 @@ def _daal4py_predict_lasso(self, X):
 def _fit(self, X, y, sample_weight=None, check_input=True):
     if sklearn_check_version('1.0'):
         self._check_feature_names(X, reset=True)
+    if sklearn_check_version("1.2"):
+        self._validate_params()
     # check X and y
     if check_input:
         X, y = check_X_y(
@@ -550,6 +552,8 @@ class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
     if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**ElasticNet_original._parameter_constraints}
+
         def __init__(
             self,
             alpha=1.0,
