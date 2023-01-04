@@ -14,23 +14,22 @@
 # limitations under the License.
 #===============================================================================
 
+from daal4py.sklearn._utils import sklearn_check_version
 from ._common import BaseSVC
 from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
-from sklearn import __version__ as sklearn_version
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
 
 from onedal.svm import SVC as onedal_SVC
 
 
 class SVC(sklearn_SVC, BaseSVC):
     __doc__ = sklearn_SVC.__doc__
+
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**sklearn_SVC._parameter_constraints}
 
     @_deprecate_positional_args
     def __init__(self, *, C=1.0, kernel='rbf', degree=3, gamma='scale',
@@ -79,7 +78,7 @@ class SVC(sklearn_SVC, BaseSVC):
         If X is a dense array, then the other methods will not support sparse
         matrices as input.
         """
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.SVC.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -105,7 +104,7 @@ class SVC(sklearn_SVC, BaseSVC):
         y_pred : ndarray of shape (n_samples,)
             The predicted values.
         """
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVC.predict', {
             'onedal': self.__class__._onedal_predict,
@@ -146,7 +145,7 @@ class SVC(sklearn_SVC, BaseSVC):
     @wrap_output_data
     def _predict_proba(self, X):
         sklearn_pred_proba = (sklearn_SVC.predict_proba
-                              if Version(sklearn_version) >= Version("1.0")
+                              if sklearn_check_version("1.0")
                               else sklearn_SVC._predict_proba)
 
         return dispatch(self, 'svm.SVC.predict_proba', {
@@ -156,7 +155,7 @@ class SVC(sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVC.decision_function', {
             'onedal': self.__class__._onedal_decision_function,
@@ -192,6 +191,8 @@ class SVC(sklearn_SVC, BaseSVC):
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
         onedal_params = {
             'C': self.C,
             'kernel': self.kernel,
