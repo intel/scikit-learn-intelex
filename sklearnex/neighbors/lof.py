@@ -31,6 +31,8 @@ except ImportError:
 
 from sklearn import __version__ as sklearn_version
 
+from daal4py.sklearn._utils import sklearn_check_version
+
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_array
 
@@ -39,7 +41,7 @@ from .._utils import get_patch_message
 from .._device_offload import dispatch, wrap_output_data
 from .._config import config_context
 
-if Version(sklearn_version) >= Version("1.0"):
+if sklearn_check_version("1.0"):
     class LocalOutlierFactor(sklearn_LocalOutlierFactor):
         def __init__(
             self,
@@ -66,7 +68,7 @@ if Version(sklearn_version) >= Version("1.0"):
                 novelty=novelty
             )
 
-            self.knn = NearestNeighbors(
+            self._knn = NearestNeighbors(
                 n_neighbors=n_neighbors,
                 algorithm=algorithm,
                 leaf_size=leaf_size,
@@ -90,7 +92,7 @@ if Version(sklearn_version) >= Version("1.0"):
 
         def _fit(self, X, y, queue=None):
             with config_context(target_offload=queue):
-                self.knn.fit(X)
+                self._knn.fit(X)
 
                 if self.contamination != "auto":
                     if not (0.0 < self.contamination <= 0.5):
@@ -99,7 +101,7 @@ if Version(sklearn_version) >= Version("1.0"):
                             "got: %f" % self.contamination
                         )
 
-                n_samples = self.knn.n_samples_fit_
+                n_samples = self._knn.n_samples_fit_
 
                 if self.n_neighbors > n_samples:
                     warnings.warn(
@@ -111,7 +113,7 @@ if Version(sklearn_version) >= Version("1.0"):
                 self.n_neighbors_ = max(1, min(self.n_neighbors, n_samples - 1))
 
                 self._distances_fit_X_, _neighbors_indices_fit_X_ =\
-                    self.knn.kneighbors(n_neighbors=self.n_neighbors_)
+                    self._knn.kneighbors(n_neighbors=self.n_neighbors_)
 
                 self._lrd = self._local_reachability_density(
                     self._distances_fit_X_, _neighbors_indices_fit_X_
@@ -131,6 +133,10 @@ if Version(sklearn_version) >= Version("1.0"):
                     self.offset_ = np.percentile(
                         self.negative_outlier_factor_, 100.0 * self.contamination
                     )
+
+                for knn_prop_name in self._knn.__dict__.keys():
+                    if knn_prop_name not in self.__dict__.keys():
+                        setattr(self, knn_prop_name, self._knn.__dict__[knn_prop_name])
 
                 return self
 
@@ -162,7 +168,7 @@ if Version(sklearn_version) >= Version("1.0"):
                     is_inlier = np.ones(X.shape[0], dtype=int)
                     is_inlier[self.decision_function(X) < 0] = -1
                 else:
-                    is_inlier = np.ones(self.knn.n_samples_fit_, dtype=int)
+                    is_inlier = np.ones(self._knn.n_samples_fit_, dtype=int)
                     is_inlier[self.negative_outlier_factor_ < self.offset_] = -1
 
                 return is_inlier
@@ -192,7 +198,7 @@ if Version(sklearn_version) >= Version("1.0"):
                 check_is_fitted(self)
                 X = check_array(X, accept_sparse="csr")
 
-                distances_X, neighbors_indices_X = self.knn.kneighbors(
+                distances_X, neighbors_indices_X = self._knn.kneighbors(
                     X, n_neighbors=self.n_neighbors_
                 )
                 X_lrd = self._local_reachability_density(distances_X, neighbors_indices_X)
@@ -305,7 +311,7 @@ else:
                 novelty=novelty
             )
 
-            self.knn = NearestNeighbors(
+            self._knn = NearestNeighbors(
                 n_neighbors=n_neighbors,
                 algorithm=algorithm,
                 leaf_size=leaf_size,
@@ -331,7 +337,7 @@ else:
             """
 
             with config_context(target_offload=queue):
-                self.knn.fit(X)
+                self._knn.fit(X)
 
                 if self.contamination != "auto":
                     if not (0.0 < self.contamination <= 0.5):
@@ -340,7 +346,7 @@ else:
                             "got: %f" % self.contamination
                         )
 
-                n_samples = self.knn.n_samples_fit_
+                n_samples = self._knn.n_samples_fit_
                 if self.n_neighbors > n_samples:
                     warnings.warn(
                         "n_neighbors (%s) is greater than the "
@@ -351,7 +357,7 @@ else:
                 self.n_neighbors_ = max(1, min(self.n_neighbors, n_samples - 1))
 
                 self._distances_fit_X_, _neighbors_indices_fit_X_ =\
-                    self.knn.kneighbors(n_neighbors=self.n_neighbors_)
+                    self._knn.kneighbors(n_neighbors=self.n_neighbors_)
 
                 self._lrd = self._local_reachability_density(
                     self._distances_fit_X_, _neighbors_indices_fit_X_
@@ -371,6 +377,10 @@ else:
                     self.offset_ = np.percentile(
                         self.negative_outlier_factor_, 100.0 * self.contamination
                     )
+
+                for knn_prop_name in self._knn.__dict__.keys():
+                    if knn_prop_name not in self.__dict__.keys():
+                        setattr(self, knn_prop_name, self._knn.__dict__[knn_prop_name])
 
                 return self
 
@@ -398,7 +408,7 @@ else:
                 check_is_fitted(self)
                 X = check_array(X, accept_sparse="csr")
 
-                distances_X, neighbors_indices_X = self.knn.kneighbors(
+                distances_X, neighbors_indices_X = self._knn.kneighbors(
                     X, n_neighbors=self.n_neighbors_
                 )
                 X_lrd = self._local_reachability_density(distances_X, neighbors_indices_X)
@@ -454,7 +464,7 @@ else:
                     is_inlier = np.ones(X.shape[0], dtype=int)
                     is_inlier[self.decision_function(X) < 0] = -1
                 else:
-                    is_inlier = np.ones(self.knn.n_samples_fit_, dtype=int)
+                    is_inlier = np.ones(self._knn.n_samples_fit_, dtype=int)
                     is_inlier[self.negative_outlier_factor_ < self.offset_] = -1
 
                 return is_inlier
