@@ -68,30 +68,17 @@ if sklearn_check_version("1.0"):
                 novelty=novelty
             )
 
-            self._knn = NearestNeighbors(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs
-            )
-
-        def _check_novelty_score_samples(self):
-            if not self.novelty:
-                msg = (
-                    "score_samples is not available when novelty=False. The "
-                    "scores of the training samples are always available "
-                    "through the negative_outlier_factor_ attribute. Use "
-                    "novelty=True if you want to use LOF for novelty detection "
-                    "and compute score_samples for new unseen data."
-                )
-                raise AttributeError(msg)
-            return True
-
         def _fit(self, X, y, queue=None):
             with config_context(target_offload=queue):
+                self._knn = NearestNeighbors(
+                    n_neighbors=self.n_neighbors,
+                    algorithm=self.algorithm,
+                    leaf_size=self.leaf_size,
+                    metric=self.metric,
+                    p=self.p,
+                    metric_params=self.metric_params,
+                    n_jobs=self.n_jobs
+                )
                 self._knn.fit(X)
 
                 if self.contamination != "auto":
@@ -141,19 +128,6 @@ if sklearn_check_version("1.0"):
                 return self
 
         def fit(self, X, y=None):
-            """Fit the local outlier factor detector from the training dataset.
-            Parameters
-            ----------
-            X : {array-like, sparse matrix} of shape (n_samples, n_features) or \
-                    (n_samples, n_samples) if metric='precomputed'
-                Training data.
-            y : Ignored
-                Not used, present for API consistency by convention.
-            Returns
-            -------
-            self : LocalOutlierFactor
-                The fitted local outlier factor detector.
-            """
             return dispatch(self, 'neighbors.LocalOutlierFactor.fit', {
                 'onedal': self.__class__._fit,
                 'sklearn': None,
@@ -175,19 +149,6 @@ if sklearn_check_version("1.0"):
 
         @wrap_output_data
         def _predict(self, X=None):
-            """Predict the labels (1 inlier, -1 outlier) of X according to LOF.
-            If X is None, returns the same as fit_predict(X_train).
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features), default=None
-                The query sample or samples to compute the Local Outlier Factor
-                w.r.t. to the training samples. If None, makes prediction on the
-                training data without considering them as their own neighbors.
-            Returns
-            -------
-            is_inlier : ndarray of shape (n_samples,)
-                Returns -1 for anomalies/outliers and +1 for inliers.
-            """
             return dispatch(self, 'neighbors.LocalOutlierFactor.predict', {
                 'onedal': self.__class__._onedal_predict,
                 'sklearn': None,
@@ -208,31 +169,21 @@ if sklearn_check_version("1.0"):
                 # as bigger is better:
                 return -np.mean(lrd_ratios_array, axis=1)
 
+        def _check_novelty_score_samples(self):
+            if not self.novelty:
+                msg = (
+                    "score_samples is not available when novelty=False. The "
+                    "scores of the training samples are always available "
+                    "through the negative_outlier_factor_ attribute. Use "
+                    "novelty=True if you want to use LOF for novelty detection "
+                    "and compute score_samples for new unseen data."
+                )
+                raise AttributeError(msg)
+            return True
+
         @available_if(_check_novelty_score_samples)
         @wrap_output_data
         def score_samples(self, X):
-            """Opposite of the Local Outlier Factor of X.
-            It is the opposite as bigger is better, i.e. large values correspond
-            to inliers.
-            **Only available for novelty detection (when novelty is set to True).**
-            The argument X is supposed to contain *new data*: if X contains a
-            point from training, it considers the later in its own neighborhood.
-            Also, the samples in X are not considered in the neighborhood of any
-            point. Because of this, the scores obtained via ``score_samples`` may
-            differ from the standard LOF scores.
-            The standard LOF scores for the training data is available via the
-            ``negative_outlier_factor_`` attribute.
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features)
-                The query sample or samples to compute the Local Outlier Factor
-                w.r.t. the training samples.
-            Returns
-            -------
-            opposite_lof_scores : ndarray of shape (n_samples,)
-                The opposite of the Local Outlier Factor of each input samples.
-                The lower, the more abnormal.
-            """
             return dispatch(self, 'neighbors.LocalOutlierFactor.score_samples', {
                 'onedal': self.__class__._score_samples,
                 'sklearn': None,
@@ -254,26 +205,6 @@ if sklearn_check_version("1.0"):
         @available_if(_check_novelty_fit_predict)
         @wrap_output_data
         def fit_predict(self, X, y=None):
-            """Fit the model to the training set X and return the labels.
-            **Not available for novelty detection (when novelty is set to True).**
-            Label is 1 for an inlier and -1 for an outlier according to the LOF
-            score and the contamination parameter.
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features), default=None
-                The query sample or samples to compute the Local Outlier Factor
-                w.r.t. to the training samples.
-            y : Ignored
-                Not used, present for API consistency by convention.
-            Returns
-            -------
-            is_inlier : ndarray of shape (n_samples,)
-                Returns -1 for anomalies/outliers and 1 for inliers.
-            """
-
-            # As fit_predict would be different from fit.predict, fit_predict is
-            # only available for outlier detection (novelty=False)
-
             return dispatch(self, 'neighbors.LocalOutlierFactor.fit_predict', {
                 'onedal': self.__class__._fit_predict,
                 'sklearn': None,
@@ -311,32 +242,17 @@ else:
                 novelty=novelty
             )
 
-            self._knn = NearestNeighbors(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs
-            )
-
         def _fit(self, X, y=None, queue=None):
-            """Fit the local outlier factor detector from the training dataset.
-            Parameters
-            ----------
-            X : {array-like, sparse matrix} of shape (n_samples, n_features) or \
-                    (n_samples, n_samples) if metric='precomputed'
-                Training data.
-            y : Ignored
-                Not used, present for API consistency by convention.
-            Returns
-            -------
-            self : LocalOutlierFactor
-                The fitted local outlier factor detector.
-            """
-
             with config_context(target_offload=queue):
+                self._knn = NearestNeighbors(
+                    n_neighbors=self.n_neighbors,
+                    algorithm=self.algorithm,
+                    leaf_size=self.leaf_size,
+                    metric=self.metric,
+                    p=self.p,
+                    metric_params=self.metric_params,
+                    n_jobs=self.n_jobs
+                )
                 self._knn.fit(X)
 
                 if self.contamination != "auto":
@@ -347,6 +263,7 @@ else:
                         )
 
                 n_samples = self._knn.n_samples_fit_
+
                 if self.n_neighbors > n_samples:
                     warnings.warn(
                         "n_neighbors (%s) is greater than the "
@@ -385,75 +302,10 @@ else:
                 return self
 
         def fit(self, X, y=None):
-            """Fit the local outlier factor detector from the training dataset.
-            Parameters
-            ----------
-            X : {array-like, sparse matrix} of shape (n_samples, n_features) or \
-                    (n_samples, n_samples) if metric='precomputed'
-                Training data.
-            y : Ignored
-                Not used, present for API consistency by convention.
-            Returns
-            -------
-            self : LocalOutlierFactor
-                The fitted local outlier factor detector.
-            """
             return dispatch(self, 'neighbors.LocalOutlierFactor.fit', {
                 'onedal': self.__class__._fit,
                 'sklearn': None,
             }, X, y)
-
-        def _ondedal_score_samples(self, X, queue=None):
-            with config_context(target_offload=queue):
-                check_is_fitted(self)
-                X = check_array(X, accept_sparse="csr")
-
-                distances_X, neighbors_indices_X = self._knn.kneighbors(
-                    X, n_neighbors=self.n_neighbors_
-                )
-                X_lrd = self._local_reachability_density(distances_X, neighbors_indices_X)
-
-                lrd_ratios_array = self._lrd[neighbors_indices_X] / X_lrd[:, np.newaxis]
-
-                # as bigger is better:
-                return -np.mean(lrd_ratios_array, axis=1)
-
-        @wrap_output_data
-        def _score_samples(self, X):
-            """Opposite of the Local Outlier Factor of X.
-            It is the opposite as bigger is better, i.e. large values correspond
-            to inliers.
-            **Only available for novelty detection (when novelty is set to True).**
-            The argument X is supposed to contain *new data*: if X contains a
-            point from training, it considers the later in its own neighborhood.
-            Also, the samples in X are not considered in the neighborhood of any
-            point. Because of this, the scores obtained via ``score_samples`` may
-            differ from the standard LOF scores.
-            The standard LOF scores for the training data is available via the
-            ``negative_outlier_factor_`` attribute.
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features)
-                The query sample or samples to compute the Local Outlier Factor
-                w.r.t. the training samples.
-            Returns
-            -------
-            opposite_lof_scores : ndarray of shape (n_samples,)
-                The opposite of the Local Outlier Factor of each input samples.
-                The lower, the more abnormal.
-            """
-            if not self.novelty:
-                msg = ('score_samples is not available when novelty=False. The '
-                       'scores of the training samples are always available '
-                       'through the negative_outlier_factor_ attribute. Use '
-                       'novelty=True if you want to use LOF for novelty detection '
-                       'and compute score_samples for new unseen data.')
-                raise AttributeError(msg)
-
-            return dispatch(self, 'neighbors.LocalOutlierFactor.score_samples', {
-                'onedal': self.__class__._ondedal_score_samples,
-                'sklearn': None,
-            }, X)
 
         def _onedal_predict(self, X, queue=None):
             with config_context(target_offload=queue):
@@ -471,21 +323,38 @@ else:
 
         @wrap_output_data
         def _predict(self, X=None):
-            """Predict the labels (1 inlier, -1 outlier) of X according to LOF.
-            If X is None, returns the same as fit_predict(X_train).
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features), default=None
-                The query sample or samples to compute the Local Outlier Factor
-                w.r.t. to the training samples. If None, makes prediction on the
-                training data without considering them as their own neighbors.
-            Returns
-            -------
-            is_inlier : ndarray of shape (n_samples,)
-                Returns -1 for anomalies/outliers and +1 for inliers.
-            """
             return dispatch(self, 'neighbors.LocalOutlierFactor.predict', {
                 'onedal': self.__class__._onedal_predict,
+                'sklearn': None,
+            }, X)
+
+        def _onedal_score_samples(self, X, queue=None):
+            with config_context(target_offload=queue):
+                check_is_fitted(self)
+                X = check_array(X, accept_sparse="csr")
+
+                distances_X, neighbors_indices_X = self._knn.kneighbors(
+                    X, n_neighbors=self.n_neighbors_
+                )
+                X_lrd = self._local_reachability_density(distances_X, neighbors_indices_X)
+
+                lrd_ratios_array = self._lrd[neighbors_indices_X] / X_lrd[:, np.newaxis]
+
+                # as bigger is better:
+                return -np.mean(lrd_ratios_array, axis=1)
+
+        @wrap_output_data
+        def _score_samples(self, X):
+            if not self.novelty:
+                msg = ('score_samples is not available when novelty=False. The '
+                       'scores of the training samples are always available '
+                       'through the negative_outlier_factor_ attribute. Use '
+                       'novelty=True if you want to use LOF for novelty detection '
+                       'and compute score_samples for new unseen data.')
+                raise AttributeError(msg)
+
+            return dispatch(self, 'neighbors.LocalOutlierFactor.score_samples', {
+                'onedal': self.__class__._onedal_score_samples,
                 'sklearn': None,
             }, X)
 
@@ -495,26 +364,6 @@ else:
 
         @wrap_output_data
         def _fit_predict(self, X, y=None):
-            """Fit the model to the training set X and return the labels.
-            **Not available for novelty detection (when novelty is set to True).**
-            Label is 1 for an inlier and -1 for an outlier according to the LOF
-            score and the contamination parameter.
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features), default=None
-                The query sample or samples to compute the Local Outlier Factor
-                w.r.t. to the training samples.
-            y : Ignored
-                Not used, present for API consistency by convention.
-            Returns
-            -------
-            is_inlier : ndarray of shape (n_samples,)
-                Returns -1 for anomalies/outliers and 1 for inliers.
-            """
-
-            # As fit_predict would be different from fit.predict, fit_predict is
-            # only available for outlier detection (novelty=False)
-
             return dispatch(self, 'neighbors.LocalOutlierFactor._onedal_fit_predict', {
                 'onedal': self.__class__._onedal_fit_predict,
                 'sklearn': None,
