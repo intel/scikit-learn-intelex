@@ -103,13 +103,8 @@ class PCA(sklearn_PCA):
                 'onedal': self.__class__._onedal_fit,
                 'sklearn': sklearn_PCA._fit_full,
             }, X)
-        elif self._fit_svd_solver == "cov":
-            return dispatch(self, 'decomposition.PCA.fit', {
-                'onedal': self.__class__._onedal_fit,
-            }, X)
         elif self._fit_svd_solver in ["arpack", "randomized"]:
-            #return self._fit_truncated(X, n_components, self._fit_svd_solver)
-            return sklearn_PCA._fit_truncated(X, n_components, self._fit_svd_solver)
+            return sklearn_PCA._fit_truncated(self, X, n_components, self._fit_svd_solver)
         else:
             raise ValueError(
                 "Unrecognized svd_solver='{0}'".format(self._fit_svd_solver)
@@ -125,7 +120,7 @@ class PCA(sklearn_PCA):
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'decomposition.PCA.fit':
-            return self._fit_svd_solver in ['cov', 'full']
+            return self._fit_svd_solver in ['cov','full']
         elif method_name == 'decomposition.PCA.transform':
             return hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
@@ -198,7 +193,7 @@ class PCA(sklearn_PCA):
         self.singular_values_ = self._onedal_estimator.singular_values_
         self.mean_ = self._onedal_estimator.mean_
         self.n_components_ = self._onedal_estimator.n_components_
-        self.n_features_ = self._onedal_estimator.n_features_
+        # self.n_features_ = self._onedal_estimator.n_features_
         self.n_samples_ = self._onedal_estimator.n_samples_
         self.noise_variance_ = self._onedal_estimator.noise_variance_
         self.n_features_in_ = self._onedal_estimator.n_features_in_

@@ -33,6 +33,7 @@ class PCA():
 
         policy = _get_policy(queue, X, y)
         params = self.get_onedal_params(X)
+        # covariance_result = _backend.get_covariance(to_table(X))
         result = _backend.decomposition.dim_reduction.train(policy, params, to_table(X))
 
         self.variances_ = from_table(result.variances)
@@ -40,7 +41,7 @@ class PCA():
         eigenvalues = from_table(result.eigenvalues)
 
         self.components_ = eigenvectors
-        self.explained_variance_ = eigenvalues * n_samples / (n_samples - 1)
+        self.explained_variance_ = eigenvalues
         tot_var = self.explained_variance_.sum()
         self.explained_variance_ratio_ = self.explained_variance_ / tot_var
         self.singular_values_ = np.sqrt((n_samples - 1) * self.explained_variance_)
