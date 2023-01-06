@@ -20,7 +20,6 @@ variables:
   python.version: '3.9'
   PYTHON: 'python'
   ARGS: '1'
-  OFF_ONEDAL_IFACE: '1'
 
 jobs:
 - job: Coverity
@@ -65,7 +64,8 @@ jobs:
       pip install -r requirements-dev.txt
       pip install -r requirements-doc.txt
       pip install -r requirements-test.txt
-      pip install xgboost lightgbm catboost requests
+      pip install -r requirements-test-optional.txt
+      pip install requests
     displayName: 'Install requirements'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh

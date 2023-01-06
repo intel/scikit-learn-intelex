@@ -14,22 +14,20 @@
 # limitations under the License.
 #===============================================================================
 
+from daal4py.sklearn._utils import sklearn_check_version
 from ._common import BaseSVR
 from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.svm import SVR as sklearn_SVR
 from sklearn.utils.validation import _deprecate_positional_args
-from sklearn import __version__ as sklearn_version
-
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
 from onedal.svm import SVR as onedal_SVR
 
 
 class SVR(sklearn_SVR, BaseSVR):
     __doc__ = sklearn_SVR.__doc__
+
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**sklearn_SVR._parameter_constraints}
 
     @_deprecate_positional_args
     def __init__(self, *, kernel='rbf', degree=3, gamma='scale',
@@ -74,7 +72,7 @@ class SVR(sklearn_SVR, BaseSVR):
         If X is a dense array, then the other methods will not support sparse
         matrices as input.
         """
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.SVR.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -101,7 +99,7 @@ class SVR(sklearn_SVR, BaseSVR):
         y_pred : ndarray of shape (n_samples,)
             The predicted values.
         """
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.SVR.predict', {
             'onedal': self.__class__._onedal_predict,
@@ -118,6 +116,8 @@ class SVR(sklearn_SVR, BaseSVR):
             return hasattr(self, '_onedal_estimator')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
         onedal_params = {
             'C': self.C,
             'epsilon': self.epsilon,

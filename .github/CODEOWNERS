@@ -4,8 +4,8 @@
 .circleci/                    @napetrov @Alexsandruss
 
 # Docs
-*.md                          @maria-Petrova
-doc/                          @maria-Petrova
+*.md                          @maria-Petrova @napetrov @alexandraepan
+doc/                          @maria-Petrova @napetrov @alexandraepan
 
 # DPC++
 **/oneapi/                    @Alexsandruss @samir-nasibli @KulikovNikita
@@ -14,11 +14,11 @@ sklearnex/                    @Alexsandruss @samir-nasibli @KulikovNikita
 
 # Examples 
 examples/daal4py/             @maria-Petrova @Alexsandruss @samir-nasibli
-examples/notebooks/           @maria-Petrova @Alexsandruss
+examples/notebooks/           @maria-Petrova @Alexsandruss @napetrov
 
 # Dependencies
 setup.py                      @Alexsandruss
-requirements*                 @maria-Petrova @Alexsandruss
+requirements*                 @napetrov @Alexsandruss 
 conda-recipe/                 @Alexsandruss
 
 # Testing

@@ -30,13 +30,5 @@ pull_request_rules:
         add: [infra]
       request_reviews:
         users:
-          - vmeshche
-  - name: automatic merge on renovate updates for documentation
-    conditions:
-      - author=renovate[bot]
-      - check-success=CI (Linux)
-      - files=requirements-doc.txt
-      - "#files=1"
-    actions:
-      merge:
-        method: squash
+          - napetrov
+          - Alexsandruss

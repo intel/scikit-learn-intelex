@@ -39,7 +39,9 @@ def _daal4py_fit(self, X, y_):
 
     ridge_params = np.asarray(self.alpha, dtype=X.dtype)
     if ridge_params.size != 1 and ridge_params.size != y.shape[1]:
-        raise ValueError("alpha length is wrong")
+        raise ValueError(
+            "Number of targets and number of penalties do not correspond: "
+            f"{ridge_params.size} != {y.shape[1]}")
     ridge_params = ridge_params.reshape((1, -1))
 
     ridge_alg = daal4py.ridge_regression_training(
@@ -115,6 +117,8 @@ def _fit_ridge(self, X, y, sample_weight=None):
         )
     if sklearn_check_version('1.0'):
         self._check_feature_names(X, reset=True)
+    if sklearn_check_version("1.2"):
+        self._validate_params()
 
     X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=[np.float64, np.float32],
                      multi_output=True, y_numeric=True)
@@ -203,6 +207,8 @@ class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 
     if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**Ridge_original._parameter_constraints}
+
         def __init__(
             self,
             alpha=1.0,

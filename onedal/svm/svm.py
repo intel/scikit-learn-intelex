@@ -14,6 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
+from daal4py.sklearn._utils import sklearn_check_version
 from sklearn.base import BaseEstimator
 from abc import ABCMeta, abstractmethod
 from enum import Enum
@@ -151,6 +152,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             if self.svm_type == SVMtype.c_svc and \
                     len(np.unique(y[sample_weight > 0])) != len(self.classes_):
                 raise ValueError(
+                    'Invalid input - all samples with positive weights '
+                    'belong to the same class' if sklearn_check_version('1.2') else
                     'Invalid input - all samples with positive weights '
                     'have the same label.')
         ww = sample_weight

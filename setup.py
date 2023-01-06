@@ -76,7 +76,7 @@ def get_win_major_version():
 
 
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
-               else time.strftime('2023.%Y%m%d.%H%M%S'))
+               else time.strftime('%Y%m%d.%H%M%S'))
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
@@ -395,6 +395,7 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         "Programming Language :: Python :: 3.10",
@@ -403,7 +404,7 @@ setup(
         'Topic :: System',
         'Topic :: Software Development',
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.7',
     install_requires=[
         "scikit-learn>=0.24",
         "numpy>=1.19.5 ; python_version <= '3.9'",
