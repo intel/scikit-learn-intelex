@@ -452,6 +452,7 @@ setup(
         'onedal',
         'onedal.svm',
         'onedal.neighbors',
+        'onedal.linear_model',
         'onedal.primitives',
         'onedal.datatypes',
         'onedal.common'

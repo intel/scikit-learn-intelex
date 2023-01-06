@@ -24,13 +24,15 @@ namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
+namespace neighbors {
+
 template <typename Task, typename Ops>
 struct method2t {
     method2t(const Task& task, const Ops& ops) : ops(ops) {}
 
     template <typename Float>
     auto operator()(const py::dict& params) {
-        using namespace knn;
+        using namespace dal::knn;
 
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "brute", ops, Float, method::brute_force);
@@ -47,7 +49,7 @@ struct metric2t {
 
     template <typename Float, typename Method>
     auto operator()(const py::dict& params) {
-        using namespace knn;
+        using namespace dal::knn;
 
         auto metric = params["metric"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(metric,
@@ -87,7 +89,7 @@ struct metric2t {
 };
 
 auto get_onedal_voting_mode(const py::dict& params) {
-    using namespace knn;
+    using namespace dal::knn;
 
     auto weights = params["vote_weights"].cast<std::string>();
     if (weights == "uniform") {
@@ -101,7 +103,7 @@ auto get_onedal_voting_mode(const py::dict& params) {
 }
 
 auto get_onedal_result_options(const py::dict& params) {
-    using namespace knn;
+    using namespace dal::knn;
 
     auto result_option = params["result_option"].cast<std::string>();
     result_option_id onedal_options;
@@ -160,7 +162,7 @@ struct descriptor_creator<Float, Method, knn::task::search, Distance> {
 struct params2desc {
     template <typename Float, typename Method, typename Task, typename Distance>
     auto operator()(const pybind11::dict& params) {
-        using namespace knn;
+        using namespace dal::knn;
 
         constexpr bool is_bf = std::is_same_v<Method, method::brute_force>;
         const auto class_count = params["class_count"].cast<std::int64_t>();
@@ -189,7 +191,7 @@ struct init_train_ops_dispatcher<Policy, knn::task::classification> {
                  const py::dict& params,
                  const table& data,
                  const table& responses) {
-                  using namespace knn;
+                  using namespace dal::knn;
                   using input_t = train_input<Task>;
 
                   train_ops ops(policy, input_t{ data, responses }, params2desc{});
@@ -207,7 +209,7 @@ struct init_train_ops_dispatcher<Policy, knn::task::regression> {
                  const py::dict& params,
                  const table& data,
                  const table& responses) {
-                  using namespace knn;
+                  using namespace dal::knn;
                   using input_t = train_input<Task>;
 
                   train_ops ops(policy, input_t{ data, responses }, params2desc{});
@@ -221,7 +223,7 @@ struct init_train_ops_dispatcher<Policy, knn::task::search> {
     void operator()(py::module_& m) {
         using Task = knn::task::search;
         m.def("train", [](const Policy& policy, const py::dict& params, const table& data) {
-            using namespace knn;
+            using namespace dal::knn;
             using input_t = train_input<Task>;
 
             train_ops ops(policy, input_t{ data }, params2desc{});
@@ -240,9 +242,9 @@ void init_infer_ops(py::module_& m) {
     m.def("infer",
           [](const Policy& policy,
              const py::dict& params,
-             const knn::model<Task>& model,
+             const dal::knn::model<Task>& model,
              const table& data) {
-              using namespace knn;
+              using namespace dal::knn;
               using input_t = infer_input<Task>;
 
               infer_ops ops(policy, input_t{ data, model }, params2desc{});
@@ -252,7 +254,7 @@ void init_infer_ops(py::module_& m) {
 
 template <typename Task>
 void init_model(py::module_& m) {
-    using namespace knn;
+    using namespace dal::knn;
     using model_t = model<Task>;
 
     auto cls = py::class_<model_t>(m, "model")
@@ -268,7 +270,7 @@ void init_model(py::module_& m) {
 
 template <typename Task>
 void init_train_result(py::module_& m) {
-    using namespace knn;
+    using namespace dal::knn;
     using result_t = train_result<Task>;
 
     py::class_<result_t>(m, "train_result").def(py::init()).DEF_ONEDAL_PY_PROPERTY(model, result_t);
@@ -276,7 +278,7 @@ void init_train_result(py::module_& m) {
 
 template <typename Task>
 void init_infer_result(py::module_& m) {
-    using namespace knn;
+    using namespace dal::knn;
     using result_t = infer_result<Task>;
 
     auto cls = py::class_<result_t>(m, "infer_result")
@@ -294,18 +296,17 @@ void init_infer_result(py::module_& m) {
     }
 }
 
-ONEDAL_PY_TYPE2STR(knn::task::classification, "classification");
-ONEDAL_PY_TYPE2STR(knn::task::regression, "regression");
-ONEDAL_PY_TYPE2STR(knn::task::search, "search");
-
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 
+} // namespace neighbors
+
 ONEDAL_PY_INIT_MODULE(neighbors) {
-    using namespace knn;
+    using namespace neighbors;
+    using namespace dal::knn;
     using namespace dal::detail;
 
     using task_list = types<task::classification, task::regression, task::search>;
@@ -318,5 +319,9 @@ ONEDAL_PY_INIT_MODULE(neighbors) {
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
 }
+
+ONEDAL_PY_TYPE2STR(dal::knn::task::classification, "classification");
+ONEDAL_PY_TYPE2STR(dal::knn::task::regression, "regression");
+ONEDAL_PY_TYPE2STR(dal::knn::task::search, "search");
 
 } // namespace oneapi::dal::python

@@ -35,6 +35,7 @@ ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 /* algorithms */
 ONEDAL_PY_INIT_MODULE(svm);
 ONEDAL_PY_INIT_MODULE(neighbors);
+ONEDAL_PY_INIT_MODULE(linear_model);
 
 #ifdef ONEDAL_DATA_PARALLEL
 PYBIND11_MODULE(_onedal_py_dpc, m) {
@@ -51,6 +52,7 @@ PYBIND11_MODULE(_onedal_py_host, m) {
 
     init_svm(m);
     init_neighbors(m);
+    init_linear_model(m);
 }
 
 } // namespace oneapi::dal::python

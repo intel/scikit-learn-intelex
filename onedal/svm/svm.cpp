@@ -23,13 +23,15 @@ namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
+namespace svm {
+
 template <typename Task, typename Ops>
 struct method2t {
     method2t(const Task& task, const Ops& ops) : ops(ops) {}
 
     template <typename Float>
     auto operator()(const py::dict& params) {
-        using namespace svm;
+        using namespace dal::svm;
 
         const auto method = params["method"].cast<std::string>();
         if constexpr (std::is_same_v<Task, task::classification>) {
@@ -53,7 +55,7 @@ struct kernel2t {
 
     template <typename Float, typename Method>
     auto operator()(const py::dict& params) {
-        using namespace svm;
+        using namespace dal::svm;
 
         auto kernel = params["kernel"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(kernel, "linear", ops, Float, Method, linear_kernel::descriptor<Float>);
@@ -69,7 +71,7 @@ struct kernel2t {
 struct params2desc {
     template <typename Float, typename Method, typename Task, typename Kernel>
     auto operator()(const pybind11::dict& params) {
-        using namespace svm;
+        using namespace dal::svm;
 
         constexpr bool is_cls = std::is_same_v<Task, task::classification>;
         constexpr bool is_nu_cls = std::is_same_v<Task, task::nu_classification>;
@@ -108,7 +110,7 @@ void init_train_ops(py::module_& m) {
              const table& data,
              const table& responses,
              const table& weights) {
-              using namespace svm;
+              using namespace dal::svm;
               using input_t = train_input<Task>;
 
               train_ops ops(policy, input_t{ data, responses, weights }, params2desc{} );
@@ -121,9 +123,9 @@ void init_infer_ops(py::module_& m) {
     m.def("infer",
           [](const Policy& policy,
              const py::dict& params,
-             const svm::model<Task>& model,
+             const dal::svm::model<Task>& model,
              const table& data) {
-              using namespace svm;
+              using namespace dal::svm;
               using input_t = infer_input<Task>;
 
               infer_ops ops(policy, input_t{ model, data }, params2desc{} );
@@ -133,7 +135,7 @@ void init_infer_ops(py::module_& m) {
 
 template <typename Task>
 void init_model(py::module_& m) {
-    using namespace svm;
+    using namespace dal::svm;
     using model_t = model<Task>;
 
     auto cls =
@@ -166,7 +168,7 @@ void init_model(py::module_& m) {
 
 template <typename Task>
 void init_train_result(py::module_& m) {
-    using namespace svm;
+    using namespace dal::svm;
     using result_t = train_result<Task>;
 
     py::class_<result_t>(m, "train_result")
@@ -180,7 +182,7 @@ void init_train_result(py::module_& m) {
 
 template <typename Task>
 void init_infer_result(py::module_& m) {
-    using namespace svm;
+    using namespace dal::svm;
     using result_t = infer_result<Task>;
 
     auto cls = py::class_<result_t>(m, "infer_result")
@@ -197,19 +199,17 @@ void init_infer_result(py::module_& m) {
     }
 }
 
-ONEDAL_PY_TYPE2STR(svm::task::classification, "classification");
-ONEDAL_PY_TYPE2STR(svm::task::regression, "regression");
-ONEDAL_PY_TYPE2STR(svm::task::nu_classification, "nu_classification");
-ONEDAL_PY_TYPE2STR(svm::task::nu_regression, "nu_regression");
-
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 
+} // namespace svm 
+
 ONEDAL_PY_INIT_MODULE(svm) {
     using namespace svm;
+    using namespace dal::svm;
     using namespace dal::detail;
 
     using task_list =
@@ -223,5 +223,10 @@ ONEDAL_PY_INIT_MODULE(svm) {
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
 }
+
+ONEDAL_PY_TYPE2STR(dal::svm::task::classification, "classification");
+ONEDAL_PY_TYPE2STR(dal::svm::task::regression, "regression");
+ONEDAL_PY_TYPE2STR(dal::svm::task::nu_classification, "nu_classification");
+ONEDAL_PY_TYPE2STR(dal::svm::task::nu_regression, "nu_regression");
 
 } // namespace oneapi::dal::python
