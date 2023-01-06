@@ -20,5 +20,5 @@ from .knn_unsupervised import NearestNeighbors
 from .knn_regression import KNeighborsRegressor
 from .lof import LocalOutlierFactor
 
-__all__ = ['KNeighborsClassifier', 'KNeighborsRegressor', 'NearestNeighbors',
-           'LocalOutlierFactor']
+__all__ = ['KNeighborsClassifier', 'KNeighborsRegressor', 'LocalOutlierFactor',
+           'NearestNeighbors']
