@@ -54,17 +54,17 @@ def test_pickle(queue):
 
 
 @pytest.mark.parametrize('queue', get_queues())
-def test_train_results(queue):
+def test_full_results(queue):
     seed = 42
     f_count, r_count = 19, 7
     s_count, t_count = 3500, 1999
 
     np.random.seed(seed)
     intp = np.random.rand(r_count)
-    coef = np.random.rand(r_count, f_count)
+    coef = np.random.rand(r_count, f_count).T
 
     X = np.random.rand(s_count, f_count)
-    y = X @ coef.T + intp[np.newaxis, :]
+    y = X @ coef + intp[np.newaxis, :]
 
     model = LinearRegression(fit_intercept=True)
     model.fit(X, y, queue=queue)
@@ -73,7 +73,31 @@ def test_train_results(queue):
     assert_allclose(intp, model.intercept_)
 
     Xt = np.random.rand(t_count, f_count)
-    gtr = Xt @ coef.T + intp[np.newaxis, :]
+    gtr = Xt @ coef + intp[np.newaxis, :]
+
+    res = model.predict(Xt, queue=queue)
+
+    assert_allclose(gtr, res)
+
+@pytest.mark.parametrize('queue', get_queues())
+def test_no_intercept_results(queue):
+    seed = 42
+    f_count, r_count = 19, 7
+    s_count, t_count = 3500, 1999
+
+    np.random.seed(seed)
+    coef = np.random.rand(r_count, f_count).T
+
+    X = np.random.rand(s_count, f_count)
+    y = X @ coef
+
+    model = LinearRegression(fit_intercept=True)
+    model.fit(X, y, queue=queue)
+
+    assert_allclose(coef, model.coef_)
+
+    Xt = np.random.rand(t_count, f_count)
+    gtr = Xt @ coef
 
     res = model.predict(Xt, queue=queue)
 
@@ -87,10 +111,10 @@ def test_reconstruct_model(queue):
 
     np.random.seed(seed)
     intp = np.random.rand(r_count)
-    coef = np.random.rand(r_count, f_count)
+    coef = np.random.rand(r_count, f_count).T
 
     X = np.random.rand(s_count, f_count)
-    gtr = X @ coef.T + intp[np.newaxis, :]
+    gtr = X @ coef + intp[np.newaxis, :]
 
     model = LinearRegression(fit_intercept=True)
     model.coef_ = coef

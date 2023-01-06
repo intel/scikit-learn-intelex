@@ -23,7 +23,6 @@ from numbers import Number
 import numpy as np
 from scipy import sparse as sp
 from ..datatypes import (
-    _validate_targets,
     _check_X_y,
     _check_array,
     _check_n_features
@@ -69,6 +68,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
                         to_table(X), to_table(y))
 
         self.coef_ = from_table(result.coefficients)
+        if len(self.coef_.shape) == 2 and self.coef_.shape[0] == 1:
+            assert self.coef_.shape[0] == 1
+            self.coef_ = self.coef_.ravel()
         
         if self.fit_intercept:
             self.intercept_ = from_table(result.intercept)
@@ -84,10 +86,12 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         m = module.model()
 
         dtype = self.coef_.dtype
-        r_count = self.coef_.shape[0]
+        is_multi_output = len(self.coef_.shape) == 2
+        r_count = self.coef_.shape[0] if is_multi_output else 1
         intercept = self.intercept_ if self.fit_intercept \
                         else np.zeros(r_count, dtype=dtype)
-        assert intercept.shape == (r_count,)
+        if self.fit_intercept:
+            assert intercept.shape == (r_count,)
         intercept = intercept.reshape(r_count, 1)
         
         coefficients = np.array(self.coef_)

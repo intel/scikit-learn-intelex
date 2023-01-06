@@ -25,7 +25,7 @@ def test_sklearnex_import_liner():
     X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
     y = np.dot(X, np.array([1, 2])) + 3
     linreg = LinearRegression().fit(X, y)
-    assert 'daal4py' in linreg.__module__
+    assert 'daal4py' in linreg.__module__ or 'sklearnex' in linreg.__module__
     assert_allclose(linreg.intercept_, 3.)
     assert_allclose(linreg.coef_, [1., 2.])
 

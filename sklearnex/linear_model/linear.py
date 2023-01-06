@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 #===============================================================================
-# Copyright 2021 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,4 +14,101 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.linear_model import LinearRegression
+from daal4py.sklearn._utils import sklearn_check_version
+from ._common import BaseLinearRegression
+from .._device_offload import dispatch, wrap_output_data
+
+from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
+from sklearn.utils.validation import _deprecate_positional_args
+from sklearn.exceptions import NotFittedError
+from scipy import sparse as sp
+
+from onedal.linear_model import LinearRegression as onedal_LinearRegression
+
+
+class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
+    __doc__ = sklearn_LinearRegression.__doc__
+
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**sklearn_LinearRegression._parameter_constraints}
+
+    @_deprecate_positional_args
+    def __init__(self, *, fit_intercept=True):
+        super().__init__(fit_intercept=fit_intercept)
+
+    def fit(self, X, y, sample_weight=None):
+        """
+        Fit linear model.
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,) or (n_samples, n_targets)
+            Target values. Will be cast to X's dtype if necessary.
+        sample_weight : array-like of shape (n_samples,), default=None
+            Individual weights for each sample.
+            .. versionadded:: 0.17
+               parameter *sample_weight* support to LinearRegression.
+        Returns
+        -------
+        self : object
+            Fitted Estimator.
+        """
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
+        dispatch(self, 'linear_model.LinearRegression.fit', {
+            'onedal': self.__class__._onedal_fit,
+            'sklearn': sklearn_LinearRegression.fit,
+        }, X, y)
+        return self
+
+    @wrap_output_data
+    def predict(self, X):
+        """
+        Predict using the linear model.
+        Parameters
+        ----------
+        X : array-like or sparse matrix, shape (n_samples, n_features)
+            Samples.
+        Returns
+        -------
+        C : array, shape (n_samples, n_targets)
+            Returns predicted values.
+        """
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        return dispatch(self, 'linear_model.LinearRegression.predict', {
+            'onedal': self.__class__._onedal_predict,
+            'sklearn': sklearn_LinearRegression.predict,
+        }, X)
+
+    def _onedal_gpu_supported(self, method_name, *data):
+        if method_name in [ 'linear_model.LinearRegression.fit', 
+                            'linear_model.LinearRegression.predict']:
+            if len(data) > 1:
+                import numpy as np
+                from scipy import sparse as sp
+
+                self._is_sparse = sp.isspmatrix(data[0])
+            return hasattr(self, '_is_sparse') and not self._is_sparse
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+
+    def _onedal_cpu_supported(self, method_name, *data):
+        if method_name in ['linear_model.LinearRegression.fit', 
+                           'linear_model.LinearRegression.predict']:
+            self._is_sparse = sp.isspmatrix(data[0])
+            return hasattr(self, '_is_sparse') and not self._is_sparse
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+
+    def _onedal_fit(self, X, y, queue=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+        onedal_params = {'fit_intercept' : self.fit_intercept}
+
+        self._onedal_estimator = onedal_LinearRegression(**onedal_params)
+        self._onedal_estimator.fit(X, y, queue=queue)
+
+        self._save_attributes()
+
+    def _onedal_predict(self, X, queue=None):
+        return self._onedal_estimator.predict(X, queue=queue)
