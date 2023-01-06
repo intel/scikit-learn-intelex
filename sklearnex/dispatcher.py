@@ -44,6 +44,8 @@ def get_patch_map():
         from .svm import NuSVR as NuSVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
 
+        from .linear_model import LinearRegression as LinearRegression_sklearnex
+
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
@@ -53,6 +55,7 @@ def get_patch_map():
         import sklearn as base_module
         import sklearn.svm as svm_module
         import sklearn.neighbors as neighbors_module
+        import sklearn.linear_model as linear_model_module
 
         # Patch for mapping
         # Algorithms
@@ -83,6 +86,12 @@ def get_patch_map():
         mapping['kneighborsclassifier'] = mapping['knn_classifier']
         mapping['kneighborsregressor'] = mapping['knn_regressor']
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
+
+        #LinearRegression
+        mapping.pop('linear')
+        mapping['linear'] = [[(linear_model_module,
+                                       'LinearRegression',
+                                       LinearRegression_sklearnex), None]]
 
         # Configs
         mapping['set_config'] = [[(base_module,
