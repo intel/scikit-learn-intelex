@@ -825,6 +825,11 @@ if sklearn_check_version('0.24'):
     class LogisticRegression(LogisticRegression_original):
         __doc__ = LogisticRegression_original.__doc__
 
+        if sklearn_check_version('1.2'):
+            _parameter_constraints: dict = {
+                **LogisticRegression_original._parameter_constraints
+            }
+
         def __init__(
             self,
             penalty='l2',
@@ -891,6 +896,8 @@ if sklearn_check_version('0.24'):
             """
             if sklearn_check_version('1.0'):
                 self._check_feature_names(X, reset=True)
+            if sklearn_check_version("1.2"):
+                self._validate_params()
             which, what = logistic_module, '_logistic_regression_path'
             replacer = logistic_regression_path
             descriptor = getattr(which, what, None)
