@@ -25,7 +25,6 @@ jobs:
 
     steps:
       - checkout
-      - run: python --version
       - run:
           name: Checkout master
           command: |
@@ -64,6 +63,7 @@ jobs:
             pushd scikit-learn && python setup.py install && popd
             pwd
             conda list
+            cd ../
             pwd
             ls -al
             source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_master_pytest_logs_sklearnex.tar.bz2 sklearnex skex
