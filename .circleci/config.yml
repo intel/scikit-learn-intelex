@@ -19,7 +19,7 @@ version: 2.0
 jobs:
   build_pypi:
     docker:
-      - image: circleci/python:3.10.1
+      - image: cimg/python:3.11
 
     working_directory: ~/daal4py-ci
 
@@ -69,7 +69,7 @@ jobs:
 
   build_master:
     docker:
-      - image: circleci/python:3.10.1
+      - image: cimg/python:3.11
 
     working_directory: ~/daal4py-ci
 
@@ -107,6 +107,8 @@ jobs:
             git clone https://github.com/scikit-learn/scikit-learn.git
             pushd scikit-learn && python setup.py install && popd
             conda list
+            pwd
+            ls -al
             source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
