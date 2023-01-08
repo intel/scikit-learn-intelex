@@ -119,5 +119,8 @@ workflows:
     triggers:
       - schedule:
           cron: "49 23 * * *"
+          filters:
+            branches:
+              only: test-sklearn-master
     jobs:
       - build_scikit-learn_master
