@@ -62,7 +62,7 @@ jobs:
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs_sklearnex.tar.bz2
 
-  build_master:
+  build_scikit-learn_master:
     docker:
       - image: cimg/python:3.11
 
