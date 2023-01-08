@@ -104,7 +104,7 @@ def _daal4py_compute_starting_centroids(
 
 def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype="double",
                                   method="lloydDense", accuracyThreshold=0.0,
-                                  resultsToEvaluate="computeCentroids"):
+                                  resultsToEvaluate="computeCentroids", gamma=1.0):
     kmeans_algo = None
     if daal_check_version(((2020, 'P', 2), (2021, 'B', 107))):
         kmeans_algo = daal4py.kmeans(nClusters=nClusters,
@@ -112,7 +112,8 @@ def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype="double",
                                      fptype=fptype,
                                      resultsToEvaluate=resultsToEvaluate,
                                      accuracyThreshold=accuracyThreshold,
-                                     method=method)
+                                     method=method,
+                                     gamma=gamma)
     else:
         assigFlag = 'computeAssignments' in resultsToEvaluate
         kmeans_algo = daal4py.kmeans(nClusters=nClusters,
@@ -120,7 +121,8 @@ def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype="double",
                                      fptype=fptype,
                                      assignFlag=assigFlag,
                                      accuracyThreshold=accuracyThreshold,
-                                     method=method)
+                                     method=method,
+                                     gamma=gamma)
     return kmeans_algo
 
 

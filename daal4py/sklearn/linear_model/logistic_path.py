@@ -658,13 +658,13 @@ def __logistic_regression_path(
                 else:
                     multi_w0 = np.reshape(w0, (classes.size, -1))
             else:
+                n_classes = max(2, classes.size)
                 if sklearn_check_version('1.1'):
                     if solver in ["lbfgs", "newton-cg"]:
                         multi_w0 = np.reshape(w0, (n_classes, -1), order="F")
                     else:
                         multi_w0 = w0
                 else:
-                    n_classes = max(2, classes.size)
                     multi_w0 = np.reshape(w0, (n_classes, -1))
                 if n_classes == 2:
                     multi_w0 = multi_w0[1][np.newaxis, :]
@@ -825,6 +825,11 @@ if sklearn_check_version('0.24'):
     class LogisticRegression(LogisticRegression_original):
         __doc__ = LogisticRegression_original.__doc__
 
+        if sklearn_check_version('1.2'):
+            _parameter_constraints: dict = {
+                **LogisticRegression_original._parameter_constraints
+            }
+
         def __init__(
             self,
             penalty='l2',
@@ -891,6 +896,8 @@ if sklearn_check_version('0.24'):
             """
             if sklearn_check_version('1.0'):
                 self._check_feature_names(X, reset=True)
+            if sklearn_check_version("1.2"):
+                self._validate_params()
             which, what = logistic_module, '_logistic_regression_path'
             replacer = logistic_regression_path
             descriptor = getattr(which, what, None)

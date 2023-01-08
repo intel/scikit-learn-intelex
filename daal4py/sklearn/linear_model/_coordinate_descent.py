@@ -23,7 +23,7 @@ from sklearn.linear_model._coordinate_descent import ElasticNet as ElasticNet_or
 from sklearn.linear_model._coordinate_descent import Lasso as Lasso_original
 from daal4py.sklearn._utils import (
     make2d, getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
-if sklearn_check_version('1.0'):
+if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
     from sklearn.linear_model._base import _deprecate_normalize
 
 import logging
@@ -96,7 +96,10 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     else:
         y_offset = np.zeros(y.shape[1], dtype=X.dtype)
 
-    _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
+    if sklearn_check_version('1.2'):
+        _normalize = False
+    else:
+        _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
     if self.fit_intercept:
         X_offset = np.average(X, axis=0)
         if _normalize:
@@ -251,7 +254,10 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     else:
         y_offset = np.zeros(y.shape[1], dtype=X.dtype)
 
-    _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
+    if sklearn_check_version('1.2'):
+        _normalize = False
+    else:
+        _normalize = self._normalize if sklearn_check_version('1.0') else self.normalize
     if self.fit_intercept:
         X_offset = np.average(X, axis=0)
         if _normalize:
@@ -386,6 +392,8 @@ def _daal4py_predict_lasso(self, X):
 def _fit(self, X, y, sample_weight=None, check_input=True):
     if sklearn_check_version('1.0'):
         self._check_feature_names(X, reset=True)
+    if sklearn_check_version("1.2"):
+        self._validate_params()
     # check X and y
     if check_input:
         X, y = check_X_y(
@@ -405,7 +413,10 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
     else:
         self.fit_shape_good_for_daal_ = False
 
-    _function_name = f"sklearn.linear_model.{self.__class__.__name__}.fit"
+    class_name = self.__class__.__name__
+    class_inst = ElasticNet if class_name == 'ElasticNet' else Lasso
+
+    _function_name = f"sklearn.linear_model.{class_name}.fit"
     _patching_status = PatchingConditionsChain(
         _function_name)
     _dal_ready = _patching_status.and_conditions([
@@ -423,10 +434,10 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         if hasattr(self, 'daal_model_'):
             del self.daal_model_
         if sklearn_check_version('0.23'):
-            res_new = super(ElasticNet, self).fit(
+            res_new = super(class_inst, self).fit(
                 X, y, sample_weight=sample_weight, check_input=check_input)
         else:
-            res_new = super(ElasticNet, self).fit(
+            res_new = super(class_inst, self).fit(
                 X, y, check_input=check_input)
         self._gap = res_new.dual_gap_
         return res_new
@@ -443,11 +454,12 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
             # print(X.flags)
             raise ValueError("ndarray is not Fortran contiguous")
 
-    if sklearn_check_version('1.0'):
+    if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
         self._normalize = _deprecate_normalize(
             self.normalize,
             default=False,
-            estimator_name=self.__class__.__name__)
+            estimator_name=class_name
+        )
 
     # only for pass tests
     # "check_estimators_fit_returns_self(readonly_memmap=True) and
@@ -457,7 +469,7 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
     if not y.flags.writeable:
         y = np.copy(y)
 
-    if self.__class__.__name__ == "ElasticNet":
+    if class_name == "ElasticNet":
         res = _daal4py_fit_enet(self, X, y, check_input=check_input)
     else:
         res = _daal4py_fit_lasso(self, X, y, check_input=check_input)
@@ -468,48 +480,137 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
             _function_name + ": " + get_patch_message("sklearn_after_daal")
         )
         if sklearn_check_version('0.23'):
-            res_new = super(ElasticNet, self).fit(
+            res_new = super(class_inst, self).fit(
                 X, y, sample_weight=sample_weight, check_input=check_input)
         else:
-            res_new = super(ElasticNet, self).fit(
+            res_new = super(class_inst, self).fit(
                 X, y, check_input=check_input)
         self._gap = res_new.dual_gap_
         return res_new
     return res
 
 
+def _dual_gap(self):
+    if (self._gap is None):
+        l1_reg = self.alpha * self.l1_ratio * self._X.shape[0]
+        l2_reg = self.alpha * (1.0 - self.l1_ratio) * self._X.shape[0]
+        n_targets = self._y.shape[1]
+
+        if (n_targets == 1):
+            self._gap = self.tol + 1.0
+            X_offset = np.average(self._X, axis=0)
+            y_offset = np.average(self._y, axis=0)
+            coef = np.reshape(self.coef_, (self.coef_.shape[0], 1))
+            R = (self._y - y_offset) - np.dot((self._X - X_offset), coef)
+            XtA = np.dot((self._X - X_offset).T, R) - l2_reg * coef
+            R_norm2 = np.dot(R.T, R)
+            coef_norm2 = np.dot(self.coef_, self.coef_)
+            dual_norm_XtA = np.max(
+                XtA) if self.positive else np.max(np.abs(XtA))
+            if dual_norm_XtA > l1_reg:
+                const = l1_reg / dual_norm_XtA
+                A_norm2 = R_norm2 * (const ** 2)
+                self._gap = 0.5 * (R_norm2 + A_norm2)
+            else:
+                const = 1.0
+                self._gap = R_norm2
+            l1_norm = np.sum(np.abs(self.coef_))
+            tmp = l1_reg * l1_norm
+            tmp -= const * np.dot(R.T, (self._y - y_offset))
+            tmp += 0.5 * l2_reg * (1 + const ** 2) * coef_norm2
+            self._gap += tmp
+            self._gap = self._gap[0][0]
+        else:
+            self._gap = np.full(n_targets, self.tol + 1.0)
+            X_offset = np.average(self._X, axis=0)
+            y_offset = np.average(self._y, axis=0)
+            for k in range(n_targets):
+                R = (self._y[:, k] - y_offset[k]) - \
+                    np.dot((self._X - X_offset), self.coef_[k, :].T)
+                XtA = np.dot((self._X - X_offset).T, R) - \
+                    l2_reg * self.coef_[k, :].T
+                R_norm2 = np.dot(R.T, R)
+                coef_norm2 = np.dot(self.coef_[k, :], self.coef_[k, :].T)
+                dual_norm_XtA = np.max(
+                    XtA) if self.positive else np.max(np.abs(XtA))
+                if dual_norm_XtA > l1_reg:
+                    const = l1_reg / dual_norm_XtA
+                    A_norm2 = R_norm2 * (const ** 2)
+                    self._gap[k] = 0.5 * (R_norm2 + A_norm2)
+                else:
+                    const = 1.0
+                    self._gap[k] = R_norm2
+                l1_norm = np.sum(np.abs(self.coef_[k, :]))
+                tmp = l1_reg * l1_norm
+                tmp -= const * np.dot(R.T, (self._y[:, k] - y_offset[k]))
+                tmp += 0.5 * l2_reg * (1 + const ** 2) * coef_norm2
+                self._gap[k] += tmp
+    return self._gap
+
+
 class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
-    def __init__(
-        self,
-        alpha=1.0,
-        l1_ratio=0.5,
-        fit_intercept=True,
-        normalize="deprecated" if sklearn_check_version('1.0') else False,
-        precompute=False,
-        max_iter=1000,
-        copy_X=True,
-        tol=1e-4,
-        warm_start=False,
-        positive=False,
-        random_state=None,
-        selection='cyclic',
-    ):
-        super(ElasticNet, self).__init__(
-            alpha=alpha,
-            l1_ratio=l1_ratio,
-            fit_intercept=fit_intercept,
-            normalize=normalize,
-            precompute=precompute,
-            max_iter=max_iter,
-            copy_X=copy_X,
-            tol=tol,
-            warm_start=warm_start,
-            positive=positive,
-            random_state=random_state,
-            selection=selection,
-        )
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**ElasticNet_original._parameter_constraints}
+
+        def __init__(
+            self,
+            alpha=1.0,
+            l1_ratio=0.5,
+            fit_intercept=True,
+            precompute=False,
+            max_iter=1000,
+            copy_X=True,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            super(ElasticNet, self).__init__(
+                alpha=alpha,
+                l1_ratio=l1_ratio,
+                fit_intercept=fit_intercept,
+                precompute=precompute,
+                max_iter=max_iter,
+                copy_X=copy_X,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
+    else:
+        def __init__(
+            self,
+            alpha=1.0,
+            l1_ratio=0.5,
+            fit_intercept=True,
+            normalize="deprecated" if sklearn_check_version('1.0') else False,
+            precompute=False,
+            max_iter=1000,
+            copy_X=True,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            super(ElasticNet, self).__init__(
+                alpha=alpha,
+                l1_ratio=l1_ratio,
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                precompute=precompute,
+                max_iter=max_iter,
+                copy_X=copy_X,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
 
     if sklearn_check_version('0.23'):
         @support_usm_ndarray()
@@ -623,61 +724,7 @@ class ElasticNet(ElasticNet_original):
 
     @property
     def dual_gap_(self):
-        if (self._gap is None):
-            l1_reg = self.alpha * self.l1_ratio * self._X.shape[0]
-            l2_reg = self.alpha * (1.0 - self.l1_ratio) * self._X.shape[0]
-            n_targets = self._y.shape[1]
-
-            if (n_targets == 1):
-                self._gap = self.tol + 1.0
-                X_offset = np.average(self._X, axis=0)
-                y_offset = np.average(self._y, axis=0)
-                coef = np.reshape(self.coef_, (self.coef_.shape[0], 1))
-                R = (self._y - y_offset) - np.dot((self._X - X_offset), coef)
-                XtA = np.dot((self._X - X_offset).T, R) - l2_reg * coef
-                R_norm2 = np.dot(R.T, R)
-                coef_norm2 = np.dot(self.coef_, self.coef_)
-                dual_norm_XtA = np.max(
-                    XtA) if self.positive else np.max(np.abs(XtA))
-                if dual_norm_XtA > l1_reg:
-                    const = l1_reg / dual_norm_XtA
-                    A_norm2 = R_norm2 * (const ** 2)
-                    self._gap = 0.5 * (R_norm2 + A_norm2)
-                else:
-                    const = 1.0
-                    self._gap = R_norm2
-                l1_norm = np.sum(np.abs(self.coef_))
-                tmp = l1_reg * l1_norm
-                tmp -= const * np.dot(R.T, (self._y - y_offset))
-                tmp += 0.5 * l2_reg * (1 + const ** 2) * coef_norm2
-                self._gap += tmp
-                self._gap = self._gap[0][0]
-            else:
-                self._gap = np.full(n_targets, self.tol + 1.0)
-                X_offset = np.average(self._X, axis=0)
-                y_offset = np.average(self._y, axis=0)
-                for k in range(n_targets):
-                    R = (self._y[:, k] - y_offset[k]) - \
-                        np.dot((self._X - X_offset), self.coef_[k, :].T)
-                    XtA = np.dot((self._X - X_offset).T, R) - \
-                        l2_reg * self.coef_[k, :].T
-                    R_norm2 = np.dot(R.T, R)
-                    coef_norm2 = np.dot(self.coef_[k, :], self.coef_[k, :].T)
-                    dual_norm_XtA = np.max(
-                        XtA) if self.positive else np.max(np.abs(XtA))
-                    if dual_norm_XtA > l1_reg:
-                        const = l1_reg / dual_norm_XtA
-                        A_norm2 = R_norm2 * (const ** 2)
-                        self._gap[k] = 0.5 * (R_norm2 + A_norm2)
-                    else:
-                        const = 1.0
-                        self._gap[k] = R_norm2
-                    l1_norm = np.sum(np.abs(self.coef_[k, :]))
-                    tmp = l1_reg * l1_norm
-                    tmp -= const * np.dot(R.T, (self._y[:, k] - y_offset[k]))
-                    tmp += 0.5 * l2_reg * (1 + const ** 2) * coef_norm2
-                    self._gap[k] += tmp
-        return self._gap
+        return _dual_gap(self)
 
     @dual_gap_.setter
     def dual_gap_(self, value):
@@ -688,37 +735,65 @@ class ElasticNet(ElasticNet_original):
         self._gap = None
 
 
-class Lasso(ElasticNet):
+class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 
-    def __init__(
-        self,
-        alpha=1.0,
-        fit_intercept=True,
-        normalize="deprecated" if sklearn_check_version('1.0') else False,
-        precompute=False,
-        copy_X=True,
-        max_iter=1000,
-        tol=1e-4,
-        warm_start=False,
-        positive=False,
-        random_state=None,
-        selection='cyclic',
-    ):
-        super().__init__(
-            alpha=alpha,
-            l1_ratio=1.0,
-            fit_intercept=fit_intercept,
-            normalize=normalize,
-            precompute=precompute,
-            copy_X=copy_X,
-            max_iter=max_iter,
-            tol=tol,
-            warm_start=warm_start,
-            positive=positive,
-            random_state=random_state,
-            selection=selection,
-        )
+    if sklearn_check_version('1.2'):
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            precompute=False,
+            copy_X=True,
+            max_iter=1000,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            self.l1_ratio = 1.0
+            super().__init__(
+                alpha=alpha,
+                fit_intercept=fit_intercept,
+                precompute=precompute,
+                copy_X=copy_X,
+                max_iter=max_iter,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
+    else:
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            normalize="deprecated" if sklearn_check_version('1.0') else False,
+            precompute=False,
+            copy_X=True,
+            max_iter=1000,
+            tol=1e-4,
+            warm_start=False,
+            positive=False,
+            random_state=None,
+            selection='cyclic',
+        ):
+            self.l1_ratio = 1.0
+            super().__init__(
+                alpha=alpha,
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                precompute=precompute,
+                copy_X=copy_X,
+                max_iter=max_iter,
+                tol=tol,
+                warm_start=warm_start,
+                positive=positive,
+                random_state=random_state,
+                selection=selection,
+            )
 
     if sklearn_check_version('0.23'):
         @support_usm_ndarray()
@@ -827,3 +902,15 @@ class Lasso(ElasticNet):
         if not _dal_ready:
             return self._decision_function(X)
         return _daal4py_predict_lasso(self, X)
+
+    @property
+    def dual_gap_(self):
+        return _dual_gap(self)
+
+    @dual_gap_.setter
+    def dual_gap_(self, value):
+        self._gap = value
+
+    @dual_gap_.deleter
+    def dual_gap_(self):
+        self._gap = None

@@ -33,9 +33,11 @@ from ..neighbors import NearestNeighbors
 from .._device_offload import support_usm_ndarray
 
 if sklearn_check_version('0.22'):
-    from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
+    from sklearn.manifold._t_sne import _joint_probabilities
+    from sklearn.manifold._t_sne import _joint_probabilities_nn
 else:
-    from sklearn.manifold.t_sne import _joint_probabilities, _joint_probabilities_nn
+    from sklearn.manifold.t_sne import _joint_probabilities
+    from sklearn.manifold.t_sne import _joint_probabilities_nn
 
 
 class TSNE(BaseTSNE):
@@ -98,8 +100,19 @@ class TSNE(BaseTSNE):
         # * final optimization with momentum at 0.8
 
         # N, nnz, n_iter_without_progress, n_iter
-        size_iter = np.array([[n_samples], [P.nnz], [self.n_iter_without_progress],
-                             [self.n_iter]], dtype=P.dtype)
+        size_iter = [[n_samples], [P.nnz],
+                     [self.n_iter_without_progress],
+                     [self.n_iter]]
+
+        # Pass params to daal4py backend
+        if daal_check_version((2023, 'P', 1)):
+            size_iter.extend(
+                [[self._EXPLORATION_N_ITER],
+                 [self._N_ITER_CHECK]]
+            )
+
+        size_iter = np.array(size_iter, dtype=P.dtype)
+
         params = np.array([[self.early_exaggeration], [self._learning_rate],
                           [self.min_grad_norm], [self.angle]], dtype=P.dtype)
         results = np.zeros((3, 1), dtype=P.dtype)  # curIter, error, gradNorm
@@ -164,17 +177,28 @@ class TSNE(BaseTSNE):
                                  "or 'auto'.")
 
         if hasattr(self, 'square_distances'):
-            if self.square_distances not in [True, 'legacy']:
-                raise ValueError("'square_distances' must be True or 'legacy'.")
-            if self.metric != "euclidean" and self.square_distances is not True:
-                warnings.warn(("'square_distances' has been introduced in 0.24"
-                               "to help phase out legacy squaring behavior. The "
-                               "'legacy' setting will be removed in 0.26, and the "
-                               "default setting will be changed to True. In 0.28, "
-                               "'square_distances' will be removed altogether,"
-                               "and distances will be squared by default. Set "
-                               "'square_distances'=True to silence this warning."),
-                              FutureWarning)
+            if sklearn_check_version("1.1"):
+                if self.square_distances != "deprecated":
+                    warnings.warn(
+                        "The parameter `square_distances` has not effect "
+                        "and will be removed in version 1.3.",
+                        FutureWarning,
+                    )
+            else:
+                if self.square_distances not in [True, "legacy"]:
+                    raise ValueError(
+                        "'square_distances' must be True or 'legacy'.")
+                if self.metric != "euclidean" and self.square_distances is not True:
+                    warnings.warn(
+                        "'square_distances' has been introduced in 0.24 to help phase "
+                        "out legacy squaring behavior. The 'legacy' setting will be "
+                        "removed in 1.1 (renaming of 0.26), and the default setting "
+                        "will be changed to True. In 1.3, 'square_distances' will be "
+                        "removed altogether, and distances will be squared by "
+                        "default. Set 'square_distances'=True to silence this "
+                        "warning.",
+                        FutureWarning,
+                    )
 
         if self.method == 'barnes_hut':
             if sklearn_check_version('0.23'):
@@ -242,8 +266,12 @@ class TSNE(BaseTSNE):
                     distances = pairwise_distances(X, metric=self.metric,
                                                    squared=True)
                 else:
+                    metric_params_ = {}
+                    if sklearn_check_version('1.1'):
+                        metric_params_ = self.metric_params or {}
                     distances = pairwise_distances(X, metric=self.metric,
-                                                   n_jobs=self.n_jobs)
+                                                   n_jobs=self.n_jobs,
+                                                   **metric_params_)
 
             if np.any(distances < 0):
                 raise ValueError("All distances should be positive, the "
@@ -272,12 +300,22 @@ class TSNE(BaseTSNE):
                       .format(n_neighbors))
 
             # Find the nearest neighbors for every point
-            knn = NearestNeighbors(
-                algorithm='auto',
-                n_jobs=self.n_jobs,
-                n_neighbors=n_neighbors,
-                metric=self.metric,
-            )
+            knn = None
+            if sklearn_check_version("1.1"):
+                knn = NearestNeighbors(
+                    algorithm='auto',
+                    n_jobs=self.n_jobs,
+                    n_neighbors=n_neighbors,
+                    metric=self.metric,
+                    metric_params=self.metric_params
+                )
+            else:
+                knn = NearestNeighbors(
+                    algorithm='auto',
+                    n_jobs=self.n_jobs,
+                    n_neighbors=n_neighbors,
+                    metric=self.metric
+                )
             t0 = time()
             knn.fit(X)
             duration = time() - t0
@@ -336,11 +374,13 @@ class TSNE(BaseTSNE):
         # Laurens van der Maaten, 2009.
         degrees_of_freedom = max(self.n_components - 1, 1)
 
-        daal_ready = self.method == 'barnes_hut' and self.n_components == 2 and \
-            self.verbose == 0 and daal_check_version((2021, 'P', 600))
+        daal_ready = self.method == 'barnes_hut' and \
+            self.n_components == 2 and self.verbose == 0 and \
+            daal_check_version((2021, 'P', 600))
 
         if daal_ready:
-            X_embedded = check_array(X_embedded, dtype=[np.float32, np.float64])
+            X_embedded = check_array(
+                X_embedded, dtype=[np.float32, np.float64])
             return self._daal_tsne(
                 P,
                 n_samples,

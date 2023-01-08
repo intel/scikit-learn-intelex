@@ -15,17 +15,14 @@
 # limitations under the License.
 #===============================================================================
 
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
-from sklearn import __version__ as sklearn_version
+from daal4py.sklearn._utils import sklearn_check_version
 import warnings
 
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._kd_tree import KDTree
-from sklearn.neighbors._base import _check_weights
+if not sklearn_check_version('1.2'):
+    from sklearn.neighbors._base import _check_weights
 from sklearn.neighbors._base import VALID_METRICS
 from sklearn.neighbors._regression import KNeighborsRegressor as \
     sklearn_KNeighborsRegressor
@@ -41,7 +38,7 @@ import numpy as np
 from scipy import sparse as sp
 
 
-if Version(sklearn_version) >= Version("0.24"):
+if sklearn_check_version("0.24"):
     class KNeighborsRegressor_(sklearn_KNeighborsRegressor):
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
@@ -55,9 +52,9 @@ if Version(sklearn_version) >= Version("0.24"):
                 metric_params=metric_params,
                 n_jobs=n_jobs, **kwargs)
             self.weights = \
-                weights if Version(sklearn_version) >= Version("1.0") \
+                weights if sklearn_check_version("1.0") \
                 else _check_weights(weights)
-elif Version(sklearn_version) >= Version("0.22"):
+elif sklearn_check_version("0.22"):
     from sklearn.neighbors._base import SupervisedFloatMixin as \
         BaseSupervisedFloatMixin
 
@@ -110,7 +107,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
             n_jobs=n_jobs, **kwargs)
 
     def fit(self, X, y):
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         if self.metric_params is not None and 'p' in self.metric_params:
             if self.p is not None:
@@ -124,18 +121,12 @@ class KNeighborsRegressor(KNeighborsRegressor_):
             effective_p = self.p
 
         if self.metric in ["minkowski"]:
-            if effective_p < 1:
-                raise ValueError("p must be greater or equal to one for minkowski metric")
             self.effective_metric_params_["p"] = effective_p
 
         self.effective_metric_ = self.metric
         # For minkowski distance, use more efficient methods where available
         if self.metric == "minkowski":
             p = self.effective_metric_params_.pop("p", 2)
-            if p < 1:
-                raise ValueError(
-                    "p must be greater or equal to one for minkowski metric"
-                )
             if p == 1:
                 self.effective_metric_ = "manhattan"
             elif p == 2:
@@ -226,7 +217,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
     @wrap_output_data
     def predict(self, X):
         check_is_fitted(self)
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsRegressor.predict', {
             'onedal': self.__class__._onedal_predict,
@@ -236,7 +227,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'neighbors.KNeighborsRegressor.kneighbors', {
             'onedal': self.__class__._onedal_kneighbors,
@@ -250,11 +241,11 @@ class KNeighborsRegressor(KNeighborsRegressor_):
 
         if _onedal_estimator is not None or getattr(self, '_tree', 0) is None and \
                 self._fit_method == 'kd_tree':
-            if Version(sklearn_version) >= Version("0.24"):
+            if sklearn_check_version("0.24"):
                 sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, '_y', None))
             else:
                 sklearn_NearestNeighbors.fit(self, self._fit_X)
-        if Version(sklearn_version) >= Version("0.22"):
+        if sklearn_check_version("0.22"):
             result = sklearn_NearestNeighbors.radius_neighbors(
                 self, X, radius, return_distance, sort_results)
         else:
@@ -281,6 +272,10 @@ class KNeighborsRegressor(KNeighborsRegressor_):
                     result_method = 'brute'
         else:
             result_method = self._fit_method
+
+        if "p" in self.effective_metric_params_.keys() and \
+                self.effective_metric_params_["p"] < 1:
+            return False
 
         is_sparse = sp.isspmatrix(data[0])
         is_single_output = False
@@ -324,6 +319,10 @@ class KNeighborsRegressor(KNeighborsRegressor_):
                     result_method = 'brute'
         else:
             result_method = self._fit_method
+
+        if "p" in self.effective_metric_params_.keys() and \
+                self.effective_metric_params_["p"] < 1:
+            return False
 
         is_sparse = sp.isspmatrix(data[0])
         is_single_output = False

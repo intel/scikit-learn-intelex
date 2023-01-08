@@ -53,7 +53,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     result3 = algo3.compute(result2.model)
 
     # implicit als prediction result objects provide prediction
-    assert(result3.prediction.shape == data.shape)
+    assert result3.prediction.shape == data.shape
 
     return result3
 

@@ -76,7 +76,7 @@ def get_win_major_version():
 
 
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
-               else time.strftime('2021.%Y%m%d.%H%M%S'))
+               else time.strftime('%Y%m%d.%H%M%S'))
 
 trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
 no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
@@ -130,7 +130,7 @@ def get_sdl_cflags():
                               '-Wformat-security', '-fno-strict-overflow',
                               '-fno-delete-null-pointer-checks']
     if IS_WIN:
-        return DIST_CFLAGS + ['-GS', ]
+        return DIST_CFLAGS + ['-GS']
 
 
 def get_sdl_ldflags():
@@ -177,7 +177,8 @@ def get_build_options():
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + '/include')
-    using_intel = os.environ.get('cc', '') in ['icc', 'icpc', 'icl', 'dpcpp']
+    using_intel = os.environ.get('cc', '') in [
+        'icc', 'icpc', 'icl', 'dpcpp', 'icx', 'icpx']
     eca = ['-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API',
            '-DD4P_VERSION="' + d4p_version + '"', '-DNPY_ALLOW_THREADS=1']
     ela = []
@@ -304,10 +305,17 @@ gen_pyx(os.path.abspath('./build'))
 
 def build_oneapi_backend():
     eca, ela, includes = get_build_options()
+    cc = 'icx'
+    if IS_WIN:
+        cxx = 'icx'
+    else:
+        cxx = 'icpx'
+    eca = ['-fsycl'] + eca
+    ela = ['-fsycl'] + ela
 
     return build_backend.build_cpp(
-        cc='dpcpp',
-        cxx='dpcpp',
+        cc=cc,
+        cxx=cxx,
         sources=['src/oneapi/oneapi_backend.cpp'],
         targetname='oneapi_backend',
         targetprefix='' if IS_WIN else 'lib',
@@ -363,15 +371,6 @@ project_urls = {
 with open('README.md', 'r', encoding='utf8') as f:
     long_description = f.read()
 
-install_requires = []
-with open('requirements.txt') as f:
-    install_requires.extend(f.read().splitlines())
-    if IS_MAC:
-        for r in install_requires:
-            if "dpcpp_cpp_rt" in r:
-                install_requires.remove(r)
-                break
-
 setup(
     name="daal4py",
     description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
@@ -396,16 +395,22 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         'Topic :: Scientific/Engineering',
         'Topic :: System',
         'Topic :: Software Development',
     ],
-    python_requires='>=3.6',
-    install_requires=install_requires,
+    python_requires='>=3.7',
+    install_requires=[
+        "scikit-learn>=0.24",
+        "numpy>=1.19.5 ; python_version <= '3.9'",
+        "numpy>=1.21.6 ; python_version == '3.10'",
+        "numpy>=1.23.5 ; python_version >= '3.11'"
+    ],
     keywords=[
         'machine learning',
         'scikit-learn',

@@ -185,6 +185,8 @@ class DBSCAN(DBSCAN_original):
     >>> clustering
     DBSCAN(eps=3, min_samples=2)
     """
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**DBSCAN_original._parameter_constraints}
 
     def __init__(
         self,
@@ -232,8 +234,11 @@ class DBSCAN(DBSCAN_original):
         self : object
             Returns a fitted instance of self.
         """
-        if self.eps <= 0.0:
-            raise ValueError("eps must be positive.")
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+        else:
+            if self.eps <= 0.0:
+                raise ValueError(f"eps == {self.eps}, must be > 0.0.")
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)

@@ -15,7 +15,8 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 rem ============================================================================
 
-set DAAL4PY_VERSION=%PKG_VERSION%
+rem %1 - scikit-learn-intelex repo root
+
 set MPIROOT=%PREFIX%\Library
 
 IF DEFINED DPCPPROOT (
@@ -38,3 +39,9 @@ IF DEFINED TBBROOT (
     echo "Sourcing TBBROOT"
     call "%TBBROOT%\env\vars.bat"
 )
+
+%PYTHON% -m unittest discover -v -s %1\tests -p test*.py
+
+pytest --verbose --pyargs %1\daal4py\sklearn --deselect="daal4py/sklearn/ensemble/tests/test_decision_forest.py::test_classifier_big_estimators_iris[8000]" --deselect="daal4py/sklearn/ensemble/tests/test_decision_forest.py::test_mse_regressor_big_estimators_iris[8000]"
+pytest --verbose --pyargs %1\sklearnex
+pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py"

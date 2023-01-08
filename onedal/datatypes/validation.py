@@ -18,7 +18,7 @@ import numpy as np
 import warnings
 from scipy import sparse as sp
 from scipy.sparse import issparse, dok_matrix, lil_matrix
-from scipy.sparse.base import spmatrix
+from sklearn.preprocessing import LabelEncoder
 from collections.abc import Sequence
 from numbers import Integral
 
@@ -58,7 +58,15 @@ def _compute_class_weight(class_weight, classes, y):
     if class_weight is None or len(class_weight) == 0:
         weight = np.ones(classes.shape[0], dtype=np.float64, order='C')
     elif class_weight == 'balanced':
-        weight = None
+        y_ = _column_or_1d(y)
+        classes, _ = np.unique(y_, return_inverse=True)
+
+        le = LabelEncoder()
+        y_ind = le.fit_transform(y_)
+        if not all(np.in1d(classes, le.classes_)):
+            raise ValueError("classes should have valid labels that are in y")
+
+        weight = len(y_) / (len(le.classes_) * np.bincount(y_ind).astype(np.float64))
     else:
         # user-defined dictionary
         weight = np.ones(classes.shape[0], dtype=np.float64, order='C')
@@ -150,7 +158,7 @@ def _check_classification_targets(y):
 
 
 def _type_of_target(y):
-    valid = (isinstance(y, (Sequence, spmatrix)) or hasattr(y, '__array__')) \
+    valid = (isinstance(y, Sequence) or sp.isspmatrix(y) or hasattr(y, '__array__')) \
         and not isinstance(y, str)
 
     if not valid:
@@ -331,7 +339,7 @@ def _num_samples(x):
             )
     # Check that shape is returning an integer or default to len
     # Dask dataframes may not return numeric shape[0] value
-    if isinstance(x.shape[0], Integral):
+    if hasattr(x, "shape") and isinstance(x.shape[0], Integral):
         return x.shape[0]
 
     try:

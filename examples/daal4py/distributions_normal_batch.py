@@ -29,14 +29,14 @@ def main(readcsv=None, method='defaultDense'):
     data = np.zeros((1, 10))
     res = algorithm.compute(data)
 
-    assert(np.allclose(data, res.randomNumbers))
-    assert(np.allclose(
+    assert np.allclose(data, res.randomNumbers)
+    assert np.allclose(
         data,
         [[
             -0.74104167, -0.13616829, -0.13679562, 2.40385531, -0.33556821,
             0.19041699, -0.61331181, 0.95958821, -0.42301092, 0.09460208
         ]]
-    ))
+    )
 
     return data
 

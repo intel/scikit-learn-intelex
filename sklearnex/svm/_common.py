@@ -16,15 +16,11 @@
 
 from abc import ABC
 import numpy as np
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
+from daal4py.sklearn._utils import sklearn_check_version
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn import __version__ as sklearn_version
 
 from onedal.datatypes.validation import _column_or_1d
 
@@ -86,7 +82,7 @@ class BaseSVC(ABC):
                     n_splits=n_splits,
                     shuffle=True,
                     random_state=self.random_state)
-                if Version(sklearn_version) >= Version("0.24"):
+                if sklearn_check_version("0.24"):
                     self.clf_prob = CalibratedClassifierCV(
                         clf_base, ensemble=False, cv=cv, method='sigmoid',
                         n_jobs=n_jobs)
@@ -107,6 +103,7 @@ class BaseSVC(ABC):
         self.dual_coef_ = self._onedal_estimator.dual_coef_
         self.shape_fit_ = self._onedal_estimator.class_weight_
         self.classes_ = self._onedal_estimator.classes_
+        self.class_weight_ = self._onedal_estimator.class_weight_
         self.support_ = self._onedal_estimator.support_
 
         self._intercept_ = self._onedal_estimator.intercept_
@@ -128,6 +125,10 @@ class BaseSVC(ABC):
         self._dual_coef_ = self.dual_coef_
         self.intercept_ = self._intercept_
         self._is_in_fit = False
+
+        if sklearn_check_version("1.1"):
+            length = int(len(self.classes_) * (len(self.classes_) - 1) / 2)
+            self.n_iter_ = np.full((length, ), self._onedal_estimator.n_iter_)
 
 
 class BaseSVR(ABC):
@@ -153,3 +154,6 @@ class BaseSVR(ABC):
         self._dual_coef_ = self.dual_coef_
         self.intercept_ = self._intercept_
         self._is_in_fit = False
+
+        if sklearn_check_version("1.1"):
+            self.n_iter_ = self._onedal_estimator.n_iter_

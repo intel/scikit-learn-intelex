@@ -14,23 +14,22 @@
 # limitations under the License.
 #===============================================================================
 
+from daal4py.sklearn._utils import sklearn_check_version
 from ._common import BaseSVC
 from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
-from sklearn import __version__ as sklearn_version
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
 
 from onedal.svm import NuSVC as onedal_NuSVC
 
 
 class NuSVC(sklearn_NuSVC, BaseSVC):
     __doc__ = sklearn_NuSVC.__doc__
+
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**sklearn_NuSVC._parameter_constraints}
 
     @_deprecate_positional_args
     def __init__(self, *, nu=0.5, kernel='rbf', degree=3, gamma='scale',
@@ -79,7 +78,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         If X is a dense array, then the other methods will not support sparse
         matrices as input.
         """
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.NuSVC.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -106,7 +105,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         y_pred : ndarray of shape (n_samples,)
             The predicted values.
         """
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.NuSVC.predict', {
             'onedal': self.__class__._onedal_predict,
@@ -146,10 +145,10 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def _predict_proba(self, X):
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         sklearn_pred_proba = (sklearn_NuSVC.predict_proba
-                              if Version(sklearn_version) >= Version("1.0")
+                              if sklearn_check_version("1.0")
                               else sklearn_NuSVC._predict_proba)
 
         return dispatch(self, 'svm.NuSVC.predict_proba', {
@@ -159,7 +158,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
-        if Version(sklearn_version) >= Version("1.0"):
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(self, 'svm.NuSVC.decision_function', {
             'onedal': self.__class__._onedal_decision_function,
@@ -178,6 +177,8 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             return hasattr(self, '_onedal_estimator')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
         onedal_params = {
             'nu': self.nu,
             'kernel': self.kernel,
@@ -195,11 +196,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
         self._onedal_estimator = onedal_NuSVC(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
-
-        if self.class_weight == 'balanced':
-            self.class_weight_ = self._compute_balanced_class_weight(y)
-        else:
-            self.class_weight_ = self._onedal_estimator.class_weight_
 
         if self.probability:
             self._fit_proba(X, y, sample_weight, queue=queue)

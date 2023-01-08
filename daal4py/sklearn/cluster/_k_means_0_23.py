@@ -41,6 +41,10 @@ from .._utils import (
     PatchingConditionsChain)
 from .._device_offload import support_usm_ndarray
 
+if sklearn_check_version('1.1'):
+    from sklearn.utils.validation import (
+        _check_sample_weight, _is_arraylike_not_scalar)
+
 
 def _validate_center_shape(X, n_centers, centers):
     """Check if centers is compatible with X and n_centers"""
@@ -135,7 +139,7 @@ def _daal4py_compute_starting_centroids(
 
 def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype="double",
                                   method="lloydDense", accuracyThreshold=0.0,
-                                  resultsToEvaluate="computeCentroids"):
+                                  resultsToEvaluate="computeCentroids", gamma=1.0):
     kmeans_algo = daal4py.kmeans(
         nClusters=nClusters,
         maxIterations=maxIterations,
@@ -143,6 +147,7 @@ def _daal4py_kmeans_compatibility(nClusters, maxIterations, fptype="double",
         resultsToEvaluate=resultsToEvaluate,
         accuracyThreshold=accuracyThreshold,
         method=method,
+        gamma=gamma
     )
     return kmeans_algo
 
@@ -170,6 +175,14 @@ def _daal4py_k_means_fit(X, nClusters, numIterations,
     if numIterations < 0:
         raise ValueError("Wrong iterations number")
 
+    def is_string(s, target_str):
+        return isinstance(s, str) and s == target_str
+
+    if n_init == 'auto':
+        if is_string(cluster_centers_0, 'random'):
+            n_init = 10
+        elif is_string(cluster_centers_0, 'k-means++'):
+            n_init = 1
     X_fptype = getFPType(X)
     abs_tol = _tolerance(X, tol)  # tol is relative tolerance
     is_sparse = sp.isspmatrix(X)
@@ -242,53 +255,97 @@ def _fit(self, X, y=None, sample_weight=None):
         are assigned equal weight (default: None)
 
     """
-    if hasattr(self, 'precompute_distances'):
-        if self.precompute_distances != 'deprecated':
-            if sklearn_check_version('0.24'):
-                warnings.warn("'precompute_distances' was deprecated in version "
-                              "0.23 and will be removed in 1.0 (renaming of 0.25)."
-                              " It has no effect", FutureWarning)
-            elif sklearn_check_version('0.23'):
-                warnings.warn("'precompute_distances' was deprecated in version "
-                              "0.23 and will be removed in 0.25. It has no "
-                              "effect", FutureWarning)
+    init = self.init
+    if sklearn_check_version('1.1'):
+        if sklearn_check_version('1.2'):
+            self._validate_params()
 
-    self._n_threads = None
-    if hasattr(self, 'n_jobs'):
-        if self.n_jobs != 'deprecated':
-            if sklearn_check_version('0.24'):
-                warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
-                              " removed in 1.0 (renaming of 0.25).", FutureWarning)
-            elif sklearn_check_version('0.23'):
-                warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
-                              " removed in 0.25.", FutureWarning)
-            self._n_threads = self.n_jobs
-    self._n_threads = _openmp_effective_n_threads(self._n_threads)
+        X = self._validate_data(
+            X,
+            accept_sparse="csr",
+            dtype=[np.float64, np.float32],
+            order="C",
+            copy=self.copy_x,
+            accept_large_sparse=False,
+        )
 
-    if self.n_init <= 0:
-        raise ValueError(
-            f"n_init should be > 0, got {self.n_init} instead.")
+        if sklearn_check_version('1.2'):
+            self._check_params_vs_input(X)
+        else:
+            self._check_params(X)
 
-    random_state = check_random_state(self.random_state)
-    if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=True)
+        random_state = check_random_state(self.random_state)
+        sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
+        self._n_threads = _openmp_effective_n_threads()
 
-    if self.max_iter <= 0:
-        raise ValueError(
-            f"max_iter should be > 0, got {self.max_iter} instead.")
+        # Validate init array
+        init_is_array_like = _is_arraylike_not_scalar(init)
+        if init_is_array_like:
+            init = check_array(init, dtype=X.dtype, copy=True, order="C")
+            self._validate_center_shape(X, init)
+    else:
+        if hasattr(self, 'precompute_distances'):
+            if self.precompute_distances != 'deprecated':
+                if sklearn_check_version('0.24'):
+                    warnings.warn("'precompute_distances' was deprecated in version "
+                                  "0.23 and will be removed in 1.0 (renaming of 0.25)."
+                                  " It has no effect", FutureWarning)
+                elif sklearn_check_version('0.23'):
+                    warnings.warn("'precompute_distances' was deprecated in version "
+                                  "0.23 and will be removed in 0.25. It has no "
+                                  "effect", FutureWarning)
 
-    algorithm = self.algorithm
-    if algorithm == "elkan" and self.n_clusters == 1:
-        warnings.warn("algorithm='elkan' doesn't make sense for a single "
-                      "cluster. Using 'full' instead.", RuntimeWarning)
-        algorithm = "full"
+        self._n_threads = None
+        if hasattr(self, 'n_jobs'):
+            if self.n_jobs != 'deprecated':
+                if sklearn_check_version('0.24'):
+                    warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
+                                  " removed in 1.0 (renaming of 0.25).", FutureWarning)
+                elif sklearn_check_version('0.23'):
+                    warnings.warn("'n_jobs' was deprecated in version 0.23 and will be"
+                                  " removed in 0.25.", FutureWarning)
+                self._n_threads = self.n_jobs
+        self._n_threads = _openmp_effective_n_threads(self._n_threads)
 
-    if algorithm == "auto":
-        algorithm = "full" if self.n_clusters == 1 else "elkan"
+        if self.n_init <= 0:
+            raise ValueError(
+                f"n_init should be > 0, got {self.n_init} instead.")
 
-    if algorithm not in ["full", "elkan"]:
-        raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
-                         " {}".format(str(algorithm)))
+        random_state = check_random_state(self.random_state)
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
+
+        if self.max_iter <= 0:
+            raise ValueError(
+                f"max_iter should be > 0, got {self.max_iter} instead.")
+
+        algorithm = self.algorithm
+        if sklearn_check_version('1.2'):
+            if algorithm == "elkan" and self.n_clusters == 1:
+                warnings.warn("algorithm='elkan' doesn't make sense for a single "
+                              "cluster. Using 'full' instead.", RuntimeWarning)
+                algorithm = "lloyd"
+
+            if algorithm == "auto" or algorithm == "full":
+                warnings.warn("algorithm= {'auto','full'} is deprecated"
+                              "Using 'lloyd' instead.", RuntimeWarning)
+                algorithm = "lloyd" if self.n_clusters == 1 else "elkan"
+
+            if algorithm not in ["lloyd", "full", "elkan"]:
+                raise ValueError("Algorithm must be 'auto','lloyd', 'full' or 'elkan',"
+                                 "got {}".format(str(algorithm)))
+        else:
+            if algorithm == "elkan" and self.n_clusters == 1:
+                warnings.warn("algorithm='elkan' doesn't make sense for a single "
+                              "cluster. Using 'full' instead.", RuntimeWarning)
+                algorithm = "full"
+
+            if algorithm == "auto":
+                algorithm = "full" if self.n_clusters == 1 else "elkan"
+
+            if algorithm not in ["full", "elkan"]:
+                raise ValueError("Algorithm must be 'auto', 'full' or 'elkan', got"
+                                 " {}".format(str(algorithm)))
 
     X_len = _num_samples(X)
 
@@ -317,8 +374,10 @@ def _fit(self, X, y=None, sample_weight=None):
         self.n_features_in_ = X.shape[1]
         self.cluster_centers_, self.labels_, self.inertia_, self.n_iter_ = \
             _daal4py_k_means_fit(
-                X, self.n_clusters, self.max_iter, self.tol, self.init, self.n_init,
+                X, self.n_clusters, self.max_iter, self.tol, init, self.n_init,
                 self.verbose, random_state)
+        if sklearn_check_version('1.1'):
+            self._n_features_out = self.cluster_centers_.shape[0]
     else:
         super(KMeans, self).fit(X, y=y, sample_weight=sample_weight)
     return self
@@ -387,7 +446,33 @@ def _predict(self, X, sample_weight=None):
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
-    if sklearn_check_version('1.0'):
+    if sklearn_check_version('1.2'):
+        @_deprecate_positional_args
+        def __init__(
+            self,
+            n_clusters=8,
+            *,
+            init='k-means++',
+            n_init=10,
+            max_iter=300,
+            tol=1e-4,
+            verbose=0,
+            random_state=None,
+            copy_x=True,
+            algorithm='lloyd',
+        ):
+            super(KMeans, self).__init__(
+                n_clusters=n_clusters,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+                n_init=n_init,
+                verbose=verbose,
+                random_state=random_state,
+                copy_x=copy_x,
+                algorithm=algorithm,
+            )
+    elif sklearn_check_version('1.0'):
         @_deprecate_positional_args
         def __init__(
             self,

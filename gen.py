@@ -21,7 +21,8 @@ if __name__ == "__main__":
     import argparse
     global no_warn
 
-    description = """A tool to create cython interface files for HLAPI of oneDAL (aka daal4py).
+    description = """
+    A tool to create cython interface files for HLAPI of oneDAL (aka daal4py).
     Extracting necessary data and creating internal data structures.
     See parse.py for details about C++ parsing.
     See wrappers.py for necessary configuration that can not be auto-extracted.

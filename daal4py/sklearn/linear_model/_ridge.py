@@ -27,6 +27,9 @@ from .._utils import (
 from .._device_offload import support_usm_ndarray
 import logging
 
+if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
+    from sklearn.linear_model._base import _deprecate_normalize
+
 
 def _daal4py_fit(self, X, y_):
     X = make2d(X)
@@ -36,7 +39,9 @@ def _daal4py_fit(self, X, y_):
 
     ridge_params = np.asarray(self.alpha, dtype=X.dtype)
     if ridge_params.size != 1 and ridge_params.size != y.shape[1]:
-        raise ValueError("alpha length is wrong")
+        raise ValueError(
+            "Number of targets and number of penalties do not correspond: "
+            f"{ridge_params.size} != {y.shape[1]}")
     ridge_params = ridge_params.reshape((1, -1))
 
     ridge_alg = daal4py.ridge_regression_training(
@@ -104,14 +109,16 @@ def _fit_ridge(self, X, y, sample_weight=None):
     -------
     self : returns an instance of self.
     """
-    if sklearn_check_version('1.0'):
-        from sklearn.linear_model._base import _deprecate_normalize
+    if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
         self._normalize = _deprecate_normalize(
             self.normalize,
             default=False,
             estimator_name=self.__class__.__name__
         )
+    if sklearn_check_version('1.0'):
         self._check_feature_names(X, reset=True)
+    if sklearn_check_version("1.2"):
+        self._validate_params()
 
     X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=[np.float64, np.float32],
                      multi_output=True, y_numeric=True)
@@ -199,7 +206,29 @@ def _predict_ridge(self, X):
 class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 
-    if sklearn_check_version('1.0'):
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**Ridge_original._parameter_constraints}
+
+        def __init__(
+            self,
+            alpha=1.0,
+            fit_intercept=True,
+            copy_X=True,
+            max_iter=None,
+            tol=1e-3,
+            solver="auto",
+            positive=False,
+            random_state=None,
+        ):
+            self.alpha = alpha
+            self.fit_intercept = fit_intercept
+            self.copy_X = copy_X
+            self.max_iter = max_iter
+            self.tol = tol
+            self.solver = solver
+            self.positive = positive
+            self.random_state = random_state
+    elif sklearn_check_version('1.0'):
         def __init__(
             self,
             alpha=1.0,

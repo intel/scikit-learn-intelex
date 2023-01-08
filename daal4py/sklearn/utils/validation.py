@@ -62,9 +62,10 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
     dt = np.dtype(get_dtype(X))
     is_float = dt.kind in 'fc'
 
-    msg_err = "Input contains {} or a value too large for {!r}."
+    msg_err = "Input {} contains {} or a value too large for {!r}."
     type_err = 'infinity' if allow_nan else 'NaN, infinity'
-    err = msg_err.format(type_err, msg_dtype if msg_dtype is not None else dt)
+    err = msg_err.format(
+        input_name, type_err, msg_dtype if msg_dtype is not None else dt)
 
     if X.ndim in [1, 2] and not np.any(np.equal(X.shape, 0)) and \
             dt in [np.float32, np.float64]:
@@ -92,7 +93,7 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
     # for object dtype data, we only check for NaNs (GH-13254)
     elif dt == np.dtype('object') and not allow_nan:
         if _object_dtype_isnan(X).any():
-            raise ValueError("Input contains NaN")
+            raise ValueError(f"Input {input_name} contains NaN")
 
 
 def _pandas_check_array(array, array_orig, force_all_finite, ensure_min_samples,

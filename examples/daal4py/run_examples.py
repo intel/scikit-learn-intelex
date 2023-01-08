@@ -72,7 +72,6 @@ if sycl_extention_available:
             availabe_devices.append("gpu")
     except RuntimeError:
         gpu_available = False
-    availabe_devices.append("host")
     availabe_devices.append("cpu")
     #validate that host and cpu devices avaialbe for logging reasons. Examples and
     #vaidaton logic assumes that host and cpu devices are always available
@@ -126,7 +125,9 @@ req_version['sycl/kmeans_batch.py'] = \
 req_version['sycl/pca_transform_batch.py'] = (2021, 'P', 200)
 req_version['sycl/decision_forest_classification_hist_batch.py'] = (2021, 'P', 200)
 req_version['sycl/decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
-req_version['decision_forest_classification_hist_batch.py'] = (2021, 'P', 200)
+req_version['decision_forest_classification_hist_batch.py'] = (2023, 'P', 1)
+req_version['decision_forest_classification_default_dense_batch.py'] = (2023, 'P', 1)
+req_version['decision_forest_classification_traverse_batch.py'] = (2023, 'P', 1)
 req_version['decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
 
 req_device = defaultdict(lambda: [])

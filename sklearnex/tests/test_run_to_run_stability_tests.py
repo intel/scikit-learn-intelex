@@ -32,8 +32,8 @@ from sklearn.svm import SVC, NuSVC, SVR, NuSVR
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 
-from sklearn.datasets import (make_classification, load_breast_cancer,
-                              load_diabetes, load_iris, load_boston)
+from sklearn.datasets import (make_classification, make_regression,
+                              load_breast_cancer, load_diabetes, load_iris)
 from sklearn.metrics import pairwise_distances, roc_auc_score
 from scipy import sparse
 from daal4py.sklearn._utils import daal_check_version
@@ -113,7 +113,8 @@ def _run_test(model, methods, dataset):
             X2 = sparse.csr_matrix(X2)
         datasets.append((X2, y2))
     elif dataset == 'regression':
-        X1, y1 = load_boston(return_X_y=True)
+        X1, y1 = make_regression(n_samples=500, n_features=10,
+                                 noise=64.0, random_state=42)
         datasets.append((X1, y1))
         X2, y2 = load_diabetes(return_X_y=True)
         datasets.append((X2, y2))

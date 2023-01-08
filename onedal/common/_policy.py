@@ -46,7 +46,7 @@ class _Daal4PyContextReset:
         if 'daal4py.oneapi' in sys.modules:
             from daal4py.oneapi import _get_sycl_ctxt, sycl_execution_context
             self._d4p_context = _get_sycl_ctxt()
-            self._host_context = sycl_execution_context('host')
+            self._host_context = sycl_execution_context('cpu')
             self._host_context.apply()
 
     def __del__(self):
