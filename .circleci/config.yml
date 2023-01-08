@@ -98,7 +98,7 @@ jobs:
             conda activate bld
             conda install -y -c conda-forge threadpoolctl cython
             git clone https://github.com/scikit-learn/scikit-learn.git
-            pushd scikit-learn && python setup.py install 
+            pushd scikit-learn && python setup.py install
             popd
             conda list
             source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
