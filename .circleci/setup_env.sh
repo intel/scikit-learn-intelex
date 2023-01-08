@@ -23,8 +23,9 @@ conda config --set always_yes yes --set changeps1 no
 conda update -q conda
 conda create -n bld python=3.10 conda-build
 source activate bld
-conda install -q scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools pybind11 cmake
-conda install -q --override-channels -c intel dal dal-include
+conda install -q  python=3.10 scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools pybind11 cmake
+conda install -q --override-channels -c conda-forge python=3.10 dal dal-include
+python --version
 gcc -v
 g++ -v
 head /proc/cpuinfo
