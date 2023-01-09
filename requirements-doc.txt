@@ -15,14 +15,14 @@ entrypoints==0.4
 idna==3.4
 imagesize==1.4.1
 importlib-metadata==5.2.0
-importlib-resources==5.10.1
+importlib-resources==5.10.2
 ipython==8.7.0
 ipython-genutils==0.2.0
 jedi==0.18.2
 Jinja2==3.0.3
 jsonschema==4.17.3
 jupyter-client==7.4.8
-jupyter-core==5.1.1
+jupyter-core==5.1.2
 jupyterlab-pygments==0.2.2
 MarkupSafe==2.1.1
 mistune==0.8.4

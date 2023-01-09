@@ -18,11 +18,8 @@ import pytest
 import functools
 
 
-def get_queues(filter_='cpu,gpu,host'):
+def get_queues(filter_='cpu,gpu'):
     queues = []
-
-    if 'host' in filter_:
-        queues.append(None)
 
     try:
         import dpctl
