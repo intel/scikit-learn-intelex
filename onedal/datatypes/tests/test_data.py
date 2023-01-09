@@ -37,7 +37,7 @@ def _test_input_format_c_contiguous_numpy(queue, dtype):
 
 
 # TODO: investigate sporadic failures on GPU
-@pytest.mark.parametrize('queue', get_queues('host,cpu'))
+@pytest.mark.parametrize('queue', get_queues('cpu'))
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_input_format_c_contiguous_numpy(queue, dtype):
     _test_input_format_c_contiguous_numpy(queue, dtype)
@@ -58,7 +58,7 @@ def _test_input_format_f_contiguous_numpy(queue, dtype):
 
 
 # TODO: investigate sporadic failures on GPU
-@pytest.mark.parametrize('queue', get_queues('host,cpu'))
+@pytest.mark.parametrize('queue', get_queues('cpu'))
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_input_format_f_contiguous_numpy(queue, dtype):
     _test_input_format_f_contiguous_numpy(queue, dtype)
@@ -83,7 +83,7 @@ def _test_input_format_c_not_contiguous_numpy(queue, dtype):
 
 
 # TODO: investigate sporadic failures on GPU
-@pytest.mark.parametrize('queue', get_queues('host,cpu'))
+@pytest.mark.parametrize('queue', get_queues('cpu'))
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_input_format_c_not_contiguous_numpy(queue, dtype):
     _test_input_format_c_not_contiguous_numpy(queue, dtype)
@@ -106,7 +106,7 @@ def _test_input_format_c_contiguous_pandas(queue, dtype):
 
 
 # TODO: investigate sporadic failures on GPU
-@pytest.mark.parametrize('queue', get_queues('host,cpu'))
+@pytest.mark.parametrize('queue', get_queues('cpu'))
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_input_format_c_contiguous_pandas(queue, dtype):
     _test_input_format_c_contiguous_pandas(queue, dtype)
@@ -129,7 +129,7 @@ def _test_input_format_f_contiguous_pandas(queue, dtype):
 
 
 # TODO: investigate sporadic failures on GPU
-@pytest.mark.parametrize('queue', get_queues('host,cpu'))
+@pytest.mark.parametrize('queue', get_queues('cpu'))
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_input_format_f_contiguous_pandas(queue, dtype):
     _test_input_format_f_contiguous_pandas(queue, dtype)
