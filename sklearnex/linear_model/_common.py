@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 from abc import ABC
 import numpy as np
@@ -24,8 +24,10 @@ from sklearn.calibration import CalibratedClassifierCV
 
 from onedal.datatypes.validation import _column_or_1d
 
+
 def get_coef(self):
     return self._coef_
+
 
 def set_coef(self, value):
     self._coef_ = value
@@ -34,8 +36,10 @@ def set_coef(self, value):
         if not self._is_in_fit:
             del self._onedal_estimator._onedal_model
 
+
 def get_intercept(self):
     return self._intercept_
+
 
 def set_intercept(self, value):
     self._intercept_ = value

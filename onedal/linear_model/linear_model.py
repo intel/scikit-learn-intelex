@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 from daal4py.sklearn._utils import sklearn_check_version
 from sklearn.base import BaseEstimator
@@ -44,19 +44,31 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         self.algorithm = algorithm
         self._sparse = False
 
-    def _get_onedal_params(self, dtype = np.float32):
+    def _get_onedal_params(self, dtype=np.float32):
         intercept = 'intercept|' if self.fit_intercept else ''
         return {
             'fptype': 'float' if dtype is np.float32 else 'double',
-            'method': self.algorithm, 'intercept' : self.fit_intercept,
-            'result_option' : (intercept + 'coefficients'),
+            'method': self.algorithm, 'intercept': self.fit_intercept,
+            'result_option': (intercept + 'coefficients'),
         }
 
     def _fit(self, X, y, module, queue):
-        X = _check_array(X, dtype=[np.float64, np.float32],
-                    ensure_2d=False, force_all_finite=True, accept_sparse='csr')
-        y = _check_array(y, dtype=[np.float64, np.float32],
-                    ensure_2d=False, force_all_finite=True, accept_sparse='csr')
+        X = _check_array(
+            X,
+            dtype=[
+                np.float64,
+                np.float32],
+            ensure_2d=False,
+            force_all_finite=True,
+            accept_sparse='csr')
+        y = _check_array(
+            y,
+            dtype=[
+                np.float64,
+                np.float32],
+            ensure_2d=False,
+            force_all_finite=True,
+            accept_sparse='csr')
 
         self._sparse = sp.isspmatrix(X)
 
@@ -64,18 +76,18 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         policy = _get_policy(queue, X, y)
         params = self._get_onedal_params(dtype)
 
-        result = module.train(policy, params, \
-                        to_table(X), to_table(y))
+        result = module.train(policy, params,
+                              to_table(X), to_table(y))
 
         self.coef_ = from_table(result.coefficients)
         if len(self.coef_.shape) == 2 and self.coef_.shape[0] == 1:
             assert self.coef_.shape[0] == 1
             self.coef_ = self.coef_.ravel()
-        
+
         if self.fit_intercept:
             self.intercept_ = from_table(result.intercept)
             self.intercept_ = self.intercept_.ravel()
-        
+
         if self._sparse:
             self.coef_ = sp.csr_matrix(self.coef_)
 
@@ -89,17 +101,16 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         is_multi_output = len(self.coef_.shape) == 2
         r_count = self.coef_.shape[0] if is_multi_output else 1
         intercept = self.intercept_ if self.fit_intercept \
-                        else np.zeros(r_count, dtype=dtype)
+            else np.zeros(r_count, dtype=dtype)
         if self.fit_intercept:
             assert intercept.shape == (r_count,)
         intercept = intercept.reshape(r_count, 1)
-        
+
         coefficients = np.array(self.coef_)
         packed_coefficients = np.hstack((intercept, coefficients))
         m.packed_coefficients = to_table(packed_coefficients)
 
         return m
-
 
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
@@ -128,13 +139,12 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         return y
 
 
-
 class LinearRegression(RegressorMixin, BaseLinearRegression):
     """
     Epsilon--Support Vector Regression.
     """
 
-    def __init__(self, fit_intercept = True, *, algorithm='norm_eq', **kwargs):
+    def __init__(self, fit_intercept=True, *, algorithm='norm_eq', **kwargs):
         super().__init__(fit_intercept=fit_intercept, algorithm=algorithm)
 
     def fit(self, X, y, queue=None):

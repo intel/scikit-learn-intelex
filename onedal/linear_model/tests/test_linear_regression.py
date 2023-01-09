@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import pytest
 import numpy as np
@@ -25,21 +25,23 @@ from sklearn.datasets import load_diabetes
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 
+
 @pytest.mark.parametrize('queue', get_queues())
 def test_diabetes(queue):
-    X, y = load_diabetes(return_X_y = True)
+    X, y = load_diabetes(return_X_y=True)
     X_train, X_test, y_train, y_test = \
-                train_test_split( X, y, \
-                train_size=0.8, random_state=777)
+        train_test_split(X, y,
+                         train_size=0.8, random_state=777)
     model = LinearRegression(fit_intercept=True)
     model.fit(X_train, y_train, queue=queue)
     y_pred = model.predict(X_test, queue=queue)
     assert mean_squared_error(y_test, y_pred) < 2396
 
+
 @pytest.mark.parametrize('queue', get_queues())
 def test_pickle(queue):
     assert len(get_queues())
-    X, y = load_diabetes(return_X_y = True)
+    X, y = load_diabetes(return_X_y=True)
     model = LinearRegression(fit_intercept=True)
     model.fit(X, y, queue=queue)
     expected = model.predict(X, queue=queue)
@@ -48,7 +50,7 @@ def test_pickle(queue):
     dump = pickle.dumps(model)
     model2 = pickle.loads(dump)
 
-    assert type(model2) == model.__class__
+    assert isinstance(model2, model.__class__)
     result = model2.predict(X, queue=queue)
     assert_array_equal(expected, result)
 
@@ -79,6 +81,7 @@ def test_full_results(queue):
 
     assert_allclose(gtr, res)
 
+
 @pytest.mark.parametrize('queue', get_queues())
 def test_no_intercept_results(queue):
     seed = 42
@@ -102,6 +105,7 @@ def test_no_intercept_results(queue):
     res = model.predict(Xt, queue=queue)
 
     assert_allclose(gtr, res)
+
 
 @pytest.mark.parametrize('queue', get_queues())
 def test_reconstruct_model(queue):

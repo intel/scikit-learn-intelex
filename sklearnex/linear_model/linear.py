@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 from daal4py.sklearn._utils import sklearn_check_version
 from ._common import BaseLinearRegression
@@ -30,7 +30,8 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
     __doc__ = sklearn_LinearRegression.__doc__
 
     if sklearn_check_version('1.2'):
-        _parameter_constraints: dict = {**sklearn_LinearRegression._parameter_constraints}
+        _parameter_constraints: dict = {
+            **sklearn_LinearRegression._parameter_constraints}
 
     @_deprecate_positional_args
     def __init__(self, *, fit_intercept=True):
@@ -83,27 +84,29 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         }, X)
 
     def _onedal_gpu_supported(self, method_name, *data):
-        if method_name in [ 'linear_model.LinearRegression.fit', 
-                            'linear_model.LinearRegression.predict']:
+        if method_name in ['linear_model.LinearRegression.fit',
+                           'linear_model.LinearRegression.predict']:
             if len(data) > 1:
                 import numpy as np
                 from scipy import sparse as sp
 
                 self._is_sparse = sp.isspmatrix(data[0])
             return hasattr(self, '_is_sparse') and not self._is_sparse
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+        raise RuntimeError(
+            f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name in ['linear_model.LinearRegression.fit', 
+        if method_name in ['linear_model.LinearRegression.fit',
                            'linear_model.LinearRegression.predict']:
             self._is_sparse = sp.isspmatrix(data[0])
             return hasattr(self, '_is_sparse') and not self._is_sparse
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+        raise RuntimeError(
+            f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, queue=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
-        onedal_params = {'fit_intercept' : self.fit_intercept}
+        onedal_params = {'fit_intercept': self.fit_intercept}
 
         self._onedal_estimator = onedal_LinearRegression(**onedal_params)
         self._onedal_estimator.fit(X, y, queue=queue)
