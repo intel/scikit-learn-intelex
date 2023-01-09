@@ -127,7 +127,8 @@ auto get_onedal_result_options(const py::dict& params) {
                 ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
             next++;
         }
-    } catch (std::regex_error& e) {
+    }
+    catch (std::regex_error& e) {
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
     }
 
@@ -141,7 +142,7 @@ template <typename Float, typename Method, typename Distance>
 struct descriptor_creator<Float, Method, knn::task::classification, Distance> {
     static auto get(const std::int64_t class_count, const std::int64_t neighbor_count) {
         return knn::descriptor<Float, Method, knn::task::classification, Distance>(class_count,
-                                                                         neighbor_count);
+                                                                                   neighbor_count);
     }
 };
 

@@ -52,9 +52,11 @@ auto get_onedal_result_options(const py::dict& params) {
         std::regex re("\\w+");
         const std::sregex_iterator last{};
         const std::sregex_iterator first( //
-            result_option.begin(), result_option.end(), re);
+            result_option.begin(),
+            result_option.end(),
+            re);
 
-        for(std::sregex_iterator it = first; it != last; ++it) {
+        for (std::sregex_iterator it = first; it != last; ++it) {
             std::smatch match = *it;
             if (match.str() == "intercept") {
                 onedal_options = onedal_options | result_options::intercept;
@@ -65,7 +67,8 @@ auto get_onedal_result_options(const py::dict& params) {
             else
                 ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
         }
-    } catch (std::regex_error& e) {
+    }
+    catch (std::regex_error& e) {
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
     }
 
@@ -76,9 +79,13 @@ template <typename Float, typename Method, typename Task>
 struct descriptor_creator;
 
 template <typename Float>
-struct descriptor_creator<Float, linear_regression::method::norm_eq, linear_regression::task::regression> {
+struct descriptor_creator<Float,
+                          linear_regression::method::norm_eq,
+                          linear_regression::task::regression> {
     static auto get(bool intercept) {
-        return linear_regression::descriptor<Float, linear_regression::method::norm_eq, linear_regression::task::regression>(intercept);
+        return linear_regression::descriptor<Float,
+                                             linear_regression::method::norm_eq,
+                                             linear_regression::task::regression>(intercept);
     }
 };
 
@@ -89,9 +96,8 @@ struct params2desc {
 
         const auto intercept = params["intercept"].cast<bool>();
 
-        auto desc =
-            descriptor_creator<Float, Method, Task>::get(intercept)
-                .set_result_options(get_onedal_result_options(params));
+        auto desc = descriptor_creator<Float, Method, Task>::get(intercept).set_result_options(
+            get_onedal_result_options(params));
         return desc;
     }
 };

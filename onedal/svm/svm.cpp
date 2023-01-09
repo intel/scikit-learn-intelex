@@ -50,18 +50,37 @@ struct method2t {
 
 template <typename Ops>
 struct kernel2t {
-    kernel2t(const Ops& ops)
-        : ops(ops) {}
+    kernel2t(const Ops& ops) : ops(ops) {}
 
     template <typename Float, typename Method>
     auto operator()(const py::dict& params) {
         using namespace dal::svm;
 
         auto kernel = params["kernel"].cast<std::string>();
-        ONEDAL_PARAM_DISPATCH_VALUE(kernel, "linear", ops, Float, Method, linear_kernel::descriptor<Float>);
-        ONEDAL_PARAM_DISPATCH_VALUE(kernel, "rbf", ops, Float, Method, rbf_kernel::descriptor<Float>);
-        ONEDAL_PARAM_DISPATCH_VALUE(kernel, "poly", ops, Float, Method, polynomial_kernel::descriptor<Float>);
-        ONEDAL_PARAM_DISPATCH_VALUE(kernel, "sigmoid", ops, Float, Method, sigmoid_kernel::descriptor<Float>);
+        ONEDAL_PARAM_DISPATCH_VALUE(kernel,
+                                    "linear",
+                                    ops,
+                                    Float,
+                                    Method,
+                                    linear_kernel::descriptor<Float>);
+        ONEDAL_PARAM_DISPATCH_VALUE(kernel,
+                                    "rbf",
+                                    ops,
+                                    Float,
+                                    Method,
+                                    rbf_kernel::descriptor<Float>);
+        ONEDAL_PARAM_DISPATCH_VALUE(kernel,
+                                    "poly",
+                                    ops,
+                                    Float,
+                                    Method,
+                                    polynomial_kernel::descriptor<Float>);
+        ONEDAL_PARAM_DISPATCH_VALUE(kernel,
+                                    "sigmoid",
+                                    ops,
+                                    Float,
+                                    Method,
+                                    sigmoid_kernel::descriptor<Float>);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(kernel);
     }
 
@@ -113,8 +132,8 @@ void init_train_ops(py::module_& m) {
               using namespace dal::svm;
               using input_t = train_input<Task>;
 
-              train_ops ops(policy, input_t{ data, responses, weights }, params2desc{} );
-              return fptype2t { method2t { Task{}, kernel2t{ ops } } }(params);
+              train_ops ops(policy, input_t{ data, responses, weights }, params2desc{});
+              return fptype2t{ method2t{ Task{}, kernel2t{ ops } } }(params);
           });
 }
 
@@ -128,8 +147,8 @@ void init_infer_ops(py::module_& m) {
               using namespace dal::svm;
               using input_t = infer_input<Task>;
 
-              infer_ops ops(policy, input_t{ model, data }, params2desc{} );
-              return fptype2t { method2t { Task{}, kernel2t{ ops } } }(params);
+              infer_ops ops(policy, input_t{ model, data }, params2desc{});
+              return fptype2t{ method2t{ Task{}, kernel2t{ ops } } }(params);
           });
 }
 
@@ -161,8 +180,12 @@ void init_model(py::module_& m) {
         auto class_1_setter = &model_t::template set_first_class_response<>;
         auto class_2_setter = &model_t::template set_second_class_response<>;
 
-        cls.def_property("first_class_response", &model_t::get_first_class_response, class_1_setter);
-        cls.def_property("second_class_response", &model_t::get_second_class_response, class_2_setter);
+        cls.def_property("first_class_response",
+                         &model_t::get_first_class_response,
+                         class_1_setter);
+        cls.def_property("second_class_response",
+                         &model_t::get_second_class_response,
+                         class_2_setter);
     }
 }
 
@@ -205,7 +228,7 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 
-} // namespace svm 
+} // namespace svm
 
 ONEDAL_PY_INIT_MODULE(svm) {
     using namespace svm;
