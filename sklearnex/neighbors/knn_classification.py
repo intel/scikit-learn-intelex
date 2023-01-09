@@ -121,18 +121,12 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             effective_p = self.p
 
         if self.metric in ["minkowski"]:
-            if effective_p < 1:
-                raise ValueError("p must be greater or equal to one for minkowski metric")
             self.effective_metric_params_["p"] = effective_p
 
         self.effective_metric_ = self.metric
         # For minkowski distance, use more efficient methods where available
         if self.metric == "minkowski":
             p = self.effective_metric_params_.pop("p", 2)
-            if p < 1:
-                raise ValueError(
-                    "p must be greater or equal to one for minkowski metric"
-                )
             if p == 1:
                 self.effective_metric_ = "manhattan"
             elif p == 2:
@@ -289,6 +283,10 @@ class KNeighborsClassifier(KNeighborsClassifier_):
         else:
             result_method = self._fit_method
 
+        if "p" in self.effective_metric_params_.keys() and \
+                self.effective_metric_params_["p"] < 1:
+            return False
+
         is_sparse = sp.isspmatrix(data[0])
         is_single_output = False
         class_count = 1
@@ -336,6 +334,10 @@ class KNeighborsClassifier(KNeighborsClassifier_):
                     result_method = 'brute'
         else:
             result_method = self._fit_method
+
+        if "p" in self.effective_metric_params_.keys() and \
+                self.effective_metric_params_["p"] < 1:
+            return False
 
         is_sparse = sp.isspmatrix(data[0])
         is_single_output = False
