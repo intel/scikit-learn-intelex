@@ -45,22 +45,17 @@ jobs:
             conda activate bld
             python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       - run:
-          name: Testing sklearn patches
+          name: Testing sklearn patches with sklearnex
           no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
-            conda install -y -c conda-forge threadpoolctl cython
-            git clone https://github.com/scikit-learn/scikit-learn.git
-            pwd
-            pushd scikit-learn && python setup.py install
-            popd
-            pwd
+            pip install -q scikit-learn "numpydoc<1.2"
             conda list
-            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_master_pytest_logs_sklearnex.tar.bz2 sklearnex skex
+            source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_sklearnex.tar.bz2 sklearnex skex
       - store_artifacts:
-          path: /tmp/patched_and_unpatched_sklearn_master_pytest_logs_sklearnex.tar.bz2
+          path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_sklearnex.tar.bz2
 
   build_scikit-learn_master:
     docker:
@@ -70,12 +65,6 @@ jobs:
 
     steps:
       - checkout
-      - run:
-          name: Checkout master
-          command: |
-            git fetch --all
-            git checkout master
-            git reset --hard origin/master
       - run:
           name: Setting up build environment
           command: |
@@ -121,6 +110,6 @@ workflows:
           cron: "49 23 * * *"
           filters:
             branches:
-              only: test-sklearn-master
+              only: master
     jobs:
       - build_scikit-learn_master
