@@ -34,8 +34,12 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
             **sklearn_LinearRegression._parameter_constraints}
 
     @_deprecate_positional_args
-    def __init__(self, *, fit_intercept=True):
+    def __init__(self, *, fit_intercept=True, positive=False):
         super().__init__(fit_intercept=fit_intercept)
+
+        if positive:
+            raise RuntimeError(
+                '`positive` parameter is not supported in sklearnex')
 
     def fit(self, X, y, sample_weight=None):
         """
