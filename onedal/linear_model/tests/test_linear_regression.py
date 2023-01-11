@@ -71,7 +71,7 @@ def test_full_results(queue):
     model = LinearRegression(fit_intercept=True)
     model.fit(X, y, queue=queue)
 
-    assert_allclose(coef, model.coef_)
+    assert_allclose(coef, model.coef_.T)
     assert_allclose(intp, model.intercept_)
 
     Xt = np.random.rand(t_count, f_count)
@@ -97,7 +97,7 @@ def test_no_intercept_results(queue):
     model = LinearRegression(fit_intercept=True)
     model.fit(X, y, queue=queue)
 
-    assert_allclose(coef, model.coef_)
+    assert_allclose(coef, model.coef_.T)
 
     Xt = np.random.rand(t_count, f_count)
     gtr = Xt @ coef
@@ -121,7 +121,7 @@ def test_reconstruct_model(queue):
     gtr = X @ coef + intp[np.newaxis, :]
 
     model = LinearRegression(fit_intercept=True)
-    model.coef_ = coef
+    model.coef_ = coef.T
     model.intercept_ = intp
 
     res = model.predict(X, queue=queue)
