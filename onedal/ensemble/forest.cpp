@@ -278,8 +278,6 @@ ONEDAL_PY_INIT_MODULE(ensemble) {
 
     using task_list =
         types<task::classification, task::regression>;
-    // TODO:
-    // naming
     auto sub = m.def_submodule("decision_forest");
 
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);

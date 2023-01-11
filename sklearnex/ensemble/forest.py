@@ -96,9 +96,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                  warm_start=False,
                  class_weight=None,
                  ccp_alpha=0.0,
-                 max_samples=None,
-                 maxBins=256,
-                 minBinSize=1):
+                 max_samples=None):
         super().__init__(
             n_estimators=n_estimators,
             criterion=criterion,
@@ -121,8 +119,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         # update __init__ for different versions sklearn
         self.ccp_alpha = ccp_alpha
         self.max_samples = max_samples
-        self.maxBins = maxBins
-        self.minBinSize = minBinSize
+        self.max_bins = 256
+        self.min_bin_size = 1
         self.min_impurity_split = None
 
     def fit(self, X, y, sample_weight=None):
@@ -381,9 +379,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                  verbose=0,
                  warm_start=False,
                  ccp_alpha=0.0,
-                 max_samples=None,
-                 maxBins=256,
-                 minBinSize=1):
+                 max_samples=None):
         super().__init__(
             n_estimators=n_estimators,
             criterion=criterion,
@@ -403,8 +399,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         )
         self.ccp_alpha = ccp_alpha
         self.max_samples = max_samples
-        self.maxBins = maxBins
-        self.minBinSize = minBinSize
+        self.max_bins = 256
+        self.min_bin_size = 1
         self.min_impurity_split = None
 
     def _estimators_(self):
