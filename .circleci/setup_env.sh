@@ -14,17 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #===============================================================================
-
+if [ -z $1 ]; then
+   python_version=$1
+else
+   python_version=3.7
+fi
 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
 bash miniconda.sh -b -p ~/miniconda
 export PATH=~/miniconda/bin:$PATH
 hash -r
 conda config --set always_yes yes --set changeps1 no
 conda update -q conda
-conda create -n bld python=3.10 conda-build
+conda create -n bld python=${python_version} conda-build
 source activate bld
-conda install -q  python=3.10 scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools pybind11 cmake
-conda install -q --override-channels -c conda-forge python=3.10 dal dal-include
+conda install -q  python=${python_version} scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools pybind11 cmake
+conda install -q --override-channels -c conda-forge python=${python_version} dal dal-include
 python --version
 gcc -v
 g++ -v
