@@ -69,7 +69,7 @@ jobs:
           name: Setting up build environment
           command: |
             ls -la
-            source ./.circleci/setup_env.sh
+            source ./.circleci/setup_env.sh 3.10
       - run:
           name: Building daal4py
           command: |
