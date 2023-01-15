@@ -16,15 +16,12 @@
 
 import os
 import subprocess
-import sys
 import unittest
 from daal4py.sklearn._utils import get_daal_version
 test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
 examples_path = os.path.join(
     os.path.dirname(test_path), "examples", "sklearnex")
-sys.path.insert(0, examples_path)
-os.chdir(examples_path)
 
 python_executable = subprocess.run(
     ['/usr/bin/which', 'python'], check=True,
@@ -40,6 +37,7 @@ print('oneDAL version:', sklearnex_version)
 class TestsklearnexExamples(unittest.TestCase):
     '''Class for testing sklernex examples'''
     def test_examples_in_directory(self):
+        '''Function for testing all examples in directory'''
         # Get a list of all Python files in the examples directory
         files = [f for f in os.listdir(examples_path) if f.endswith(".py")]
 
