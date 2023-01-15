@@ -36,29 +36,28 @@ print('oneDAL version:', sklearnex_version)
 
 class TestsklearnexExamples(unittest.TestCase):
     '''Class for testing sklernex examples'''
-    def test_examples_in_directory(self):
-        '''Function for testing all examples in directory'''
-        # Get a list of all Python files in the examples directory
-        files = [f for f in os.listdir(examples_path) if f.endswith(".py")]
+    # Get a list of all Python files in the examples directory
+    pass
 
-        # Iterate over each file and run it as a test case
-        for file in files:
-            # Define a test function for each file
-            def test(self):
-                # Run the script and capture its exit code
-                process = subprocess.run(
-                    [python_executable, os.path.join(examples_path, file)],
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                    check=True)
-                exit_code = process.returncode
 
-                # Assert that the exit code is 0
-                self.assertEqual(exit_code, 0)
+def test_generator(file):
+    def test(self):
+        # Run the script and capture its exit code
+        process = subprocess.run(
+            [python_executable, os.path.join(examples_path, file)],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            check=True)
+        exit_code = process.returncode
 
-            # Set the test function name and add it to the test suite
-            test_name = 'test_' + os.path.splitext(file)[0]
-            setattr(TestsklearnexExamples, test_name, test)
+        # Assert that the exit code is 0
+        self.assertEqual(exit_code, 0)
+    return test
 
 
 if __name__ == '__main__':
+    files = [f for f in os.listdir(examples_path) if f.endswith(".py")]
+    for file in files:
+        test_name = 'test_' + os.path.splitext(file)[0]
+        test = test_generator(file)
+        setattr(TestsklearnexExamples, test_name, test)
     unittest.main()
