@@ -60,4 +60,5 @@ if __name__ == '__main__':
         test_name = 'test_' + os.path.splitext(file)[0]
         test = test_generator(file)
         setattr(TestsklearnexExamples, test_name, test)
+        print("Generating tests for " + test_name)
     unittest.main()
