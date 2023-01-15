@@ -43,7 +43,8 @@ class TestsklearnexExamples(unittest.TestCase):
 
         # Iterate over each file and run it as a test case
         for file in files:
-            with self.subTest(file=file):
+            # Define a test function for each file
+            def test(self):
                 # Run the script and capture its exit code
                 process = subprocess.run(
                     [python_executable, os.path.join(examples_path, file)],
@@ -53,6 +54,10 @@ class TestsklearnexExamples(unittest.TestCase):
 
                 # Assert that the exit code is 0
                 self.assertEqual(exit_code, 0)
+
+            # Set the test function name and add it to the test suite
+            test_name = 'test_' + os.path.splitext(file)[0]
+            setattr(TestsklearnexExamples, test_name, test)
 
 
 if __name__ == '__main__':
