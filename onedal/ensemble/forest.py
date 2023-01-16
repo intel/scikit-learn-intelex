@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2022 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,32 +40,6 @@ from ..datatypes._data_conversion import from_table, to_table
 from onedal import _backend
 
 from sklearn.tree import DecisionTreeClassifier
-
-
-def check_sample_weight(sample_weight, X, dtype=None):
-    n_samples = _num_samples(X)
-
-    if dtype is not None and dtype not in [np.float32, np.float64]:
-        dtype = np.float64
-
-    if sample_weight is None:
-        sample_weight = np.ones(n_samples, dtype=dtype)
-    elif isinstance(sample_weight, numbers.Number):
-        sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
-    else:
-        if dtype is None:
-            dtype = [np.float64, np.float32]
-        sample_weight = check_array(
-            sample_weight, accept_sparse=False, ensure_2d=False, dtype=dtype,
-            order="C"
-        )
-        if sample_weight.ndim != 1:
-            raise ValueError("Sample weights must be 1D array or scalar")
-
-        if sample_weight.shape != (n_samples,):
-            raise ValueError("sample_weight.shape == {}, expected {}!"
-                             .format(sample_weight.shape, (n_samples,)))
-    return sample_weight
 
 
 class BaseForest(BaseEnsemble, metaclass=ABCMeta):
@@ -161,11 +135,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                                               self.min_samples_split, numbers.Integral)
                                           else int(ceil(
                                               self.min_samples_split * data.shape[0])))
-
-        return {
+        onedal_params = {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
             'method': self.algorithm,
-            'class_count': 0 if self.classes_ is None else len(self.classes_),
             'infer_mode': self.infer_mode,
             'voting_mode': self.voting_mode,
             'observations_per_tree_fraction': observations_per_tree_fraction,
@@ -186,6 +158,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             'error_metric_mode': self.error_metric_mode,
             'variable_importance_mode': self.variable_importance_mode,
         }
+        if self.is_classification:
+            onedal_params['class_count'] = 0 if self.classes_ is None else len(self.classes_)
+        return onedal_params
 
     def _check_parameters(self):
         if isinstance(self.min_samples_leaf, numbers.Integral):
@@ -248,17 +223,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                              "%r" % self.min_bin_size)
 
     def _validate_targets(self, y, dtype):
-        y, self.class_weight_, self.classes_ = _validate_targets(
-            y, self.class_weight, dtype)
-        return y
-
-    def _validate_y_class_weight(self, y):
-        # Default implementation
-        return y, None
-
-#    def _compute_oob_predictions(self, X, y):
-#        # TODO:
-#        pass
+        self.class_weight_ = None
+        self.classes_ = None
+        return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
     def _fit(self, X, y, sample_weight, module, queue):
         # TODO:
@@ -268,9 +235,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         #         "sparse multilabel-indicator for y is not supported."
         #         )
         self._check_parameters()
-        self.classes_ = None
-        if sample_weight is not None:
-            sample_weight = check_sample_weight(sample_weight, X)
+        # TODO:
+        # valid accept_sparse check
         X, y = _check_X_y(
             X, y, dtype=[np.float64, np.float32],
             force_all_finite=True, accept_sparse=['csr', 'csc', 'coo'],)
@@ -287,31 +253,24 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             # reshape is necessary to preserve the data contiguity against vs
             # [:, np.newaxis] that does not.
             y = np.reshape(y, (-1, 1))
+        # TODO:
+        # add variables assigning for different sklearn versions
         self.n_outputs_ = y.shape[1]
         self.n_features = X.shape[1]
         self.n_features_in_ = X.shape[1]
         self.n_features_ = self.n_features_in_
-        # TODO:
-        # use expanded_class_weight
-        y, expanded_class_weight = self._validate_y_class_weight(y)
-        # TODO:
-        # use _is_classifier(self)
-        if self.is_classification:
-            y = self._validate_targets(y, X.dtype)
+
         policy = _get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
         self._cached_estimators_ = None
-        result_train = module.train(policy, params, *to_table(X, y, sample_weight))
-        self._onedal_model = result_train.model
+        train_result = module.train(policy, params, *to_table(X, y, sample_weight))
+        self._onedal_model = train_result.model
 
-        # TODO:
-        # if self.oob_score:
-        #     self.oob_score_ = self._onedal_model.outOfBagErrorAccuracy[0][0]
-        #     self.oob_decision_function_ = self._onedal_model.outOfBagErrorDecisionFunction
-        #     if self.oob_decision_function_.shape[-1] == 1:
-        #         self.oob_decision_function_ = self.oob_decision_function_.squeeze(axis=-1)
         if self.oob_score:
-            self.oob_score_ = result_train.oob_err
+            self.oob_score_ = from_table(train_result.oob_err)[0][0]
+        # TODO:
+        # check for regression
+        # self.oob_score_ = from_table(train_result.oob_err_per_observation)
         return self
 
     def _predict(self, X, module, queue):
@@ -319,16 +278,40 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         X = _check_array(X, dtype=[np.float64, np.float32],
                              force_all_finite=True, accept_sparse='csr')
         _check_n_features(self, X, False)
+        # TODO:
+        # sparse check
+        # if self._sparse and not sp.isspmatrix(X):
         policy = _get_policy(queue, X)
         params = self._get_onedal_params(X)
+        # TODO:
+        # if hasattr(self, '_onedal_model'):
+        #     model = self._onedal_model
+        # else:
+        #     model = self._create_model(module)
         model = self._onedal_model
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.responses)
         return y
 
     def _predict_proba(self, X, module, queue):
+        _check_is_fitted(self)
+        X = _check_array(X, dtype=[np.float64, np.float32],
+                             force_all_finite=True, accept_sparse='csr')
+        _check_n_features(self, X, False)
         # TODO:
-        pass
+        # sparse check
+        # if self._sparse and not sp.isspmatrix(X):
+        policy = _get_policy(queue, X)
+        params = self._get_onedal_params(X)
+        # TODO:
+        # if hasattr(self, '_onedal_model'):
+        #     model = self._onedal_model
+        # else:
+        #     model = self._create_model(module)
+        model = self._onedal_model
+        result = module.infer(policy, params, model, to_table(X))
+        y = from_table(result.probabilities)
+        return y
 
 
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
@@ -371,59 +354,10 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             variable_importance_mode=variable_importance_mode, algorithm=algorithm)
         self.is_classification = True
 
-    def _validate_y_class_weight(self, y):
-        # check_classification_targets(y)
-
-        y = np.copy(y)
-        expanded_class_weight = None
-
-        if self.class_weight is not None:
-            y_original = np.copy(y)
-
-        self.classes_ = []
-        self.n_classes_ = []
-
-        y_store_unique_indices = np.zeros(y.shape, dtype=int)
-        for k in range(self.n_outputs_):
-            classes_k, y_store_unique_indices[:, k] = np.unique(
-                y[:, k], return_inverse=True
-            )
-            self.classes_.append(classes_k)
-            self.n_classes_.append(classes_k.shape[0])
-        y = y_store_unique_indices
-
-        if self.class_weight is not None:
-            valid_presets = ("balanced", "balanced_subsample")
-            if isinstance(self.class_weight, str):
-                if self.class_weight not in valid_presets:
-                    raise ValueError(
-                        "Valid presets for class_weight include "
-                        '"balanced" and "balanced_subsample".'
-                        'Given "%s".'
-                        % self.class_weight
-                    )
-                if self.warm_start:
-                    warnings.warn(
-                        'class_weight presets "balanced" or '
-                        '"balanced_subsample" are '
-                        "not recommended for warm_start if the fitted data "
-                        "differs from the full dataset. In order to use "
-                        '"balanced" weights, use compute_class_weight '
-                        '("balanced", classes, y). In place of y you can use '
-                        "a large enough sample of the full training set "
-                        "target to properly estimate the class frequency "
-                        "distributions. Pass the resulting weights as the "
-                        "class_weight parameter."
-                    )
-
-            if self.class_weight != "balanced_subsample" or not self.bootstrap:
-                if self.class_weight == "balanced_subsample":
-                    class_weight = "balanced"
-                else:
-                    class_weight = self.class_weight
-                expanded_class_weight = compute_sample_weight(class_weight, y_original)
-
-        return y, expanded_class_weight
+    def _validate_targets(self, y, dtype):
+        y, self.class_weight_, self.classes_ = _validate_targets(
+            y, self.class_weight, dtype)
+        return y
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(X, y, sample_weight,
@@ -431,18 +365,12 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
     def predict(self, X, queue=None):
         pred = super()._predict(X, _backend.decision_forest.classification, queue)
-        # return np.take(self.classes_, pred.ravel().astype(np.int64, casting='unsafe'))
-        #if len(self.classes_) == 2:
-        #    y = y.ravel()
-        #return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
-
-        return pred.ravel().astype(np.int64, casting='unsafe')
+        if len(self.classes_) == 2:
+            pred = pred.ravel()
+        return self.classes_.take(np.asarray(pred, dtype=np.intp)).ravel()
 
     def predict_proba(self, X, queue=None):
         return super()._predict_proba(X, _backend.decision_forest.classification, queue)
-
-    def _more_tags(self):
-        return {"multilabel": True}
 
 
 class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
