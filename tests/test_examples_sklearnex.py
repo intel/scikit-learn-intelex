@@ -23,10 +23,6 @@ unittest_data_path = os.path.join(test_path, "unittest_data")
 examples_path = os.path.join(
     os.path.dirname(test_path), "examples", "sklearnex")
 
-python_executable = subprocess.run(
-    ['/usr/bin/which', 'python'], check=True,
-    capture_output=True).stdout.decode().strip()
-
 print('Testing examples_sklearnex')
 # First item is major version - 2021,
 # second is minor+patch - 0110,
@@ -45,7 +41,7 @@ def test_generator(file):
     def testit(self):
         # Run the script and capture its exit code
         process = subprocess.run(
-            [python_executable, os.path.join(examples_path, file)],
+            ['python', os.path.join(examples_path, file)],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             check=True)
         exit_code = process.returncode
