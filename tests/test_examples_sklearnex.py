@@ -27,7 +27,7 @@ python_executable = subprocess.run(
     ['/usr/bin/which', 'python'], check=True,
     capture_output=True).stdout.decode().strip()
 
-print('Testing examples_scikitlearnex')
+print('Testing examples_sklearnex')
 # First item is major version - 2021,
 # second is minor+patch - 0110,
 # third item is status - B
