@@ -42,7 +42,7 @@ class TestsklearnexExamples(unittest.TestCase):
 
 
 def test_generator(file):
-    def test(self):
+    def testit(self):
         # Run the script and capture its exit code
         process = subprocess.run(
             [python_executable, os.path.join(examples_path, file)],
@@ -52,14 +52,14 @@ def test_generator(file):
 
         # Assert that the exit code is 0
         self.assertEqual(exit_code, 0)
-    return test
 
+    setattr(TestsklearnexExamples, 'test_' + os.path.splitext(file)[0], testit)
+    print("Generating tests for " + os.path.splitext(file)[0])
+
+
+files = [f for f in os.listdir(examples_path) if f.endswith(".py")]
+for file in files:
+    test_generator(file)
 
 if __name__ == '__main__':
-    files = [f for f in os.listdir(examples_path) if f.endswith(".py")]
-    for file in files:
-        test_name = 'test_' + os.path.splitext(file)[0]
-        test = test_generator(file)
-        setattr(TestsklearnexExamples, test_name, test)
-        print("Generating tests for " + test_name)
     unittest.main()
