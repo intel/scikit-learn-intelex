@@ -65,8 +65,6 @@ def device_type_to_str(queue):
         return 'cpu'
     if queue.sycl_device.device_type == device_type.gpu:
         return 'gpu'
-    if queue.sycl_device.device_type == device_type.host:
-        return 'host'
     return 'unknown'
 
 

@@ -33,7 +33,7 @@ def test_iris(queue):
 
 
 # TODO: investigate failures on GPU
-@pytest.mark.parametrize('queue', get_queues('host,cpu'))
+@pytest.mark.parametrize('queue', get_queues('cpu'))
 def test_pickle(queue):
     iris = datasets.load_iris()
     clf = KNeighborsClassifier(2).fit(iris.data, iris.target, queue=queue)

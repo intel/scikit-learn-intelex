@@ -101,7 +101,7 @@ oneAPI and GPU support in daal4py
 ---------------------------------
 daal4py provides support of oneAPI concepts such as context and queues, which means that
 algorithms can be executed on different devices, GPUs in particular. This is implemented via 'with sycl_context("xpu")'
-blocks that redirect execution to a device of the selected type: GPU, CPU, or host.
+blocks that redirect execution to a device of the selected type: GPU, CPU.
 Same approach is implemented for scikit-learn patching, so scikit-learn programs can be
 executed on GPU devices as well.
 
