@@ -176,12 +176,13 @@ def patch_is_enabled(name=None, get_map=_get_map_of_algorithms, return_map=False
     else:
         if return_map:
             enabled = {}
-
+            for key in get_map():
+                enabled[key] = _is_enabled(key, get_map)
         else:
             enabled = True
             for key in get_map():
                 enabled = enabled and _is_enabled(key, get_map)
-            return enabled
+        return enabled
 
 
 def _patch_names():
