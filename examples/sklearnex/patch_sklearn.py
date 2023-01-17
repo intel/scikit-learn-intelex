@@ -14,12 +14,22 @@
 # limitations under the License.
 #===============================================================================
 
-# Calling scikit-learn patch - this would enable acceleration on all enabled algorithms
+# Calling scikit-learn patch - this would enable acceleration on all
+# enabled algorithms. This is most straight forward way of patching
 from sklearnex import patch_sklearn
 patch_sklearn()
 
-#Remaining non modified scikit-learn code
-import numpy as np
+# Calling scikit-learn unpatch - this would revert patching for all algorithms
+from sklearnex import unpatch_sklearn
+unpatch_sklearn()
+
+# Direct import of functions in way aligned with scikit-learn
+from sklearnex.neighbors import NearestNeighbors
+
+#Patching can be enabled for selected algorithms/estimators only
+patch_sklearn(["DBSCAN"])
+
+#Remaining non modified scikit-learn codes
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 
@@ -31,7 +41,6 @@ X, labels_true = make_blobs(
 X = StandardScaler().fit_transform(X)
 
 from sklearn.cluster import DBSCAN
-from sklearn import metrics
 
 db = DBSCAN(eps=0.3, min_samples=10).fit(X)
 labels = db.labels_
