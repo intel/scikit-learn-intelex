@@ -158,5 +158,32 @@ def disable(name=None, get_map=_get_map_of_algorithms):
         get_map.cache_clear()
 
 
+def _is_enabled(name, get_map=_get_map_of_algorithms):
+    lname = name.lower()
+    if lname in get_map():
+        enabled = True
+        for descriptor in get_map()[lname]:
+            which, what, replacer = descriptor[0]
+            enabled = enabled and getattr(which, what) == replacer
+        return enabled
+    else:
+        raise ValueError("Has no patch for: " + name)
+
+
+def patch_is_enabled(name=None, get_map=_get_map_of_algorithms, return_map=False):
+    if name is not None:
+        return _is_enabled(name, get_map)
+    else:
+        if return_map:
+            enabled = {}
+            for key in get_map():
+                enabled[key] = _is_enabled(key, get_map)
+        else:
+            enabled = True
+            for key in get_map():
+                enabled = enabled and _is_enabled(key, get_map)
+        return enabled
+
+
 def _patch_names():
     return list(_get_map_of_algorithms().keys())
