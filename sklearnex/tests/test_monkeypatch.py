@@ -142,3 +142,15 @@ def test_patching_checker():
 
         sklearnex.unpatch_sklearn(name=name)
         assert not sklearnex.sklearn_is_patched(name=name)
+
+    sklearnex.patch_sklearn()
+    patching_status_map = sklearnex.sklearn_is_patched(return_map=True)
+    assert len(patching_status_map) == len(sklearnex.get_patch_names())
+    for status in patching_status_map.values():
+        assert status
+
+    sklearnex.unpatch_sklearn()
+    patching_status_map = sklearnex.sklearn_is_patched(return_map=True)
+    assert len(patching_status_map) == len(sklearnex.get_patch_names())
+    for status in patching_status_map.values():
+        assert not status
