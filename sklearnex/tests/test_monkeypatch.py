@@ -133,3 +133,12 @@ def test_unpatch_by_list_many_estimators():
     assert KNeighborsRegressor.__module__.startswith('sklearn')
     assert LogisticRegression.__module__.startswith('daal4py')
     assert SVC.__module__.startswith('daal4py') or SVC.__module__.startswith('sklearnex')
+
+
+def test_patching_checker():
+    for name in [None, 'SVC', 'PCA']:
+        sklearnex.patch_sklearn(name=name)
+        assert sklearnex.sklearn_is_patched(name=name)
+
+        sklearnex.unpatch_sklearn(name=name)
+        assert not sklearnex.sklearn_is_patched(name=name)
