@@ -17,6 +17,6 @@
 
 # TODO:
 # from .forest import RandomForestClassifier, RandomForestRegressor
-from daal4py import RandomForestClassifier, RandomForestRegressor
+from daal4py.sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 __all__ = ['RandomForestClassifier', 'RandomForestRegressor']
