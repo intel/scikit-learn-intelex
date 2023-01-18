@@ -16,12 +16,13 @@
 
 from .monkeypatch.dispatcher import enable as patch_sklearn
 from .monkeypatch.dispatcher import disable as unpatch_sklearn
+from .monkeypatch.dispatcher import patch_is_enabled as sklearn_is_patched
 from .monkeypatch.dispatcher import _patch_names as sklearn_patch_names
 from .monkeypatch.dispatcher import _get_map_of_algorithms as sklearn_patch_map
 
 __all__ = [
-    "patch_sklearn", "unpatch_sklearn", "sklearn_patch_names",
-    "sklearn_patch_map", "cluster", "decomposition", "ensemble",
-    "linear_model", "manifold", "neighbors",
-    "svm", "tree", "utils", "model_selection", "metrics",
+    'cluster', 'decomposition', 'ensemble', 'linear_model',
+    'manifold', 'metrics', 'model_selection', 'neighbors',
+    'patch_sklearn', 'sklearn_is_patched', 'sklearn_patch_map',
+    'sklearn_patch_names', 'svm', 'tree', 'unpatch_sklearn', 'utils'
 ]

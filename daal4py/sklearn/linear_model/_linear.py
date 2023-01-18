@@ -234,6 +234,10 @@ class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 
     if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **LinearRegression_original._parameter_constraints
+        }
+
         def __init__(
             self,
             fit_intercept=True,
@@ -309,6 +313,8 @@ class LinearRegression(LinearRegression_original):
             )
         if sklearn_check_version('1.0'):
             self._check_feature_names(X, reset=True)
+        if sklearn_check_version("1.2"):
+            self._validate_params()
 
         if sklearn_check_version('0.24'):
             _patching_status = PatchingConditionsChain(

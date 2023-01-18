@@ -143,10 +143,6 @@ def custom_build_cmake_clib(iface, cxx=None):
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
 
-    if iface == 'dpc':
-        cmake_args += ["-DCMAKE_C_COMPILER_WORKS=1",
-                       "-DCMAKE_CXX_COMPILER_WORKS=1"]
-
     import multiprocessing
     cpu_count = multiprocessing.cpu_count()
 

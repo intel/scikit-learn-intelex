@@ -26,7 +26,7 @@ from onedal.tests.utils._device_selection import (get_queues,
 
 
 # TODO: investigate sporadic failures on GPU
-@pytest.mark.parametrize('queue', get_queues('host,cpu'))
+@pytest.mark.parametrize('queue', get_queues('cpu'))
 def test_dense_self_linear_kernel(queue):
     rng = np.random.RandomState(0)
     X = np.array(5 * rng.random_sample((10, 4)))
@@ -48,7 +48,7 @@ def _test_dense_small_linear_kernel(queue, scale, shift, dtype):
 
 
 # TODO: investigate sporadic failures on GPU
-@pytest.mark.parametrize('queue', get_queues('host,cpu'))
+@pytest.mark.parametrize('queue', get_queues('cpu'))
 @pytest.mark.parametrize('scale', [1.0, 2.0])
 @pytest.mark.parametrize('shift', [0.0, 1.0])
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
