@@ -57,12 +57,14 @@ def _get_device_info_from_daal4py():
         return _get_device_name_sycl_ctxt(), _get_sycl_ctxt_params()
     return None, dict()
 
+
 def _get_device_float64_support_from_daal4py():
     import sys
     if 'daal4py.oneapi' in sys.modules:
         from daal4py.oneapi import _get_device_float64_support
         return _get_device_float64_support()
     return None
+
 
 def _get_global_queue():
     target = get_config()['target_offload']
@@ -115,11 +117,13 @@ def _transfer_to_host(queue, *data):
         else:
             has_host_data = True
 
-        mismatch_host_item = usm_iface is None and item is not None and has_usm_data
+        mismatch_host_item = usm_iface is None and \
+            item is not None and has_usm_data
         mismatch_usm_item = usm_iface is not None and has_host_data
 
         if mismatch_host_item or mismatch_usm_item:
-            raise RuntimeError('Input data shall be located on single target device')
+            raise RuntimeError(
+                'Input data shall be located on single target device')
 
         host_data.append(item)
     return queue, host_data
@@ -130,13 +134,15 @@ def _check_input_dtypes(queue, *data):
     if gpu_device:
         has_native_float64_support = False
         import os
-        if not os.getenv("OverrideDefaultFP64Settings", False) and os.getenv("IGC_ForceDPEmulation", False) and \
+        if not os.getenv("OverrideDefaultFP64Settings", False) and \
+               os.getenv("IGC_ForceDPEmulation", False) and \
                os.getenv("IGC_EnableDPEmulation", False):
             if dpctl_available:
                 has_native_float64_support = queue.sycl_device.has_aspect_fp64
             else:
-                has_native_float64_support = _get_device_float64_support_from_daal4py()
-        
+                has_native_float64_support = \
+                    _get_device_float64_support_from_daal4py()
+
         _, d4p_options = _get_device_info_from_daal4py()
         allow_cast = get_config()['allow_cast_to_float32'] or \
             d4p_options.get('allow_cast_to_float32', False)
@@ -144,12 +150,12 @@ def _check_input_dtypes(queue, *data):
         if has_native_float64_support:
             return data
         elif not has_native_float64_support and not allow_cast:
-            raise RuntimeError("Target device does not support float64 input data type")
+            raise RuntimeError(
+                "Target device does not support float64 input data type")
         else:
             cast_data = []
             import logging
-            # TODO: move this logging message to print this one time when script run
-            logging.info(f"Input data casted from float64 to float32")
+            logging.info("Input data casted from float64 to float32")
             for item in data:
                 dtype = getattr(item, 'dtype', None)
                 if dtype == np.float64:
@@ -196,7 +202,9 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
 
     backend, q, cpu_fallback = _get_backend(obj, q, method_name, *hostargs)
 
-    logging.info(f"sklearn.{method_name}: {get_patch_message(backend, q, cpu_fallback)}")
+    logging.info(
+        f"sklearn.{method_name}: \
+            {get_patch_message(backend, q, cpu_fallback)}")
     if backend == 'onedal':
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == 'sklearn':
@@ -226,4 +234,3 @@ def wrap_output_data(func):
             return _copy_to_usm(usm_iface['syclobj'], result)
         return result
     return wrapper
-

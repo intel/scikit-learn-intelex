@@ -51,7 +51,9 @@ def get_config():
     return {**sklearn, **sklearnex}
 
 
-def set_config(target_offload=None, allow_fallback_to_host=None, allow_cast_to_float32=None, **sklearn_configs):
+def set_config(
+        target_offload=None, allow_fallback_to_host=None,
+        allow_cast_to_float32=None, **sklearn_configs):
     """Set global configuration
     Parameters
     ----------
@@ -65,7 +67,7 @@ def set_config(target_offload=None, allow_fallback_to_host=None, allow_cast_to_f
         in case particular estimator does not support the selected one.
         Global default: False.
     allow_cast_to_float32 : bool, default=None
-        If True, allows to cast input data from float64 to float32 
+        If True, allows to cast input data from float64 to float32
         in case target_offload device does not have native float64 support.
         Global default: False.
     See Also
