@@ -135,8 +135,8 @@ def _check_input_dtypes(queue, *data):
         has_native_float64_support = False
         import os
         if not os.getenv("OverrideDefaultFP64Settings", False) and \
-               os.getenv("IGC_ForceDPEmulation", False) and \
-               os.getenv("IGC_EnableDPEmulation", False):
+                os.getenv("IGC_ForceDPEmulation", False) and \
+                os.getenv("IGC_EnableDPEmulation", False):
             if dpctl_available:
                 has_native_float64_support = queue.sycl_device.has_aspect_fp64
             else:
@@ -162,7 +162,7 @@ def _check_input_dtypes(queue, *data):
                     item = item.astype(np.float32)
                 cast_data.append(item)
             return cast_data
-    else: 
+    else:
         return data
 
 
