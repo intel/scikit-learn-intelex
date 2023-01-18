@@ -19,6 +19,10 @@
 from sklearnex import patch_sklearn
 patch_sklearn()
 
+# Function that can validate current state of patching
+from sklearnex import sklearn_is_patched
+sklearn_is_patched()
+
 # Calling scikit-learn unpatch - this would revert patching for all algorithms
 from sklearnex import unpatch_sklearn
 unpatch_sklearn()
