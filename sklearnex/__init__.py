@@ -19,13 +19,14 @@ from .dispatcher import patch_sklearn
 from .dispatcher import unpatch_sklearn
 from .dispatcher import get_patch_names
 from .dispatcher import get_patch_map
+from .dispatcher import sklearn_is_patched
 from ._config import get_config, set_config, config_context
 
 __all__ = [
-    "patch_sklearn", "unpatch_sklearn", "get_patch_names",
-    "get_patch_map", "get_config", "set_config", "config_context",
-    "cluster", "decomposition", "ensemble", "linear_model",
-    "manifold", "neighbors", "svm", "metrics", "utils"
+    'cluster', 'config_context', 'decomposition', 'ensemble', 'get_config',
+    'get_patch_names', 'linear_model', 'manifold', 'metrics', 'neighbors',
+    'patch_sklearn', 'set_config', 'sklearn_is_patchedget_patch_map',
+    'svm', 'unpatch_sklearn', 'utils'
 ]
 
 from ._utils import set_sklearn_ex_verbose
