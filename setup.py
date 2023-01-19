@@ -238,18 +238,20 @@ def getpyexts():
         elif IS_WIN:
             runtime_oneapi_dirs = []
 
+        mpi_extra_link = ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS]
+
         ext = Extension('daal4py._oneapi',
                         [os.path.abspath('src/oneapi/oneapi.pyx'), ],
                         depends=['src/oneapi/oneapi.h', 'src/oneapi/oneapi_backend.h'],
-                        include_dirs=include_dir_plat + [np.get_include()],
+                        include_dirs=include_dir_plat + [np.get_include()]  + MPI_INCDIRS,
                         extra_compile_args=eca,
-                        extra_link_args=ela,
+                        extra_link_args=mpi_extra_link,
                         define_macros=[
                             ('NPY_NO_DEPRECATED_API',
                              'NPY_1_7_API_VERSION')
                         ],
-                        libraries=['oneapi_backend'] + libraries_plat,
-                        library_dirs=['daal4py/oneapi'] + ONEDAL_LIBDIRS,
+                        libraries=['oneapi_backend'] + libraries_plat + MPI_LIBS,
+                        library_dirs=['daal4py/oneapi'] + ONEDAL_LIBDIRS + MPI_LIBDIRS,
                         runtime_library_dirs=runtime_oneapi_dirs,
                         language='c++')
         exts.extend(cythonize(ext))

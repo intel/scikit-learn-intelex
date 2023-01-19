@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2021 Intel Corporation
+* Copyright 2023 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-
+#ifdef ONEDAL_DATA_PARALLEL
 #include "oneapi/dal/detail/spmd_policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #include "oneapi/dal/spmd/mpi/communicator.hpp"
@@ -24,7 +24,6 @@ namespace py = pybind11;
 namespace oneapi::dal::python {
 
 ONEDAL_PY_INIT_MODULE(spmd_policy) {
-#ifdef ONEDAL_DATA_PARALLEL
     import_dpctl();
     py::class_<dal::detail::spmd_policy<detail::data_parallel_policy>>(m, "spmd_data_parallel_policy")
         .def(py::init([](cl::sycl::queue &q) {
@@ -33,7 +32,6 @@ ONEDAL_PY_INIT_MODULE(spmd_policy) {
             detail::spmd_policy<detail::data_parallel_policy> spmd_policy{ local_policy, comm };
             return spmd_policy;
         }));
-#endif
 }
-
 } // namespace oneapi::dal::python
+#endif
