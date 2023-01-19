@@ -22,7 +22,7 @@ from setuptools import setup
 from scripts.package_helpers import get_packages_with_tests
 
 sklearnex_version = (os.environ["SKLEARNEX_VERSION"] if "SKLEARNEX_VERSION" in os.environ
-                     else time.strftime("2023.%Y%m%d.%H%M%S"))
+                     else time.strftime("%Y%m%d.%H%M%S"))
 
 project_urls = {
     "Bug Tracker": "https://github.com/intel/scikit-learn-intelex/issues",
@@ -58,6 +58,7 @@ setup(name="scikit-learn-intelex",
           "Operating System :: Microsoft :: Windows",
           "Operating System :: POSIX :: Linux",
           "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.7",
           "Programming Language :: Python :: 3.8",
           "Programming Language :: Python :: 3.9",
           "Programming Language :: Python :: 3.10",
@@ -66,7 +67,7 @@ setup(name="scikit-learn-intelex",
           "Topic :: System",
           "Topic :: Software Development",
       ],
-      python_requires=">=3.8",
+      python_requires=">=3.7",
       install_requires=[
           "daal4py>=2021.2",
           "scikit-learn>=0.24"

@@ -300,10 +300,14 @@ class PCA(PCA_original):
                 (1, self.explained_variance_.shape[0]),
                 self.n_samples_ - 1.0, dtype=X.dtype)
 
-        if X.shape[1] != self.n_features_:
+        if sklearn_check_version('1.2'):
+            expected_n_features = self.n_features_in_
+        else:
+            expected_n_features = self.n_features_
+        if X.shape[1] != expected_n_features:
             raise ValueError(
                 (f'X has {X.shape[1]} features, '
-                 f'but PCA is expecting {self.n_features_} features as input'))
+                 f'but PCA is expecting {expected_n_features} features as input'))
 
         tr_res = daal4py.pca_transform(
             fptype=fpType

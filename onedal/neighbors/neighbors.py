@@ -118,11 +118,11 @@ class NeighborsCommonBase(metaclass=ABCMeta):
                 "'distance', or a callable function"
             )
 
-    def _get_onedal_params(self, data):
+    def _get_onedal_params(self, X, y=None):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, 'weights', 'uniform')
         return {
-            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'fptype': 'float' if X.dtype is np.dtype('float32') else 'double',
             'vote_weights': 'uniform' if weights == 'uniform' else 'distance',
             'method': self._fit_method,
             'radius': self.radius,
@@ -131,7 +131,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             'metric': self.effective_metric_,
             'p': self.p,
             'metric_params': self.effective_metric_params_,
-            'result_option': 'indices|distances',
+            'result_option': 'indices|distances' if y is None else 'responses',
         }
 
     def _get_daal_params(self, data):
@@ -379,9 +379,8 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             **kwargs)
         self.weights = weights
 
-    def _get_onedal_params(self, data):
-        params = super()._get_onedal_params(data)
-        params['result_option'] = 'responses'
+    def _get_onedal_params(self, X, y=None):
+        params = super()._get_onedal_params(X, y)
         return params
 
     def _get_daal_params(self, data):
@@ -403,7 +402,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             return train_alg(**params).compute(X, y).model
 
         policy = _get_policy(queue, X, y)
-        params = self._get_onedal_params(X)
+        params = self._get_onedal_params(X, y)
         train_alg = _backend.neighbors.classification.train(policy, params,
                                                             *to_table(X, y))
 
@@ -524,9 +523,8 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
             **kwargs)
         self.weights = weights
 
-    def _get_onedal_params(self, data):
-        params = super()._get_onedal_params(data)
-        params['result_option'] = 'responses'
+    def _get_onedal_params(self, X, y=None):
+        params = super()._get_onedal_params(X, y)
         return params
 
     def _get_daal_params(self, data):
@@ -548,7 +546,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
             return train_alg(**params).compute(X, y).model
 
         policy = _get_policy(queue, X, y)
-        params = self._get_onedal_params(X)
+        params = self._get_onedal_params(X, y)
         train_alg_regr = _backend.neighbors.regression.train
         train_alg_srch = _backend.neighbors.search.train
         if gpu_device:
@@ -653,9 +651,8 @@ class NearestNeighbors(NeighborsBase):
             **kwargs)
         self.weights = weights
 
-    def _get_onedal_params(self, data):
-        params = super()._get_onedal_params(data)
-        params['result_option'] = 'indices|distances'
+    def _get_onedal_params(self, X, y=None):
+        params = super()._get_onedal_params(X, y)
         return params
 
     def _get_daal_params(self, data):
@@ -678,7 +675,7 @@ class NearestNeighbors(NeighborsBase):
             return train_alg(**params).compute(X, y).model
 
         policy = _get_policy(queue, X, y)
-        params = self._get_onedal_params(X)
+        params = self._get_onedal_params(X, y)
         train_alg = _backend.neighbors.search.train(policy, params,
                                                     to_table(X))
 

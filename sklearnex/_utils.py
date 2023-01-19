@@ -39,7 +39,7 @@ def get_patch_message(s, queue=None, cpu_fallback=False):
         if queue is not None:
             if queue.sycl_device.is_gpu:
                 message += 'GPU'
-            elif queue.sycl_device.is_cpu or queue.sycl_device.is_host:
+            elif queue.sycl_device.is_cpu:
                 message += 'CPU'
             else:
                 raise RuntimeError('Unsupported device')
@@ -56,7 +56,7 @@ def get_patch_message(s, queue=None, cpu_fallback=False):
                     message += 'GPU'
             else:
                 raise ValueError(f"Unexpected device name {dev}."
-                                 " Supported types are host, cpu and gpu")
+                                 " Supported types are cpu and gpu")
         else:
             message += 'CPU'
 

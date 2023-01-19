@@ -19,7 +19,7 @@ version: 2.0
 jobs:
   build_pypi:
     docker:
-      - image: circleci/python:3.10.1
+      - image: cimg/python:3.10.1
 
     working_directory: ~/daal4py-ci
 
@@ -57,25 +57,19 @@ jobs:
       - store_artifacts:
           path: /tmp/patched_and_unpatched_sklearn_pypi_pytest_logs_sklearnex.tar.bz2
 
-  build_master:
+  build_scikit-learn_master:
     docker:
-      - image: circleci/python:3.10.1
+      - image: cimg/python:3.11
 
     working_directory: ~/daal4py-ci
 
     steps:
       - checkout
       - run:
-          name: Checkout master
-          command: |
-            git fetch --all
-            git checkout master
-            git reset --hard origin/master
-      - run:
           name: Setting up build environment
           command: |
             ls -la
-            source ./.circleci/setup_env.sh
+            source ./.circleci/setup_env.sh 3.10
       - run:
           name: Building daal4py
           command: |
@@ -83,19 +77,18 @@ jobs:
             conda activate bld
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
-            export OFF_ONEDAL_IFACE=1
             python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
-            export OFF_ONEDAL_IFACE=1
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
             conda install -y -c conda-forge threadpoolctl cython
             git clone https://github.com/scikit-learn/scikit-learn.git
-            pushd scikit-learn && python setup.py install && popd
+            pushd scikit-learn && python setup.py install
+            popd
             conda list
             source ./.circleci/run_and_compare.sh ~/daal4py-ci /tmp/patched_and_unpatched_sklearn_master_pytest_logs.tar.bz2
       - store_artifacts:
@@ -117,6 +110,6 @@ workflows:
           cron: "49 23 * * *"
           filters:
             branches:
-              only: test-sklearn-master
+              only: master
     jobs:
-      - build_master
+      - build_scikit-learn_master
