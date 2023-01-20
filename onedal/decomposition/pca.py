@@ -36,7 +36,7 @@ class PCA():
         params = self.get_onedal_params(X)
         cov_result = _backend.covariance.compute(
             policy,
-            {"fptype":params['fptype'],"method":"dense"},
+            {"fptype": params['fptype'], "method": "dense"},
             to_table(X)
         )
         covariance_matrix = from_table(cov_result.cov_matrix)

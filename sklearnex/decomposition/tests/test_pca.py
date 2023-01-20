@@ -24,6 +24,6 @@ def test_sklearnex_import():
     X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
     pca = PCA(n_components=2, svd_solver='full').fit(X)
     assert 'sklearnex' in pca.__module__
-    assert_allclose(pca.singular_values_, [[6.30061236 0.54980354]])
-    assert_allclose(pca.components_, [[ 0.83849223  0.54491356][-0.54491356  0.83849223]])
-    assert_allclose(pca.explained_variance_ratio_, [[0.9924429 0.0075571]])
+    assert_allclose(pca.singular_values_, [[6.30061236, 0.54980354]])
+    assert_allclose(pca.components_, [[ 0.83849223, 0.54491356],[-0.54491356, 0.83849223]])
+    assert_allclose(pca.explained_variance_ratio_, [[0.9924429, 0.0075571]])
