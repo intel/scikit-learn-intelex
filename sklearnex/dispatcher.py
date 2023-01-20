@@ -151,3 +151,24 @@ def unpatch_sklearn(name=None, global_unpatch=False):
             for config in ['set_config', 'get_config', 'config_context']:
                 unpatch_sklearn_orig(config, get_map=get_patch_map)
         unpatch_sklearn_orig(name, get_map=get_patch_map)
+
+
+def sklearn_is_patched(name=None, return_map=False):
+    from daal4py.sklearn import sklearn_is_patched as sklearn_is_patched_orig
+
+    if isinstance(name, list):
+        if return_map:
+            result = {}
+            for algorithm in name:
+                result[algorithm] = sklearn_is_patched_orig(
+                    algorithm, get_map=get_patch_map)
+            return result
+        else:
+            is_patched = True
+            for algorithm in name:
+                is_patched = is_patched and \
+                    sklearn_is_patched_orig(algorithm, get_map=get_patch_map)
+            return is_patched
+    else:
+        return sklearn_is_patched_orig(
+            name, get_map=get_patch_map, return_map=return_map)

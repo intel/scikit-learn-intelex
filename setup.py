@@ -310,8 +310,8 @@ def build_oneapi_backend():
         cxx = 'icx'
     else:
         cxx = 'icpx'
-    eca = ['-fsycl'] + eca
-    ela = ['-fsycl'] + ela
+    eca = ['-fsycl'] + ['-fsycl-device-code-split=per_kernel'] + eca
+    ela = ['-fsycl'] + ['-fsycl-device-code-split=per_kernel'] + ela
 
     return build_backend.build_cpp(
         cc=cc,
