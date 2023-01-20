@@ -24,7 +24,8 @@ import numpy as np
 from onedal.datatypes import _check_array
 
 from .._device_offload import dispatch, wrap_output_data
-from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
+from sklearn.utils.validation import _deprecate_positional_args
+from sklearn.utils.validation import check_is_fitted
 
 try:
     from packaging.version import Version
@@ -61,7 +62,6 @@ class PCA(sklearn_PCA):
         self.random_state = random_state
 
     def fit(self, X, y=None):
-        #In sklearn here we have check_scalar call
         self._fit(X)
         return self
 
@@ -73,7 +73,10 @@ class PCA(sklearn_PCA):
             )
 
         X = _check_array(
-            X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+            X,
+            dtype=[np.float64, np.float32],
+            ensure_2d=True,
+            copy=self.copy
         )
 
         if self.n_components is None:
@@ -91,7 +94,7 @@ class PCA(sklearn_PCA):
             # Small problem or n_components == 'mle', just call full PCA
             if max(X.shape) <= 500 or n_components == "mle":
                 self._fit_svd_solver = "full"
-            elif n_components >= 1 and n_components < 0.8 * min(X.shape):
+            elif 1 <= n_components < 0.8 * min(X.shape):
                 self._fit_svd_solver = "randomized"
             # This is also the case of n_components in (0,1)
             else:
@@ -104,7 +107,12 @@ class PCA(sklearn_PCA):
                 'sklearn': sklearn_PCA._fit_full,
             }, X)
         elif self._fit_svd_solver in ["arpack", "randomized"]:
-            return sklearn_PCA._fit_truncated(self, X, n_components, self._fit_svd_solver)
+            return sklearn_PCA._fit_truncated(
+                self,
+                X,
+                n_components,
+                self._fit_svd_solver
+            )
         else:
             raise ValueError(
                 "Unrecognized svd_solver='{0}'".format(self._fit_svd_solver)
@@ -113,29 +121,42 @@ class PCA(sklearn_PCA):
     def _onedal_gpu_supported(self, method_name, *data):
         print("call _onedall_gpu_supported")
         if method_name == 'decomposition.PCA.fit':
-            return self._fit_svd_solver == 'cov'
+            return self._fit_svd_solver == 'full'
         elif method_name == 'decomposition.PCA.transform':
             return hasattr(self, '_onedal_estimator')
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+        raise RuntimeError(
+            f'Unknown method {method_name} in {self.__class__.__name__}'
+        )
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'decomposition.PCA.fit':
-            return self._fit_svd_solver in ['cov','full']
+            return self._fit_svd_solver == 'full'
         elif method_name == 'decomposition.PCA.transform':
             return hasattr(self, '_onedal_estimator')
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+        raise RuntimeError(
+            f'Unknown method {method_name} in {self.__class__.__name__}'
+        )
 
     def _onedal_fit(self, X, y=None, queue=None):
-        if self.svd_solver == "full" or self.svd_solver == "auto":
-            method = "svd"
-        elif self.svd_solver == "cov":
-            method = "cov"
+        if self._fit_svd_solver == "full":
+            method = "precomputed"
         else:
             raise ValueError(
                 "Unknown method='{0}'".format(self.svd_solver)
             )
+
+        n_samples, n_features = X.shape
+        n_sf_min = min(n_samples, n_features)
+
+        if self.n_components == 'mle' or self.n_components is None:
+            onedal_n_components = n_features
+        elif self.n_components < 1:
+            onedal_n_components = n_sf_min
+        else:
+            onedal_n_components = self.n_components
+
         onedal_params = {
-            'n_components': self.n_components,
+            'n_components': onedal_n_components,
             'is_deterministic': True,
             'method': method,
             'copy': self.copy
@@ -143,7 +164,7 @@ class PCA(sklearn_PCA):
         self._onedal_estimator = onedal_PCA(**onedal_params)
         self._onedal_estimator.fit(X, y, queue=queue)
         self._save_attributes()
-        #TODO: Check U value
+
         U = None
         S = self.singular_values_
         V = self.components_
@@ -171,7 +192,10 @@ class PCA(sklearn_PCA):
         exp_var_diff = np.maximum(exp_var - self.noise_variance_, 0.0)
         precision = np.dot(components_, components_.T) / self.noise_variance_
         precision.flat[:: len(precision) + 1] += 1.0 / exp_var_diff
-        precision = np.dot(components_.T, np.dot(np.linalg.inv(precision), components_))
+        precision = np.dot(
+            components_.T,
+            np.dot(np.linalg.inv(precision), components_)
+        )
         precision /= -(self.noise_variance_**2)
         precision.flat[:: len(precision) + 1] += 1.0 / self.noise_variance_
         return precision
@@ -189,7 +213,8 @@ class PCA(sklearn_PCA):
     def _save_attributes(self):
         self.components_ = self._onedal_estimator.components_
         self.explained_variance_ = self._onedal_estimator.explained_variance_
-        self.explained_variance_ratio_ = self._onedal_estimator.explained_variance_ratio_
+        self.explained_variance_ratio_ = \
+            self._onedal_estimator.explained_variance_ratio_
         self.singular_values_ = self._onedal_estimator.singular_values_
         self.mean_ = self._onedal_estimator.mean_
         self.n_components_ = self._onedal_estimator.n_components_

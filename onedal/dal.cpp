@@ -27,6 +27,7 @@ ONEDAL_PY_INIT_MODULE(policy);
 ONEDAL_PY_INIT_MODULE(table);
 
 /* primitives */
+ONEDAL_PY_INIT_MODULE(covariance);
 ONEDAL_PY_INIT_MODULE(linear_kernel);
 ONEDAL_PY_INIT_MODULE(rbf_kernel);
 ONEDAL_PY_INIT_MODULE(polynomial_kernel);
@@ -45,6 +46,7 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_policy(m);
     init_table(m);
 
+    init_covariance(m);
     init_linear_kernel(m);
     init_rbf_kernel(m);
     init_polynomial_kernel(m);

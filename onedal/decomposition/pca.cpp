@@ -16,7 +16,7 @@ struct params2desc {
         //sign-flip feauture is always used in scikit-learn
         bool is_deterministic= params["is_deterministic"].cast<bool>();
 
-        auto desc = dal::pca::descriptor<Float, Method>().set_component_count(n_components).set_deterministic(false);
+        auto desc = dal::pca::descriptor<Float, Method>().set_component_count(n_components).set_deterministic(is_deterministic);
         
         return desc;
     }
@@ -33,6 +33,7 @@ struct method2t {
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "cov", ops, Float, method::cov);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "svd", ops, Float, method::svd);
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "precomputed", ops, Float, method::precomputed);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
