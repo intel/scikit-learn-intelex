@@ -15,5 +15,6 @@
 #===============================================================================
 
 from .kernel_functions import linear_kernel, rbf_kernel, poly_kernel, sigmoid_kernel
+from .covariance import covariance
 
-__all__ = ['linear_kernel', 'rbf_kernel', 'poly_kernel', 'sigmoid_kernel']
+__all__ = ['covariance', 'linear_kernel', 'rbf_kernel', 'poly_kernel', 'sigmoid_kernel']
