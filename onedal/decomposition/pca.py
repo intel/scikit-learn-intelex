@@ -35,7 +35,7 @@ class PCA():
 
         policy = _get_policy(queue, X, y)
         params = self.get_onedal_params(X)
-        covariance_matrix = covariance(X)
+        covariance_matrix = covariance(X, y, queue)
         result = _backend.decomposition.dim_reduction.train(
             policy,
             params,
