@@ -56,4 +56,4 @@ def covariance(X, Y=None, queue=None):
     """
     X, Y, fptype = _check_inputs(X, Y)
     return _compute_cov({'fptype': fptype, 'method': 'dense'},
-                           _backend.covariance, X, Y, queue)
+                        _backend.covariance, X, Y, queue)
