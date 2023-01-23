@@ -1,5 +1,4 @@
 from onedal import _backend
-from onedal.primitives.covariance import covariance
 
 from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
@@ -35,7 +34,12 @@ class PCA():
 
         policy = _get_policy(queue, X, y)
         params = self.get_onedal_params(X)
-        covariance_matrix = covariance(X, y, queue)
+        cov_result = _backend.covariance.compute(
+            policy,
+            {'fptype': params['fptype'], 'method': 'dense'},
+            to_table(X)
+        )
+        covariance_matrix = from_table(cov_result.cov_matrix)
         result = _backend.decomposition.dim_reduction.train(
             policy,
             params,
