@@ -89,7 +89,6 @@ class PCA(sklearn_PCA):
 
         # Handle svd_solver
         self._fit_svd_solver = self.svd_solver
-        #TODO: Look at parameters sets conditions at daal4py interface
         if self._fit_svd_solver == "auto":
             # Small problem or n_components == 'mle', just call full PCA
             if max(X.shape) <= 500 or n_components == "mle":
@@ -157,7 +156,7 @@ class PCA(sklearn_PCA):
 
         onedal_params = {
             'n_components': onedal_n_components,
-            'is_deterministic': True,
+            'is_deterministic': False,
             'method': method,
             'copy': self.copy
         }
@@ -209,6 +208,32 @@ class PCA(sklearn_PCA):
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_PCA.transform,
         }, X)
+
+
+    def fit_transform(self, X, y=None):
+        """Fit the model with X and apply the dimensionality reduction on X.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples
+            and `n_features` is the number of features.
+        y : Ignored
+            Ignored.
+        Returns
+        -------
+        X_new : ndarray of shape (n_samples, n_components)
+            Transformed values.
+        Notes
+        -----
+        This method returns a C-contiguous array unlike scikit-learn.
+        """
+
+        self.copy = True
+        _ = self._fit(X)
+        X_new = self.transform(X)
+
+        return X_new
+
 
     def _save_attributes(self):
         self.components_ = self._onedal_estimator.components_

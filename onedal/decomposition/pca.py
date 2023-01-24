@@ -10,7 +10,7 @@ class PCA():
     def __init__(
         self,
         n_components=None,
-        is_deterministic=True,
+        is_deterministic=False,
         method='precomputed',
         copy=True
     ):
