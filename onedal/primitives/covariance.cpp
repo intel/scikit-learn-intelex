@@ -43,7 +43,8 @@ template <template <typename F, typename M, typename T> typename Desc>
 struct cov_params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const pybind11::dict& params) {
-        auto desc = dal::covariance::descriptor{}.set_result_options(dal::covariance::result_options::cov_matrix);
+        auto desc = dal::covariance::descriptor{}.set_result_options(
+            dal::covariance::result_options::cov_matrix | dal::covariance::result_options::means);
         return desc;
     }
 };
@@ -62,7 +63,7 @@ inline void init_cov_result(pybind11::module_& m) {
     pybind11::class_<Result>(m, "cov_result")
         .def(pybind11::init())
         .def_property("cov_matrix", &Result::get_cov_matrix, &Result::set_cov_matrix)
-        .def_property("cov_means", &Result::get_means, &Result::set_means);
+        .def_property("feature_means", &Result::get_means, &Result::set_means);
 }
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_cov_result);

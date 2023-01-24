@@ -57,7 +57,7 @@ class PCA():
         self.singular_values_ = np.sqrt(
             (n_samples - 1) * self.explained_variance_
         )
-        self.mean_ = from_table(result.means)
+        self.mean_ = from_table(cov_result.feature_means)
         self.n_components_ = self.n_components
         self.n_features_ = n_features
         # n_features_ was deprecated in scikit-learn 1.2 and
