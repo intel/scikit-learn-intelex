@@ -209,7 +209,6 @@ class PCA(sklearn_PCA):
             'sklearn': sklearn_PCA.transform,
         }, X)
 
-
     def fit_transform(self, X, y=None):
         """Fit the model with X and apply the dimensionality reduction on X.
         Parameters
@@ -233,7 +232,6 @@ class PCA(sklearn_PCA):
         X_new = self.transform(X)
 
         return X_new
-
 
     def _save_attributes(self):
         self.components_ = self._onedal_estimator.components_
