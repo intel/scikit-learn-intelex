@@ -222,16 +222,20 @@ class PCA(sklearn_PCA):
         -------
         X_new : ndarray of shape (n_samples, n_components)
             Transformed values.
-        Notes
-        -----
-        This method returns a C-contiguous array unlike scikit-learn.
         """
+        U, S, Vt = self._fit(X)
+        if U is None:
+            S_inv = np.diag(1 / S.reshape(-1,))
+            X_dot_V = self.transform(X)[:, : self.n_components_]
+            U = np.sqrt(X.shape[0] - 1) * np.dot(X_dot_V, S_inv)
+        else:
+            U = U[:, : self.n_components_]
+            if self.whiten:
+                U *= np.sqrt(X.shape[0] - 1)
+            else:
+                U *= S[: self.n_components_]
 
-        self.copy = True
-        _ = self._fit(X)
-        X_new = self.transform(X)
-
-        return X_new
+        return U
 
     def _save_attributes(self):
         self.components_ = self._onedal_estimator.components_

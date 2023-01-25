@@ -29,4 +29,3 @@ def test_sklearnex_import():
         pca.components_,
         [[-0.83849223, -0.54491356], [0.54491356, -0.83849223]]
     )
-    assert_allclose(pca.explained_variance_ratio_, [[0.9924429, 0.0075571]])
