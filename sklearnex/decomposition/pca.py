@@ -216,8 +216,8 @@ class PCA(sklearn_PCA):
         X : array-like of shape (n_samples, n_features)
             Training data, where `n_samples` is the number of samples
             and `n_features` is the number of features.
-        y : Ignored
-            Ignored.
+        y : Ignored.
+
         Returns
         -------
         X_new : ndarray of shape (n_samples, n_components)
@@ -226,8 +226,11 @@ class PCA(sklearn_PCA):
         U, S, Vt = self._fit(X)
         if U is None:
             S_inv = np.diag(1 / S.reshape(-1,))
-            X_dot_V = self.transform(X)[:, : self.n_components_]
-            U = np.sqrt(X.shape[0] - 1) * np.dot(X_dot_V, S_inv)
+            U_dot_S = self.transform(X)[:, : self.n_components_]
+            if self.whiten:
+                U = np.sqrt(X.shape[0] - 1) * np.dot(U_dot_S, S_inv)
+            else:
+                U = U_dot_S
         else:
             U = U[:, : self.n_components_]
             if self.whiten:
