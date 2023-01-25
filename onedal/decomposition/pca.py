@@ -1,3 +1,18 @@
+#===============================================================================
+# Copyright 2023 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#===============================================================================
 from onedal import _backend
 
 from ..common._policy import _get_policy
@@ -10,7 +25,7 @@ class PCA():
     def __init__(
         self,
         n_components=None,
-        is_deterministic=False,
+        is_deterministic=True,
         method='precomputed',
         copy=True
     ):
@@ -78,7 +93,7 @@ class PCA():
         else:
             self.noise_variance_ = 0.
 
-        #TODO: find out what should we do with this attribute
+        #TODO Implement when supported
         self.feature_names_in_ = "Not supported yet"
 
         return self

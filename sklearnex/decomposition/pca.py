@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2021 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -156,7 +156,7 @@ class PCA(sklearn_PCA):
 
         onedal_params = {
             'n_components': onedal_n_components,
-            'is_deterministic': False,
+            'is_deterministic': True,
             'method': method,
             'copy': self.copy
         }
