@@ -29,7 +29,7 @@ class PCA():
         }
 
     def fit(self, X, y, queue):
-        X = X - np.mean(X, axis = 0)
+        X = X - np.mean(X, axis=0)
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
@@ -89,7 +89,7 @@ class PCA():
         return m
 
     def predict(self, X, queue):
-        X = X - np.mean(X, axis = 0)
+        X = X - np.mean(X, axis=0)
         policy = _get_policy(queue, X)
         params = self.get_onedal_params(X)
         model = self._create_model()
