@@ -73,7 +73,7 @@ if(IFACE STREQUAL "host")
     elseif(APPLE)
         set(ONEDAL_LIBRARIES "onedal.${ONEDAL_MAJOR_BINARY}" "onedal_core.${ONEDAL_MAJOR_BINARY}" "onedal_thread.${ONEDAL_MAJOR_BINARY}")
     else()
-        set(ONEDAL_LIBRARIES "libonedal.so.${ONEDAL_MAJOR_BINARY}" "libonedal_core.so.${ONEDAL_MAJOR_BINARY}" "libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
+        set(ONEDAL_LIBRARIES "-l:libonedal.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_core.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
     endif()
 
     list(APPEND COMPILE_DEFINITIONS "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
@@ -94,7 +94,7 @@ elseif(IFACE STREQUAL "dpc")
     elseif(APPLE)
         set(ONEDAL_LIBRARIES "onedal_dpc.${ONEDAL_MAJOR_BINARY}" "onedal_core.${ONEDAL_MAJOR_BINARY}" "onedal_thread.${ONEDAL_MAJOR_BINARY}")
     else()
-        set(ONEDAL_LIBRARIES "libonedal_dpc.so.${ONEDAL_MAJOR_BINARY}" "libonedal_core.so.${ONEDAL_MAJOR_BINARY}" "libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
+        set(ONEDAL_LIBRARIES "-l:libonedal_dpc.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_core.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
     endif()
 
     list(APPEND COMPILE_DEFINITIONS

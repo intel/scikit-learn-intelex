@@ -156,10 +156,10 @@ def get_libs(iface='daal'):
         onedal_lib = [f'onedal.{major_version}']
         onedal_dpc_lib = [f'onedal_dpc.{major_version}']
     else:
-        libraries_plat = [f'libonedal_core.so.{major_version}',
-                          f'libonedal_thread.so.{major_version}']
-        onedal_lib = [f'libonedal.so.{major_version}']
-        onedal_dpc_lib = [f'libonedal_dpc.so.{major_version}']
+        libraries_plat = [f':libonedal_core.so.{major_version}',
+                          f':libonedal_thread.so.{major_version}']
+        onedal_lib = [f':libonedal.so.{major_version}']
+        onedal_dpc_lib = [f':libonedal_dpc.so.{major_version}']
     if iface == 'onedal':
         libraries_plat = onedal_lib + libraries_plat
     elif iface == 'onedal_dpc':
