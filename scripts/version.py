@@ -19,7 +19,7 @@ import re
 from os.path import join as jp
 
 
-def find_defines(defines:list, file_obj):
+def find_defines(defines: list, file_obj):
     defines_dict = {define: '' for define in defines}
     for elem in file_obj:
         for define in defines:
