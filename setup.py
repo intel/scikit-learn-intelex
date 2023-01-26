@@ -23,6 +23,7 @@ from setuptools import setup, Extension
 import setuptools.command.develop as orig_develop
 import distutils.command.build as orig_build
 from os.path import join as jp
+import pathlib
 from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 import glob
@@ -61,6 +62,7 @@ ONEDAL_MAJOR_BINARY_VERSION, ONEDAL_MINOR_BINARY_VERSION = get_onedal_version(
     dal_root, 'binary')
 ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
+ONEDAL_2023_0_1 = 2023 * 10000 + 0 * 100 + 1
 is_onedal_iface = \
     os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
 
@@ -338,17 +340,37 @@ class custom_build():
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib('dpc')
 
+    def post_build(self):
+        if IS_MAC:
+            # manually fix incorrect install_name of oneDAL 2023.0.1 libs
+            major_version = ONEDAL_MAJOR_BINARY_VERSION
+            major_is_available = find_library(
+                f'libonedal_core.{major_version}.dylib') is not None
+            none_is_available = find_library(f'libonedal_core.dylib') is not None
+            if major_is_available and not none_is_available \
+                    and ONEDAL_VERSION == ONEDAL_2023_0_1:
+                extension_libs = list(pathlib.Path('.').glob('**/*darwin.so'))
+                onedal_libs = ['onedal', 'onedal_dpc', 'onedal_core', 'onedal_thread']
+                for ext_lib in extension_libs:
+                    for onedal_lib in onedal_libs:
+                        os.system('install_name_tool -change '
+                                  f'lib{onedal_lib}.dylib '
+                                  f'lib{onedal_lib}.{major_version}.dylib '
+                                  f'{ext_lib}')
+
 
 class develop(orig_develop.develop, custom_build):
     def run(self):
         custom_build.run(self)
-        return super().run()
+        super().run()
+        custom_build.post_build(self)
 
 
 class build(orig_build.build, custom_build):
     def run(self):
         custom_build.run(self)
-        return super().run()
+        super().run()
+        custom_build.post_build(self)
 
 
 project_urls = {

@@ -41,9 +41,12 @@ def get_onedal_version(dal_root, version_type='release'):
 
     with open(header_version, 'r') as header:
         if version_type == 'release':
-            version = find_defines(['__INTEL_DAAL__', '__INTEL_DAAL_MINOR__'], header)
+            version = find_defines(
+                ['__INTEL_DAAL__', '__INTEL_DAAL_MINOR__', '__INTEL_DAAL_UPDATE__'],
+                header)
             version = int(version['__INTEL_DAAL__']) * 10000 + \
-                int(version['__INTEL_DAAL_MINOR__']) * 100
+                int(version['__INTEL_DAAL_MINOR__']) * 100 + \
+                int(version['__INTEL_DAAL_UPDATE__'])
         elif version_type == 'binary':
             version = find_defines(
                 ['__INTEL_DAAL_MAJOR_BINARY__', '__INTEL_DAAL_MINOR_BINARY__'], header)
