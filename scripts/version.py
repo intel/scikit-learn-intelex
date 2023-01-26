@@ -19,23 +19,34 @@ import re
 from os.path import join as jp
 
 
-def get_onedal_version(dal_root):
+def find_defines(defines:list, file_obj):
+    defines_dict = {define: '' for define in defines}
+    for elem in file_obj:
+        for define in defines:
+            if f'#define {define}' in elem:
+                match = re.match(rf'#define {define} (\d+)', elem)
+                if match:
+                    defines_dict[define] = match.group(1)
+    return defines_dict
+
+
+def get_onedal_version(dal_root, version_type='release'):
     """Parse oneDAL version strings"""
+
+    if version_type not in ['release', 'binary']:
+        raise ValueError(f'Incorrect version type "{version_type}"')
 
     header_version = jp(dal_root, 'include', 'services', 'library_version_info.h')
     version = ""
 
-    major, minnor = "", ""
     with open(header_version, 'r') as header:
-        for elem in header:
-            if '#define __INTEL_DAAL__' in elem:
-                match = re.match(r'#define __INTEL_DAAL__ (\d+)', elem)
-                if match:
-                    major = match.group(1)
-
-            if '#define __INTEL_DAAL_MINOR__' in elem:
-                match = re.match(r'#define __INTEL_DAAL_MINOR__ (\d+)', elem)
-                if match:
-                    minnor = match.group(1)
-    version = int(major) * 10000 + int(minnor) * 100
+        if version_type == 'release':
+            version = find_defines(['__INTEL_DAAL__', '__INTEL_DAAL_MINOR__'], header)
+            version = int(version['__INTEL_DAAL__']) * 10000 + \
+                int(version['__INTEL_DAAL_MINOR__']) * 100
+        elif version_type == 'binary':
+            version = find_defines(
+                ['__INTEL_DAAL_MAJOR_BINARY__', '__INTEL_DAAL_MINOR_BINARY__'], header)
+            version = int(version['__INTEL_DAAL_MAJOR_BINARY__']), \
+                int(version['__INTEL_DAAL_MINOR_BINARY__'])
     return version

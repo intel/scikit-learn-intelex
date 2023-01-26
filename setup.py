@@ -57,23 +57,12 @@ elif sys.platform in ['win32', 'cygwin']:
 else:
     assert False, sys.platform + ' not supported'
 
+ONEDAL_MAJOR_BINARY_VERSION, ONEDAL_MINOR_BINARY_VERSION = get_onedal_version(
+    dal_root, 'binary')
 ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
 is_onedal_iface = \
     os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
-
-
-def get_win_major_version():
-    lib_name = find_library('onedal_core')
-    if lib_name is None:
-        return ''
-    version = lib_name.split('\\')[-1].split('.')[1]
-    try:
-        version = '.' + str(int(version))
-    except ValueError:
-        version = ''
-    return version
-
 
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
                else time.strftime('%Y%m%d.%H%M%S'))
@@ -155,7 +144,7 @@ def get_daal_type_defines():
 
 def get_libs(iface='daal'):
     if IS_WIN:
-        major_version = get_win_major_version()
+        major_version = ONEDAL_MAJOR_BINARY_VERSION
         libraries_plat = [f'onedal_core_dll{major_version}']
         onedal_lib = [f'onedal_dll{major_version}']
         onedal_dpc_lib = [f'onedal_dpc_dll{major_version}']
