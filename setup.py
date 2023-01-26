@@ -349,21 +349,20 @@ class custom_build():
 
     def post_build(self):
         if IS_MAC:
+            import subprocess
             # manually fix incorrect install_name of oneDAL 2023.0.1 libs
             major_version = ONEDAL_MAJOR_BINARY_VERSION
             major_is_available = find_library(
                 f'libonedal_core.{major_version}.dylib') is not None
-            none_is_available = find_library('libonedal_core.dylib') is not None
-            if major_is_available and not none_is_available \
-                    and ONEDAL_VERSION == ONEDAL_2023_0_1:
+            if major_is_available and ONEDAL_VERSION == ONEDAL_2023_0_1:
                 extension_libs = list(pathlib.Path('.').glob('**/*darwin.so'))
                 onedal_libs = ['onedal', 'onedal_dpc', 'onedal_core', 'onedal_thread']
                 for ext_lib in extension_libs:
                     for onedal_lib in onedal_libs:
-                        os.system('install_name_tool -change '
-                                  f'lib{onedal_lib}.dylib '
-                                  f'lib{onedal_lib}.{major_version}.dylib '
-                                  f'{ext_lib}')
+                        subprocess.call('/usr/bin/install_name_tool -change '
+                                        f'lib{onedal_lib}.dylib '
+                                        f'lib{onedal_lib}.{major_version}.dylib '
+                                        f'{ext_lib}', shell=False)
 
 
 class develop(orig_develop.develop, custom_build):
