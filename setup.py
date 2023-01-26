@@ -151,8 +151,8 @@ def get_libs(iface='daal'):
         onedal_lib = [f'onedal_dll.{major_version}']
         onedal_dpc_lib = [f'onedal_dpc_dll.{major_version}']
     else:
-        libraries_plat = [f'onedal_core.{major_version}', 
-            f'onedal_thread.{major_version}']
+        libraries_plat = [f'onedal_core.{major_version}',
+                          f'onedal_thread.{major_version}']
         onedal_lib = [f'onedal.{major_version}']
         onedal_dpc_lib = [f'onedal_dpc.{major_version}']
     if iface == 'onedal':
@@ -335,11 +335,12 @@ class custom_build():
     def run(self):
         if is_onedal_iface:
             cxx = os.getenv('CXX', 'cl' if IS_WIN else 'g++')
-            build_backend.custom_build_cmake_clib('host', cxx)
+            build_backend.custom_build_cmake_clib(
+                'host', cxx, ONEDAL_MAJOR_BINARY_VERSION)
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
-                build_backend.custom_build_cmake_clib('dpc')
+                build_backend.custom_build_cmake_clib('dpc', ONEDAL_MAJOR_BINARY_VERSION)
 
     def post_build(self):
         if IS_MAC:
@@ -347,7 +348,7 @@ class custom_build():
             major_version = ONEDAL_MAJOR_BINARY_VERSION
             major_is_available = find_library(
                 f'libonedal_core.{major_version}.dylib') is not None
-            none_is_available = find_library(f'libonedal_core.dylib') is not None
+            none_is_available = find_library('libonedal_core.dylib') is not None
             if major_is_available and not none_is_available \
                     and ONEDAL_VERSION == ONEDAL_2023_0_1:
                 extension_libs = list(pathlib.Path('.').glob('**/*darwin.so'))
