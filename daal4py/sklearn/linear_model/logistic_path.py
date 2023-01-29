@@ -898,12 +898,24 @@ if sklearn_check_version('0.24'):
                 self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
                 self._validate_params()
-            which, what = logistic_module, '_logistic_regression_path'
-            replacer = logistic_regression_path
-            descriptor = getattr(which, what, None)
-            setattr(which, what, replacer)
-            clf = super().fit(X, y, sample_weight)
-            setattr(which, what, descriptor)
+            # TODO: remove this fallback workaround after
+            # _logistic_regression_path is reworked
+            _patching_status = PatchingConditionsChain(
+                "sklearn.linear_model.LogisticRegression.fit")
+            _dal_ready = _patching_status.and_conditions([
+                (not (sklearn_check_version("1.2") and self.solver == 'newton-cholesky'),
+                    f"'{self.solver}' solver is not supported. "
+                    "Only 'lbfgs' and 'newton-cg' solvers are supported.")])
+            if _dal_ready:
+                which, what = logistic_module, '_logistic_regression_path'
+                replacer = logistic_regression_path
+                descriptor = getattr(which, what, None)
+                setattr(which, what, replacer)
+                clf = super().fit(X, y, sample_weight)
+                setattr(which, what, descriptor)
+            else:
+                clf = super().fit(X, y, sample_weight)
+                _patching_status.write_log()
             return clf
 
         @support_usm_ndarray()
