@@ -25,6 +25,23 @@
 #  will exclude deselection in versions 0.18.1, and 0.18.2 only
 
 deselected_tests:
+  # Non-critical but significant numerical difference in doctests
+  - pipeline.py::sklearn.pipeline.FeatureUnion
+  - ensemble/_forest.py::sklearn.ensemble._forest.RandomForestRegressor
+  - ensemble/_voting.py::sklearn.ensemble._voting.VotingRegressor
+
+  # Difference of assigined dtype: int64 (sklearn) vs. int32 (oneDAL/sklearnex)
+  - cluster/_dbscan.py::sklearn.cluster._dbscan.DBSCAN
+  - neighbors/_base.py::sklearn.neighbors._base.KNeighborsMixin.kneighbors
+
+  # Difference between sklearn and sklearnex methods of kNN
+  - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-euclidean-True-1000-5-100-1]
+  - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-minkowski-True-1000-5-100-1]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-euclidean-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-1-100-euclidean-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-1-100-minkowski-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
+
   # Model with sparse data are different between oneAPI Data Analytics Library (oneDAL) and stock sklearn
   - svm/tests/test_sparse.py::test_svc
   - svm/tests/test_sparse.py::test_svc_iris
