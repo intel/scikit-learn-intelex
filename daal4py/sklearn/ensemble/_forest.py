@@ -550,6 +550,11 @@ def check_sample_weight(sample_weight, X, dtype=None):
 class RandomForestClassifier(RandomForestClassifier_original):
     __doc__ = RandomForestClassifier_original.__doc__
 
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **RandomForestClassifier_original._parameter_constraints
+        }
+
     if sklearn_check_version('1.0'):
         def __init__(self,
                      n_estimators=100,
@@ -857,6 +862,11 @@ class RandomForestClassifier(RandomForestClassifier_original):
 
 class RandomForestRegressor(RandomForestRegressor_original):
     __doc__ = RandomForestRegressor_original.__doc__
+
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **RandomForestRegressor_original._parameter_constraints
+        }
 
     if sklearn_check_version('1.0'):
         def __init__(self,
