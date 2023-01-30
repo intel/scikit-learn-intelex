@@ -49,26 +49,7 @@ def set_intercept(self, value):
             del self._onedal_estimator._onedal_model
 
 
-def gen_unsupported_property(param):
-    err_msg = f'\"{param}\" value is not supported by Sklearnex'
-
-    def getter(self):
-        raise RuntimeError(err_msg)
-
-    def setter(self, value):
-        raise RuntimeError(err_msg)
-    return (getter, setter)
-
-
-def get_n_features_in(self):
-    return self.coef_.shape[-1]
-
-
 class BaseLinearRegression(ABC):
-    n_features_in_ = property(get_n_features_in)
-    rank_ = property(*gen_unsupported_property('rank_'))
-    singular_ = property(*gen_unsupported_property('singular_'))
-
     def _save_attributes(self):
         self.fit_status_ = 0
         self._coef_ = self._onedal_estimator.coef_

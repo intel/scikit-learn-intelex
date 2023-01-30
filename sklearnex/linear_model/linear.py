@@ -34,20 +34,10 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
             **sklearn_LinearRegression._parameter_constraints}
 
     @_deprecate_positional_args
-    def __init__(self, *, fit_intercept=True, positive=False, 
-                        normalize=False, n_jobs = None, copy_X = False):
-        super().__init__(fit_intercept=fit_intercept, positive=positive, 
-                        normalize=normalize, n_jobs=n_jobs, copy_X=copy_X)
-
-        def report_sklearnex_unsupported(param):
-            raise RuntimeError(f'\"{param}\" parameter is not supported by Sklearnex')
-
-        if positive:
-            report_sklearnex_unsupported('positive')
-        if normalize:
-            report_sklearnex_unsupported('normalize')
-        if copy_X:
-            report_sklearnex_unsupported('copy_X')
+    def __init__(self, *, fit_intercept=True, positive=False,
+                 n_jobs=None, copy_X=False):
+        super().__init__(fit_intercept=fit_intercept, positive=positive,
+                         n_jobs=n_jobs, copy_X=copy_X)
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -95,9 +85,13 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
             'sklearn': sklearn_LinearRegression.predict,
         }, X)
 
-    def _onedal_gpu_supported(self, method_name, *data):
+    def _onedal_supported(self, method_name, *data):
         if method_name in ['linear_model.LinearRegression.fit',
                            'linear_model.LinearRegression.predict']:
+            if hasattr(self, 'normalize') and self.normalize:
+                return False
+            if hasattr(self, 'positive') and self.positive:
+                return False
             if len(data) > 1:
                 import numpy as np
                 from scipy import sparse as sp
@@ -108,12 +102,10 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name in ['linear_model.LinearRegression.fit',
-                           'linear_model.LinearRegression.predict']:
-            self._is_sparse = sp.isspmatrix(data[0])
-            return hasattr(self, '_is_sparse') and not self._is_sparse
-        raise RuntimeError(
-            f'Unknown method {method_name} in {self.__class__.__name__}')
+        return _onedal_supported(self, method_name, *data)
+
+    def _onedal_cpu_supported(self, method_name, *data):
+        return _onedal_supported(self, method_name, *data)
 
     def _onedal_fit(self, X, y, queue=None):
         if sklearn_check_version("1.2"):
