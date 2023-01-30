@@ -102,10 +102,10 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_cpu_supported(self, method_name, *data):
-        return _onedal_supported(self, method_name, *data)
+        return self._onedal_supported(method_name, *data)
 
     def _onedal_cpu_supported(self, method_name, *data):
-        return _onedal_supported(self, method_name, *data)
+        return self._onedal_supported(method_name, *data)
 
     def _onedal_fit(self, X, y, queue=None):
         if sklearn_check_version("1.2"):
