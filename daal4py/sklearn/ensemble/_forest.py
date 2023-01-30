@@ -618,6 +618,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
+            self._estimator = DecisionTreeClassifier()
     else:
         def __init__(self,
                      n_estimators=100,
@@ -664,6 +665,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
+            self._estimator = DecisionTreeClassifier()
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
@@ -929,6 +931,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
+            self._estimator = DecisionTreeRegressor()
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -973,6 +976,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
+            self._estimator = DecisionTreeRegressor()
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
