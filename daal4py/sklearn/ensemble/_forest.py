@@ -299,7 +299,10 @@ def _fit_classifier(self, X, y, sample_weight=None):
         raise ValueError(
             "sparse multilabel-indicator for y is not supported."
         )
-    _check_parameters(self)
+    if sklearn_check_version("1.2"):
+        self._validate_params()
+    else:
+        _check_parameters(self)
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
 
@@ -445,7 +448,10 @@ def _fit_regressor(self, X, y, sample_weight=None):
         raise ValueError(
             "sparse multilabel-indicator for y is not supported."
         )
-    _check_parameters(self)
+    if sklearn_check_version("1.2"):
+        self._validate_params()
+    else:
+        _check_parameters(self)
     if sample_weight is not None:
         sample_weight = check_sample_weight(sample_weight, X)
 
