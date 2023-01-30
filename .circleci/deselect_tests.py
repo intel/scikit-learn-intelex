@@ -63,7 +63,7 @@ def filter_by_version(entry, sk_ver):
     return None
 
 
-def create_pytest_switches(filename, absolute, reduced, public, gpu):
+def create_pytest_switches(filename, absolute, reduced, public, gpu, base_dir=None):
     pytest_switches = []
     if os.path.exists(filename):
         with open(filename, 'r') as fh:
@@ -73,8 +73,10 @@ def create_pytest_switches(filename, absolute, reduced, public, gpu):
             base_dir = os.path.relpath(
                 os.path.dirname(sklearn.__file__),
                 os.path.expanduser('~')) + '/'
-        else:
+        elif base_dir is None:
             base_dir = ""
+        elif not base_dir.endswith('/'):
+            base_dir += '/'
 
         filtered_deselection = [
             filter_by_version(test_name, sklearn_version)
@@ -109,9 +111,10 @@ if __name__ == '__main__':
     argParser.add_argument('--reduced', action='store_true')
     argParser.add_argument('--public', action='store_true')
     argParser.add_argument('--gpu', action='store_true')
+    argParser.add_argument('--base-dir', type=str, default=None)
     args = argParser.parse_args()
 
     fn = args.conf_file[0]
     if os.path.exists(fn):
         print(" ".join(create_pytest_switches(fn, args.absolute, args.reduced,
-                                              args.public, args.gpu)))
+                                              args.public, args.gpu, args.base_dir)))
