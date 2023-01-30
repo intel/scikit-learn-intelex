@@ -53,6 +53,15 @@ def _to_absolute_max_features(
         return n_features
     if isinstance(max_features, str):
         if max_features == "auto":
+            if sklearn_check_version('1.2'):
+                warnings.warn(
+                    "`max_features='auto'` has been deprecated in 1.1 "
+                    "and will be removed in 1.3. To keep the past behaviour, "
+                    "explicitly set `max_features=1.0` or remove this "
+                    "parameter as it is also the default value for "
+                    "RandomForestRegressors and ExtraTreesRegressors.",
+                    FutureWarning,
+                )
             return max(1, int(np.sqrt(n_features))
                        ) if is_classification else n_features
         if max_features == 'sqrt':
@@ -74,13 +83,16 @@ def _get_n_samples_bootstrap(n_samples, max_samples):
         return 1.
 
     if isinstance(max_samples, numbers.Integral):
-        if not (1 <= max_samples <= n_samples):
-            msg = "`max_samples` must be in range 1 to {} but got value {}"
-            raise ValueError(msg.format(n_samples, max_samples))
+        if not sklearn_check_version('1.2'):
+            if not (1 <= max_samples <= n_samples):
+                msg = "`max_samples` must be in range 1 to {} but got value {}"
+                raise ValueError(msg.format(n_samples, max_samples))
         return float(max_samples / n_samples)
 
     if isinstance(max_samples, numbers.Real):
-        if sklearn_check_version('1.0'):
+        if sklearn_check_version('1.2'):
+            pass
+        elif sklearn_check_version('1.0'):
             if not (0 < float(max_samples) <= 1):
                 msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
                 raise ValueError(msg.format(max_samples))
