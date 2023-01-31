@@ -71,12 +71,20 @@ def daal_check_version(rule):
     return True
 
 
+sklearn_versions_map = {}
+
+
 def sklearn_check_version(ver):
+    if ver in sklearn_versions_map.keys():
+        return sklearn_versions_map[ver]
     if hasattr(Version(ver), 'base_version'):
         base_sklearn_version = Version(sklearn_version).base_version
-        return bool(Version(base_sklearn_version) >= Version(ver))
-    # packaging module not available
-    return bool(Version(sklearn_version) >= Version(ver))
+        res = bool(Version(base_sklearn_version) >= Version(ver))
+    else:
+        # packaging module not available
+        res = bool(Version(sklearn_version) >= Version(ver))
+    sklearn_versions_map[ver] = res
+    return res
 
 
 def get_daal_version():
