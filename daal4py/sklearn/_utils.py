@@ -40,6 +40,10 @@ try:
 except (ImportError, ModuleNotFoundError):
     ctx_imported = False
 
+oneapi_is_available = 'daal4py.oneapi' in sys.modules
+if oneapi_is_available:
+    from daal4py.oneapi import _get_device_name_sycl_ctxt
+
 
 def set_idp_sklearn_verbose():
     logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
@@ -120,8 +124,7 @@ def make2d(X):
 def get_patch_message(s):
     if s == "daal":
         message = "running accelerated version on "
-        if 'daal4py.oneapi' in sys.modules:
-            from daal4py.oneapi import _get_device_name_sycl_ctxt
+        if oneapi_is_available:
             dev = _get_device_name_sycl_ctxt()
             if dev == 'cpu' or dev is None:
                 message += 'CPU'
@@ -153,7 +156,6 @@ def is_in_sycl_ctxt():
 
 def is_DataFrame(X):
     if pandas_is_imported:
-        from pandas import DataFrame
         return isinstance(X, DataFrame)
     else:
         return False
