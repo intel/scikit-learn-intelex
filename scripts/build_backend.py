@@ -117,6 +117,12 @@ def custom_build_cmake_clib(iface, cxx=None):
     win_python_path_lib = os.path.abspath(jp(get_config_var('LIBDEST'), "..", "libs"))
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var('LIBDIR')
     numpy_include = np.get_include()
+    mpi_root = os.environ['MPIROOT']
+    MPI_INCDIRS = [jp(mpi_root, 'include')]
+    MPI_LIBDIRS = [jp(mpi_root, 'lib')]
+    MPI_LIBS = ['mpi']
+    import dpctl
+    dpctl_include = dpctl.get_include()
 
     if iface == 'dpc':
         if IS_WIN:
@@ -136,10 +142,13 @@ def custom_build_cmake_clib(iface, cxx=None):
         "-DCMAKE_PREFIX_PATH=" + install_directory,
         "-DIFACE=" + iface,
         "-DPYTHON_INCLUDE_DIR=" + python_include,
+        "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
         "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ['DALROOT'], 'include'),
         "-DoneDAL_LIBRARY_DIR=" + jp(os.environ['DALROOT'], 'lib', 'intel64'),
+        "-DMPI_INCLUDE_DIRS=" + jp(os.environ['MPIROOT'], 'include'),
+        "-DMPI_LIBRARY_DIR=" + jp(os.environ['MPIROOT'], 'lib'),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
 

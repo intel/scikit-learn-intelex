@@ -227,6 +227,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.classes_ = None
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
+
     def _fit(self, X, y, sample_weight, module, queue):
         # TODO:
         # remove sp using
@@ -259,8 +262,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.n_features = X.shape[1]
         self.n_features_in_ = X.shape[1]
         self.n_features_ = self.n_features_in_
-
-        policy = _get_policy(queue, X, y, sample_weight)
+        policy = self._get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
         self._cached_estimators_ = None
         train_result = module.train(policy, params, *to_table(X, y, sample_weight))
@@ -281,7 +283,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # TODO:
         # sparse check
         # if self._sparse and not sp.isspmatrix(X):
-        policy = _get_policy(queue, X)
+        policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
         # TODO:
         # if hasattr(self, '_onedal_model'):
@@ -301,7 +303,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # TODO:
         # sparse check
         # if self._sparse and not sp.isspmatrix(X):
-        policy = _get_policy(queue, X)
+        policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
         # TODO:
         # if hasattr(self, '_onedal_model'):

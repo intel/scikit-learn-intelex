@@ -39,7 +39,6 @@ def get_patch_map():
         from ._config import get_config as get_config_sklearnex
         from ._config import config_context as config_context_sklearnex
 
-
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
         from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
 

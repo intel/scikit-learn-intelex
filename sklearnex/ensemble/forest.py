@@ -63,6 +63,7 @@ class BaseRandomForest(ABC):
 
     def _save_attributes(self):
         # TODO:
+        # check for different sklearn versions
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.classes_ = self._onedal_estimator.classes_
         self.n_classes_ = self._onedal_estimator.n_classes_
@@ -116,7 +117,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             class_weight=class_weight
         )
         # TODO:
-        # update __init__ for different versions sklearn
+        # update __init__ for different versions of sklearn
         self.ccp_alpha = ccp_alpha
         self.max_samples = max_samples
         self.max_bins = 256
@@ -323,6 +324,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
     def _onedal_gpu_supported(self, method_name, *data):
         # TODO:
+        # Add conditions for GPU device
         return True
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):

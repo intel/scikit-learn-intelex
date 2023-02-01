@@ -435,6 +435,8 @@ setup(
         'onedal',
         'onedal.ensemble',
         'onedal.svm',
+        'onedal.spmd',
+        'onedal.spmd.ensemble',
         'onedal.neighbors',
         'onedal.primitives',
         'onedal.datatypes',
