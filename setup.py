@@ -23,6 +23,7 @@ from setuptools import setup, Extension
 import setuptools.command.develop as orig_develop
 import distutils.command.build as orig_build
 from os.path import join as jp
+import pathlib
 from distutils.sysconfig import get_config_vars
 from Cython.Build import cythonize
 import glob
@@ -57,23 +58,13 @@ elif sys.platform in ['win32', 'cygwin']:
 else:
     assert False, sys.platform + ' not supported'
 
+ONEDAL_MAJOR_BINARY_VERSION, ONEDAL_MINOR_BINARY_VERSION = get_onedal_version(
+    dal_root, 'binary')
 ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
+ONEDAL_2023_0_1 = 2023 * 10000 + 0 * 100 + 1
 is_onedal_iface = \
     os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
-
-
-def get_win_major_version():
-    lib_name = find_library('onedal_core')
-    if lib_name is None:
-        return ''
-    version = lib_name.split('\\')[-1].split('.')[1]
-    try:
-        version = '.' + str(int(version))
-    except ValueError:
-        version = ''
-    return version
-
 
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
                else time.strftime('%Y%m%d.%H%M%S'))
@@ -154,15 +145,21 @@ def get_daal_type_defines():
 
 
 def get_libs(iface='daal'):
+    major_version = ONEDAL_MAJOR_BINARY_VERSION
     if IS_WIN:
-        major_version = get_win_major_version()
-        libraries_plat = [f'onedal_core_dll{major_version}']
-        onedal_lib = [f'onedal_dll{major_version}']
-        onedal_dpc_lib = [f'onedal_dpc_dll{major_version}']
+        libraries_plat = [f'onedal_core_dll.{major_version}']
+        onedal_lib = [f'onedal_dll.{major_version}']
+        onedal_dpc_lib = [f'onedal_dpc_dll.{major_version}']
+    elif IS_MAC:
+        libraries_plat = [f'onedal_core.{major_version}',
+                          f'onedal_thread.{major_version}']
+        onedal_lib = [f'onedal.{major_version}']
+        onedal_dpc_lib = [f'onedal_dpc.{major_version}']
     else:
-        libraries_plat = ['onedal_core', 'onedal_thread']
-        onedal_lib = ['onedal']
-        onedal_dpc_lib = ['onedal_dpc']
+        libraries_plat = [f':libonedal_core.so.{major_version}',
+                          f':libonedal_thread.so.{major_version}']
+        onedal_lib = [f':libonedal.so.{major_version}']
+        onedal_dpc_lib = [f':libonedal_dpc.so.{major_version}']
     if iface == 'onedal':
         libraries_plat = onedal_lib + libraries_plat
     elif iface == 'onedal_dpc':
@@ -343,23 +340,43 @@ class custom_build():
     def run(self):
         if is_onedal_iface:
             cxx = os.getenv('CXX', 'cl' if IS_WIN else 'g++')
-            build_backend.custom_build_cmake_clib('host', cxx)
+            build_backend.custom_build_cmake_clib(
+                'host', cxx, ONEDAL_MAJOR_BINARY_VERSION)
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
-                build_backend.custom_build_cmake_clib('dpc')
+                build_backend.custom_build_cmake_clib('dpc', ONEDAL_MAJOR_BINARY_VERSION)
+
+    def post_build(self):
+        if IS_MAC:
+            import subprocess
+            # manually fix incorrect install_name of oneDAL 2023.0.1 libs
+            major_version = ONEDAL_MAJOR_BINARY_VERSION
+            major_is_available = find_library(
+                f'libonedal_core.{major_version}.dylib') is not None
+            if major_is_available and ONEDAL_VERSION == ONEDAL_2023_0_1:
+                extension_libs = list(pathlib.Path('.').glob('**/*darwin.so'))
+                onedal_libs = ['onedal', 'onedal_dpc', 'onedal_core', 'onedal_thread']
+                for ext_lib in extension_libs:
+                    for onedal_lib in onedal_libs:
+                        subprocess.call('/usr/bin/install_name_tool -change '
+                                        f'lib{onedal_lib}.dylib '
+                                        f'lib{onedal_lib}.{major_version}.dylib '
+                                        f'{ext_lib}'.split(' '), shell=False)
 
 
 class develop(orig_develop.develop, custom_build):
     def run(self):
         custom_build.run(self)
-        return super().run()
+        super().run()
+        custom_build.post_build(self)
 
 
 class build(orig_build.build, custom_build):
     def run(self):
         custom_build.run(self)
-        return super().run()
+        super().run()
+        custom_build.post_build(self)
 
 
 project_urls = {

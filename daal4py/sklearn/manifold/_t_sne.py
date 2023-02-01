@@ -175,6 +175,9 @@ class TSNE(BaseTSNE):
             if not (self._learning_rate > 0):
                 raise ValueError("'learning_rate' must be a positive number "
                                  "or 'auto'.")
+        # rename attribute for compatibility with sklearn>=1.2
+        if sklearn_check_version('1.2'):
+            self.learning_rate_ = self._learning_rate
 
         if hasattr(self, 'square_distances'):
             if sklearn_check_version("1.1"):
