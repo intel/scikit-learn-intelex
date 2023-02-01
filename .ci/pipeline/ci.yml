@@ -103,6 +103,7 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      conda install -q -y -c intel dpctl
       pip install -r requirements-dev.txt
       pip list
     displayName: 'Install develop requirements'
