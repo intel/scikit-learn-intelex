@@ -123,6 +123,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self.max_bins = 256
         self.min_bin_size = 1
         self.min_impurity_split = None
+        self._estimator = DecisionTreeClassifier()
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -323,9 +324,16 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        # TODO:
-        # Add conditions for GPU device
-        return True
+        if method_name == 'ensemble.RandomForestClassifier.fit':
+            # TODO:
+            # add check for `sample_weight``
+            return self.criterion == "gini" and not self.oob_score and \
+                not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
+                self.warm_start is False and self.n_outputs_ == 1
+        if method_name in ['ensemble.RandomForestClassifier.predict',
+                           'ensemble.RandomForestClassifier.predict_proba']:
+            return hasattr(self, '_onedal_estimator')
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
@@ -420,7 +428,14 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
 
     def _onedal_gpu_supported(self, method_name, *data):
         # TODO:
-        return True
+        # add check for `sample_weight`
+        if method_name == 'ensemble.RandomForestRegressor.fit':
+            return self.criterion == "gini" and not self.oob_score and \
+                not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
+                self.warm_start is False and self.n_outputs_ == 1
+        if method_name ==  'ensemble.RandomForestRegressor.predict':
+            return hasattr(self, '_onedal_estimator')
+        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {

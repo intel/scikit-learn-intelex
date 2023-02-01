@@ -14,6 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
+# TODO:
+# refactoring imports
 from sklearn.ensemble import BaseEnsemble
 from abc import ABCMeta, abstractmethod
 import numbers
@@ -21,6 +23,11 @@ import warnings
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import (compute_sample_weight, check_array, deprecated)
 from sklearn.utils.validation import (_num_samples)
+from sklearn.utils import (check_random_state, check_array, deprecated)
+from sklearn.utils.validation import (
+    check_is_fitted,
+    check_consistent_length,
+    _num_samples)
 from math import ceil
 
 import numpy as np
@@ -231,12 +238,10 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         return _get_policy(queue, *data)
 
     def _fit(self, X, y, sample_weight, module, queue):
-        # TODO:
-        # remove sp using
-        # if sp.issparse(y):
-        #     raise ValueError(
-        #         "sparse multilabel-indicator for y is not supported."
-        #         )
+        if sp.issparse(y):
+            raise ValueError(
+                "sparse multilabel-indicator for y is not supported."
+                )
         self._check_parameters()
         # TODO:
         # valid accept_sparse check
@@ -359,6 +364,11 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
             y, self.class_weight, dtype)
+        # Decapsulate classes_ attributes
+        # TODO:
+        # align with `n_classes_` and `classes_` attr with daal4py implementations.
+        if hasattr(self, "classes_"):
+            self.n_classes_ = self.classes_
         return y
 
     def fit(self, X, y, sample_weight=None, queue=None):
