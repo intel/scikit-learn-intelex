@@ -43,6 +43,9 @@ from sklearn.exceptions import DataConversionWarning
 from math import ceil
 from scipy import sparse as sp
 
+if sklearn_check_version('1.2'):
+    from sklearn.utils._param_validation import Interval
+
 
 def _to_absolute_max_features(
     max_features,
@@ -570,7 +573,9 @@ class RandomForestClassifier(RandomForestClassifier_original):
 
     if sklearn_check_version('1.2'):
         _parameter_constraints: dict = {
-            **RandomForestClassifier_original._parameter_constraints
+            **RandomForestClassifier_original._parameter_constraints,
+            "maxBins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "minBinSize": [Interval(numbers.Integral, 1, None, closed="left")]
         }
 
     if sklearn_check_version('1.0'):
@@ -885,7 +890,9 @@ class RandomForestRegressor(RandomForestRegressor_original):
 
     if sklearn_check_version('1.2'):
         _parameter_constraints: dict = {
-            **RandomForestRegressor_original._parameter_constraints
+            **RandomForestRegressor_original._parameter_constraints,
+            "maxBins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "minBinSize": [Interval(numbers.Integral, 1, None, closed="left")]
         }
 
     if sklearn_check_version('1.0'):
