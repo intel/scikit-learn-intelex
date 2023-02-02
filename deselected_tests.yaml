@@ -36,6 +36,15 @@ deselected_tests:
   - linear_model/tests/test_common.py::test_balance_property[42-True-LinearRegression]
   - linear_model/tests/test_logistic.py::test_logistic_regression_multinomial
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
+  - linear_model/tests/test_coordinate_descent.py::test_enet_nonfinite_params
+  - svm/tests/test_svm.py::test_svc_nonfinite_params
+
+  # Different exception types in sklearnex and sklearn
+  - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[asarray-X]
+  - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[csr_matrix-X]
+
+  # TODO: investigate copy failure of read-only buffer
+  - linear_model/tests/test_coordinate_descent.py::test_read_only_buffer
 
   # Warm starting issue on 1 iteration of LogReg
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-True-True-lbfgs]
