@@ -215,8 +215,8 @@ class PCA(sklearn_PCA):
 
         Returns
         -------
-        X_new : ndarray of shape (n_samples, n_components)
-            Transformed values.
+        U : ndarray of shape (n_samples, n_components)
+            Transformed values of X.
         """
         U, S, Vt = self._fit(X)
         if U is None:
