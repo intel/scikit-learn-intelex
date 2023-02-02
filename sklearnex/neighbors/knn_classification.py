@@ -40,6 +40,10 @@ from scipy import sparse as sp
 
 if sklearn_check_version("0.24"):
     class KNeighborsClassifier_(sklearn_KNeighborsClassifier):
+        if sklearn_check_version('1.2'):
+            _parameter_constraints: dict = {
+                **sklearn_KNeighborsClassifier._parameter_constraints}
+
         @_deprecate_positional_args
         def __init__(self, n_neighbors=5, *,
                      weights='uniform', algorithm='auto', leaf_size=30,
@@ -93,6 +97,10 @@ else:
 
 
 class KNeighborsClassifier(KNeighborsClassifier_):
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **KNeighborsClassifier_._parameter_constraints}
+
     @_deprecate_positional_args
     def __init__(self, n_neighbors=5, *,
                  weights='uniform', algorithm='auto', leaf_size=30,
@@ -107,6 +115,8 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             n_jobs=n_jobs, **kwargs)
 
     def fit(self, X, y):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         if self.metric_params is not None and 'p' in self.metric_params:

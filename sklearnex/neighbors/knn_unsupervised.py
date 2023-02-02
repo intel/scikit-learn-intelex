@@ -54,6 +54,10 @@ if sklearn_check_version("0.22") and \
                 metric_params=metric_params, n_jobs=n_jobs)
 else:
     class NearestNeighbors_(sklearn_NearestNeighbors):
+        if sklearn_check_version('1.2'):
+            _parameter_constraints: dict = {
+                **sklearn_NearestNeighbors._parameter_constraints}
+
         @_deprecate_positional_args
         def __init__(self, *, n_neighbors=5, radius=1.0,
                      algorithm='auto', leaf_size=30, metric='minkowski',
@@ -67,6 +71,10 @@ else:
 
 
 class NearestNeighbors(NearestNeighbors_):
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **NearestNeighbors_._parameter_constraints}
+
     @_deprecate_positional_args
     def __init__(self, n_neighbors=5, radius=1.0,
                  algorithm='auto', leaf_size=30, metric='minkowski',
@@ -79,6 +87,8 @@ class NearestNeighbors(NearestNeighbors_):
             metric_params=metric_params, n_jobs=n_jobs)
 
     def fit(self, X, y=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         if self.metric_params is not None and 'p' in self.metric_params:
