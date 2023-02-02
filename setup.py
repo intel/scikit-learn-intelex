@@ -362,7 +362,7 @@ class custom_build():
                         subprocess.call('/usr/bin/install_name_tool -change '
                                         f'lib{onedal_lib}.dylib '
                                         f'lib{onedal_lib}.{major_version}.dylib '
-                                        f'{ext_lib}', shell=False)
+                                        f'{ext_lib}'.split(' '), shell=False)
 
 
 class develop(orig_develop.develop, custom_build):

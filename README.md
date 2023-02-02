@@ -149,7 +149,7 @@ You may reach out to project maintainers privately at onedal.maintainers@intel.c
 
 Intel(R) Extension for Scikit-learn is part of [oneAPI](https://oneapi.io) and [Intel® AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit).
 
-## daalpy and oneDAL
+## daal4py and oneDAL
 
 The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL). Learn more:
 - [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)

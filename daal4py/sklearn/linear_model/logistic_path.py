@@ -58,6 +58,7 @@ else:
         _multinomial_grad_hess,
         _LOGISTIC_SOLVER_CONVERGENCE_MSG,
         LogisticRegression as LogisticRegression_original)
+from sklearn.linear_model._logistic import _logistic_regression_path as lr_path_original
 from sklearn.preprocessing import LabelEncoder, LabelBinarizer
 from .._device_offload import support_usm_ndarray
 
@@ -235,6 +236,33 @@ def __logistic_regression_path(
     .. versionchanged:: 0.19
         The "copy" parameter was removed.
     """
+    _patching_status = PatchingConditionsChain(
+        "sklearn.linear_model.LogisticRegression.fit")
+    # TODO: remove this fallback workaround after
+    # logistic path is reworked to align with sklearn 1.2
+    _dal_ready = _patching_status.and_conditions([
+        (not (sklearn_check_version('1.2') and solver == 'newton-cholesky'),
+            f"'{solver}' solver is not supported. "
+            "Only 'lbfgs' and 'newton-cg' solvers are supported.")])
+    if not _dal_ready:
+        _patching_status.write_log()
+        return lr_path_original(
+            X, y, pos_class=pos_class,
+            Cs=Cs, fit_intercept=fit_intercept,
+            max_iter=max_iter, tol=tol, verbose=verbose,
+            solver=solver, coef=coef,
+            class_weight=class_weight,
+            dual=dual, penalty=penalty,
+            intercept_scaling=intercept_scaling,
+            multi_class=multi_class,
+            random_state=random_state,
+            check_input=check_input,
+            max_squared_sum=max_squared_sum,
+            sample_weight=sample_weight,
+            l1_ratio=l1_ratio,
+            n_threads=n_threads
+        )
+
     if isinstance(Cs, numbers.Integral):
         Cs = np.logspace(-4, 4, Cs)
 
@@ -270,8 +298,6 @@ def __logistic_regression_path(
         # np.unique(y) gives labels in sorted order.
         pos_class = classes[1]
 
-    _patching_status = PatchingConditionsChain(
-        "sklearn.linear_model.LogisticRegression.fit")
     _dal_ready = _patching_status.and_conditions([
         (solver in ['lbfgs', 'newton-cg'],
             f"'{solver}' solver is not supported. "
