@@ -176,6 +176,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         }, X, y, sample_weight)
         return self
 
+    @wrap_output_data
     def predict(self, X):
         """
         Predict class for X.
@@ -202,6 +203,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'sklearn': sklearn_RandomForestClassifier.predict,
         }, X)
 
+    @wrap_output_data
     def predict_proba(self, X):
         """
         Predict class probabilities for X.
@@ -517,6 +519,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         }, X, y, sample_weight)
         return self
 
+    @wrap_output_data
     def predict(self, X):
         """
         Predict class for X.
