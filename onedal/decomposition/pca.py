@@ -17,6 +17,7 @@ from onedal import _backend
 
 from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
+from daal4py.sklearn._utils import sklearn_check_version
 
 import numpy as np
 
@@ -75,10 +76,10 @@ class PCA():
         )
         self.mean_ = from_table(cov_result.feature_means)
         self.n_components_ = self.n_components
-        self.n_features_ = n_features
-        # n_features_ was deprecated in scikit-learn 1.2 and
-        # will be replaced by n_features_in_ in 1.4
-        self.n_features_in_ = n_features
+        if sklearn_check_version("1.2"):
+            self.n_features_in_ = n_features
+        else:
+            self.n_features_ = n_features
         self.n_samples_ = n_samples
 
         if self.n_components < n_sf_min:
@@ -92,9 +93,6 @@ class PCA():
                     resid_var_ / (n_sf_min - self.n_components)
         else:
             self.noise_variance_ = 0.
-
-        #TODO Implement when supported
-        self.feature_names_in_ = "Not supported yet"
 
         return self
 

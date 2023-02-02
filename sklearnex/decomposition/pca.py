@@ -26,18 +26,13 @@ from onedal.datatypes import _check_array
 from .._device_offload import dispatch, wrap_output_data
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.utils.validation import check_is_fitted
-
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
+from daal4py.sklearn._utils import sklearn_check_version
 
 from onedal.decomposition import PCA as onedal_PCA
 from sklearn.decomposition import PCA as sklearn_PCA
 
 
 class PCA(sklearn_PCA):
-    #@_deprecate_positional_args
     def __init__(
         self,
         n_components=None,
@@ -248,8 +243,9 @@ class PCA(sklearn_PCA):
         self.singular_values_ = self._onedal_estimator.singular_values_
         self.mean_ = self._onedal_estimator.mean_
         self.n_components_ = self._onedal_estimator.n_components_
-        # self.n_features_ = self._onedal_estimator.n_features_
+        if sklearn_check_version("1.2"):
+            self.n_features_in_ = self._onedal_estimator.n_features_in_
+        else:
+            self.n_features_ = self._onedal_estimator.n_features_
         self.n_samples_ = self._onedal_estimator.n_samples_
         self.noise_variance_ = self._onedal_estimator.noise_variance_
-        self.n_features_in_ = self._onedal_estimator.n_features_in_
-        self.feature_names_in_ = self._onedal_estimator.feature_names_in_
