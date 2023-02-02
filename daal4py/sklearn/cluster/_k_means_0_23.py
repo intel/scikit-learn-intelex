@@ -178,7 +178,7 @@ def _daal4py_k_means_fit(X, nClusters, numIterations,
     def is_string(s, target_str):
         return isinstance(s, str) and s == target_str
 
-    if n_init == 'auto':
+    if n_init == 'auto' or 'warn':
         if is_string(cluster_centers_0, 'random'):
             n_init = 10
         elif is_string(cluster_centers_0, 'k-means++'):
@@ -447,13 +447,16 @@ class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
     if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **KMeans_original._parameter_constraints}
+
         @_deprecate_positional_args
         def __init__(
             self,
             n_clusters=8,
             *,
             init='k-means++',
-            n_init=10,
+            n_init='warn' if sklearn_check_version('1.2') else 10,
             max_iter=300,
             tol=1e-4,
             verbose=0,
