@@ -56,7 +56,7 @@ def _to_absolute_max_features(
         return n_features
     if isinstance(max_features, str):
         if max_features == "auto":
-            if sklearn_check_version('1.2'):
+            if sklearn_check_version('1.1'):
                 warnings.warn(
                     "`max_features='auto'` has been deprecated in 1.1 "
                     "and will be removed in 1.3. To keep the past behaviour, "
@@ -89,6 +89,10 @@ def _get_n_samples_bootstrap(n_samples, max_samples):
         if not sklearn_check_version('1.2'):
             if not (1 <= max_samples <= n_samples):
                 msg = "`max_samples` must be in range 1 to {} but got value {}"
+                raise ValueError(msg.format(n_samples, max_samples))
+        else:
+            if max_samples > n_samples:
+                msg = "`max_samples` must be <= n_samples={} but got value {}"
                 raise ValueError(msg.format(n_samples, max_samples))
         return float(max_samples / n_samples)
 
@@ -218,6 +222,13 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
         n_samples=X.shape[0],
         max_samples=self.max_samples
     )
+
+    if not self.bootstrap and self.max_samples is not None:
+        raise ValueError(
+            "`max_sample` cannot be set if `bootstrap=False`. "
+            "Either switch to `bootstrap=True` or set "
+            "`max_sample=None`."
+        )
 
     if not self.bootstrap and self.oob_score:
         raise ValueError("Out of bag estimation only available"
@@ -379,6 +390,13 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
         self.n_features_ = self.n_features_in_
 
     rs_ = check_random_state(self.random_state)
+
+    if not self.bootstrap and self.max_samples is not None:
+        raise ValueError(
+            "`max_sample` cannot be set if `bootstrap=False`. "
+            "Either switch to `bootstrap=True` or set "
+            "`max_sample=None`."
+        )
 
     if not self.bootstrap and self.oob_score:
         raise ValueError("Out of bag estimation only available"
