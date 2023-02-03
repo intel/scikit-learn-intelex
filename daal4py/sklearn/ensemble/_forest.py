@@ -412,6 +412,8 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     )
 
     if sample_weight is not None:
+        if hasattr(sample_weight, '__array__'):
+            sample_weight[sample_weight == 0.0] = 1.0
         sample_weight = [sample_weight]
 
     # create algorithm
