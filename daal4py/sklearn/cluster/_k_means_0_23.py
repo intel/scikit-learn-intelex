@@ -456,7 +456,7 @@ class KMeans(KMeans_original):
             n_clusters=8,
             *,
             init='k-means++',
-            n_init='warn' if sklearn_check_version('1.2') else 10,
+            n_init='auto' if sklearn_check_version('1.4') else 'warn',
             max_iter=300,
             tol=1e-4,
             verbose=0,
