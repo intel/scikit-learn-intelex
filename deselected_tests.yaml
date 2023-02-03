@@ -40,7 +40,8 @@ deselected_tests:
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
   - cluster/tests/test_k_means.py::test_k_means_fit_predict >=0.23,<0.24
 
-  - utils/tests/test_validation.py::test_check_memory <1.0
+  # cache directory is not accessible on some systems
+  - utils/tests/test_validation.py::test_check_memory
 
   # oneDAL doesn't throw error if resulting coeffs are not finite
   - linear_model/tests/test_coordinate_descent.py::test_enet_nonfinite_params
