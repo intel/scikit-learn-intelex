@@ -370,6 +370,8 @@ def _fit_classifier(self, X, y, sample_weight=None):
     if _dal_ready:
         _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
 
+        if sklearn_check_version("1.2"):
+            self._estimator = DecisionTreeClassifier()
         self.estimators_ = self._estimators_
 
         # Decapsulate classes_ attributes
@@ -530,6 +532,8 @@ def _fit_regressor(self, X, y, sample_weight=None):
     if _dal_ready:
         _daal_fit_regressor(self, X, y, sample_weight=sample_weight)
 
+        if sklearn_check_version("1.2"):
+            self._estimator = DecisionTreeRegressor()
         self.estimators_ = self._estimators_
         return self
     return super(RandomForestRegressor, self).fit(
@@ -632,7 +636,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
-            self._estimator = DecisionTreeClassifier()
     else:
         def __init__(self,
                      n_estimators=100,
@@ -679,7 +682,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
-            self._estimator = DecisionTreeClassifier()
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
@@ -947,7 +949,6 @@ class RandomForestRegressor(RandomForestRegressor_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
-            self._estimator = DecisionTreeRegressor()
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -992,7 +993,6 @@ class RandomForestRegressor(RandomForestRegressor_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
-            self._estimator = DecisionTreeRegressor()
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
