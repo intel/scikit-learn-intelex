@@ -56,24 +56,27 @@ def _to_absolute_max_features(
         return n_features
     if isinstance(max_features, str):
         if max_features == "auto":
-            if sklearn_check_version('1.1'):
-                warnings.warn(
-                    "`max_features='auto'` has been deprecated in 1.1 "
-                    "and will be removed in 1.3. To keep the past behaviour, "
-                    "explicitly set `max_features=1.0` or remove this "
-                    "parameter as it is also the default value for "
-                    "RandomForestRegressors and ExtraTreesRegressors.",
-                    FutureWarning,
-                )
-            return max(1, int(np.sqrt(n_features))
-                       ) if is_classification else n_features
+            if not sklearn_check_version('1.3'):
+                if sklearn_check_version('1.1'):
+                    warnings.warn(
+                        "`max_features='auto'` has been deprecated in 1.1 "
+                        "and will be removed in 1.3. To keep the past behaviour, "
+                        "explicitly set `max_features=1.0` or remove this "
+                        "parameter as it is also the default value for "
+                        "RandomForestRegressors and ExtraTreesRegressors.",
+                        FutureWarning,
+                    )
+                return max(1, int(np.sqrt(n_features))
+                           ) if is_classification else n_features
         if max_features == 'sqrt':
             return max(1, int(np.sqrt(n_features)))
         if max_features == "log2":
             return max(1, int(np.log2(n_features)))
+        allowed_string_values = '"sqrt" or "log2"' if sklearn_check_version('1.3') \
+            else '"auto", "sqrt" or "log2"'
         raise ValueError(
             'Invalid value for max_features. Allowed string '
-            'values are "auto", "sqrt" or "log2".')
+            f'values are {allowed_string_values}.')
     if isinstance(max_features, (numbers.Integral, np.integer)):
         return max_features
     if max_features > 0.0:
@@ -604,7 +607,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
                      min_samples_split=2,
                      min_samples_leaf=1,
                      min_weight_fraction_leaf=0.,
-                     max_features="auto",
+                     max_features='sqrt' if sklearn_check_version('1.1') else 'auto',
                      max_leaf_nodes=None,
                      min_impurity_decrease=0.,
                      bootstrap=True,
@@ -921,7 +924,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
                      min_samples_split=2,
                      min_samples_leaf=1,
                      min_weight_fraction_leaf=0.,
-                     max_features="auto",
+                     max_features=1.0 if sklearn_check_version('1.1') else 'auto',
                      max_leaf_nodes=None,
                      min_impurity_decrease=0.,
                      bootstrap=True,
