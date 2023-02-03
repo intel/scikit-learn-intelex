@@ -73,6 +73,7 @@ class PCA(sklearn_PCA):
             ensure_2d=True,
             copy=self.copy
         )
+        self.mean_ = np.mean(X, axis=0)
 
         if self.n_components is None:
             if self.svd_solver != "arpack":
@@ -194,15 +195,24 @@ class PCA(sklearn_PCA):
         precision.flat[:: len(precision) + 1] += 1.0 / self.noise_variance_
         return precision
 
-    def transform(self, X):
+    def sklearnex_transform(self, X):
         check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
         )
+        # Mean center
+        X -= self.mean_
         return dispatch(self, 'decomposition.PCA.transform', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_PCA.transform,
         }, X)
+
+    def transform(self, X):
+        X_new = self.sklearnex_transform(X)[:, : self.n_components_]
+        S_inv = np.diag(1 / self.singular_values_.reshape(-1,))
+        if self.whiten:
+            X_new = np.sqrt(X.shape[0] - 1) * np.dot(X_new, S_inv)
+        return X_new
 
     def fit_transform(self, X, y=None):
         """Fit the model with X and apply the dimensionality reduction on X.
@@ -220,12 +230,7 @@ class PCA(sklearn_PCA):
         """
         U, S, Vt = self._fit(X)
         if U is None:
-            S_inv = np.diag(1 / S.reshape(-1,))
-            U_dot_S = self.transform(X)[:, : self.n_components_]
-            if self.whiten:
-                U = np.sqrt(X.shape[0] - 1) * np.dot(U_dot_S, S_inv)
-            else:
-                U = U_dot_S
+            U = self.transform(X)
         else:
             U = U[:, : self.n_components_]
             if self.whiten:
@@ -241,7 +246,6 @@ class PCA(sklearn_PCA):
         self.explained_variance_ratio_ = \
             self._onedal_estimator.explained_variance_ratio_
         self.singular_values_ = self._onedal_estimator.singular_values_
-        self.mean_ = self._onedal_estimator.mean_
         self.n_components_ = self._onedal_estimator.n_components_
         if sklearn_check_version("1.2"):
             self.n_features_in_ = self._onedal_estimator.n_features_in_

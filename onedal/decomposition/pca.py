@@ -45,7 +45,6 @@ class PCA():
         }
 
     def fit(self, X, y, queue):
-        X = X - np.mean(X, axis=0)
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
@@ -74,7 +73,6 @@ class PCA():
         self.singular_values_ = np.sqrt(
             (n_samples - 1) * self.explained_variance_
         )
-        self.mean_ = from_table(cov_result.feature_means)
         self.n_components_ = self.n_components
         if sklearn_check_version("1.2"):
             self.n_features_in_ = n_features
@@ -102,7 +100,6 @@ class PCA():
         return m
 
     def predict(self, X, queue):
-        X = X - np.mean(X, axis=0)
         policy = _get_policy(queue, X)
         params = self.get_onedal_params(X)
         model = self._create_model()
