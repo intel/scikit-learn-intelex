@@ -101,18 +101,30 @@ class KNeighborsRegressor(KNeighborsRegressor_):
         _parameter_constraints: dict = {
             **KNeighborsRegressor_._parameter_constraints}
 
-    @_deprecate_positional_args
-    def __init__(self, n_neighbors=5, *,
-                 weights='uniform', algorithm='auto', leaf_size=30,
-                 p=2, metric='minkowski', metric_params=None, n_jobs=None,
-                 **kwargs):
-        super().__init__(
-            n_neighbors=n_neighbors,
-            weights=weights,
-            algorithm=algorithm,
-            leaf_size=leaf_size, metric=metric, p=p,
-            metric_params=metric_params,
-            n_jobs=n_jobs, **kwargs)
+    if sklearn_check_version('1.0'):
+        def __init__(self, n_neighbors=5, *,
+                     weights='uniform', algorithm='auto', leaf_size=30,
+                     p=2, metric='minkowski', metric_params=None, n_jobs=None):
+            super().__init__(
+                n_neighbors=n_neighbors,
+                weights=weights,
+                algorithm=algorithm,
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params,
+                n_jobs=n_jobs)
+    else:
+        @_deprecate_positional_args
+        def __init__(self, n_neighbors=5, *,
+                     weights='uniform', algorithm='auto', leaf_size=30,
+                     p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                     **kwargs):
+            super().__init__(
+                n_neighbors=n_neighbors,
+                weights=weights,
+                algorithm=algorithm,
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params,
+                n_jobs=n_jobs, **kwargs)
 
     def fit(self, X, y):
         if sklearn_check_version("1.2"):
