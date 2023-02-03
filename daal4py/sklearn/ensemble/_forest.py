@@ -209,14 +209,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     # create algorithm
     X_fptype = getFPType(X)
 
-    # limitation on the number of stream for mt2203 is 6024
-    # more details here:
-    # https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mt2203.html
-    max_stream_count = 6024
-    if self.n_estimators <= max_stream_count:
-        daal_engine = daal4py.engines_mt2203(seed=seed_, fptype=X_fptype)
-    else:
-        daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
+    daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
 
     features_per_node_ = _to_absolute_max_features(
         self.max_features, X.shape[1], is_classification=True)
@@ -408,14 +401,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     X_fptype = getFPType(X)
     seed_ = rs_.randint(0, np.iinfo('i').max)
 
-    # limitation on the number of stream for mt2203 is 6024
-    # more details here:
-    # https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mt2203.html
-    max_stream_count = 6024
-    if self.n_estimators <= max_stream_count:
-        daal_engine = daal4py.engines_mt2203(seed=seed_, fptype=X_fptype)
-    else:
-        daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
+    daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
 
     _featuresPerNode = _to_absolute_max_features(
         self.max_features, X.shape[1], is_classification=False)
