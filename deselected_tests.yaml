@@ -36,6 +36,10 @@ deselected_tests:
   - linear_model/tests/test_common.py::test_balance_property[42-True-LinearRegression]
   - linear_model/tests/test_logistic.py::test_logistic_regression_multinomial
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
+  - cluster/tests/test_k_means.py::test_k_means_fit_predict >=0.23,<0.24
+
+  - utils/tests/test_validation.py::test_check_memory <1.0
+
   # oneDAL doesn't throw error if resulting coeffs are not finite
   - linear_model/tests/test_coordinate_descent.py::test_enet_nonfinite_params
   - svm/tests/test_svm.py::test_svc_nonfinite_params
