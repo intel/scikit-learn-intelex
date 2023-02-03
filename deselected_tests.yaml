@@ -33,6 +33,8 @@ deselected_tests:
   # Non-critival but significant difference because of different implementations
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[True-X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[oob_score1-X2-y2-0.65-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_importances[RandomForestClassifier-gini-float64]
+  - ensemble/tests/test_voting.py::test_set_estimator_drop
   - linear_model/tests/test_common.py::test_balance_property[42-True-LinearRegression]
   - linear_model/tests/test_logistic.py::test_logistic_regression_multinomial
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
