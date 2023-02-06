@@ -178,7 +178,7 @@ def _daal4py_k_means_fit(X, nClusters, numIterations,
     def is_string(s, target_str):
         return isinstance(s, str) and s == target_str
 
-    if n_init == 'auto' or 'warn':
+    if n_init in ['auto', 'warn']:
         if is_string(cluster_centers_0, 'random'):
             n_init = 10
         elif is_string(cluster_centers_0, 'k-means++'):
