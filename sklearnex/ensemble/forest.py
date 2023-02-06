@@ -327,11 +327,10 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
-            # TODO:
-            # add check for `sample_weight``
             return self.criterion == "gini" and not self.oob_score and \
                 not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
-                self.warm_start is False and self.n_outputs_ == 1
+                self.warm_start is False and self.n_outputs_ == 1 and \
+                self.sample_weight is None
         if method_name in ['ensemble.RandomForestClassifier.predict',
                            'ensemble.RandomForestClassifier.predict_proba']:
             return hasattr(self, '_onedal_estimator')
@@ -429,12 +428,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        # TODO:
-        # add check for `sample_weight`
         if method_name == 'ensemble.RandomForestRegressor.fit':
             return self.criterion == "gini" and not self.oob_score and \
                 not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
-                self.warm_start is False and self.n_outputs_ == 1
+                self.warm_start is False and self.n_outputs_ == 1 and \
+                self.sample_weight is None
         if method_name ==  'ensemble.RandomForestRegressor.predict':
             return hasattr(self, '_onedal_estimator')
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
