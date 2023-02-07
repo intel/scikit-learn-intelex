@@ -178,11 +178,19 @@ def _daal4py_k_means_fit(X, nClusters, numIterations,
     def is_string(s, target_str):
         return isinstance(s, str) and s == target_str
 
+    default_n_init = 10
     if n_init in ['auto', 'warn']:
-        if is_string(cluster_centers_0, 'random'):
-            n_init = 10
-        elif is_string(cluster_centers_0, 'k-means++'):
+        if n_init == "warn":
+            warnings.warn(
+                "The default value of `n_init` will change from "
+                f"{default_n_init} to 'auto' in 1.4. Set the value of `n_init`"
+                " explicitly to suppress the warning",
+                FutureWarning,
+            )
+        if is_string(cluster_centers_0, 'k-means++'):
             n_init = 1
+        else:
+            n_init = default_n_init
     X_fptype = getFPType(X)
     abs_tol = _tolerance(X, tol)  # tol is relative tolerance
     is_sparse = sp.isspmatrix(X)
@@ -438,9 +446,18 @@ def _predict(self, X, sample_weight=None):
     if _dal_ready:
         return _daal4py_k_means_predict(
             X, self.n_clusters, self.cluster_centers_)[0]
-    x_squared_norms = row_norms(X, squared=True)
-    return _labels_inertia(X, sample_weight, x_squared_norms,
-                           self.cluster_centers_)[0]
+    if sklearn_check_version('1.2'):
+        if sklearn_check_version('1.3') and sample_weight is not None:
+            warnings.warn(
+                "'sample_weight' was deprecated in version 1.3 and "
+                "will be removed in 1.5.",
+                FutureWarning,
+            )
+        return _labels_inertia(X, sample_weight, self.cluster_centers_)[0]
+    else:
+        x_squared_norms = row_norms(X, squared=True)
+        return _labels_inertia(X, sample_weight, x_squared_norms,
+                               self.cluster_centers_)[0]
 
 
 class KMeans(KMeans_original):
