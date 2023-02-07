@@ -16,15 +16,13 @@
 #===============================================================================
 
 from sklearn.base import BaseEstimator
-from sklearn.utils.extmath import fast_logdet
 
 from scipy.sparse import issparse
 import numpy as np
 
 from onedal.datatypes import _check_array
 
-from .._device_offload import dispatch, wrap_output_data
-from sklearn.utils.validation import _deprecate_positional_args
+from .._device_offload import dispatch
 from sklearn.utils.validation import check_is_fitted
 from daal4py.sklearn._utils import sklearn_check_version
 
@@ -114,7 +112,6 @@ class PCA(sklearn_PCA):
             )
 
     def _onedal_gpu_supported(self, method_name, *data):
-        print("call _onedall_gpu_supported")
         if method_name == 'decomposition.PCA.fit':
             return self._fit_svd_solver == 'full'
         elif method_name == 'decomposition.PCA.transform':
@@ -195,7 +192,7 @@ class PCA(sklearn_PCA):
         precision.flat[:: len(precision) + 1] += 1.0 / self.noise_variance_
         return precision
 
-    def sklearnex_transform(self, X):
+    def _sklearnex_transform(self, X):
         check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
@@ -208,9 +205,9 @@ class PCA(sklearn_PCA):
         }, X)
 
     def transform(self, X):
-        X_new = self.sklearnex_transform(X)[:, : self.n_components_]
-        S_inv = np.diag(1 / self.singular_values_.reshape(-1,))
+        X_new = self._sklearnex_transform(X)[:, : self.n_components_]
         if self.whiten:
+            S_inv = np.diag(1 / self.singular_values_.reshape(-1,))
             X_new = np.sqrt(X.shape[0] - 1) * np.dot(X_new, S_inv)
         return X_new
 
