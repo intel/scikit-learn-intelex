@@ -78,6 +78,8 @@ class SVC(sklearn_SVC, BaseSVC):
         If X is a dense array, then the other methods will not support sparse
         matrices as input.
         """
+        if sklearn_check_version("1.2"):
+            self._validate_params()
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.SVC.fit', {
@@ -191,8 +193,6 @@ class SVC(sklearn_SVC, BaseSVC):
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        if sklearn_check_version("1.2"):
-            self._validate_params()
         onedal_params = {
             'C': self.C,
             'kernel': self.kernel,
