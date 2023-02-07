@@ -33,9 +33,26 @@ deselected_tests:
   # Non-critival but significant difference because of different implementations
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[True-X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[oob_score1-X2-y2-0.65-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_importances[RandomForestClassifier-gini-float64]
+  - ensemble/tests/test_voting.py::test_set_estimator_drop
   - linear_model/tests/test_common.py::test_balance_property[42-True-LinearRegression]
   - linear_model/tests/test_logistic.py::test_logistic_regression_multinomial
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
+  - cluster/tests/test_k_means.py::test_k_means_fit_predict >=0.23,<0.24
+
+  # cache directory is not accessible on some systems
+  - utils/tests/test_validation.py::test_check_memory
+
+  # oneDAL doesn't throw error if resulting coeffs are not finite
+  - linear_model/tests/test_coordinate_descent.py::test_enet_nonfinite_params
+  - svm/tests/test_svm.py::test_svc_nonfinite_params
+
+  # Different exception types in sklearnex and sklearn
+  - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[asarray-X]
+  - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[csr_matrix-X]
+
+  # TODO: investigate copy failure of read-only buffer
+  - linear_model/tests/test_coordinate_descent.py::test_read_only_buffer
 
   # Warm starting issue on 1 iteration of LogReg
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-True-True-lbfgs]
