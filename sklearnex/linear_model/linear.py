@@ -19,9 +19,13 @@ from ._common import BaseLinearRegression
 from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
+if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
+    from sklearn.linear_model._base import _deprecate_normalize
+
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
 from scipy import sparse as sp
+from numbers import Integral
 
 from onedal.linear_model import LinearRegression as onedal_LinearRegression
 
@@ -31,7 +35,7 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
 
     if sklearn_check_version('1.2'):
         _parameter_constraints: dict = {
-            **LinearRegression_original._parameter_constraints
+            **sklearn_LinearRegression._parameter_constraints
         }
 
         def __init__(
@@ -41,7 +45,7 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
             n_jobs=None,
             positive=False,
         ):
-            super(BaseLinearRegression, self).__init__(
+            super().__init__(
                 fit_intercept=fit_intercept,
                 copy_X=copy_X,
                 n_jobs=n_jobs,
@@ -56,7 +60,7 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
             n_jobs=None,
             positive=False,
         ):
-            super(BaseLinearRegression, self).__init__(
+            super().__init__(
                 fit_intercept=fit_intercept,
                 normalize=normalize,
                 copy_X=copy_X,
@@ -71,7 +75,7 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
             copy_X=True,
             n_jobs=None,
         ):
-            super(BaseLinearRegression, self).__init__(
+            super().__init__(
                 fit_intercept=fit_intercept,
                 normalize=normalize,
                 copy_X=copy_X,
@@ -98,8 +102,17 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         self : object
             Fitted Estimator.
         """
-        if sklearn_check_version("1.0"):
+        if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
+            self._normalize = _deprecate_normalize(
+                self.normalize,
+                default=False,
+                estimator_name=self.__class__.__name__,
+            )
+        if sklearn_check_version('1.0'):
             self._check_feature_names(X, reset=True)
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+
         dispatch(self, 'linear_model.LinearRegression.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_LinearRegression.fit,
