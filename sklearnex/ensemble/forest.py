@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # import daal4py
 
@@ -74,6 +74,7 @@ class BaseRandomForest(ABC):
             self.classes_ = self.classes_[0]
         # TODO:
         # update for regression
+
 
 class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     __doc__ = sklearn_RandomForestClassifier.__doc__
@@ -323,7 +324,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if method_name in ['ensemble.RandomForestClassifier.predict',
                            'ensemble.RandomForestClassifier.predict_proba']:
             return hasattr(self, '_onedal_estimator')
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+        raise RuntimeError(
+            f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
@@ -334,7 +336,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if method_name in ['ensemble.RandomForestClassifier.predict',
                            'ensemble.RandomForestClassifier.predict_proba']:
             return hasattr(self, '_onedal_estimator')
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+        raise RuntimeError(
+            f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
@@ -343,7 +346,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'max_depth': self.max_depth,
             'min_samples_split': self.min_samples_split,
             'min_samples_leaf': self.min_samples_leaf,
-            'min_weight_fraction_leaf':self.min_weight_fraction_leaf,
+            'min_weight_fraction_leaf': self.min_weight_fraction_leaf,
             'max_features': self.max_features,
             'max_leaf_nodes': self.max_leaf_nodes,
             'min_impurity_decrease': self.min_impurity_decrease,
@@ -423,9 +426,10 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             return self.criterion == "gini" and not self.oob_score and \
                 not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
                 self.warm_start is False and self.n_outputs_ == 1
-        if method_name ==  'ensemble.RandomForestRegressor.predict':
+        if method_name == 'ensemble.RandomForestRegressor.predict':
             return hasattr(self, '_onedal_estimator')
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+        raise RuntimeError(
+            f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
@@ -433,9 +437,10 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
                 self.warm_start is False and self.n_outputs_ == 1 and \
                 self.sample_weight is None
-        if method_name ==  'ensemble.RandomForestRegressor.predict':
+        if method_name == 'ensemble.RandomForestRegressor.predict':
             return hasattr(self, '_onedal_estimator')
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+        raise RuntimeError(
+            f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
@@ -444,7 +449,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'max_depth': self.max_depth,
             'min_samples_split': self.min_samples_split,
             'min_samples_leaf': self.min_samples_leaf,
-            'min_weight_fraction_leaf':self.min_weight_fraction_leaf,
+            'min_weight_fraction_leaf': self.min_weight_fraction_leaf,
             'max_features': self.max_features,
             'max_leaf_nodes': self.max_leaf_nodes,
             'min_impurity_decrease': self.min_impurity_decrease,

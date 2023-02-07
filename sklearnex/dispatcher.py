@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # Other imports
 import sys
@@ -68,11 +68,11 @@ def get_patch_map():
         mapping['random_forest_classifier'] = [[(ensemble_module,
                                                  'RandomForestClassifier',
                                                  RandomForestClassifier_sklearnex),
-                                                 None]]
+                                                None]]
         mapping['random_forest_regressor'] = [[(ensemble_module,
                                                 'RandomForestRegressor',
                                                 RandomForestRegressor_sklearnex),
-                                                None]]
+                                               None]]
 
         # SVM
         mapping.pop('svm')

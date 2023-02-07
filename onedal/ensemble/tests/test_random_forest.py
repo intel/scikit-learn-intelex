@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import pytest
 import numpy as np
@@ -29,7 +29,8 @@ def test_rf_classifier(queue):
     X, y = make_classification(n_samples=100, n_features=4,
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
-    rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y, queue=queue)
+    rf = RandomForestClassifier(
+        max_depth=2, random_state=0).fit(X, y, queue=queue)
     assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
 
 
@@ -37,5 +38,7 @@ def test_rf_classifier(queue):
 def test_rf_regression(queue):
     X, y = make_regression(n_samples=100, n_features=4, n_informative=2,
                            random_state=0, shuffle=False)
-    rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y, queue=queue)
-    assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+    rf = RandomForestRegressor(
+        max_depth=2, random_state=0).fit(X, y, queue=queue)
+    assert_allclose(
+        [-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)

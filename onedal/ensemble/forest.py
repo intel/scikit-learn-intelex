@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # TODO:
 # refactoring imports
@@ -166,7 +166,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             'variable_importance_mode': self.variable_importance_mode,
         }
         if self.is_classification:
-            onedal_params['class_count'] = 0 if self.classes_ is None else len(self.classes_)
+            onedal_params['class_count'] = 0 if self.classes_ is None else len(
+                self.classes_)
         return onedal_params
 
     def _check_parameters(self):
@@ -241,7 +242,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         if sp.issparse(y):
             raise ValueError(
                 "sparse multilabel-indicator for y is not supported."
-                )
+            )
         self._check_parameters()
         # TODO:
         # valid accept_sparse check
@@ -270,7 +271,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         policy = self._get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
         self._cached_estimators_ = None
-        train_result = module.train(policy, params, *to_table(X, y, sample_weight))
+        train_result = module.train(
+            policy, params, *to_table(X, y, sample_weight))
         self._onedal_model = train_result.model
 
         if self.oob_score:
@@ -283,7 +285,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
-                             force_all_finite=True, accept_sparse='csr')
+                         force_all_finite=True, accept_sparse='csr')
         _check_n_features(self, X, False)
         # TODO:
         # sparse check
@@ -303,7 +305,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
     def _predict_proba(self, X, module, queue):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
-                             force_all_finite=True, accept_sparse='csr')
+                         force_all_finite=True, accept_sparse='csr')
         _check_n_features(self, X, False)
         # TODO:
         # sparse check
@@ -373,7 +375,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(X, y, sample_weight,
-                            _backend.decision_forest.classification, queue)
+                         _backend.decision_forest.classification, queue)
 
     def predict(self, X, queue=None):
         pred = super()._predict(X, _backend.decision_forest.classification, queue)
