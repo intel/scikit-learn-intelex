@@ -20,13 +20,12 @@
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
-
+namespace decomposition {
 struct params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const pybind11::dict& params) {
-        using namespace pca;
+        using namespace dal::pca;
 
-        //constexpr bool is_bf = std::is_same_v<Method, method::brute_force>;
         const auto n_components = params["n_components"].cast<std::int64_t>();
         //sign-flip feauture is always used in scikit-learn
         bool is_deterministic= params["is_deterministic"].cast<bool>();
@@ -43,7 +42,7 @@ struct method2t {
 
     template <typename Float>
     auto operator()(const py::dict& params) {
-        using namespace pca;
+        using namespace dal::pca;
 
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "cov", ops, Float, method::cov);
@@ -57,7 +56,7 @@ struct method2t {
 
 template <typename Task>
 void init_model(py::module_& m) {
-    using namespace pca;
+    using namespace dal::pca;
     using model_t = model<Task>;
 
     auto cls = py::class_<model_t>(m, "model")
@@ -74,7 +73,7 @@ void init_model(py::module_& m) {
 
 template <typename Task>
 void init_train_result(py::module_& m) {
-    using namespace pca;
+    using namespace dal::pca;
     using result_t = train_result<Task>;
 
     py::class_<result_t>(m, "train_result").def(py::init())
@@ -87,7 +86,7 @@ void init_train_result(py::module_& m) {
 
 template <typename Task>
 void init_infer_result(py::module_& m) {
-    using namespace pca;
+    using namespace dal::pca;
     using result_t = infer_result<Task>;
 
     auto cls = py::class_<result_t>(m, "infer_result")
@@ -102,7 +101,7 @@ void init_train_ops(py::module& m) {
              const py::dict& params,
              const table& data
              ) {
-              using namespace pca;
+              using namespace dal::pca;
               using input_t = train_input<Task>;
 
               train_ops ops(policy, input_t{ data }, params2desc{} );
@@ -117,7 +116,7 @@ void init_infer_ops(py::module_& m) {
              const py::dict& params,
              const pca::model<Task>& model,
              const table& data) {
-              using namespace pca;
+              using namespace dal::pca;
               using input_t = infer_input<Task>;
 
               infer_ops ops(policy, input_t{ model, data }, params2desc{} );
@@ -125,16 +124,17 @@ void init_infer_ops(py::module_& m) {
           });
 }
 
-ONEDAL_PY_TYPE2STR(pca::task::dim_reduction, "dim_reduction");
+
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
-
+}
 ONEDAL_PY_INIT_MODULE(decomposition) {
-    using namespace pca;
+    using namespace decomposition;
+    using namespace dal::pca;
     using namespace dal::detail;
 
     using task_list = types<task::dim_reduction>;
@@ -148,4 +148,5 @@ ONEDAL_PY_INIT_MODULE(decomposition) {
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
 }
 
+ONEDAL_PY_TYPE2STR(oneapi::dal::pca::task::dim_reduction, "dim_reduction");
 } //namespace oneapi::dal::python
