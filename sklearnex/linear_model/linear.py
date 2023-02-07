@@ -145,9 +145,6 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
             if hasattr(self, 'positive') and self.positive:
                 return False
             if len(data) > 1:
-                import numpy as np
-                from scipy import sparse as sp
-
                 self._is_sparse = sp.isspmatrix(data[0])
             return hasattr(self, '_is_sparse') and not self._is_sparse
         raise RuntimeError(
