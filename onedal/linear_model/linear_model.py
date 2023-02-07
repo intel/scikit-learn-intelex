@@ -136,7 +136,11 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             model = self._create_model(module)
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.responses)
-        return y
+
+        if len(y.shape) == 2 and y.shape[1] == 1:
+            return y.ravel()
+        else:
+            return y
 
 
 class LinearRegression(RegressorMixin, BaseLinearRegression):
