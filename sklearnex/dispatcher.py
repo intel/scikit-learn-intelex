@@ -39,9 +39,6 @@ def get_patch_map():
         from ._config import get_config as get_config_sklearnex
         from ._config import config_context as config_context_sklearnex
 
-        from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
-        from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
-
         from .svm import SVR as SVR_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
@@ -54,25 +51,11 @@ def get_patch_map():
         # Scikit-learn* modules
 
         import sklearn as base_module
-        import sklearn.ensemble as ensemble_module
         import sklearn.svm as svm_module
         import sklearn.neighbors as neighbors_module
 
         # Patch for mapping
         # Algorithms
-        # Ensemble
-        mapping.pop('random_forest_classifier')
-        mapping.pop('random_forest_regressor')
-        mapping.pop('randomrorestclassifier')
-        mapping.pop('randomforestregressor')
-        mapping['random_forest_classifier'] = [[(ensemble_module,
-                                                 'RandomForestClassifier',
-                                                 RandomForestClassifier_sklearnex),
-                                                 None]]
-        mapping['random_forest_regressor'] = [[(ensemble_module,
-                                                'RandomForestRegressor',
-                                                RandomForestRegressor_sklearnex),
-                                                None]]
 
         # SVM
         mapping.pop('svm')
