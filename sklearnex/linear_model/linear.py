@@ -153,7 +153,7 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
-    def _onedal_cpu_supported(self, method_name, *data):
+    def _onedal_gpu_supported(self, method_name, *data):
         return self._onedal_supported(method_name, *data)
 
     def _onedal_cpu_supported(self, method_name, *data):
