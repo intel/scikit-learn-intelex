@@ -24,10 +24,8 @@ from sklearn.calibration import CalibratedClassifierCV
 
 from onedal.datatypes.validation import _column_or_1d
 
-
 def get_coef(self):
     return self._coef_
-
 
 def set_coef(self, value):
     self._coef_ = value
@@ -36,10 +34,8 @@ def set_coef(self, value):
         if not self._is_in_fit:
             del self._onedal_estimator._onedal_model
 
-
 def get_intercept(self):
     return self._intercept_
-
 
 def set_intercept(self, value):
     self._intercept_ = value
@@ -48,12 +44,12 @@ def set_intercept(self, value):
         if not self._is_in_fit:
             del self._onedal_estimator._onedal_model
 
-
 class BaseLinearRegression(ABC):
     def _save_attributes(self):
         self.fit_status_ = 0
         self._coef_ = self._onedal_estimator.coef_
-        self._intercept_ = self._onedal_estimator.intercept_
+        if self.fit_intercept:
+            self._intercept_ = self._onedal_estimator.intercept_
         self._sparse = False
 
         self.coef_ = property(get_coef, set_coef)

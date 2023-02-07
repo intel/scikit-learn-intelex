@@ -31,13 +31,54 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
 
     if sklearn_check_version('1.2'):
         _parameter_constraints: dict = {
-            **sklearn_LinearRegression._parameter_constraints}
+            **LinearRegression_original._parameter_constraints
+        }
 
-    @_deprecate_positional_args
-    def __init__(self, *, fit_intercept=True, positive=False,
-                 n_jobs=None, copy_X=False):
-        super().__init__(fit_intercept=fit_intercept, positive=positive,
-                         n_jobs=n_jobs, copy_X=copy_X)
+        def __init__(
+            self,
+            fit_intercept=True,
+            copy_X=True,
+            n_jobs=None,
+            positive=False,
+        ):
+            super(BaseLinearRegression, self).__init__(
+                fit_intercept=fit_intercept,
+                copy_X=copy_X,
+                n_jobs=n_jobs,
+                positive=positive,
+            )
+    elif sklearn_check_version('0.24'):
+        def __init__(
+            self,
+            fit_intercept=True,
+            normalize='deprecated' if sklearn_check_version('1.0') else False,
+            copy_X=True,
+            n_jobs=None,
+            positive=False,
+        ):
+            super(BaseLinearRegression, self).__init__(
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                copy_X=copy_X,
+                n_jobs=n_jobs,
+                positive=positive,
+            )
+    else:
+        def __init__(
+            self,
+            fit_intercept=True,
+            normalize=False,
+            copy_X=True,
+            n_jobs=None,
+        ):
+            super(BaseLinearRegression, self).__init__(
+                fit_intercept=fit_intercept,
+                normalize=normalize,
+                copy_X=copy_X,
+                n_jobs=n_jobs
+            )
+
+
 
     def fit(self, X, y, sample_weight=None):
         """
