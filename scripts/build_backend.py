@@ -100,7 +100,7 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     os.chdir(d4p_dir)
 
 
-def custom_build_cmake_clib(iface, cxx=None):
+def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1):
     import pybind11
 
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
@@ -142,6 +142,7 @@ def custom_build_cmake_clib(iface, cxx=None):
         "-DCMAKE_INSTALL_PREFIX=" + install_directory,
         "-DCMAKE_PREFIX_PATH=" + install_directory,
         "-DIFACE=" + iface,
+        "-DONEDAL_MAJOR_BINARY=" + str(onedal_major_binary_version),
         "-DPYTHON_INCLUDE_DIR=" + python_include,
         "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,

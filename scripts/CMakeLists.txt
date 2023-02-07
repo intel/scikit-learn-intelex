@@ -72,9 +72,11 @@ if(IFACE STREQUAL "host")
     set(TARGET "_onedal_py_host")
 
     if(WIN32)
-        set(ONEDAL_LIBRARIES "onedal_dll" "onedal_core_dll")
+        set(ONEDAL_LIBRARIES "onedal_dll.${ONEDAL_MAJOR_BINARY}" "onedal_core_dll.${ONEDAL_MAJOR_BINARY}")
+    elseif(APPLE)
+        set(ONEDAL_LIBRARIES "onedal.${ONEDAL_MAJOR_BINARY}" "onedal_core.${ONEDAL_MAJOR_BINARY}" "onedal_thread.${ONEDAL_MAJOR_BINARY}")
     else()
-        set(ONEDAL_LIBRARIES "onedal" "onedal_core" "onedal_thread")
+        set(ONEDAL_LIBRARIES "-l:libonedal.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_core.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
     endif()
 
     list(APPEND COMPILE_DEFINITIONS "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
@@ -91,10 +93,12 @@ elseif(IFACE STREQUAL "dpc")
     endif()
 
     if(WIN32)
-        set(ONEDAL_LIBRARIES "onedal_dpc_dll" "onedal_core_dll")
-        # set(MPI_LIBRARY "mpi") # impi or mpi
+        set(ONEDAL_LIBRARIES "onedal_dpc_dll.${ONEDAL_MAJOR_BINARY}" "onedal_core_dll.${ONEDAL_MAJOR_BINARY}")
+        set(MPI_LIBRARY "mpi") # impi or mpi
+    elseif(APPLE)
+        set(ONEDAL_LIBRARIES "onedal_dpc.${ONEDAL_MAJOR_BINARY}" "onedal_core.${ONEDAL_MAJOR_BINARY}" "onedal_thread.${ONEDAL_MAJOR_BINARY}")
     else()
-        set(ONEDAL_LIBRARIES "onedal_dpc" "onedal_core" "onedal_thread")
+        set(ONEDAL_LIBRARIES "-l:libonedal_dpc.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_core.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
         set(MPI_LIBRARY "mpi")
     endif()
 
