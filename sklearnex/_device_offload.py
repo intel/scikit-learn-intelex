@@ -18,6 +18,8 @@ from ._config import get_config
 from ._utils import get_patch_message
 from functools import wraps
 import numpy as np
+import sys
+import logging
 
 try:
     from dpctl import SyclQueue
@@ -26,6 +28,10 @@ try:
     dpctl_available = True
 except ImportError:
     dpctl_available = False
+
+oneapi_is_available = 'daal4py.oneapi' in sys.modules
+if oneapi_is_available:
+    from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
 
 
 class DummySyclQueue:
@@ -51,9 +57,7 @@ class DummySyclQueue:
 
 
 def _get_device_info_from_daal4py():
-    import sys
-    if 'daal4py.oneapi' in sys.modules:
-        from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
+    if oneapi_is_available:
         return _get_device_name_sycl_ctxt(), _get_sycl_ctxt_params()
     return None, dict()
 
@@ -144,8 +148,6 @@ def _get_backend(obj, queue, method_name, *data):
 
 
 def dispatch(obj, method_name, branches, *args, **kwargs):
-    import logging
-
     q = _get_global_queue()
     q, hostargs = _transfer_to_host(q, *args)
     q, hostvalues = _transfer_to_host(q, *kwargs.values())
