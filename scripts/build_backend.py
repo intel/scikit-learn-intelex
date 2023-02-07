@@ -121,7 +121,6 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1):
     MPI_INCDIRS = [jp(mpi_root, 'include')]
     MPI_LIBDIRS = [jp(mpi_root, 'lib')]
     MPI_LIBS = ['mpi']
-    # check dpctl availibility
     import dpctl
     dpctl_include = dpctl.get_include()
 

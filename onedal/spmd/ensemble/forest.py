@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-from onedal import _backend, _is_dpc_backend
-import sys
-
-=======
 #===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -19,17 +14,22 @@ import sys
 # limitations under the License.
 #===============================================================================
 
-from onedal import _backend, _is_dpc_backend
-import sys
+from abc import ABC
+
+from ...common._spmd_policy import _get_spmd_policy
+
+from onedal.ensemble import RandomForestClassifier as RandomForestClassifier_Batch
+from onedal.ensemble import RandomForestRegressor as RandomForestRegressor_Batch
 
 
-class _SPMDDataParallelInteropPolicy(_backend.spmd_data_parallel_policy):
-    def __init__(self, queue):
-        self._queue = queue
-        super().__init__(self._queue)
+class BaseForestSPMD(ABC):
+    def _get_policy(self, queue, *data):
+        return _get_spmd_policy(queue)
 
 
-def _get_spmd_policy(queue):
-    # TODO:
-    # cases when queue is None
-    return _SPMDDataParallelInteropPolicy(queue)
+class RandomForestClassifier(BaseForestSPMD, RandomForestClassifier_Batch):
+    pass
+
+
+class RandomForestRegressor(BaseForestSPMD, RandomForestRegressor_Batch):
+    pass

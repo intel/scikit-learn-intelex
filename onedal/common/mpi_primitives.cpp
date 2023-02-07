@@ -14,26 +14,30 @@
 * limitations under the License.
 *******************************************************************************/
 #ifdef ONEDAL_DATA_PARALLEL
-#include "oneapi/dal/detail/spmd_policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
-#include "oneapi/dal/spmd/mpi/communicator.hpp"
-#include "dpctl4pybind11.hpp"
+#include <mpi.h>
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
-ONEDAL_PY_INIT_MODULE(spmd_policy) {
-    import_dpctl();
-    py::class_<dal::detail::spmd_policy<detail::data_parallel_policy>>(m, "spmd_data_parallel_policy")
-        .def(py::init([](cl::sycl::queue &q) {
-            detail::data_parallel_policy local_policy = detail::data_parallel_policy(q);
-            // TODO:
-            // Communicator hardcoded. Implement passing spmd communicator.
-            spmd::communicator<spmd::device_memory_access::usm> comm = dal::preview::spmd::make_communicator<dal::preview::spmd::backend::mpi>(q);
-            detail::spmd_policy<detail::data_parallel_policy> spmd_policy{ local_policy, comm };
-            return spmd_policy;
-        }));
+// TODO:
+// Just for examples: will be removed.
+class mpi_initializer
+{
+public:
+    mpi_initializer() {}
+    void init() { MPI_Init(NULL, NULL); }
+
+    void fini() { MPI_Finalize(); }
+};
+
+ONEDAL_PY_INIT_MODULE(mpi_primitives) {
+    //using mpi_initializer_t = mpi_initializer;
+    py::class_<mpi_initializer>(m, "mpi_initializer")
+        .def(py::init())
+        .def("init", &mpi_initializer::init)
+        .def("fini", &mpi_initializer::fini);
 }
 } // namespace oneapi::dal::python
 #endif

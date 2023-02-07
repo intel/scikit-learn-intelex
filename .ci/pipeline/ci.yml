@@ -101,7 +101,9 @@ jobs:
       conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel mpich
     displayName: 'Conda create'
   - script: |
-      pip install daal-devel impi-devel
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      conda install -q -y -c intel dpctl
       pip install -r requirements-dev.txt
       pip list
     displayName: 'Install develop requirements'

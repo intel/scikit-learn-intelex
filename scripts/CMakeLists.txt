@@ -97,6 +97,7 @@ elseif(IFACE STREQUAL "dpc")
         set(MPI_LIBRARY "mpi") # impi or mpi
     elseif(APPLE)
         set(ONEDAL_LIBRARIES "onedal_dpc.${ONEDAL_MAJOR_BINARY}" "onedal_core.${ONEDAL_MAJOR_BINARY}" "onedal_thread.${ONEDAL_MAJOR_BINARY}")
+        set(MPI_LIBRARY "mpi")
     else()
         set(ONEDAL_LIBRARIES "-l:libonedal_dpc.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_core.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
         set(MPI_LIBRARY "mpi")
