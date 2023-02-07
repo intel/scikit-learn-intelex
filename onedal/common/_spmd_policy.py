@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-from onedal import _backend, _is_dpc_backend
-import sys
-
-=======
 #===============================================================================
 # Copyright 2023 Intel Corporation
 #
