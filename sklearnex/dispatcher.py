@@ -59,6 +59,7 @@ def get_patch_map():
 
         # Patch for mapping
         # Algorithms
+
         # SVM
         mapping.pop('svm')
         mapping.pop('svc')
