@@ -82,8 +82,6 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
                 n_jobs=n_jobs
             )
 
-
-
     def fit(self, X, y, sample_weight=None):
         """
         Fit linear model.
