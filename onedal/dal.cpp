@@ -22,7 +22,6 @@ namespace oneapi::dal::python {
 
 /* common */
 ONEDAL_PY_INIT_MODULE(policy);
-ONEDAL_PY_INIT_MODULE(spmd_policy);
 
 /* datatypes*/
 ONEDAL_PY_INIT_MODULE(table);
@@ -35,14 +34,11 @@ ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 
 /* algorithms */
 ONEDAL_PY_INIT_MODULE(ensemble);
-//ONEDAL_PY_INIT_MODULE(mpi_primitives);
 ONEDAL_PY_INIT_MODULE(svm);
 ONEDAL_PY_INIT_MODULE(neighbors);
 
 #ifdef ONEDAL_DATA_PARALLEL
 PYBIND11_MODULE(_onedal_py_dpc, m) {
-    init_spmd_policy(m);
-    //init_mpi_primitives(m);
 #else
 PYBIND11_MODULE(_onedal_py_host, m) {
 #endif
