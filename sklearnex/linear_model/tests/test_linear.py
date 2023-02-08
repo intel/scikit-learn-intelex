@@ -20,6 +20,7 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 from daal4py.sklearn._utils import daal_check_version
 
+
 def test_sklearnex_import_liner():
     from sklearnex.linear_model import LinearRegression
     X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
