@@ -21,9 +21,11 @@ from abc import ABCMeta, abstractmethod
 import numbers
 import warnings
 from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import (compute_sample_weight, check_array, deprecated)
-from sklearn.utils.validation import (_num_samples)
-from sklearn.utils import (check_random_state, check_array, deprecated)
+from sklearn.utils import (
+    check_random_state,
+    compute_sample_weight,
+    check_array,
+    deprecated)
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
@@ -83,7 +85,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.variable_importance_mode = variable_importance_mode
         self.algorithm = algorithm
 
-    def _to_absolute_max_features(self, max_features, n_features, is_classification=False):
+    def _to_absolute_max_features(self, max_features, n_features,
+                                  is_classification=False):
         if max_features is None:
             return n_features
         elif isinstance(max_features, str):
@@ -282,6 +285,10 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # self.oob_score_ = from_table(train_result.oob_err_per_observation)
         return self
 
+    def _create_model(self, module):
+        # TODO:
+        pass
+
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
@@ -292,12 +299,10 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # if self._sparse and not sp.isspmatrix(X):
         policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
-        # TODO:
-        # if hasattr(self, '_onedal_model'):
-        #     model = self._onedal_model
-        # else:
-        #     model = self._create_model(module)
-        model = self._onedal_model
+        if hasattr(self, '_onedal_model'):
+            model = self._onedal_model
+        else:
+            model = self._create_model(module)
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.responses)
         return y
@@ -312,12 +317,10 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # if self._sparse and not sp.isspmatrix(X):
         policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
-        # TODO:
-        # if hasattr(self, '_onedal_model'):
-        #     model = self._onedal_model
-        # else:
-        #     model = self._create_model(module)
-        model = self._onedal_model
+        if hasattr(self, '_onedal_model'):
+            model = self._onedal_model
+        else:
+            model = self._create_model(module)
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.probabilities)
         return y

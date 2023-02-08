@@ -27,7 +27,7 @@ def test_sklearnex_import_rf_classifier():
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
-    assert 'daal4py' in rf.__module__
+    assert 'daal4py' in rf.__module__ or 'sklearnex' in rf.__module__
     assert_allclose([1], rf.predict([[0, 0, 0, 0]]))
 
 
@@ -36,7 +36,7 @@ def test_sklearnex_import_rf_regression():
     X, y = make_regression(n_features=4, n_informative=2,
                            random_state=0, shuffle=False)
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
-    assert 'daal4py' in rf.__module__
+    assert 'daal4py' in rf.__module__ or 'sklearnex' in rf.__module__
     pred = rf.predict([[0, 0, 0, 0]])
     if daal_check_version((2021, 'P', 400)):
         # random engine work was changed in sklearnex 2023.1

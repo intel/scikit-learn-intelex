@@ -237,84 +237,82 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         }, X)
 
     def _estimators_(self):
-        # TODO
-        # check
-        if hasattr(self, '_onedal_estimator'):
-            if hasattr(self._onedal_estimator, '_cached_estimators_'):
-                if self._onedal_estimator._cached_estimators_:
-                    return self._onedal_estimator._cached_estimators_
-        # if sklearn_check_version('0.22'):
-        #     check_is_fitted(self)
-        # else:
-        #     check_is_fitted(self, 'daal_model_')
-        check_is_fitted(self)
-        # classes_ = self.classes_[0]
-        # n_classes_ = self.n_classes_[0]
-        classes_ = self.classes_
-        n_classes_ = self.n_classes_
-        # convert model to estimators
-        params = {
-            'criterion': self.criterion,
-            'max_depth': self.max_depth,
-            'min_samples_split': self.min_samples_split,
-            'min_samples_leaf': self.min_samples_leaf,
-            'min_weight_fraction_leaf': self.min_weight_fraction_leaf,
-            'max_features': self.max_features,
-            'max_leaf_nodes': self.max_leaf_nodes,
-            'min_impurity_decrease': self.min_impurity_decrease,
-            'random_state': None,
-        }
-        # if not sklearn_check_version('1.0'):
-        #     params['min_impurity_split'] = self.min_impurity_split
-        # params['min_impurity_split'] = self.min_impurity_split
-        est = DecisionTreeClassifier(**params)
-        # TODO:
-        # we need to set est.tree_ field with Trees constructed from Intel(R)
-        # oneAPI Data Analytics Library solution
-        estimators_ = []
-        random_state_checked = check_random_state(self.random_state)
-        for i in range(self.n_estimators):
-            est_i = clone(est)
-            est_i.set_params(
-                random_state=random_state_checked.randint(np.iinfo(np.int32).max))
-            # if sklearn_check_version('1.0'):
-            #     est_i.n_features_in_ = self.n_features_in_
-            # else:
-            #     est_i.n_features_ = self.n_features_in_
-            est_i.n_features_in_ = self.n_features_in_
-            # est_i.n_features_ = self.n_features_in_
-
-            est_i.n_outputs_ = self.n_outputs_
-            est_i.classes_ = classes_
-            est_i.n_classes_ = n_classes_
-            # treeState members: 'class_count', 'leaf_count', 'max_depth',
-            # 'node_ar', 'node_count', 'value_ar'
-            tree_i_state_class = daal4py.getTreeState(
-                self._onedal_estimator._onedal_model, i, n_classes_)
-
-            # node_ndarray = tree_i_state_class.node_ar
-            # value_ndarray = tree_i_state_class.value_ar
-            # value_shape = (node_ndarray.shape[0], self.n_outputs_,
-            #                n_classes_)
-            # assert np.allclose(
-            #     value_ndarray, value_ndarray.astype(np.intc, casting='unsafe')
-            # ), "Value array is non-integer"
-            tree_i_state_dict = {
-                'max_depth': tree_i_state_class.max_depth,
-                'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
-                'values': tree_i_state_class.value_ar}
-            est_i.tree_ = Tree(
-                self.n_features_in_,
-                np.array(
-                    [n_classes_],
-                    dtype=np.intp),
-                self.n_outputs_)
-            est_i.tree_.__setstate__(tree_i_state_dict)
-            estimators_.append(est_i)
-
-        self._onedal_estimator._cached_estimators_ = estimators_
-        return estimators_
+        pass
+        # # TODO
+        # # check
+        # if hasattr(self, '_onedal_estimator'):
+        #     if hasattr(self._onedal_estimator, '_cached_estimators_'):
+        #         if self._onedal_estimator._cached_estimators_:
+        #             return self._onedal_estimator._cached_estimators_
+        # # if sklearn_check_version('0.22'):
+        # #     check_is_fitted(self)
+        # # else:
+        # #     check_is_fitted(self, 'daal_model_')
+        # check_is_fitted(self)
+        # # classes_ = self.classes_[0]
+        # # n_classes_ = self.n_classes_[0]
+        # classes_ = self.classes_
+        # n_classes_ = self.n_classes_
+        # # convert model to estimators
+        # params = {
+        #     'criterion': self.criterion,
+        #     'max_depth': self.max_depth,
+        #     'min_samples_split': self.min_samples_split,
+        #     'min_samples_leaf': self.min_samples_leaf,
+        #     'min_weight_fraction_leaf': self.min_weight_fraction_leaf,
+        #     'max_features': self.max_features,
+        #     'max_leaf_nodes': self.max_leaf_nodes,
+        #     'min_impurity_decrease': self.min_impurity_decrease,
+        #     'random_state': None,
+        # }
+        # # if not sklearn_check_version('1.0'):
+        # #     params['min_impurity_split'] = self.min_impurity_split
+        # # params['min_impurity_split'] = self.min_impurity_split
+        # est = DecisionTreeClassifier(**params)
+        # # TODO:
+        # # we need to set est.tree_ field with Trees constructed from Intel(R)
+        # # oneAPI Data Analytics Library solution
+        # estimators_ = []
+        # random_state_checked = check_random_state(self.random_state)
+        # for i in range(self.n_estimators):
+        #     est_i = clone(est)
+        #     est_i.set_params(
+        #         random_state=random_state_checked.randint(np.iinfo(np.int32).max))
+        #     # if sklearn_check_version('1.0'):
+        #     #     est_i.n_features_in_ = self.n_features_in_
+        #     # else:
+        #     #     est_i.n_features_ = self.n_features_in_
+        #     est_i.n_features_in_ = self.n_features_in_
+        #     # est_i.n_features_ = self.n_features_in_
+        #     est_i.n_outputs_ = self.n_outputs_
+        #     est_i.classes_ = classes_
+        #     est_i.n_classes_ = n_classes_
+        #     # treeState members: 'class_count', 'leaf_count', 'max_depth',
+        #     # 'node_ar', 'node_count', 'value_ar'
+        #     tree_i_state_class = daal4py.getTreeState(
+        #         self._onedal_estimator._onedal_model, i, n_classes_)
+        #     # node_ndarray = tree_i_state_class.node_ar
+        #     # value_ndarray = tree_i_state_class.value_ar
+        #     # value_shape = (node_ndarray.shape[0], self.n_outputs_,
+        #     #                n_classes_)
+        #     # assert np.allclose(
+        #     #     value_ndarray, value_ndarray.astype(np.intc, casting='unsafe')
+        #     # ), "Value array is non-integer"
+        #     tree_i_state_dict = {
+        #         'max_depth': tree_i_state_class.max_depth,
+        #         'node_count': tree_i_state_class.node_count,
+        #         'nodes': tree_i_state_class.node_ar,
+        #         'values': tree_i_state_class.value_ar}
+        #     est_i.tree_ = Tree(
+        #         self.n_features_in_,
+        #         np.array(
+        #             [n_classes_],
+        #             dtype=np.intp),
+        #         self.n_outputs_)
+        #     est_i.tree_.__setstate__(tree_i_state_dict)
+        #     estimators_.append(est_i)
+        # self._onedal_estimator._cached_estimators_ = estimators_
+        # return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
@@ -332,7 +330,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             return self.criterion == "gini" and not self.oob_score and \
                 not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
                 self.warm_start is False and self.n_outputs_ == 1 and \
-                self.sample_weight is None
+                len(data) == 2 # sample_weight is not supported
         if method_name in ['ensemble.RandomForestClassifier.predict',
                            'ensemble.RandomForestClassifier.predict_proba']:
             return hasattr(self, '_onedal_estimator')
@@ -436,7 +434,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             return self.criterion == "gini" and not self.oob_score and \
                 not sp.issparse(data[0]) and self.ccp_alpha == 0.0 and \
                 self.warm_start is False and self.n_outputs_ == 1 and \
-                self.sample_weight is None
+                len(data) == 2 # sample_weight is not supported
         if method_name == 'ensemble.RandomForestRegressor.predict':
             return hasattr(self, '_onedal_estimator')
         raise RuntimeError(
