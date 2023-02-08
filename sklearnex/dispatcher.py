@@ -88,10 +88,11 @@ def get_patch_map():
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
 
         # LinearRegression
-        mapping.pop('linear')
-        mapping['linear'] = [[(linear_model_module,
-                               'LinearRegression',
-                               LinearRegression_sklearnex), None]]
+        if daal_check_version((2023, 'P', 100)):
+            mapping.pop('linear')
+            mapping['linear'] = [[(linear_model_module,
+                                   'LinearRegression',
+                                   LinearRegression_sklearnex), None]]
 
         # Configs
         mapping['set_config'] = [[(base_module,
