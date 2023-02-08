@@ -80,13 +80,16 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
                               to_table(X), to_table(y))
 
         self.coef_ = from_table(result.coefficients)
+        self.n_targets_, self.n_features_in_ = self.coef_.shape
         if len(self.coef_.shape) == 2 and self.coef_.shape[0] == 1:
             assert self.coef_.shape[0] == 1
             self.coef_ = self.coef_.ravel()
 
         if self.fit_intercept:
             self.intercept_ = from_table(result.intercept)
-            self.intercept_ = self.intercept_.ravel()
+        else:
+            self.intercept_ = np.zeros(self.n_targets_)
+        self.intercept_ = self.intercept_.ravel()
 
         if self._sparse:
             self.coef_ = sp.csr_matrix(self.coef_)

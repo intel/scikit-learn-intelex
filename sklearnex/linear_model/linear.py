@@ -114,7 +114,7 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         dispatch(self, 'linear_model.LinearRegression.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_LinearRegression.fit,
-        }, X, y)
+        }, X, y, sample_weight)
         return self
 
     @wrap_output_data
@@ -146,6 +146,12 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
                 return False
             if len(data) > 1:
                 self._is_sparse = sp.isspmatrix(data[0])
+                n_samples, _ = data[0].shape
+                if n_samples < 2:
+                    return False
+            if len(data) > 2:
+                if data[2] is not None:
+                    return False
             return hasattr(self, '_is_sparse') and not self._is_sparse
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}')
@@ -156,7 +162,8 @@ class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
     def _onedal_cpu_supported(self, method_name, *data):
         return self._onedal_supported(method_name, *data)
 
-    def _onedal_fit(self, X, y, queue=None):
+    def _onedal_fit(self, X, y, sample_weight, queue=None):
+        assert sample_weight is None
         if sklearn_check_version("1.2"):
             self._validate_params()
         onedal_params = {'fit_intercept': self.fit_intercept}

@@ -51,10 +51,10 @@ def set_intercept(self, value):
 
 class BaseLinearRegression(ABC):
     def _save_attributes(self):
+        self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.fit_status_ = 0
         self._coef_ = self._onedal_estimator.coef_
-        if self.fit_intercept:
-            self._intercept_ = self._onedal_estimator.intercept_
+        self._intercept_ = self._onedal_estimator.intercept_
         self._sparse = False
 
         self.coef_ = property(get_coef, set_coef)
