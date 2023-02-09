@@ -54,7 +54,7 @@ deselected_tests:
   # TODO: investigate copy failure of read-only buffer
   - linear_model/tests/test_coordinate_descent.py::test_read_only_buffer
 
-  # LinearRegression 
+  # LinearRegression
   - tests/test_coordinate_descent.py::test_enet_sample_weight_consistency[False-False-0.01-True]
   - tests/test_coordinate_descent.py::test_enet_sample_weight_consistency[False-True-0.01-True]
 
