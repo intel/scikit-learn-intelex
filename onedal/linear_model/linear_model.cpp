@@ -23,7 +23,7 @@ namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100ul
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 
 namespace linear_model {
 
@@ -212,6 +212,6 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
 
 ONEDAL_PY_TYPE2STR(dal::linear_regression::task::regression, "regression");
 
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20230100ul
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20230100
 
 } // namespace oneapi::dal::python
