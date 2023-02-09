@@ -309,6 +309,9 @@ def build_oneapi_backend():
         cxx = 'icpx'
     eca = ['-fsycl'] + ['-fsycl-device-code-split=per_kernel'] + eca
     ela = ['-fsycl'] + ['-fsycl-device-code-split=per_kernel'] + ela
+    
+    onedal_version = str(ONEDAL_VERSION).replace('.', '')
+    onedal_version_define = f'-DONEDAL_VERSION={onedal_version}'
 
     return build_backend.build_cpp(
         cc=cc,
@@ -322,7 +325,7 @@ def build_oneapi_backend():
         includes=includes,
         eca=eca,
         ela=ela,
-        defines=[],
+        defines=[onedal_version_define],
         installpath='daal4py/oneapi/'
     )
 

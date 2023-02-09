@@ -98,8 +98,6 @@ setup(name="scikit-learn-intelex",
           'sklearnex.model_selection',
           'sklearnex.neighbors',
           'sklearnex.svm',
-          'sklearnex.utils',
-          'sklearnex.linear_model'
-      ]
-#      ] + ['sklearnex.linear_model'] if ONEDAL_VERSION >= "2023.1" else []),
-      )
+          'sklearnex.utils'
+      ] + ['sklearnex.linear_model'] if ONEDAL_VERSION >= "2023.1" else []),
+)
