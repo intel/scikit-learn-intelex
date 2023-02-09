@@ -99,5 +99,5 @@ setup(name="scikit-learn-intelex",
           'sklearnex.neighbors',
           'sklearnex.svm',
           'sklearnex.utils'
-      ] + (['sklearnex.linear_model'] if str(ONEDAL_VERSION) >= "20230000" else [])),
+      ] + (['sklearnex.linear_model'] if str(ONEDAL_VERSION) >= "20230100" else [])),
       )

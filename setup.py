@@ -311,7 +311,7 @@ def build_oneapi_backend():
     ela = ['-fsycl'] + ['-fsycl-device-code-split=per_kernel'] + ela
 
     onedal_version = str(ONEDAL_VERSION).replace('.', '')
-    onedal_version_define = f'-DONEDAL_VERSION={onedal_version}'
+    onedal_version_define = f'-DONEDAL_VERSION={onedal_version}ul'
 
     return build_backend.build_cpp(
         cc=cc,
@@ -465,7 +465,7 @@ setup(
         'onedal.primitives',
         'onedal.datatypes',
         'onedal.common'
-    ] + (['onedal.linear_model'] if str(ONEDAL_VERSION) >= "20230000" else [])),
+    ] + (['onedal.linear_model'] if str(ONEDAL_VERSION) >= "20230100" else [])),
     package_data={
         'daal4py.oneapi': [
             'liboneapi_backend.so',
