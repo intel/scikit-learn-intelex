@@ -16,12 +16,13 @@
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
-if daal_check_version((2023, 'P', 100))
-from ._common import BaseLinearRegression
- from .._device_offload import dispatch, wrap_output_data
+if daal_check_version((2023, 'P', 100)):
+    from ._common import BaseLinearRegression
+    from .._device_offload import dispatch, wrap_output_data
 
-  from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
-   if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
+    from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
+
+    if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
         from sklearn.linear_model._base import _deprecate_normalize
 
     from sklearn.utils.validation import _deprecate_positional_args
