@@ -30,8 +30,6 @@ dal_root = os.environ.get('DALROOT')
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
 
-ONEDAL_MAJOR_BINARY_VERSION, ONEDAL_MINOR_BINARY_VERSION = get_onedal_version(
-    dal_root, 'binary')
 ONEDAL_VERSION = get_onedal_version(dal_root)
 
 project_urls = {
