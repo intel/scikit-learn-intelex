@@ -23,7 +23,7 @@ namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION>=2023001ul
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 2023001ul
 
 namespace linear_model {
 
