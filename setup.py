@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # System imports
 import os
@@ -63,8 +63,8 @@ ONEDAL_MAJOR_BINARY_VERSION, ONEDAL_MINOR_BINARY_VERSION = get_onedal_version(
 ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
 ONEDAL_2023_0_1 = 2023 * 10000 + 0 * 100 + 1
-is_onedal_iface = \
-    os.environ.get('OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
+is_onedal_iface = os.environ.get(
+    'OFF_ONEDAL_IFACE') is None and ONEDAL_VERSION >= ONEDAL_2021_3
 
 d4p_version = (os.environ['DAAL4PY_VERSION'] if 'DAAL4PY_VERSION' in os.environ
                else time.strftime('%Y%m%d.%H%M%S'))
@@ -309,7 +309,7 @@ def build_oneapi_backend():
         cxx = 'icpx'
     eca = ['-fsycl'] + ['-fsycl-device-code-split=per_kernel'] + eca
     ela = ['-fsycl'] + ['-fsycl-device-code-split=per_kernel'] + ela
-    
+
     onedal_version = str(ONEDAL_VERSION).replace('.', '')
     onedal_version_define = f'-DONEDAL_VERSION={onedal_version}'
 
@@ -335,7 +335,8 @@ def get_onedal_py_libs():
     libs = [f'_onedal_py_host{ext_suffix}', f'_onedal_py_dpc{ext_suffix}']
     if IS_WIN:
         ext_suffix_lib = ext_suffix.replace('.dll', '.lib')
-        libs += [f'_onedal_py_host{ext_suffix_lib}', f'_onedal_py_dpc{ext_suffix_lib}']
+        libs += [f'_onedal_py_host{ext_suffix_lib}',
+                 f'_onedal_py_dpc{ext_suffix_lib}']
     return libs
 
 
@@ -348,7 +349,8 @@ class custom_build():
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
-                build_backend.custom_build_cmake_clib('dpc', ONEDAL_MAJOR_BINARY_VERSION)
+                build_backend.custom_build_cmake_clib(
+                    'dpc', ONEDAL_MAJOR_BINARY_VERSION)
 
     def post_build(self):
         if IS_MAC:
@@ -359,13 +361,18 @@ class custom_build():
                 f'libonedal_core.{major_version}.dylib') is not None
             if major_is_available and ONEDAL_VERSION == ONEDAL_2023_0_1:
                 extension_libs = list(pathlib.Path('.').glob('**/*darwin.so'))
-                onedal_libs = ['onedal', 'onedal_dpc', 'onedal_core', 'onedal_thread']
+                onedal_libs = [
+                    'onedal',
+                    'onedal_dpc',
+                    'onedal_core',
+                    'onedal_thread']
                 for ext_lib in extension_libs:
                     for onedal_lib in onedal_libs:
-                        subprocess.call('/usr/bin/install_name_tool -change '
-                                        f'lib{onedal_lib}.dylib '
-                                        f'lib{onedal_lib}.{major_version}.dylib '
-                                        f'{ext_lib}'.split(' '), shell=False)
+                        subprocess.call(
+                            '/usr/bin/install_name_tool -change '
+                            f'lib{onedal_lib}.dylib '
+                            f'lib{onedal_lib}.{major_version}.dylib '
+                            f'{ext_lib}'.split(' '), shell=False)
 
 
 class develop(orig_develop.develop, custom_build):
