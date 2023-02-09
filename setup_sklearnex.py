@@ -91,11 +91,12 @@ setup(name="scikit-learn-intelex",
           'sklearnex.decomposition',
           'sklearnex.ensemble',
           'sklearnex.glob',
+          'sklearnex.linear_model',
           'sklearnex.manifold',
           'sklearnex.metrics',
           'sklearnex.model_selection',
           'sklearnex.neighbors',
           'sklearnex.svm',
           'sklearnex.utils'
-      ] + (['sklearnex.linear_model'] if ONEDAL_VERSION >= 20230100 else [])),
+      ]),
       )
