@@ -14,8 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
-# TODO:
-# refactoring imports
+from daal4py.sklearn._utils import (
+    daal_check_version, sklearn_check_version)
 from sklearn.ensemble import BaseEnsemble
 from abc import ABCMeta, abstractmethod
 import numbers
@@ -89,39 +89,61 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                                   is_classification=False):
         if max_features is None:
             return n_features
-        elif isinstance(max_features, str):
+        if isinstance(max_features, str):
             if max_features == "auto":
-                return max(1, int(np.sqrt(n_features))
-                           ) if is_classification else n_features
-            elif max_features == 'sqrt':
+                if not sklearn_check_version('1.3'):
+                    if sklearn_check_version('1.1'):
+                        warnings.warn(
+                            "`max_features='auto'` has been deprecated in 1.1 "
+                            "and will be removed in 1.3. To keep the past behaviour, "
+                            "explicitly set `max_features=1.0` or remove this "
+                            "parameter as it is also the default value for "
+                            "RandomForestRegressors and ExtraTreesRegressors.",
+                            FutureWarning,
+                        )
+                    return max(1, int(np.sqrt(n_features))
+                               ) if is_classification else n_features
+            if max_features == 'sqrt':
                 return max(1, int(np.sqrt(n_features)))
-            elif max_features == "log2":
+            if max_features == "log2":
                 return max(1, int(np.log2(n_features)))
-            else:
-                raise ValueError(
-                    'Invalid value for max_features. Allowed string '
-                    'values are "auto", "sqrt" or "log2".')
-        elif isinstance(max_features, (numbers.Integral, np.integer)):
+            allowed_string_values = '"sqrt" or "log2"' if sklearn_check_version('1.3') \
+                else '"auto", "sqrt" or "log2"'
+            raise ValueError(
+                'Invalid value for max_features. Allowed string '
+                f'values are {allowed_string_values}.')
+        if isinstance(max_features, (numbers.Integral, np.integer)):
             return max_features
-        else:
-            if max_features > 0.0:
-                return max(1, int(max_features * n_features))
-            return 0
+        if max_features > 0.0:
+            return max(1, int(max_features * n_features))
+        return 0
 
     def _get_observations_per_tree_fraction(self, n_samples, max_samples):
         if max_samples is None:
             return 1.
 
         if isinstance(max_samples, numbers.Integral):
-            if not (1 <= max_samples <= n_samples):
-                msg = "`max_samples` must be in range 1 to {} but got value {}"
-                raise ValueError(msg.format(n_samples, max_samples))
+            if not sklearn_check_version('1.2'):
+                if not (1 <= max_samples <= n_samples):
+                    msg = "`max_samples` must be in range 1 to {} but got value {}"
+                    raise ValueError(msg.format(n_samples, max_samples))
+            else:
+                if max_samples > n_samples:
+                    msg = "`max_samples` must be <= n_samples={} but got value {}"
+                    raise ValueError(msg.format(n_samples, max_samples))
             return float(max_samples / n_samples)
 
         if isinstance(max_samples, numbers.Real):
-            if not (0 < float(max_samples) <= 1):
-                msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
-                raise ValueError(msg.format(max_samples))
+            if sklearn_check_version('1.2'):
+                pass
+            elif sklearn_check_version('1.0'):
+                if not (0 < float(max_samples) <= 1):
+                    msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
+                    raise ValueError(msg.format(max_samples))
+            else:
+                if not (0 < float(max_samples) < 1):
+                    msg = "`max_samples` must be in range (0, 1) but got value {}"
+                    raise ValueError(msg.format(max_samples))
             return float(max_samples)
 
         msg = "`max_samples` should be int or float, but got type '{}'"
@@ -133,6 +155,15 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         observations_per_tree_fraction = self._get_observations_per_tree_fraction(
             n_samples=data.shape[0], max_samples=self.max_samples)
+        if not self.bootstrap and self.max_samples is not None:
+            raise ValueError(
+                "`max_sample` cannot be set if `bootstrap=False`. "
+                "Either switch to `bootstrap=True` or set "
+                "`max_sample=None`."
+            )
+        if not self.bootstrap and self.oob_score:
+            raise ValueError("Out of bag estimation only available"
+                             " if bootstrap=True")
 
         min_observations_in_leaf_node = (self.min_samples_leaf
                                          if isinstance(
@@ -246,34 +277,23 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             raise ValueError(
                 "sparse multilabel-indicator for y is not supported."
             )
-        self._check_parameters()
-        # TODO:
-        # valid accept_sparse check
+        # # TODO:
+        # # valid accept_sparse check
         X, y = _check_X_y(
             X, y, dtype=[np.float64, np.float32],
-            force_all_finite=True, accept_sparse=['csr', 'csc', 'coo'],)
+            force_all_finite=True, accept_sparse=['csr'],)
         if self.is_classification:
             y = self._validate_targets(y, X.dtype)
-        if y.ndim == 2 and y.shape[1] == 1:
-            warnings.warn(
-                "A column-vector y was passed when a 1d array was"
-                " expected. Please change the shape of y to "
-                "(n_samples,), for example using ravel().",
-                DataConversionWarning, stacklevel=2)
 
-        if y.ndim == 1:
-            # reshape is necessary to preserve the data contiguity against vs
-            # [:, np.newaxis] that does not.
-            y = np.reshape(y, (-1, 1))
-        # TODO:
-        # add variables assigning for different sklearn versions
-        self.n_outputs_ = y.shape[1]
-        self.n_features = X.shape[1]
-        self.n_features_in_ = X.shape[1]
-        self.n_features_ = self.n_features_in_
+        # # TODO:
+        # # add variables assigning for different sklearn versions
+        # self.n_outputs_ = y.shape[1]
+        # self.n_features = X.shape[1]
+        # self.n_features_in_ = X.shape[1]
+        # self.n_features_ = self.n_features_in_
         policy = self._get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
-        self._cached_estimators_ = None
+        # self._cached_estimators_ = None
         train_result = module.train(
             policy, params, *to_table(X, y, sample_weight))
         self._onedal_model = train_result.model
@@ -372,8 +392,8 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         # Decapsulate classes_ attributes
         # TODO:
         # align with `n_classes_` and `classes_` attr with daal4py implementations.
-        if hasattr(self, "classes_"):
-            self.n_classes_ = self.classes_
+        #if hasattr(self, "classes_"):
+        #    self.n_classes_ = self.classes_
         return y
 
     def fit(self, X, y, sample_weight=None, queue=None):
