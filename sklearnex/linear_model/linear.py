@@ -143,18 +143,33 @@ if daal_check_version((2023, 'P', 100)):
         def _onedal_supported(self, method_name, *data):
             if method_name in ['linear_model.LinearRegression.fit',
                                'linear_model.LinearRegression.predict']:
+                if hasattr(data[0], 'shape'):
+                    n_samples, n_features = data[0].shape
+                else:
+                    n_samples, n_features = len(data[0]), 1
+
                 if hasattr(self, 'normalize') and self.normalize:
                     return False
                 if hasattr(self, 'positive') and self.positive:
                     return False
+
                 if len(data) > 1:
                     self._is_sparse = sp.isspmatrix(data[0])
-                    n_samples, _ = data[0].shape
-                    if n_samples < 2:
-                        return False
+
+                # Train stage
                 if len(data) > 2:
+                    # Sample weights are provided
                     if data[2] is not None:
                         return False
+                    # Linear system is determined
+                    is_good_for_onedal = n_samples > \
+                        (n_features + int(self.fit_intercept))
+                    if not is_good_for_onedal:
+                        return False
+                    # Too insufficient dataset
+                    if n_samples < 2:
+                        return False
+                        
                 return hasattr(self, '_is_sparse') and not self._is_sparse
             raise RuntimeError(
                 f'Unknown method {method_name} in {self.__class__.__name__}')

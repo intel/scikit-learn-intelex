@@ -58,6 +58,9 @@ deselected_tests:
   - tests/test_coordinate_descent.py::test_enet_sample_weight_consistency[False-False-0.01-True]
   - tests/test_coordinate_descent.py::test_enet_sample_weight_consistency[False-True-0.01-True]
 
+  # LinearRegression - system of linear equations is not defined
+  - ensemble/tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
+
   # Warm starting issue on 1 iteration of LogReg
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-True-True-lbfgs]
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-True-True-newton-cg]

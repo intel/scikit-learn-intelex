@@ -101,16 +101,11 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         m = module.model()
 
         dtype = self.coef_.dtype
-        is_multi_output = len(self.coef_.shape) == 2
-        r_count = self.coef_.shape[0] if is_multi_output else 1
-        intercept = self.intercept_ if self.fit_intercept \
-            else np.zeros(r_count, dtype=dtype)
-        if self.fit_intercept:
-            assert intercept.shape == (r_count,)
-        intercept = intercept.reshape(r_count, 1)
 
-        coefficients = np.array(self.coef_)
+        coefficients = np.array(self.coef_, dtype = dtype)
+        intercept = np.array(self.intercept_, dtype = dtype)
         packed_coefficients = np.hstack((intercept, coefficients))
+        packed_coefficients = np.array(packed_coefficients)
         m.packed_coefficients = to_table(packed_coefficients)
 
         return m
