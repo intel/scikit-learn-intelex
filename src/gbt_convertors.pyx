@@ -163,7 +163,6 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
 
     class_label = 0
     iterations_counter = 0
-    mis_eq_yes = None
     for tree in trees_arr:
         n_nodes = 1
         # find out the number of nodes in the tree
@@ -197,19 +196,6 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
                                  feature_value=feature_value)
 
         # create queue
-        yes_idx = sub_tree["yes"]
-        no_idx = sub_tree["no"]
-        mis_idx = sub_tree["missing"]
-        if mis_eq_yes is None:
-            if mis_idx == yes_idx:
-                mis_eq_yes = True
-            elif mis_idx == no_idx:
-                mis_eq_yes = False
-            else:
-                raise TypeError(
-                    "Missing values are not supported in daal4py Gradient Boosting Trees")
-        elif mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
-            raise TypeError("Missing values are not supported in daal4py Gradient Boosting Trees")
         node_queue: Deque[Node] = deque()
         node_queue.append(Node(sub_tree["children"][0], parent_id, 0))
         node_queue.append(Node(sub_tree["children"][1], parent_id, 1))
@@ -239,12 +225,6 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
                 parent_id=parent_id, position=position)
 
             # append to queue
-            yes_idx = sub_tree["yes"]
-            no_idx = sub_tree["no"]
-            mis_idx = sub_tree["missing"]
-            if mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
-                raise TypeError(
-                    "Missing values are not supported in daal4py Gradient Boosting Trees")
             node_queue.append(Node(sub_tree["children"][0], parent_id, 0))
             node_queue.append(Node(sub_tree["children"][1], parent_id, 1))
 
