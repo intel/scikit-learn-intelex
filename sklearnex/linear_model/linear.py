@@ -165,18 +165,25 @@ if daal_check_version((2023, 'P', 100)):
         def _onedal_cpu_supported(self, method_name, *data):
             return self._onedal_supported(method_name, *data)
 
+        def _initialize_onedal_estimator(self):
+            onedal_params = {'fit_intercept': self.fit_intercept}
+            self._onedal_estimator = onedal_LinearRegression(**onedal_params)
+
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             assert sample_weight is None
             if sklearn_check_version("1.2"):
                 self._validate_params()
-            onedal_params = {'fit_intercept': self.fit_intercept}
 
-            self._onedal_estimator = onedal_LinearRegression(**onedal_params)
+            self._initialize_onedal_estimator()
             self._onedal_estimator.fit(X, y, queue=queue)
 
             self._save_attributes()
 
         def _onedal_predict(self, X, queue=None):
+            if not hasattr(self, '_onedal_estimator'):
+                self._initialize_onedal_estimator()
+                self._onedal_estimator.coef_ = self.coef_
+                self._onedal_estimator.intercept_ = self.intercept_
             return self._onedal_estimator.predict(X, queue=queue)
 
 else:
