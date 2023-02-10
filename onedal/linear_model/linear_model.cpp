@@ -17,6 +17,8 @@
 #include "oneapi/dal/algo/linear_regression.hpp"
 
 #include "onedal/common.hpp"
+#include "onedal/version.hpp"
+
 #include <regex>
 
 namespace py = pybind11;
