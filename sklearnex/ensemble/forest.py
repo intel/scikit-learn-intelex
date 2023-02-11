@@ -51,6 +51,7 @@ from sklearn.tree._tree import Tree
 
 from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
+from onedal import getTreeState
 
 from scipy import sparse as sp
 
@@ -431,9 +432,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             est_i.n_classes_ = n_classes_
             # treeState members: 'class_count', 'leaf_count', 'max_depth',
             # 'node_ar', 'node_count', 'value_ar'
-            # TODO:
-            # onedal.getTreeState
-            tree_i_state_class = daal4py.getTreeState(
+            tree_i_state_class = getTreeState(
                 self._onedal_model, i, n_classes_)
             # node_ndarray = tree_i_state_class.node_ar
             # value_ndarray = tree_i_state_class.value_ar
@@ -466,9 +465,10 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 self.criterion == "gini" and not sp.issparse(data[0]) and \
                 not sp.issparse(data[1]) and self.ccp_alpha == 0.0 and \
                 self.warm_start is False and self.n_outputs_ == 1
-        if method_name in ['ensemble.RandomForestClassifier.predict',
-                           'ensemble.RandomForestClassifier.predict_proba']:
-            return hasattr(self, '_onedal_estimator')
+        if method_name == 'ensemble.RandomForestClassifier.predict':
+            return hasattr(self, '_onedal_model') and not sp.issparse(data[0])
+        if method_name == 'ensemble.RandomForestClassifier.predict_proba':
+            return hasattr(self, '_onedal_model')
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
@@ -482,9 +482,10 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 not sp.issparse(data[1]) and self.ccp_alpha == 0.0 and \
                 self.warm_start is False and self.n_outputs_ == 1 and \
                 len(data) == 2 # `sample_weight` is not supported.
-        if method_name in ['ensemble.RandomForestClassifier.predict',
-                           'ensemble.RandomForestClassifier.predict_proba']:
-            return hasattr(self, '_onedal_estimator')
+        if method_name == 'ensemble.RandomForestClassifier.predict':
+            return hasattr(self, '_onedal_model') and not sp.issparse(data[0])
+        if method_name == 'ensemble.RandomForestClassifier.predict_proba':
+            return hasattr(self, '_onedal_model')
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
