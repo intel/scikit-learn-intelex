@@ -147,7 +147,9 @@ if daal_check_version((2023, 'P', 100)):
                     n_samples, n_features = data[0].shape
                 else:
                     n_samples, n_features = len(data[0]), 1
-                assert n_features == self.n_features_in_s
+
+                if hasattr(self, 'n_features_in_'):
+                    assert n_features == self.n_features_in_
 
                 if hasattr(self, 'normalize') and self.normalize:
                     return False
