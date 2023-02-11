@@ -102,8 +102,8 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         dtype = self.coef_.dtype
 
-        coefficients = np.array(self.coef_, dtype = dtype)
-        intercept = np.array(self.intercept_, dtype = dtype)
+        coefficients = np.array(self.coef_, dtype=dtype)
+        intercept = np.array(self.intercept_, dtype=dtype)
         packed_coefficients = np.hstack((intercept, coefficients))
         packed_coefficients = np.array(packed_coefficients)
         m.packed_coefficients = to_table(packed_coefficients)
