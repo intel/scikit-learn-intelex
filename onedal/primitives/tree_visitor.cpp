@@ -92,8 +92,8 @@ public:
 // We only expose the minimum information to cython
 struct TreeState
 {
-    skl_tree_node *node_ar;
-    double        *value_ar;
+    py::array_t<skl_tree_node> node_ar;
+    py::array_t<double> value_ar;
     size_t         max_depth;
     size_t         node_count;
     size_t         leaf_count;
@@ -131,7 +131,7 @@ public:
     size_t n_leaf_nodes;
 };
 
-//// our tree visitor for getting tree state
+// our tree visitor for getting tree state
 template <typename Task>
 class toSKLearnTreeObjectVisitor : public TreeState
 {
@@ -167,22 +167,26 @@ toSKLearnTreeObjectVisitor<Task>::toSKLearnTreeObjectVisitor(size_t _depth, size
 template <typename Task>
 bool toSKLearnTreeObjectVisitor<Task>::operator()(const df::split_node_info<Task>& info)
 {
+    py::buffer_info node_ar_buf = node_ar.request();
+
+    skl_tree_node *node_ar_ptr = static_cast<skl_tree_node *>(node_ar_buf.ptr);
+
     if(info.get_level() > 0) {
         // has parents
         Py_ssize_t parent = parents[info.get_level() - 1];
-        if(node_ar[parent].left_child > 0) {
-            assert(node_ar[node_id].right_child < 0);
-            node_ar[parent].right_child = node_id;
+        if(node_ar_ptr[parent].left_child > 0) {
+            assert(node_ar_ptr[node_id].right_child < 0);
+            node_ar_ptr[parent].right_child = node_id;
         } else {
-            node_ar[parent].left_child = node_id;
+            node_ar_ptr[parent].left_child = node_id;
         }
     }
     parents[info.get_level()] = node_id;
-    node_ar[node_id].feature = info.get_feature_index();
-    node_ar[node_id].threshold = info.get_feature_value();
-    node_ar[node_id].impurity = info.get_impurity();
-    node_ar[node_id].n_node_samples = info.get_sample_count();
-    node_ar[node_id].weighted_n_node_samples = info.get_sample_count();
+    node_ar_ptr[node_id].feature = info.get_feature_index();
+    node_ar_ptr[node_id].threshold = info.get_feature_value();
+    node_ar_ptr[node_id].impurity = info.get_impurity();
+    node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
+    node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
 
     // wrap-up
     ++node_id;
@@ -193,19 +197,23 @@ bool toSKLearnTreeObjectVisitor<Task>::operator()(const df::split_node_info<Task
 template <typename Task>
 void toSKLearnTreeObjectVisitor<Task>::_onLeafNode(const df::leaf_node_info<Task>& info)
 {
+    py::buffer_info node_ar_buf = node_ar.request();
+
+    skl_tree_node *node_ar_ptr = static_cast<skl_tree_node *>(node_ar_buf.ptr);
+
     if(info.get_level()) {
         Py_ssize_t parent = parents[info.get_level() - 1];
-        if(node_ar[parent].left_child > 0) {
-            assert(node_ar[node_id].right_child < 0);
-            node_ar[parent].right_child = node_id;
+        if(node_ar_ptr[parent].left_child > 0) {
+            assert(node_ar_ptr[node_id].right_child < 0);
+            node_ar_ptr[parent].right_child = node_id;
         } else {
-            node_ar[parent].left_child = node_id;
+            node_ar_ptr[parent].left_child = node_id;
         }
     }
 
-    node_ar[node_id].impurity = info.get_impurity();
-    node_ar[node_id].n_node_samples = info.get_sample_count();
-    node_ar[node_id].weighted_n_node_samples = info.get_sample_count();
+    node_ar_ptr[node_id].impurity = info.get_impurity();
+    node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
+    node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
 }
 
 template<>
@@ -213,7 +221,11 @@ bool toSKLearnTreeObjectVisitor<df::task::regression>::operator()(const df::leaf
 {
     _onLeafNode(info);
     OVERFLOW_CHECK_BY_MULTIPLICATION(int, node_id, class_count);
-    value_ar[node_id*1*class_count] = info.get_response();
+
+    py::buffer_info value_ar_buf = value_ar.request();
+    double *value_ar_ptr = static_cast<double *>(value_ar_buf.ptr);
+
+    value_ar_ptr[node_id*1*class_count] = info.get_response();
 
     // wrap-up
     ++node_id;
@@ -223,13 +235,16 @@ bool toSKLearnTreeObjectVisitor<df::task::regression>::operator()(const df::leaf
 template<>
 bool toSKLearnTreeObjectVisitor<df::task::classification>::operator()(const df::leaf_node_info<df::task::classification>& info)
 {
+    py::buffer_info value_ar_buf = value_ar.request();
+    double *value_ar_ptr = static_cast<double *>(value_ar_buf.ptr);
+
     if (info.get_level() > 0)
     {
         size_t depth = info.get_level() - 1;
         while (depth >= 0)
         {
             size_t id = parents[depth];
-            value_ar[id*1*class_count + info.get_label()] += info.get_sample_count();
+            value_ar_ptr[id*1*class_count + info.get_label()] += info.get_sample_count();
             if (depth == 0)
             {
                 break;
@@ -239,53 +254,26 @@ bool toSKLearnTreeObjectVisitor<df::task::classification>::operator()(const df::
     }
     _onLeafNode(info);
     OVERFLOW_CHECK_BY_ADDING(int, node_id*1*class_count, info.get_label());
-    value_ar[node_id*1*class_count + info.get_label()] += info.get_sample_count();
+    value_ar_ptr[node_id*1*class_count + info.get_label()] += info.get_sample_count();
 
     // wrap-up
     ++node_id;
     return true;
 }
 
-// This is the function for getting the tree state from a forest which we use in cython
-// we will have different model types, so it's a template
-// Note: the caller will own the memory of the 2 returned arrays!
-template <typename Task>
-TreeState _getTreeState(const df::model<Task>& model, size_t iTree, size_t n_classes)
-{
-    // First count nodes
-    NodeDepthCountNodeVisitor<Task> ncv;
-    model.traverse_depth_first(iTree, ncv);
-    // then do the final tree traversal
-    toSKLearnTreeObjectVisitor<Task> tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
-    model.traverse_depth_first(iTree, tsv);
-
-    return TreeState(tsv);
-}
-
-
 ONEDAL_PY_INIT_MODULE(get_tree) {
-    //py::class_<skl_tree_node>(m, "skl_tree_node")
-    //    .def(py::init())
-    //    .def_readwrite("left_child", &skl_tree_node::left_child)
-    //    .def_readwrite("right_child", &skl_tree_node::right_child)
-    //    .def_readwrite("feature", &skl_tree_node::feature)
-    //    .def_readwrite("threshold", &skl_tree_node::threshold)
-    //    .def_readwrite("impurity", &skl_tree_node::impurity)
-    //    .def_readwrite("n_node_samples", &skl_tree_node::n_node_samples)
-    //    .def_readwrite("weighted_n_node_samples", &skl_tree_node::weighted_n_node_samples);
-
-    //py::class_<TreeState>(m, "TreeState")
-    //    .def(py::init())
-    //    .def_readwrite("node_ar", &TreeState::node_ar)
-    //    .def_readwrite("value_ar", &TreeState::value_ar)
-    //    .def_readwrite("max_depth", &TreeState::max_depth)
-    //    .def_readwrite("node_count", &TreeState::node_count)
-    //    .def_readwrite("leaf_count", &TreeState::leaf_count)
-    //    .def_readwrite("class_count", &TreeState::class_count);
-
-    py::class_<TreeState>(m, "_get_tree_state")
-    .def(py::init());
+    py::class_<TreeState>(m, "_getTreeState")
+        .def(py::init([](const df::model<df::task::classification>& model, size_t iTree, size_t n_classes) {
+            // First count nodes
+            NodeDepthCountNodeVisitor<df::task::classification> ncv;
+            model.traverse_depth_first(iTree, ncv);
+            // then do the final tree traversal
+            toSKLearnTreeObjectVisitor<df::task::classification> tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
+            model.traverse_depth_first(iTree, tsv);
+            return TreeState(tsv);
+        }));
 }
+
 } // namespace oneapi::dal::python
 #endif
 

@@ -51,7 +51,7 @@ from sklearn.tree._tree import Tree
 
 from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
-from onedal import getTreeState
+from onedal.primitives import getTreeState
 
 from scipy import sparse as sp
 
@@ -396,9 +396,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         else:
             check_is_fitted(self, '_onedal_model')
         classes_ = self.classes_[0]
-        # different that in 838
-        # n_classes_ = self.n_classes_[0]
-        n_classes_ = self.n_classes_
+        n_classes_ = self.n_classes_[0]
         # convert model to estimators
         params = {
             'criterion': self.criterion,
