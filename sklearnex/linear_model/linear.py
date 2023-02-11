@@ -164,7 +164,7 @@ if daal_check_version((2023, 'P', 100)):
                 # Train stage
                 if n_samples > 2:
                     # Sample weights are provided
-                    if data[2] is not None:
+                    if len(data) > 2 and data[2] is not None:
                         return False
                     # Linear system is determined
                     is_good_for_onedal = n_samples > \
