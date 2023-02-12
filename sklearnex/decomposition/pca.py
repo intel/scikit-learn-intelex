@@ -179,8 +179,6 @@ class PCA(sklearn_PCA):
         # Get precision using matrix inversion lemma
         components_ = self.components_
         exp_var = self.explained_variance_
-        if self.whiten:
-            components_ = components_ * np.sqrt(exp_var[:, np.newaxis])
         exp_var_diff = np.maximum(exp_var - self.noise_variance_, 0.0)
         precision = np.dot(components_, components_.T) / self.noise_variance_
         precision.flat[:: len(precision) + 1] += 1.0 / exp_var_diff

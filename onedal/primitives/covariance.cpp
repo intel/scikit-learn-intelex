@@ -13,9 +13,6 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-
-// #pragma once
-
 #include <pybind11/pybind11.h>
 
 #include "oneapi/dal/algo/covariance.hpp"
@@ -23,7 +20,6 @@
 #include "onedal/common.hpp"
 
 namespace oneapi::dal::python {
-
 
 template <typename Dense, typename Ops>
 struct cov_method2t {
@@ -49,13 +45,16 @@ struct cov_params2desc {
     }
 };
 
-template <typename Policy, typename Input, typename Result, typename Param2Desc, typename DenseMethod>
+template <typename Policy,
+          typename Input,
+          typename Result,
+          typename Param2Desc,
+          typename DenseMethod>
 inline void init_cov_compute_ops(pybind11::module_& m) {
-    m.def("compute",
-          [](const Policy& policy, const pybind11::dict& params, const table& x) {
-              compute_ops ops (policy, Input{x}, Param2Desc{});
-              return fptype2t{ cov_method2t{ DenseMethod{}, ops } }(params);
-          });
+    m.def("compute", [](const Policy& policy, const pybind11::dict& params, const table& x) {
+        compute_ops ops(policy, Input{ x }, Param2Desc{});
+        return fptype2t{ cov_method2t{ DenseMethod{}, ops } }(params);
+    });
 }
 
 template <typename Result>
@@ -77,7 +76,13 @@ ONEDAL_PY_INIT_MODULE(covariance) {
 
     auto sub = m.def_submodule("covariance");
     ONEDAL_PY_INSTANTIATE(init_cov_result, sub, result_t);
-    ONEDAL_PY_INSTANTIATE(init_cov_compute_ops, sub, policy_list, input_t, result_t, param2desc_t, method::dense);
+    ONEDAL_PY_INSTANTIATE(init_cov_compute_ops,
+                          sub,
+                          policy_list,
+                          input_t,
+                          result_t,
+                          param2desc_t,
+                          method::dense);
 }
 
 } // namespace oneapi::dal::python

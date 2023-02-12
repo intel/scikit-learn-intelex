@@ -28,10 +28,12 @@ struct params2desc {
 
         const auto n_components = params["n_components"].cast<std::int64_t>();
         //sign-flip feauture is always used in scikit-learn
-        bool is_deterministic= params["is_deterministic"].cast<bool>();
+        bool is_deterministic = params["is_deterministic"].cast<bool>();
 
-        auto desc = dal::pca::descriptor<Float, Method>().set_component_count(n_components).set_deterministic(is_deterministic);
-        
+        auto desc = dal::pca::descriptor<Float, Method>()
+                        .set_component_count(n_components)
+                        .set_deterministic(is_deterministic);
+
         return desc;
     }
 };
@@ -68,7 +70,7 @@ void init_model(py::module_& m) {
                        [](const py::bytes& bytes) {
                            return deserialize<model_t>(bytes);
                        }))
-                    .DEF_ONEDAL_PY_PROPERTY(eigenvectors, model_t);
+                   .DEF_ONEDAL_PY_PROPERTY(eigenvectors, model_t);
 }
 
 template <typename Task>
@@ -76,7 +78,8 @@ void init_train_result(py::module_& m) {
     using namespace dal::pca;
     using result_t = train_result<Task>;
 
-    py::class_<result_t>(m, "train_result").def(py::init())
+    py::class_<result_t>(m, "train_result")
+        .def(py::init())
         .DEF_ONEDAL_PY_PROPERTY(model, result_t)
         .def_property_readonly("eigenvectors", &result_t::get_eigenvectors)
         .DEF_ONEDAL_PY_PROPERTY(eigenvalues, result_t)
@@ -96,17 +99,13 @@ void init_infer_result(py::module_& m) {
 
 template <typename Policy, typename Task>
 void init_train_ops(py::module& m) {
-    m.def("train",
-          [](const Policy& policy,
-             const py::dict& params,
-             const table& data
-             ) {
-              using namespace dal::pca;
-              using input_t = train_input<Task>;
+    m.def("train", [](const Policy& policy, const py::dict& params, const table& data) {
+        using namespace dal::pca;
+        using input_t = train_input<Task>;
 
-              train_ops ops(policy, input_t{ data }, params2desc{} );
-              return fptype2t { method2t { Task {}, ops } }(params);
-          });
+        train_ops ops(policy, input_t{ data }, params2desc{});
+        return fptype2t{ method2t{ Task{}, ops } }(params);
+    });
 }
 
 template <typename Policy, typename Task>
@@ -119,19 +118,17 @@ void init_infer_ops(py::module_& m) {
               using namespace dal::pca;
               using input_t = infer_input<Task>;
 
-              infer_ops ops(policy, input_t{ model, data }, params2desc{} );
-              return fptype2t { method2t { Task{ }, ops } }(params);
+              infer_ops ops(policy, input_t{ model, data }, params2desc{});
+              return fptype2t{ method2t{ Task{}, ops } }(params);
           });
 }
-
-
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
-}
+} // namespace decomposition
 ONEDAL_PY_INIT_MODULE(decomposition) {
     using namespace decomposition;
     using namespace dal::pca;
