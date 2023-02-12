@@ -18,4 +18,4 @@ from onedal import _backend
 
 
 def getTreeState(model, iTree, n_classes):
-    return _backend._getTreeState(model, iTree, n_classes)
+    return _backend._get_tree_state(model, iTree, n_classes)
