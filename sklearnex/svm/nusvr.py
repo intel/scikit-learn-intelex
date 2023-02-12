@@ -72,6 +72,8 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
         If X is a dense array, then the other methods will not support sparse
         matrices as input.
         """
+        if sklearn_check_version("1.2"):
+            self._validate_params()
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(self, 'svm.NuSVR.fit', {
@@ -115,8 +117,6 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             return hasattr(self, '_onedal_estimator')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        if sklearn_check_version("1.2"):
-            self._validate_params()
         onedal_params = {
             'C': self.C,
             'nu': self.nu,

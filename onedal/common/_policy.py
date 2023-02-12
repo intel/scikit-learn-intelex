@@ -17,6 +17,10 @@
 from onedal import _backend, _is_dpc_backend
 import sys
 
+oneapi_is_available = 'daal4py.oneapi' in sys.modules
+if oneapi_is_available:
+    from daal4py.oneapi import _get_sycl_ctxt, sycl_execution_context
+
 
 def _get_policy(queue, *data):
     data_queue = _get_queue(*data)
@@ -39,12 +43,9 @@ def _get_queue(*data):
 
 class _Daal4PyContextReset:
     def __init__(self):
-        import sys
-
         self._d4p_context = None
         self._host_context = None
-        if 'daal4py.oneapi' in sys.modules:
-            from daal4py.oneapi import _get_sycl_ctxt, sycl_execution_context
+        if oneapi_is_available:
             self._d4p_context = _get_sycl_ctxt()
             self._host_context = sycl_execution_context('cpu')
             self._host_context.apply()

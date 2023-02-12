@@ -19,6 +19,7 @@ import warnings
 from scipy import sparse as sp
 from scipy.sparse import issparse, dok_matrix, lil_matrix
 from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.validation import check_array
 from collections.abc import Sequence
 from numbers import Integral
 
@@ -100,8 +101,6 @@ def _validate_targets(y, class_weight, dtype):
 def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
                  copy=False, force_all_finite=True,
                  ensure_2d=True, accept_large_sparse=True):
-    # TODO
-    from sklearn.utils.validation import check_array
     array = check_array(array=array, dtype=dtype, accept_sparse=accept_sparse,
                         order=order, copy=copy, force_all_finite=force_all_finite,
                         ensure_2d=ensure_2d, accept_large_sparse=accept_large_sparse)
