@@ -20,6 +20,7 @@ if daal_check_version((2023, 'P', 100)):
     from ._common import BaseLinearRegression
     from .._device_offload import dispatch, wrap_output_data
 
+    from daal4py.sklearn._utils import make2d
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
     if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
@@ -27,10 +28,10 @@ if daal_check_version((2023, 'P', 100)):
 
     from sklearn.utils.validation import _deprecate_positional_args
     from sklearn.exceptions import NotFittedError
-    from scipy import sparse as sp
-    from numbers import Integral
+    from scipy.sparse import issparse
 
     from onedal.linear_model import LinearRegression as onedal_LinearRegression
+    from onedal.datatypes import *
 
     class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         __doc__ = sklearn_LinearRegression.__doc__
@@ -140,42 +141,56 @@ if daal_check_version((2023, 'P', 100)):
                 'sklearn': sklearn_LinearRegression.predict,
             }, X)
 
+        def _onedal_fit_supported(self, method_name, *data):
+            assert method_name == 'linear_model.LinearRegression.fit'
+
+            assert len(data) == 3
+            X, y, sample_weight = data
+            
+            if sample_weight is not None:
+                return False
+
+            if issparse(X) or issparse(y):
+                return False
+
+            if hasattr(self, 'normalize') and self.normalize:
+                return False
+
+            if hasattr(self, 'positive') and self.positive:
+                return False
+
+            n_samples, n_features = _get_2d_shape(X, fallback_1d=True)
+
+            # Check if equations are well defined
+            is_good_for_onedal = n_samples > \
+                (n_features + int(self.fit_intercept))
+            if not is_good_for_onedal:
+                return False
+
+            return True
+
+        def _onedal_predict_supported(self, method_name, *data):
+            assert method_name == 'linear_model.LinearRegression.predict'
+
+            assert len(data) == 1
+
+            n_samples = _num_samples(*data)
+            if not (n_samples > 0):
+                return False
+
+            if issparse(*data) or issparse(self.coef_):
+                return False
+
+            if self.fit_intercept and issparse(self.intercept_):
+                return False
+
+            return True
+
         def _onedal_supported(self, method_name, *data):
-            if method_name in ['linear_model.LinearRegression.fit',
-                               'linear_model.LinearRegression.predict']:
-                if hasattr(data[0], 'shape') and len(data[0].shape) > 1:
-                    n_samples, n_features = data[0].shape
-                else:
-                    n_samples, n_features = len(data[0]), 1
-
-                if hasattr(self, 'n_features_in_'):
-                    assert n_features == self.n_features_in_
-
-                if hasattr(self, 'normalize') and self.normalize:
-                    return False
-                if hasattr(self, 'positive') and self.positive:
-                    return False
-
-                # No support of sparse matrices yet
-                if len(data) > 1:
-                    self._is_sparse = sp.isspmatrix(data[0])
-                    return False
-
-                # Train stage
-                if n_samples > 2:
-                    # Sample weights are provided
-                    if len(data) > 2 and data[2] is not None:
-                        return False
-                    # Linear system is determined
-                    is_good_for_onedal = n_samples > \
-                        (n_features + int(self.fit_intercept))
-                    if not is_good_for_onedal:
-                        return False
-                    # Too insufficient dataset
-                    if n_samples < 2:
-                        return False
-
-                return True
+            if method_name == 'linear_model.LinearRegression.fit':
+                return self._onedal_fit_supported(method_name, *data)
+            if method_name == 'linear_model.LinearRegression.predict':
+                return self._onedal_predict_supported(method_name, *data)
             raise RuntimeError(
                 f'Unknown method {method_name} in {self.__class__.__name__}')
 
@@ -186,7 +201,7 @@ if daal_check_version((2023, 'P', 100)):
             return self._onedal_supported(method_name, *data)
 
         def _initialize_onedal_estimator(self):
-            onedal_params = {'fit_intercept': self.fit_intercept}
+            onedal_params = {'fit_intercept': self.fit_intercept, 'copy_X': self.copy_X}
             self._onedal_estimator = onedal_LinearRegression(**onedal_params)
 
         def _onedal_fit(self, X, y, sample_weight, queue=None):
@@ -204,6 +219,7 @@ if daal_check_version((2023, 'P', 100)):
                 self._initialize_onedal_estimator()
                 self._onedal_estimator.coef_ = self.coef_
                 self._onedal_estimator.intercept_ = self.intercept_
+            
             return self._onedal_estimator.predict(X, queue=queue)
 
 else:

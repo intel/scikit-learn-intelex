@@ -120,8 +120,8 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
 
 
 def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=False,
-               force_all_finite=True, ensure_2d=True,
-               accept_large_sparse=True, y_numeric=False):
+               force_all_finite=True, ensure_2d=True, accept_large_sparse=True, 
+               y_numeric=False, accept_2d_y = False):
     if y is None:
         raise ValueError("y cannot be None")
 
@@ -131,7 +131,8 @@ def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=Fals
                      ensure_2d=ensure_2d,
                      accept_large_sparse=accept_large_sparse)
 
-    y = _column_or_1d(y, warn=True)
+    if not accept_2d_y:
+        y = _column_or_1d(y, warn=True)
     if y_numeric and y.dtype.kind == 'O':
         y = y.astype(np.float64)
     try:
@@ -279,7 +280,7 @@ def _check_n_features(self, X, reset):
             f"is expecting {self.n_features_in_} features as input.")
 
 
-def _num_features(X):
+def _num_features(X, fallback_1d = False):
     type_ = type(X)
     if type_.__module__ == "builtins":
         type_name = type_.__qualname__
@@ -297,10 +298,11 @@ def _num_features(X):
         X = np.asarray(X)
 
     if hasattr(X, 'shape'):
-        if not hasattr(X.shape, '__len__') or len(X.shape) <= 1:
+        ndim_thr = 1 if fallback_1d else 2
+        if not hasattr(X.shape, '__len__') or len(X.shape) < ndim_thr:
             message += f" with shape {X.shape}"
             raise TypeError(message)
-        return X.shape[1]
+        return X.shape[-1]
 
     first_sample = X[0]
 
@@ -314,7 +316,10 @@ def _num_features(X):
         # If X is a list of lists, for instance, we assume that all nested
         # lists have the same length without checking or converting to
         # a numpy array to keep this function call as cheap as possible.
-        return len(first_sample)
+        if (not fallback_1d) or hasattr(first_sample, '__len__'):
+            return len(first_sample)
+        else:
+            return 1
     except Exception as err:
         raise TypeError(message) from err
 
@@ -345,3 +350,8 @@ def _num_samples(x):
         return len(x)
     except TypeError as type_error:
         raise TypeError(message) from type_error
+
+def _get_2d_shape(x, fallback_1d = True):
+    n_samples = _num_samples(x)
+    n_features = _num_features(x, fallback_1d)
+    return (n_samples, n_features)
