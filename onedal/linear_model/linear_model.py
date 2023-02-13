@@ -26,7 +26,7 @@ from ..datatypes import (
     _num_features,
     _check_array,
     _get_2d_shape,
-    _ceheck_n_features)
+    _check_n_features)
 
 from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
@@ -91,9 +91,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         m = module.model()
 
         coefficients = self.coef_
+        dtype = get_dtype(coefficients)
         if not isinstance(coefficients, np.ndarray):
             coefficients = np.asarray(coefficients, dtype=dtype)
-        dtype = get_dtype(coefficients)
 
         if coefficients.ndim == 2:
             n_features_in = coefficients.shape[1]
