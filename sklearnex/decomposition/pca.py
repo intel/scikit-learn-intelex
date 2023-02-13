@@ -236,7 +236,7 @@ class PCA(sklearn_PCA):
         else:
             X_new = self._sklearnex_transform(X)[:, : self.n_components_]
             if self.whiten:
-                S_inv = np.diag(1 / self.singular_values_.reshape(-1,))
+                S_inv = np.diag(1 / self.singular_values_)
                 X_new = np.sqrt(X.shape[0] - 1) * np.dot(X_new, S_inv)
         return X_new
 

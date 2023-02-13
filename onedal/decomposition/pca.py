@@ -65,8 +65,8 @@ class PCA():
         self.n_components_ = self.n_components
         self.variances_ = from_table(result.variances)
         self.components_ = from_table(result.eigenvectors)
-        self.explained_variance_ = from_table(result.eigenvalues)
-        self.explained_variance_ = np.reshape(self.explained_variance_, (-1, ))
+        self.explained_variance_ = \
+        np.maximum(from_table(result.eigenvalues).ravel(), 0)
         tot_var = covariance_matrix.trace()
         self.explained_variance_ratio_ = self.explained_variance_ / tot_var
         self.singular_values_ = np.sqrt(

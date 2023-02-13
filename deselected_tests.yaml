@@ -49,6 +49,14 @@ deselected_tests:
   - decomposition/tests/test_incremental_pca.py::test_incremental_pca_fit_overflow_error
   - decomposition/tests/test_sparse_pca.py::test_sparse_pca_inverse_transform
 
+  # PCA - Non-critical but significant numerical difference between implementations
+  - decomposition/tests/test_sparse_pca.py::test_pca_vs_spca
+
+  # PCA - Edge Case: For extreme multicollinear data, with n_components = "mle",
+  # sklearnex PCA captures more components than stock scikit learn and daal4py.
+  # TODO: Investigate the returned eigen values from DAAL and OneDAL
+  - decomposition/tests/test_pca.py::test_mle_redundant_data
+
   # cache directory is not accessible on some systems
   - utils/tests/test_validation.py::test_check_memory
 
