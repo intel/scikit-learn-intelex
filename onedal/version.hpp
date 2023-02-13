@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 * Copyright 2023 Intel Corporation
 *
@@ -19,7 +18,7 @@
 
 #include "services/library_version_info.h"
 
+#define ONEDAL_VERSION INTEL_DAAL_VERSION
 #define MAJOR_VERSION  __INTEL_DAAL__
 #define MINOR_VERSION  __INTEL_DAAL_MINOR__
 #define UPDATE_VERSION __INTEL_DAAL_UPDATE__
-#define ONEDAL_VERSION MAJOR_VERSION * 10000 + MINOR_VERSION * 100 + UPDATE_VERSION
