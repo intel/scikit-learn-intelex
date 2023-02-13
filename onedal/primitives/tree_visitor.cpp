@@ -91,7 +91,8 @@ public:
               weighted_n_node_samples(0.0) {}
 };
 
-// We only expose the minimum information to cython
+// We only expose the minimum information to python
+template <typename T>
 struct tree_state {
     py::array_t<skl_tree_node> node_ar;
     py::array_t<double> value_ar;
@@ -143,7 +144,7 @@ public:
 
 // our tree visitor for getting tree state
 template <typename Task>
-class to_sklearn_tree_object_visitor : public tree_state {
+class to_sklearn_tree_object_visitor : public tree_state<Task> {
 public:
     to_sklearn_tree_object_visitor(size_t _depth,
                                    size_t _n_nodes,
@@ -166,31 +167,33 @@ to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(size_t _dep
                                                                      size_t _max_n_classes)
         : node_id(0),
           parents(arange<Py_ssize_t>(-1, _depth - 1)) {
-    max_n_classes = _max_n_classes;
-    node_count = _n_nodes;
-    max_depth = _depth;
-    leaf_count = _n_leafs;
-    class_count = _max_n_classes;
+    this->max_n_classes = _max_n_classes;
+    this->node_count = _n_nodes;
+    this->max_depth = _depth;
+    this->leaf_count = _n_leafs;
+    this->class_count = _max_n_classes;
 
-    auto node_ar_shape = py::array::ShapeContainer({ node_count });
+    auto node_ar_shape = py::array::ShapeContainer({ this->node_count });
     auto node_ar_strides = py::array::StridesContainer({ sizeof(skl_tree_node) });
 
-    auto value_ar_shape = py::array::ShapeContainer(
-        { static_cast<Py_ssize_t>(node_count), 1, static_cast<Py_ssize_t>(class_count) });
+    auto value_ar_shape = py::array::ShapeContainer({ static_cast<Py_ssize_t>(this->node_count),
+                                                      1,
+                                                      static_cast<Py_ssize_t>(this->class_count) });
     auto value_ar_strides = py::array::StridesContainer(
-        { class_count * sizeof(double), class_count * sizeof(double), sizeof(double) });
+        { this->class_count * sizeof(double), this->class_count * sizeof(double), sizeof(double) });
 
-    skl_tree_node* node_ar_ptr = new skl_tree_node[node_count];
+    skl_tree_node* node_ar_ptr = new skl_tree_node[this->node_count];
     double* value_ar_ptr =
-        new double[node_count * 1 * class_count](); // oneDAL only supports scalar responses for now
+        new double[this->node_count * 1 *
+                   this->class_count](); // oneDAL only supports scalar responses for now
 
-    node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides, node_ar_ptr);
-    value_ar = py::array_t<double>(value_ar_shape, value_ar_strides, value_ar_ptr);
+    this->node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides, node_ar_ptr);
+    this->value_ar = py::array_t<double>(value_ar_shape, value_ar_strides, value_ar_ptr);
 }
 
 template <typename Task>
 bool to_sklearn_tree_object_visitor<Task>::call(const df::split_node_info<Task>& info) {
-    py::buffer_info node_ar_buf = node_ar.request();
+    py::buffer_info node_ar_buf = this->node_ar.request();
 
     skl_tree_node* node_ar_ptr = static_cast<skl_tree_node*>(node_ar_buf.ptr);
 
@@ -220,7 +223,7 @@ bool to_sklearn_tree_object_visitor<Task>::call(const df::split_node_info<Task>&
 // stuff that is done for all leaf node types
 template <typename Task>
 void to_sklearn_tree_object_visitor<Task>::_onLeafNode(const df::leaf_node_info<Task>& info) {
-    py::buffer_info node_ar_buf = node_ar.request();
+    py::buffer_info node_ar_buf = this->node_ar.request();
 
     skl_tree_node* node_ar_ptr = static_cast<skl_tree_node*>(node_ar_buf.ptr);
 
@@ -246,10 +249,10 @@ bool to_sklearn_tree_object_visitor<df::task::regression>::call(
     _onLeafNode(info);
     OVERFLOW_CHECK_BY_MULTIPLICATION(int, node_id, class_count);
 
-    py::buffer_info value_ar_buf = value_ar.request();
+    py::buffer_info value_ar_buf = this->value_ar.request();
     double* value_ar_ptr = static_cast<double*>(value_ar_buf.ptr);
 
-    value_ar_ptr[node_id * 1 * class_count] = info.get_response();
+    value_ar_ptr[node_id * 1 * this->class_count] = info.get_response();
 
     // wrap-up
     ++node_id;
@@ -259,14 +262,15 @@ bool to_sklearn_tree_object_visitor<df::task::regression>::call(
 template <>
 bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     const df::leaf_node_info<df::task::classification>& info) {
-    py::buffer_info value_ar_buf = value_ar.request();
+    py::buffer_info value_ar_buf = this->value_ar.request();
     double* value_ar_ptr = static_cast<double*>(value_ar_buf.ptr);
 
     if (info.get_level() > 0) {
         size_t depth = static_cast<const size_t>(info.get_level()) - 1;
         while (depth >= 0) {
             size_t id = parents[depth];
-            value_ar_ptr[id * 1 * class_count + info.get_label()] += info.get_sample_count();
+            value_ar_ptr[id * 1 * this->class_count + info.get_response()] +=
+                info.get_sample_count();
             if (depth == 0) {
                 break;
             }
@@ -274,61 +278,55 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
         }
     }
     _onLeafNode(info);
-    OVERFLOW_CHECK_BY_ADDING(int, node_id * 1 * class_count, info.get_label());
-    value_ar_ptr[node_id * 1 * class_count + info.get_label()] += info.get_sample_count();
+    OVERFLOW_CHECK_BY_ADDING(int, node_id * 1 * this->class_count, info.get_response());
+    value_ar_ptr[node_id * 1 * this->class_count + info.get_response()] += info.get_sample_count();
 
     // wrap-up
     ++node_id;
     return true;
 }
 
-//template <typename Task>
-//void init_get_tree_state(py::module_& m) {
-//    using namespace decision_forest;
-//    using model_t = model<Task>;
-//
-//    py::class_<tree_state>(m, "_get_tree_state")
-//        .def(py::init([](const model_t& model, size_t iTree, size_t n_classes) {
-//            // First count nodes
-//            node_count_visitor<Task> ncv;
-//            node_visitor<Task, decltype(ncv)> ncv_decorator{&ncv};
-//            // TODO:
-//            // fix passing instance.
-//            model.traverse_depth_first(iTree, std::move(ncv_decorator));
-//            // then do the final tree traversal
-//            to_sklearn_tree_object_visitor<Task> tsv(ncv.depth, ncv.n_nodes, ncv.n_leaf_nodes, n_classes);
-//            node_visitor<Task, decltype(tsv)> tsv_decorator{&tsv};
-//            //to_sklearn_tree_object_visitor<df::task::classification> tsv({size_t(1), size_t(3), size_t(2), n_classes});
-//            model.traverse_depth_first(iTree, std::move(tsv_decorator));
-//            return tree_state(tsv);
-//        }))
-//        .def_readwrite("node_ar", &tree_state::node_ar, py::return_value_policy::take_ownership)
-//        .def_readwrite("value_ar", &tree_state::value_ar, py::return_value_policy::take_ownership)
-//        .def_readwrite("max_depth", &tree_state::max_depth)
-//        .def_readwrite("node_count", &tree_state::node_count)
-//        .def_readwrite("leaf_count", &tree_state::leaf_count)
-//        .def_readwrite("class_count", &tree_state::class_count);
-//
-//}
-//
-//ONEDAL_PY_TYPE2STR(decision_forest::task::classification, "classification");
-//ONEDAL_PY_TYPE2STR(decision_forest::task::regression, "regression");
-//
-//ONEDAL_PY_DECLARE_INSTANTIATOR(init_get_tree_state);
-//
-//ONEDAL_PY_INIT_MODULE(get_tree) {
-//    using namespace decision_forest;
-//    using namespace dal::detail;
-//
-//    PYBIND11_NUMPY_DTYPE(skl_tree_node, left_child, right_child, feature, threshold, impurity, n_node_samples, weighted_n_node_samples);
-//
-//    // TODO:
-//    using task_list = types<task::classification>;//, task::regression>;
-//
-//    ONEDAL_PY_INSTANTIATE(init_get_tree_state, m, task_list);
-//}
+template <typename Task>
+void init_get_tree_state(py::module_& m) {
+    using namespace decision_forest;
+    using model_t = model<Task>;
+    using tree_state_t = tree_state<Task>;
+
+    // TODO:
+    // create one instance for cls and reg.
+    py::class_<tree_state_t>(m, "get_tree_state")
+        .def(py::init([](const model_t& model, size_t iTree, size_t n_classes) {
+            // First count nodes
+            node_count_visitor<Task> ncv;
+            node_visitor<Task, decltype(ncv)> ncv_decorator{ &ncv };
+
+            model.traverse_depth_first(iTree, std::move(ncv_decorator));
+            // then do the final tree traversal
+            to_sklearn_tree_object_visitor<Task> tsv(ncv.depth,
+                                                     ncv.n_nodes,
+                                                     ncv.n_leaf_nodes,
+                                                     n_classes);
+            node_visitor<Task, decltype(tsv)> tsv_decorator{ &tsv };
+            model.traverse_depth_first(iTree, std::move(tsv_decorator));
+            return tree_state_t(tsv);
+        }))
+        .def_readwrite("node_ar", &tree_state_t::node_ar, py::return_value_policy::take_ownership)
+        .def_readwrite("value_ar", &tree_state_t::value_ar, py::return_value_policy::take_ownership)
+        .def_readwrite("max_depth", &tree_state_t::max_depth)
+        .def_readwrite("node_count", &tree_state_t::node_count)
+        .def_readwrite("leaf_count", &tree_state_t::leaf_count)
+        .def_readwrite("class_count", &tree_state_t::class_count);
+}
+
+ONEDAL_PY_TYPE2STR(decision_forest::task::classification, "classification");
+ONEDAL_PY_TYPE2STR(decision_forest::task::regression, "regression");
+
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_get_tree_state);
 
 ONEDAL_PY_INIT_MODULE(get_tree) {
+    using namespace decision_forest;
+    using namespace dal::detail;
+
     PYBIND11_NUMPY_DTYPE(skl_tree_node,
                          left_child,
                          right_child,
@@ -337,32 +335,10 @@ ONEDAL_PY_INIT_MODULE(get_tree) {
                          impurity,
                          n_node_samples,
                          weighted_n_node_samples);
-    // TODO:
-    // template Task = regression and classification
-    py::class_<tree_state>(m, "_get_tree_state")
-        .def(py::init(
-            [](const df::model<df::task::classification>& model, size_t iTree, size_t n_classes) {
-                // First count nodes
-                node_count_visitor<df::task::classification> ncv;
-                node_visitor<df::task::classification, decltype(ncv)> ncv_decorator{ &ncv };
 
-                model.traverse_depth_first(iTree, std::move(ncv_decorator));
+    using task_list = types<task::classification, task::regression>;
+    auto sub = m.def_submodule("get_tree");
 
-                // then do the final tree traversal
-                to_sklearn_tree_object_visitor<df::task::classification> tsv(ncv.depth,
-                                                                             ncv.n_nodes,
-                                                                             ncv.n_leaf_nodes,
-                                                                             n_classes);
-                node_visitor<df::task::classification, decltype(tsv)> tsv_decorator{ &tsv };
-
-                model.traverse_depth_first(iTree, std::move(tsv_decorator));
-                return tree_state(tsv);
-            }))
-        .def_readwrite("node_ar", &tree_state::node_ar, py::return_value_policy::take_ownership)
-        .def_readwrite("value_ar", &tree_state::value_ar, py::return_value_policy::take_ownership)
-        .def_readwrite("max_depth", &tree_state::max_depth)
-        .def_readwrite("node_count", &tree_state::node_count)
-        .def_readwrite("leaf_count", &tree_state::leaf_count)
-        .def_readwrite("class_count", &tree_state::class_count);
+    ONEDAL_PY_INSTANTIATE(init_get_tree_state, sub, task_list);
 }
 } // namespace oneapi::dal::python

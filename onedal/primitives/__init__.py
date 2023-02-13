@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 from .kernel_functions import linear_kernel, rbf_kernel, poly_kernel, sigmoid_kernel
-from .get_tree import getTreeState
+from .get_tree import get_tree_state_cls, get_tree_state_reg
 
-__all__ = ['getTreeState', 'linear_kernel', 'rbf_kernel', 'poly_kernel', 'sigmoid_kernel']
+__all__ = [
+    'get_tree_state_cls',
+    'get_tree_state_reg',
+    'linear_kernel',
+    'rbf_kernel',
+    'poly_kernel',
+    'sigmoid_kernel']
