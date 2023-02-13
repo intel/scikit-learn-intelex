@@ -174,7 +174,7 @@ if daal_check_version((2023, 'P', 100)):
             try:
                 assert_all_finite(X)
                 assert_all_finite(y)
-            except:
+            except BaseException:
                 return False
 
             return True
@@ -203,7 +203,7 @@ if daal_check_version((2023, 'P', 100)):
 
             try:
                 assert_all_finite(*data)
-            except:
+            except BaseException:
                 return False
 
             return True
