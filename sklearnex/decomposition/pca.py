@@ -62,7 +62,6 @@ class PCA(sklearn_PCA):
         self.power_iteration_normalizer = power_iteration_normalizer
         self.random_state = random_state
 
-
     def fit(self, X, y=None):
         self._fit(X)
         return self
