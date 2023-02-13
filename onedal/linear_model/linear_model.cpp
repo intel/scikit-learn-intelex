@@ -17,11 +17,15 @@
 #include "oneapi/dal/algo/linear_regression.hpp"
 
 #include "onedal/common.hpp"
+#include "onedal/version.hpp"
+
 #include <regex>
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
+
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 
 namespace linear_model {
 
@@ -200,8 +204,13 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
     using task_list = types<task::regression>;
     auto sub = m.def_submodule("linear_model");
 
+#ifdef ONEDAL_DATA_PARALLEL
+    ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list_spmd, task_list);
+#else // ONEDAL_DATA_PARALLEL
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
+#endif // ONEDAL_DATA_PARALLEL
 
     ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
@@ -209,5 +218,7 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
 }
 
 ONEDAL_PY_TYPE2STR(dal::linear_regression::task::regression, "regression");
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20230100
 
 } // namespace oneapi::dal::python

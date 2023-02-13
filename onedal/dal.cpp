@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include "onedal/common.hpp"
+#include "onedal/version.hpp"
 
 namespace py = pybind11;
 
@@ -34,7 +35,9 @@ ONEDAL_PY_INIT_MODULE(polynomial_kernel);
 ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 
 /* algorithms */
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 ONEDAL_PY_INIT_MODULE(linear_model);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 ONEDAL_PY_INIT_MODULE(neighbors);
 ONEDAL_PY_INIT_MODULE(svm);
 
@@ -52,7 +55,10 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_polynomial_kernel(m);
     init_sigmoid_kernel(m);
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     init_linear_model(m);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+
     init_neighbors(m);
     init_svm(m);
 }

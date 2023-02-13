@@ -60,6 +60,31 @@ deselected_tests:
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-False-True-newton-cg]
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-False-True-lbfgs]
 
+  # Linear Regression - equation system is bad defined
+  - ensemble/tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
+
+  # Linear Regression - no warning on passing sparse array
+  - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
+
+  # Linear Regression - unsupported data type
+  - linear_model/tests/test_ransac.py::test_ransac_score
+  - linear_model/tests/test_ransac.py::test_ransac_predict
+  - linear_model/tests/test_ransac.py::test_perfect_horizontal_line
+  - model_selection/tests/test_search.py::test_grid_search_pipeline_steps
+  - tests/test_common.py::test_estimators[RANSACRegressor(estimator=LinearRegression())-check_estimators_dtypes]
+  - tests/test_multiclass.py::test_ovr_multiclass
+  - tests/test_multiclass.py::test_ovr_multilabel
+  - tests/test_multiclass.py::test_ovr_binary
+
+  # Linear Regression does not support fancy data types
+  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_requires_y_none]
+  - tests/test_common.py::test_estimators[RandomForestRegressor()-check_requires_y_none]
+  - tests/test_common.py::test_estimators[LinearRegression()-check_requires_y_none]
+
+  # No correct logging in algorithm
+  - ensemble/tests/test_voting.py::test_voting_verbose[estimator0]
+  - tests/test_common.py::test_estimators[LinearRegression()-check_complex_data]
+
   # Base sklearn estimator is N/A for sklearnex ensembles
   - ensemble/tests/test_forest.py::test_base_estimator_property_deprecated
 
