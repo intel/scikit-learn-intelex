@@ -221,7 +221,6 @@ class PCA(sklearn_PCA):
             'sklearn': sklearn_PCA.transform,
         }, X)
 
-
     def transform(self, X):
         if self.svd_solver in ["arpack", "randomized"]:
             return sklearn_PCA.transform(self, X)
@@ -281,10 +280,9 @@ class PCA(sklearn_PCA):
             return (
                 np.dot(
                     X,
-                    np.sqrt(self.explained_variance_[:, np.newaxis]) \
+                    np.sqrt(self.explained_variance_[:, np.newaxis])
                     * self.components_
-                )
-                + self.mean_
+                ) + self.mean_
             )
         else:
             return np.dot(X, self.components_) + self.mean_
