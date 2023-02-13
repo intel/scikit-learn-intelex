@@ -77,19 +77,12 @@ class PCA():
         else:
             self.n_features_ = n_features
         self.n_samples_ = n_samples
-
         if self.n_components < n_sf_min:
-            if self.explained_variance_.shape[0] == n_sf_min:
-                self.noise_variance_ = \
-                    self.explained_variance_[self.n_components:].mean()
-            else:
+            if self.explained_variance_.shape[0] < n_sf_min:
                 resid_var_ = self.variances_.sum()
                 resid_var_ -= self.explained_variance_[:self.n_components].sum()
                 self.noise_variance_ = \
                     resid_var_ / (n_sf_min - self.n_components)
-        else:
-            self.noise_variance_ = 0.
-
         return self
 
     def _create_model(self):

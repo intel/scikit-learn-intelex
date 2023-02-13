@@ -297,7 +297,7 @@ class PCA(sklearn_PCA):
         else:
             self.n_features_ = self._onedal_estimator.n_features_
             n_features = self.n_features_
-
+        n_sf_min = min(self.n_samples_, n_features)
         self.singular_values_ = np.reshape(
             self._onedal_estimator.singular_values_, (-1, )
         )
@@ -325,6 +325,15 @@ class PCA(sklearn_PCA):
                 ratio_cumsum, self.n_components, side='right') + 1
         else:
             self.n_components_ = self._onedal_estimator.n_components_
+        
+        if self.n_components_ < n_sf_min:
+            if self.explained_variance_.shape[0] == n_sf_min:
+                self.noise_variance_ = \
+                    self.explained_variance_[self.n_components_:].mean()
+            else:
+                self.noise_variance_ = self._onedal_estimator.noise_variance_
+        else:
+            self.noise_variance_ = 0.
 
         self.explained_variance_ = self.explained_variance_[:self.n_components_]
         self.explained_variance_ratio_ = \
@@ -332,4 +341,3 @@ class PCA(sklearn_PCA):
         self.components_ = \
             self._onedal_estimator.components_[:self.n_components_]
         self.singular_values_ = self.singular_values_[:self.n_components_]
-        self.noise_variance_ = self._onedal_estimator.noise_variance_
