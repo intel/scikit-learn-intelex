@@ -31,7 +31,7 @@ if daal_check_version((2023, 'P', 100)):
     from scipy.sparse import issparse
 
     from onedal.linear_model import LinearRegression as onedal_LinearRegression
-    from onedal.datatypes import *
+    from onedal.datatypes import (_num_samples, _get_2d_shape)
 
     class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         __doc__ = sklearn_LinearRegression.__doc__

@@ -25,7 +25,8 @@ from ..datatypes import (
     _check_X_y,
     _num_features,
     _check_array,
-    _get_2d_shape)
+    _get_2d_shape,
+    _ceheck_n_features)
 
 from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
