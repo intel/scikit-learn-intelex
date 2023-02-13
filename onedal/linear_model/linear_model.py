@@ -18,10 +18,14 @@ from sklearn.base import BaseEstimator
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from ..datatypes import *
 from numbers import Number
 
-from daal4py.sklearn._utils import *
+from daal4py.sklearn._utils import (get_dtype, make2d)
+from ..datatypes import (
+    _check_X_y,
+    _num_features,
+    _check_array,
+    _get_2d_shape)
 
 from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
