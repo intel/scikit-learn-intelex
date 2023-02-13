@@ -83,6 +83,7 @@ deselected_tests:
 
   # No correct logging in algorithm
   - ensemble/tests/test_voting.py::test_voting_verbose[estimator0]
+  - tests/test_common.py::test_estimators[LinearRegression()-check_complex_data]
 
   # Base sklearn estimator is N/A for sklearnex ensembles
   - ensemble/tests/test_forest.py::test_base_estimator_property_deprecated

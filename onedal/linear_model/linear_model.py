@@ -53,11 +53,14 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             X_loc = np.asarray(X)
 
         dtype = get_dtype(X_loc)
+        if dtype not in [np.float32, np.float64]:
+            X_loc = X_loc.astype(np.float64, copy=self.copy_X)
+            dtype = np.float64
+
         y_loc = np.asarray(y_loc, dtype=dtype)
 
         X_loc, y_loc = _check_X_y(
-            X_loc, y_loc, dtype=[
-                np.float64, np.float32], force_all_finite=True, copy=self.copy_X, accept_2d_y=True)
+            X_loc, y_loc, force_all_finite=True, accept_2d_y=True)
 
         params = self._get_onedal_params(dtype)
 
