@@ -147,7 +147,7 @@ if daal_check_version((2023, 'P', 100)):
 
             assert len(data) == 3
             X, y, sample_weight = data
-            
+
             if sample_weight is not None:
                 return False
 
@@ -205,7 +205,9 @@ if daal_check_version((2023, 'P', 100)):
             return self._onedal_supported(method_name, *data)
 
         def _initialize_onedal_estimator(self):
-            onedal_params = {'fit_intercept': self.fit_intercept, 'copy_X': self.copy_X}
+            onedal_params = {
+                'fit_intercept': self.fit_intercept,
+                'copy_X': self.copy_X}
             self._onedal_estimator = onedal_LinearRegression(**onedal_params)
 
         def _onedal_fit(self, X, y, sample_weight, queue=None):
@@ -223,7 +225,7 @@ if daal_check_version((2023, 'P', 100)):
                 self._initialize_onedal_estimator()
                 self._onedal_estimator.coef_ = self.coef_
                 self._onedal_estimator.intercept_ = self.intercept_
-            
+
             return self._onedal_estimator.predict(X, queue=queue)
 
 else:

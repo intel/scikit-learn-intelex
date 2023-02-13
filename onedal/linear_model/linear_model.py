@@ -55,8 +55,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         dtype = get_dtype(X_loc)
         y_loc = np.asarray(y_loc, dtype=dtype)
 
-        X_loc, y_loc = _check_X_y(X_loc, y_loc, dtype=[np.float64, np.float32],
-                force_all_finite=True, copy=self.copy_X, accept_2d_y=True)
+        X_loc, y_loc = _check_X_y(
+            X_loc, y_loc, dtype=[
+                np.float64, np.float32], force_all_finite=True, copy=self.copy_X, accept_2d_y=True)
 
         params = self._get_onedal_params(dtype)
 
@@ -102,9 +103,13 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             assert n_targets_in == intercept.size
 
         intercept = _check_array(intercept, dtype=[np.float64, np.float32],
-                                                    force_all_finite=True)
-        coefficients = _check_array(coefficients, dtype=[np.float64, np.float32],
-                                                    force_all_finite=True)
+                                 force_all_finite=True)
+        coefficients = _check_array(
+            coefficients,
+            dtype=[
+                np.float64,
+                np.float32],
+            force_all_finite=True)
 
         coefficients, intercept = make2d(coefficients), make2d(intercept)
         coefficients = coefficients.T if n_targets_in == 1 else coefficients
@@ -113,7 +118,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         assert intercept.shape == (n_targets_in, 1)
 
         desired_shape = (n_targets_in, n_features_in + 1)
-        packed_coefficients = np.zeros(desired_shape, dtype = dtype)
+        packed_coefficients = np.zeros(desired_shape, dtype=dtype)
 
         packed_coefficients[:, 1:] = coefficients
         if self.fit_intercept:
@@ -134,7 +139,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             X_loc = X
 
         X_loc = _check_array(X_loc, dtype=[np.float64, np.float32],
-                         force_all_finite=True)
+                             force_all_finite=True)
         _check_n_features(self, X_loc, False)
 
         params = self._get_onedal_params(X_loc)
@@ -164,7 +169,13 @@ class LinearRegression(RegressorMixin, BaseLinearRegression):
     Linear Regression oneDAL implementation.
     """
 
-    def __init__(self, fit_intercept=True, copy_X = False, *, algorithm='norm_eq', **kwargs):
+    def __init__(
+            self,
+            fit_intercept=True,
+            copy_X=False,
+            *,
+            algorithm='norm_eq',
+            **kwargs):
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
 
     def fit(self, X, y, queue=None):
