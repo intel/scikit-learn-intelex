@@ -21,7 +21,7 @@ import numpy as np
 from ..datatypes import *
 from numbers import Number
 
-from daal4py.sklearn._utils import make2d
+from daal4py.sklearn._utils import *
 
 from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
@@ -48,20 +48,22 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     def _fit(self, X, y, module, queue):
         policy = _get_policy(queue, X, y)
 
-        X_loc, y_loc = _check_X_y(X, y, dtype=[np.float64, np.float32],
-            force_all_finite=True, copy=self.copy_X, accept_2d_y=True)
+        X_loc, y_loc = X, y
+        if not isinstance(X, np.ndarray):
+            X_loc = np.asarray(X)
 
-        if not isinstance(X_loc, np.ndarray):
-            X_loc = np.asarray(X_loc)
-            
-        dtype = X_loc.dtype
+        dtype = get_dtype(X_loc)
         y_loc = np.asarray(y_loc, dtype=dtype)
+
+        X_loc, y_loc = _check_X_y(X_loc, y_loc, dtype=[np.float64, np.float32],
+                force_all_finite=True, copy=self.copy_X, accept_2d_y=True)
 
         params = self._get_onedal_params(dtype)
 
         self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
 
-        X_table, y_table = to_table(X_loc), to_table(y_loc)
+        y_loc = y_loc.astype(dtype=np.float64)
+        X_table, y_table = to_table(X_loc, y_loc)
 
         result = module.train(policy, params, X_table, y_table)
 
@@ -70,7 +72,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         coeff = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = coeff[:, 1:], coeff[:, 0]
 
-        if self.coef_.shape[0] == 1 and y.ndim == 1:
+        if self.coef_.shape[0] == 1 and y_loc.ndim == 1:
             self.coef_ = self.coef_.ravel()
             self.intercept_ = self.intercept_[0]
 
@@ -79,8 +81,11 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     def _create_model(self, module):
         m = module.model()
 
-        dtype = self.coef_.dtype
         coefficients = self.coef_
+        if not isinstance(coefficients, np.ndarray):
+            coefficients = np.asarray(coefficients, dtype=dtype)
+        dtype = get_dtype(coefficients)
+
         if coefficients.ndim == 2:
             n_features_in = coefficients.shape[1]
             n_targets_in = coefficients.shape[0]
@@ -92,13 +97,18 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         if isinstance(intercept, Number):
             assert n_targets_in == 1
         else:
+            if not isinstance(intercept, np.ndarray):
+                intercept = np.asarray(intercept, dtype=dtype)
             assert n_targets_in == intercept.size
 
+        intercept = _check_array(intercept, dtype=[np.float64, np.float32],
+                                                    force_all_finite=True)
+        coefficients = _check_array(coefficients, dtype=[np.float64, np.float32],
+                                                    force_all_finite=True)
+
         coefficients, intercept = make2d(coefficients), make2d(intercept)
-        print(coefficients.shape, intercept.shape)
         coefficients = coefficients.T if n_targets_in == 1 else coefficients
-        print(n_features_in, n_targets_in)
-        print(coefficients.shape, intercept.shape)
+
         assert coefficients.shape == (n_targets_in, n_features_in)
         assert intercept.shape == (n_targets_in, 1)
 
@@ -108,7 +118,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         packed_coefficients[:, 1:] = coefficients
         if self.fit_intercept:
             packed_coefficients[:, :0] = intercept
-        print(packed_coefficients)
+
         m.packed_coefficients = to_table(packed_coefficients)
 
         return m
@@ -116,23 +126,34 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
 
-        X = _check_array(X, dtype=[np.float64, np.float32],
-                         force_all_finite=True)
-        _check_n_features(self, X, False)
-
         policy = _get_policy(queue, X)
-        params = self._get_onedal_params(X)
+
+        if isinstance(X, np.ndarray):
+            X_loc = np.asarray(X)
+        else:
+            X_loc = X
+
+        X_loc = _check_array(X_loc, dtype=[np.float64, np.float32],
+                         force_all_finite=True)
+        _check_n_features(self, X_loc, False)
+
+        params = self._get_onedal_params(X_loc)
 
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:
             model = self._create_model(module)
 
-        X_table = to_table(make2d(X))
+        X_table = to_table(make2d(X_loc))
         result = module.infer(policy, params, model, X_table)
         y = from_table(result.responses)
 
-        if y.shape[1] == 1 and self.coef_.ndim == 1:
+        if not isinstance(self.coef_, np.ndarray):
+            coefficients = np.asarray(self.coef_)
+        else:
+            coefficients = self.coef_
+
+        if y.shape[1] == 1 and coefficients.ndim == 1:
             return y.ravel()
         else:
             return y

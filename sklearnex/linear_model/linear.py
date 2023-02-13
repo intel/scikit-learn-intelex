@@ -35,6 +35,7 @@ if daal_check_version((2023, 'P', 100)):
 
     class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         __doc__ = sklearn_LinearRegression.__doc__
+        intercept_, coef_ = None, None
 
         if sklearn_check_version('1.2'):
             _parameter_constraints: dict = {
@@ -182,6 +183,9 @@ if daal_check_version((2023, 'P', 100)):
                 return False
 
             if self.fit_intercept and issparse(self.intercept_):
+                return False
+
+            if not hasattr(self, '_onedal_estimator'):
                 return False
 
             return True

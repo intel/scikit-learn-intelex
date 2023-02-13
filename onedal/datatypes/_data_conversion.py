@@ -15,15 +15,18 @@
 #===============================================================================
 
 from onedal import _backend
-
+from daal4py.sklearn._utils import make2d
 
 def from_table(*args):
     if len(args) == 1:
         return _backend.from_table(args[0])
     return (_backend.from_table(item) for item in args)
 
+def convert_one_to_table(arg):
+    arg = make2d(arg)
+    return _backend.to_table(arg)
 
 def to_table(*args):
     if len(args) == 1:
-        return _backend.to_table(args[0])
-    return (_backend.to_table(item) for item in args)
+        return convert_one_to_table(args[0])
+    return (convert_one_to_table(item) for item in args)
