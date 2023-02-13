@@ -15,19 +15,24 @@
 # limitations under the License.
 #===============================================================================
 
-from sklearn.base import BaseEstimator
 
-from scipy.sparse import issparse
 import numpy as np
-
+from sklearn.utils.extmath import stable_cumsum
 from onedal.datatypes import _check_array
-
 from .._device_offload import dispatch
-from sklearn.utils.validation import check_is_fitted
-from daal4py.sklearn._utils import sklearn_check_version
-
 from onedal.decomposition import PCA as onedal_PCA
 from sklearn.decomposition import PCA as sklearn_PCA
+
+from sklearn.base import BaseEstimator
+from scipy.sparse import issparse
+from sklearn.utils.validation import check_is_fitted
+from daal4py.sklearn._utils import sklearn_check_version
+if sklearn_check_version('0.23'):
+    from sklearn.decomposition._pca import _infer_dimension
+elif sklearn_check_version('0.22'):
+    from sklearn.decomposition._pca import _infer_dimension_
+else:
+    from sklearn.decomposition.pca import _infer_dimension_
 
 
 class PCA(sklearn_PCA):
@@ -72,14 +77,29 @@ class PCA(sklearn_PCA):
             copy=self.copy
         )
         self.mean_ = np.mean(X, axis=0)
+        n_samples, n_features = X.shape
+        n_sf_min = min(n_samples, n_features)
 
         if self.n_components is None:
             if self.svd_solver != "arpack":
-                n_components = min(X.shape)
+                n_components = n_sf_min
             else:
-                n_components = min(X.shape) - 1
+                n_components = n_sf_min - 1
         else:
             n_components = self.n_components
+
+        if n_components == "mle":
+            if n_samples < n_features:
+                raise ValueError(
+                    "n_components='mle' is only supported if"
+                    " n_samples >= n_features"
+                )
+        elif not 0 <= n_components <= n_sf_min:
+            raise ValueError(
+                "n_components=%r must be between 0 and "
+                "min(n_samples, n_features)=%r with "
+                "svd_solver='full'" % (n_components, min(n_samples, n_features))
+            )
 
         # Handle svd_solver
         self._fit_svd_solver = self.svd_solver
@@ -87,7 +107,7 @@ class PCA(sklearn_PCA):
             # Small problem or n_components == 'mle', just call full PCA
             if max(X.shape) <= 500 or n_components == "mle":
                 self._fit_svd_solver = "full"
-            elif 1 <= n_components < 0.8 * min(X.shape):
+            elif 1 <= n_components < 0.8 * n_sf_min:
                 self._fit_svd_solver = "randomized"
             # This is also the case of n_components in (0,1)
             else:
@@ -104,7 +124,7 @@ class PCA(sklearn_PCA):
                 self,
                 X,
                 n_components,
-                self._fit_svd_solver
+                self._fit_svd_solver,
             )
         else:
             raise ValueError(
@@ -137,13 +157,10 @@ class PCA(sklearn_PCA):
                 "Unknown method='{0}'".format(self.svd_solver)
             )
 
-        n_samples, n_features = X.shape
-        n_sf_min = min(n_samples, n_features)
-
         if self.n_components == 'mle' or self.n_components is None:
-            onedal_n_components = n_features
-        elif self.n_components < 1:
-            onedal_n_components = n_sf_min
+            onedal_n_components = min(X.shape)
+        elif 0 < self.n_components < 1:
+            onedal_n_components = min(X.shape)
         else:
             onedal_n_components = self.n_components
 
@@ -179,6 +196,8 @@ class PCA(sklearn_PCA):
         # Get precision using matrix inversion lemma
         components_ = self.components_
         exp_var = self.explained_variance_
+        if self.whiten:
+            components_ = components_ * np.sqrt(exp_var[:, np.newaxis])
         exp_var_diff = np.maximum(exp_var - self.noise_variance_, 0.0)
         precision = np.dot(components_, components_.T) / self.noise_variance_
         precision.flat[:: len(precision) + 1] += 1.0 / exp_var_diff
@@ -202,11 +221,15 @@ class PCA(sklearn_PCA):
             'sklearn': sklearn_PCA.transform,
         }, X)
 
+
     def transform(self, X):
-        X_new = self._sklearnex_transform(X)[:, : self.n_components_]
-        if self.whiten:
-            S_inv = np.diag(1 / self.singular_values_.reshape(-1,))
-            X_new = np.sqrt(X.shape[0] - 1) * np.dot(X_new, S_inv)
+        if self.svd_solver in ["arpack", "randomized"]:
+            return sklearn_PCA.transform(self, X)
+        else:
+            X_new = self._sklearnex_transform(X)[:, : self.n_components_]
+            if self.whiten:
+                S_inv = np.diag(1 / self.singular_values_.reshape(-1,))
+                X_new = np.sqrt(X.shape[0] - 1) * np.dot(X_new, S_inv)
         return X_new
 
     def fit_transform(self, X, y=None):
@@ -220,31 +243,94 @@ class PCA(sklearn_PCA):
 
         Returns
         -------
-        U : ndarray of shape (n_samples, n_components)
+        X_new : ndarray of shape (n_samples, n_components)
             Transformed values of X.
         """
         U, S, Vt = self._fit(X)
         if U is None:
-            U = self.transform(X)
+            X_new = self.transform(X)
         else:
-            U = U[:, : self.n_components_]
+            X_new = U[:, : self.n_components_]
             if self.whiten:
-                U *= np.sqrt(X.shape[0] - 1)
+                X_new *= np.sqrt(X.shape[0] - 1)
             else:
-                U *= S[: self.n_components_]
+                X_new *= S[: self.n_components_]
 
-        return U
+        return X_new
+
+    def inverse_transform(self, X):
+        """Transform data back to its original space.
+        In other words, If `X` is the transformed matrix of `X_original`,
+        then `X_original` would be returned.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_components)
+            New data, where `n_samples` is the number of samples
+            and `n_components` is the number of components.
+        Returns
+        -------
+        X_original array-like of shape (n_samples, n_features)
+            Original data, where `n_samples` is the number of samples
+            and `n_features` is the number of features.
+        Notes
+        -----
+        If whitening is enabled, inverse_transform will compute the
+        exact inverse operation, which includes reversing whitening.
+        """
+        if self.whiten:
+            return (
+                np.dot(
+                    X,
+                    np.sqrt(self.explained_variance_[:, np.newaxis]) \
+                    * self.components_
+                )
+                + self.mean_
+            )
+        else:
+            return np.dot(X, self.components_) + self.mean_
 
     def _save_attributes(self):
-        self.components_ = self._onedal_estimator.components_
-        self.explained_variance_ = self._onedal_estimator.explained_variance_
-        self.explained_variance_ratio_ = \
-            self._onedal_estimator.explained_variance_ratio_
-        self.singular_values_ = self._onedal_estimator.singular_values_
-        self.n_components_ = self._onedal_estimator.n_components_
+        self.n_samples_ = self._onedal_estimator.n_samples_
+
         if sklearn_check_version("1.2"):
             self.n_features_in_ = self._onedal_estimator.n_features_in_
+            n_features = self.n_features_in_
         else:
             self.n_features_ = self._onedal_estimator.n_features_
-        self.n_samples_ = self._onedal_estimator.n_samples_
+            n_features = self.n_features_
+
+        self.singular_values_ = np.reshape(
+            self._onedal_estimator.singular_values_, (-1, )
+        )
+        self.explained_variance_ = np.reshape(
+            self._onedal_estimator.explained_variance_, (-1, )
+        )
+        self.explained_variance_ratio_ = np.reshape(
+            self._onedal_estimator.explained_variance_ratio_, (-1, )
+        )
+
+        if self.n_components is None:
+            self.n_components_ = self._onedal_estimator.n_components_
+        elif self.n_components == 'mle':
+            if sklearn_check_version('0.23'):
+                self.n_components_ = _infer_dimension(
+                    self.explained_variance_, self.n_samples_
+                )
+            else:
+                self.n_components_ = _infer_dimension_(
+                    self.explained_variance_, self.n_samples_, n_features
+                )
+        elif 0 < self.n_components < 1.0:
+            ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
+            self.n_components_ = np.searchsorted(
+                ratio_cumsum, self.n_components, side='right') + 1
+        else:
+            self.n_components_ = self._onedal_estimator.n_components_
+
+        self.explained_variance_ = self.explained_variance_[:self.n_components_]
+        self.explained_variance_ratio_ = \
+            self.explained_variance_ratio_[:self.n_components_]
+        self.components_ = \
+            self._onedal_estimator.components_[:self.n_components_]
+        self.singular_values_ = self.singular_values_[:self.n_components_]
         self.noise_variance_ = self._onedal_estimator.noise_variance_

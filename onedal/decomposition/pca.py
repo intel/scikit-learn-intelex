@@ -62,18 +62,16 @@ class PCA():
             to_table(covariance_matrix)
         )
 
+        self.n_components_ = self.n_components
         self.variances_ = from_table(result.variances)
-        eigenvectors = from_table(result.eigenvectors)
-        eigenvalues = from_table(result.eigenvalues)
-
-        self.components_ = eigenvectors
-        self.explained_variance_ = eigenvalues
-        tot_var = self.explained_variance_.sum()
+        self.components_ = from_table(result.eigenvectors)
+        self.explained_variance_ = from_table(result.eigenvalues)
+        tot_var = covariance_matrix.trace()
         self.explained_variance_ratio_ = self.explained_variance_ / tot_var
         self.singular_values_ = np.sqrt(
             (n_samples - 1) * self.explained_variance_
         )
-        self.n_components_ = self.n_components
+
         if sklearn_check_version("1.2"):
             self.n_features_in_ = n_features
         else:
