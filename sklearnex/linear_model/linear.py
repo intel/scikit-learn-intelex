@@ -104,13 +104,6 @@ if daal_check_version((2023, 'P', 100)):
             self : object
                 Fitted Estimator.
             """
-            if sklearn_check_version(
-                    '1.0') and not sklearn_check_version('1.2'):
-                self._normalize = _deprecate_normalize(
-                    self.normalize,
-                    default=False,
-                    estimator_name=self.__class__.__name__,
-                )
             if sklearn_check_version('1.0'):
                 self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
@@ -212,8 +205,14 @@ if daal_check_version((2023, 'P', 100)):
 
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             assert sample_weight is None
-            if sklearn_check_version("1.2"):
-                self._validate_params()
+
+            if sklearn_check_version(
+                    '1.0') and not sklearn_check_version('1.2'):
+                self._normalize = _deprecate_normalize(
+                    self.normalize,
+                    default=False,
+                    estimator_name=self.__class__.__name__,
+                )
 
             self._initialize_onedal_estimator()
             self._onedal_estimator.fit(X, y, queue=queue)

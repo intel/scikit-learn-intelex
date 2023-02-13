@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import numpy as np
 import warnings
@@ -67,7 +67,8 @@ def _compute_class_weight(class_weight, classes, y):
         if not all(np.in1d(classes, le.classes_)):
             raise ValueError("classes should have valid labels that are in y")
 
-        weight = len(y_) / (len(le.classes_) * np.bincount(y_ind).astype(np.float64))
+        weight = len(y_) / (len(le.classes_) *
+                            np.bincount(y_ind).astype(np.float64))
     else:
         # user-defined dictionary
         weight = np.ones(classes.shape[0], dtype=np.float64, order='C')
@@ -101,9 +102,15 @@ def _validate_targets(y, class_weight, dtype):
 def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
                  copy=False, force_all_finite=True,
                  ensure_2d=True, accept_large_sparse=True):
-    array = check_array(array=array, dtype=dtype, accept_sparse=accept_sparse,
-                        order=order, copy=copy, force_all_finite=force_all_finite,
-                        ensure_2d=ensure_2d, accept_large_sparse=accept_large_sparse)
+    array = check_array(
+        array=array,
+        dtype=dtype,
+        accept_sparse=accept_sparse,
+        order=order,
+        copy=copy,
+        force_all_finite=force_all_finite,
+        ensure_2d=ensure_2d,
+        accept_large_sparse=accept_large_sparse)
 
     if sp.isspmatrix(array):
         return array
@@ -119,9 +126,18 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
     return array
 
 
-def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=False,
-               force_all_finite=True, ensure_2d=True, accept_large_sparse=True, 
-               y_numeric=False, accept_2d_y = False):
+def _check_X_y(
+        X,
+        y,
+        dtype="numeric",
+        accept_sparse=False,
+        order=None,
+        copy=False,
+        force_all_finite=True,
+        ensure_2d=True,
+        accept_large_sparse=True,
+        y_numeric=False,
+        accept_2d_y=False):
     if y is None:
         raise ValueError("y cannot be None")
 
@@ -158,8 +174,14 @@ def _check_classification_targets(y):
 
 
 def _type_of_target(y):
-    valid = (isinstance(y, Sequence) or sp.isspmatrix(y) or hasattr(y, '__array__')) \
-        and not isinstance(y, str)
+    valid = (
+        isinstance(
+            y,
+            Sequence) or sp.isspmatrix(y) or hasattr(
+            y,
+            '__array__')) and not isinstance(
+                y,
+        str)
 
     if not valid:
         raise ValueError('Expected array-like (array or non-string sequence), '
@@ -196,7 +218,8 @@ def _type_of_target(y):
         pass
 
     # Invalid inputs
-    if y.ndim > 2 or (y.dtype == object and len(y) and not isinstance(y.flat[0], str)):
+    if y.ndim > 2 or (y.dtype == object and len(
+            y) and not isinstance(y.flat[0], str)):
         return 'unknown'  # [[[1, 2]]] or [obj_1] and not ["label_1"]
 
     if y.ndim == 2 and y.shape[1] == 0:
@@ -247,7 +270,8 @@ def _is_multilabel(y):
             (y.dtype.kind in 'biu' or _is_integral_float(np.unique(y.data)))
     labels = np.unique(y)
 
-    return len(labels) < 3 and (y.dtype.kind in 'biu' or _is_integral_float(labels))
+    return len(labels) < 3 and (
+        y.dtype.kind in 'biu' or _is_integral_float(labels))
 
 
 def _check_n_features(self, X, reset):
@@ -280,7 +304,7 @@ def _check_n_features(self, X, reset):
             f"is expecting {self.n_features_in_} features as input.")
 
 
-def _num_features(X, fallback_1d = False):
+def _num_features(X, fallback_1d=False):
     type_ = type(X)
     if type_.__module__ == "builtins":
         type_name = type_.__qualname__
@@ -339,8 +363,8 @@ def _num_samples(x):
     if hasattr(x, "shape") and x.shape is not None:
         if len(x.shape) == 0:
             raise TypeError(
-                "Singleton array %r cannot be considered a valid collection." % x
-            )
+                "Singleton array %r cannot be considered a valid collection." %
+                x)
     # Check that shape is returning an integer or default to len
     # Dask dataframes may not return numeric shape[0] value
     if hasattr(x, "shape") and isinstance(x.shape[0], Integral):
@@ -351,7 +375,8 @@ def _num_samples(x):
     except TypeError as type_error:
         raise TypeError(message) from type_error
 
-def _get_2d_shape(x, fallback_1d = True):
+
+def _get_2d_shape(x, fallback_1d=True):
     n_samples = _num_samples(x)
     n_features = _num_features(x, fallback_1d)
     return (n_samples, n_features)
