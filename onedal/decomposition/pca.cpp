@@ -27,7 +27,7 @@ struct params2desc {
         using namespace dal::pca;
 
         const auto n_components = params["n_components"].cast<std::int64_t>();
-        //sign-flip feauture is always used in scikit-learn
+        // sign-flip feature is always used in scikit-learn
         bool is_deterministic = params["is_deterministic"].cast<bool>();
 
         auto desc = dal::pca::descriptor<Float, Method>()

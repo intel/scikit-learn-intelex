@@ -66,6 +66,7 @@ class PCA():
         self.variances_ = from_table(result.variances)
         self.components_ = from_table(result.eigenvectors)
         self.explained_variance_ = from_table(result.eigenvalues)
+        self.explained_variance_ = np.reshape(self.explained_variance_, (-1, ))
         tot_var = covariance_matrix.trace()
         self.explained_variance_ratio_ = self.explained_variance_ / tot_var
         self.singular_values_ = np.sqrt(
@@ -74,13 +75,17 @@ class PCA():
 
         if sklearn_check_version("1.2"):
             self.n_features_in_ = n_features
+        elif sklearn_check_version("0.24"):
+            self.n_features_in_ = n_features
+            self.n_features_ = n_features
         else:
             self.n_features_ = n_features
+
         self.n_samples_ = n_samples
         if self.n_components < n_sf_min:
             if self.explained_variance_.shape[0] < n_sf_min:
-                resid_var_ = self.variances_.sum()
-                resid_var_ -= self.explained_variance_[:self.n_components].sum()
+                resid_var_ = tot_var - \
+                    self.explained_variance_[:self.n_components].sum()
                 self.noise_variance_ = \
                     resid_var_ / (n_sf_min - self.n_components)
         return self

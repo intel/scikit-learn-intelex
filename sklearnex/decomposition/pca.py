@@ -17,6 +17,8 @@
 
 
 import numpy as np
+import numbers
+from math import log
 from sklearn.utils.extmath import stable_cumsum
 from onedal.datatypes import _check_array
 from .._device_offload import dispatch
@@ -26,6 +28,7 @@ from sklearn.decomposition import PCA as sklearn_PCA
 from sklearn.base import BaseEstimator
 from scipy.sparse import issparse
 from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.extmath import fast_logdet
 from daal4py.sklearn._utils import sklearn_check_version
 if sklearn_check_version('0.23'):
     from sklearn.decomposition._pca import _infer_dimension
@@ -58,6 +61,7 @@ class PCA(sklearn_PCA):
         self.n_oversamples = n_oversamples
         self.power_iteration_normalizer = power_iteration_normalizer
         self.random_state = random_state
+
 
     def fit(self, X, y=None):
         self._fit(X)
@@ -100,6 +104,12 @@ class PCA(sklearn_PCA):
                 "min(n_samples, n_features)=%r with "
                 "svd_solver='full'" % (n_components, min(n_samples, n_features))
             )
+        elif n_components >= 1:
+            if not isinstance(n_components, numbers.Integral):
+                raise ValueError("n_components=%r must be of type int "
+                                 "when greater than or equal to 1, "
+                                 "was of type=%r"
+                                 % (n_components, type(n_components)))
 
         # Handle svd_solver
         self._fit_svd_solver = self.svd_solver
@@ -294,19 +304,19 @@ class PCA(sklearn_PCA):
         if sklearn_check_version("1.2"):
             self.n_features_in_ = self._onedal_estimator.n_features_in_
             n_features = self.n_features_in_
+        elif sklearn_check_version("0.24"):
+            self.n_features_ = self._onedal_estimator.n_features_
+            self.n_features_in_ = self._onedal_estimator.n_features_in_
+            n_features = self.n_features_in_
         else:
             self.n_features_ = self._onedal_estimator.n_features_
             n_features = self.n_features_
         n_sf_min = min(self.n_samples_, n_features)
-        self.singular_values_ = np.reshape(
-            self._onedal_estimator.singular_values_, (-1, )
-        )
-        self.explained_variance_ = np.reshape(
-            self._onedal_estimator.explained_variance_, (-1, )
-        )
-        self.explained_variance_ratio_ = np.reshape(
-            self._onedal_estimator.explained_variance_ratio_, (-1, )
-        )
+
+        self.singular_values_ = self._onedal_estimator.singular_values_
+        self.explained_variance_ = self._onedal_estimator.explained_variance_
+        self.explained_variance_ratio_ = \
+            self._onedal_estimator.explained_variance_ratio_
 
         if self.n_components is None:
             self.n_components_ = self._onedal_estimator.n_components_
@@ -341,3 +351,45 @@ class PCA(sklearn_PCA):
         self.components_ = \
             self._onedal_estimator.components_[:self.n_components_]
         self.singular_values_ = self.singular_values_[:self.n_components_]
+
+    def score_samples(self, X):
+        """Return the log-likelihood of each sample.
+        See. "Pattern Recognition and Machine Learning"
+        by C. Bishop, 12.2.1 p. 574
+        or http://www.miketipping.com/papers/met-mppca.pdf
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data.
+        Returns
+        -------
+        ll : ndarray of shape (n_samples,)
+            Log-likelihood of each sample under the current model.
+        """
+        check_is_fitted(self)
+
+        X = self._validate_data(X, dtype=[np.float64, np.float32], reset=False)
+        Xr = X - self.mean_
+        n_features = X.shape[1]
+        precision = self.get_precision()
+        log_like = -0.5 * (Xr * (np.dot(Xr, precision))).sum(axis=1)
+        log_like -= 0.5 * (n_features * log(2.0 * np.pi) - fast_logdet(precision))
+        return log_like
+
+    def score(self, X, y=None):
+        """Return the average log-likelihood of all samples.
+        See. "Pattern Recognition and Machine Learning"
+        by C. Bishop, 12.2.1 p. 574
+        or http://www.miketipping.com/papers/met-mppca.pdf
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data.
+        y : Ignored
+            Ignored.
+        Returns
+        -------
+        ll : float
+            Average log-likelihood of the samples under the current model.
+        """
+        return np.mean(self.score_samples(X))
