@@ -175,8 +175,8 @@ def _check_classification_targets(y):
 
 def _type_of_target(y):
     is_sequence, is_array = isinstance(y, Sequence), hasattr(y, '__array__')
-    is_string, is_spmatrix = not isinstance(y, str), sp.isspmatrix(y)
-    valid = (is_sequence or is_array or is_spmatrix) and not is_string
+    is_not_string, is_spmatrix = not isinstance(y, str), sp.isspmatrix(y)
+    valid = (is_sequence or is_array or is_spmatrix) and is_not_string
 
     if not valid:
         raise ValueError('Expected array-like (array or non-string sequence), '
