@@ -325,7 +325,7 @@ class PCA(sklearn_PCA):
                 ratio_cumsum, self.n_components, side='right') + 1
         else:
             self.n_components_ = self._onedal_estimator.n_components_
-        
+
         if self.n_components_ < n_sf_min:
             if self.explained_variance_.shape[0] == n_sf_min:
                 self.noise_variance_ = \
