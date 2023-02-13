@@ -280,8 +280,9 @@ class PCA(sklearn_PCA):
             return (
                 np.dot(
                     X,
-                    np.sqrt(self.explained_variance_[:, np.newaxis])
-                    * self.components_
+                    np.sqrt(
+                        self.explained_variance_[:, np.newaxis]
+                    ) * self.components_
                 ) + self.mean_
             )
         else:
