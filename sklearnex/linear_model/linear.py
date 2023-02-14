@@ -141,7 +141,7 @@ if daal_check_version((2023, 'P', 100)):
         def _test_finiteness_and_type(self, X_in):
             X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
 
-            if np.iscomplex(X):
+            if np.iscomplex(X.ravel()[0]):
                 return False
 
             try:
