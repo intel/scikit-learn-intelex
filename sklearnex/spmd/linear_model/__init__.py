@@ -14,4 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['linear_model']
+from .linar_model import LinearRegression
+
+__all__ = ['LinearRegression']

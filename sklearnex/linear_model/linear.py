@@ -163,13 +163,6 @@ if daal_check_version((2023, 'P', 100)):
 
             if hasattr(self, 'positive') and self.positive:
                 return False
-<<<<<<< HEAD
-            if len(data) > 1:
-                self._is_sparse = sp.isspmatrix(data[0])
-            return hasattr(self, '_is_sparse') and not self._is_sparse
-        raise RuntimeError(
-            f'Unknown method {method_name} in {self.__class__.__name__}')
-=======
 
             n_samples, n_features = _get_2d_shape(X, fallback_1d=True)
 
@@ -232,7 +225,6 @@ if daal_check_version((2023, 'P', 100)):
 
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             assert sample_weight is None
->>>>>>> dev/linear-regression
 
             if sklearn_check_version(
                     '1.0') and not sklearn_check_version('1.2'):

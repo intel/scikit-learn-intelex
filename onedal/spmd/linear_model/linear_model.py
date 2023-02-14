@@ -14,4 +14,22 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['linear_model']
+from abc import ABC
+
+from ...common._spmd_policy import _get_spmd_policy
+
+from onedal.ensemble import LinearRegression as LinearRegression_Batch
+
+
+class BaseForestSPMD(ABC):
+    def _get_policy(self, queue, *data):
+        return _get_spmd_policy(queue)
+
+
+class RandomForestClassifier(BaseForestSPMD, RandomForestClassifier_Batch):
+    pass
+
+
+class RandomForestRegressor(BaseForestSPMD, RandomForestRegressor_Batch):
+    pass
+    
