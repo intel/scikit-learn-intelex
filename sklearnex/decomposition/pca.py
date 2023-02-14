@@ -223,6 +223,21 @@ class PCA(sklearn_PCA):
         X = _check_array(
             X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
         )
+        if hasattr(self, "n_features_in_"):
+            if self.n_features_in_ != X.shape[1]:
+                raise ValueError(
+                    f"X has {X.shape[1]} features, "
+                    f"but {self.__class__.__name__} expecting "
+                    f"{self.n_features_in_} features"
+                )
+        elif hasattr(self, "n_features_"):
+            if self.n_features_ != X.shape[1]:
+                raise ValueError(
+                    f"X has {X.shape[1]} features, "
+                    f"but {self.__class__.__name__} expecting "
+                    f"{self.n_features_} features"
+                )
+
         # Mean center
         X -= self.mean_
         return dispatch(self, 'decomposition.PCA.transform', {
@@ -367,13 +382,13 @@ class PCA(sklearn_PCA):
         """
         check_is_fitted(self)
 
-        X = self._validate_data(X, dtype=[np.float64, np.float32], reset=False)
+        X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
         Xr = X - self.mean_
         n_features = X.shape[1]
         precision = self.get_precision()
-        log_like = -0.5 * (Xr * (np.dot(Xr, precision))).sum(axis=1)
-        log_like -= 0.5 * (n_features * log(2.0 * np.pi) - fast_logdet(precision))
-        return log_like
+        ll = -0.5 * (Xr * (np.dot(Xr, precision))).sum(axis=1)
+        ll -= 0.5 * (n_features * log(2.0 * np.pi) - fast_logdet(precision))
+        return ll
 
     def score(self, X, y=None):
         """Return the average log-likelihood of all samples.
