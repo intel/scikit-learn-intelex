@@ -218,7 +218,7 @@ class PCA(sklearn_PCA):
         precision.flat[:: len(precision) + 1] += 1.0 / self.noise_variance_
         return precision
 
-    def _sklearnex_transform(self, X):
+    def _onedal_transform(self, X):
         check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
@@ -227,14 +227,14 @@ class PCA(sklearn_PCA):
             if self.n_features_in_ != X.shape[1]:
                 raise ValueError(
                     f"X has {X.shape[1]} features, "
-                    f"but {self.__class__.__name__} expecting "
-                    f"{self.n_features_in_} features"
+                    f"but {self.__class__.__name__} is expecting "
+                    f"{self.n_features_in_} features as input"
                 )
         elif hasattr(self, "n_features_"):
             if self.n_features_ != X.shape[1]:
                 raise ValueError(
                     f"X has {X.shape[1]} features, "
-                    f"but {self.__class__.__name__} expecting "
+                    f"but {self.__class__.__name__} is expecting "
                     f"{self.n_features_} features"
                 )
 
@@ -249,7 +249,7 @@ class PCA(sklearn_PCA):
         if self.svd_solver in ["arpack", "randomized"]:
             return sklearn_PCA.transform(self, X)
         else:
-            X_new = self._sklearnex_transform(X)[:, : self.n_components_]
+            X_new = self._onedal_transform(X)[:, : self.n_components_]
             if self.whiten:
                 S_inv = np.diag(1 / self.singular_values_)
                 X_new = np.sqrt(X.shape[0] - 1) * np.dot(X_new, S_inv)
