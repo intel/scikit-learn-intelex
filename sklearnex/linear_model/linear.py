@@ -138,7 +138,7 @@ if daal_check_version((2023, 'P', 100)):
                 'sklearn': sklearn_LinearRegression.predict,
             }, X)
 
-        def _test_type_and_finiteness(self, X):
+        def _test_type_and_finiteness(self, X_in):
             X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
 
             dtype = X.dtype
