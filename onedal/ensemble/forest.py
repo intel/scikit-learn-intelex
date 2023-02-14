@@ -475,7 +475,8 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
                  voting_mode='weighted',
                  error_metric_mode='none',
                  variable_importance_mode='none',
-                 algorithm='hist'):
+                 algorithm='hist',
+                 **kwargs):
         super().__init__(
             n_estimators=n_estimators,
             criterion=criterion,
@@ -504,6 +505,10 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         self.is_classification = False
 
     def fit(self, X, y, sample_weight=None, queue=None):
+        if sample_weight is not None:
+            if hasattr(sample_weight, '__array__'):
+                sample_weight[sample_weight == 0.0] = 1.0
+            sample_weight = [sample_weight]
         return super()._fit(X, y, sample_weight,
                             _backend.decision_forest.regression, queue)
 
