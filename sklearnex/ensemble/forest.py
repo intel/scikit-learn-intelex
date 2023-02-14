@@ -532,7 +532,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if sklearn_check_version("1.2"):
             self._validate_params()
         else:
-            self._check_parameters(self)
+            self._check_parameters()
         if sample_weight is not None:
             sample_weight = self.check_sample_weight(sample_weight, X)
 
@@ -849,7 +849,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         if sklearn_check_version("1.2"):
             self._validate_params()
         else:
-            self._check_parameters(self)
+            self._check_parameters()
         if sample_weight is not None:
             sample_weight = self.check_sample_weight(sample_weight, X)
         if sklearn_check_version("1.0"):
