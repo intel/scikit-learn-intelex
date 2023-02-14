@@ -88,8 +88,7 @@ if daal_check_version((2023, 'P', 100)):
 
     def run_on_dataset(comm, queue, params, X, y):
         gtr_coef, gtr_err = run_groundtruth(params, X, y)
-        spmd_coef, spmd_err, n_samples = 
-            run_spmd_training(comm, queue, params, X, y)
+        spmd_coef, spmd_err, n_samples = run_spmd_training(comm, queue, params, X, y)
 
         assert_allclose(gtr_coef, spmd_coef)
 
@@ -104,10 +103,6 @@ if daal_check_version((2023, 'P', 100)):
         mse = np.sum(global_mse * global_nss) / np.sum(global_nss)
 
         assert_close(mse, gtr_err)
-
-
-
-
                 
     @pytest.mark.parametrize('queue', get_queues())
     def test_diabetes(queue):
@@ -126,6 +121,4 @@ if daal_check_version((2023, 'P', 100)):
         X, y = make_regression(n_samples = n_samples, 
                                n_features = n_features)
         run_on_dataset(comm, queue, params, X, y)
-
-
 

@@ -21,6 +21,7 @@
 # TODO:
 # Example just for debuging. Will be reimplemented.
 
+import dpctl
 import numpy as np
 from mpi4py import MPI
 import dpctl.tensor as dpt
@@ -46,12 +47,11 @@ def run_lr_regression_with_mpi4py(q):
 
     # onedal interface
     model = LinearRegression(True)
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
+    model.fit(X_train, y_train, q)
+    y_pred = model.predict(X_test, q)
 
     print(mpi_rank, y_pred, y_test)
 
 if __name__ == "__main__":
-    queues = get_queues()
-    for q in queues:
-        run_lr_regression_with_mpi4py(q)
+    q = dpctl.SyclQueue("gpu")
+    run_lr_regression_with_mpi4py(q)

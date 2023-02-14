@@ -138,10 +138,11 @@ if daal_check_version((2023, 'P', 100)):
                 'sklearn': sklearn_LinearRegression.predict,
             }, X)
 
-        def _test_finiteness_and_type(self, X_in):
+        def _test_type_and_finiteness(self, X_in):
             X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
 
-            if np.iscomplex(X.ravel()[0]):
+            dtype = X.dtype
+            if 'complex' in str(type(dtype)):
                 return False
 
             try:
@@ -176,10 +177,10 @@ if daal_check_version((2023, 'P', 100)):
             if not is_good_for_onedal:
                 return False
 
-            if not self._test_finiteness_and_type(X):
+            if not self._test_type_and_finiteness(X):
                 return False
 
-            if not self._test_finiteness_and_type(y):
+            if not self._test_type_and_finiteness(y):
                 return False
 
             return True
@@ -202,7 +203,7 @@ if daal_check_version((2023, 'P', 100)):
             if not hasattr(self, '_onedal_estimator'):
                 return False
 
-            if not self._test_finiteness_and_type(*data):
+            if not self._test_type_and_finiteness(*data):
                 return False
 
             return True
