@@ -138,8 +138,12 @@ if daal_check_version((2023, 'P', 100)):
                 'sklearn': sklearn_LinearRegression.predict,
             }, X)
 
-        def _test_is_finite(self, X_in):
+        def _test_finiteness_and_type(self, X_in):
             X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
+
+            if X.dtype:
+                return False
+
             try:
                 assert_all_finite(X)
             except BaseException:
