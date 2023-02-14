@@ -176,10 +176,10 @@ if daal_check_version((2023, 'P', 100)):
             if not is_good_for_onedal:
                 return False
 
-            if not self._test_is_finite(X):
+            if not self._test_finiteness_and_type(X):
                 return False
 
-            if not self._test_is_finite(y):
+            if not self._test_finiteness_and_type(y):
                 return False
 
             return True
@@ -202,7 +202,7 @@ if daal_check_version((2023, 'P', 100)):
             if not hasattr(self, '_onedal_estimator'):
                 return False
 
-            if not self._test_is_finite(*data):
+            if not self._test_finiteness_and_type(*data):
                 return False
 
             return True
