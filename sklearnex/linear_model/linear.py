@@ -138,6 +138,14 @@ if daal_check_version((2023, 'P', 100)):
                 'sklearn': sklearn_LinearRegression.predict,
             }, X)
 
+        def _test_is_finite(self, X_in):
+            X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
+            try:
+                assert_all_finite(*data)
+            except BaseException:
+                return False
+            return True
+
         def _onedal_fit_supported(self, method_name, *data):
             assert method_name == 'linear_model.LinearRegression.fit'
 
@@ -164,17 +172,10 @@ if daal_check_version((2023, 'P', 100)):
             if not is_good_for_onedal:
                 return False
 
-            if isinstance(X, np.ndarray):
-                if get_dtype(X) not in [np.float32, np.float64]:
-                    return False
-            if isinstance(y, np.ndarray):
-                if get_dtype(y) not in [np.float32, np.float64]:
-                    return False
+            if not self._test_is_finite(X):
+                return False
 
-            try:
-                assert_all_finite(X)
-                assert_all_finite(y)
-            except BaseException:
+            if not self._test_is_finite(y):
                 return False
 
             return True
@@ -194,16 +195,7 @@ if daal_check_version((2023, 'P', 100)):
             if self.fit_intercept and issparse(self.intercept_):
                 return False
 
-            if not hasattr(self, '_onedal_estimator'):
-                return False
-
-            if isinstance(*data, np.ndarray):
-                if get_dtype(*data) not in [np.float32, np.float64]:
-                    return False
-
-            try:
-                assert_all_finite(*data)
-            except BaseException:
+            if not self._test_is_finite(*data):
                 return False
 
             return True

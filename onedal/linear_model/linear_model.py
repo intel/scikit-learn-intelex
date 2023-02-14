@@ -62,7 +62,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             X_loc = X_loc.astype(np.float64, copy=self.copy_X)
             dtype = np.float64
 
-        y_loc = np.asarray(y_loc, dtype=dtype)
+        y_loc = np.asarray(y_loc).astype(dtype=dtype)
 
         X_loc, y_loc = _check_X_y(
             X_loc, y_loc, force_all_finite=True, accept_2d_y=True)
@@ -71,7 +71,6 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
 
-        y_loc = y_loc.astype(dtype=np.float64)
         X_table, y_table = to_table(X_loc, y_loc)
 
         result = module.train(policy, params, X_table, y_table)
