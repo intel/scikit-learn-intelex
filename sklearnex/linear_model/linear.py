@@ -141,7 +141,7 @@ if daal_check_version((2023, 'P', 100)):
         def _test_is_finite(self, X_in):
             X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
             try:
-                assert_all_finite(*data)
+                assert_all_finite(X)
             except BaseException:
                 return False
             return True
