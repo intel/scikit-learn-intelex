@@ -194,8 +194,6 @@ deselected_tests:
   # Linear Regression - minor mismatches in error/warning messages
   - tree/tests/test_export.py::test_precision
   - model_selection/tests/test_search.py::test_grid_search_pipeline_steps
-  - metrics/tests/test_classification.py::test_average_binary_jaccard_score
-  - metrics/tests/test_classification.py::test_prf_no_warnings_if_zero_division_set[1]
   - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
 
   # Different results sklearnex and sklearn linear regression with weights. Need to investigate.

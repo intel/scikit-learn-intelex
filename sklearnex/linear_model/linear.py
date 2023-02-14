@@ -195,6 +195,9 @@ if daal_check_version((2023, 'P', 100)):
             if self.fit_intercept and issparse(self.intercept_):
                 return False
 
+            if not hasattr(self, '_onedal_estimator'):
+                return False
+
             if not self._test_is_finite(*data):
                 return False
 
