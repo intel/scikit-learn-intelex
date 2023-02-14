@@ -138,8 +138,13 @@ if daal_check_version((2023, 'P', 100)):
                 'sklearn': sklearn_LinearRegression.predict,
             }, X)
 
-        def _test_is_finite(self, X_in):
+        def _test_type_and_finiteness(self, X):
             X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
+
+            dtype = X.dtype
+            if 'complex' in str(type(dtype)):
+                return False
+
             try:
                 assert_all_finite(X)
             except BaseException:
@@ -172,10 +177,10 @@ if daal_check_version((2023, 'P', 100)):
             if not is_good_for_onedal:
                 return False
 
-            if not self._test_is_finite(X):
+            if not self._test_type_and_finiteness(X):
                 return False
 
-            if not self._test_is_finite(y):
+            if not self._test_type_and_finiteness(y):
                 return False
 
             return True
@@ -198,7 +203,7 @@ if daal_check_version((2023, 'P', 100)):
             if not hasattr(self, '_onedal_estimator'):
                 return False
 
-            if not self._test_is_finite(*data):
+            if not self._test_type_and_finiteness(*data):
                 return False
 
             return True
