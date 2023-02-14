@@ -17,10 +17,13 @@
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 if daal_check_version((2023, 'P', 100)):
+    import numpy as np
+
     from ._common import BaseLinearRegression
     from .._device_offload import dispatch, wrap_output_data
 
-    from daal4py.sklearn._utils import make2d
+    from ..utils.validation import assert_all_finite
+    from daal4py.sklearn._utils import (get_dtype, make2d)
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
     if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
@@ -135,6 +138,14 @@ if daal_check_version((2023, 'P', 100)):
                 'sklearn': sklearn_LinearRegression.predict,
             }, X)
 
+        def _test_is_finite(self, X_in):
+            X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
+            try:
+                assert_all_finite(X)
+            except BaseException:
+                return False
+            return True
+
         def _onedal_fit_supported(self, method_name, *data):
             assert method_name == 'linear_model.LinearRegression.fit'
 
@@ -168,6 +179,12 @@ if daal_check_version((2023, 'P', 100)):
             if not is_good_for_onedal:
                 return False
 
+            if not self._test_is_finite(X):
+                return False
+
+            if not self._test_is_finite(y):
+                return False
+
             return True
 
         def _onedal_predict_supported(self, method_name, *data):
@@ -186,6 +203,9 @@ if daal_check_version((2023, 'P', 100)):
                 return False
 
             if not hasattr(self, '_onedal_estimator'):
+                return False
+
+            if not self._test_is_finite(*data):
                 return False
 
             return True

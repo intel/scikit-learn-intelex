@@ -48,6 +48,8 @@ def get_patch_map():
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
+        from .linear_model import LinearRegression as LinearRegression_sklearnex
+
         # Scikit-learn* modules
 
         import sklearn as base_module
@@ -86,14 +88,10 @@ def get_patch_map():
         mapping['kneighborsregressor'] = mapping['knn_regressor']
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
 
-        # LinearRegression
-        if daal_check_version((2023, 'P', 100)):
-            from .linear_model import LinearRegression as LinearRegression_sklearnex
-
-            mapping.pop('linear')
-            mapping['linear'] = [[(linear_model_module,
-                                   'LinearRegression',
-                                   LinearRegression_sklearnex), None]]
+        mapping.pop('linear')
+        mapping['linear'] = [[(linear_model_module,
+                               'LinearRegression',
+                               LinearRegression_sklearnex), None]]
 
         # Configs
         mapping['set_config'] = [[(base_module,
