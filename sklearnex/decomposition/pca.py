@@ -227,8 +227,8 @@ class PCA(sklearn_PCA):
             if self.n_features_in_ != X.shape[1]:
                 raise ValueError(
                     f"X has {X.shape[1]} features, "
-                    f"but {self.__class__.__name__} expecting "
-                    f"{self.n_features_in_} features"
+                    f"but {self.__class__.__name__} is expecting "
+                    f"{self.n_features_in_} features as input"
                 )
         elif hasattr(self, "n_features_"):
             if self.n_features_ != X.shape[1]:
