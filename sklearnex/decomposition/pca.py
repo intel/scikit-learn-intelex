@@ -235,7 +235,7 @@ class PCA(sklearn_PCA):
                 raise ValueError(
                     f"X has {X.shape[1]} features, "
                     f"but {self.__class__.__name__} is expecting "
-                    f"{self.n_features_} features"
+                    f"{self.n_features_} features as input"
                 )
 
         # Mean center
