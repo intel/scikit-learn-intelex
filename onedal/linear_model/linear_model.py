@@ -42,6 +42,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         self.algorithm = algorithm
         self.copy_X = copy_X
 
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
+
     def _get_onedal_params(self, dtype=np.float32):
         intercept = 'intercept|' if self.fit_intercept else ''
         return {
@@ -51,7 +54,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         }
 
     def _fit(self, X, y, module, queue):
-        policy = _get_policy(queue, X, y)
+        policy = self._get_policy(queue, X, y)
 
         X_loc, y_loc = X, y
         if not isinstance(X, np.ndarray):
@@ -138,7 +141,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
 
-        policy = _get_policy(queue, X)
+        policy = self._get_policy(queue, X)
 
         if isinstance(X, np.ndarray):
             X_loc = np.asarray(X)
