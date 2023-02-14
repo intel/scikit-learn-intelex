@@ -43,6 +43,7 @@ def split_datasets(n_ranks, *arrays):
     assert int(block * n_ranks) <= n_samples
 
     n_arrays = len(arrays)
+    print(n_arrays)
     results = ([],) * n_arrays
 
     for b in range(n_ranks):
@@ -55,7 +56,7 @@ def split_datasets(n_ranks, *arrays):
             else:
                 last = first + block
 
-            shard = arrays[a][:, first:last]
+            shard = arrays[a][first:last, :]
             results[a].append(shard)
 
     return results
@@ -65,11 +66,9 @@ def run_spmd_training(comm, queue, params, X, y):
     Xs, ys = split_datasets(size, X, y)
 
     Xc, yc = Xs[rank], ys[rank]
-    Xd = dpt.asarray(Xc, usm_type="device", sycl_queue=queue)
-    yd = dpt.asarray(yc, usm_type="device", sycl_queue=queue)
-
+    print(Xc.shape, yc.shape)
     model = LinearRegressionSpmd(**params)
-    model.fit(Xs, ys, queue)
+    model.fit(Xc, yc, queue)
 
     coef = model.coef_
 
@@ -77,8 +76,6 @@ def run_spmd_training(comm, queue, params, X, y):
     Xt, yt = Xs[test], ys[test]
 
     n_samples = Xt.shape[0]
-
-    Xtd = dpt.asarray(Xt, usm_type="device", sycl_queue=queue)
 
     yp = model.predict(Xt, queue)
     error = mean_squared_error(yt, yp)
@@ -119,10 +116,12 @@ def test_generated(queue):
     rank, size = comm.Get_rank(), comm.Get_size()
     n_samples, n_features = size * 10, size * 11
 
+    print(rank, size)
+
     params = { 'fit_intercept' : True }
     X, y = make_regression(n_samples = n_samples, 
                                n_features = n_features)
-    y = y[:, np.newaxis]
+    X, y = np.array(X), np.array(y[:, np.newaxis])
     run_on_dataset(comm, queue, params, X, y)
 
 if __name__ == "__main__":
