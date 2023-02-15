@@ -104,7 +104,7 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
                  copy=False, force_all_finite=True,
                  ensure_2d=True, accept_large_sparse=True):
     if force_all_finite:
-        assert_all_finite(array)
+        assert_all_finite(array.data if sp.issparse(array) else array)
     array = check_array(
         array=array,
         dtype=dtype,
