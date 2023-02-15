@@ -43,6 +43,7 @@ jobs:
           command: |
             . ~/miniconda/etc/profile.d/conda.sh
             conda activate bld
+            export DALROOT=$CONDA_PREFIX
             python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       - run:
           name: Testing sklearn patches with sklearnex
