@@ -22,6 +22,7 @@ if daal_check_version((2023, 'P', 100)):
     from ._common import BaseLinearRegression
     from .._device_offload import dispatch, wrap_output_data
 
+    from ..utils.validation import assert_all_finite
     from daal4py.sklearn._utils import (get_dtype, make2d)
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
@@ -143,6 +144,12 @@ if daal_check_version((2023, 'P', 100)):
             dtype = X.dtype
             if 'complex' in str(type(dtype)):
                 return False
+
+            try:
+                assert_all_finite(X)
+            except BaseException:
+                return False
+            return True
 
         def _onedal_fit_supported(self, method_name, *data):
             assert method_name == 'linear_model.LinearRegression.fit'
