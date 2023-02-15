@@ -251,8 +251,7 @@ class PCA(sklearn_PCA):
         else:
             X_new = self._onedal_transform(X)[:, : self.n_components_]
             if self.whiten:
-                S_inv = np.diag(1 / self.singular_values_)
-                X_new = np.sqrt(X.shape[0] - 1) * np.dot(X_new, S_inv)
+                X_new /= np.sqrt(self.explained_variance_)
         return X_new
 
     def fit_transform(self, X, y=None):
