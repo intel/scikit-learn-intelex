@@ -297,6 +297,12 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         -------
         self : object
         """
+        if not self.bootstrap and self.max_samples is not None:
+            raise ValueError(
+                "`max_sample` cannot be set if `bootstrap=False`. "
+                "Either switch to `bootstrap=True` or set "
+                "`max_sample=None`."
+            )
         # TODO:
         # move this `y` manipulation to `_onedal_fit`.
         y = np.asarray(y)
@@ -586,6 +592,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'random_state': self.random_state,
             'verbose': self.verbose,
             'warm_start': self.warm_start,
+            'error_metric_mode' : 'out_of_bag_error' if self.oob_score else 'none',
+            'variable_importance_mode' : 'mdi',
             'class_weight': self.class_weight,
         }
         self._cached_estimators_ = None
@@ -714,8 +722,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 ccp_alpha=ccp_alpha,
                 max_samples=max_samples
             )
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self.min_impurity_split = None
 
     @property
     def _estimators_(self):
@@ -756,9 +767,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             else:
                 est_i.n_features_ = self.n_features_in_
             est_i.n_outputs_ = self.n_outputs_
-            # TODO:
-            # remove last param `n_classes` for `get_tree_state_reg`.
-            tree_i_state_class = get_tree_state_reg(self._onedal_model, i, 1)
+            tree_i_state_class = get_tree_state_reg(
+                self._onedal_model, i)
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
@@ -878,7 +888,9 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'n_jobs': self.n_jobs,
             'random_state': self.random_state,
             'verbose': self.verbose,
-            'warm_start': self.warm_start
+            'warm_start': self.warm_start,
+            'error_metric_mode' : 'out_of_bag_error' if self.oob_score else 'none',
+            'variable_importance_mode' : 'mdi'
         }
         self._cached_estimators_ = None
         self._onedal_estimator = onedal_RandomForestRegressor(**onedal_params)
@@ -927,6 +939,12 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         -------
         self : object
         """
+        if not self.bootstrap and self.max_samples is not None:
+            raise ValueError(
+                "`max_sample` cannot be set if `bootstrap=False`. "
+                "Either switch to `bootstrap=True` or set "
+                "`max_sample=None`."
+            )
         # We have to get `n_outputs_` before dispatching
         # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
         y = np.asarray(y)

@@ -22,5 +22,5 @@ def get_tree_state_cls(model, iTree, n_classes):
         model, iTree, n_classes)
 
 
-def get_tree_state_reg(model, iTree, n_classes):
-    return _backend.get_tree.regression.get_tree_state(model, iTree, n_classes)
+def get_tree_state_reg(model, iTree):
+    return _backend.get_tree.regression.get_tree_state(model, iTree, 1)

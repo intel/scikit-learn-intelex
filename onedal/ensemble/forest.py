@@ -198,6 +198,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                 ceil(
                     self.min_samples_split *
                     data.shape[0])))
+
         onedal_params = {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
             'method': self.algorithm,
@@ -311,15 +312,12 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         if self.is_classification:
             y = self._validate_targets(y, X.dtype)
 
-        # # TODO:
-        # # add variables assigning for different sklearn versions
-        # self.n_outputs_ = y.shape[1]
-        # self.n_features = X.shape[1]
-        # self.n_features_in_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
+        if not sklearn_check_version('1.0'):
+            self.n_features_ = self.n_features_in_
         # self.n_features_ = self.n_features_in_
         policy = self._get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
-        # self._cached_estimators_ = None
         train_result = module.train(
             policy, params, *to_table(X, y, sample_weight))
         self._onedal_model = train_result.model
