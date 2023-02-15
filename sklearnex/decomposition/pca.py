@@ -382,6 +382,21 @@ class PCA(sklearn_PCA):
         check_is_fitted(self)
 
         X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
+        if hasattr(self, "n_features_in_"):
+            if self.n_features_in_ != X.shape[1]:
+                raise ValueError(
+                    f"X has {X.shape[1]} features, "
+                    f"but {self.__class__.__name__} is expecting "
+                    f"{self.n_features_in_} features as input"
+                )
+        elif hasattr(self, "n_features_"):
+            if self.n_features_ != X.shape[1]:
+                raise ValueError(
+                    f"X has {X.shape[1]} features, "
+                    f"but {self.__class__.__name__} is expecting "
+                    f"{self.n_features_} features as input"
+                )
+
         Xr = X - self.mean_
         n_features = X.shape[1]
         precision = self.get_precision()
