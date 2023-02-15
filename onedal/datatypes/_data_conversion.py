@@ -17,7 +17,6 @@
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
 
-
 def from_table(*args):
     if len(args) == 1:
         return _backend.from_table(args[0])
@@ -33,3 +32,37 @@ def to_table(*args):
     if len(args) == 1:
         return convert_one_to_table(args[0])
     return (convert_one_to_table(item) for item in args)
+
+from onedal import _is_dpc_backend
+
+if _is_dpc_backend: 
+    import numpy as np
+
+    from ..common._spmd_policy import _SPMDDataParallelInteropPolicy
+    from ..common._policy import _HostInteropPolicy, _DataParallelInteropPolicy
+
+    def _convert_to_supported(policy, *data):
+        # CPUs support FP64 by default
+        is_host = isinstance(policy, _HostInteropPolicy)
+        no_dpcpp = not _is_dpc_backend 
+        if is_host or no_dpcpp:
+            return data
+
+        # There is only one option of data parallel policy
+        assert isinstance(policy, _DataParallelInteropPolicy)
+
+        device = policy._queue.sycl_device
+
+        def convert_or_pass(x):
+            if x.dtype is not np.float32:
+                return x.astype(np.float32)
+            else:
+                return x
+
+        if not device.has_aspect_fp64:
+            return (convert_or_pass(x) for x in data)
+        else:
+            return data
+else:
+    def _convert_to_supported(policy, *data):
+        return data

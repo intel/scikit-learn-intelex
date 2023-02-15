@@ -26,7 +26,8 @@ from ..datatypes import (
     _num_features,
     _check_array,
     _get_2d_shape,
-    _check_n_features)
+    _check_n_features,
+    _convert_to_supported)
 
 from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
@@ -74,6 +75,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
 
+        X_loc, y_loc = _convert_to_supported(policy, X_loc, y_loc)
         X_table, y_table = to_table(X_loc, y_loc)
 
         result = module.train(policy, params, X_table, y_table)
@@ -159,6 +161,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         else:
             model = self._create_model(module)
 
+        X_loc = _convert_to_supported(policy, X_loc)
         X_table = to_table(make2d(X_loc))
         result = module.infer(policy, params, model, X_table)
         y = from_table(result.responses)
