@@ -29,13 +29,13 @@
 namespace oneapi::dal::python {
 
 template <typename T>
-static dal::array<T> transfer_to_host(const dal::array<T>& array) {
-    #ifdef ONEDAL_DATA_PARALLEL
+static dal::array<T> transfer_to_host(const dal::array<T> &array) {
+#ifdef ONEDAL_DATA_PARALLEL
     auto opt_queue = array.get_queue();
     if (opt_queue.has_value()) {
         auto device = opt_queue->get_device();
         if (!device.is_cpu()) {
-            const auto* device_data = array.get_data();
+            const auto *device_data = array.get_data();
 
             auto memory_kind = sycl::get_pointer_type(device_data, opt_queue->get_context());
             if (memory_kind == sycl::usm::alloc::unknown) {
@@ -49,7 +49,7 @@ static dal::array<T> transfer_to_host(const dal::array<T>& array) {
             }
         }
     }
-    #endif
+#endif
 
     return array;
 }
@@ -70,11 +70,14 @@ inline dal::homogen_table convert_to_homogen_impl(PyArrayObject *np_data) {
     }
     const auto layout =
         array_is_behaved_F(np_data) ? dal::data_layout::column_major : dal::data_layout::row_major;
-    auto res_table = dal::homogen_table(data_pointer,
-                                        row_count,
-                                        column_count,
-                                        [np_data](const T* data) { Py_DECREF(np_data); },
-                                        layout);
+    auto res_table = dal::homogen_table(
+        data_pointer,
+        row_count,
+        column_count,
+        [np_data](const T *data) {
+            Py_DECREF(np_data);
+        },
+        layout);
 
     // we need to increment the ref-count as we use the input array in-place
     Py_INCREF(np_data);
@@ -115,11 +118,14 @@ inline dal::csr_table convert_to_csr_impl(PyObject *py_data,
     const T *data_pointer = static_cast<T *>(array_data(np_data));
     const std::int64_t data_count = static_cast<std::int64_t>(array_size(np_data, 0));
 
-    auto res_table = dal::csr_table(
-        dal::array<T>(data_pointer, data_count, [np_data](const T* data) { Py_DECREF(np_data); }),
-        column_indices_one_based,
-        row_indices_one_based,
-        column_count);
+    auto res_table = dal::csr_table(dal::array<T>(data_pointer,
+                                                  data_count,
+                                                  [np_data](const T *data) {
+                                                      Py_DECREF(np_data);
+                                                  }),
+                                    column_indices_one_based,
+                                    row_indices_one_based,
+                                    column_count);
 
     // we need to increment the ref-count as we use the input array in-place
     Py_INCREF(np_data);
@@ -216,12 +222,9 @@ static PyObject *convert_to_numpy_impl(const dal::array<T> &array,
     npy_intp dims[2] = { static_cast<npy_intp>(row_count), static_cast<npy_intp>(column_count) };
     auto host_array = transfer_to_host(array);
     host_array.need_mutable_data();
-    auto* bytes = host_array.get_mutable_data();
+    auto *bytes = host_array.get_mutable_data();
 
-    PyObject *obj = PyArray_SimpleNewFromData(size_dims,
-                                              dims,
-                                              NpType,
-                                              static_cast<void *>(bytes));
+    PyObject *obj = PyArray_SimpleNewFromData(size_dims, dims, NpType, static_cast<void *>(bytes));
     if (!obj)
         throw std::invalid_argument("Conversion to numpy array failed");
 
@@ -259,8 +262,8 @@ static PyObject *convert_to_py_from_csr_impl(const csr_table &table) {
     std::uint64_t *column_indices_zero_based_data = nullptr;
     const std::int64_t *column_indices = table.get_column_indices();
     if (table.get_indexing() == sparse_indexing::zero_based) {
-        column_indices_zero_based_data = const_cast<std::uint64_t *>(
-            reinterpret_cast<const std::uint64_t *>(column_indices));
+        column_indices_zero_based_data =
+            const_cast<std::uint64_t *>(reinterpret_cast<const std::uint64_t *>(column_indices));
     }
     else { // table.get_indexing() == sparse_indexing::one_based
         column_indices_zero_based_data =
@@ -269,7 +272,7 @@ static PyObject *convert_to_py_from_csr_impl(const csr_table &table) {
             column_indices_zero_based_data[i] = column_indices[i] - 1;
     }
     auto column_indices_zero_based_array =
-            dal::array<std::uint64_t>::wrap(column_indices_zero_based_data, non_zero_count);
+        dal::array<std::uint64_t>::wrap(column_indices_zero_based_data, non_zero_count);
     PyObject *py_col =
         convert_to_numpy_impl<NPY_UINT64, std::uint64_t>(column_indices_zero_based_array,
                                                          non_zero_count);
