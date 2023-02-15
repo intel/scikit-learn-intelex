@@ -22,10 +22,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 from collections.abc import Sequence
 from numbers import Integral
-try:
-    from daal4py.utils.validation import _daal_assert_all_finite as assert_all_finite
-except ImportError:
-    from sklearn.utils.validation import assert_all_finite
+from daal4py.sklearn.utils.validation import _daal_assert_all_finite as assert_all_finite
 
 
 class DataConversionWarning(UserWarning):
