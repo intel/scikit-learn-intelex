@@ -103,6 +103,14 @@ def _validate_targets(y, class_weight, dtype):
 def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
                  copy=False, force_all_finite=True,
                  ensure_2d=True, accept_large_sparse=True):
+    if force_all_finite:
+        if sp.issparse(array):
+            if hasattr(array, 'data'):
+                assert_all_finite(array.data)
+                force_all_finite = False
+        else:
+            assert_all_finite(array)
+            force_all_finite = False
     array = check_array(
         array=array,
         dtype=dtype,

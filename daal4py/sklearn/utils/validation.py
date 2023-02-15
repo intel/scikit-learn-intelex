@@ -68,7 +68,8 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
     err = msg_err.format(
         input_name, type_err, msg_dtype if msg_dtype is not None else dt)
 
-    _patching_status = PatchingConditionsChain('sklearn.utils.validation._assert_all_finite')
+    _patching_status = PatchingConditionsChain(
+        'sklearn.utils.validation._assert_all_finite')
     _dal_ready = _patching_status.and_conditions([
         (X.ndim in [1, 2], "X has not 1 or 2 dimensions."),
         (not np.any(np.equal(X.shape, 0)), "X shape contains 0."),
