@@ -15,6 +15,8 @@
 # ===============================================================================
 
 import platform
+from daal4py.sklearn._utils import daal_check_version
+
 if "Windows" in platform.system():
     import os
     import sys
@@ -38,3 +40,6 @@ except ImportError:
     _is_dpc_backend = False
 
 __all__ = ['ensemble', 'neighbors', 'primitives', 'svm']
+
+if daal_check_version((2023, 'P', 100)):
+    __all__.append('linear_model')

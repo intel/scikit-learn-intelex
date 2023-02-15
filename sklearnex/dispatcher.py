@@ -51,12 +51,15 @@ def get_patch_map():
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
+        from .linear_model import LinearRegression as LinearRegression_sklearnex
+
         # Scikit-learn* modules
 
         import sklearn as base_module
         import sklearn.ensemble as ensemble_module
         import sklearn.svm as svm_module
         import sklearn.neighbors as neighbors_module
+        import sklearn.linear_model as linear_model_module
 
         # Patch for mapping
         # Algorithms
@@ -102,6 +105,11 @@ def get_patch_map():
         mapping['kneighborsregressor'] = mapping['knn_regressor']
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
 
+        mapping.pop('linear')
+        mapping['linear'] = [[(linear_model_module,
+                               'LinearRegression',
+                               LinearRegression_sklearnex), None]]
+
         # Configs
         mapping['set_config'] = [[(base_module,
                                    'set_config',
@@ -121,8 +129,9 @@ def get_patch_names():
 
 def patch_sklearn(name=None, verbose=True, global_patch=False):
     if not sklearn_check_version('0.22'):
-        raise NotImplementedError("Intel(R) Extension for Scikit-learn* patches apply "
-                                  "for scikit-learn >= 0.22 only ...")
+        raise NotImplementedError(
+            "Intel(R) Extension for Scikit-learn* patches apply "
+            "for scikit-learn >= 0.22 only ...")
 
     if global_patch:
         from sklearnex.glob.dispatcher import patch_sklearn_global

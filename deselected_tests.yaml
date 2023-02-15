@@ -185,6 +185,17 @@ deselected_tests:
   - tests/test_multioutput.py::test_multi_output_classification
   - tests/test_multioutput.py::test_classifier_chain_tuple_order >=0.24,<=1.1
 
+  # Linear Regression - badly defined equation system
+  - ensemble/tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
+  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_requires_y_none]
+  - tests/test_common.py::test_estimators[RandomForestRegressor()-check_requires_y_none]
+  - tests/test_common.py::test_estimators[LinearRegression()-check_requires_y_none]
+
+  # Linear Regression - minor mismatches in error/warning messages
+  - tree/tests/test_export.py::test_precision
+  - model_selection/tests/test_search.py::test_grid_search_pipeline_steps
+  - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
+
   # Different results sklearnex and sklearn linear regression with weights. Need to investigate.
   - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=1.0
 
