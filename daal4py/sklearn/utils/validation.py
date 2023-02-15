@@ -26,7 +26,8 @@ from sklearn.utils.validation import (_num_samples, _ensure_no_complex_data,
                                       _ensure_sparse_format, column_or_1d,
                                       check_consistent_length, _assert_all_finite)
 from sklearn.utils.extmath import _safe_accumulator_op
-from .._utils import is_DataFrame, get_dtype, get_number_of_types, sklearn_check_version
+from .._utils import (is_DataFrame, get_dtype, get_number_of_types,
+                      sklearn_check_version, PatchingConditionsChain)
 
 
 def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
@@ -67,8 +68,13 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
     err = msg_err.format(
         input_name, type_err, msg_dtype if msg_dtype is not None else dt)
 
-    if X.ndim in [1, 2] and not np.any(np.equal(X.shape, 0)) and \
-            dt in [np.float32, np.float64]:
+    _patching_status = PatchingConditionsChain('sklearn.utils.validation._assert_all_finite')
+    _dal_ready = _patching_status.and_conditions([
+        (X.ndim in [1, 2], "X has not 1 or 2 dimensions."),
+        (not np.any(np.equal(X.shape, 0)), "X shape contains 0."),
+        (dt in [np.float32, np.float64], "X dtype is not float32 or float64.")])
+    _patching_status.write_log()
+    if _dal_ready:
         if X.ndim == 1:
             X = X.reshape((-1, 1))
 
