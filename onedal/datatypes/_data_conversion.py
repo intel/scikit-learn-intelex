@@ -49,7 +49,9 @@ if _is_dpc_backend:
             return data
 
         # There is only one option of data parallel policy
-        assert isinstance(policy, _DataParallelInteropPolicy)
+        is_dpcpp_policy = isinstance(policy, _DataParallelInteropPolicy)
+        is_spmd_policy = isinstance(policy, _SPMDDataParallelInteropPolicy)
+        assert is_spmd_policy or is_dpcpp_policy
 
         device = policy._queue.sycl_device
 
