@@ -18,7 +18,6 @@
 
 import numpy as np
 import numbers
-from math import log
 from sklearn.utils.extmath import stable_cumsum
 from onedal.datatypes import _check_array
 from .._device_offload import dispatch
@@ -28,7 +27,6 @@ from sklearn.decomposition import PCA as sklearn_PCA
 from sklearn.base import BaseEstimator
 from scipy.sparse import issparse
 from sklearn.utils.validation import check_is_fitted
-from sklearn.utils.extmath import fast_logdet
 from daal4py.sklearn._utils import sklearn_check_version
 if sklearn_check_version('0.23'):
     from sklearn.decomposition._pca import _infer_dimension
@@ -192,32 +190,6 @@ class PCA(sklearn_PCA):
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue)
 
-    def get_precision(self):
-        n_features = self.components_.shape[1]
-
-        # handle corner cases first
-        if self.n_components_ == 0:
-            return np.eye(n_features) / self.noise_variance_
-
-        if np.isclose(self.noise_variance_, 0.0, atol=0.0):
-            return np.linalg.inv(self.get_covariance())
-
-        # Get precision using matrix inversion lemma
-        components_ = self.components_
-        exp_var = self.explained_variance_
-        if self.whiten:
-            components_ = components_ * np.sqrt(exp_var[:, np.newaxis])
-        exp_var_diff = np.maximum(exp_var - self.noise_variance_, 0.0)
-        precision = np.dot(components_, components_.T) / self.noise_variance_
-        precision.flat[:: len(precision) + 1] += 1.0 / exp_var_diff
-        precision = np.dot(
-            components_.T,
-            np.dot(np.linalg.inv(precision), components_)
-        )
-        precision /= -(self.noise_variance_**2)
-        precision.flat[:: len(precision) + 1] += 1.0 / self.noise_variance_
-        return precision
-
     def _onedal_transform(self, X):
         check_is_fitted(self)
         X = _check_array(
@@ -280,37 +252,6 @@ class PCA(sklearn_PCA):
 
         return X_new
 
-    def inverse_transform(self, X):
-        """Transform data back to its original space.
-        In other words, If `X` is the transformed matrix of `X_original`,
-        then `X_original` would be returned.
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_components)
-            New data, where `n_samples` is the number of samples
-            and `n_components` is the number of components.
-        Returns
-        -------
-        X_original array-like of shape (n_samples, n_features)
-            Original data, where `n_samples` is the number of samples
-            and `n_features` is the number of features.
-        Notes
-        -----
-        If whitening is enabled, inverse_transform will compute the
-        exact inverse operation, which includes reversing whitening.
-        """
-        if self.whiten:
-            return (
-                np.dot(
-                    X,
-                    np.sqrt(
-                        self.explained_variance_[:, np.newaxis]
-                    ) * self.components_
-                ) + self.mean_
-            )
-        else:
-            return np.dot(X, self.components_) + self.mean_
-
     def _save_attributes(self):
         self.n_samples_ = self._onedal_estimator.n_samples_
 
@@ -364,60 +305,3 @@ class PCA(sklearn_PCA):
         self.components_ = \
             self._onedal_estimator.components_[:self.n_components_]
         self.singular_values_ = self.singular_values_[:self.n_components_]
-
-    def score_samples(self, X):
-        """Return the log-likelihood of each sample.
-        See. "Pattern Recognition and Machine Learning"
-        by C. Bishop, 12.2.1 p. 574
-        or http://www.miketipping.com/papers/met-mppca.pdf
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The data.
-        Returns
-        -------
-        ll : ndarray of shape (n_samples,)
-            Log-likelihood of each sample under the current model.
-        """
-        check_is_fitted(self)
-
-        X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
-        if hasattr(self, "n_features_in_"):
-            if self.n_features_in_ != X.shape[1]:
-                raise ValueError(
-                    f"X has {X.shape[1]} features, "
-                    f"but {self.__class__.__name__} is expecting "
-                    f"{self.n_features_in_} features as input"
-                )
-        elif hasattr(self, "n_features_"):
-            if self.n_features_ != X.shape[1]:
-                raise ValueError(
-                    f"X has {X.shape[1]} features, "
-                    f"but {self.__class__.__name__} is expecting "
-                    f"{self.n_features_} features as input"
-                )
-
-        Xr = X - self.mean_
-        n_features = X.shape[1]
-        precision = self.get_precision()
-        ll = -0.5 * (Xr * (np.dot(Xr, precision))).sum(axis=1)
-        ll -= 0.5 * (n_features * log(2.0 * np.pi) - fast_logdet(precision))
-        return ll
-
-    def score(self, X, y=None):
-        """Return the average log-likelihood of all samples.
-        See. "Pattern Recognition and Machine Learning"
-        by C. Bishop, 12.2.1 p. 574
-        or http://www.miketipping.com/papers/met-mppca.pdf
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The data.
-        y : Ignored
-            Ignored.
-        Returns
-        -------
-        ll : float
-            Average log-likelihood of the samples under the current model.
-        """
-        return np.mean(self.score_samples(X))
