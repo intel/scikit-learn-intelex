@@ -15,7 +15,7 @@
 *******************************************************************************/
 
 #include "oneapi/dal/table/homogen.hpp"
-#include "oneapi/dal/table/detail/csr.hpp"
+#include "oneapi/dal/table/csr.hpp"
 
 #include "onedal/datatypes/data_conversion.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
@@ -44,7 +44,7 @@ ONEDAL_PY_INIT_MODULE(table) {
             if (t.get_kind() == homogen_table::kind()) {
                 return "homogen";
             }
-            if (t.get_kind() == detail::csr_table::kind()) {
+            if (t.get_kind() == csr_table::kind()) {
                 return "csr";
             }
             return "unknown";
