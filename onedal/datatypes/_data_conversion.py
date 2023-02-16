@@ -41,7 +41,7 @@ if _is_dpc_backend:
     from ..common._spmd_policy import _SPMDDataParallelInteropPolicy
     from ..common._policy import _HostInteropPolicy, _DataParallelInteropPolicy
 
-    def _convert_to_supported(policy, *data):
+    def _convert_to_supported_impl(policy, *data):
         # CPUs support FP64 by default
         is_host = isinstance(policy, _HostInteropPolicy)
         no_dpcpp = not _is_dpc_backend 
@@ -64,5 +64,15 @@ if _is_dpc_backend:
         else:
             return data
 else:
-    def _convert_to_supported(policy, *data):
+    def _convert_to_supported_impl(policy, *data):
         return data
+
+def _convert_to_supported(policy, *data):
+    res = _convert_to_supported_impl(policy, *data)
+
+    if len(data) == 1:
+        return res[0]
+    else:
+        return res
+
+
