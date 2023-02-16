@@ -123,5 +123,6 @@ if daal_check_version((2023, 'P', 100)):
         model.intercept_ = intp
 
         res = model.predict(X, queue=queue)
-
+        from onedal.datatypes._data_conversion import from_table
+        print(from_table(model._onedal_model.packed_coefficients))
         assert_allclose(gtr, res)

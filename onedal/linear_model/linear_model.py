@@ -116,13 +116,13 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             assert n_targets_in == intercept.size
 
         intercept = _check_array(intercept, dtype=[np.float64, np.float32],
-                                 force_all_finite=True)
+                                 force_all_finite=True, ensure_2d = False)
         coefficients = _check_array(
             coefficients,
             dtype=[
                 np.float64,
                 np.float32],
-            force_all_finite=True)
+            force_all_finite=True, ensure_2d = False)
 
         coefficients, intercept = make2d(coefficients), make2d(intercept)
         coefficients = coefficients.T if n_targets_in == 1 else coefficients
@@ -135,9 +135,11 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         packed_coefficients[:, 1:] = coefficients
         if self.fit_intercept:
-            packed_coefficients[:, :0] = intercept
-
+            packed_coefficients[:, 0][:, np.newaxis] = intercept
+            
         m.packed_coefficients = to_table(packed_coefficients)
+
+        self._onedal_model = m
 
         return m
 
@@ -153,7 +155,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         # Finiteness is checked in the sklearnex wrapper
         X_loc = _check_array(X_loc, dtype=[np.float64, np.float32],
-                             force_all_finite=False)
+                             force_all_finite=False, ensure_2d = False)
         _check_n_features(self, X_loc, False)
 
         params = self._get_onedal_params(X_loc)
