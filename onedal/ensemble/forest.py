@@ -386,6 +386,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
+        params['infer_mode'] = 'class_probabilities'
 
         model = self._onedal_model
         result = module.infer(policy, params, model, to_table(X))

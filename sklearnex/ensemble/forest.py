@@ -39,6 +39,8 @@ from sklearn.utils.validation import (
     check_array,
     _num_samples)
 
+from onedal.datatypes import _check_array, _num_features, _num_samples
+
 from sklearn.utils import (check_random_state, check_array, deprecated)
 
 from sklearn.base import clone
@@ -408,6 +410,18 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         # TODO:
         # _check_proba()
         # self._check_proba()
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        if hasattr(self, 'n_features_in_'):
+            try:
+                num_features = _num_features(X)
+            except TypeError:
+                num_features = _num_samples(X)
+            if num_features != self.n_features_in_:
+                raise ValueError(
+                    (f'X has {num_features} features, '
+                     f'but RandomForestClassifier is expecting '
+                     f'{self.n_features_in_} features as input'))
         return dispatch(self, 'ensemble.RandomForestClassifier.predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_RandomForestClassifier.predict_proba,
@@ -633,6 +647,10 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         return self._onedal_estimator.predict(X, queue=queue)
 
     def _onedal_predict_proba(self, X, queue=None):
+        X = check_array(X, dtype=[np.float64, np.float32])
+        check_is_fitted(self)
+        if sklearn_check_version('0.23'):
+            self._check_n_features(X, reset=False)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         X = check_array(
