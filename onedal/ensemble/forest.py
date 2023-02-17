@@ -373,10 +373,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
-        # if hasattr(self, '_onedal_model'):
-        #     model = self._onedal_model
-        # else:
-        #     model = self._create_model(module)
+
         model = self._onedal_model
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.responses)
@@ -389,10 +386,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
-        # if hasattr(self, '_onedal_model'):
-        #     model = self._onedal_model
-        # else:
-        #     model = self._create_model(module)
+
         model = self._onedal_model
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.probabilities)
