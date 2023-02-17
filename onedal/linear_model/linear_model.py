@@ -64,8 +64,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         y_loc = np.asarray(y_loc).astype(dtype=dtype)
 
+        # Finiteness is checked in the sklearnex wrapper
         X_loc, y_loc = _check_X_y(
-            X_loc, y_loc, force_all_finite=True, accept_2d_y=True)
+            X_loc, y_loc, force_all_finite=False, accept_2d_y=True)
 
         params = self._get_onedal_params(dtype)
 
@@ -145,8 +146,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         else:
             X_loc = X
 
+        # Finiteness is checked in the sklearnex wrapper
         X_loc = _check_array(X_loc, dtype=[np.float64, np.float32],
-                             force_all_finite=True)
+                             force_all_finite=False)
         _check_n_features(self, X_loc, False)
 
         params = self._get_onedal_params(X_loc)
