@@ -77,7 +77,7 @@ class PCA(sklearn_PCA):
             ensure_2d=True,
             copy=self.copy
         )
-        self.mean_ = np.mean(X, axis=0)
+        # self.mean_ = np.mean(X, axis=0)
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
@@ -267,6 +267,7 @@ class PCA(sklearn_PCA):
             n_features = self.n_features_
         n_sf_min = min(self.n_samples_, n_features)
 
+        self.mean_ = self._onedal_estimator.mean_
         self.singular_values_ = self._onedal_estimator.singular_values_
         self.explained_variance_ = self._onedal_estimator.explained_variance_
         self.explained_variance_ratio_ = \

@@ -61,7 +61,8 @@ template <typename Result>
 inline void init_cov_result(pybind11::module_& m) {
     pybind11::class_<Result>(m, "cov_result")
         .def(pybind11::init())
-        .def_property("cov_matrix", &Result::get_cov_matrix, &Result::set_cov_matrix);
+        .def_property("cov_matrix", &Result::get_cov_matrix, &Result::set_cov_matrix)
+        .def_property("means", &Result::get_means, &Result::set_means);
 }
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_cov_result);

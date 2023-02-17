@@ -56,6 +56,7 @@ class PCA():
             to_table(X)
         )
         covariance_matrix = from_table(cov_result.cov_matrix)
+        self.mean_ = from_table(cov_result.means)
         result = _backend.decomposition.dim_reduction.train(
             policy,
             params,
