@@ -52,6 +52,8 @@ from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 
 from scipy import sparse as sp
 
+if sklearn_check_version('1.2'):
+    from sklearn.utils._param_validation import Interval
 
 class BaseRandomForest(ABC):
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
@@ -145,7 +147,7 @@ class BaseRandomForest(ABC):
             raise ValueError("min_bin_size must be integral number but was "
                              "%r" % self.min_bin_size)
 
-    def check_sample_weight(sample_weight, X, dtype=None):
+    def check_sample_weight(self, sample_weight, X, dtype=None):
         n_samples = _num_samples(X)
 
         if dtype is not None and dtype not in [np.float32, np.float64]:
@@ -175,6 +177,13 @@ class BaseRandomForest(ABC):
 
 class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     __doc__ = sklearn_RandomForestClassifier.__doc__
+
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **sklearn_RandomForestClassifier._parameter_constraints,
+            "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
+        }
 
     if sklearn_check_version('1.0'):
         def __init__(
@@ -297,20 +306,47 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         -------
         self : object
         """
+        if sp.issparse(y):
+            raise ValueError(
+                "sparse multilabel-indicator for y is not supported."
+            )
         if not self.bootstrap and self.max_samples is not None:
             raise ValueError(
                 "`max_sample` cannot be set if `bootstrap=False`. "
                 "Either switch to `bootstrap=True` or set "
                 "`max_sample=None`."
             )
-        # TODO:
-        # move this `y` manipulation to `_onedal_fit`.
-        y = np.asarray(y)
-        if y.ndim == 1:
-            # reshape is necessary to preserve the data contiguity against vs
-            # [:, np.newaxis] that does not.
-            y = np.reshape(y, (-1, 1))
-        self.n_outputs_ = y.shape[1]
+        if not self.bootstrap and self.oob_score:
+            raise ValueError("Out of bag estimation only available"
+                             " if bootstrap=True")
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+        else:
+            self._check_parameters(self)
+        if sample_weight is not None:
+            sample_weight = self.check_sample_weight(sample_weight, X)
+
+        _onedal_ready = (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score) and \
+            self.warm_start is False and self.criterion == "gini" and self.ccp_alpha == 0.0 and \
+                not sp.issparse(X)
+        if _onedal_ready:
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=True)
+            X = check_array(X, dtype=[np.float32, np.float64])
+            y = np.asarray(y)
+            y = np.atleast_1d(y)
+            if y.ndim == 2 and y.shape[1] == 1:
+                warnings.warn("A column-vector y was passed when a 1d array was"
+                              " expected. Please change the shape of y to "
+                              "(n_samples,), for example using ravel().",
+                              DataConversionWarning, stacklevel=2)
+            check_consistent_length(X, y)
+            if y.ndim == 1:
+                # reshape is necessary to preserve the data contiguity against vs
+                # [:, np.newaxis] that does not.
+                y = np.reshape(y, (-1, 1))
+            self.n_outputs_ = y.shape[1]
+            _onedal_ready = _onedal_ready and self.n_outputs_ == 1
 
         dispatch(self, 'ensemble.RandomForestClassifier.fit', {
             'onedal': self.__class__._onedal_fit,
@@ -411,7 +447,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if not sklearn_check_version('1.0'):
             params['min_impurity_split'] = self.min_impurity_split
         est = DecisionTreeClassifier(**params)
-        # TODO:
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
@@ -458,102 +493,79 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
-            if not (self.oob_score and daal_check_version(
-                    (2021, 'P', 500)) or not self.oob_score):
-                pass
+            X, y, sample_weight = data
+            if not (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score):
+                return False
+            # if self.oob_score:
+            #     return False
             elif not self.criterion == "gini":
-                pass
-            elif sp.issparse(data[0]):
-                pass
-            elif sp.issparse(data[1]):
-                pass
+                return False
+            elif sp.issparse(X):
+                return False
+            elif sp.issparse(y):
+                return False
+            elif sp.issparse(sample_weight):
+                return False
             elif not self.ccp_alpha == 0.0:
-                pass
-            elif self.warm_start is not False:
-                pass
+                return False
+            elif self.warm_start:
+                return False
             elif not self.n_outputs_ == 1:
-                pass
+                return False
             else:
                 return True
-            return False
         if method_name in ['ensemble.RandomForestClassifier.predict',
                            'ensemble.RandomForestClassifier.predict_proba']:
             if not hasattr(self, '_onedal_model'):
-                pass
+                return False
             elif sp.issparse(data[0]):
-                pass
+                return False
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
-                pass
+                return False
             elif not daal_check_version((2021, 'P', 400)):
-                pass
+                return False
             else:
                 return True
-            return False
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
+        X, y, sample_weight = data
         if method_name == 'ensemble.RandomForestClassifier.fit':
-            if not (self.oob_score and daal_check_version(
-                    (2021, 'P', 500)) or not self.oob_score):
-                pass
+            if not (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score):
+                return False
             elif not self.criterion == "gini":
-                pass
-            elif sp.issparse(data[0]):
-                pass
-            elif sp.issparse(data[1]):
-                pass
+                return False
+            elif sp.issparse(X):
+                return False
+            elif sp.issparse(y):
+                return False
+            elif not sample_weight:  # `sample_weight` is not supported.
+                return False
             elif not self.ccp_alpha == 0.0:
-                pass
-            elif self.warm_start is not False:
-                pass
+                return False
+            elif self.warm_start:
+                return False
             elif not self.n_outputs_ == 1:
-                pass
-            elif not len(data) == 2:  # `sample_weight` is not supported.
-                pass
+                return False
             else:
                 return True
-            return False
         if method_name in ['ensemble.RandomForestClassifier.predict',
                            'ensemble.RandomForestClassifier.predict_proba']:
             if not hasattr(self, '_onedal_model'):
-                pass
-            elif sp.issparse(data[0]):
-                pass
+                return False
+            elif sp.issparse(X):
+                return False
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
-                pass
+                return False
             elif not daal_check_version((2021, 'P', 400)):
-                pass
+                return False
             else:
                 return True
-            return False
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        if sp.issparse(y):
-            raise ValueError(
-                "sparse multilabel-indicator for y is not supported."
-            )
-        if sklearn_check_version("1.2"):
-            self._validate_params()
-        else:
-            self._check_parameters()
-        if sample_weight is not None:
-            sample_weight = self.check_sample_weight(sample_weight, X)
-
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
-        X = check_array(X, dtype=[np.float32, np.float64])
-        y = np.asarray(y)
-        y = np.atleast_1d(y)
-        if y.ndim == 2 and y.shape[1] == 1:
-            warnings.warn("A column-vector y was passed when a 1d array was"
-                          " expected. Please change the shape of y to "
-                          "(n_samples,), for example using ravel().",
-                          DataConversionWarning, stacklevel=2)
-        check_consistent_length(X, y)
-
         y = check_array(y, ensure_2d=False, dtype=None)
         y, expanded_class_weight = self._validate_y_class_weight(y)
         n_classes_ = self.n_classes_[0]
@@ -568,14 +580,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 sample_weight = expanded_class_weight
         if sample_weight is not None:
             sample_weight = [sample_weight]
-
-        rs_ = check_random_state(self.random_state)
-        seed_ = rs_.randint(0, np.iinfo('i').max)
-
+        # rs_ = check_random_state(self.random_state)
+        # seed_ = rs_.randint(0, np.iinfo('i').max)
         if n_classes_ < 2:
             raise ValueError(
                 "Training data only contain information about one class.")
-
         onedal_params = {
             'n_estimators': self.n_estimators,
             'criterion': self.criterion,
@@ -586,6 +595,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'max_features': self.max_features,
             'max_leaf_nodes': self.max_leaf_nodes,
             'min_impurity_decrease': self.min_impurity_decrease,
+            'min_impurity_split': self.min_impurity_split,
             'bootstrap': self.bootstrap,
             'oob_score': self.oob_score,
             'n_jobs': self.n_jobs,
@@ -595,11 +605,12 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'error_metric_mode' : 'out_of_bag_error' if self.oob_score else 'none',
             'variable_importance_mode' : 'mdi',
             'class_weight': self.class_weight,
+            'max_bins': self.max_bins,
+            'min_bin_size': self.min_bin_size
         }
         self._cached_estimators_ = None
         # Compute
         self._onedal_estimator = onedal_RandomForestClassifier(**onedal_params)
-        self._onedal_estimator.classes_ = self.classes_
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
@@ -785,34 +796,75 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
-            if not (self.oob_score and daal_check_version(
-                    (2021, 'P', 500)) or not self.oob_score):
-                pass
-            elif self.warm_start is not False:
-                pass
+            X, y, sample_weight = data
+            if not (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score):
+                return False
+            # if self.oob_score:
+            #     return False
             elif self.criterion not in ["mse", "squared_error"]:
-                pass
+                return False
+            elif sp.issparse(X):
+                return False
+            elif sp.issparse(y):
+                return False
+            elif sp.issparse(sample_weight):
+                return False
             elif not self.ccp_alpha == 0.0:
-                pass
-            elif sp.issparse(data[0]):
-                pass
-            elif sp.issparse(data[1]):
-                pass
+                return False
+            elif self.warm_start:
+                return False
             elif not self.n_outputs_ == 1:
-                pass
+                return False
             else:
                 return True
-            return False
-        if method_name == 'ensemble.RandomForestRegressor.predict':
+        if method_name in ['ensemble.RandomForestRegressor.predict',
+                           'ensemble.RandomForestRegressor.predict_proba']:
             if not hasattr(self, '_onedal_model'):
-                pass
+                return False
             elif sp.issparse(data[0]):
-                pass
+                return False
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
-                pass
+                return False
+            elif not daal_check_version((2021, 'P', 400)):
+                return False
             else:
                 return True
-            return False
+        raise RuntimeError(
+            f'Unknown method {method_name} in {self.__class__.__name__}')
+
+    def _onedal_gpu_supported(self, method_name, *data):
+        X, y, sample_weight = data
+        if method_name == 'ensemble.RandomForestRegressor.fit':
+            if not (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score):
+                return False
+            elif self.criterion not in ["mse", "squared_error"]:
+                return False
+            elif sp.issparse(X):
+                return False
+            elif sp.issparse(y):
+                return False
+            elif not sample_weight:  # `sample_weight` is not supported.
+                return False
+            elif not self.ccp_alpha == 0.0:
+                return False
+            elif self.warm_start:
+                return False
+            elif not self.n_outputs_ == 1:
+                return False
+            else:
+                return True
+        if method_name in ['ensemble.RandomForestRegressor.predict',
+                           'ensemble.RandomForestRegressor.predict_proba']:
+            if not hasattr(self, '_onedal_model'):
+                return False
+            elif sp.issparse(X):
+                return False
+            elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
+                return False
+            elif not daal_check_version((2021, 'P', 400)):
+                return False
+            else:
+                return True
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}')
 

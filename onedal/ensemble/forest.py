@@ -19,6 +19,7 @@ from daal4py.sklearn._utils import (
 from sklearn.ensemble import BaseEnsemble
 from abc import ABCMeta, abstractmethod
 import numbers
+from numbers import Number
 import warnings
 from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import (
@@ -296,26 +297,57 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.classes_ = None
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
+    def _get_sample_weight(self, X, y, sample_weight):
+        n_samples = X.shape[0]
+        dtype = X.dtype
+        if n_samples == 1:
+            raise ValueError("n_samples=1")
+
+        sample_weight = np.asarray([]
+                                   if sample_weight is None
+                                   else sample_weight, dtype=np.float64)
+        # TODO:
+        # sample_weight = _column_or_1d(sample_weight, warn=False)
+        sample_weight = np.ravel(sample_weight)
+
+        sample_weight_count = sample_weight.shape[0]
+        if sample_weight_count != 0 and sample_weight_count != n_samples:
+            raise ValueError("sample_weight and X have incompatible shapes: "
+                             "%r vs %r\n"
+                             "Note: Sparse matrices cannot be indexed w/"
+                             "boolean masks (use `indices=True` in CV)."
+                             % (len(sample_weight), X.shape))
+
+        if sample_weight_count == 0:
+            sample_weight = np.ones(n_samples, dtype=dtype)
+        elif isinstance(sample_weight, Number):
+            sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
+        else:
+            sample_weight = _check_array(
+                sample_weight, accept_sparse=False, ensure_2d=False,
+                dtype=dtype, order="C"
+            )
+            if sample_weight.ndim != 1:
+                raise ValueError("Sample weights must be 1D array or scalar")
+
+            if sample_weight.shape != (n_samples,):
+                raise ValueError("sample_weight.shape == {}, expected {}!"
+                                 .format(sample_weight.shape, (n_samples,)))
+        return sample_weight
+
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
 
     def _fit(self, X, y, sample_weight, module, queue):
-        if sp.issparse(y):
-            raise ValueError(
-                "sparse multilabel-indicator for y is not supported."
-            )
-        # # TODO:
-        # # valid accept_sparse check
         X, y = _check_X_y(
             X, y, dtype=[np.float64, np.float32],
-            force_all_finite=True, accept_sparse=False)
-        if self.is_classification:
-            y = self._validate_targets(y, X.dtype)
+            force_all_finite=True, accept_sparse='csr')
+        y = self._validate_targets(y, X.dtype)
+        sample_weight = self._get_sample_weight(X, y, sample_weight)
 
         self.n_features_in_ = X.shape[1]
         if not sklearn_check_version('1.0'):
             self.n_features_ = self.n_features_in_
-        # self.n_features_ = self.n_features_in_
         policy = self._get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
         train_result = module.train(
@@ -341,10 +373,11 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
-        if hasattr(self, '_onedal_model'):
-            model = self._onedal_model
-        else:
-            model = self._create_model(module)
+        # if hasattr(self, '_onedal_model'):
+        #     model = self._onedal_model
+        # else:
+        #     model = self._create_model(module)
+        model = self._onedal_model
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.responses)
         return y
@@ -356,10 +389,11 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
-        if hasattr(self, '_onedal_model'):
-            model = self._onedal_model
-        else:
-            model = self._create_model(module)
+        # if hasattr(self, '_onedal_model'):
+        #     model = self._onedal_model
+        # else:
+        #     model = self._create_model(module)
+        model = self._onedal_model
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.probabilities)
         return y
