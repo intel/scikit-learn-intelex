@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # System imports
 import os
 import time
 from setuptools import setup
+from scripts.version import get_onedal_version
 from scripts.package_helpers import get_packages_with_tests
 
 sklearnex_version = (os.environ["SKLEARNEX_VERSION"] if "SKLEARNEX_VERSION" in os.environ
                      else time.strftime("%Y%m%d.%H%M%S"))
+
+dal_root = os.environ.get('DALROOT')
+
+if dal_root is None:
+    raise RuntimeError("Not set DALROOT variable")
+
+ONEDAL_VERSION = get_onedal_version(dal_root)
 
 project_urls = {
     "Bug Tracker": "https://github.com/intel/scikit-learn-intelex/issues",
@@ -32,7 +40,6 @@ project_urls = {
 
 with open("README.md", "r", encoding="utf8") as f:
     long_description = f.read()
-
 
 # sklearnex setup
 setup(name="scikit-learn-intelex",

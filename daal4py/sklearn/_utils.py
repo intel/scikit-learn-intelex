@@ -40,6 +40,10 @@ try:
 except (ImportError, ModuleNotFoundError):
     ctx_imported = False
 
+oneapi_is_available = 'daal4py.oneapi' in sys.modules
+if oneapi_is_available:
+    from daal4py.oneapi import _get_device_name_sycl_ctxt
+
 
 def set_idp_sklearn_verbose():
     logLevel = os.environ.get("IDP_SKLEARN_VERBOSE")
@@ -71,12 +75,20 @@ def daal_check_version(rule):
     return True
 
 
+sklearn_versions_map = {}
+
+
 def sklearn_check_version(ver):
+    if ver in sklearn_versions_map.keys():
+        return sklearn_versions_map[ver]
     if hasattr(Version(ver), 'base_version'):
         base_sklearn_version = Version(sklearn_version).base_version
-        return bool(Version(base_sklearn_version) >= Version(ver))
-    # packaging module not available
-    return bool(Version(sklearn_version) >= Version(ver))
+        res = bool(Version(base_sklearn_version) >= Version(ver))
+    else:
+        # packaging module not available
+        res = bool(Version(sklearn_version) >= Version(ver))
+    sklearn_versions_map[ver] = res
+    return res
 
 
 def get_daal_version():
@@ -112,8 +124,7 @@ def make2d(X):
 def get_patch_message(s):
     if s == "daal":
         message = "running accelerated version on "
-        if 'daal4py.oneapi' in sys.modules:
-            from daal4py.oneapi import _get_device_name_sycl_ctxt
+        if oneapi_is_available:
             dev = _get_device_name_sycl_ctxt()
             if dev == 'cpu' or dev is None:
                 message += 'CPU'
@@ -145,7 +156,6 @@ def is_in_sycl_ctxt():
 
 def is_DataFrame(X):
     if pandas_is_imported:
-        from pandas import DataFrame
         return isinstance(X, DataFrame)
     else:
         return False

@@ -43,6 +43,9 @@ from sklearn.exceptions import DataConversionWarning
 from math import ceil
 from scipy import sparse as sp
 
+if sklearn_check_version('1.2'):
+    from sklearn.utils._param_validation import Interval
+
 
 def _to_absolute_max_features(
     max_features,
@@ -53,24 +56,27 @@ def _to_absolute_max_features(
         return n_features
     if isinstance(max_features, str):
         if max_features == "auto":
-            if sklearn_check_version('1.2'):
-                warnings.warn(
-                    "`max_features='auto'` has been deprecated in 1.1 "
-                    "and will be removed in 1.3. To keep the past behaviour, "
-                    "explicitly set `max_features=1.0` or remove this "
-                    "parameter as it is also the default value for "
-                    "RandomForestRegressors and ExtraTreesRegressors.",
-                    FutureWarning,
-                )
-            return max(1, int(np.sqrt(n_features))
-                       ) if is_classification else n_features
+            if not sklearn_check_version('1.3'):
+                if sklearn_check_version('1.1'):
+                    warnings.warn(
+                        "`max_features='auto'` has been deprecated in 1.1 "
+                        "and will be removed in 1.3. To keep the past behaviour, "
+                        "explicitly set `max_features=1.0` or remove this "
+                        "parameter as it is also the default value for "
+                        "RandomForestRegressors and ExtraTreesRegressors.",
+                        FutureWarning,
+                    )
+                return max(1, int(np.sqrt(n_features))
+                           ) if is_classification else n_features
         if max_features == 'sqrt':
             return max(1, int(np.sqrt(n_features)))
         if max_features == "log2":
             return max(1, int(np.log2(n_features)))
+        allowed_string_values = '"sqrt" or "log2"' if sklearn_check_version('1.3') \
+            else '"auto", "sqrt" or "log2"'
         raise ValueError(
             'Invalid value for max_features. Allowed string '
-            'values are "auto", "sqrt" or "log2".')
+            f'values are {allowed_string_values}.')
     if isinstance(max_features, (numbers.Integral, np.integer)):
         return max_features
     if max_features > 0.0:
@@ -86,6 +92,10 @@ def _get_n_samples_bootstrap(n_samples, max_samples):
         if not sklearn_check_version('1.2'):
             if not (1 <= max_samples <= n_samples):
                 msg = "`max_samples` must be in range 1 to {} but got value {}"
+                raise ValueError(msg.format(n_samples, max_samples))
+        else:
+            if max_samples > n_samples:
+                msg = "`max_samples` must be <= n_samples={} but got value {}"
                 raise ValueError(msg.format(n_samples, max_samples))
         return float(max_samples / n_samples)
 
@@ -199,14 +209,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     # create algorithm
     X_fptype = getFPType(X)
 
-    # limitation on the number of stream for mt2203 is 6024
-    # more details here:
-    # https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mt2203.html
-    max_stream_count = 6024
-    if self.n_estimators <= max_stream_count:
-        daal_engine = daal4py.engines_mt2203(seed=seed_, fptype=X_fptype)
-    else:
-        daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
+    daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
 
     features_per_node_ = _to_absolute_max_features(
         self.max_features, X.shape[1], is_classification=True)
@@ -215,6 +218,13 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
         n_samples=X.shape[0],
         max_samples=self.max_samples
     )
+
+    if not self.bootstrap and self.max_samples is not None:
+        raise ValueError(
+            "`max_sample` cannot be set if `bootstrap=False`. "
+            "Either switch to `bootstrap=True` or set "
+            "`max_sample=None`."
+        )
 
     if not self.bootstrap and self.oob_score:
         raise ValueError("Out of bag estimation only available"
@@ -360,6 +370,8 @@ def _fit_classifier(self, X, y, sample_weight=None):
     if _dal_ready:
         _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
 
+        if sklearn_check_version("1.2"):
+            self._estimator = DecisionTreeClassifier()
         self.estimators_ = self._estimators_
 
         # Decapsulate classes_ attributes
@@ -377,6 +389,13 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
 
     rs_ = check_random_state(self.random_state)
 
+    if not self.bootstrap and self.max_samples is not None:
+        raise ValueError(
+            "`max_sample` cannot be set if `bootstrap=False`. "
+            "Either switch to `bootstrap=True` or set "
+            "`max_sample=None`."
+        )
+
     if not self.bootstrap and self.oob_score:
         raise ValueError("Out of bag estimation only available"
                          " if bootstrap=True")
@@ -384,14 +403,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     X_fptype = getFPType(X)
     seed_ = rs_.randint(0, np.iinfo('i').max)
 
-    # limitation on the number of stream for mt2203 is 6024
-    # more details here:
-    # https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mt2203.html
-    max_stream_count = 6024
-    if self.n_estimators <= max_stream_count:
-        daal_engine = daal4py.engines_mt2203(seed=seed_, fptype=X_fptype)
-    else:
-        daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
+    daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
 
     _featuresPerNode = _to_absolute_max_features(
         self.max_features, X.shape[1], is_classification=False)
@@ -402,6 +414,8 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     )
 
     if sample_weight is not None:
+        if hasattr(sample_weight, '__array__'):
+            sample_weight[sample_weight == 0.0] = 1.0
         sample_weight = [sample_weight]
 
     # create algorithm
@@ -518,6 +532,8 @@ def _fit_regressor(self, X, y, sample_weight=None):
     if _dal_ready:
         _daal_fit_regressor(self, X, y, sample_weight=sample_weight)
 
+        if sklearn_check_version("1.2"):
+            self._estimator = DecisionTreeRegressor()
         self.estimators_ = self._estimators_
         return self
     return super(RandomForestRegressor, self).fit(
@@ -570,7 +586,9 @@ class RandomForestClassifier(RandomForestClassifier_original):
 
     if sklearn_check_version('1.2'):
         _parameter_constraints: dict = {
-            **RandomForestClassifier_original._parameter_constraints
+            **RandomForestClassifier_original._parameter_constraints,
+            "maxBins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "minBinSize": [Interval(numbers.Integral, 1, None, closed="left")]
         }
 
     if sklearn_check_version('1.0'):
@@ -581,7 +599,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
                      min_samples_split=2,
                      min_samples_leaf=1,
                      min_weight_fraction_leaf=0.,
-                     max_features="auto",
+                     max_features='sqrt' if sklearn_check_version('1.1') else 'auto',
                      max_leaf_nodes=None,
                      min_impurity_decrease=0.,
                      bootstrap=True,
@@ -618,7 +636,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
-            self._estimator = DecisionTreeClassifier()
     else:
         def __init__(self,
                      n_estimators=100,
@@ -665,7 +682,6 @@ class RandomForestClassifier(RandomForestClassifier_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
-            self._estimator = DecisionTreeClassifier()
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
@@ -885,7 +901,9 @@ class RandomForestRegressor(RandomForestRegressor_original):
 
     if sklearn_check_version('1.2'):
         _parameter_constraints: dict = {
-            **RandomForestRegressor_original._parameter_constraints
+            **RandomForestRegressor_original._parameter_constraints,
+            "maxBins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "minBinSize": [Interval(numbers.Integral, 1, None, closed="left")]
         }
 
     if sklearn_check_version('1.0'):
@@ -896,7 +914,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
                      min_samples_split=2,
                      min_samples_leaf=1,
                      min_weight_fraction_leaf=0.,
-                     max_features="auto",
+                     max_features=1.0 if sklearn_check_version('1.1') else 'auto',
                      max_leaf_nodes=None,
                      min_impurity_decrease=0.,
                      bootstrap=True,
@@ -931,7 +949,6 @@ class RandomForestRegressor(RandomForestRegressor_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
-            self._estimator = DecisionTreeRegressor()
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -976,7 +993,6 @@ class RandomForestRegressor(RandomForestRegressor_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
-            self._estimator = DecisionTreeRegressor()
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
