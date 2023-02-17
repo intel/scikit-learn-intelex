@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include "onedal/common.hpp"
+#include "onedal/version.hpp"
 
 namespace py = pybind11;
 
@@ -37,7 +38,11 @@ ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 ONEDAL_PY_INIT_MODULE(ensemble);
 //ONEDAL_PY_INIT_MODULE(mpi_primitives);
 ONEDAL_PY_INIT_MODULE(svm);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+ONEDAL_PY_INIT_MODULE(linear_model);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 ONEDAL_PY_INIT_MODULE(neighbors);
+ONEDAL_PY_INIT_MODULE(svm);
 
 #ifdef ONEDAL_DATA_PARALLEL
 PYBIND11_MODULE(_onedal_py_dpc, m) {
@@ -55,8 +60,12 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_sigmoid_kernel(m);
 
     init_ensemble(m);
-    init_svm(m);
+
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    init_linear_model(m);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     init_neighbors(m);
+    init_svm(m);
 }
 
 } // namespace oneapi::dal::python
