@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -70,12 +69,14 @@ def get_patch_map():
         mapping.pop('randomforestregressor')
         mapping['random_forest_classifier'] = [[(ensemble_module,
                                                  'RandomForestClassifier',
-                                                 RandomForestClassifier_sklearnex),
-                                                 None]]
+                                                  RandomForestClassifier_sklearnex),
+                                                  None]]
         mapping['random_forest_regressor'] = [[(ensemble_module,
                                                 'RandomForestRegressor',
-                                                RandomForestRegressor_sklearnex),
-                                                None]]
+                                                 RandomForestRegressor_sklearnex),
+                                                 None]]
+        mapping['randomrorestclassifier'] = mapping['random_forest_classifier']
+        mapping['randomforestregressor'] = mapping['random_forest_regressor']
 
         # SVM
         mapping.pop('svm')

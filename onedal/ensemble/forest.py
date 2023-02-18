@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
-# TODO:
-# refactoring imports
+from daal4py.sklearn._utils import (
+    daal_check_version, sklearn_check_version)
 from sklearn.ensemble import BaseEnsemble
 from abc import ABCMeta, abstractmethod
 import numbers
+from numbers import Number
 import warnings
 from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import (compute_sample_weight, check_array, deprecated)
-from sklearn.utils.validation import (_num_samples)
-from sklearn.utils import (check_random_state, check_array, deprecated)
+from sklearn.utils import (
+    check_random_state,
+    compute_sample_weight,
+    check_array,
+    deprecated)
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
@@ -51,13 +54,33 @@ from sklearn.tree import DecisionTreeClassifier
 
 class BaseForest(BaseEnsemble, metaclass=ABCMeta):
     @abstractmethod
-    def __init__(self,
-                 n_estimators, criterion, max_depth, min_samples_split, min_samples_leaf,
-                 min_weight_fraction_leaf, max_features, max_leaf_nodes,
-                 min_impurity_decrease, min_impurity_split, bootstrap, oob_score,
-                 random_state, warm_start, class_weight, ccp_alpha, max_samples,
-                 max_bins, min_bin_size, infer_mode, voting_mode, error_metric_mode,
-                 variable_importance_mode, algorithm, **kwargs):
+    def __init__(
+            self,
+            n_estimators,
+            criterion,
+            max_depth,
+            min_samples_split,
+            min_samples_leaf,
+            min_weight_fraction_leaf,
+            max_features,
+            max_leaf_nodes,
+            min_impurity_decrease,
+            min_impurity_split,
+            bootstrap,
+            oob_score,
+            random_state,
+            warm_start,
+            class_weight,
+            ccp_alpha,
+            max_samples,
+            max_bins,
+            min_bin_size,
+            infer_mode,
+            voting_mode,
+            error_metric_mode,
+            variable_importance_mode,
+            algorithm,
+            **kwargs):
         self.n_estimators = n_estimators
         self.bootstrap = bootstrap
         self.oob_score = oob_score
@@ -83,42 +106,63 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.variable_importance_mode = variable_importance_mode
         self.algorithm = algorithm
 
-    def _to_absolute_max_features(self, max_features, n_features, is_classification=False):
+    def _to_absolute_max_features(self, max_features, n_features,
+                                  is_classification=False):
         if max_features is None:
             return n_features
-        elif isinstance(max_features, str):
+        if isinstance(max_features, str):
             if max_features == "auto":
-                return max(1, int(np.sqrt(n_features))
-                           ) if is_classification else n_features
-            elif max_features == 'sqrt':
+                if not sklearn_check_version('1.3'):
+                    if sklearn_check_version('1.1'):
+                        warnings.warn(
+                            "`max_features='auto'` has been deprecated in 1.1 "
+                            "and will be removed in 1.3. To keep the past behaviour, "
+                            "explicitly set `max_features=1.0` or remove this "
+                            "parameter as it is also the default value for "
+                            "RandomForestRegressors and ExtraTreesRegressors.", FutureWarning, )
+                    return max(1, int(np.sqrt(n_features))
+                               ) if is_classification else n_features
+            if max_features == 'sqrt':
                 return max(1, int(np.sqrt(n_features)))
-            elif max_features == "log2":
+            if max_features == "log2":
                 return max(1, int(np.log2(n_features)))
-            else:
-                raise ValueError(
-                    'Invalid value for max_features. Allowed string '
-                    'values are "auto", "sqrt" or "log2".')
-        elif isinstance(max_features, (numbers.Integral, np.integer)):
+            allowed_string_values = '"sqrt" or "log2"' if sklearn_check_version(
+                '1.3') else '"auto", "sqrt" or "log2"'
+            raise ValueError(
+                'Invalid value for max_features. Allowed string '
+                f'values are {allowed_string_values}.')
+        if isinstance(max_features, (numbers.Integral, np.integer)):
             return max_features
-        else:
-            if max_features > 0.0:
-                return max(1, int(max_features * n_features))
-            return 0
+        if max_features > 0.0:
+            return max(1, int(max_features * n_features))
+        return 0
 
     def _get_observations_per_tree_fraction(self, n_samples, max_samples):
         if max_samples is None:
             return 1.
 
         if isinstance(max_samples, numbers.Integral):
-            if not (1 <= max_samples <= n_samples):
-                msg = "`max_samples` must be in range 1 to {} but got value {}"
-                raise ValueError(msg.format(n_samples, max_samples))
+            if not sklearn_check_version('1.2'):
+                if not (1 <= max_samples <= n_samples):
+                    msg = "`max_samples` must be in range 1 to {} but got value {}"
+                    raise ValueError(msg.format(n_samples, max_samples))
+            else:
+                if max_samples > n_samples:
+                    msg = "`max_samples` must be <= n_samples={} but got value {}"
+                    raise ValueError(msg.format(n_samples, max_samples))
             return float(max_samples / n_samples)
 
         if isinstance(max_samples, numbers.Real):
-            if not (0 < float(max_samples) <= 1):
-                msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
-                raise ValueError(msg.format(max_samples))
+            if sklearn_check_version('1.2'):
+                pass
+            elif sklearn_check_version('1.0'):
+                if not (0 < float(max_samples) <= 1):
+                    msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
+                    raise ValueError(msg.format(max_samples))
+            else:
+                if not (0 < float(max_samples) < 1):
+                    msg = "`max_samples` must be in range (0, 1) but got value {}"
+                    raise ValueError(msg.format(max_samples))
             return float(max_samples)
 
         msg = "`max_samples` should be int or float, but got type '{}'"
@@ -130,18 +174,32 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         observations_per_tree_fraction = self._get_observations_per_tree_fraction(
             n_samples=data.shape[0], max_samples=self.max_samples)
+        if not self.bootstrap and self.max_samples is not None:
+            raise ValueError(
+                "`max_sample` cannot be set if `bootstrap=False`. "
+                "Either switch to `bootstrap=True` or set "
+                "`max_sample=None`."
+            )
+        if not self.bootstrap and self.oob_score:
+            raise ValueError("Out of bag estimation only available"
+                             " if bootstrap=True")
 
-        min_observations_in_leaf_node = (self.min_samples_leaf
-                                         if isinstance(
-                                             self.min_samples_leaf, numbers.Integral)
-                                         else int(ceil(
-                                             self.min_samples_leaf * data.shape[0])))
+        min_observations_in_leaf_node = (
+            self.min_samples_leaf if isinstance(
+                self.min_samples_leaf,
+                numbers.Integral) else int(
+                ceil(
+                    self.min_samples_leaf *
+                    data.shape[0])))
 
-        min_observations_in_split_node = (self.min_samples_split
-                                          if isinstance(
-                                              self.min_samples_split, numbers.Integral)
-                                          else int(ceil(
-                                              self.min_samples_split * data.shape[0])))
+        min_observations_in_split_node = (
+            self.min_samples_split if isinstance(
+                self.min_samples_split,
+                numbers.Integral) else int(
+                ceil(
+                    self.min_samples_split *
+                    data.shape[0])))
+
         onedal_params = {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
             'method': self.algorithm,
@@ -166,7 +224,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             'variable_importance_mode': self.variable_importance_mode,
         }
         if self.is_classification:
-            onedal_params['class_count'] = 0 if self.classes_ is None else len(self.classes_)
+            onedal_params['class_count'] = 0 if self.classes_ is None else len(
+                self.classes_)
         return onedal_params
 
     def _check_parameters(self):
@@ -209,11 +268,15 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                              "or equal to 0")
         if self.max_leaf_nodes is not None:
             if not isinstance(self.max_leaf_nodes, numbers.Integral):
-                raise ValueError("max_leaf_nodes must be integral number but was "
-                                 "%r" % self.max_leaf_nodes)
+                raise ValueError(
+                    "max_leaf_nodes must be integral number but was "
+                    "%r" %
+                    self.max_leaf_nodes)
             if self.max_leaf_nodes < 2:
-                raise ValueError(("max_leaf_nodes {0} must be either None "
-                                  "or larger than 1").format(self.max_leaf_nodes))
+                raise ValueError(
+                    ("max_leaf_nodes {0} must be either None "
+                     "or larger than 1").format(
+                        self.max_leaf_nodes))
         if isinstance(self.max_bins, numbers.Integral):
             if not 2 <= self.max_bins:
                 raise ValueError("max_bins must be at least 2, got %s"
@@ -234,43 +297,61 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.classes_ = None
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
+    def _get_sample_weight(self, X, y, sample_weight):
+        n_samples = X.shape[0]
+        dtype = X.dtype
+        if n_samples == 1:
+            raise ValueError("n_samples=1")
+
+        sample_weight = np.asarray([]
+                                   if sample_weight is None
+                                   else sample_weight, dtype=np.float64)
+        # TODO:
+        # sample_weight = _column_or_1d(sample_weight, warn=False)
+        sample_weight = np.ravel(sample_weight)
+
+        sample_weight_count = sample_weight.shape[0]
+        if sample_weight_count != 0 and sample_weight_count != n_samples:
+            raise ValueError("sample_weight and X have incompatible shapes: "
+                             "%r vs %r\n"
+                             "Note: Sparse matrices cannot be indexed w/"
+                             "boolean masks (use `indices=True` in CV)."
+                             % (len(sample_weight), X.shape))
+
+        if sample_weight_count == 0:
+            sample_weight = np.ones(n_samples, dtype=dtype)
+        elif isinstance(sample_weight, Number):
+            sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
+        else:
+            sample_weight = _check_array(
+                sample_weight, accept_sparse=False, ensure_2d=False,
+                dtype=dtype, order="C"
+            )
+            if sample_weight.ndim != 1:
+                raise ValueError("Sample weights must be 1D array or scalar")
+
+            if sample_weight.shape != (n_samples,):
+                raise ValueError("sample_weight.shape == {}, expected {}!"
+                                 .format(sample_weight.shape, (n_samples,)))
+        return sample_weight
+
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
 
     def _fit(self, X, y, sample_weight, module, queue):
-        if sp.issparse(y):
-            raise ValueError(
-                "sparse multilabel-indicator for y is not supported."
-                )
-        self._check_parameters()
-        # TODO:
-        # valid accept_sparse check
         X, y = _check_X_y(
             X, y, dtype=[np.float64, np.float32],
-            force_all_finite=True, accept_sparse=['csr', 'csc', 'coo'],)
-        if self.is_classification:
-            y = self._validate_targets(y, X.dtype)
-        if y.ndim == 2 and y.shape[1] == 1:
-            warnings.warn(
-                "A column-vector y was passed when a 1d array was"
-                " expected. Please change the shape of y to "
-                "(n_samples,), for example using ravel().",
-                DataConversionWarning, stacklevel=2)
+            force_all_finite=True, accept_sparse='csr')
+        y = self._validate_targets(y, X.dtype)
+        sample_weight = self._get_sample_weight(X, y, sample_weight)
 
-        if y.ndim == 1:
-            # reshape is necessary to preserve the data contiguity against vs
-            # [:, np.newaxis] that does not.
-            y = np.reshape(y, (-1, 1))
-        # TODO:
-        # add variables assigning for different sklearn versions
-        self.n_outputs_ = y.shape[1]
-        self.n_features = X.shape[1]
         self.n_features_in_ = X.shape[1]
-        self.n_features_ = self.n_features_in_
+        if not sklearn_check_version('1.0'):
+            self.n_features_ = self.n_features_in_
         policy = self._get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
-        self._cached_estimators_ = None
-        train_result = module.train(policy, params, *to_table(X, y, sample_weight))
+        train_result = module.train(
+            policy, params, *to_table(X, y, sample_weight))
         self._onedal_model = train_result.model
 
         if self.oob_score:
@@ -280,21 +361,19 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # self.oob_score_ = from_table(train_result.oob_err_per_observation)
         return self
 
+    def _create_model(self, module):
+        # TODO:
+        # upate error msg.
+        raise ValueError('Creating model is not supported.')
+
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
-                             force_all_finite=True, accept_sparse='csr')
+                         force_all_finite=True, accept_sparse=False)
         _check_n_features(self, X, False)
-        # TODO:
-        # sparse check
-        # if self._sparse and not sp.isspmatrix(X):
         policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
-        # TODO:
-        # if hasattr(self, '_onedal_model'):
-        #     model = self._onedal_model
-        # else:
-        #     model = self._create_model(module)
+
         model = self._onedal_model
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.responses)
@@ -303,18 +382,12 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
     def _predict_proba(self, X, module, queue):
         _check_is_fitted(self)
         X = _check_array(X, dtype=[np.float64, np.float32],
-                             force_all_finite=True, accept_sparse='csr')
+                         force_all_finite=True, accept_sparse=False)
         _check_n_features(self, X, False)
-        # TODO:
-        # sparse check
-        # if self._sparse and not sp.isspmatrix(X):
         policy = self._get_policy(queue, X)
         params = self._get_onedal_params(X)
-        # TODO:
-        # if hasattr(self, '_onedal_model'):
-        #     model = self._onedal_model
-        # else:
-        #     model = self._create_model(module)
+        params['infer_mode'] = 'class_probabilities'
+
         model = self._onedal_model
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.probabilities)
@@ -349,16 +422,30 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
                  algorithm='hist',
                  **kwargs):
         super().__init__(
-            n_estimators=n_estimators, criterion=criterion, max_depth=max_depth,
-            min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
-            min_weight_fraction_leaf=min_weight_fraction_leaf, max_features=max_features,
-            max_leaf_nodes=max_leaf_nodes, min_impurity_decrease=min_impurity_decrease,
-            min_impurity_split=min_impurity_split, bootstrap=bootstrap,
-            oob_score=oob_score, random_state=random_state, warm_start=warm_start,
-            class_weight=class_weight, ccp_alpha=ccp_alpha, max_samples=max_samples,
-            max_bins=max_bins, min_bin_size=min_bin_size, infer_mode=infer_mode,
-            voting_mode=voting_mode, error_metric_mode=error_metric_mode,
-            variable_importance_mode=variable_importance_mode, algorithm=algorithm)
+            n_estimators=n_estimators,
+            criterion=criterion,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_weight_fraction_leaf=min_weight_fraction_leaf,
+            max_features=max_features,
+            max_leaf_nodes=max_leaf_nodes,
+            min_impurity_decrease=min_impurity_decrease,
+            min_impurity_split=min_impurity_split,
+            bootstrap=bootstrap,
+            oob_score=oob_score,
+            random_state=random_state,
+            warm_start=warm_start,
+            class_weight=class_weight,
+            ccp_alpha=ccp_alpha,
+            max_samples=max_samples,
+            max_bins=max_bins,
+            min_bin_size=min_bin_size,
+            infer_mode=infer_mode,
+            voting_mode=voting_mode,
+            error_metric_mode=error_metric_mode,
+            variable_importance_mode=variable_importance_mode,
+            algorithm=algorithm)
         self.is_classification = True
 
     def _validate_targets(self, y, dtype):
@@ -367,19 +454,24 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         # Decapsulate classes_ attributes
         # TODO:
         # align with `n_classes_` and `classes_` attr with daal4py implementations.
-        if hasattr(self, "classes_"):
-            self.n_classes_ = self.classes_
+        # if hasattr(self, "classes_"):
+        #    self.n_classes_ = self.classes_
         return y
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(X, y, sample_weight,
-                            _backend.decision_forest.classification, queue)
+                         _backend.decision_forest.classification, queue)
 
     def predict(self, X, queue=None):
         pred = super()._predict(X, _backend.decision_forest.classification, queue)
-        if len(self.classes_) == 2:
-            pred = pred.ravel()
-        return self.classes_.take(np.asarray(pred, dtype=np.intp)).ravel()
+        # if len(self.classes_) == 2:
+        #     pred = pred.ravel()
+        # return self.classes_.take(np.asarray(pred, dtype=np.intp)).ravel()
+        return np.take(
+            self.classes_,
+            pred.ravel().astype(
+                np.int64,
+                casting='unsafe'))
 
     def predict_proba(self, X, queue=None):
         return super()._predict_proba(X, _backend.decision_forest.classification, queue)
@@ -410,21 +502,40 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
                  voting_mode='weighted',
                  error_metric_mode='none',
                  variable_importance_mode='none',
-                 algorithm='hist'):
+                 algorithm='hist',
+                 **kwargs):
         super().__init__(
-            n_estimators=n_estimators, criterion=criterion, max_depth=max_depth,
-            min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
-            min_weight_fraction_leaf=min_weight_fraction_leaf, max_features=max_features,
-            max_leaf_nodes=max_leaf_nodes, min_impurity_decrease=min_impurity_decrease,
-            min_impurity_split=min_impurity_split, bootstrap=bootstrap,
-            oob_score=oob_score, random_state=random_state, warm_start=warm_start,
-            class_weight=class_weight, ccp_alpha=ccp_alpha, max_samples=max_samples,
-            max_bins=max_bins, min_bin_size=min_bin_size, infer_mode=infer_mode,
-            voting_mode=voting_mode, error_metric_mode=error_metric_mode,
-            variable_importance_mode=variable_importance_mode, algorithm=algorithm)
+            n_estimators=n_estimators,
+            criterion=criterion,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_weight_fraction_leaf=min_weight_fraction_leaf,
+            max_features=max_features,
+            max_leaf_nodes=max_leaf_nodes,
+            min_impurity_decrease=min_impurity_decrease,
+            min_impurity_split=min_impurity_split,
+            bootstrap=bootstrap,
+            oob_score=oob_score,
+            random_state=random_state,
+            warm_start=warm_start,
+            class_weight=class_weight,
+            ccp_alpha=ccp_alpha,
+            max_samples=max_samples,
+            max_bins=max_bins,
+            min_bin_size=min_bin_size,
+            infer_mode=infer_mode,
+            voting_mode=voting_mode,
+            error_metric_mode=error_metric_mode,
+            variable_importance_mode=variable_importance_mode,
+            algorithm=algorithm)
         self.is_classification = False
 
     def fit(self, X, y, sample_weight=None, queue=None):
+        if sample_weight is not None:
+            if hasattr(sample_weight, '__array__'):
+                sample_weight[sample_weight == 0.0] = 1.0
+            sample_weight = [sample_weight]
         return super()._fit(X, y, sample_weight,
                             _backend.decision_forest.regression, queue)
 

@@ -40,12 +40,12 @@ struct method2t {
     Ops ops;
 };
 
-std::vector<std::string> split(const std::string & str) {
-    const std::int64_t size = str.size();
+std::vector<std::string> split(const std::string& str) {
+    const size_t size = str.size();
     std::vector<std::string> result;
 
-    std::int64_t start = 0;
-    for (std::int64_t i = 0; i < size; ++i) {
+    size_t start = 0;
+    for (size_t i = 0; i < size; ++i) {
         if (str[i] == '|') {
             result.emplace_back(str.substr(start, i - start));
             start = i + 1;
@@ -63,10 +63,10 @@ auto get_error_metric_mode(const py::dict& params) {
 
     auto mode = params["error_metric_mode"].cast<std::string>();
     auto modes = split(mode);
-    const std::int64_t modes_num = modes.size();
+    const size_t modes_num = modes.size();
 
     error_metric_mode result_mode = error_metric_mode::none;
-    for (std::int64_t i = 0; i < modes_num; ++i) {
+    for (size_t i = 0; i < modes_num; ++i) {
         if (modes[i] == "none")
             result_mode |= error_metric_mode::none;
         else if (modes[i] == "out_of_bag_error")
@@ -84,7 +84,7 @@ auto get_infer_mode(const py::dict& params) {
 
     auto mode = params["infer_mode"].cast<std::string>();
     auto modes = split(mode);
-    const std::int64_t modes_num = modes.size();
+    const size_t modes_num = modes.size();
 
     infer_mode result_mode;
     if (modes[0] == "class_responses")
@@ -94,7 +94,7 @@ auto get_infer_mode(const py::dict& params) {
     else
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(mode);
 
-    for (std::int64_t i = 1; i < modes_num; ++i) {
+    for (size_t i = 1; i < modes_num; ++i) {
         if (modes[i] == "class_responses")
             result_mode |= infer_mode::class_responses;
         else if (modes[i] == "class_probabilities")
@@ -148,15 +148,20 @@ struct params2desc {
         constexpr bool is_reg = std::is_same_v<Task, task::regression>;
 
         auto desc = descriptor<Float, Method, Task>{}
-                        .set_observations_per_tree_fraction(params["observations_per_tree_fraction"].cast<double>())
+                        .set_observations_per_tree_fraction(
+                            params["observations_per_tree_fraction"].cast<double>())
                         .set_impurity_threshold(params["impurity_threshold"].cast<double>())
-                        .set_min_weight_fraction_in_leaf_node(params["min_weight_fraction_in_leaf_node"].cast<double>())
-                        .set_min_impurity_decrease_in_split_node(params["min_impurity_decrease_in_split_node"].cast<double>())
+                        .set_min_weight_fraction_in_leaf_node(
+                            params["min_weight_fraction_in_leaf_node"].cast<double>())
+                        .set_min_impurity_decrease_in_split_node(
+                            params["min_impurity_decrease_in_split_node"].cast<double>())
                         .set_tree_count(params["tree_count"].cast<std::int64_t>())
                         .set_features_per_node(params["features_per_node"].cast<std::int64_t>())
                         .set_max_tree_depth(params["max_tree_depth"].cast<std::int64_t>())
-                        .set_min_observations_in_leaf_node(params["min_observations_in_leaf_node"].cast<std::int64_t>())
-                        .set_min_observations_in_split_node(params["min_observations_in_split_node"].cast<std::int64_t>())
+                        .set_min_observations_in_leaf_node(
+                            params["min_observations_in_leaf_node"].cast<std::int64_t>())
+                        .set_min_observations_in_split_node(
+                            params["min_observations_in_split_node"].cast<std::int64_t>())
                         .set_max_leaf_nodes(params["max_leaf_nodes"].cast<std::int64_t>())
                         .set_max_bins(params["max_bins"].cast<std::int64_t>())
                         .set_min_bin_size(params["min_bin_size"].cast<std::int64_t>())
@@ -186,8 +191,8 @@ void init_train_ops(py::module_& m) {
               using namespace decision_forest;
               using input_t = train_input<Task>;
 
-              train_ops ops(policy, input_t{ data, responses, weights }, params2desc{} );
-              return fptype2t { method2t { Task{}, ops } }(params);
+              train_ops ops(policy, input_t{ data, responses, weights }, params2desc{});
+              return fptype2t{ method2t{ Task{}, ops } }(params);
           });
 }
 
@@ -201,8 +206,8 @@ void init_infer_ops(py::module_& m) {
               using namespace decision_forest;
               using input_t = infer_input<Task>;
 
-              infer_ops ops(policy, input_t{ model, data }, params2desc{} );
-              return fptype2t { method2t { Task{}, ops } }(params);
+              infer_ops ops(policy, input_t{ model, data }, params2desc{});
+              return fptype2t{ method2t{ Task{}, ops } }(params);
           });
 }
 
@@ -211,17 +216,16 @@ void init_model(py::module_& m) {
     using namespace decision_forest;
     using model_t = model<Task>;
 
-    auto cls =
-        py::class_<model_t>(m, "model")
-            .def(py::init())
-            .def(py::pickle(
-                [](const model_t& m) {
-                    return serialize(m);
-                },
-                [](const py::bytes& bytes) {
-                    return deserialize<model_t>(bytes);
-                }))
-            .def_property_readonly("tree_count", &model_t::get_tree_count);
+    auto cls = py::class_<model_t>(m, "model")
+                   .def(py::init())
+                   .def(py::pickle(
+                       [](const model_t& m) {
+                           return serialize(m);
+                       },
+                       [](const py::bytes& bytes) {
+                           return deserialize<model_t>(bytes);
+                       }))
+                   .def_property_readonly("tree_count", &model_t::get_tree_count);
 
     constexpr bool is_classification = std::is_same_v<Task, task::classification>;
 
@@ -294,4 +298,3 @@ ONEDAL_PY_INIT_MODULE(ensemble) {
 }
 
 } // namespace oneapi::dal::python
-
