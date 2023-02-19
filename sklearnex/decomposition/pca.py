@@ -15,25 +15,25 @@
 # limitations under the License.
 #===============================================================================
 
-
 import numpy as np
 import numbers
-from sklearn.utils.extmath import stable_cumsum
-from onedal.datatypes import _check_array
-from .._device_offload import dispatch
-from onedal.decomposition import PCA as onedal_PCA
-from sklearn.decomposition import PCA as sklearn_PCA
-
-from sklearn.base import BaseEstimator
+from math import sqrt
 from scipy.sparse import issparse
-from sklearn.utils.validation import check_is_fitted
+
+from .._device_offload import dispatch
 from daal4py.sklearn._utils import sklearn_check_version
+
+from sklearn.utils.extmath import stable_cumsum
+from sklearn.utils import check_array
+from sklearn.base import BaseEstimator
+from sklearn.utils.validation import check_is_fitted
 if sklearn_check_version('0.23'):
     from sklearn.decomposition._pca import _infer_dimension
-elif sklearn_check_version('0.22'):
-    from sklearn.decomposition._pca import _infer_dimension_
 else:
-    from sklearn.decomposition.pca import _infer_dimension_
+    from sklearn.decomposition._pca import _infer_dimension_
+
+from onedal.decomposition import PCA as onedal_PCA
+from sklearn.decomposition import PCA as sklearn_PCA
 
 
 class PCA(sklearn_PCA):
@@ -71,21 +71,21 @@ class PCA(sklearn_PCA):
                 "TruncatedSVD for a possible alternative."
             )
 
-        X = _check_array(
+        X = check_array(
             X,
             dtype=[np.float64, np.float32],
             ensure_2d=True,
-            copy=self.copy
+            copy=False
         )
-        # self.mean_ = np.mean(X, axis=0)
+
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
         if self.n_components is None:
-            if self.svd_solver != "arpack":
-                n_components = n_sf_min
-            else:
+            if self.svd_solver == "arpack":
                 n_components = n_sf_min - 1
+            else:
+                n_components = n_sf_min
         else:
             n_components = self.n_components
 
@@ -192,9 +192,14 @@ class PCA(sklearn_PCA):
 
     def _onedal_transform(self, X):
         check_is_fitted(self)
-        X = _check_array(
-            X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+
+        X = check_array(
+            X,
+            dtype=[np.float64, np.float32],
+            ensure_2d=True,
+            copy=False
         )
+
         if hasattr(self, "n_features_in_"):
             if self.n_features_in_ != X.shape[1]:
                 raise ValueError(
@@ -246,7 +251,7 @@ class PCA(sklearn_PCA):
         else:
             X_new = U[:, : self.n_components_]
             if self.whiten:
-                X_new *= np.sqrt(X.shape[0] - 1)
+                X_new *= sqrt(X.shape[0] - 1)
             else:
                 X_new *= S[: self.n_components_]
 

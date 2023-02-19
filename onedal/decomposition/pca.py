@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #===============================================================================
-from onedal import _backend
 
+from onedal import _backend
 from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
 from daal4py.sklearn._utils import sklearn_check_version
