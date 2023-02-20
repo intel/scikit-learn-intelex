@@ -41,11 +41,11 @@ struct method2t {
 };
 
 std::vector<std::string> split(const std::string& str) {
-    const size_t size = str.size();
+    const auto size = str.size();
     std::vector<std::string> result;
 
-    size_t start = 0;
-    for (size_t i = 0; i < size; ++i) {
+    std::size_t start = 0;
+    for (std::size_t i = 0; i < size; ++i) {
         if (str[i] == '|') {
             result.emplace_back(str.substr(start, i - start));
             start = i + 1;
@@ -63,10 +63,10 @@ auto get_error_metric_mode(const py::dict& params) {
 
     auto mode = params["error_metric_mode"].cast<std::string>();
     auto modes = split(mode);
-    const size_t modes_num = modes.size();
+    const auto modes_num = modes.size();
 
     error_metric_mode result_mode = error_metric_mode::none;
-    for (size_t i = 0; i < modes_num; ++i) {
+    for (std::size_t i = 0; i < modes_num; ++i) {
         if (modes[i] == "none")
             result_mode |= error_metric_mode::none;
         else if (modes[i] == "out_of_bag_error")
@@ -84,17 +84,10 @@ auto get_infer_mode(const py::dict& params) {
 
     auto mode = params["infer_mode"].cast<std::string>();
     auto modes = split(mode);
-    const size_t modes_num = modes.size();
+    const auto modes_num = modes.size();
 
-    infer_mode result_mode;
-    if (modes[0] == "class_responses")
-        result_mode = infer_mode::class_responses;
-    else if (modes[0] == "class_probabilities")
-        result_mode = infer_mode::class_probabilities;
-    else
-        ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(mode);
-
-    for (size_t i = 1; i < modes_num; ++i) {
+    infer_mode result_mode{};
+    for (std::size_t i = 0; i < modes_num; ++i) {
         if (modes[i] == "class_responses")
             result_mode |= infer_mode::class_responses;
         else if (modes[i] == "class_probabilities")

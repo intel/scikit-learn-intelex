@@ -75,6 +75,7 @@ class BaseRandomForest(ABC):
         # update for regression
         if self.oob_score:
             self.oob_score_ = self._onedal_estimator.oob_score_
+            self.oob_prediction_ = self._onedal_estimator.oob_prediction_
         return self
 
     # TODO:

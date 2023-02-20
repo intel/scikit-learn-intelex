@@ -169,11 +169,13 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         raise TypeError(msg.format(type(max_samples)))
 
     def _get_onedal_params(self, data):
+        n_samples, n_features = data.shape
         features_per_node = self._to_absolute_max_features(
-            self.max_features, data.shape[1], self.is_classification)
+            self.max_features, n_features, self.is_classification)
 
-        observations_per_tree_fraction = self._get_observations_per_tree_fraction(
-            n_samples=data.shape[0], max_samples=self.max_samples)
+        observations_per_tree_fraction = self._get_observations_per_tree_fraction(n_samples=n_samples, max_samples=self.max_samples)
+        observations_per_tree_fraction = observations_per_tree_fraction if bool(self.bootstrap) else 1.
+
         if not self.bootstrap and self.max_samples is not None:
             raise ValueError(
                 "`max_sample` cannot be set if `bootstrap=False`. "
@@ -190,7 +192,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                 numbers.Integral) else int(
                 ceil(
                     self.min_samples_leaf *
-                    data.shape[0])))
+                    n_samples)))
 
         min_observations_in_split_node = (
             self.min_samples_split if isinstance(
@@ -198,7 +200,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                 numbers.Integral) else int(
                 ceil(
                     self.min_samples_split *
-                    data.shape[0])))
+                    n_samples)))
 
         onedal_params = {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
@@ -356,20 +358,14 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         if self.oob_score:
             self.oob_score_ = from_table(train_result.oob_err)[0][0]
-
-        
-        # TODO:
-        # check for regression
-        # self.oob_score_ = from_table(train_result.oob_err_per_observation)
-
-        n_oob_pred = from_table(train_result.oob_err_per_observation)
-        if np.any(n_oob_pred == 0):
-            warnings.warn(
-                "Some inputs do not have OOB scores. This probably means "
-                "too few trees were used to compute any reliable OOB "
-                "estimates.",
-                UserWarning,
-            )
+            self.oob_prediction_ = from_table(train_result.oob_err_per_observation)
+            if np.any(self.oob_prediction_ == 0):
+                warnings.warn(
+                    "Some inputs do not have OOB scores. This probably means "
+                    "too few trees were used to compute any reliable OOB "
+                    "estimates.",
+                    UserWarning,
+                )
 
         return self
 

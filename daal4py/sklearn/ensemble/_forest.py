@@ -383,7 +383,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
 
 
 def _daal_fit_regressor(self, X, y, sample_weight=None):
-    self.n_features_in_ = X.shape[1]
+    self.n_features_in_= X.shape[1]
     if not sklearn_check_version('1.0'):
         self.n_features_ = self.n_features_in_
 
