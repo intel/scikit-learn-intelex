@@ -380,6 +380,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         # Decapsulate classes_ attributes
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
+        print(self.estimators_)
         return self
     return super(RandomForestClassifier, self).fit(
         X, y, sample_weight=sample_weight)
@@ -497,7 +498,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
     _dal_ready = _patching_status.and_conditions([
         (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
             "OOB score is only supported starting from 2021.5 version of oneDAL."),
-        (self.warm_start is False, "Warm start is not supported."),
+        # (self.warm_start is False, "Warm start is not supported."),
         (self.criterion in ["mse", "squared_error"],
             f"'{self.criterion}' criterion is not supported. "
             "Only 'mse' and 'squared_error' criteria are supported."),
@@ -849,7 +850,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             'max_features': self.max_features,
             'max_leaf_nodes': self.max_leaf_nodes,
             'min_impurity_decrease': self.min_impurity_decrease,
-            'random_state': self.random_state,
+            'random_state': None,
         }
         if not sklearn_check_version('1.0'):
             params['min_impurity_split'] = self.min_impurity_split
