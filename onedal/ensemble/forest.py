@@ -362,16 +362,14 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # check for regression
         # self.oob_score_ = from_table(train_result.oob_err_per_observation)
 
-        if not self.is_classification:
-            n_oob_pred = from_table(train_result.oob_err_per_observation)
-            print("Check for oob_pred...", n_oob_pred)
-            if np.any(n_oob_pred == 0):
-                warn(
-                    "Some inputs do not have OOB scores. This probably means "
-                    "too few trees were used to compute any reliable OOB "
-                    "estimates.",
-                    UserWarning,
-                )
+        n_oob_pred = from_table(train_result.oob_err_per_observation)
+        if np.any(n_oob_pred == 0):
+            warnings.warn(
+                "Some inputs do not have OOB scores. This probably means "
+                "too few trees were used to compute any reliable OOB "
+                "estimates.",
+                UserWarning,
+            )
 
         return self
 

@@ -603,6 +603,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if n_classes_ < 2:
             raise ValueError(
                 "Training data only contain information about one class.")
+        
+        err = 'out_of_bag_error|out_of_bag_error_per_observation' if self.oob_score else 'none'
         onedal_params = {
             'n_estimators': self.n_estimators,
             'criterion': self.criterion,
@@ -620,7 +622,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'random_state': self.random_state,
             'verbose': self.verbose,
             'warm_start': self.warm_start,
-            'error_metric_mode' : 'out_of_bag_error' if self.oob_score else 'none',
+            'error_metric_mode' : err,
             'variable_importance_mode' : 'mdi',
             'class_weight': self.class_weight,
             'max_bins': self.max_bins,
@@ -917,6 +919,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         if not sklearn_check_version('1.0'):
             self.n_features_ = self.n_features_in_
         rs_ = check_random_state(self.random_state)
+
+        err = 'out_of_bag_error|out_of_bag_error_per_observation' if self.oob_score else 'none'
         onedal_params = {
             'n_estimators': self.n_estimators,
             'criterion': self.criterion,
@@ -933,7 +937,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'random_state': self.random_state,
             'verbose': self.verbose,
             'warm_start': self.warm_start,
-            'error_metric_mode' : 'out_of_bag_error' if self.oob_score else 'none',
+            'error_metric_mode' : err,
             'variable_importance_mode' : 'mdi',
             'max_samples': self.max_samples
         }
