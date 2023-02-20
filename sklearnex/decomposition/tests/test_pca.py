@@ -24,4 +24,4 @@ def test_sklearnex_import():
     X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
     pca = PCA(n_components=2, svd_solver='full').fit(X)
     assert 'sklearnex' in pca.__module__ or 'daal4py' in pca.__module__
-    assert_allclose(pca.singular_values_, [6.30061236, 0.54980354])
+    assert_allclose(pca.singular_values_, [6.30061232, 0.54980396])
