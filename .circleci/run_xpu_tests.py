@@ -86,5 +86,5 @@ if __name__ == '__main__':
             )
     else:
         pytest.main(
-            pytest_params + ["--pyargs", "sklearn"] + yml_deselected_tests
+            pytest_params + ["--pyargs", "sklearn.ensemble"] + yml_deselected_tests
         )

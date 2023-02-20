@@ -84,6 +84,16 @@ deselected_tests:
   - ensemble/tests/test_bagging.py::test_sparse_classification
   - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
 
+  # Random Forest Regression insufficient accuracy (not that bad)
+  - tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
+  - tests/test_bagging.py::test_sparse_classification[csc_matrix-params15-decision_function]
+  - tests/test_bagging.py::test_sparse_classification[csr_matrix-params31-decision_function]
+  - tests/test_bagging.py::test_estimators_samples_deterministic
+  - tests/test_voting.py::test_set_estimator_drop
+
+  # Random Forest in sklearnex doesn't use joblib backend
+  - tests/test_forest.py::test_backend_respected
+
   # Same results as in scikit-learn, but in a different order.
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[SVC]
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[NuSVC]

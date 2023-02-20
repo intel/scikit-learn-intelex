@@ -298,17 +298,17 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
     def _get_sample_weight(self, X, y, sample_weight):
-        n_samples = X.shape[0]
+        n_samples, _ = X.shape
         dtype = X.dtype
         if n_samples == 1:
             raise ValueError("n_samples=1")
 
         sample_weight = np.asarray([]
                                    if sample_weight is None
-                                   else sample_weight, dtype=np.float64)
+                                   else sample_weight, dtype=dtype)
         # TODO:
         # sample_weight = _column_or_1d(sample_weight, warn=False)
-        sample_weight = np.ravel(sample_weight)
+        sample_weight = sample_weight.ravel()
 
         sample_weight_count = sample_weight.shape[0]
         if sample_weight_count != 0 and sample_weight_count != n_samples:
@@ -356,9 +356,23 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         if self.oob_score:
             self.oob_score_ = from_table(train_result.oob_err)[0][0]
+
+        
         # TODO:
         # check for regression
         # self.oob_score_ = from_table(train_result.oob_err_per_observation)
+
+        if not self.is_classification:
+            n_oob_pred = from_table(train_result.oob_err_per_observation)
+            print("Check for oob_pred...", n_oob_pred)
+            if np.any(n_oob_pred == 0):
+                warn(
+                    "Some inputs do not have OOB scores. This probably means "
+                    "too few trees were used to compute any reliable OOB "
+                    "estimates.",
+                    UserWarning,
+                )
+
         return self
 
     def _create_model(self, module):
@@ -451,6 +465,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
             y, self.class_weight, dtype)
+
         # Decapsulate classes_ attributes
         # TODO:
         # align with `n_classes_` and `classes_` attr with daal4py implementations.
@@ -467,11 +482,8 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         # if len(self.classes_) == 2:
         #     pred = pred.ravel()
         # return self.classes_.take(np.asarray(pred, dtype=np.intp)).ravel()
-        return np.take(
-            self.classes_,
-            pred.ravel().astype(
-                np.int64,
-                casting='unsafe'))
+
+        return np.take(self.classes_, pred.ravel().astype(np.int64, casting='unsafe'))
 
     def predict_proba(self, X, queue=None):
         return super()._predict_proba(X, _backend.decision_forest.classification, queue)

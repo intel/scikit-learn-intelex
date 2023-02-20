@@ -278,8 +278,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 ccp_alpha=ccp_alpha,
                 max_samples=max_samples
             )
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self.min_impurity_split = None
             # self._estimator = DecisionTreeClassifier()
 
     def fit(self, X, y, sample_weight=None):
@@ -582,6 +585,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         y = check_array(y, ensure_2d=False, dtype=None)
         y, expanded_class_weight = self._validate_y_class_weight(y)
+
         n_classes_ = self.n_classes_[0]
         self.n_features_in_ = X.shape[1]
         if not sklearn_check_version('1.0'):
@@ -620,9 +624,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'variable_importance_mode' : 'mdi',
             'class_weight': self.class_weight,
             'max_bins': self.max_bins,
-            'min_bin_size': self.min_bin_size
+            'min_bin_size': self.min_bin_size,
+            'max_samples': self.max_samples
         }
         self._cached_estimators_ = None
+        
         # Compute
         self._onedal_estimator = onedal_RandomForestClassifier(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
@@ -644,7 +650,10 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             accept_sparse=False,  # is not supported
             dtype=[np.float64, np.float32]
         )
-        return self._onedal_estimator.predict(X, queue=queue)
+
+        res = self._onedal_estimator.predict(X, queue=queue)
+        return np.take(self.classes_,
+            res.ravel().astype(np.int64, casting='unsafe'))
 
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32])
@@ -886,41 +895,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
-    def _onedal_gpu_supported(self, method_name, *data):
-        if method_name == 'ensemble.RandomForestRegressor.fit':
-            if not (self.oob_score and daal_check_version(
-                    (2021, 'P', 500)) or not self.oob_score):
-                pass
-            elif self.warm_start is not False:
-                pass
-            elif self.criterion not in ["mse", "squared_error"]:
-                pass
-            elif not self.ccp_alpha == 0.0:
-                pass
-            elif sp.issparse(data[0]):
-                pass
-            elif sp.issparse(data[1]):
-                pass
-            elif not self.n_outputs_ == 1:
-                pass
-            elif not len(data) == 2:  # sample_weight is not supported:
-                pass
-            else:
-                return True
-            return False
-        if method_name == 'ensemble.RandomForestRegressor.predict':
-            if not hasattr(self, '_onedal_model'):
-                pass
-            elif sp.issparse(data[0]):
-                pass
-            elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
-                pass
-            else:
-                return True
-            return False
-        raise RuntimeError(
-            f'Unknown method {method_name} in {self.__class__.__name__}')
-
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sp.issparse(y):
             raise ValueError(
@@ -960,7 +934,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'verbose': self.verbose,
             'warm_start': self.warm_start,
             'error_metric_mode' : 'out_of_bag_error' if self.oob_score else 'none',
-            'variable_importance_mode' : 'mdi'
+            'variable_importance_mode' : 'mdi',
+            'max_samples': self.max_samples
         }
         self._cached_estimators_ = None
         self._onedal_estimator = onedal_RandomForestRegressor(**onedal_params)
