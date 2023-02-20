@@ -39,7 +39,7 @@ template <template <typename F, typename M, typename T> typename Desc>
 struct cov_params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const pybind11::dict& params) {
-        auto desc = dal::covariance::descriptor{}.set_result_options(
+        auto desc = dal::covariance::descriptor<Float>{}.set_result_options(
             dal::covariance::result_options::cov_matrix | dal::covariance::result_options::means);
         return desc;
     }

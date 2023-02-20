@@ -24,7 +24,7 @@ from .._device_offload import dispatch
 from daal4py.sklearn._utils import sklearn_check_version
 
 from sklearn.utils.extmath import stable_cumsum
-from sklearn.utils import check_array
+from onedal.datatypes import _check_array
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 if sklearn_check_version('0.23'):
@@ -71,7 +71,7 @@ class PCA(sklearn_PCA):
                 "TruncatedSVD for a possible alternative."
             )
 
-        X = check_array(
+        X = _check_array(
             X,
             dtype=[np.float64, np.float32],
             ensure_2d=True,
@@ -193,7 +193,7 @@ class PCA(sklearn_PCA):
     def _onedal_transform(self, X):
         check_is_fitted(self)
 
-        X = check_array(
+        X = _check_array(
             X,
             dtype=[np.float64, np.float32],
             ensure_2d=True,
