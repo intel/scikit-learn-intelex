@@ -20,8 +20,9 @@ from numpy.testing import assert_allclose
 
 
 def test_sklearnex_import():
-    from sklearnex.decomposition import PCA
+    from sklearnex.preview.decomposition import PCA
     X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
     pca = PCA(n_components=2, svd_solver='full').fit(X)
-    assert 'daal4py' in pca.__module__
+    assert 'sklearnex' in pca.__module__
+    assert hasattr(pca, '_onedal_estimator')
     assert_allclose(pca.singular_values_, [6.30061232, 0.54980396])
