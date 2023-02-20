@@ -27,6 +27,10 @@ def _is_new_patching_available():
         and daal_check_version((2021, 'P', 300))
 
 
+def _is_preview_enabled():
+    return os.environ.get('SKLEARNEX_PREVIEW') is not None
+
+
 @lru_cache(maxsize=None)
 def get_patch_map():
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
@@ -39,8 +43,6 @@ def get_patch_map():
         from ._config import get_config as get_config_sklearnex
         from ._config import config_context as config_context_sklearnex
 
-        from .decomposition import PCA as PCA_sklearnex
-
         from .svm import SVR as SVR_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
@@ -50,7 +52,10 @@ def get_patch_map():
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
-        from .linear_model import LinearRegression as LinearRegression_sklearnex
+        # Preview classes for patching
+
+        from .preview.decomposition import PCA as PCA_sklearnex
+        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
 
         # Scikit-learn* modules
 
@@ -62,9 +67,16 @@ def get_patch_map():
 
         # Patch for mapping
         # Algorithms
-        # decomposition
-        mapping.pop('pca')
-        mapping['pca'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
+        if _is_preview_enabled():
+            # PCA
+            mapping.pop('pca')
+            mapping['pca'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
+
+            # Linear Regression
+            mapping.pop('linear')
+            mapping['linear'] = [[(linear_model_module,
+                                   'LinearRegression',
+                                   LinearRegression_sklearnex), None]]
 
         # SVM
         mapping.pop('svm')
@@ -93,11 +105,6 @@ def get_patch_map():
         mapping['kneighborsclassifier'] = mapping['knn_classifier']
         mapping['kneighborsregressor'] = mapping['knn_regressor']
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
-
-        mapping.pop('linear')
-        mapping['linear'] = [[(linear_model_module,
-                               'LinearRegression',
-                               LinearRegression_sklearnex), None]]
 
         # Configs
         mapping['set_config'] = [[(base_module,
