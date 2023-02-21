@@ -15,6 +15,8 @@
 #===============================================================================
 
 import sklearnex
+from os import environ
+from daal4py.sklearn._utils import daal_check_version
 
 
 def test_monkey_patching():
@@ -154,3 +156,47 @@ def test_patching_checker():
     assert len(patching_status_map) == len(sklearnex.get_patch_names())
     for status in patching_status_map.values():
         assert not status
+
+
+def test_preview_namespace():
+    def get_estimators():
+        from sklearn.linear_model import LinearRegression
+        from sklearn.decomposition import PCA
+        from sklearn.cluster import DBSCAN
+        from sklearn.svm import SVC
+
+        return LinearRegression(), PCA(), DBSCAN(), SVC()
+
+    # BUG: previous patching tests force PCA to be patched with daal4py.
+    # This unpatching returns behavior to expected
+    sklearnex.unpatch_sklearn()
+    # behavior with enabled preview
+    sklearnex.patch_sklearn(preview=True)
+    assert sklearnex.dispatcher._is_preview_enabled()
+
+    lr, pca, dbscan, svc = get_estimators()
+    if daal_check_version((2023, 'P', 100)):
+        assert 'sklearnex.preview' in lr.__module__
+    else:
+        assert 'daal4py' in lr.__module__
+    assert 'sklearnex.preview' in pca.__module__
+    assert 'daal4py' in dbscan.__module__
+    assert 'sklearnex' in svc.__module__
+    sklearnex.unpatch_sklearn()
+
+    # no patching behavior
+    lr, pca, dbscan, svc = get_estimators()
+    assert 'sklearn.' in lr.__module__
+    assert 'sklearn.' in pca.__module__
+    assert 'sklearn.' in dbscan.__module__
+    assert 'sklearn.' in svc.__module__
+
+    # default patching behavior
+    sklearnex.patch_sklearn()
+    assert not sklearnex.dispatcher._is_preview_enabled()
+
+    lr, pca, dbscan, svc = get_estimators()
+    assert 'daal4py' in lr.__module__
+    assert 'daal4py' in pca.__module__
+    assert 'daal4py' in dbscan.__module__
+    assert 'sklearnex' in svc.__module__

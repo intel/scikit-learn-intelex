@@ -123,7 +123,9 @@ def get_patch_names():
     return list(get_patch_map().keys())
 
 
-def patch_sklearn(name=None, verbose=True, global_patch=False):
+def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
+    if preview:
+        os.environ['SKLEARNEX_PREVIEW'] = 'enabled_via_patch_sklearn'
     if not sklearn_check_version('0.22'):
         raise NotImplementedError(
             "Intel(R) Extension for Scikit-learn* patches apply "
@@ -167,6 +169,8 @@ def unpatch_sklearn(name=None, global_unpatch=False):
             for config in ['set_config', 'get_config', 'config_context']:
                 unpatch_sklearn_orig(config, get_map=get_patch_map)
         unpatch_sklearn_orig(name, get_map=get_patch_map)
+    if os.environ.get('SKLEARNEX_PREVIEW') == 'enabled_via_patch_sklearn':
+        os.environ.pop('SKLEARNEX_PREVIEW')
 
 
 def sklearn_is_patched(name=None, return_map=False):
