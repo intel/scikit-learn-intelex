@@ -92,9 +92,6 @@ deselected_tests:
   - tests/test_bagging.py::test_estimators_samples_deterministic
   - tests/test_voting.py::test_set_estimator_drop
 
-  # Random Forest in sklearnex doesn't use joblib backend
-  - tests/test_forest.py::test_backend_respected
-
   # Same results as in scikit-learn, but in a different order.
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[SVC]
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[NuSVC]
@@ -104,17 +101,16 @@ deselected_tests:
   - svm/tests/test_svm.py::test_precomputed
 
   # TODO: Identified as minor accuracy bugs. Have to be fixed
-  - tests/test_forest.py::test_balance_property_random_forest[squared_error]
-  - tests/test_forest.py::test_regression[squared_error-RandomForestRegressor]
-  - tests/test_stacking.py::test_stacking_with_sample_weight[StackingClassifier]
+  - ensemble/tests/test_voting.py::test_none_estimator_with_weights[X0-y0-voter0]
+  - ensemble/tests/test_voting.py::test_none_estimator_with_weights[X1-y1-voter1]
 
   # TODO: Known major bugs. Have to be fixed.
   # Possibly linked to passing oob value
-  - tests/test_forest.py::test_class_weights[RandomForestClassifier]
-  - tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-RandomForestRegressor]
-  - tests/test_forest.py::test_forest_classifier_oob[X0-y0-0.9-array-RandomForestClassifier]
-  - tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-RandomForestClassifier]
-  - tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-RandomForestRegressor]
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X0-y0-0.9-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
 
   # Possibly linked to the improper estimators_ value
   - tests/test_forest.py::test_warm_start[RandomForestRegressor]
