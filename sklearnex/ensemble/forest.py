@@ -37,12 +37,11 @@ from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegres
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
-    check_array,
-    _num_samples)
+    check_array)
 
 from onedal.datatypes import _check_array, _num_features, _num_samples
 
-from sklearn.utils import (check_random_state, check_array, deprecated)
+from sklearn.utils import (check_random_state, deprecated)
 
 from sklearn.base import clone
 
