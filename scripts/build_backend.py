@@ -131,7 +131,7 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
     elif cxx is None:
         raise RuntimeError('CXX compiler shall be specified')
 
-    build_distribute = iface == 'dpc' and dpctl_available and not no_dist 
+    build_distribute = iface == 'dpc' and dpctl_available and not no_dist
 
     if build_distribute:
         dpctl_include = dpctl.get_include()
@@ -169,7 +169,7 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
     ]
 
     if build_distribute:
-        cmake_args +=[
+        cmake_args += [
             "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
             "-DMPI_INCLUDE_DIRS=" + MPI_INCDIRS,
             "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,

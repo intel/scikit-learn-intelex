@@ -33,8 +33,10 @@ def _get_policy(queue, *data):
     assert data_queue is None and queue is None
     return _HostInteropPolicy()
 
+
 def _get_spmd_policy(queue):
     return _SPMDDataParallelInteropPolicy(queue)
+
 
 def _get_queue(*data):
     if len(data) > 0 and hasattr(data[0], '__sycl_usm_array_interface__'):
