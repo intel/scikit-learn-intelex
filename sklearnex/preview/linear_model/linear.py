@@ -164,7 +164,8 @@ if daal_check_version((2023, 'P', 100)):
             if issparse(X) or issparse(y):
                 return False
 
-            if hasattr(self, 'normalize') and self.normalize:
+            if hasattr(self, 'normalize') and self.normalize \
+                    and self.normalize != 'deprecated':
                 return False
 
             if hasattr(self, 'positive') and self.positive:

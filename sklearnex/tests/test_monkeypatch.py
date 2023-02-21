@@ -15,7 +15,6 @@
 #===============================================================================
 
 import sklearnex
-from os import environ
 from daal4py.sklearn._utils import daal_check_version
 
 
