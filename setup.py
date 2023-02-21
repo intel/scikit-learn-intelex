@@ -75,8 +75,6 @@ no_stream = 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
-dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
-dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
 
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(
@@ -342,12 +340,12 @@ class custom_build():
         if is_onedal_iface:
             cxx = os.getenv('CXX', 'cl' if IS_WIN else 'g++')
             build_backend.custom_build_cmake_clib(
-                'host', cxx, ONEDAL_MAJOR_BINARY_VERSION)
+                'host', cxx, ONEDAL_MAJOR_BINARY_VERSION, no_dist=no_dist)
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib(
-                    'dpc', ONEDAL_MAJOR_BINARY_VERSION)
+                    'dpc', ONEDAL_MAJOR_BINARY_VERSION, no_dist=no_dist)
 
     def post_build(self):
         if IS_MAC:
