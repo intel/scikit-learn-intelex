@@ -28,6 +28,7 @@ from abc import ABC
 
 from sklearn.exceptions import DataConversionWarning
 
+from .._config import get_config, config_context
 from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
@@ -59,7 +60,6 @@ if sklearn_check_version('1.2'):
 
 class BaseRandomForest(ABC):
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
-        from .._config import get_config, config_context
 
         params = self.get_params()
         clf_base = self.__class__(**params)
