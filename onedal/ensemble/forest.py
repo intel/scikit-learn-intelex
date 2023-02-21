@@ -173,8 +173,10 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         features_per_node = self._to_absolute_max_features(
             self.max_features, n_features, self.is_classification)
 
-        observations_per_tree_fraction = self._get_observations_per_tree_fraction(n_samples=n_samples, max_samples=self.max_samples)
-        observations_per_tree_fraction = observations_per_tree_fraction if bool(self.bootstrap) else 1.
+        observations_per_tree_fraction = self._get_observations_per_tree_fraction(
+            n_samples=n_samples, max_samples=self.max_samples)
+        observations_per_tree_fraction = observations_per_tree_fraction if bool(
+            self.bootstrap) else 1.
 
         if not self.bootstrap and self.max_samples is not None:
             raise ValueError(
@@ -308,8 +310,6 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         sample_weight = np.asarray([]
                                    if sample_weight is None
                                    else sample_weight, dtype=dtype)
-        # TODO:
-        # sample_weight = _column_or_1d(sample_weight, warn=False)
         sample_weight = sample_weight.ravel()
 
         sample_weight_count = sample_weight.shape[0]
@@ -357,8 +357,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self._onedal_model = train_result.model
 
         if self.oob_score:
-            self.oob_score_ = from_table(train_result.oob_err)[0][0]
-            self.oob_prediction_ = from_table(train_result.oob_err_per_observation)
+            self.oob_score_ = from_table(train_result.oob_err)[0, 0]
+            self.oob_prediction_ = from_table(
+                train_result.oob_err_per_observation)
             if np.any(self.oob_prediction_ == 0):
                 warnings.warn(
                     "Some inputs do not have OOB scores. This probably means "
@@ -477,7 +478,11 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         #     pred = pred.ravel()
         # return self.classes_.take(np.asarray(pred, dtype=np.intp)).ravel()
 
-        return np.take(self.classes_, pred.ravel().astype(np.int64, casting='unsafe'))
+        return np.take(
+            self.classes_,
+            pred.ravel().astype(
+                np.int64,
+                casting='unsafe'))
 
     def predict_proba(self, X, queue=None):
         return super()._predict_proba(X, _backend.decision_forest.classification, queue)

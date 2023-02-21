@@ -25,7 +25,7 @@ import numbers
 import warnings
 
 from abc import ABC
-import warnings
+
 from sklearn.exceptions import DataConversionWarning
 
 from .._device_offload import dispatch, wrap_output_data
@@ -229,6 +229,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 warm_start=warm_start,
                 class_weight=class_weight
             )
+            self.warm_start = warm_start
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
             self.max_bins = max_bins
@@ -279,6 +280,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 ccp_alpha=ccp_alpha,
                 max_samples=max_samples
             )
+            self.warm_start = warm_start
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
             self.max_bins = max_bins
@@ -482,17 +484,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = classes_
             est_i.n_classes_ = n_classes_
-            # treeState members: 'class_count', 'leaf_count', 'max_depth',
-            # 'node_ar', 'node_count', 'value_ar'
             tree_i_state_class = get_tree_state_cls(
                 self._onedal_model, i, n_classes_)
-            # node_ndarray = tree_i_state_class.node_ar
-            # value_ndarray = tree_i_state_class.value_ar
-            # value_shape = (node_ndarray.shape[0], self.n_outputs_,
-            #                n_classes_)
-            # assert np.allclose(
-            #     value_ndarray, value_ndarray.astype(np.intc, casting='unsafe')
-            # ), "Value array is non-integer"
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
@@ -506,6 +499,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 self.n_outputs_)
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
+
         self._cached_estimators_ = estimators_
         return estimators_
 
@@ -530,6 +524,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
+            elif hasattr(self, 'estimators_'):
+                return False
             else:
                 return True
         if method_name in ['ensemble.RandomForestClassifier.predict',
@@ -541,6 +537,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
                 return False
             elif not daal_check_version((2021, 'P', 400)):
+                return False
+            elif self.warm_start:
                 return False
             else:
                 return True
@@ -566,6 +564,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
+            elif hasattr(self, 'estimators_'):
+                return False
             else:
                 return True
         if method_name in ['ensemble.RandomForestClassifier.predict',
@@ -577,6 +577,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
                 return False
             elif not daal_check_version((2021, 'P', 400)):
+                return False
+            elif self.warm_start:
                 return False
             else:
                 return True
@@ -716,6 +718,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 verbose=verbose,
                 warm_start=warm_start
             )
+            self.warm_start = warm_start
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
             self.max_bins = max_bins
@@ -763,6 +766,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 ccp_alpha=ccp_alpha,
                 max_samples=max_samples
             )
+            self.warm_start = warm_start
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
             self.max_bins = max_bins
@@ -807,6 +811,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 est_i.n_features_in_ = self.n_features_in_
             else:
                 est_i.n_features_ = self.n_features_in_
+            est_i.n_classes_ = 1
             est_i.n_outputs_ = self.n_outputs_
             tree_i_state_class = get_tree_state_reg(
                 self._onedal_model, i)
@@ -821,7 +826,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                     [1], dtype=np.intp), self.n_outputs_)
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
-        # self._cached_estimators_ = estimators_
+
         return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
@@ -829,8 +834,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             X, y, sample_weight = data
             if not (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score):
                 return False
-            # if self.oob_score:
-            #     return False
             elif self.criterion not in ["mse", "squared_error"]:
                 return False
             elif sp.issparse(X):
@@ -845,6 +848,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
+            elif hasattr(self, 'estimators_'):
+                return False
             else:
                 return True
         if method_name in ['ensemble.RandomForestRegressor.predict',
@@ -856,6 +861,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
                 return False
             elif not daal_check_version((2021, 'P', 400)):
+                return False
+            elif self.warm_start:
                 return False
             else:
                 return True
@@ -881,6 +888,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
+            elif hasattr(self, 'estimators_'):
+                return False
             else:
                 return True
         if method_name in ['ensemble.RandomForestRegressor.predict',
@@ -892,6 +901,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
                 return False
             elif not daal_check_version((2021, 'P', 400)):
+                return False
+            elif self.warm_start:
                 return False
             else:
                 return True

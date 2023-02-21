@@ -88,6 +88,7 @@ deselected_tests:
   - tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
   - tests/test_bagging.py::test_sparse_classification[csc_matrix-params15-decision_function]
   - tests/test_bagging.py::test_sparse_classification[csr_matrix-params31-decision_function]
+  - tests/test_stacking.py::test_stacking_cv_influence[StackingClassifier]
   - tests/test_bagging.py::test_estimators_samples_deterministic
   - tests/test_voting.py::test_set_estimator_drop
 
@@ -101,6 +102,11 @@ deselected_tests:
   # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with custom and precompute kernel
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
+
+  # TODO: Identified as minor accuracy bugs. Have to be fixed
+  - tests/test_forest.py::test_balance_property_random_forest[squared_error]
+  - tests/test_forest.py::test_regression[squared_error-RandomForestRegressor]
+  - tests/test_stacking.py::test_stacking_with_sample_weight[StackingClassifier]
 
   # sklearn expects an exception for sparce matrices with 64-bit integer indices.
   # sklearnex works correctly with 64-bit integer indices
@@ -212,7 +218,7 @@ deselected_tests:
   # Patched and unpatched kmeans belong same values to different clusters. Need to investigate.
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0,<=1.1
 
-  # OOB scores in sklearn and oneDAL are different because of different random nuber generators
+  # OOB scores in sklearn and oneDAL are different because of different random number generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
 

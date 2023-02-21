@@ -43,24 +43,6 @@ inline static const double get_nan64() {
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-#define OVERFLOW_CHECK_BY_ADDING(type, op1, op2)                      \
-    {                                                                 \
-        volatile type r = (op1) + (op2);                              \
-        r -= (op1);                                                   \
-        if (!(r == (op2)))                                            \
-            throw std::runtime_error("Buffer size integer overflow"); \
-    }
-
-#define OVERFLOW_CHECK_BY_MULTIPLICATION(type, op1, op2)                  \
-    {                                                                     \
-        if (!(0 == (op1)) && !(0 == (op2))) {                             \
-            volatile type r = (op1) * (op2);                              \
-            r /= (op1);                                                   \
-            if (!(r == (op2)))                                            \
-                throw std::runtime_error("Buffer size integer overflow"); \
-        }                                                                 \
-    }
-
 // equivalent for numpy arange
 template <typename T>
 std::vector<T> arange(T start, T stop, T step = 1) {
@@ -96,10 +78,10 @@ template <typename T>
 struct tree_state {
     py::array_t<skl_tree_node> node_ar;
     py::array_t<double> value_ar;
-    size_t max_depth;
-    size_t node_count;
-    size_t leaf_count;
-    size_t class_count;
+    std::size_t max_depth;
+    std::size_t node_count;
+    std::size_t leaf_count;
+    std::size_t class_count;
 };
 
 // Declaration and implementation.
@@ -110,18 +92,18 @@ public:
     bool call(const df::leaf_node_info<Task>& info) {
         ++n_nodes;
         ++n_leaf_nodes;
-        depth = std::max(depth, static_cast<const size_t>(info.get_level()));
+        depth = std::max(depth, static_cast<const std::size_t>(info.get_level()));
         return true;
     }
     bool call(const df::split_node_info<Task>& info) {
         ++n_nodes;
-        depth = std::max(depth, static_cast<const size_t>(info.get_level()));
+        depth = std::max(depth, static_cast<const std::size_t>(info.get_level()));
         return true;
     }
 
-    size_t n_nodes;
-    size_t depth;
-    size_t n_leaf_nodes;
+    std::size_t n_nodes;
+    std::size_t depth;
+    std::size_t n_leaf_nodes;
 };
 
 template <typename Task, typename Impl>
@@ -147,24 +129,24 @@ template <typename Task>
 class to_sklearn_tree_object_visitor : public tree_state<Task> {
 public:
     to_sklearn_tree_object_visitor(size_t _depth,
-                                   size_t _n_nodes,
-                                   size_t _n_leafs,
-                                   size_t _max_n_classes);
+                                   std::size_t _n_nodes,
+                                   std::size_t _n_leafs,
+                                   std::size_t _max_n_classes);
     bool call(const df::leaf_node_info<Task>& info);
     bool call(const df::split_node_info<Task>& info);
 
 protected:
-    size_t node_id;
-    size_t max_n_classes;
+    std::size_t node_id;
+    std::size_t max_n_classes;
     std::vector<Py_ssize_t> parents;
     void _onLeafNode(const df::leaf_node_info<Task>& info);
 };
 
 template <typename Task>
 to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(size_t _depth,
-                                                                     size_t _n_nodes,
-                                                                     size_t _n_leafs,
-                                                                     size_t _max_n_classes)
+                                                                     std::size_t _n_nodes,
+                                                                     std::size_t _n_leafs,
+                                                                     std::size_t _max_n_classes)
         : node_id(0),
           parents(arange<Py_ssize_t>(-1, _depth - 1)) {
     this->max_n_classes = _max_n_classes;
@@ -183,6 +165,9 @@ to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(size_t _dep
         { this->class_count * sizeof(double), this->class_count * sizeof(double), sizeof(double) });
 
     skl_tree_node* node_ar_ptr = new skl_tree_node[this->node_count];
+
+
+    OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, this->node_count, this->class_count);
     double* value_ar_ptr =
         new double[this->node_count * 1 *
                    this->class_count](); // oneDAL only supports scalar responses for now
@@ -247,7 +232,7 @@ template <>
 bool to_sklearn_tree_object_visitor<df::task::regression>::call(
     const df::leaf_node_info<df::task::regression>& info) {
     _onLeafNode(info);
-    OVERFLOW_CHECK_BY_MULTIPLICATION(int, node_id, class_count);
+    OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, node_id, class_count);
 
     py::buffer_info value_ar_buf = this->value_ar.request();
     double* value_ar_ptr = static_cast<double*>(value_ar_buf.ptr);
@@ -266,11 +251,13 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     double* value_ar_ptr = static_cast<double*>(value_ar_buf.ptr);
 
     if (info.get_level() > 0) {
-        size_t depth = static_cast<const size_t>(info.get_level()) - 1;
+        std::size_t depth = static_cast<const std::size_t>(info.get_level()) - 1;
         while (depth >= 0) {
-            size_t id = parents[depth];
-            value_ar_ptr[id * 1 * this->class_count + info.get_response()] +=
-                info.get_sample_count();
+            const std::size_t id = parents[depth];
+            OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, id, this->class_count);
+            const auto row = id * 1 * this->class_count;
+            OVERFLOW_CHECK_BY_ADDING(std::size_t, row, info.get_response());
+            value_ar_ptr[row + info.get_response()] += info.get_sample_count();
             if (depth == 0) {
                 break;
             }
@@ -278,7 +265,7 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
         }
     }
     _onLeafNode(info);
-    OVERFLOW_CHECK_BY_ADDING(int, node_id * 1 * this->class_count, info.get_response());
+    OVERFLOW_CHECK_BY_ADDING(std::size_t, node_id * 1 * this->class_count, info.get_response());
     value_ar_ptr[node_id * 1 * this->class_count + info.get_response()] += info.get_sample_count();
 
     // wrap-up
@@ -295,7 +282,7 @@ void init_get_tree_state(py::module_& m) {
     // TODO:
     // create one instance for cls and reg.
     py::class_<tree_state_t>(m, "get_tree_state")
-        .def(py::init([](const model_t& model, size_t iTree, size_t n_classes) {
+        .def(py::init([](const model_t& model, std::size_t iTree, std::size_t n_classes) {
             // First count nodes
             node_count_visitor<Task> ncv;
             node_visitor<Task, decltype(ncv)> ncv_decorator{ &ncv };
