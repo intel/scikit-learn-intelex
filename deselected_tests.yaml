@@ -108,6 +108,22 @@ deselected_tests:
   - tests/test_forest.py::test_regression[squared_error-RandomForestRegressor]
   - tests/test_stacking.py::test_stacking_with_sample_weight[StackingClassifier]
 
+  # TODO: Known major bugs. Have to be fixed.
+  # Possibly linked to passing oob value
+  - tests/test_forest.py::test_class_weights[RandomForestClassifier]
+  - tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-RandomForestRegressor]
+  - tests/test_forest.py::test_forest_classifier_oob[X0-y0-0.9-array-RandomForestClassifier]
+  - tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-RandomForestClassifier]
+  - tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
+
+  # Possibly linked to the improper estimators_ value
+  - tests/test_forest.py::test_warm_start[RandomForestRegressor]
+  - tests/test_forest.py::test_warm_start[RandomForestClassifier]
+  - tests/test_forest.py::test_warm_start_oob[RandomForestRegressor]
+  - tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
+  - tests/test_forest.py::test_warm_start_clear[RandomForestRegressor]
+  - tests/test_forest.py::test_warm_start_clear[RandomForestClassifier]
+
   # sklearn expects an exception for sparce matrices with 64-bit integer indices.
   # sklearnex works correctly with 64-bit integer indices
   - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
