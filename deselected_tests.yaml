@@ -40,23 +40,6 @@ deselected_tests:
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
   - cluster/tests/test_k_means.py::test_k_means_fit_predict >=0.23,<0.24
 
-  # PCA - Non-critical numerical difference between implementations
-  - decomposition/tests/test_pca.py::test_whitening
-  - decomposition/tests/test_pca.py::test_pca_inverse
-  - decomposition/tests/test_pca.py::test_pca_randomized_svd_n_oversamples
-  - decomposition/tests/test_incremental_pca.py::test_singular_values
-  - decomposition/tests/test_incremental_pca.py::test_whitening
-  - decomposition/tests/test_incremental_pca.py::test_incremental_pca_fit_overflow_error
-  - decomposition/tests/test_sparse_pca.py::test_sparse_pca_inverse_transform
-
-  # PCA - Non-critical but significant numerical difference between implementations
-  - decomposition/tests/test_sparse_pca.py::test_pca_vs_spca
-
-  # PCA - Edge Case: For extreme multicollinear data, with n_components = "mle",
-  # sklearnex PCA captures more components than stock scikit learn and daal4py.
-  # TODO: Investigate the returned eigen values from DAAL and OneDAL
-  - decomposition/tests/test_pca.py::test_mle_redundant_data
-
   # cache directory is not accessible on some systems
   - utils/tests/test_validation.py::test_check_memory
 
