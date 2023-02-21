@@ -372,6 +372,9 @@ def _fit_classifier(self, X, y, sample_weight=None):
             self.random_state = None 
         if sklearn_check_version("1.2"):
             self._estimator = DecisionTreeClassifier()
+        if not self.warm_start or not hasattr(self, "estimators_"):
+            self.estimators_ = []
+        
         if self.warm_start:
             self.estimators_.extend(self._estimators_)
         else:
@@ -380,7 +383,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         # Decapsulate classes_ attributes
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
-        print(self.estimators_)
+        
         return self
     return super(RandomForestClassifier, self).fit(
         X, y, sample_weight=sample_weight)
@@ -857,10 +860,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
         est = DecisionTreeClassifier(**params)
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
-        if not self.warm_start or not hasattr(self, "estimators_"):
-            estimators_ = []
-        else:
-            estimators_ = self.estimators_
+        estimators_ = self.estimators_
         n_more_estimators = self.n_estimators - len(estimators_)
         if n_more_estimators < 0:
             raise ValueError('n_estimators=%d must be larger or equal to '
