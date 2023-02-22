@@ -61,19 +61,8 @@ class PCA(sklearn_PCA):
         self.power_iteration_normalizer = power_iteration_normalizer
         self.random_state = random_state
 
-    def fit(self, X, y=None):
-        self._fit(X)
-        return self
-
-    def _validate_n_components(self, n_samples, n_features, n_sf_min):
-        if self.n_components is None:
-            if self.svd_solver == "arpack":
-                n_components = n_sf_min - 1
-            else:
-                n_components = n_sf_min
-        else:
-            n_components = self.n_components
-
+    def _validate_n_components(self, n_components, n_samples,
+        n_features, n_sf_min):
         if n_components == "mle":
             if n_samples < n_features:
                 raise ValueError(
@@ -93,6 +82,9 @@ class PCA(sklearn_PCA):
                                  "was of type=%r"
                                  % (n_components, type(n_components)))
 
+    def fit(self, X, y=None):
+        self._fit(X)
+        return self
 
     def _fit(self, X):
         if issparse(X):
@@ -111,7 +103,16 @@ class PCA(sklearn_PCA):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
-        self._validate_n_components(n_samples, n_features, n_sf_min)
+        if self.n_components is None:
+            if self.svd_solver == "arpack":
+                n_components = n_sf_min - 1
+            else:
+                n_components = n_sf_min
+        else:
+            n_components = self.n_components
+
+        self._validate_n_components(n_components, n_samples, n_features,
+            n_sf_min)
 
         # Handle svd_solver
         self._fit_svd_solver = self.svd_solver
@@ -149,6 +150,7 @@ class PCA(sklearn_PCA):
                         self._fit_svd_solver = 'randomized'
                     else:
                         self._fit_svd_solver = 'full'
+        
         if not shape_good_for_daal or self._fit_svd_solver != 'full':
             if sklearn_check_version('0.23'):
                 X = self._validate_data(X, copy=self.copy)
@@ -165,10 +167,7 @@ class PCA(sklearn_PCA):
             return sklearn_PCA._fit_full(self, X, n_components)
         elif self._fit_svd_solver in ["arpack", "randomized"]:
             return sklearn_PCA._fit_truncated(
-                self,
-                X,
-                n_components,
-                self._fit_svd_solver,
+                self, X, n_components, self._fit_svd_solver,
             )
         else:
             raise ValueError(
