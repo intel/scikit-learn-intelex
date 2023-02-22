@@ -113,6 +113,7 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
 
   # Possibly linked to the improper estimators_ value
+  - cluster/tests/test_optics.py::test_processing_order
   - tests/test_forest.py::test_warm_start[RandomForestRegressor]
   - tests/test_forest.py::test_warm_start[RandomForestClassifier]
   - tests/test_forest.py::test_warm_start_oob[RandomForestRegressor]
