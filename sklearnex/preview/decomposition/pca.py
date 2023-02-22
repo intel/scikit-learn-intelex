@@ -25,6 +25,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 
 from sklearn.utils.extmath import stable_cumsum
 from onedal.datatypes import _check_array
+from sklearn.utils.validation import check_array
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 if sklearn_check_version('0.23'):
@@ -64,23 +65,7 @@ class PCA(sklearn_PCA):
         self._fit(X)
         return self
 
-    def _fit(self, X):
-        if issparse(X):
-            raise TypeError(
-                "PCA does not support sparse input. See "
-                "TruncatedSVD for a possible alternative."
-            )
-
-        X = _check_array(
-            X,
-            dtype=[np.float64, np.float32],
-            ensure_2d=True,
-            copy=False
-        )
-
-        n_samples, n_features = X.shape
-        n_sf_min = min(n_samples, n_features)
-
+    def _validate_n_components(self, n_samples, n_features, n_sf_min):
         if self.n_components is None:
             if self.svd_solver == "arpack":
                 n_components = n_sf_min - 1
@@ -107,6 +92,26 @@ class PCA(sklearn_PCA):
                                  "when greater than or equal to 1, "
                                  "was of type=%r"
                                  % (n_components, type(n_components)))
+
+
+    def _fit(self, X):
+        if issparse(X):
+            raise TypeError(
+                "PCA does not support sparse input. See "
+                "TruncatedSVD for a possible alternative."
+            )
+
+        X = _check_array(
+            X,
+            dtype=[np.float64, np.float32],
+            ensure_2d=True,
+            copy=False
+        )
+
+        n_samples, n_features = X.shape
+        n_sf_min = min(n_samples, n_features)
+
+        self._validate_n_components(n_samples, n_features, n_sf_min)
 
         # Handle svd_solver
         self._fit_svd_solver = self.svd_solver
@@ -139,7 +144,8 @@ class PCA(sklearn_PCA):
                     ])
 
                     if n_components >= 1 and np.dot(
-                            regression_coefs[:, 0], regression_coefs[:, 1]) <= 0:
+                            regression_coefs[:, 0],
+                            regression_coefs[:, 1]) <= 0:
                         self._fit_svd_solver = 'randomized'
                     else:
                         self._fit_svd_solver = 'full'
