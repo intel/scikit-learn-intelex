@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# ===============================================================================
-# Copyright 2023 Intel Corporation
+#===============================================================================
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
-from .forest import RandomForestClassifier, RandomForestRegressor
-
-__all__ = ['RandomForestClassifier', 'RandomForestRegressor']
+from daal4py.sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
