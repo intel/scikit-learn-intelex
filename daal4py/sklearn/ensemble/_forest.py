@@ -229,12 +229,12 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     if not self.bootstrap and self.oob_score:
         raise ValueError("Out of bag estimation only available"
                          " if bootstrap=True")
-
+    n_more_estimators = self.n_estimators - len(self.estimators_)
     dfc_algorithm = daal4py.decision_forest_classification_training(
         nClasses=int(n_classes_),
         fptype=X_fptype,
         method='hist',
-        nTrees=int(self.n_estimators),
+        nTrees=int(n_more_estimators),
         observationsPerTreeFraction=n_samples_bootstrap_
         if self.bootstrap is True else 1.,
         featuresPerNode=int(features_per_node_),
@@ -367,13 +367,14 @@ def _fit_classifier(self, X, y, sample_weight=None):
 
     _patching_status.write_log()
     if _dal_ready:
+        if not self.warm_start or not hasattr(self, "estimators_"):
+            self.estimators_ = []
+
         _daal_fit_classifier(self, X, y, sample_weight=sample_weight)
         if not self.warm_start:
             self.random_state = None 
         if sklearn_check_version("1.2"):
             self._estimator = DecisionTreeClassifier()
-        if not self.warm_start or not hasattr(self, "estimators_"):
-            self.estimators_ = []
         
         if self.warm_start:
             self.estimators_.extend(self._estimators_)
@@ -425,11 +426,12 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
             sample_weight[sample_weight == 0.0] = 1.0
         sample_weight = [sample_weight]
 
+    n_more_estimators = self.n_estimators - len(self.estimators_)
     # create algorithm
     dfr_algorithm = daal4py.decision_forest_regression_training(
         fptype=getFPType(X),
         method='hist',
-        nTrees=int(self.n_estimators),
+        nTrees=int(n_more_estimators),
         observationsPerTreeFraction=n_samples_bootstrap if self.bootstrap is True else 1.,
         featuresPerNode=int(_featuresPerNode),
         maxTreeDepth=int(0 if self.max_depth is None else self.max_depth),
@@ -501,7 +503,6 @@ def _fit_regressor(self, X, y, sample_weight=None):
     _dal_ready = _patching_status.and_conditions([
         (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
             "OOB score is only supported starting from 2021.5 version of oneDAL."),
-        # (self.warm_start is False, "Warm start is not supported."),
         (self.criterion in ["mse", "squared_error"],
             f"'{self.criterion}' criterion is not supported. "
             "Only 'mse' and 'squared_error' criteria are supported."),
@@ -537,11 +538,17 @@ def _fit_regressor(self, X, y, sample_weight=None):
 
     _patching_status.write_log()
     if _dal_ready:
+        if not self.warm_start or not hasattr(self, "estimators_"):
+            self.estimators_ = []
         _daal_fit_regressor(self, X, y, sample_weight=sample_weight)
 
         if sklearn_check_version("1.2"):
             self._estimator = DecisionTreeRegressor()
-        self.estimators_ = self._estimators_
+
+        if self.warm_start:
+            self.estimators_.extend(self._estimators_)
+        else:
+            self.estimators_ = self._estimators_
         return self
     return super(RandomForestRegressor, self).fit(
         X, y, sample_weight=sample_weight)
@@ -860,8 +867,9 @@ class RandomForestClassifier(RandomForestClassifier_original):
         est = DecisionTreeClassifier(**params)
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
-        estimators_ = self.estimators_
-        n_more_estimators = self.n_estimators - len(estimators_)
+        estimators_ =[]
+        
+        n_more_estimators = self.n_estimators - len(self.estimators_)
         if n_more_estimators < 0:
             raise ValueError('n_estimators=%d must be larger or equal to '
                              'len(estimators_)=%d when warm_start==True'
@@ -1122,28 +1130,38 @@ class RandomForestRegressor(RandomForestRegressor_original):
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
-        random_state_checked = check_random_state(self.random_state)
-        for i in range(self.n_estimators):
-            est_i = clone(est)
-            est_i.set_params(
-                random_state=random_state_checked.randint(np.iinfo(np.int32).max))
-            if sklearn_check_version('1.0'):
-                est_i.n_features_in_ = self.n_features_in_
-            else:
-                est_i.n_features_ = self.n_features_in_
-            est_i.n_outputs_ = self.n_outputs_
+        n_more_estimators = self.n_estimators - len(self.estimators_)
+        if n_more_estimators < 0:
+            raise ValueError('n_estimators=%d must be larger or equal to '
+                             'len(estimators_)=%d when warm_start==True'
+                             % (self.n_estimators, len(estimators_)))
 
-            tree_i_state_class = daal4py.getTreeState(self.daal_model_, i)
-            tree_i_state_dict = {
-                'max_depth': tree_i_state_class.max_depth,
-                'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
-                'values': tree_i_state_class.value_ar}
+        elif n_more_estimators == 0:
+            warnings.warn("Warm-start fitting without increasing n_estimators does not "
+                 "fit new trees.")
+        else:
+            random_state_checked = check_random_state(self.random_state)
+            for i in range(n_more_estimators):
+                est_i = clone(est)
+                est_i.set_params(
+                    random_state=random_state_checked.randint(np.iinfo(np.int32).max))
+                if sklearn_check_version('1.0'):
+                    est_i.n_features_in_ = self.n_features_in_
+                else:
+                    est_i.n_features_ = self.n_features_in_
+                est_i.n_outputs_ = self.n_outputs_
 
-            est_i.tree_ = Tree(
+                tree_i_state_class = daal4py.getTreeState(self.daal_model_, i)
+                tree_i_state_dict = {
+                    'max_depth': tree_i_state_class.max_depth,
+                    'node_count': tree_i_state_class.node_count,
+                    'nodes': tree_i_state_class.node_ar,
+                    'values': tree_i_state_class.value_ar}
+
+                est_i.tree_ = Tree(
                 self.n_features_in_, np.array(
                     [1], dtype=np.intp), self.n_outputs_)
-            est_i.tree_.__setstate__(tree_i_state_dict)
-            estimators_.append(est_i)
+                est_i.tree_.__setstate__(tree_i_state_dict)
+                estimators_.append(est_i)
 
         return estimators_
