@@ -26,6 +26,8 @@ def _is_new_patching_available():
     return os.environ.get('OFF_ONEDAL_IFACE') is None \
         and daal_check_version((2021, 'P', 300))
 
+def _is_preview_enabled():
+    return os.environ.get('SKLEARNEX_PREVIEW') is not None
 
 @lru_cache(maxsize=None)
 def get_patch_map():
@@ -39,8 +41,8 @@ def get_patch_map():
         from ._config import get_config as get_config_sklearnex
         from ._config import config_context as config_context_sklearnex
 
-        from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
-        from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .preview.ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
+        from .preview.ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
 
         from .svm import SVR as SVR_sklearnex
         from .svm import SVC as SVC_sklearnex
@@ -64,20 +66,21 @@ def get_patch_map():
         # Patch for mapping
         # Algorithms
         # Ensemble
-        mapping.pop('random_forest_classifier')
-        mapping.pop('random_forest_regressor')
-        mapping.pop('randomrorestclassifier')
-        mapping.pop('randomforestregressor')
-        mapping['random_forest_classifier'] = [[(ensemble_module,
-                                                 'RandomForestClassifier',
-                                                  RandomForestClassifier_sklearnex),
-                                                  None]]
-        mapping['random_forest_regressor'] = [[(ensemble_module,
-                                                'RandomForestRegressor',
-                                                 RandomForestRegressor_sklearnex),
-                                                 None]]
-        mapping['randomrorestclassifier'] = mapping['random_forest_classifier']
-        mapping['randomforestregressor'] = mapping['random_forest_regressor']
+        if _is_preview_enabled():
+            mapping.pop('random_forest_classifier')
+            mapping.pop('random_forest_regressor')
+            mapping.pop('randomrorestclassifier')
+            mapping.pop('randomforestregressor')
+            mapping['random_forest_classifier'] = [[(ensemble_module,
+                                                     'RandomForestClassifier',
+                                                      RandomForestClassifier_sklearnex),
+                                                      None]]
+            mapping['random_forest_regressor'] = [[(ensemble_module,
+                                                    'RandomForestRegressor',
+                                                     RandomForestRegressor_sklearnex),
+                                                     None]]
+            mapping['randomrorestclassifier'] = mapping['random_forest_classifier']
+            mapping['randomforestregressor'] = mapping['random_forest_regressor']
 
         # SVM
         mapping.pop('svm')
@@ -129,7 +132,9 @@ def get_patch_names():
     return list(get_patch_map().keys())
 
 
-def patch_sklearn(name=None, verbose=True, global_patch=False):
+def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
+    if preview:
+        os.environ['SKLEARNEX_PREVIEW'] = 'enabled_via_patch_sklearn'
     if not sklearn_check_version('0.22'):
         raise NotImplementedError(
             "Intel(R) Extension for Scikit-learn* patches apply "
@@ -173,6 +178,8 @@ def unpatch_sklearn(name=None, global_unpatch=False):
             for config in ['set_config', 'get_config', 'config_context']:
                 unpatch_sklearn_orig(config, get_map=get_patch_map)
         unpatch_sklearn_orig(name, get_map=get_patch_map)
+    if os.environ.get('SKLEARNEX_PREVIEW') == 'enabled_via_patch_sklearn':
+        os.environ.pop('SKLEARNEX_PREVIEW')
 
 
 def sklearn_is_patched(name=None, return_map=False):

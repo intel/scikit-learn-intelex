@@ -96,6 +96,8 @@ setup(name="scikit-learn-intelex",
           'sklearnex.metrics',
           'sklearnex.model_selection',
           'sklearnex.neighbors',
+          'sklearnex.preview',
+          'sklearnex.preview.ensemble',
           'sklearnex.svm',
           'sklearnex.utils'
       ]),
