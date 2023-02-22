@@ -199,3 +199,4 @@ def test_preview_namespace():
     assert 'daal4py' in pca.__module__
     assert 'daal4py' in dbscan.__module__
     assert 'sklearnex' in svc.__module__
+    sklearnex.unpatch_sklearn()
