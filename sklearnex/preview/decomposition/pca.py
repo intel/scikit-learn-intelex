@@ -82,7 +82,6 @@ class PCA(sklearn_PCA):
                                  "was of type=%r"
                                  % (n_components, type(n_components)))
 
-
     def fit(self, X, y=None):
         self._fit(X)
         return self
@@ -115,17 +114,14 @@ class PCA(sklearn_PCA):
         self._validate_n_components(n_components, n_samples, n_features,
                                     n_sf_min)
 
-        # Handle svd_solver
         self._fit_svd_solver = self.svd_solver
         shape_good_for_daal = X.shape[1] / X.shape[0] < 2
         if self._fit_svd_solver == "auto":
             if sklearn_check_version('1.1'):
-                # Small problem or n_components == 'mle', just call full PCA
                 if max(X.shape) <= 500 or n_components == "mle":
                     self._fit_svd_solver = "full"
                 elif 1 <= n_components < 0.8 * n_sf_min:
                     self._fit_svd_solver = "randomized"
-                    # This is also the case of n_components in (0,1)
                 else:
                     self._fit_svd_solver = "full"
             else:
@@ -133,12 +129,8 @@ class PCA(sklearn_PCA):
                     self._fit_svd_solver = 'full'
                 else:
                     n, p, k = X.shape[0], X.shape[1], n_components
-                    # These coefficients are result of training of Logistic
-                    # Regression (max_iter=10000, solver="liblinear",
-                    # fit_intercept=False)on different datasets and number of
-                    # components. X is a dataset with npk, np^2, and n^2
-                    # columns. And y is speedup of patched scikit-learn's
-                    # full PCA against stock scikit-learn's randomized PCA.
+                    # check if sklearnex is faster than randomized sklearn
+                    # Refer to daal4py
                     regression_coefs = np.array([
                         [9.779873e-11, n * p * k],
                         [-1.122062e-11, n * p * p],
@@ -164,7 +156,7 @@ class PCA(sklearn_PCA):
                 'onedal': self.__class__._onedal_fit,
                 'sklearn': sklearn_PCA._fit_full,
             }, X)
-        elif self._fit_svd_solver == "full":
+        elif not shape_good_for_daal and self._fit_svd_solver == "full":
             return sklearn_PCA._fit_full(self, X, n_components)
         elif self._fit_svd_solver in ["arpack", "randomized"]:
             return sklearn_PCA._fit_truncated(
