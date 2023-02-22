@@ -56,6 +56,7 @@ from scipy import sparse as sp
 if sklearn_check_version('1.2'):
     from sklearn.utils._param_validation import Interval
 
+
 class BaseRandomForest(ABC):
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
 
@@ -182,9 +183,18 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     if sklearn_check_version('1.2'):
         _parameter_constraints: dict = {
             **sklearn_RandomForestClassifier._parameter_constraints,
-            "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
-        }
+            "max_bins": [
+                Interval(
+                    numbers.Integral,
+                    2,
+                    None,
+                    closed="left")],
+            "min_bin_size": [
+                Interval(
+                    numbers.Integral,
+                    1,
+                    None,
+                    closed="left")]}
 
     if sklearn_check_version('1.0'):
         def __init__(
@@ -334,7 +344,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
         _onedal_ready = (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score) and \
             self.warm_start is False and self.criterion == "gini" and self.ccp_alpha == 0.0 and \
-                not sp.issparse(X)
+            not sp.issparse(X)
         if _onedal_ready:
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
@@ -342,10 +352,12 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             y = np.asarray(y)
             y = np.atleast_1d(y)
             if y.ndim == 2 and y.shape[1] == 1:
-                warnings.warn("A column-vector y was passed when a 1d array was"
-                              " expected. Please change the shape of y to "
-                              "(n_samples,), for example using ravel().",
-                              DataConversionWarning, stacklevel=2)
+                warnings.warn(
+                    "A column-vector y was passed when a 1d array was"
+                    " expected. Please change the shape of y to "
+                    "(n_samples,), for example using ravel().",
+                    DataConversionWarning,
+                    stacklevel=2)
             check_consistent_length(X, y)
             if y.ndim == 1:
                 # reshape is necessary to preserve the data contiguity against vs
@@ -504,7 +516,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
             X, y, sample_weight = data
-            if not (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score):
+            if not (self.oob_score and daal_check_version(
+                    (2021, 'P', 500)) or not self.oob_score):
                 return False
             # if self.oob_score:
             #     return False
@@ -546,7 +559,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_gpu_supported(self, method_name, *data):
         X, y, sample_weight = data
         if method_name == 'ensemble.RandomForestClassifier.fit':
-            if not (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score):
+            if not (self.oob_score and daal_check_version(
+                    (2021, 'P', 500)) or not self.oob_score):
                 return False
             elif not self.criterion == "gini":
                 return False
@@ -604,7 +618,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if n_classes_ < 2:
             raise ValueError(
                 "Training data only contain information about one class.")
-        
+
         err = 'out_of_bag_error|out_of_bag_error_per_observation' if self.oob_score else 'none'
         onedal_params = {
             'n_estimators': self.n_estimators,
@@ -623,15 +637,15 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'random_state': self.random_state,
             'verbose': self.verbose,
             'warm_start': self.warm_start,
-            'error_metric_mode' : err,
-            'variable_importance_mode' : 'mdi',
+            'error_metric_mode': err,
+            'variable_importance_mode': 'mdi',
             'class_weight': self.class_weight,
             'max_bins': self.max_bins,
             'min_bin_size': self.min_bin_size,
             'max_samples': self.max_samples
         }
         self._cached_estimators_ = None
-        
+
         # Compute
         self._onedal_estimator = onedal_RandomForestClassifier(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
@@ -656,7 +670,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_,
-            res.ravel().astype(np.int64, casting='unsafe'))
+                       res.ravel().astype(np.int64, casting='unsafe'))
 
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32])
@@ -830,7 +844,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
             X, y, sample_weight = data
-            if not (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score):
+            if not (self.oob_score and daal_check_version(
+                    (2021, 'P', 500)) or not self.oob_score):
                 return False
             elif self.criterion not in ["mse", "squared_error"]:
                 return False
@@ -870,7 +885,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_gpu_supported(self, method_name, *data):
         X, y, sample_weight = data
         if method_name == 'ensemble.RandomForestRegressor.fit':
-            if not (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score):
+            if not (self.oob_score and daal_check_version(
+                    (2021, 'P', 500)) or not self.oob_score):
                 return False
             elif self.criterion not in ["mse", "squared_error"]:
                 return False
@@ -947,8 +963,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'random_state': self.random_state,
             'verbose': self.verbose,
             'warm_start': self.warm_start,
-            'error_metric_mode' : err,
-            'variable_importance_mode' : 'mdi',
+            'error_metric_mode': err,
+            'variable_importance_mode': 'mdi',
             'max_samples': self.max_samples
         }
         self._cached_estimators_ = None

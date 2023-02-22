@@ -26,8 +26,10 @@ def _is_new_patching_available():
     return os.environ.get('OFF_ONEDAL_IFACE') is None \
         and daal_check_version((2021, 'P', 300))
 
+
 def _is_preview_enabled():
     return os.environ.get('SKLEARNEX_PREVIEW') is not None
+
 
 @lru_cache(maxsize=None)
 def get_patch_map():
@@ -73,12 +75,12 @@ def get_patch_map():
             mapping.pop('randomforestregressor')
             mapping['random_forest_classifier'] = [[(ensemble_module,
                                                      'RandomForestClassifier',
-                                                      RandomForestClassifier_sklearnex),
-                                                      None]]
+                                                     RandomForestClassifier_sklearnex),
+                                                    None]]
             mapping['random_forest_regressor'] = [[(ensemble_module,
                                                     'RandomForestRegressor',
-                                                     RandomForestRegressor_sklearnex),
-                                                     None]]
+                                                    RandomForestRegressor_sklearnex),
+                                                   None]]
             mapping['randomrorestclassifier'] = mapping['random_forest_classifier']
             mapping['randomforestregressor'] = mapping['random_forest_regressor']
 
