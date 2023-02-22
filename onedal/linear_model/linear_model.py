@@ -155,11 +155,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         # Finiteness is checked in the sklearnex wrapper
         X_loc = _check_array(X_loc, dtype=[np.float64, np.float32],
-<<<<<<< HEAD
                              force_all_finite=False, ensure_2d = False)
-=======
-                             force_all_finite=False)
->>>>>>> samir/enh/spmd_common
         _check_n_features(self, X_loc, False)
 
         params = self._get_onedal_params(X_loc)
