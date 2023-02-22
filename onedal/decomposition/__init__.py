@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -15,4 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['decomposition', 'linear_model', 'ensemble']
+from .pca import PCA
+
+__all__ = ['PCA']

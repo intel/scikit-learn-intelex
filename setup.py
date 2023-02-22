@@ -458,6 +458,7 @@ setup(
         'daal4py.sklearn.model_selection',
         'onedal',
         'onedal.ensemble',
+        'onedal.decomposition',
         'onedal.svm',
         'onedal.neighbors',
         'onedal.primitives',

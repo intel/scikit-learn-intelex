@@ -30,7 +30,7 @@ deselected_tests:
   - ensemble/_forest.py::sklearn.ensemble._forest.RandomForestRegressor
   - ensemble/_voting.py::sklearn.ensemble._voting.VotingRegressor
 
-  # Non-critival but significant difference because of different implementations
+  # Non-critical but significant difference because of different implementations
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[True-X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[oob_score1-X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_importances[RandomForestClassifier-gini-float64]

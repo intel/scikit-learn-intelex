@@ -176,6 +176,13 @@ def test_preview_namespace():
     
     lr, pca, dbscan, svc, rfc = get_estimators()
     assert 'sklearnex.preview' in rfc.__module__
+
+    if daal_check_version((2023, 'P', 100)):
+        assert 'sklearnex.preview' in lr.__module__
+    else:
+        assert 'daal4py' in lr.__module__
+        
+    assert 'sklearnex.preview' in pca.__module__
     assert 'daal4py' in dbscan.__module__
     assert 'sklearnex' in svc.__module__
     sklearnex.unpatch_sklearn()

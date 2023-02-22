@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2021 Intel Corporation
+* Copyright 2023 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ ONEDAL_PY_INIT_MODULE(table);
 
 /* primitives */
 ONEDAL_PY_INIT_MODULE(get_tree);
-
+ONEDAL_PY_INIT_MODULE(covariance);
 ONEDAL_PY_INIT_MODULE(linear_kernel);
 ONEDAL_PY_INIT_MODULE(rbf_kernel);
 ONEDAL_PY_INIT_MODULE(polynomial_kernel);
@@ -37,6 +37,7 @@ ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 
 /* algorithms */
 ONEDAL_PY_INIT_MODULE(ensemble);
+ONEDAL_PY_INIT_MODULE(decomposition);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 ONEDAL_PY_INIT_MODULE(linear_model);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
@@ -51,12 +52,14 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_policy(m);
     init_table(m);
 
+    init_covariance(m);
     init_linear_kernel(m);
     init_rbf_kernel(m);
     init_polynomial_kernel(m);
     init_sigmoid_kernel(m);
     init_get_tree(m);
 
+    init_decomposition(m);
     init_ensemble(m);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     init_linear_model(m);
