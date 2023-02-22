@@ -27,6 +27,10 @@ def _is_new_patching_available():
         and daal_check_version((2021, 'P', 300))
 
 
+def _is_preview_enabled():
+    return os.environ.get('SKLEARNEX_PREVIEW') is not None
+
+
 @lru_cache(maxsize=None)
 def get_patch_map():
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
@@ -48,17 +52,32 @@ def get_patch_map():
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
-        from .linear_model import LinearRegression as LinearRegression_sklearnex
+        # Preview classes for patching
+
+        from .preview.decomposition import PCA as PCA_sklearnex
+        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
 
         # Scikit-learn* modules
 
         import sklearn as base_module
+        import sklearn.decomposition as decomposition_module
         import sklearn.svm as svm_module
         import sklearn.neighbors as neighbors_module
         import sklearn.linear_model as linear_model_module
 
         # Patch for mapping
         # Algorithms
+        if _is_preview_enabled():
+            # PCA
+            mapping.pop('pca')
+            mapping['pca'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
+
+            # Linear Regression
+            mapping.pop('linear')
+            mapping['linear'] = [[(linear_model_module,
+                                   'LinearRegression',
+                                   LinearRegression_sklearnex), None]]
+
         # SVM
         mapping.pop('svm')
         mapping.pop('svc')
@@ -87,11 +106,6 @@ def get_patch_map():
         mapping['kneighborsregressor'] = mapping['knn_regressor']
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
 
-        mapping.pop('linear')
-        mapping['linear'] = [[(linear_model_module,
-                               'LinearRegression',
-                               LinearRegression_sklearnex), None]]
-
         # Configs
         mapping['set_config'] = [[(base_module,
                                    'set_config',
@@ -109,7 +123,9 @@ def get_patch_names():
     return list(get_patch_map().keys())
 
 
-def patch_sklearn(name=None, verbose=True, global_patch=False):
+def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
+    if preview:
+        os.environ['SKLEARNEX_PREVIEW'] = 'enabled_via_patch_sklearn'
     if not sklearn_check_version('0.22'):
         raise NotImplementedError(
             "Intel(R) Extension for Scikit-learn* patches apply "
@@ -153,6 +169,8 @@ def unpatch_sklearn(name=None, global_unpatch=False):
             for config in ['set_config', 'get_config', 'config_context']:
                 unpatch_sklearn_orig(config, get_map=get_patch_map)
         unpatch_sklearn_orig(name, get_map=get_patch_map)
+    if os.environ.get('SKLEARNEX_PREVIEW') == 'enabled_via_patch_sklearn':
+        os.environ.pop('SKLEARNEX_PREVIEW')
 
 
 def sklearn_is_patched(name=None, return_map=False):
