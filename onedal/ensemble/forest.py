@@ -119,7 +119,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                             "and will be removed in 1.3. To keep the past behaviour, "
                             "explicitly set `max_features=1.0` or remove this "
                             "parameter as it is also the default value for "
-                            "RandomForestRegressors and ExtraTreesRegressors.", FutureWarning, )
+                            "RandomForestRegressors and ExtraTreesRegressors.",
+                            FutureWarning, )
                     return max(1, int(np.sqrt(n_features))
                                ) if is_classification else n_features
             if max_features == 'sqrt':
@@ -193,16 +194,14 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                 self.min_samples_leaf,
                 numbers.Integral) else int(
                 ceil(
-                    self.min_samples_leaf *
-                    n_samples)))
+                    self.min_samples_leaf * n_samples)))
 
         min_observations_in_split_node = (
             self.min_samples_split if isinstance(
                 self.min_samples_split,
                 numbers.Integral) else int(
                 ceil(
-                    self.min_samples_split *
-                    n_samples)))
+                    self.min_samples_split * n_samples)))
 
         onedal_params = {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',

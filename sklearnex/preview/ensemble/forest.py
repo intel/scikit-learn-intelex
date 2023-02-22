@@ -59,9 +59,8 @@ if sklearn_check_version('1.2'):
 
 class BaseRandomForest(ABC):
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
-
         params = self.get_params()
-        clf_base = self.__class__(**params)
+        self.__class__(**params)
 
         # We use stock metaestimators below, so the only way
         # to pass a queue is using config_context.
@@ -342,9 +341,21 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if sample_weight is not None:
             sample_weight = self.check_sample_weight(sample_weight, X)
 
-        _onedal_ready = (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score) and \
-            self.warm_start is False and self.criterion == "gini" and self.ccp_alpha == 0.0 and \
-            not sp.issparse(X)
+        if daal_check_version((2021, 'P', 500)):
+            correct_oob_score = self.oob_score
+        else:
+            correct_oob_score = not self.oob_score
+
+        correct_sparsity = not sp.issparse(X)
+        correct_ccp_alpha = self.ccp_alpha == 0.0
+        correct_criterion = self.criterion == "gini"
+        correct_warm_start = self.warm_start is False
+
+        _onedal_ready = all([correct_oob_score,
+                             correct_sparsity,
+                             correct_ccp_alpha,
+                             correct_criterion,
+                             correct_warm_start])
         if _onedal_ready:
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
@@ -613,13 +624,16 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 sample_weight = expanded_class_weight
         if sample_weight is not None:
             sample_weight = [sample_weight]
-        # rs_ = check_random_state(self.random_state)
-        # seed_ = rs_.randint(0, np.iinfo('i').max)
+
         if n_classes_ < 2:
             raise ValueError(
                 "Training data only contain information about one class.")
 
-        err = 'out_of_bag_error|out_of_bag_error_per_observation' if self.oob_score else 'none'
+        if self.oob_score:
+            err = 'out_of_bag_error|out_of_bag_error_per_observation'
+        else:
+            err = 'none'
+
         onedal_params = {
             'n_estimators': self.n_estimators,
             'criterion': self.criterion,
@@ -946,7 +960,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.n_features_ = self.n_features_in_
         rs_ = check_random_state(self.random_state)
 
-        err = 'out_of_bag_error|out_of_bag_error_per_observation' if self.oob_score else 'none'
+        if self.oob_score:
+            err = 'out_of_bag_error|out_of_bag_error_per_observation'
+        else:
+            err = 'none'
+
         onedal_params = {
             'n_estimators': self.n_estimators,
             'criterion': self.criterion,
@@ -960,7 +978,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'bootstrap': self.bootstrap,
             'oob_score': self.oob_score,
             'n_jobs': self.n_jobs,
-            'random_state': self.random_state,
+            'random_state': rs_,
             'verbose': self.verbose,
             'warm_start': self.warm_start,
             'error_metric_mode': err,

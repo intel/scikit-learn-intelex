@@ -43,8 +43,10 @@ def get_patch_map():
         from ._config import get_config as get_config_sklearnex
         from ._config import config_context as config_context_sklearnex
 
-        from .preview.ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
-        from .preview.ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .preview.ensemble import RandomForestClassifier \
+            as RandomForestClassifier_sklearnex
+        from .preview.ensemble import RandomForestRegressor \
+            as RandomForestRegressor_sklearnex
 
         from .svm import SVR as SVR_sklearnex
         from .svm import SVC as SVC_sklearnex

@@ -173,7 +173,7 @@ def test_preview_namespace():
     # behavior with enabled preview
     sklearnex.patch_sklearn(preview=True)
     assert sklearnex.dispatcher._is_preview_enabled()
-    
+
     lr, pca, dbscan, svc, rfc = get_estimators()
     assert 'sklearnex.preview' in rfc.__module__
 
@@ -181,7 +181,7 @@ def test_preview_namespace():
         assert 'sklearnex.preview' in lr.__module__
     else:
         assert 'daal4py' in lr.__module__
-        
+
     assert 'sklearnex.preview' in pca.__module__
     assert 'daal4py' in dbscan.__module__
     assert 'sklearnex' in svc.__module__

@@ -63,7 +63,8 @@ def _to_absolute_max_features(
                         "and will be removed in 1.3. To keep the past behaviour, "
                         "explicitly set `max_features=1.0` or remove this "
                         "parameter as it is also the default value for "
-                        "RandomForestRegressors and ExtraTreesRegressors.", FutureWarning, )
+                        "RandomForestRegressors and ExtraTreesRegressors.",
+                        FutureWarning, )
                 return max(1, int(np.sqrt(n_features))
                            ) if is_classification else n_features
         if max_features == 'sqrt':
