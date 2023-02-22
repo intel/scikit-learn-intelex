@@ -76,6 +76,14 @@ mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 
+try:
+    import dpctl
+    dpctl_available = dpctl.__version__ >= '0.14'
+except ImportError:
+    dpctl_available = False
+
+build_distribute = dpcpp and dpctl_available and not no_dist
+
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(
     lib_dir)) else os.path.dirname(lib_dir)
@@ -456,12 +464,12 @@ setup(
         'daal4py.sklearn.model_selection',
         'onedal',
         'onedal.svm',
-        'onedal.spmd',
         'onedal.neighbors',
         'onedal.primitives',
         'onedal.datatypes',
         'onedal.common'
-    ] + (['onedal.linear_model'] if ONEDAL_VERSION >= 20230100 else [])),
+    ] + (['onedal.linear_model'] if ONEDAL_VERSION >= 20230100 else []) + \
+        (['onedal.spmd'] if build_distribute else [])),
     package_data={
         'daal4py.oneapi': [
             'liboneapi_backend.so',

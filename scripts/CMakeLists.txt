@@ -103,12 +103,16 @@ elseif(IFACE STREQUAL "dpc")
         set(ONEDAL_LIBRARIES "-l:libonedal_dpc.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_core.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
     endif()
     if(ONEDAL_DIST_SPMD)
-    set(MPI_LIBRARY ${MPI_LIBS})
+        set(MPI_LIBRARY ${MPI_LIBS})
     endif()
 
     list(APPEND COMPILE_DEFINITIONS
         "ONEDAL_DATA_PARALLEL"
         "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
+    if(ONEDAL_DIST_SPMD)
+        list(APPEND COMPILE_DEFINITIONS
+             "ONEDAL_DATA_PARALLEL_SPMD")
+    endif()
 else()
     message(FATAL_ERROR "Invalid IFACE value: " ${IFACE})
 endif()
