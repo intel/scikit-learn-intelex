@@ -236,11 +236,11 @@ class PCA(sklearn_PCA):
                 )
 
         # Mean center
-        X -= self.mean_
+        X_centered = X - self.mean_
         return dispatch(self, 'decomposition.PCA.transform', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_PCA.transform,
-        }, X)
+        }, X_centered)
 
     def transform(self, X):
         check_is_fitted(self)
