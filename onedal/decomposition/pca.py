@@ -31,7 +31,6 @@ class PCA():
         copy=True
     ):
         self.n_components = n_components
-        self.copy = copy
         self.method = method
         self.is_deterministic = is_deterministic
 

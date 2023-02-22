@@ -83,8 +83,7 @@ void init_train_result(py::module_& m) {
         .DEF_ONEDAL_PY_PROPERTY(model, result_t)
         .def_property_readonly("eigenvectors", &result_t::get_eigenvectors)
         .DEF_ONEDAL_PY_PROPERTY(eigenvalues, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(variances, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(means, result_t);
+        .DEF_ONEDAL_PY_PROPERTY(variances, result_t);
 }
 
 template <typename Task>
@@ -129,6 +128,7 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 } // namespace decomposition
+
 ONEDAL_PY_INIT_MODULE(decomposition) {
     using namespace decomposition;
     using namespace dal::pca;

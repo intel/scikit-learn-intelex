@@ -110,22 +110,53 @@ class PCA(sklearn_PCA):
 
         # Handle svd_solver
         self._fit_svd_solver = self.svd_solver
+        shape_good_for_daal = X.shape[1] / X.shape[0] < 2
         if self._fit_svd_solver == "auto":
-            # Small problem or n_components == 'mle', just call full PCA
-            if max(X.shape) <= 500 or n_components == "mle":
-                self._fit_svd_solver = "full"
-            elif 1 <= n_components < 0.8 * n_sf_min:
-                self._fit_svd_solver = "randomized"
-            # This is also the case of n_components in (0,1)
+            if sklearn_check_version('1.1'):
+                # Small problem or n_components == 'mle', just call full PCA
+                if max(X.shape) <= 500 or n_components == "mle":
+                    self._fit_svd_solver = "full"
+                elif 1 <= n_components < 0.8 * n_sf_min:
+                    self._fit_svd_solver = "randomized"
+                # This is also the case of n_components in (0,1)
+                else:
+                    self._fit_svd_solver = "full"
             else:
-                self._fit_svd_solver = "full"
+                if n_components == 'mle':
+                    self._fit_svd_solver = 'full'
+                else:
+                    n, p, k = X.shape[0], X.shape[1], n_components
+                    # These coefficients are result of training of Logistic
+                    # Regression (max_iter=10000, solver="liblinear",
+                    # fit_intercept=False)on different datasets and number of
+                    # components. X is a dataset with npk, np^2, and n^2
+                    # columns. And y is speedup of patched scikit-learn's
+                    # full PCA against stock scikit-learn's randomized PCA.
+                    regression_coefs = np.array([
+                        [9.779873e-11, n * p * k],
+                        [-1.122062e-11, n * p * p],
+                        [1.127905e-09, n ** 2],
+                    ])
+
+                    if n_components >= 1 and np.dot(
+                            regression_coefs[:, 0], regression_coefs[:, 1]) <= 0:
+                        self._fit_svd_solver = 'randomized'
+                    else:
+                        self._fit_svd_solver = 'full'
+        if not shape_good_for_daal or self._fit_svd_solver != 'full':
+            if sklearn_check_version('0.23'):
+                X = self._validate_data(X, copy=self.copy)
+            else:
+                X = check_array(X, copy=self.copy)
 
         # Call different fits for either full or truncated SVD
-        if self._fit_svd_solver == "full":
+        if shape_good_for_daal and self._fit_svd_solver == "full":
             return dispatch(self, 'decomposition.PCA.fit', {
                 'onedal': self.__class__._onedal_fit,
                 'sklearn': sklearn_PCA._fit_full,
             }, X)
+        elif self._fit_svd_solver == "full":
+            return sklearn_PCA._fit_full(self, X, n_components)
         elif self._fit_svd_solver in ["arpack", "randomized"]:
             return sklearn_PCA._fit_truncated(
                 self,
@@ -157,12 +188,6 @@ class PCA(sklearn_PCA):
         )
 
     def _onedal_fit(self, X, y=None, queue=None):
-        if self._fit_svd_solver == "full":
-            method = "precomputed"
-        else:
-            raise ValueError(
-                "Unknown method='{0}'".format(self.svd_solver)
-            )
 
         if self.n_components == 'mle' or self.n_components is None:
             onedal_n_components = min(X.shape)
@@ -174,8 +199,7 @@ class PCA(sklearn_PCA):
         onedal_params = {
             'n_components': onedal_n_components,
             'is_deterministic': True,
-            'method': method,
-            'copy': self.copy
+            'method': "precomputed",
         }
         self._onedal_estimator = onedal_PCA(**onedal_params)
         self._onedal_estimator.fit(X, y, queue=queue)
@@ -191,8 +215,6 @@ class PCA(sklearn_PCA):
         return self._onedal_estimator.predict(X, queue)
 
     def _onedal_transform(self, X):
-        check_is_fitted(self)
-
         X = _check_array(
             X,
             dtype=[np.float64, np.float32],
@@ -223,12 +245,13 @@ class PCA(sklearn_PCA):
         }, X)
 
     def transform(self, X):
-        if self.svd_solver in ["arpack", "randomized"]:
-            return sklearn_PCA.transform(self, X)
-        else:
+        check_is_fitted(self)
+        if hasattr(self, "_onedal_estimator"):
             X_new = self._onedal_transform(X)[:, : self.n_components_]
             if self.whiten:
                 X_new /= np.sqrt(self.explained_variance_)
+        else:
+            return sklearn_PCA.transform(self, X)
         return X_new
 
     def fit_transform(self, X, y=None):
@@ -245,17 +268,17 @@ class PCA(sklearn_PCA):
         X_new : ndarray of shape (n_samples, n_components)
             Transformed values of X.
         """
-        U, S, Vt = self._fit(X)
-        if U is None:
-            X_new = self.transform(X)
+        if self.svd_solver in ["randomized", "arpack"]:
+            return sklearn_PCA.fit_transform(self, X)
         else:
-            X_new = U[:, : self.n_components_]
-            if self.whiten:
-                X_new *= sqrt(X.shape[0] - 1)
+            self.fit(X)
+            if hasattr(self, "_onedal_estimator"):
+                X_new = self._onedal_transform(X)[:, : self.n_components_]
+                if self.whiten:
+                    X_new /= np.sqrt(self.explained_variance_)
+                return X_new
             else:
-                X_new *= S[: self.n_components_]
-
-        return X_new
+                return sklearn_PCA.transform(self, X)
 
     def _save_attributes(self):
         self.n_samples_ = self._onedal_estimator.n_samples_
