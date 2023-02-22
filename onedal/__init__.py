@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import platform
+from daal4py.sklearn._utils import daal_check_version
+
 if "Windows" in platform.system():
     import os
     import sys
@@ -23,7 +25,8 @@ if "Windows" in platform.system():
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
     if sys.version_info.minor >= 8:
         if 'DALROOT' in os.environ:
-            dal_root_redist = os.path.join(os.environ['DALROOT'], "redist", "intel64")
+            dal_root_redist = os.path.join(
+                os.environ['DALROOT'], "redist", "intel64")
             if os.path.exists(dal_root_redist):
                 os.add_dll_directory(dal_root_redist)
         os.add_dll_directory(path_to_libs)
@@ -40,3 +43,6 @@ except ImportError:
 # spmd only if _is_dpc_backend
 # if _is_dpc_backend:
 __all__ = ['neighbors', 'primitives', 'spmd', 'svm']
+
+if daal_check_version((2023, 'P', 100)):
+    __all__.append('linear_model')

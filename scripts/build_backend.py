@@ -100,8 +100,13 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     os.chdir(d4p_dir)
 
 
-def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1):
+def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_dist=True):
     import pybind11
+    try:
+        import dpctl
+        dpctl_available = dpctl.__version__ >= '0.14'
+    except ImportError:
+        dpctl_available = False
 
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")
@@ -117,12 +122,6 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1):
     win_python_path_lib = os.path.abspath(jp(get_config_var('LIBDEST'), "..", "libs"))
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var('LIBDIR')
     numpy_include = np.get_include()
-    mpi_root = os.environ['MPIROOT']
-    MPI_INCDIRS = [jp(mpi_root, 'include')]
-    MPI_LIBDIRS = [jp(mpi_root, 'lib')]
-    MPI_LIBS = ['mpi']
-    import dpctl
-    dpctl_include = dpctl.get_include()
 
     if iface == 'dpc':
         if IS_WIN:
@@ -131,6 +130,25 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1):
             cxx = 'icpx'
     elif cxx is None:
         raise RuntimeError('CXX compiler shall be specified')
+
+    build_distribute = iface == 'dpc' and dpctl_available and not no_dist
+
+    if build_distribute:
+        dpctl_include = dpctl.get_include()
+        mpi_root = os.environ['MPIROOT']
+        MPI_INCDIRS = jp(mpi_root, 'include')
+        MPI_LIBDIRS = jp(mpi_root, 'lib')
+        MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
+        if MPI_LIBNAME:
+            MPI_LIBS = MPI_LIBNAME
+        elif IS_WIN:
+            if os.path.isfile(jp(mpi_root, 'lib', 'mpi.lib')):
+                MPI_LIBS = 'mpi'
+            if os.path.isfile(jp(mpi_root, 'lib', 'impi.lib')):
+                MPI_LIBS = 'impi'
+            assert MPI_LIBS, "Couldn't find MPI library"
+        else:
+            MPI_LIBS = 'mpi'
 
     cmake_args = [
         "cmake",
@@ -143,15 +161,21 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1):
         "-DIFACE=" + iface,
         "-DONEDAL_MAJOR_BINARY=" + str(onedal_major_binary_version),
         "-DPYTHON_INCLUDE_DIR=" + python_include,
-        "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
         "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ['DALROOT'], 'include'),
         "-DoneDAL_LIBRARY_DIR=" + jp(os.environ['DALROOT'], 'lib', 'intel64'),
-        "-DMPI_INCLUDE_DIRS=" + jp(os.environ['MPIROOT'], 'include'),
-        "-DMPI_LIBRARY_DIR=" + jp(os.environ['MPIROOT'], 'lib'),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
+
+    if build_distribute:
+        cmake_args += [
+            "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
+            "-DMPI_INCLUDE_DIRS=" + MPI_INCDIRS,
+            "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,
+            "-DMPI_LIBS=" + MPI_LIBS,
+            "-DONEDAL_DIST_SPMD:BOOL=ON"
+        ]
 
     import multiprocessing
     cpu_count = multiprocessing.cpu_count()

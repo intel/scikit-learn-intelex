@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-#ifdef ONEDAL_DATA_PARALLEL
+#ifdef ONEDAL_DATA_PARALLEL_SPMD
 #include "oneapi/dal/detail/spmd_policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #include "oneapi/dal/spmd/mpi/communicator.hpp"

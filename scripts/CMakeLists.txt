@@ -59,12 +59,15 @@ message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}")
 # find_package(oneDAL REQUIRED)
 message(STATUS "oneDAL_INCLUDE_DIRS:" ${oneDAL_INCLUDE_DIRS})
 message(STATUS "oneDAL_LIBRARY_DIR:" ${oneDAL_LIBRARY_DIR})
-message(STATUS "MPI_INCLUDE_DIRS:" ${MPI_INCLUDE_DIRS})
-message(STATUS "MPI_LIBRARY_DIR:" ${MPI_LIBRARY_DIR})
 message(STATUS "PYTHON_INCLUDE_DIR:" ${PYTHON_INCLUDE_DIR})
 message(STATUS "PYTHON_LIBRARY_DIR:" ${PYTHON_LIBRARY_DIR})
-message(STATUS "DPCTL_INCLUDE_DIR:" ${DPCTL_INCLUDE_DIR})
 message(STATUS "NUMPY_INCLUDE_DIRS:" ${NUMPY_INCLUDE_DIRS})
+
+if(ONEDAL_DIST_SPMD)
+message(STATUS "MPI_INCLUDE_DIRS:" ${MPI_INCLUDE_DIRS})
+message(STATUS "MPI_LIBRARY_DIR:" ${MPI_LIBRARY_DIR})
+message(STATUS "DPCTL_INCLUDE_DIR:" ${DPCTL_INCLUDE_DIR})
+endif()
 
 find_package(pybind11 REQUIRED)
 
@@ -94,24 +97,29 @@ elseif(IFACE STREQUAL "dpc")
 
     if(WIN32)
         set(ONEDAL_LIBRARIES "onedal_dpc_dll.${ONEDAL_MAJOR_BINARY}" "onedal_core_dll.${ONEDAL_MAJOR_BINARY}")
-        set(MPI_LIBRARY "mpi") # impi or mpi
     elseif(APPLE)
         set(ONEDAL_LIBRARIES "onedal_dpc.${ONEDAL_MAJOR_BINARY}" "onedal_core.${ONEDAL_MAJOR_BINARY}" "onedal_thread.${ONEDAL_MAJOR_BINARY}")
-        set(MPI_LIBRARY "mpi")
     else()
         set(ONEDAL_LIBRARIES "-l:libonedal_dpc.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_core.so.${ONEDAL_MAJOR_BINARY}" "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
-        set(MPI_LIBRARY "mpi")
+    endif()
+    if(ONEDAL_DIST_SPMD)
+        set(MPI_LIBRARY ${MPI_LIBS})
     endif()
 
     list(APPEND COMPILE_DEFINITIONS
         "ONEDAL_DATA_PARALLEL"
         "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
+    if(ONEDAL_DIST_SPMD)
+        list(APPEND COMPILE_DEFINITIONS
+             "ONEDAL_DATA_PARALLEL_SPMD")
+    endif()
 else()
     message(FATAL_ERROR "Invalid IFACE value: " ${IFACE})
 endif()
 
 pybind11_add_module(${TARGET} ${sources})
 
+if(ONEDAL_DIST_SPMD)
 target_include_directories(${TARGET}
     PRIVATE ${PYTHON_ONEDAL}../
     PRIVATE ${oneDAL_INCLUDE_DIRS}
@@ -120,10 +128,23 @@ target_include_directories(${TARGET}
     PRIVATE ${DPCTL_INCLUDE_DIR}
     PRIVATE ${NUMPY_INCLUDE_DIRS}
 )
+else()
+target_include_directories(${TARGET}
+    PRIVATE ${PYTHON_ONEDAL}../
+    PRIVATE ${oneDAL_INCLUDE_DIRS}
+    PRIVATE ${PYTHON_INCLUDE_DIR}
+    PRIVATE ${NUMPY_INCLUDE_DIRS}
+)
+endif()
 
 target_compile_definitions(${TARGET} PUBLIC ${COMPILE_DEFINITIONS})
+if(ONEDAL_DIST_SPMD)
 target_link_directories(${TARGET} PRIVATE ${PYTHON_LIBRARY_DIR} ${oneDAL_LIBRARY_DIR} ${MPI_LIBRARY_DIR})
 target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES} ${MPI_LIBRARY})
+else()
+target_link_directories(${TARGET} PRIVATE ${PYTHON_LIBRARY_DIR} ${oneDAL_LIBRARY_DIR})
+target_link_libraries(${TARGET} PUBLIC ${ONEDAL_LIBRARIES})
+endif()
 target_link_options(${TARGET} PRIVATE ${ONEDAL_PY_LINK_OPTIONS})
 
 install(
