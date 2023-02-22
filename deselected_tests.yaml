@@ -84,14 +84,6 @@ deselected_tests:
   - ensemble/tests/test_bagging.py::test_sparse_classification
   - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
 
-  # Random Forest Regression insufficient accuracy (not that bad)
-  - tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
-  - tests/test_bagging.py::test_sparse_classification[csc_matrix-params15-decision_function]
-  - tests/test_bagging.py::test_sparse_classification[csr_matrix-params31-decision_function]
-  - tests/test_stacking.py::test_stacking_cv_influence[StackingClassifier]
-  - tests/test_bagging.py::test_estimators_samples_deterministic
-  - tests/test_voting.py::test_set_estimator_drop
-
   # Same results as in scikit-learn, but in a different order.
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[SVC]
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[NuSVC]
@@ -99,27 +91,6 @@ deselected_tests:
   # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with custom and precompute kernel
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
-
-  # TODO: Identified as minor accuracy bugs. Have to be fixed
-  - ensemble/tests/test_voting.py::test_none_estimator_with_weights[X0-y0-voter0]
-  - ensemble/tests/test_voting.py::test_none_estimator_with_weights[X1-y1-voter1]
-
-  # TODO: Known major bugs. Have to be fixed.
-  # Possibly linked to passing oob value
-  - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-RandomForestRegressor]
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X0-y0-0.9-array-RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
-
-  # Possibly linked to the improper estimators_ value
-  - cluster/tests/test_optics.py::test_processing_order
-  - tests/test_forest.py::test_warm_start[RandomForestRegressor]
-  - tests/test_forest.py::test_warm_start[RandomForestClassifier]
-  - tests/test_forest.py::test_warm_start_oob[RandomForestRegressor]
-  - tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
-  - tests/test_forest.py::test_warm_start_clear[RandomForestRegressor]
-  - tests/test_forest.py::test_warm_start_clear[RandomForestClassifier]
 
   # sklearn expects an exception for sparce matrices with 64-bit integer indices.
   # sklearnex works correctly with 64-bit integer indices
@@ -231,7 +202,7 @@ deselected_tests:
   # Patched and unpatched kmeans belong same values to different clusters. Need to investigate.
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0,<=1.1
 
-  # OOB scores in sklearn and oneDAL are different because of different random number generators
+  # OOB scores in sklearn and oneDAL are different because of different random nuber generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
 

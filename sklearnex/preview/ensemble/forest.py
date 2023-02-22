@@ -1,4 +1,3 @@
-# BUILD: 0023
 #!/usr/bin/env python
 # ===============================================================================
 # Copyright 2021 Intel Corporation
@@ -28,8 +27,8 @@ from abc import ABC
 
 from sklearn.exceptions import DataConversionWarning
 
-from .._config import get_config, config_context
-from .._device_offload import dispatch, wrap_output_data
+from ..._config import get_config, config_context
+from ..._device_offload import dispatch, wrap_output_data
 
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
