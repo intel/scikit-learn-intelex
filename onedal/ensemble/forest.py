@@ -473,9 +473,6 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
     def predict(self, X, queue=None):
         pred = super()._predict(X, _backend.decision_forest.classification, queue)
-        # if len(self.classes_) == 2:
-        #     pred = pred.ravel()
-        # return self.classes_.take(np.asarray(pred, dtype=np.intp)).ravel()
 
         return np.take(
             self.classes_,

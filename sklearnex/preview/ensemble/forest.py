@@ -16,7 +16,7 @@
 # ===============================================================================
 
 from daal4py.sklearn._utils import (
-    daal_check_version, sklearn_check_version,
+    daal_check_version, sklearn_check_version
 )
 import numpy as np
 
@@ -40,7 +40,7 @@ from sklearn.utils.validation import (
 
 from onedal.datatypes import _check_array, _num_features, _num_samples
 
-from sklearn.utils import (check_random_state, deprecated)
+from sklearn.utils import check_random_state, deprecated
 
 from sklearn.base import clone
 

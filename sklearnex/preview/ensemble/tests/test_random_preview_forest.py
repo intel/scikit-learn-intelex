@@ -26,15 +26,15 @@ def test_sklearnex_import_rf_classifier():
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
-    assert 'daal4py' in rf.__module__ or 'sklearnex' in rf.__module__
+    assert 'sklearnex.preview' in rf.__module__
     assert_allclose([1], rf.predict([[0, 0, 0, 0]]))
 
 
 def test_sklearnex_import_rf_regression():
-    from sklearnex.ensemble import RandomForestRegressor
+    from sklearnex.preview.ensemble import RandomForestRegressor
     X, y = make_regression(n_features=4, n_informative=2,
                            random_state=0, shuffle=False)
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
-    assert 'daal4py' in rf.__module__ or 'sklearnex' in rf.__module__
+    assert 'sklearnex.preview' in rf.__module__
     pred = rf.predict([[0, 0, 0, 0]])
     assert_allclose([-8.363], pred, atol=1e-2)
