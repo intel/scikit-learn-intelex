@@ -592,8 +592,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        X = check_array(X, dtype=[np.float64, np.float32])
-        y = check_array(make2d(y), ensure_2d=False, dtype=X.dtype)
+        X, y = make2d(X), make2d(y)
+        y = check_array(y, ensure_2d=False, dtype=X.dtype)
 
         y, expanded_class_weight = self._validate_y_class_weight(y)
 
@@ -672,7 +672,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                        res.ravel().astype(np.int64, casting='unsafe'))
 
     def _onedal_predict_proba(self, X, queue=None):
-        X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self)
         if sklearn_check_version('0.23'):
             self._check_n_features(X, reset=False)
