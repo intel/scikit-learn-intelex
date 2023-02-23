@@ -29,8 +29,8 @@
 #include <iostream>
 #include <utility>
 
-#define TERMINAL_NODE -1
-#define NO_FEATURE    -2
+#define ONEDAL_PY_TERMINAL_NODE -1
+#define ONEDAL_PY_NO_FEATURE    -2
 
 namespace py = pybind11;
 
@@ -64,9 +64,9 @@ public:
     double weighted_n_node_samples;
 
     skl_tree_node()
-            : left_child(TERMINAL_NODE),
-              right_child(TERMINAL_NODE),
-              feature(NO_FEATURE),
+            : left_child(ONEDAL_PY_TERMINAL_NODE),
+              right_child(ONEDAL_PY_TERMINAL_NODE),
+              feature(ONEDAL_PY_NO_FEATURE),
               threshold(get_nan64()),
               impurity(get_nan64()),
               n_node_samples(0),

@@ -30,6 +30,8 @@ from sklearn.exceptions import DataConversionWarning
 from ..._config import get_config, config_context
 from ..._device_offload import dispatch, wrap_output_data
 
+from daal4py.sklearn._utils import make2d
+
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
 
@@ -345,7 +347,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         correct_warm_start = self.warm_start is False
 
         if daal_check_version((2021, 'P', 500)):
-            correct_oob_score = self.oob_score
+            correct_oob_score = not self.oob_score
         else:
             correct_oob_score = self.oob_score
 
@@ -590,7 +592,9 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        y = check_array(y, ensure_2d=False, dtype=None)
+        X = check_array(X, dtype=[np.float64, np.float32])
+        y = check_array(make2d(y), ensure_2d=False, dtype=X.dtype)
+
         y, expanded_class_weight = self._validate_y_class_weight(y)
 
         n_classes_ = self.n_classes_[0]
@@ -932,8 +936,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float64, np.float32])
-        y = np.asarray(y)
-        y = np.atleast_1d(y)
+        y = np.atleast_1d(np.asarray(y))
         y = check_array(y, ensure_2d=False, dtype=X.dtype)
         check_consistent_length(X, y)
         self.n_features_in_ = X.shape[1]
@@ -1034,8 +1037,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             # [:, np.newaxis] that does not.
             y = np.reshape(y, (-1, 1))
         self.n_outputs_ = y.shape[1]
-
-        print(self.n_outputs_)
 
         dispatch(self, 'ensemble.RandomForestRegressor.fit', {
             'onedal': self.__class__._onedal_fit,
