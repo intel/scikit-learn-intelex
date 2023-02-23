@@ -23,7 +23,6 @@ if _is_dpc_backend:
             self._queue = queue
             super().__init__(self._queue)
 
-
     def _get_spmd_policy(queue):
         # TODO:
         # cases when queue is None
