@@ -321,6 +321,14 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         -------
         self : object
         """
+        dispatch(self, 'ensemble.RandomForestClassifier.fit', {
+            'onedal': self.__class__._onedal_fit,
+            'sklearn': sklearn_RandomForestClassifier.fit,
+        }, X, y, sample_weight)
+        return self
+
+
+    def _onedal_ready(self, X, y, sample_weight):
         if sp.issparse(y):
             raise ValueError(
                 "sparse multilabel-indicator for y is not supported."
@@ -341,22 +349,22 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if sample_weight is not None:
             sample_weight = self.check_sample_weight(sample_weight, X)
 
-        if daal_check_version((2021, 'P', 500)):
-            correct_oob_score = self.oob_score
-        else:
-            correct_oob_score = not self.oob_score
-
         correct_sparsity = not sp.issparse(X)
         correct_ccp_alpha = self.ccp_alpha == 0.0
         correct_criterion = self.criterion == "gini"
         correct_warm_start = self.warm_start is False
 
-        _onedal_ready = all([correct_oob_score,
-                             correct_sparsity,
-                             correct_ccp_alpha,
-                             correct_criterion,
-                             correct_warm_start])
-        if _onedal_ready:
+        if daal_check_version((2021, 'P', 500)):
+            correct_oob_score = self.oob_score
+        else:
+            correct_oob_score = self.oob_score
+
+        ready = all([correct_oob_score,
+                      correct_sparsity,
+                      correct_ccp_alpha,
+                      correct_criterion,
+                      correct_warm_start])
+        if ready:
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
             X = check_array(X, dtype=[np.float32, np.float64])
@@ -371,17 +379,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                     stacklevel=2)
             check_consistent_length(X, y)
             if y.ndim == 1:
-                # reshape is necessary to preserve the data contiguity against vs
-                # [:, np.newaxis] that does not.
                 y = np.reshape(y, (-1, 1))
             self.n_outputs_ = y.shape[1]
-            _onedal_ready = _onedal_ready and self.n_outputs_ == 1
+            ready = ready and self.n_outputs_ == 1
 
-        dispatch(self, 'ensemble.RandomForestClassifier.fit', {
-            'onedal': self.__class__._onedal_fit,
-            'sklearn': sklearn_RandomForestClassifier.fit,
-        }, X, y, sample_weight)
-        return self
+        return ready, X, y, sample_weight
 
     @wrap_output_data
     def predict(self, X):
@@ -526,15 +528,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
-            X, y, sample_weight = data
-            if not (self.oob_score and daal_check_version(
-                    (2021, 'P', 500)) or not self.oob_score):
-                return False
-            # if self.oob_score:
-            #     return False
-            elif not self.criterion == "gini":
-                return False
-            elif sp.issparse(X):
+            ready, X, y, sample_weight = self._onedal_ready(*data)
+            if not ready:
                 return False
             elif sp.issparse(y):
                 return False
@@ -570,12 +565,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_gpu_supported(self, method_name, *data):
         X, y, sample_weight = data
         if method_name == 'ensemble.RandomForestClassifier.fit':
-            if not (self.oob_score and daal_check_version(
-                    (2021, 'P', 500)) or not self.oob_score):
-                return False
-            elif not self.criterion == "gini":
-                return False
-            elif sp.issparse(X):
+            ready, X, y, sample_weight = self._onedal_ready(*data)
+            if not ready:
                 return False
             elif sp.issparse(y):
                 return False
@@ -1053,6 +1044,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             # [:, np.newaxis] that does not.
             y = np.reshape(y, (-1, 1))
         self.n_outputs_ = y.shape[1]
+
+        print(self.n_outputs_)
 
         dispatch(self, 'ensemble.RandomForestRegressor.fit', {
             'onedal': self.__class__._onedal_fit,

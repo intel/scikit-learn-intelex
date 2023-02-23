@@ -43,11 +43,6 @@ def get_patch_map():
         from ._config import get_config as get_config_sklearnex
         from ._config import config_context as config_context_sklearnex
 
-        from .preview.ensemble import RandomForestClassifier \
-            as RandomForestClassifier_sklearnex
-        from .preview.ensemble import RandomForestRegressor \
-            as RandomForestRegressor_sklearnex
-
         from .svm import SVR as SVR_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
@@ -60,7 +55,13 @@ def get_patch_map():
         # Preview classes for patching
 
         from .preview.decomposition import PCA as PCA_sklearnex
+
         from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
+
+        from .preview.ensemble import RandomForestClassifier \
+            as RandomForestClassifier_sklearnex
+        from .preview.ensemble import RandomForestRegressor \
+            as RandomForestRegressor_sklearnex
 
         # Scikit-learn* modules
 
@@ -91,12 +92,10 @@ def get_patch_map():
             mapping['randomrorestclassifier'] = mapping['random_forest_classifier']
             mapping['randomforestregressor'] = mapping['random_forest_regressor']
 
-        if _is_preview_enabled():
             # PCA
             mapping.pop('pca')
             mapping['pca'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
 
-        if _is_preview_enabled():
             # Linear Regression
             mapping.pop('linear')
             mapping['linear'] = [[(linear_model_module,

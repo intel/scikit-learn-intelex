@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #===============================================================================
-# Copyright 2021 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ from sklearn.datasets import make_classification, make_regression
 
 
 def test_sklearnex_import_rf_classifier():
-    from sklearnex.ensemble import RandomForestClassifier
+    from sklearnex.preview.ensemble import RandomForestClassifier
     X, y = make_classification(n_samples=1000, n_features=4,
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
