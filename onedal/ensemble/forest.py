@@ -372,7 +372,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
     def _create_model(self, module):
         # TODO:
         # upate error msg.
-        raise ValueError('Creating model is not supported.')
+        raise NotImplementedError('Creating model is not supported.')
 
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
