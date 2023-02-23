@@ -49,8 +49,8 @@ if __name__ == "__main__":
     params_spmd = {'ns': 15, 'nf': 21, 'nr': 23}
     params_grtr = {'ns': 30, 'nf': 21, 'nr': 23}
     
-    Xsp, ysp, csp, isp = generate_X_y(params_spmd, size, rank)
-    Xgt, ygt, cgt, igt = generate_X_y(params_grtr, size, rank)
+    Xsp, ysp, csp, isp = generate_X_y(params_spmd, size, size + rank - 1)
+    Xgt, ygt, cgt, igt = generate_X_y(params_grtr, size, size + rank + 1)
 
     assert_allclose(csp, cgt)
     assert_allclose(isp, igt)
