@@ -15,13 +15,8 @@
 # limitations under the License.
 #===============================================================================
 
-import numpy as np
-from numpy.testing import assert_allclose
+from .linear import LinearRegression
 
-
-def test_sklearnex_import():
-    from sklearnex.decomposition import PCA
-    X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
-    pca = PCA(n_components=2, svd_solver='full').fit(X)
-    assert 'daal4py' in pca.__module__
-    assert_allclose(pca.singular_values_, [6.30061232, 0.54980396])
+__all__ = [
+    'LinearRegression'
+]
