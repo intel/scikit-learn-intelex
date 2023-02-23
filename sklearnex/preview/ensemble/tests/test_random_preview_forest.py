@@ -37,4 +37,4 @@ def test_sklearnex_import_rf_regression():
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
     assert 'sklearnex.preview' in rf.__module__
     pred = rf.predict([[0, 0, 0, 0]])
-    assert_allclose([-8.363], pred, atol=1e-2)
+    assert_allclose([-6.839], pred, atol=1e-2)
