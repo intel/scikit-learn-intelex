@@ -327,7 +327,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         }, X, y, sample_weight)
         return self
 
-
     def _onedal_ready(self, X, y, sample_weight):
         if sp.issparse(y):
             raise ValueError(
@@ -360,10 +359,10 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             correct_oob_score = self.oob_score
 
         ready = all([correct_oob_score,
-                      correct_sparsity,
-                      correct_ccp_alpha,
-                      correct_criterion,
-                      correct_warm_start])
+                     correct_sparsity,
+                     correct_ccp_alpha,
+                     correct_criterion,
+                     correct_warm_start])
         if ready:
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
