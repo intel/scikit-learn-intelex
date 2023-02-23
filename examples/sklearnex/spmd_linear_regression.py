@@ -1,57 +1,53 @@
-#===============================================================================
-# Copyright 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#===============================================================================
+import numpy as np
 
-# sklearnex RF example for distributed memory systems; SPMD mode
-# run like this:
-#    mpirun -n 4 python ./spmd_random_forest.py
-
-# TODO:
-# Example just for debuging. Will be reimplemented.
+from mpi4py import MPI
 
 import dpctl
-import numpy as np
-from mpi4py import MPI
-import dpctl.tensor as dpt
-from onedal import _backend
+
+from numpy.testing import assert_allclose
+
+from onedal.spmd.linear_model import LinearRegression as LinRegSpmd
+
 from sklearn.datasets import make_regression
-from sklearnex.spmd.linear_model import LinearRegression
-from onedal.tests.utils._device_selection import get_queues
 
-def run_lr_regression_with_mpi4py(q):
-    comm = MPI.COMM_WORLD
-    mpi_size = comm.Get_size()
-    mpi_rank = comm.Get_rank()
+def generate_X_y(par, coef_seed, data_seed):
+    ns, nf, nr = par['ns'], par['nf'], par['nr']
 
-    n_features = 1024
-    X_test, y_test = make_regression(n_samples=128, 
-            n_features=n_features, random_state=mpi_rank)
-    X_train, y_train = make_regression(n_samples=1024, 
-            n_features=n_features, random_state=mpi_rank)
+    crng = np.random.default_rng(coef_seed)
+    coef = crng.uniform(-4, 1, size = (nr, nf)).T
+    intp = crng.uniform(-1, 9, size = (nr, ))
 
-    # sklearnex level
-    X_dpctl = dpt.asarray(X_train, usm_type="device", sycl_queue=q)
-    y_dpctl = dpt.asarray(y_train, usm_type="device", sycl_queue=q)
+    drng = np.random.default_rng(data_seed)
+    data = drng.uniform(-7, 7, size = (ns, nf))
+    resp = data @ coef + intp[np.newaxis, :]
 
-    # onedal interface
-    model = LinearRegression(True)
-    model.fit(X_train, y_train, q)
-    y_pred = model.predict(X_test, q)
-
-    print(mpi_rank, y_pred, y_test)
+    return data, resp, coef, intp
 
 if __name__ == "__main__":
     q = dpctl.SyclQueue("gpu")
-    run_lr_regression_with_mpi4py(q)
+
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+
+    params_spmd = {'ns': 15, 'nf': 21, 'nr': 23}
+    params_grtr = {'ns': 30, 'nf': 21, 'nr': 23}
+    
+    Xsp, ysp, csp, isp = generate_X_y(params_spmd, size, rank)
+    Xgt, ygt, cgt, igt = generate_X_y(params_grtr, size, rank)
+
+    assert_allclose(csp, cgt)
+    assert_allclose(isp, igt)
+
+    lrsp = LinRegSpmd(copy_X=True, fit_intercept=True)
+    lrsp.fit(Xsp, ysp, queue=q)
+
+    assert_allclose(lrsp.coef_, csp.T)
+    assert_allclose(lrsp.intercept_, isp)
+
+    ypr = lrsp.predict(Xgt, queue=q)
+
+    assert_allclose(ypr, ygt)
+
+    print("Groundtruth responses:\n", ygt)
+    print("Computed responses:\n", ypr)
