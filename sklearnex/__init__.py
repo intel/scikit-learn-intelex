@@ -26,8 +26,18 @@ __all__ = [
     'cluster', 'config_context', 'decomposition', 'ensemble', 'get_config',
     'get_patch_names', 'linear_model', 'manifold', 'metrics', 'neighbors',
     'patch_sklearn', 'set_config', 'sklearn_is_patchedget_patch_map',
-    'spmd', 'svm', 'unpatch_sklearn', 'utils'
+    'svm', 'unpatch_sklearn', 'utils'
 ]
+
+try:
+    import onedal._onedal_py_dpc as _backend
+    _is_dpc_backend = True
+except ImportError:
+    import onedal._onedal_py_host as _backend
+    _is_dpc_backend = False
+
+if _is_dpc_backend:
+    __all__.append('spmd')
 
 from ._utils import set_sklearn_ex_verbose
 
