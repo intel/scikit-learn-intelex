@@ -1,5 +1,5 @@
 # ===============================================================================
-# Copyright 2021 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
 # limitations under the License.
 # ===============================================================================
 
-from .kernel_functions import linear_kernel, rbf_kernel, poly_kernel, sigmoid_kernel
-from .get_tree import get_tree_state_cls, get_tree_state_reg
+from onedal import _backend
 
-__all__ = [
-    'get_tree_state_cls',
-    'get_tree_state_reg',
-    'linear_kernel',
-    'rbf_kernel',
-    'poly_kernel',
-    'sigmoid_kernel']
+
+def get_tree_state_cls(model, iTree, n_classes):
+    return _backend.get_tree.classification.get_tree_state(
+        model, iTree, n_classes)
+
+
+def get_tree_state_reg(model, iTree):
+    return _backend.get_tree.regression.get_tree_state(model, iTree, 1)

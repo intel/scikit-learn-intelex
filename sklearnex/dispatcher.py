@@ -55,11 +55,18 @@ def get_patch_map():
         # Preview classes for patching
 
         from .preview.decomposition import PCA as PCA_sklearnex
+
         from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
+
+        from .preview.ensemble import RandomForestClassifier \
+            as RandomForestClassifier_sklearnex
+        from .preview.ensemble import RandomForestRegressor \
+            as RandomForestRegressor_sklearnex
 
         # Scikit-learn* modules
 
         import sklearn as base_module
+        import sklearn.ensemble as ensemble_module
         import sklearn.decomposition as decomposition_module
         import sklearn.svm as svm_module
         import sklearn.neighbors as neighbors_module
@@ -67,7 +74,24 @@ def get_patch_map():
 
         # Patch for mapping
         # Algorithms
+
         if _is_preview_enabled():
+            # Ensemble
+            mapping.pop('random_forest_classifier')
+            mapping.pop('random_forest_regressor')
+            mapping.pop('randomrorestclassifier')
+            mapping.pop('randomforestregressor')
+            mapping['random_forest_classifier'] = [[(ensemble_module,
+                                                     'RandomForestClassifier',
+                                                     RandomForestClassifier_sklearnex),
+                                                    None]]
+            mapping['random_forest_regressor'] = [[(ensemble_module,
+                                                    'RandomForestRegressor',
+                                                    RandomForestRegressor_sklearnex),
+                                                   None]]
+            mapping['randomrorestclassifier'] = mapping['random_forest_classifier']
+            mapping['randomforestregressor'] = mapping['random_forest_regressor']
+
             # PCA
             mapping.pop('pca')
             mapping['pca'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
