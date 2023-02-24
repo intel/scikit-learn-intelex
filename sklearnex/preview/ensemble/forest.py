@@ -16,11 +16,14 @@
 # ===============================================================================
 
 from daal4py.sklearn._utils import (
-    daal_check_version, sklearn_check_version
+    daal_check_version, sklearn_check_version,
+    make2d, get_dtype
 )
+
 import numpy as np
 
 import numbers
+
 import warnings
 
 from abc import ABC
@@ -30,7 +33,7 @@ from sklearn.exceptions import DataConversionWarning
 from ..._config import get_config, config_context
 from ..._device_offload import dispatch, wrap_output_data
 
-from daal4py.sklearn._utils import make2d
+from daal4py.sklearn._utils import make2d, get_dtype
 
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
@@ -370,10 +373,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                     DataConversionWarning,
                     stacklevel=2)
             check_consistent_length(X, y)
-            if y.ndim == 1:
-                y = np.reshape(y, (-1, 1))
+
+            y = make2d(y)
             self.n_outputs_ = y.shape[1]
             ready = ready and self.n_outputs_ == 1
+            ready = ready and (y.dtype in [np.float32, np.float64])
 
         return ready, X, y, sample_weight
 
@@ -539,6 +543,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return True
         if method_name in ['ensemble.RandomForestClassifier.predict',
                            'ensemble.RandomForestClassifier.predict_proba']:
+            X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
             elif sp.issparse(data[0]):
@@ -555,7 +560,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        X, y, sample_weight = data
         if method_name == 'ensemble.RandomForestClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if not ready:
@@ -576,6 +580,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return True
         if method_name in ['ensemble.RandomForestClassifier.predict',
                            'ensemble.RandomForestClassifier.predict_proba']:
+            X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
             elif sp.issparse(X):
@@ -592,7 +597,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        X, y = make2d(np.asarray(X)), make2d(y)
+        X, y = make2d(np.asarray(X)), make2d(np.asarray(y))
+        
         y = check_array(y, ensure_2d=False, dtype=X.dtype)
 
         y, expanded_class_weight = self._validate_y_class_weight(y)
