@@ -43,6 +43,7 @@ __all__ = ['decomposition', 'neighbors', 'primitives', 'svm']
 
 if _is_dpc_backend:
     __all__.append('spmd')
+    __all__.append('spmd.linear_model')
 
 if daal_check_version((2023, 'P', 100)):
     __all__.append('linear_model')
