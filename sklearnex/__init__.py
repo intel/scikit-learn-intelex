@@ -29,12 +29,7 @@ __all__ = [
     'svm', 'unpatch_sklearn', 'utils'
 ]
 
-try:
-    import onedal._onedal_py_dpc as _backend
-    _is_dpc_backend = True
-except ImportError:
-    import onedal._onedal_py_host as _backend
-    _is_dpc_backend = False
+from onedal import _is_dpc_backend
 
 if _is_dpc_backend:
     __all__.append('spmd')
