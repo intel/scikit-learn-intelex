@@ -26,18 +26,20 @@ from onedal.spmd.linear_model import LinearRegression as LinRegSpmd
 
 from sklearn.datasets import make_regression
 
+
 def generate_X_y(par, coef_seed, data_seed):
     ns, nf, nr = par['ns'], par['nf'], par['nr']
 
     crng = np.random.default_rng(coef_seed)
-    coef = crng.uniform(-4, 1, size = (nr, nf)).T
-    intp = crng.uniform(-1, 9, size = (nr, ))
+    coef = crng.uniform(-4, 1, size=(nr, nf)).T
+    intp = crng.uniform(-1, 9, size=(nr, ))
 
     drng = np.random.default_rng(data_seed)
-    data = drng.uniform(-7, 7, size = (ns, nf))
+    data = drng.uniform(-7, 7, size=(ns, nf))
     resp = data @ coef + intp[np.newaxis, :]
 
     return data, resp, coef, intp
+
 
 if __name__ == "__main__":
     q = dpctl.SyclQueue("gpu")
@@ -48,7 +50,7 @@ if __name__ == "__main__":
 
     params_spmd = {'ns': 15, 'nf': 21, 'nr': 23}
     params_grtr = {'ns': 30, 'nf': 21, 'nr': 23}
-    
+
     Xsp, ysp, csp, isp = generate_X_y(params_spmd, size, size + rank - 1)
     Xgt, ygt, cgt, igt = generate_X_y(params_grtr, size, size + rank + 1)
 
