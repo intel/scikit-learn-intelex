@@ -98,12 +98,11 @@ jobs:
     displayName: 'System info'
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel mpich
+      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich dpctl
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      conda install -q -y -c intel dpctl
       pip install -r requirements-dev.txt
       pip list
     displayName: 'Install develop requirements'

@@ -77,7 +77,11 @@ if _is_dpc_backend:
                     return
             super().__init__(self._queue.addressof_ref())
 
-    class _SPMDDataParallelInteropPolicy(_backend.spmd_data_parallel_policy):
-        def __init__(self, queue):
-            self._queue = queue
-            super().__init__(self._queue)
+    try:
+        class _SPMDDataParallelInteropPolicy(_backend.spmd_data_parallel_policy):
+            def __init__(self, queue):
+                self._queue = queue
+                super().__init__(self._queue)
+    except:
+        class _SPMDDataParallelInteropPolicy(_DataParallelInteropPolicy):
+            pass

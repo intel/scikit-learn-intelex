@@ -39,8 +39,10 @@ except ImportError:
     import onedal._onedal_py_host as _backend
     _is_dpc_backend = False
 
+__all__ = ['decomposition', 'neighbors', 'primitives', 'svm']
 
-__all__ = ['decomposition', 'neighbors', 'primitives', 'spmd', 'svm']
+if _is_dpc_backend:
+    __all__.append('spmd')
 
 if daal_check_version((2023, 'P', 100)):
     __all__.append('linear_model')

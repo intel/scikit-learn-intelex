@@ -20,10 +20,11 @@ from ...common._spmd_policy import _get_spmd_policy
 
 from onedal.linear_model import LinearRegression as LinearRegression_Batch
 
+
 class BaseLinearRegressionSPMD(ABC):
     def _get_policy(self, queue, *data):
         return _get_spmd_policy(queue)
 
+
 class LinearRegression(BaseLinearRegressionSPMD, LinearRegression_Batch):
     pass
-    
