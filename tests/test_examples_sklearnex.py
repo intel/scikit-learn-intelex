@@ -53,14 +53,7 @@ def test_generator(file):
     print("Generating tests for " + os.path.splitext(file)[0])
 
 
-filters = [lambda x: 'spmd' not in str(x), lambda x: str(x).endswith(".py")]
-
-
-def joint_filter(x):
-    return all([f(x) for f in filters])
-
-
-files = list(filter(joint_filter, os.listdir(examples_path)))
+files = [f for f in os.listdir(examples_path) if f.endswith(".py") and 'spmd' not in f]
 
 for file in files:
     test_generator(file)
