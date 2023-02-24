@@ -15,9 +15,7 @@
 #===============================================================================
 
 from abc import ABC
-
 from ...common._spmd_policy import _get_spmd_policy
-
 from onedal.linear_model import LinearRegression as LinearRegression_Batch
 
 
