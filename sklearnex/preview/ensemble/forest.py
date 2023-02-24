@@ -592,7 +592,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        X, y = make2d(X), make2d(y)
+        X, y = make2d(np.asarray(X)), make2d(y)
         y = check_array(y, ensure_2d=False, dtype=X.dtype)
 
         y, expanded_class_weight = self._validate_y_class_weight(y)
