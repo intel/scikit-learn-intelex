@@ -15,7 +15,6 @@
 #===============================================================================
 
 from onedal import _backend, _is_dpc_backend
-from warnings import warn 
 import sys
 
 oneapi_is_available = 'daal4py.oneapi' in sys.modules
@@ -33,10 +32,6 @@ def _get_policy(queue, *data):
         return _DataParallelInteropPolicy(queue)
     assert data_queue is None and queue is None
     return _HostInteropPolicy()
-
-
-def _get_spmd_policy(queue):
-    return _SPMDDataParallelInteropPolicy(queue)
 
 
 def _get_queue(*data):
