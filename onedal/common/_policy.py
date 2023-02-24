@@ -15,6 +15,7 @@
 #===============================================================================
 
 from onedal import _backend, _is_dpc_backend
+from warnings import warn 
 import sys
 
 oneapi_is_available = 'daal4py.oneapi' in sys.modules
@@ -76,12 +77,3 @@ if _is_dpc_backend:
                     super().__init__(self._queue.sycl_device.get_filter_string())
                     return
             super().__init__(self._queue.addressof_ref())
-
-    try:
-        class _SPMDDataParallelInteropPolicy(_backend.spmd_data_parallel_policy):
-            def __init__(self, queue):
-                self._queue = queue
-                super().__init__(self._queue)
-    except:
-        class _SPMDDataParallelInteropPolicy(_DataParallelInteropPolicy):
-            pass

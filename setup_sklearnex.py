@@ -115,5 +115,5 @@ setup(name="scikit-learn-intelex",
           'sklearnex.preview.linear_model',
           'sklearnex.svm',
           'sklearnex.utils'
-      ] + (['onedal.spmd'] if build_distribute else [])),
+      ] + (['sklearnex.spmd'] if build_distribute else [])),
       )
