@@ -98,7 +98,8 @@ jobs:
     displayName: 'System info'
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich dpctl
+      if [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCTL_PACKAGE=dpctl; else export DPCTL_PACKAGE=; fi
+      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich $DPCTL_PACKAGE
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
