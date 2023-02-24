@@ -30,6 +30,19 @@ dal_root = os.environ.get('DALROOT')
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
 
+trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
+no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
+dpcpp = True if 'DPCPPROOT' in os.environ else False
+dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
+
+try:
+    import dpctl
+    dpctl_available = dpctl.__version__ >= '0.14'
+except ImportError:
+    dpctl_available = False
+
+build_distribute = dpcpp and dpctl_available and not no_dist
+
 ONEDAL_VERSION = get_onedal_version(dal_root)
 
 project_urls = {
@@ -102,5 +115,5 @@ setup(name="scikit-learn-intelex",
           'sklearnex.preview.linear_model',
           'sklearnex.svm',
           'sklearnex.utils'
-      ]),
+      ] + (['sklearnex.spmd'] if build_distribute else [])),
       )

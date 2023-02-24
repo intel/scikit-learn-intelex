@@ -1030,12 +1030,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
         y = np.asarray(y)
 
-        if y.ndim == 2 and y.shape[1] == 1:
-            warnings.warn("A column-vector y was passed when a 1d array was"
-                          " expected. Please change the shape of y to "
-                          "(n_samples,), for example using ravel().",
-                          DataConversionWarning, stacklevel=2)
-
         if y.ndim == 1:
             # reshape is necessary to preserve the data contiguity against vs
             # [:, np.newaxis] that does not.
