@@ -43,6 +43,10 @@ from .._config import config_context
 
 if sklearn_check_version("1.0"):
     class LocalOutlierFactor(sklearn_LocalOutlierFactor):
+        if sklearn_check_version('1.2'):
+            _parameter_constraints: dict = {
+                **sklearn_LocalOutlierFactor._parameter_constraints}
+
         def __init__(
             self,
             n_neighbors=20,
@@ -70,6 +74,8 @@ if sklearn_check_version("1.0"):
 
         def _fit(self, X, y, queue=None):
             with config_context(target_offload=queue):
+                if sklearn_check_version("1.2"):
+                    self._validate_params()
                 self._knn = NearestNeighbors(
                     n_neighbors=self.n_neighbors,
                     algorithm=self.algorithm,

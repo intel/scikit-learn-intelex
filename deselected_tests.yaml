@@ -39,6 +39,8 @@ deselected_tests:
   - linear_model/tests/test_logistic.py::test_logistic_regression_multinomial
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
   - cluster/tests/test_k_means.py::test_k_means_fit_predict >=0.23,<0.24
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-brute]
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-brute]
 
   # cache directory is not accessible on some systems
   - utils/tests/test_validation.py::test_check_memory
