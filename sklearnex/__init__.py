@@ -29,6 +29,11 @@ __all__ = [
     'svm', 'unpatch_sklearn', 'utils'
 ]
 
+from onedal import _is_dpc_backend
+
+if _is_dpc_backend:
+    __all__.append('spmd')
+
 from ._utils import set_sklearn_ex_verbose
 
 set_sklearn_ex_verbose()
