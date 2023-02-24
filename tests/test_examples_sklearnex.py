@@ -52,10 +52,16 @@ def test_generator(file):
     setattr(TestsklearnexExamples, 'test_' + os.path.splitext(file)[0], testit)
     print("Generating tests for " + os.path.splitext(file)[0])
 
-filters = []
 
-files = [f for f in os.listdir(examples_path) if f.endswith(".py")]
-filtered_files = 
+filters = [lambda x: 'spmd' not in str(x), lambda x: str(x).endswith(".py")]
+
+
+def joint_filter(x):
+    return all([f(x) for f in filters])
+
+
+files = list(filter(joint_filter, os.listdir(examples_path)))
+
 for file in files:
     test_generator(file)
 
