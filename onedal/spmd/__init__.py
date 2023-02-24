@@ -14,6 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-import mpi4py
-
 __all__ = ['linear_model']
