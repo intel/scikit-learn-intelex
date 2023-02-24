@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import numpy as np
 
@@ -64,16 +64,15 @@ def _to_absolute_max_features(
                         "explicitly set `max_features=1.0` or remove this "
                         "parameter as it is also the default value for "
                         "RandomForestRegressors and ExtraTreesRegressors.",
-                        FutureWarning,
-                    )
+                        FutureWarning, )
                 return max(1, int(np.sqrt(n_features))
                            ) if is_classification else n_features
         if max_features == 'sqrt':
             return max(1, int(np.sqrt(n_features)))
         if max_features == "log2":
             return max(1, int(np.log2(n_features)))
-        allowed_string_values = '"sqrt" or "log2"' if sklearn_check_version('1.3') \
-            else '"auto", "sqrt" or "log2"'
+        allowed_string_values = '"sqrt" or "log2"' if sklearn_check_version(
+            '1.3') else '"auto", "sqrt" or "log2"'
         raise ValueError(
             'Invalid value for max_features. Allowed string '
             f'values are {allowed_string_values}.')
@@ -277,7 +276,8 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
         self.oob_score_ = dfc_trainingResult.outOfBagErrorAccuracy[0][0]
         self.oob_decision_function_ = dfc_trainingResult.outOfBagErrorDecisionFunction
         if self.oob_decision_function_.shape[-1] == 1:
-            self.oob_decision_function_ = self.oob_decision_function_.squeeze(axis=-1)
+            self.oob_decision_function_ = self.oob_decision_function_.squeeze(
+                axis=-1)
 
     return self
 
@@ -462,7 +462,8 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
 
     if self.oob_score:
         self.oob_score_ = dfr_trainingResult.outOfBagErrorR2[0][0]
-        self.oob_prediction_ = dfr_trainingResult.outOfBagErrorPrediction.squeeze(axis=1)
+        self.oob_prediction_ = dfr_trainingResult.outOfBagErrorPrediction.squeeze(
+            axis=1)
         if self.oob_prediction_.shape[-1] == 1:
             self.oob_prediction_ = self.oob_prediction_.squeeze(axis=-1)
 
@@ -592,27 +593,28 @@ class RandomForestClassifier(RandomForestClassifier_original):
         }
 
     if sklearn_check_version('1.0'):
-        def __init__(self,
-                     n_estimators=100,
-                     criterion="gini",
-                     max_depth=None,
-                     min_samples_split=2,
-                     min_samples_leaf=1,
-                     min_weight_fraction_leaf=0.,
-                     max_features='sqrt' if sklearn_check_version('1.1') else 'auto',
-                     max_leaf_nodes=None,
-                     min_impurity_decrease=0.,
-                     bootstrap=True,
-                     oob_score=False,
-                     n_jobs=None,
-                     random_state=None,
-                     verbose=0,
-                     warm_start=False,
-                     class_weight=None,
-                     ccp_alpha=0.0,
-                     max_samples=None,
-                     maxBins=256,
-                     minBinSize=1):
+        def __init__(
+                self,
+                n_estimators=100,
+                criterion="gini",
+                max_depth=None,
+                min_samples_split=2,
+                min_samples_leaf=1,
+                min_weight_fraction_leaf=0.,
+                max_features='sqrt' if sklearn_check_version('1.1') else 'auto',
+                max_leaf_nodes=None,
+                min_impurity_decrease=0.,
+                bootstrap=True,
+                oob_score=False,
+                n_jobs=None,
+                random_state=None,
+                verbose=0,
+                warm_start=False,
+                class_weight=None,
+                ccp_alpha=0.0,
+                max_samples=None,
+                maxBins=256,
+                minBinSize=1):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -818,8 +820,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
     if sklearn_check_version('1.0'):
         @deprecated(
             "Attribute `n_features_` was deprecated in version 1.0 and will be "
-            "removed in 1.2. Use `n_features_in_` instead."
-        )
+            "removed in 1.2. Use `n_features_in_` instead.")
         @property
         def n_features_(self):
             return self.n_features_in_
@@ -858,7 +859,9 @@ class RandomForestClassifier(RandomForestClassifier_original):
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
-                random_state=random_state_checked.randint(np.iinfo(np.int32).max))
+                random_state=random_state_checked.randint(
+                    np.iinfo(
+                        np.int32).max))
             if sklearn_check_version('1.0'):
                 est_i.n_features_in_ = self.n_features_in_
             else:
@@ -907,26 +910,28 @@ class RandomForestRegressor(RandomForestRegressor_original):
         }
 
     if sklearn_check_version('1.0'):
-        def __init__(self,
-                     n_estimators=100, *,
-                     criterion="squared_error",
-                     max_depth=None,
-                     min_samples_split=2,
-                     min_samples_leaf=1,
-                     min_weight_fraction_leaf=0.,
-                     max_features=1.0 if sklearn_check_version('1.1') else 'auto',
-                     max_leaf_nodes=None,
-                     min_impurity_decrease=0.,
-                     bootstrap=True,
-                     oob_score=False,
-                     n_jobs=None,
-                     random_state=None,
-                     verbose=0,
-                     warm_start=False,
-                     ccp_alpha=0.0,
-                     max_samples=None,
-                     maxBins=256,
-                     minBinSize=1):
+        def __init__(
+                self,
+                n_estimators=100,
+                *,
+                criterion="squared_error",
+                max_depth=None,
+                min_samples_split=2,
+                min_samples_leaf=1,
+                min_weight_fraction_leaf=0.,
+                max_features=1.0 if sklearn_check_version('1.1') else 'auto',
+                max_leaf_nodes=None,
+                min_impurity_decrease=0.,
+                bootstrap=True,
+                oob_score=False,
+                n_jobs=None,
+                random_state=None,
+                verbose=0,
+                warm_start=False,
+                ccp_alpha=0.0,
+                max_samples=None,
+                maxBins=256,
+                minBinSize=1):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -1071,8 +1076,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
     if sklearn_check_version('1.0'):
         @deprecated(
             "Attribute `n_features_` was deprecated in version 1.0 and will be "
-            "removed in 1.2. Use `n_features_in_` instead."
-        )
+            "removed in 1.2. Use `n_features_in_` instead.")
         @property
         def n_features_(self):
             return self.n_features_in_
@@ -1109,7 +1113,9 @@ class RandomForestRegressor(RandomForestRegressor_original):
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
-                random_state=random_state_checked.randint(np.iinfo(np.int32).max))
+                random_state=random_state_checked.randint(
+                    np.iinfo(
+                        np.int32).max))
             if sklearn_check_version('1.0'):
                 est_i.n_features_in_ = self.n_features_in_
             else:

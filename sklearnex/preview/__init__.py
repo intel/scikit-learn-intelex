@@ -15,6 +15,4 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = [
-    'decomposition', 'linear_model'
-]
+__all__ = ['decomposition', 'linear_model', 'ensemble']
