@@ -33,8 +33,6 @@ from sklearn.exceptions import DataConversionWarning
 from ..._config import get_config, config_context
 from ..._device_offload import dispatch, wrap_output_data
 
-from daal4py.sklearn._utils import make2d, get_dtype
-
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
 
@@ -377,7 +375,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             y = make2d(y)
             self.n_outputs_ = y.shape[1]
             ready = ready and self.n_outputs_ == 1
-            ready = ready and (y.dtype in [np.float32, np.float64])
+            # TODO: Fix to support integers as input
+            ready = ready and (y.dtype in [np.float32, np.float64, np.int32, np.int64])
 
         return ready, X, y, sample_weight
 
@@ -546,7 +545,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
-            elif sp.issparse(data[0]):
+            elif sp.issparse(X):
                 return False
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
                 return False
@@ -598,8 +597,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         X, y = make2d(np.asarray(X)), make2d(np.asarray(y))
-        
-        y = check_array(y, ensure_2d=False, dtype=X.dtype)
+
+        y = check_array(y, ensure_2d=False)
 
         y, expanded_class_weight = self._validate_y_class_weight(y)
 
