@@ -14,4 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['linear_model']
+from onedal.spmd.linear_model import LinearRegression
+
+# TODO:
+# Currently it uses `onedal` module interface.
+# Add sklearnex dispatching.

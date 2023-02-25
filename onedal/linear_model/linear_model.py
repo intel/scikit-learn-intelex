@@ -26,7 +26,8 @@ from ..datatypes import (
     _num_features,
     _check_array,
     _get_2d_shape,
-    _check_n_features)
+    _check_n_features,
+    _convert_to_supported)
 
 from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
@@ -42,6 +43,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         self.algorithm = algorithm
         self.copy_X = copy_X
 
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
+
     def _get_onedal_params(self, dtype=np.float32):
         intercept = 'intercept|' if self.fit_intercept else ''
         return {
@@ -51,7 +55,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         }
 
     def _fit(self, X, y, module, queue):
-        policy = _get_policy(queue, X, y)
+        policy = self._get_policy(queue, X, y)
 
         X_loc, y_loc = X, y
         if not isinstance(X, np.ndarray):
@@ -72,6 +76,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
 
+        X_loc, y_loc = _convert_to_supported(policy, X_loc, y_loc)
         X_table, y_table = to_table(X_loc, y_loc)
 
         result = module.train(policy, params, X_table, y_table)
@@ -111,13 +116,13 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             assert n_targets_in == intercept.size
 
         intercept = _check_array(intercept, dtype=[np.float64, np.float32],
-                                 force_all_finite=True)
+                                 force_all_finite=True, ensure_2d=False)
         coefficients = _check_array(
             coefficients,
             dtype=[
                 np.float64,
                 np.float32],
-            force_all_finite=True)
+            force_all_finite=True, ensure_2d=False)
 
         coefficients, intercept = make2d(coefficients), make2d(intercept)
         coefficients = coefficients.T if n_targets_in == 1 else coefficients
@@ -130,16 +135,18 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         packed_coefficients[:, 1:] = coefficients
         if self.fit_intercept:
-            packed_coefficients[:, :0] = intercept
+            packed_coefficients[:, 0][:, np.newaxis] = intercept
 
         m.packed_coefficients = to_table(packed_coefficients)
+
+        self._onedal_model = m
 
         return m
 
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
 
-        policy = _get_policy(queue, X)
+        policy = self._get_policy(queue, X)
 
         if isinstance(X, np.ndarray):
             X_loc = np.asarray(X)
@@ -148,7 +155,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         # Finiteness is checked in the sklearnex wrapper
         X_loc = _check_array(X_loc, dtype=[np.float64, np.float32],
-                             force_all_finite=False)
+                             force_all_finite=False, ensure_2d=False)
         _check_n_features(self, X_loc, False)
 
         params = self._get_onedal_params(X_loc)
@@ -158,7 +165,10 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         else:
             model = self._create_model(module)
 
-        X_table = to_table(make2d(X_loc))
+        X_loc = make2d(X_loc)
+        X_loc = _convert_to_supported(policy, X_loc)
+
+        X_table = to_table(X_loc)
         result = module.infer(policy, params, model, X_table)
         y = from_table(result.responses)
 
