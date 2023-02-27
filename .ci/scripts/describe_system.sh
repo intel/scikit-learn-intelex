@@ -35,6 +35,10 @@ else
     echo "Unable to get operating system via uname or python/platform"
 fi
 echo
+# meminfo
+if [ -f /proc/meminfo ]; then
+    cat /proc/meminfo
+fi
 # Compilers
 echo "Compilers:"
 if [ -x "$(command -v gcc)" ]; then
