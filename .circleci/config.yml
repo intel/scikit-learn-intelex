@@ -30,7 +30,7 @@ jobs:
           command: |
             ls -la
             sudo apt-get update
-            sudo apt-get install -q -y gcc-10
+            sudo apt-get install -q -y gcc-10 gxx-10
             source ./.circleci/setup_env.sh
       - run:
           name: Building daal4py
@@ -73,7 +73,7 @@ jobs:
           command: |
             ls -la
             sudo apt-get update
-            sudo apt-get install -q -y gcc-10
+            sudo apt-get install -q -y gcc-10 gxx-10
             source ./.circleci/setup_env.sh 3.10
       - run:
           name: Building daal4py
