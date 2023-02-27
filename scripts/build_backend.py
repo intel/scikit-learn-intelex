@@ -22,6 +22,7 @@ import numpy as np
 import subprocess
 from distutils import log
 from distutils.sysconfig import get_python_inc, get_config_var
+import multiprocessing
 
 IS_WIN = False
 IS_MAC = False
@@ -177,8 +178,8 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
             "-DONEDAL_DIST_SPMD:BOOL=ON"
         ]
 
-    import multiprocessing
-    cpu_count = multiprocessing.cpu_count()
+    # cpu_count = multiprocessing.cpu_count()
+    cpu_count = 2
 
     make_args = [
         "cmake",
