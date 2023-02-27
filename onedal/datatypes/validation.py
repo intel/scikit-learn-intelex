@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import numpy as np
 import warnings
@@ -22,6 +22,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 from collections.abc import Sequence
 from numbers import Integral
+from daal4py.sklearn.utils.validation import _daal_assert_all_finite as assert_all_finite
 
 
 class DataConversionWarning(UserWarning):
@@ -67,7 +68,8 @@ def _compute_class_weight(class_weight, classes, y):
         if not all(np.in1d(classes, le.classes_)):
             raise ValueError("classes should have valid labels that are in y")
 
-        weight = len(y_) / (len(le.classes_) * np.bincount(y_ind).astype(np.float64))
+        y_bin = np.bincount(y_ind).astype(np.float64)
+        weight = len(y_) / (len(le.classes_) * y_bin)
     else:
         # user-defined dictionary
         weight = np.ones(classes.shape[0], dtype=np.float64, order='C')
@@ -101,9 +103,23 @@ def _validate_targets(y, class_weight, dtype):
 def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
                  copy=False, force_all_finite=True,
                  ensure_2d=True, accept_large_sparse=True):
-    array = check_array(array=array, dtype=dtype, accept_sparse=accept_sparse,
-                        order=order, copy=copy, force_all_finite=force_all_finite,
-                        ensure_2d=ensure_2d, accept_large_sparse=accept_large_sparse)
+    if force_all_finite:
+        if sp.issparse(array):
+            if hasattr(array, 'data'):
+                assert_all_finite(array.data)
+                force_all_finite = False
+        else:
+            assert_all_finite(array)
+            force_all_finite = False
+    array = check_array(
+        array=array,
+        dtype=dtype,
+        accept_sparse=accept_sparse,
+        order=order,
+        copy=copy,
+        force_all_finite=force_all_finite,
+        ensure_2d=ensure_2d,
+        accept_large_sparse=accept_large_sparse)
 
     if sp.isspmatrix(array):
         return array
@@ -119,9 +135,18 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
     return array
 
 
-def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=False,
-               force_all_finite=True, ensure_2d=True,
-               accept_large_sparse=True, y_numeric=False):
+def _check_X_y(
+        X,
+        y,
+        dtype="numeric",
+        accept_sparse=False,
+        order=None,
+        copy=False,
+        force_all_finite=True,
+        ensure_2d=True,
+        accept_large_sparse=True,
+        y_numeric=False,
+        accept_2d_y=False):
     if y is None:
         raise ValueError("y cannot be None")
 
@@ -131,13 +156,10 @@ def _check_X_y(X, y, dtype="numeric", accept_sparse=False, order=None, copy=Fals
                      ensure_2d=ensure_2d,
                      accept_large_sparse=accept_large_sparse)
 
-    y = _column_or_1d(y, warn=True)
+    if not accept_2d_y:
+        y = _column_or_1d(y, warn=True)
     if y_numeric and y.dtype.kind == 'O':
         y = y.astype(np.float64)
-    try:
-        from daal4py.utils.validation import _daal_assert_all_finite as assert_all_finite
-    except ImportError:
-        from sklearn.utils.validation import assert_all_finite
     assert_all_finite(y)
 
     lengths = [X.shape[0], y.shape[0]]
@@ -157,8 +179,9 @@ def _check_classification_targets(y):
 
 
 def _type_of_target(y):
-    valid = (isinstance(y, Sequence) or sp.isspmatrix(y) or hasattr(y, '__array__')) \
-        and not isinstance(y, str)
+    is_sequence, is_array = isinstance(y, Sequence), hasattr(y, '__array__')
+    is_not_string, is_spmatrix = not isinstance(y, str), sp.isspmatrix(y)
+    valid = (is_sequence or is_array or is_spmatrix) and is_not_string
 
     if not valid:
         raise ValueError('Expected array-like (array or non-string sequence), '
@@ -195,7 +218,8 @@ def _type_of_target(y):
         pass
 
     # Invalid inputs
-    if y.ndim > 2 or (y.dtype == object and len(y) and not isinstance(y.flat[0], str)):
+    if y.ndim > 2 or (y.dtype == object and len(
+            y) and not isinstance(y.flat[0], str)):
         return 'unknown'  # [[[1, 2]]] or [obj_1] and not ["label_1"]
 
     if y.ndim == 2 and y.shape[1] == 0:
@@ -209,8 +233,6 @@ def _type_of_target(y):
     # check float and contains non-integer float values
     if y.dtype.kind == 'f' and np.any(y != y.astype(int)):
         # [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]
-        # TODO: replace on daal4py
-        from sklearn.utils.validation import assert_all_finite
         assert_all_finite(y)
         return 'continuous' + suffix
 
@@ -246,7 +268,8 @@ def _is_multilabel(y):
             (y.dtype.kind in 'biu' or _is_integral_float(np.unique(y.data)))
     labels = np.unique(y)
 
-    return len(labels) < 3 and (y.dtype.kind in 'biu' or _is_integral_float(labels))
+    return len(labels) < 3 and (
+        y.dtype.kind in 'biu' or _is_integral_float(labels))
 
 
 def _check_n_features(self, X, reset):
@@ -279,7 +302,7 @@ def _check_n_features(self, X, reset):
             f"is expecting {self.n_features_in_} features as input.")
 
 
-def _num_features(X):
+def _num_features(X, fallback_1d=False):
     type_ = type(X)
     if type_.__module__ == "builtins":
         type_name = type_.__qualname__
@@ -297,10 +320,11 @@ def _num_features(X):
         X = np.asarray(X)
 
     if hasattr(X, 'shape'):
-        if not hasattr(X.shape, '__len__') or len(X.shape) <= 1:
+        ndim_thr = 1 if fallback_1d else 2
+        if not hasattr(X.shape, '__len__') or len(X.shape) < ndim_thr:
             message += f" with shape {X.shape}"
             raise TypeError(message)
-        return X.shape[1]
+        return X.shape[-1]
 
     first_sample = X[0]
 
@@ -314,7 +338,10 @@ def _num_features(X):
         # If X is a list of lists, for instance, we assume that all nested
         # lists have the same length without checking or converting to
         # a numpy array to keep this function call as cheap as possible.
-        return len(first_sample)
+        if (not fallback_1d) or hasattr(first_sample, '__len__'):
+            return len(first_sample)
+        else:
+            return 1
     except Exception as err:
         raise TypeError(message) from err
 
@@ -334,8 +361,8 @@ def _num_samples(x):
     if hasattr(x, "shape") and x.shape is not None:
         if len(x.shape) == 0:
             raise TypeError(
-                "Singleton array %r cannot be considered a valid collection." % x
-            )
+                "Singleton array %r cannot be considered a valid collection." %
+                x)
     # Check that shape is returning an integer or default to len
     # Dask dataframes may not return numeric shape[0] value
     if hasattr(x, "shape") and isinstance(x.shape[0], Integral):
@@ -345,3 +372,9 @@ def _num_samples(x):
         return len(x)
     except TypeError as type_error:
         raise TypeError(message) from type_error
+
+
+def _get_2d_shape(x, fallback_1d=True):
+    n_samples = _num_samples(x)
+    n_features = _num_features(x, fallback_1d)
+    return (n_samples, n_features)

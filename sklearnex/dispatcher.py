@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # Other imports
 import sys
@@ -25,6 +25,10 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 def _is_new_patching_available():
     return os.environ.get('OFF_ONEDAL_IFACE') is None \
         and daal_check_version((2021, 'P', 300))
+
+
+def _is_preview_enabled():
+    return os.environ.get('SKLEARNEX_PREVIEW') is not None
 
 
 @lru_cache(maxsize=None)
@@ -48,14 +52,56 @@ def get_patch_map():
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
+        # Preview classes for patching
+
+        from .preview.decomposition import PCA as PCA_sklearnex
+
+        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
+
+        from .preview.ensemble import RandomForestClassifier \
+            as RandomForestClassifier_sklearnex
+        from .preview.ensemble import RandomForestRegressor \
+            as RandomForestRegressor_sklearnex
+
         # Scikit-learn* modules
 
         import sklearn as base_module
+        import sklearn.ensemble as ensemble_module
+        import sklearn.decomposition as decomposition_module
         import sklearn.svm as svm_module
         import sklearn.neighbors as neighbors_module
+        import sklearn.linear_model as linear_model_module
 
         # Patch for mapping
         # Algorithms
+
+        if _is_preview_enabled():
+            # Ensemble
+            mapping.pop('random_forest_classifier')
+            mapping.pop('random_forest_regressor')
+            mapping.pop('randomrorestclassifier')
+            mapping.pop('randomforestregressor')
+            mapping['random_forest_classifier'] = [[(ensemble_module,
+                                                     'RandomForestClassifier',
+                                                     RandomForestClassifier_sklearnex),
+                                                    None]]
+            mapping['random_forest_regressor'] = [[(ensemble_module,
+                                                    'RandomForestRegressor',
+                                                    RandomForestRegressor_sklearnex),
+                                                   None]]
+            mapping['randomrorestclassifier'] = mapping['random_forest_classifier']
+            mapping['randomforestregressor'] = mapping['random_forest_regressor']
+
+            # PCA
+            mapping.pop('pca')
+            mapping['pca'] = [[(decomposition_module, 'PCA', PCA_sklearnex), None]]
+
+            # Linear Regression
+            mapping.pop('linear')
+            mapping['linear'] = [[(linear_model_module,
+                                   'LinearRegression',
+                                   LinearRegression_sklearnex), None]]
+
         # SVM
         mapping.pop('svm')
         mapping.pop('svc')
@@ -101,10 +147,13 @@ def get_patch_names():
     return list(get_patch_map().keys())
 
 
-def patch_sklearn(name=None, verbose=True, global_patch=False):
+def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
+    if preview:
+        os.environ['SKLEARNEX_PREVIEW'] = 'enabled_via_patch_sklearn'
     if not sklearn_check_version('0.22'):
-        raise NotImplementedError("Intel(R) Extension for Scikit-learn* patches apply "
-                                  "for scikit-learn >= 0.22 only ...")
+        raise NotImplementedError(
+            "Intel(R) Extension for Scikit-learn* patches apply "
+            "for scikit-learn >= 0.22 only ...")
 
     if global_patch:
         from sklearnex.glob.dispatcher import patch_sklearn_global
@@ -144,6 +193,8 @@ def unpatch_sklearn(name=None, global_unpatch=False):
             for config in ['set_config', 'get_config', 'config_context']:
                 unpatch_sklearn_orig(config, get_map=get_patch_map)
         unpatch_sklearn_orig(name, get_map=get_patch_map)
+    if os.environ.get('SKLEARNEX_PREVIEW') == 'enabled_via_patch_sklearn':
+        os.environ.pop('SKLEARNEX_PREVIEW')
 
 
 def sklearn_is_patched(name=None, return_map=False):

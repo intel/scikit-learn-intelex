@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 from onedal import _backend
+from daal4py.sklearn._utils import make2d
 
 
 def from_table(*args):
@@ -23,7 +24,58 @@ def from_table(*args):
     return (_backend.from_table(item) for item in args)
 
 
+def convert_one_to_table(arg):
+    arg = make2d(arg)
+    return _backend.to_table(arg)
+
+
 def to_table(*args):
     if len(args) == 1:
-        return _backend.to_table(args[0])
-    return (_backend.to_table(item) for item in args)
+        return convert_one_to_table(args[0])
+    return (convert_one_to_table(item) for item in args)
+
+
+from onedal import _is_dpc_backend
+
+if _is_dpc_backend:
+    import numpy as np
+
+    from ..common._spmd_policy import _SPMDDataParallelInteropPolicy
+    from ..common._policy import _HostInteropPolicy, _DataParallelInteropPolicy
+
+    def _convert_to_supported_impl(policy, *data):
+        # CPUs support FP64 by default
+        is_host = isinstance(policy, _HostInteropPolicy)
+        no_dpcpp = not _is_dpc_backend
+        if is_host or no_dpcpp:
+            return data
+
+        # There is only one option of data parallel policy
+        is_dpcpp_policy = isinstance(policy, _DataParallelInteropPolicy)
+        is_spmd_policy = isinstance(policy, _SPMDDataParallelInteropPolicy)
+        assert is_spmd_policy or is_dpcpp_policy
+
+        device = policy._queue.sycl_device
+
+        def convert_or_pass(x):
+            if x.dtype is not np.float32:
+                return x.astype(np.float32)
+            else:
+                return x
+
+        if not device.has_aspect_fp64:
+            return (convert_or_pass(x) for x in data)
+        else:
+            return data
+else:
+    def _convert_to_supported_impl(policy, *data):
+        return data
+
+
+def _convert_to_supported(policy, *data):
+    res = _convert_to_supported_impl(policy, *data)
+
+    if len(data) == 1:
+        return res[0]
+    else:
+        return res

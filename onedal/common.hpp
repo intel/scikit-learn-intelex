@@ -16,6 +16,24 @@
 
 #pragma once
 
+#define OVERFLOW_CHECK_BY_ADDING(type, op1, op2)                      \
+    {                                                                 \
+        volatile type r = (op1) + (op2);                              \
+        r -= (op1);                                                   \
+        if (!(r == (op2)))                                            \
+            throw std::runtime_error("Integer overflow by adding");   \
+    }
+
+#define OVERFLOW_CHECK_BY_MULTIPLICATION(type, op1, op2)                        \
+    {                                                                           \
+        if (!(0 == (op1)) && !(0 == (op2))) {                                   \
+            volatile type r = (op1) * (op2);                                    \
+            r /= (op1);                                                         \
+            if (!(r == (op2)))                                                  \
+                throw std::runtime_error("Integer overflow by multiplication"); \
+        }                                                                       \
+    }
+
 #include "onedal/common/dispatch_utils.hpp"
 #include "onedal/common/instantiate_utils.hpp"
 #include "onedal/common/pybind11_helpers.hpp"

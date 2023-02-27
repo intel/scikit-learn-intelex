@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +13,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # System imports
 import os
 import time
 from setuptools import setup
+from scripts.version import get_onedal_version
 from scripts.package_helpers import get_packages_with_tests
 
 sklearnex_version = (os.environ["SKLEARNEX_VERSION"] if "SKLEARNEX_VERSION" in os.environ
                      else time.strftime("%Y%m%d.%H%M%S"))
+
+dal_root = os.environ.get('DALROOT')
+
+if dal_root is None:
+    raise RuntimeError("Not set DALROOT variable")
+
+trues = ['true', 'True', 'TRUE', '1', 't', 'T', 'y', 'Y', 'Yes', 'yes', 'YES']
+no_dist = True if 'NO_DIST' in os.environ and os.environ['NO_DIST'] in trues else False
+dpcpp = True if 'DPCPPROOT' in os.environ else False
+dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
+
+try:
+    import dpctl
+    dpctl_available = dpctl.__version__ >= '0.14'
+except ImportError:
+    dpctl_available = False
+
+build_distribute = dpcpp and dpctl_available and not no_dist
+
+ONEDAL_VERSION = get_onedal_version(dal_root)
 
 project_urls = {
     "Bug Tracker": "https://github.com/intel/scikit-learn-intelex/issues",
@@ -32,7 +53,6 @@ project_urls = {
 
 with open("README.md", "r", encoding="utf8") as f:
     long_description = f.read()
-
 
 # sklearnex setup
 setup(name="scikit-learn-intelex",
@@ -89,7 +109,11 @@ setup(name="scikit-learn-intelex",
           'sklearnex.metrics',
           'sklearnex.model_selection',
           'sklearnex.neighbors',
+          'sklearnex.preview',
+          'sklearnex.preview.ensemble',
+          'sklearnex.preview.decomposition',
+          'sklearnex.preview.linear_model',
           'sklearnex.svm',
           'sklearnex.utils'
-      ]),
+      ] + (['sklearnex.spmd'] if build_distribute else [])),
       )
