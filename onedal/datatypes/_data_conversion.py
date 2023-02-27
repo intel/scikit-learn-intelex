@@ -40,25 +40,18 @@ from onedal import _is_dpc_backend
 if _is_dpc_backend:
     import numpy as np
 
-    from ..common._spmd_policy import _SPMDDataParallelInteropPolicy
-    from ..common._policy import _HostInteropPolicy, _DataParallelInteropPolicy
+    from ..common._policy import _HostInteropPolicy
 
     def _convert_to_supported_impl(policy, *data):
         # CPUs support FP64 by default
-        is_host = isinstance(policy, _HostInteropPolicy)
-        no_dpcpp = not _is_dpc_backend
-        if is_host or no_dpcpp:
+        if isinstance(policy, _HostInteropPolicy):
             return data
 
-        # There is only one option of data parallel policy
-        is_dpcpp_policy = isinstance(policy, _DataParallelInteropPolicy)
-        is_spmd_policy = isinstance(policy, _SPMDDataParallelInteropPolicy)
-        assert is_spmd_policy or is_dpcpp_policy
-
+        # It can be either SPMD or DPCPP policy
         device = policy._queue.sycl_device
 
         def convert_or_pass(x):
-            if x.dtype is not np.float32:
+            if x.dtype is np.float64:
                 return x.astype(np.float32)
             else:
                 return x

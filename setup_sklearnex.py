@@ -17,6 +17,7 @@
 
 # System imports
 import os
+import sys
 import time
 from setuptools import setup
 from scripts.version import get_onedal_version
@@ -24,6 +25,19 @@ from scripts.package_helpers import get_packages_with_tests
 
 sklearnex_version = (os.environ["SKLEARNEX_VERSION"] if "SKLEARNEX_VERSION" in os.environ
                      else time.strftime("%Y%m%d.%H%M%S"))
+
+IS_WIN = False
+IS_MAC = False
+IS_LIN = False
+
+if 'linux' in sys.platform:
+    IS_LIN = True
+elif sys.platform == 'darwin':
+    IS_MAC = True
+elif sys.platform in ['win32', 'cygwin']:
+    IS_WIN = True
+else:
+    assert False, sys.platform + ' not supported'
 
 dal_root = os.environ.get('DALROOT')
 
@@ -41,7 +55,7 @@ try:
 except ImportError:
     dpctl_available = False
 
-build_distribute = dpcpp and dpctl_available and not no_dist
+build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
 
 ONEDAL_VERSION = get_onedal_version(dal_root)
 
