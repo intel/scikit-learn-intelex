@@ -26,9 +26,6 @@
 #include <limits>
 #include <vector>
 
-#include <iostream>
-#include <utility>
-
 #define ONEDAL_PY_TERMINAL_NODE -1
 #define ONEDAL_PY_NO_FEATURE    -2
 
@@ -45,7 +42,7 @@ inline static const double get_nan64() {
 
 // equivalent for numpy arange
 template <typename T>
-std::vector<T> arange(T start, T stop, T step = 1) {
+inline std::vector<T> arange(T start, T stop, T step = 1) {
     std::vector<T> res;
     for (T i = start; i < stop; i += step)
         res.push_back(i);
@@ -128,7 +125,7 @@ public:
 template <typename Task>
 class to_sklearn_tree_object_visitor : public tree_state<Task> {
 public:
-    to_sklearn_tree_object_visitor(size_t _depth,
+    to_sklearn_tree_object_visitor(std::size_t _depth,
                                    std::size_t _n_nodes,
                                    std::size_t _n_leafs,
                                    std::size_t _max_n_classes);
@@ -143,7 +140,7 @@ protected:
 };
 
 template <typename Task>
-to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(size_t _depth,
+to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(std::size_t _depth,
                                                                      std::size_t _n_nodes,
                                                                      std::size_t _n_leafs,
                                                                      std::size_t _max_n_classes)
