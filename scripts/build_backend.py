@@ -187,7 +187,7 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
             memtotal = meminfo_file_obj.read().split('\n')[0].split(' ')
             while '' in memtotal:
                 memtotal.remove('')
-            memtotal = int(memtotal[1]) # total memory in kB
+            memtotal = int(memtotal[1])  # total memory in kB
         cpu_count = min(cpu_count, floor(max(1, memtotal / 2 ** 20)))
 
     make_args = [
