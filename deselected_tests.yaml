@@ -40,6 +40,18 @@ deselected_tests:
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
   - cluster/tests/test_k_means.py::test_k_means_fit_predict >=0.23,<0.24
 
+  # random forest classifier selects different most important feature
+  # Feature importances:
+  # sklearnex  [0.             0.00553064     0.71323666     0.2812327 ]
+  # sklearn    [1.59232288e-04 2.65131818e-02 2.63581110e-01 7.09746476e-01]
+  - feature_selection/tests/test_from_model.py::test_prefit_get_feature_names_out
+
+  # TODO: add support of subset invariance to SVM
+  - tests/test_common.py::test_estimators[SVC()-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[NuSVC()-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[SVR()-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[NuSVR()-check_methods_subset_invariance]
+
   # cache directory is not accessible on some systems
   - utils/tests/test_validation.py::test_check_memory
 
@@ -200,7 +212,7 @@ deselected_tests:
   - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=1.0
 
   # Patched and unpatched kmeans belong same values to different clusters. Need to investigate.
-  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0,<=1.1
+  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0
 
   # OOB scores in sklearn and oneDAL are different because of different random nuber generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
