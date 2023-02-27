@@ -184,11 +184,11 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
     # TODO: add on all platforms
     if IS_LIN:
         with open('/proc/meminfo', 'r') as meminfo_file_obj:
-            memtotal = meminfo_file_obj.read().split('\n')[0].split(' ')
-            while '' in memtotal:
-                memtotal.remove('')
-            memtotal = int(memtotal[1])  # total memory in kB
-        cpu_count = min(cpu_count, floor(max(1, memtotal / 2 ** 20)))
+            memfree = meminfo_file_obj.read().split('\n')[1].split(' ')
+            while '' in memfree:
+                memfree.remove('')
+            memfree = int(memfree[1])  # total memory in kB
+        cpu_count = min(cpu_count, floor(max(1, memfree / 2 ** 20)))
 
     make_args = [
         "cmake",
