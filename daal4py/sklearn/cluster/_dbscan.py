@@ -242,11 +242,11 @@ class DBSCAN(DBSCAN_original):
             self._validate_params()
         elif sklearn_check_version("1.1"):
             check_scalar(
-            self.eps,
-            "eps",
-            target_type=numbers.Real,
-            min_val=0.0,
-            include_boundaries="neither",
+                self.eps,
+                "eps",
+                target_type=numbers.Real,
+                min_val=0.0,
+                include_boundaries="neither",
             )
             check_scalar(
                 self.min_samples,
