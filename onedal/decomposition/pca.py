@@ -14,12 +14,13 @@
 # limitations under the License.
 #===============================================================================
 
+import numpy as np
+
 from onedal import _backend
 from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table, _convert_to_supported
 from daal4py.sklearn._utils import sklearn_check_version
 
-import numpy as np
 
 class PCA():
     def __init__(

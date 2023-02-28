@@ -351,7 +351,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         if not sklearn_check_version('1.0'):
             self.n_features_ = self.n_features_in_
         policy = self._get_policy(queue, X, y, sample_weight)
-        
+
         X, y, sample_weight = _convert_to_supported(policy, X, y, sample_weight)
         params = self._get_onedal_params(X)
         train_result = module.train(
