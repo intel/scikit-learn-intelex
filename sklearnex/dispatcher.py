@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -41,9 +42,6 @@ def get_patch_map():
         from ._config import set_config as set_config_sklearnex
         from ._config import get_config as get_config_sklearnex
         from ._config import config_context as config_context_sklearnex
-
-        from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
-        from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
 
         from .svm import SVR as SVR_sklearnex
         from .svm import SVC as SVC_sklearnex

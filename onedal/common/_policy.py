@@ -33,8 +33,6 @@ def _get_policy(queue, *data):
     assert data_queue is None and queue is None
     return _HostInteropPolicy()
 
-def _get_spmd_policy(queue):
-    return _SPMDDataParallelInteropPolicy(queue)
 
 def _get_queue(*data):
     if len(data) > 0 and hasattr(data[0], '__sycl_usm_array_interface__'):
@@ -74,8 +72,3 @@ if _is_dpc_backend:
                     super().__init__(self._queue.sycl_device.get_filter_string())
                     return
             super().__init__(self._queue.addressof_ref())
-
-    class _SPMDDataParallelInteropPolicy(_backend.spmd_data_parallel_policy):
-        def __init__(self, queue):
-            self._queue = queue
-            super().__init__(self._queue)
