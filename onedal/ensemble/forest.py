@@ -204,7 +204,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                     self.min_samples_split * n_samples)))
 
         onedal_params = {
-            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'fptype': 'float' if data.dtype == np.float32 else 'double',
             'method': self.algorithm,
             'infer_mode': self.infer_mode,
             'voting_mode': self.voting_mode,

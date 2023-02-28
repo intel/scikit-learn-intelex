@@ -37,7 +37,7 @@ class PCA():
     def get_onedal_params(self, data):
         return {
             'fptype':
-                'float' if data.dtype is np.dtype('float32') else 'double',
+                'float' if data.dtype == np.float32 else 'double',
             'method': self.method,
             'n_components': self.n_components,
             'is_deterministic': self.is_deterministic

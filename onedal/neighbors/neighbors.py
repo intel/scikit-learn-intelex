@@ -122,7 +122,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, 'weights', 'uniform')
         return {
-            'fptype': 'float' if X.dtype is np.dtype('float32') else 'double',
+            'fptype': 'float' if X.dtype == np.float32 else 'double',
             'vote_weights': 'uniform' if weights == 'uniform' else 'distance',
             'method': self._fit_method,
             'radius': self.radius,
@@ -138,7 +138,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, 'weights', 'uniform')
         params = {
-            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'fptype': 'float' if data.dtype == np.float32 else 'double',
             'method': 'defaultDense',
             'k': self.n_neighbors,
             'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',

@@ -57,9 +57,9 @@ if _is_dpc_backend:
                 return x
 
         if not device.has_aspect_fp64:
-            return (convert_or_pass(x) for x in data)
+            return [convert_or_pass(x) for x in data]
         else:
-            return data
+            return [x for x in data]
 else:
     def _convert_to_supported_impl(policy, *data):
         return data
@@ -67,7 +67,7 @@ else:
 
 def _convert_to_supported(policy, *data):
     res = _convert_to_supported_impl(policy, *data)
-
+    
     if len(data) == 1:
         return res[0]
     else:

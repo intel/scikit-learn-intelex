@@ -48,11 +48,12 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
     def _get_onedal_params(self, dtype=np.float32):
         intercept = 'intercept|' if self.fit_intercept else ''
-        return {
-            'fptype': 'float' if dtype is np.float32 else 'double',
+        res = {
+            'fptype': 'float' if dtype == np.float32 else 'double',
             'method': self.algorithm, 'intercept': self.fit_intercept,
             'result_option': (intercept + 'coefficients'),
         }
+        return res
 
     def _fit(self, X, y, module, queue):
         policy = self._get_policy(queue, X, y)
@@ -63,8 +64,8 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         dtype = get_dtype(X_loc)
         if dtype not in [np.float32, np.float64]:
-            X_loc = X_loc.astype(np.float64, copy=self.copy_X)
             dtype = np.float64
+            X_loc = X_loc.astype(dtype, copy=self.copy_X)
 
         y_loc = np.asarray(y_loc).astype(dtype=dtype)
 
@@ -158,7 +159,8 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
                              force_all_finite=False, ensure_2d=False)
         _check_n_features(self, X_loc, False)
 
-        params = self._get_onedal_params(X_loc)
+        dtype = get_dtype(X_loc)
+        params = self._get_onedal_params(dtype)
 
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
