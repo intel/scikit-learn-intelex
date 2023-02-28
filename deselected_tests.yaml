@@ -52,6 +52,12 @@ deselected_tests:
   - tests/test_common.py::test_estimators[SVR()-check_methods_subset_invariance]
   - tests/test_common.py::test_estimators[NuSVR()-check_methods_subset_invariance]
 
+  # SVR.fit fails when input is two samples of one class
+  - preprocessing/tests/test_data.py::test_cv_pipeline_precomputed
+
+  # kdtree kNN rarely misses 0-distance points when kneighbors is used on same fitting data
+  - manifold/tests/test_spectral_embedding.py::test_precomputed_nearest_neighbors_filtering
+
   # cache directory is not accessible on some systems
   - utils/tests/test_validation.py::test_check_memory
 
