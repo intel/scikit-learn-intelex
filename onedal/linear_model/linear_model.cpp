@@ -15,7 +15,7 @@
 *******************************************************************************/
 
 #include "oneapi/dal/algo/linear_regression.hpp"
-
+#include <cstdio>
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
 
@@ -99,7 +99,7 @@ struct params2desc {
         using namespace dal::linear_regression;
 
         const auto intercept = params["intercept"].cast<bool>();
-
+        std::printf("Descriptor with parameters: %s \n", __PRETTY_FUNCTION__);
         auto desc = descriptor_creator<Float, Method, Task>::get(intercept).set_result_options(
             get_onedal_result_options(params));
         return desc;

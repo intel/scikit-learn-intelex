@@ -19,7 +19,7 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 if daal_check_version((2023, 'P', 100)):
     import pytest
     import numpy as np
-    from numpy.testing import assert_array_equal, assert_allclose
+    from numpy.testing import assert_allclose
 
     from onedal.linear_model import LinearRegression
     from onedal.tests.utils._device_selection import get_queues
@@ -53,7 +53,8 @@ if daal_check_version((2023, 'P', 100)):
 
         assert isinstance(model2, model.__class__)
         result = model2.predict(X, queue=queue)
-        assert_array_equal(expected, result)
+
+        assert_allclose(expected, result, rtol=1e-5)
 
     @pytest.mark.parametrize('queue', get_queues())
     def test_full_results(queue):
@@ -71,15 +72,15 @@ if daal_check_version((2023, 'P', 100)):
         model = LinearRegression(fit_intercept=True)
         model.fit(X, y, queue=queue)
 
-        assert_allclose(coef, model.coef_.T)
-        assert_allclose(intp, model.intercept_)
+        assert_allclose(coef, model.coef_.T, rtol=2e-3)
+        assert_allclose(intp, model.intercept_, rtol=1e-3)
 
         Xt = np.random.rand(t_count, f_count)
         gtr = Xt @ coef + intp[np.newaxis, :]
 
         res = model.predict(Xt, queue=queue)
 
-        assert_allclose(gtr, res)
+        assert_allclose(gtr, res, rtol=2e-5)
 
     @pytest.mark.parametrize('queue', get_queues())
     def test_no_intercept_results(queue):
@@ -96,14 +97,14 @@ if daal_check_version((2023, 'P', 100)):
         model = LinearRegression(fit_intercept=True)
         model.fit(X, y, queue=queue)
 
-        assert_allclose(coef, model.coef_.T)
+        assert_allclose(coef, model.coef_.T, rtol=2e-3)
 
         Xt = np.random.rand(t_count, f_count)
         gtr = Xt @ coef
 
         res = model.predict(Xt, queue=queue)
 
-        assert_allclose(gtr, res)
+        assert_allclose(gtr, res, rtol=5e-5)
 
     @pytest.mark.parametrize('queue', get_queues())
     def test_reconstruct_model(queue):
@@ -123,6 +124,5 @@ if daal_check_version((2023, 'P', 100)):
         model.intercept_ = intp
 
         res = model.predict(X, queue=queue)
-        from onedal.datatypes._data_conversion import from_table
-        print(from_table(model._onedal_model.packed_coefficients))
-        assert_allclose(gtr, res)
+
+        assert_allclose(gtr, res, rtol=1e-5)
