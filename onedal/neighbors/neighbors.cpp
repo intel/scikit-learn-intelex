@@ -15,7 +15,7 @@
 *******************************************************************************/
 
 #include "oneapi/dal/algo/knn.hpp"
-#include <cstdio>
+
 #include "onedal/common.hpp"
 #include "onedal/primitives/pairwise_distances.hpp"
 #include <regex>
@@ -164,7 +164,7 @@ struct params2desc {
     template <typename Float, typename Method, typename Task, typename Distance>
     auto operator()(const pybind11::dict& params) {
         using namespace dal::knn;
-        std::printf("Descriptor: %s \n", __PRETTY_FUNCTION__);
+
         constexpr bool is_bf = std::is_same_v<Method, method::brute_force>;
         const auto class_count = params["class_count"].cast<std::int64_t>();
         const auto neighbor_count = params["neighbor_count"].cast<std::int64_t>();

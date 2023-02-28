@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+import warnings
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
 
@@ -52,6 +53,10 @@ if _is_dpc_backend:
 
         def convert_or_pass(x):
             if x.dtype == np.float64:
+                warnings.warn(
+                            "Data will be converted into float32 from "
+                            "float64 because device does not support it",
+                            RuntimeWarning, )
                 return x.astype(np.float32)
             else:
                 return x
