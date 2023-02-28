@@ -51,7 +51,7 @@ if _is_dpc_backend:
         device = policy._queue.sycl_device
 
         def convert_or_pass(x):
-            if x.dtype is np.float64:
+            if x.dtype == np.float64:
                 return x.astype(np.float32)
             else:
                 return x
@@ -62,12 +62,12 @@ if _is_dpc_backend:
             return [x for x in data]
 else:
     def _convert_to_supported_impl(policy, *data):
-        return data
+        return [x for x in data]
 
 
 def _convert_to_supported(policy, *data):
     res = _convert_to_supported_impl(policy, *data)
-    
+
     if len(data) == 1:
         return res[0]
     else:

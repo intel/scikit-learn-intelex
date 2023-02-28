@@ -15,7 +15,7 @@
 *******************************************************************************/
 
 #define NO_IMPORT_ARRAY
-
+#include <cstdio>
 #include <stdexcept>
 #include <string>
 
@@ -56,6 +56,7 @@ static dal::array<T> transfer_to_host(const dal::array<T>& array) {
 
 template <typename T>
 inline dal::homogen_table convert_to_homogen_impl(PyArrayObject *np_data) {
+    std::printf("Convert to homogen: %s \n", __PRETTY_FUNCTION__);
     std::int64_t column_count = 1;
 
     if (array_numdims(np_data) > 2) {
