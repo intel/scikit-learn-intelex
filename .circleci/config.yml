@@ -29,7 +29,10 @@ jobs:
           name: Setting up build environment
           command: |
             ls -la
+            sudo apt-get update
+            sudo apt-get install -q -y gcc-10 g++-10
             source ./.circleci/setup_env.sh
+            bash .ci/scripts/describe_system.sh
       - run:
           name: Building daal4py
           command: |
@@ -37,7 +40,7 @@ jobs:
             conda activate bld
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
-            python setup.py install --single-version-externally-managed --record=record.txt
+            CC=gcc-10 CXX=g++-10 python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Building sklearnex
           command: |
@@ -70,7 +73,10 @@ jobs:
           name: Setting up build environment
           command: |
             ls -la
+            sudo apt-get update
+            sudo apt-get install -q -y gcc-10 g++-10
             source ./.circleci/setup_env.sh 3.10
+            bash .ci/scripts/describe_system.sh
       - run:
           name: Building daal4py
           command: |
@@ -78,7 +84,7 @@ jobs:
             conda activate bld
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
-            python setup.py install --single-version-externally-managed --record=record.txt
+            CC=gcc-10 CXX=g++-10 python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Testing sklearn patches
           no_output_timeout: 20m

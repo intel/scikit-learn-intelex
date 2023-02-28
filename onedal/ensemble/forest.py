@@ -119,7 +119,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                             "and will be removed in 1.3. To keep the past behaviour, "
                             "explicitly set `max_features=1.0` or remove this "
                             "parameter as it is also the default value for "
-                            "RandomForestRegressors and ExtraTreesRegressors.", FutureWarning, )
+                            "RandomForestRegressors and ExtraTreesRegressors.",
+                            FutureWarning, )
                     return max(1, int(np.sqrt(n_features))
                                ) if is_classification else n_features
             if max_features == 'sqrt':
@@ -169,11 +170,15 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         raise TypeError(msg.format(type(max_samples)))
 
     def _get_onedal_params(self, data):
+        n_samples, n_features = data.shape
         features_per_node = self._to_absolute_max_features(
-            self.max_features, data.shape[1], self.is_classification)
+            self.max_features, n_features, self.is_classification)
 
         observations_per_tree_fraction = self._get_observations_per_tree_fraction(
-            n_samples=data.shape[0], max_samples=self.max_samples)
+            n_samples=n_samples, max_samples=self.max_samples)
+        observations_per_tree_fraction = observations_per_tree_fraction if bool(
+            self.bootstrap) else 1.
+
         if not self.bootstrap and self.max_samples is not None:
             raise ValueError(
                 "`max_sample` cannot be set if `bootstrap=False`. "
@@ -189,16 +194,14 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                 self.min_samples_leaf,
                 numbers.Integral) else int(
                 ceil(
-                    self.min_samples_leaf *
-                    data.shape[0])))
+                    self.min_samples_leaf * n_samples)))
 
         min_observations_in_split_node = (
             self.min_samples_split if isinstance(
                 self.min_samples_split,
                 numbers.Integral) else int(
                 ceil(
-                    self.min_samples_split *
-                    data.shape[0])))
+                    self.min_samples_split * n_samples)))
 
         onedal_params = {
             'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
@@ -298,17 +301,15 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
     def _get_sample_weight(self, X, y, sample_weight):
-        n_samples = X.shape[0]
+        n_samples, _ = X.shape
         dtype = X.dtype
         if n_samples == 1:
             raise ValueError("n_samples=1")
 
         sample_weight = np.asarray([]
                                    if sample_weight is None
-                                   else sample_weight, dtype=np.float64)
-        # TODO:
-        # sample_weight = _column_or_1d(sample_weight, warn=False)
-        sample_weight = np.ravel(sample_weight)
+                                   else sample_weight, dtype=dtype)
+        sample_weight = sample_weight.ravel()
 
         sample_weight_count = sample_weight.shape[0]
         if sample_weight_count != 0 and sample_weight_count != n_samples:
@@ -355,16 +356,23 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self._onedal_model = train_result.model
 
         if self.oob_score:
-            self.oob_score_ = from_table(train_result.oob_err)[0][0]
-        # TODO:
-        # check for regression
-        # self.oob_score_ = from_table(train_result.oob_err_per_observation)
+            self.oob_score_ = from_table(train_result.oob_err)[0, 0]
+            self.oob_prediction_ = from_table(
+                train_result.oob_err_per_observation)
+            if np.any(self.oob_prediction_ == 0):
+                warnings.warn(
+                    "Some inputs do not have OOB scores. This probably means "
+                    "too few trees were used to compute any reliable OOB "
+                    "estimates.",
+                    UserWarning,
+                )
+
         return self
 
     def _create_model(self, module):
         # TODO:
         # upate error msg.
-        raise ValueError('Creating model is not supported.')
+        raise NotImplementedError('Creating model is not supported.')
 
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
@@ -464,9 +472,6 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
     def predict(self, X, queue=None):
         pred = super()._predict(X, _backend.decision_forest.classification, queue)
-        # if len(self.classes_) == 2:
-        #     pred = pred.ravel()
-        # return self.classes_.take(np.asarray(pred, dtype=np.intp)).ravel()
         return np.take(
             self.classes_,
             pred.ravel().astype(

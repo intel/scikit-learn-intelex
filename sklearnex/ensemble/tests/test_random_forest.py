@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #===============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -17,6 +18,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_classification, make_regression
+from daal4py.sklearn._utils import daal_check_version
 
 
 def test_sklearnex_import_rf_classifier():
@@ -25,7 +27,7 @@ def test_sklearnex_import_rf_classifier():
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
-    assert 'daal4py' in rf.__module__ or 'sklearnex' in rf.__module__
+    assert 'daal4py' in rf.__module__
     assert_allclose([1], rf.predict([[0, 0, 0, 0]]))
 
 
@@ -34,6 +36,11 @@ def test_sklearnex_import_rf_regression():
     X, y = make_regression(n_features=4, n_informative=2,
                            random_state=0, shuffle=False)
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
-    assert 'daal4py' in rf.__module__ or 'sklearnex' in rf.__module__
+    assert 'daal4py' in rf.__module__
     pred = rf.predict([[0, 0, 0, 0]])
-    assert_allclose([-6.83], pred, atol=1e-2)
+    if daal_check_version((2021, 'P', 400)):
+        # random engine work was changed in sklearnex 2023.1
+        assert np.allclose([-6.97], pred, atol=1e-2) \
+            or np.allclose([-8.36], pred, atol=1e-2)
+    else:
+        assert_allclose([-6.66], pred, atol=1e-2)

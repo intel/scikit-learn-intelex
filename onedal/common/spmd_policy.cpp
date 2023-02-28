@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-#ifdef ONEDAL_DATA_PARALLEL
+#ifdef ONEDAL_DATA_PARALLEL_SPMD
 #include "oneapi/dal/detail/spmd_policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #include "oneapi/dal/spmd/mpi/communicator.hpp"
@@ -26,7 +26,7 @@ namespace oneapi::dal::python {
 ONEDAL_PY_INIT_MODULE(spmd_policy) {
     import_dpctl();
     py::class_<dal::detail::spmd_policy<detail::data_parallel_policy>>(m, "spmd_data_parallel_policy")
-        .def(py::init([](cl::sycl::queue &q) {
+        .def(py::init([](sycl::queue &q) {
             detail::data_parallel_policy local_policy = detail::data_parallel_policy(q);
             // TODO:
             // Communicator hardcoded. Implement passing spmd communicator.

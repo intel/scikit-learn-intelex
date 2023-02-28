@@ -22,6 +22,8 @@ import numpy as np
 import subprocess
 from distutils import log
 from distutils.sysconfig import get_python_inc, get_config_var
+import multiprocessing
+from math import floor
 
 IS_WIN = False
 IS_MAC = False
@@ -100,8 +102,13 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     os.chdir(d4p_dir)
 
 
-def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1):
+def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_dist=True):
     import pybind11
+    try:
+        import dpctl
+        dpctl_available = dpctl.__version__ >= '0.14'
+    except ImportError:
+        dpctl_available = False
 
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")
@@ -132,6 +139,25 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1):
     elif cxx is None:
         raise RuntimeError('CXX compiler shall be specified')
 
+    build_distribute = iface == 'dpc' and dpctl_available and not no_dist
+
+    if build_distribute:
+        dpctl_include = dpctl.get_include()
+        mpi_root = os.environ['MPIROOT']
+        MPI_INCDIRS = jp(mpi_root, 'include')
+        MPI_LIBDIRS = jp(mpi_root, 'lib')
+        MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
+        if MPI_LIBNAME:
+            MPI_LIBS = MPI_LIBNAME
+        elif IS_WIN:
+            if os.path.isfile(jp(mpi_root, 'lib', 'mpi.lib')):
+                MPI_LIBS = 'mpi'
+            if os.path.isfile(jp(mpi_root, 'lib', 'impi.lib')):
+                MPI_LIBS = 'impi'
+            assert MPI_LIBS, "Couldn't find MPI library"
+        else:
+            MPI_LIBS = 'mpi'
+
     cmake_args = [
         "cmake",
         cmake_generator,
@@ -153,8 +179,25 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1):
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
 
-    import multiprocessing
+    if build_distribute:
+        cmake_args += [
+            "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
+            "-DMPI_INCLUDE_DIRS=" + MPI_INCDIRS,
+            "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,
+            "-DMPI_LIBS=" + MPI_LIBS,
+            "-DONEDAL_DIST_SPMD:BOOL=ON"
+        ]
+
     cpu_count = multiprocessing.cpu_count()
+    # limit parallel cmake jobs if memory size is insufficient
+    # TODO: add on all platforms
+    if IS_LIN:
+        with open('/proc/meminfo', 'r') as meminfo_file_obj:
+            memfree = meminfo_file_obj.read().split('\n')[1].split(' ')
+            while '' in memfree:
+                memfree.remove('')
+            memfree = int(memfree[1])  # total memory in kB
+        cpu_count = min(cpu_count, floor(max(1, memfree / 2 ** 20)))
 
     make_args = [
         "cmake",

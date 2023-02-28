@@ -75,8 +75,14 @@ no_stream = 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
-dpctl = True if dpcpp and 'DPCTLROOT' in os.environ else False
-dpctl_root = None if not dpctl else os.environ['DPCTLROOT']
+
+try:
+    import dpctl
+    dpctl_available = dpctl.__version__ >= '0.14'
+except ImportError:
+    dpctl_available = False
+
+build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
 
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(
@@ -342,12 +348,12 @@ class custom_build():
         if is_onedal_iface:
             cxx = os.getenv('CXX', 'cl' if IS_WIN else 'g++')
             build_backend.custom_build_cmake_clib(
-                'host', cxx, ONEDAL_MAJOR_BINARY_VERSION)
+                'host', cxx, ONEDAL_MAJOR_BINARY_VERSION, no_dist=no_dist)
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib(
-                    'dpc', ONEDAL_MAJOR_BINARY_VERSION)
+                    'dpc', ONEDAL_MAJOR_BINARY_VERSION, no_dist=no_dist)
 
     def post_build(self):
         if IS_MAC:
@@ -395,6 +401,41 @@ project_urls = {
 with open('README.md', 'r', encoding='utf8') as f:
     long_description = f.read()
 
+packages_with_tests = [
+    'daal4py',
+    'daal4py.oneapi',
+    'daal4py.sklearn',
+    'daal4py.sklearn.cluster',
+    'daal4py.sklearn.decomposition',
+    'daal4py.sklearn.ensemble',
+    'daal4py.sklearn.linear_model',
+    'daal4py.sklearn.manifold',
+    'daal4py.sklearn.metrics',
+    'daal4py.sklearn.neighbors',
+    'daal4py.sklearn.monkeypatch',
+    'daal4py.sklearn.svm',
+    'daal4py.sklearn.utils',
+    'daal4py.sklearn.model_selection',
+    'onedal',
+    'onedal.ensemble',
+    'onedal.decomposition',
+    'onedal.svm',
+    'onedal.neighbors',
+    'onedal.primitives',
+    'onedal.datatypes',
+    'onedal.common'
+    ]
+
+if ONEDAL_VERSION >= 20230100:
+    packages_with_tests += ['onedal.linear_model']
+
+if build_distribute:
+    packages_with_tests += [
+        'onedal.spmd',
+        'onedal.spmd.ensemble',
+        'onedal.spmd.linear_model'
+    ]
+
 setup(
     name="daal4py",
     description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
@@ -441,31 +482,7 @@ setup(
         'data science',
         'data analytics'
     ],
-    packages=get_packages_with_tests([
-        'daal4py',
-        'daal4py.oneapi',
-        'daal4py.sklearn',
-        'daal4py.sklearn.cluster',
-        'daal4py.sklearn.decomposition',
-        'daal4py.sklearn.ensemble',
-        'daal4py.sklearn.linear_model',
-        'daal4py.sklearn.manifold',
-        'daal4py.sklearn.metrics',
-        'daal4py.sklearn.neighbors',
-        'daal4py.sklearn.monkeypatch',
-        'daal4py.sklearn.svm',
-        'daal4py.sklearn.utils',
-        'daal4py.sklearn.model_selection',
-        'onedal',
-        'onedal.ensemble',
-        'onedal.svm',
-        'onedal.spmd',
-        'onedal.spmd.ensemble',
-        'onedal.neighbors',
-        'onedal.primitives',
-        'onedal.datatypes',
-        'onedal.common'
-    ] + (['onedal.linear_model'] if ONEDAL_VERSION >= 20230100 else [])),
+    packages=get_packages_with_tests(packages_with_tests),
     package_data={
         'daal4py.oneapi': [
             'liboneapi_backend.so',

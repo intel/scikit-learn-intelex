@@ -14,4 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['ensemble']
+__all__ = ['ensemble', 'linear_model']
