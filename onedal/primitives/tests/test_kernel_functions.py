@@ -43,8 +43,9 @@ def _test_dense_small_linear_kernel(queue, scale, shift, dtype):
 
     result = linear_kernel(X, Y, scale=scale, shift=shift, queue=queue)
     expected = np.dot(X, np.array(Y).T) * scale + shift
-
-    assert_allclose(result, expected, rtol=1e-6)
+    
+    tol = 1e-14 if result.dtype == np.float64 else 1e-6
+    assert_allclose(result, expected, rtol=tol)
 
 
 # TODO: investigate sporadic failures on GPU
@@ -64,7 +65,7 @@ def test_dense_self_rbf_kernel(queue):
     result = rbf_kernel(X, queue=queue)
     expected = sklearn_rbf_kernel(X)
 
-    assert_allclose(result, expected, rtol=1e-6)
+    assert_allclose(result, expected, rtol=1e-14)
 
 
 def _test_dense_small_rbf_kernel(queue, gamma, dtype):
@@ -75,7 +76,8 @@ def _test_dense_small_rbf_kernel(queue, gamma, dtype):
     result = rbf_kernel(X, Y, gamma=gamma, queue=queue)
     expected = sklearn_rbf_kernel(X, Y, gamma)
 
-    assert_allclose(result, expected, rtol=1e-5)
+    tol = 1e-14 if result.dtype == np.float64 else 1e-5
+    assert_allclose(result, expected, rtol=tol)
 
 
 @pytest.mark.parametrize('gamma', [0.1, None])
@@ -95,7 +97,7 @@ def test_dense_self_poly_kernel(queue):
     result = poly_kernel(X, degree=degree, queue=queue)
     expected = np.dot(X, np.array(X).T) ** degree
 
-    assert_allclose(result, expected, rtol=1e-6)
+    assert_allclose(result, expected, rtol=1e-14)
 
 
 def _test_dense_small_poly_kernel(queue, gamma, coef0, degree, dtype):
@@ -106,7 +108,8 @@ def _test_dense_small_poly_kernel(queue, gamma, coef0, degree, dtype):
     result = poly_kernel(X, Y, gamma=gamma, coef0=coef0, degree=degree, queue=queue)
     expected = (gamma * np.dot(X, np.array(Y).T) + coef0) ** degree
 
-    assert_allclose(result, expected, rtol=1e-5)
+    tol = 1e-14 if result.dtype == np.float64 else 1e-5
+    assert_allclose(result, expected, rtol=tol)
 
 
 @pass_if_not_implemented_for_gpu(reason="poly kernel is not implemented")
@@ -128,7 +131,7 @@ def test_dense_self_sigmoid_kernel(queue):
     result = sigmoid_kernel(X, queue=queue)
     expected = np.tanh(np.dot(X, np.array(X).T))
 
-    assert_allclose(result, expected, rtol=1e-6)
+    assert_allclose(result, expected)
 
 
 def _test_dense_small_sigmoid_kernel(queue, gamma, coef0, dtype):
@@ -139,7 +142,8 @@ def _test_dense_small_sigmoid_kernel(queue, gamma, coef0, dtype):
     result = sigmoid_kernel(X, Y, gamma=gamma, coef0=coef0, queue=queue)
     expected = np.tanh(gamma * np.dot(X, np.array(Y).T) + coef0)
 
-    assert_allclose(result, expected, rtol=1e-6)
+    tol = 1e-14 if result.dtype == np.float64 else 1e-6
+    assert_allclose(result, expected, rtol=tol)
 
 
 @pass_if_not_implemented_for_gpu(reason="sigmoid kernel is not implemented")
