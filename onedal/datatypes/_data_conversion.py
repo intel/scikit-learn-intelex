@@ -48,7 +48,9 @@ if _is_dpc_backend:
     from ..common._policy import _HostInteropPolicy
 
     def _convert_to_supported_impl(policy, *data):
-        func = lambda x: x
+        def func(x):
+            return x
+
         # CPUs support FP64 by default
         if isinstance(policy, _HostInteropPolicy):
             return _apply_and_pass(func, *data)
@@ -72,7 +74,9 @@ if _is_dpc_backend:
 
 else:
     def _convert_to_supported_impl(policy, *data):
-        func = lambda x: x
+        def func(x):
+            return x
+
         return _apply_and_pass(func, *data)
 
 
