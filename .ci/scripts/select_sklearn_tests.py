@@ -15,6 +15,7 @@
 # limitations under the License.
 #===============================================================================
 import argparse
+import sys
 
 
 def parse_tests_tree(entry, prefix=''):
@@ -70,5 +71,9 @@ if __name__ == '__main__':
     parse_tests_tree(tests_map, args.base_dir)
     result = ''
     for test in tests_list:
+
         result += test + ' '
+    # correct paths for non-Unix envs
+    if sys.platform in ['win32', 'cygwin']:
+        result = result.replace('/', '\\')
     print(result[:-1])
