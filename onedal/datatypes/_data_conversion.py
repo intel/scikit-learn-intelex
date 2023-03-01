@@ -30,10 +30,14 @@ def convert_one_to_table(arg):
     return _backend.to_table(arg)
 
 
-def to_table(*args):
+def _apply_and_pass(func, *args):
     if len(args) == 1:
-        return convert_one_to_table(args[0])
-    return (convert_one_to_table(item) for item in args)
+        return func(args[0])
+    return (func(item) for item in args)
+
+
+def to_table(*args):
+    return _apply_and_pass(convert_one_to_table, *args)
 
 
 from onedal import _is_dpc_backend
@@ -44,9 +48,10 @@ if _is_dpc_backend:
     from ..common._policy import _HostInteropPolicy
 
     def _convert_to_supported_impl(policy, *data):
+        func = lambda x: x
         # CPUs support FP64 by default
         if isinstance(policy, _HostInteropPolicy):
-            return data
+            return _apply_and_pass(func, *data)
 
         # It can be either SPMD or DPCPP policy
         device = policy._queue.sycl_device
@@ -61,18 +66,15 @@ if _is_dpc_backend:
                 return x
 
         if not device.has_aspect_fp64:
-            return [convert_or_pass(x) for x in data]
-        else:
-            return [x for x in data]
+            func = convert_or_pass
+
+        return _apply_and_pass(func, *data)
+
 else:
     def _convert_to_supported_impl(policy, *data):
-        return [x for x in data]
+        func = lambda x: x
+        return _apply_and_pass(func, *data)
 
 
 def _convert_to_supported(policy, *data):
-    res = _convert_to_supported_impl(policy, *data)
-
-    if len(data) == 1:
-        return res[0]
-    else:
-        return res
+    return _convert_to_supported_impl(policy, *data)
