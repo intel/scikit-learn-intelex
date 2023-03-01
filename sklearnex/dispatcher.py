@@ -131,9 +131,11 @@ def get_patch_map():
         mapping['kneighborsregressor'] = mapping['knn_regressor']
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
 
+        # LocalOutlierFactor
         mapping['lof'] = [[(neighbors_module,
                             'LocalOutlierFactor',
                             LocalOutlierFactor_sklearnex), None]]
+        mapping['localoutlierfactor'] = mapping['lof']
 
         # Configs
         mapping['set_config'] = [[(base_module,
