@@ -43,7 +43,7 @@ def _test_dense_small_linear_kernel(queue, scale, shift, dtype):
 
     result = linear_kernel(X, Y, scale=scale, shift=shift, queue=queue)
     expected = np.dot(X, np.array(Y).T) * scale + shift
-    
+
     tol = 1e-14 if result.dtype == np.float64 else 1e-6
     assert_allclose(result, expected, rtol=tol)
 
