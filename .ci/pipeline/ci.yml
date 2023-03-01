@@ -101,7 +101,7 @@ jobs:
   - script: |
       conda update -y -q conda
       if [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCTL_PACKAGE=; else export DPCTL_PACKAGE=; fi
-      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich $DPCTL_PACKAGE
+      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCTL_PACKAGE
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -178,7 +178,7 @@ jobs:
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
-      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich clang-format
+      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich clang-format pyyaml
     displayName: Create Anaconda environment
   - script: |
       source activate CB
@@ -244,7 +244,7 @@ jobs:
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format
+  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format pyyaml
     displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
