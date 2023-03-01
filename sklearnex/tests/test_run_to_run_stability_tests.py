@@ -24,7 +24,8 @@ patch_sklearn()
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor, NearestNeighbors
+from sklearn.neighbors import (KNeighborsClassifier, KNeighborsRegressor,
+                               NearestNeighbors, LocalOutlierFactor)
 from sklearn.linear_model import LinearRegression, Ridge, ElasticNet, Lasso
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.decomposition import PCA
@@ -188,6 +189,16 @@ MODELS_INFO = [
     {
         'model': NearestNeighbors(n_neighbors=10, algorithm='kd_tree'),
         'methods': ['kneighbors'],
+        'dataset': 'blobs',
+    },
+    {
+        'model': LocalOutlierFactor(n_neighbors=10, novelty=False),
+        'methods': ['fit_predict'],
+        'dataset': 'blobs',
+    },
+    {
+        'model': LocalOutlierFactor(n_neighbors=10, novelty=True),
+        'methods': ['predict'],
         'dataset': 'blobs',
     },
     {

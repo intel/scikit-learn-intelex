@@ -44,3 +44,14 @@ def test_sklearnex_import_nn():
     assert 'sklearnex' in neigh.__module__
     result = neigh.kneighbors([[0, 0, 1.3]], 2, return_distance=False)
     assert_allclose(result, [[2, 0]])
+
+
+def test_sklearnex_import_lof():
+    from sklearnex.neighbors import LocalOutlierFactor
+    X = [[7, 7, 7], [1, 0, 0], [0, 0, 1], [0, 0, 1]]
+    lof = LocalOutlierFactor(n_neighbors=2)
+    result = lof.fit_predict(X)
+    assert hasattr(lof, '_knn')
+    assert 'sklearnex' in lof.__module__
+    assert 'sklearnex' in lof._knn.__module__
+    assert_allclose(result, [-1, 1, 1, 1])
