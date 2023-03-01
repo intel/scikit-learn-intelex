@@ -283,8 +283,9 @@ jobs:
     displayName: 'Sklearnex testing'
   - script: |
       call activate CB
-      for /f "delims=" %%c in ('python .ci/scripts/select_sklearn_tests.py') do set SELECTED_TESTS=%%c
-      for /f "delims=" %%c in ('python .circleci/deselect_tests.py deselected_tests.yaml') do set DESELECTED_TESTS=%%c
+      cd ..
+      for /f "delims=" %%c in ('python s\.ci\scripts\select_sklearn_tests.py') do set SELECTED_TESTS=%%c
+      for /f "delims=" %%c in ('python s\.circleci\deselect_tests.py deselected_tests.yaml') do set DESELECTED_TESTS=%%c
       cd %CONDA_PREFIX%\Lib\site-packages\sklearn
       python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 %DESELECTED_TESTS% %SELECTED_TESTS%
     displayName: 'Sklearn testing'
