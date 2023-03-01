@@ -137,7 +137,15 @@ jobs:
       conda activate CB
       cd ..
       ./s/conda-recipe/run_test.sh
-    displayName: 'Testing'
+    displayName: 'Sklearnex testing'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      export SELECTED_TESTS=$(python .ci/scrips/select_sklearn_tests.py)
+      export DESELECTED_TESTS=$(python .circleci/deselect_tests.py deselected_tests.yaml)
+      cd $CONDA_PREFIX/lib/python$(PYTHON_VERSION)/site-packages/sklearn
+      python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 $DESELECTED_TESTS $SELECTED_TESTS
+    displayName: 'Sklearn testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -200,7 +208,14 @@ jobs:
       source activate CB
       cd ..
       ./s/conda-recipe/run_test.sh
-    displayName: Testing
+    displayName: 'Sklearnex testing'
+  - script: |
+      source activate CB
+      export SELECTED_TESTS=$(python .ci/scrips/select_sklearn_tests.py)
+      export DESELECTED_TESTS=$(python .circleci/deselect_tests.py deselected_tests.yaml)
+      cd $CONDA_PREFIX/lib/python$(PYTHON_VERSION)/site-packages/sklearn
+      python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 $DESELECTED_TESTS $SELECTED_TESTS
+    displayName: 'Sklearn testing'
   - script: |
       source activate CB
       cd ..
@@ -265,7 +280,14 @@ jobs:
       call activate CB
       cd ..
       call s\conda-recipe\run_test.bat s
-    displayName: daal4py/sklearnex testing
+    displayName: 'Sklearnex testing'
+  - script: |
+      call activate CB
+      for /f "delims=" %c in ('python .ci/scrips/select_sklearn_tests.py') do set SELECTED_TESTS=%c
+      for /f "delims=" %c in ('python .circleci/deselect_tests.py deselected_tests.yaml') do set DESELECTED_TESTS=%c
+      cd %CONDA_PREFIX%\Lib\site-packages\sklearn
+      python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 %DESELECTED_TESTS% %SELECTED_TESTS%
+    displayName: 'Sklearn testing'
   - script: |
       call activate CB
       cd ..
