@@ -128,8 +128,7 @@ jobs:
       conda activate CB
       sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt
-      pip install -r requirements-test-optional.txt
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
     displayName: 'Install testing requirements'
   - script: |
@@ -200,8 +199,7 @@ jobs:
       source activate CB
       sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt
-      pip install -r requirements-test-optional.txt
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
     displayName: 'Install testing requirements'
   - script: |
@@ -272,8 +270,9 @@ jobs:
       call activate CB
       sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt
-      pip install -r requirements-test-optional.txt
+      cd ..
+      for /f "delims=" %%c in ('python s\.ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt %SCIPY_VERSION%
       pip list
     displayName: 'Install testing requirements'
   - script: |
