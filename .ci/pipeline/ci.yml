@@ -290,6 +290,7 @@ jobs:
       for /f "delims=" %%c in ('python s\.circleci\deselect_tests.py deselected_tests.yaml') do set DESELECTED_TESTS=%%c
       for /f "delims=" %%c in ('python -c "import sklearn, os; print(os.path.dirname(sklearn.__file__))"') do set SKLEARN_ROOT=%%c
       cd %SKLEARN_ROOT%
+      echo %SKLEARN_ROOT%
       python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 %DESELECTED_TESTS% %SELECTED_TESTS%
     displayName: 'Sklearn testing'
   - script: |
