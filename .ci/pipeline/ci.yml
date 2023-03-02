@@ -128,7 +128,8 @@ jobs:
       conda activate CB
       sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt $(python .ci/scripts/get_compatible_scipy_version.py)
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
+      pip install $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
     displayName: 'Install testing requirements'
   - script: |
@@ -142,7 +143,7 @@ jobs:
       conda activate CB
       export SELECTED_TESTS=$(python .ci/scripts/select_sklearn_tests.py)
       export DESELECTED_TESTS=$(python .circleci/deselect_tests.py deselected_tests.yaml)
-      cd $CONDA_PREFIX/lib/python$(PYTHON_VERSION)/site-packages/sklearn
+      cd $(python -c "import sklearn, os; print(os.path.dirname(sklearn.__file__))")
       python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 $DESELECTED_TESTS $SELECTED_TESTS
     displayName: 'Sklearn testing'
   - script: |
@@ -199,7 +200,8 @@ jobs:
       source activate CB
       sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt $(python .ci/scripts/get_compatible_scipy_version.py)
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
+      pip install $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
     displayName: 'Install testing requirements'
   - script: |
@@ -211,7 +213,7 @@ jobs:
       source activate CB
       export SELECTED_TESTS=$(python .ci/scripts/select_sklearn_tests.py)
       export DESELECTED_TESTS=$(python .circleci/deselect_tests.py deselected_tests.yaml)
-      cd $CONDA_PREFIX/lib/python$(PYTHON_VERSION)/site-packages/sklearn
+      cd $(python -c "import sklearn, os; print(os.path.dirname(sklearn.__file__))")
       python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 $DESELECTED_TESTS $SELECTED_TESTS
     displayName: 'Sklearn testing'
   - script: |
@@ -270,10 +272,10 @@ jobs:
       call activate CB
       sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
       cd ..
       for /f "delims=" %%c in ('python s\.ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
-      cd s
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt %SCIPY_VERSION%
+      pip install %SCIPY_VERSION%
       pip list
     displayName: 'Install testing requirements'
   - script: |
@@ -286,9 +288,8 @@ jobs:
       cd ..
       for /f "delims=" %%c in ('python s\.ci\scripts\select_sklearn_tests.py') do set SELECTED_TESTS=%%c
       for /f "delims=" %%c in ('python s\.circleci\deselect_tests.py deselected_tests.yaml') do set DESELECTED_TESTS=%%c
-      echo %CONDA_PREFIX%
-      cd "%CONDA_PREFIX%\Lib\site-packages\sklearn"
-      ls
+      for /f "delims=" %%c in ('python -c "import sklearn, os; print(os.path.dirname(sklearn.__file__))"') do set SKLEARN_ROOT=%%c
+      cd %SKLEARN_ROOT%
       python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 %DESELECTED_TESTS% %SELECTED_TESTS%
     displayName: 'Sklearn testing'
   - script: |
