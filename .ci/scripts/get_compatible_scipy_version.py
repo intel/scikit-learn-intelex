@@ -18,12 +18,12 @@ from daal4py.sklearn._utils import sklearn_check_version
 
 
 if sklearn_check_version('1.2'):
-	print('scipy')
+    print('scipy')
 elif sklearn_check_version('1.1'):
-	print('scipy==1.8')
+    print('scipy==1.8')
 elif sklearn_check_version('1.0'):
-	print('scipy==1.7')
+    print('scipy==1.7')
 elif sklearn_check_version('0.24'):
-	print('scipy==1.6')
+    print('scipy==1.6')
 else:
-	print('scipy')
+    print('scipy')
