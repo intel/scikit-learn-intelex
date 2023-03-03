@@ -141,10 +141,7 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      export SELECTED_TESTS=$(python .ci/scripts/select_sklearn_tests.py)
-      export DESELECTED_TESTS=$(python .circleci/deselect_tests.py deselected_tests.yaml)
-      cd $(python -c "import sklearn, os; print(os.path.dirname(sklearn.__file__))")
-      python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 $DESELECTED_TESTS $SELECTED_TESTS
+      bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -211,10 +208,7 @@ jobs:
     displayName: 'Sklearnex testing'
   - script: |
       source activate CB
-      export SELECTED_TESTS=$(python .ci/scripts/select_sklearn_tests.py)
-      export DESELECTED_TESTS=$(python .circleci/deselect_tests.py deselected_tests.yaml)
-      cd $(python -c "import sklearn, os; print(os.path.dirname(sklearn.__file__))")
-      python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 $DESELECTED_TESTS $SELECTED_TESTS
+      bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
   - script: |
       source activate CB
@@ -285,13 +279,7 @@ jobs:
     displayName: 'Sklearnex testing'
   - script: |
       call activate CB
-      cd ..
-      for /f "delims=" %%c in ('python s\.ci\scripts\select_sklearn_tests.py') do set SELECTED_TESTS=%%c
-      for /f "delims=" %%c in ('python s\.circleci\deselect_tests.py deselected_tests.yaml') do set DESELECTED_TESTS=%%c
-      for /f "delims=" %%c in ('python -c "import sklearn, os; print(os.path.dirname(sklearn.__file__))"') do set SKLEARN_ROOT=%%c
-      cd %SKLEARN_ROOT%
-      echo %SKLEARN_ROOT%
-      python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 %DESELECTED_TESTS% %SELECTED_TESTS%
+      bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
   - script: |
       call activate CB
