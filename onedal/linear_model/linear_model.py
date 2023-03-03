@@ -75,11 +75,11 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             if isinstance(y_loc, dpt.usm_ndarray):
                 do_checks = False
 
+        dtype = get_dtype(X_loc)
         if do_checks:
             if not isinstance(X, np.ndarray):
                 X_loc = np.asarray(X)
 
-            dtype = get_dtype(X_loc)
             if dtype not in [np.float32, np.float64]:
                 X_loc = X_loc.astype(np.float64, copy=self.copy_X)
                 dtype = np.float64
@@ -90,15 +90,14 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             X_loc, y_loc = _check_X_y(
                 X_loc, y_loc, force_all_finite=False, accept_2d_y=True)
 
-            params = self._get_onedal_params(dtype)
-
             self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
 
             X_loc, y_loc = _convert_to_supported(policy, X_loc, y_loc)
 
+        params = self._get_onedal_params(dtype)
         X_table, y_table = to_table(X_loc, y_loc)
-        self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
         result = module.train(policy, params, X_table, y_table)
+        self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
 
         self._onedal_model = result.model
 

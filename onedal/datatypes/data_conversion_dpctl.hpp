@@ -18,14 +18,16 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL ONEDAL_PY_ARRAY_API
 
-#include <Python.h>
+#include <pybind11/pybind11.h>
 #include <numpy/arrayobject.h>
 
 #include "oneapi/dal/table/common.hpp"
 
 namespace oneapi::dal::python {
 
+namespace py = pybind11;
+
 PyObject *convert_to_dptensor(const dal::table &input);
-dal::table convert_from_dptensor(PyObject *obj);
+dal::table convert_from_dptensor(py::object obj);
 
 } // namespace oneapi::dal::python

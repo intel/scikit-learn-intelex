@@ -66,7 +66,7 @@ ONEDAL_PY_INIT_MODULE(table) {
 
 #ifdef ONEDAL_DPCTL_INTEGRATION
     m.def("dpctl_to_table", [](py::object obj) {
-        return convert_from_dptensor(obj.ptr());
+        return convert_from_dptensor(obj);
     });
 
     m.def("dpctl_from_table", [](dal::table& t) -> py::handle {

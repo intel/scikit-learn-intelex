@@ -32,12 +32,9 @@ def from_table(*args):
 
 
 def convert_one_to_table(arg):
-    print(f"dpctl_available {str(dpctl_available)}")
     if dpctl_available:
-        print("Convert 1", str(type(arg)), str(arg.dtype))
         ndarr = dpt.usm_ndarray
         if isinstance(arg, ndarr):
-            print("Convert 2")
             return _backend.dpctl_to_table(arg)
     arg = make2d(arg)
     return _backend.to_table(arg)

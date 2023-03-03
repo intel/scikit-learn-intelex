@@ -41,31 +41,32 @@ void report_problem_from_dptensor(const char* clarification) {
     throw std::invalid_argument{ message };
 }
 
-std::int64_t get_and_check_dptensor_ndim(dpctl::tensor::usm_ndarray* ptr) {
+std::int64_t get_and_check_dptensor_ndim(const dpctl::tensor::usm_ndarray& tensor) {
     constexpr const char* const err_message = ": only 1D & 2D tensors are allowed";
 
-    const auto ndim = dal::detail::integral_cast<std::int64_t>(ptr->get_ndim());
+    const auto ndim = dal::detail::integral_cast<std::int64_t>(tensor.get_ndim());
     if ((ndim != 1) && (ndim != 2)) report_problem_from_dptensor(err_message);
     return ndim;
 }
 
-auto get_dptensor_shape(dpctl::tensor::usm_ndarray* ptr) {
-    const auto ndim = get_and_check_dptensor_ndim(ptr);
+auto get_dptensor_shape(const dpctl::tensor::usm_ndarray& tensor) {
+    const auto ndim = get_and_check_dptensor_ndim(tensor);
     std::int64_t row_count, col_count;
     if (ndim == 1l) {
-        row_count = 1l;
-        col_count = dal::detail::integral_cast<std::int64_t>(ptr->get_shape(0));
+        row_count = dal::detail::integral_cast<std::int64_t>(tensor.get_shape(0));
+        col_count = 1l;
     } else {
-        row_count = dal::detail::integral_cast<std::int64_t>(ptr->get_shape(0));
-        col_count = dal::detail::integral_cast<std::int64_t>(ptr->get_shape(1));
+        row_count = dal::detail::integral_cast<std::int64_t>(tensor.get_shape(0));
+        col_count = dal::detail::integral_cast<std::int64_t>(tensor.get_shape(1));
     }
+    std::printf("Row count: %d, Col count: %d \n", int(row_count), int(col_count));
     return std::make_pair(row_count, col_count);
 }
 
-auto get_dptensor_layout(dpctl::tensor::usm_ndarray* ptr) {
-    const auto ndim = get_and_check_dptensor_ndim(ptr);
-    const bool is_c_cont = ptr->is_c_contiguous();
-    const bool is_f_cont = ptr->is_f_contiguous();
+auto get_dptensor_layout(const dpctl::tensor::usm_ndarray& tensor) {
+    const auto ndim = get_and_check_dptensor_ndim(tensor);
+    const bool is_c_cont = tensor.is_c_contiguous();
+    const bool is_f_cont = tensor.is_f_contiguous();
 
     if (ndim == 1l) {
         //if (!is_c_cont || !is_f_cont) report_problem_from_dptensor(
@@ -79,36 +80,40 @@ auto get_dptensor_layout(dpctl::tensor::usm_ndarray* ptr) {
 }
 
 template<typename Type>
-dal::table convert_to_homogen_impl(dpctl::tensor::usm_ndarray* ptr) {
-    const auto [r_count, c_count] = get_dptensor_shape(ptr);
-    const auto layout = get_dptensor_layout(ptr);
-    const auto* data = ptr->get_data<Type>();
-    const auto queue = ptr->get_queue();
+dal::table convert_to_homogen_impl(py::object obj, dpctl::tensor::usm_ndarray& tensor) {
+    const dpctl::tensor::usm_ndarray* const ptr = &tensor;
+    const auto deleter = [obj](const Type*) { obj.dec_ref(); };
+    const auto [r_count, c_count] = get_dptensor_shape(tensor);
+    const auto layout = get_dptensor_layout(tensor);
+    const auto* data = tensor.get_data<Type>();
+    const auto queue = tensor.get_queue();
 
     std::printf("Ready for table creation\n\n\n");
 
-    return dal::homogen_table::wrap(queue, data, r_count, c_count, //
-                                    std::vector<sycl::event>{}, layout);
+    auto res = dal::homogen_table(queue, data, r_count, c_count, //
+                        deleter, std::vector<sycl::event>{}, layout);
+
+
+    obj.inc_ref();
+
+    return res;
 }
 
-dal::table convert_from_dptensor(PyObject *obj) {
-    if(obj == nullptr || obj == Py_None)
-        report_problem_from_dptensor(": nullptr or Py_None passed");
+dal::table convert_from_dptensor(py::object obj) {
+    auto tensor = pybind11::cast<dpctl::tensor::usm_ndarray>(obj);
 
-    std::printf("At the beggining of conversion function\n\n\n");
-
-    auto* const ptr = reinterpret_cast<dpctl::tensor::usm_ndarray*>(obj);
-    const auto type = ptr->get_typenum();
+    const auto type = tensor.get_typenum();
 
     dal::table res{};
 
-#define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(ptr);
+#define MAKE_HOMOGEN_TABLE(CType) \
+    res = convert_to_homogen_impl<CType>(obj, tensor);
+
     SET_NPY_FEATURE(type, MAKE_HOMOGEN_TABLE, //
         report_problem_from_dptensor(": unknown data type"));
+
 #undef MAKE_HOMOGEN_TABLE
 
-    std::printf("\n\n\nConvert from dptendor call\n\n\n");
-    
     return res;
 }
 
