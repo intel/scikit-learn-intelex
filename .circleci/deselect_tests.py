@@ -17,6 +17,7 @@
 
 # coding: utf-8
 import argparse
+import sys
 import os.path
 from yaml import FullLoader, load as yaml_load
 try:
@@ -48,15 +49,19 @@ def evaluate_cond(cond, v):
     return False
 
 
-def filter_by_version(entry, sk_ver):
+def filter_by_version_and_platform(entry, sk_ver):
     if not entry:
         return None
     t = entry.split(' ')
     if len(t) == 1:
         return entry
-    if len(t) != 2:
+    elif len(t) == 2:
+        t.append(None)
+    if len(t) != 3:
         return None
-    test_name, cond = t
+    test_name, cond, platform = t
+    if platform is not None and platform != sys.platform:
+        return None
     conds = cond.split(',')
     if all([evaluate_cond(cond, sk_ver) for cond in conds]):
         return test_name
@@ -79,19 +84,19 @@ def create_pytest_switches(filename, absolute, reduced, public, gpu, base_dir=No
             base_dir += '/'
 
         filtered_deselection = [
-            filter_by_version(test_name, sklearn_version)
+            filter_by_version_and_platform(test_name, sklearn_version)
             for test_name in dt.get('deselected_tests', [])]
         if reduced:
             filtered_deselection.extend(
-                [filter_by_version(test_name, sklearn_version)
+                [filter_by_version_and_platform(test_name, sklearn_version)
                  for test_name in dt.get('reduced_tests', [])])
         if public:
             filtered_deselection.extend(
-                [filter_by_version(test_name, sklearn_version)
+                [filter_by_version_and_platform(test_name, sklearn_version)
                  for test_name in dt.get('public', [])])
         if gpu:
             filtered_deselection.extend(
-                [filter_by_version(test_name, sklearn_version)
+                [filter_by_version_and_platform(test_name, sklearn_version)
                  for test_name in dt.get('gpu', [])])
         pytest_switches = []
         for test_name in filtered_deselection:
