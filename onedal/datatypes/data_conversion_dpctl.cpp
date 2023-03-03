@@ -14,6 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
+#ifdef ONEDAL_DPCTL_INTEGRATION
+#include <cstdio>
 #define NO_IMPORT_ARRAY
 
 #include <stdexcept>
@@ -41,6 +43,7 @@ void report_problem_from_dptensor(const char* clarification) {
 
 std::int64_t get_and_check_dptensor_ndim(dpctl::tensor::usm_ndarray* ptr) {
     constexpr const char* const err_message = ": only 1D & 2D tensors are allowed";
+
     const auto ndim = dal::detail::integral_cast<std::int64_t>(ptr->get_ndim());
     if ((ndim != 1) && (ndim != 2)) report_problem_from_dptensor(err_message);
     return ndim;
@@ -48,37 +51,71 @@ std::int64_t get_and_check_dptensor_ndim(dpctl::tensor::usm_ndarray* ptr) {
 
 auto get_dptensor_shape(dpctl::tensor::usm_ndarray* ptr) {
     const auto ndim = get_and_check_dptensor_ndim(ptr);
-    const std::int64_t row_count = dal::detail::integral_cast<std::int64_t>(ptr->get_shape(0));
-    const std::int64_t col_count = (ndim == 1l) ? 1l : dal::detail::integral_cast<std::int64_t>(ptr->get_shape(1));
+    std::int64_t row_count, col_count;
+    if (ndim == 1l) {
+        row_count = 1l;
+        col_count = dal::detail::integral_cast<std::int64_t>(ptr->get_shape(0));
+    } else {
+        row_count = dal::detail::integral_cast<std::int64_t>(ptr->get_shape(0));
+        col_count = dal::detail::integral_cast<std::int64_t>(ptr->get_shape(1));
+    }
     return std::make_pair(row_count, col_count);
 }
 
 auto get_dptensor_layout(dpctl::tensor::usm_ndarray* ptr) {
-    const bool is_c_ordered = ptr->is_c_contiguous();
-    const bool is_f_ordered = ptr->is_f_contiguous();
+    const auto ndim = get_and_check_dptensor_ndim(ptr);
+    const bool is_c_cont = ptr->is_c_contiguous();
+    const bool is_f_cont = ptr->is_f_contiguous();
+
+    if (ndim == 1l) {
+        //if (!is_c_cont || !is_f_cont) report_problem_from_dptensor(
+        //    ": 1D array should be contiguous both as C-order and F-order");
+        return dal::data_layout::row_major;
+    } else {
+        //if (!is_c_cont || !is_f_cont) report_problem_from_dptensor(
+        //    ": 2D array should be contiguous at least by one axis");
+        return is_c_cont ? dal::data_layout::row_major : dal::data_layout::column_major;
+    }
+}
+
+template<typename Type>
+dal::table convert_to_homogen_impl(dpctl::tensor::usm_ndarray* ptr) {
+    const auto [r_count, c_count] = get_dptensor_shape(ptr);
+    const auto layout = get_dptensor_layout(ptr);
+    const auto* data = ptr->get_data<Type>();
+    const auto queue = ptr->get_queue();
+
+    std::printf("Ready for table creation\n\n\n");
+
+    return dal::homogen_table::wrap(queue, data, r_count, c_count, //
+                                    std::vector<sycl::event>{}, layout);
 }
 
 dal::table convert_from_dptensor(PyObject *obj) {
-    using tensor = dpctl::tensor::usm_ndarray;
-    auto* const ptr = dynamic_cast<tensor*>(obj);
-    if(ptr == nullptr) {
-        report_problem_from_dptensor(": pointer casting");
-    }
-    else {
-        const auto typenum = ptr->get_typenum();
-        const auto ndim = ptr->get_ndim();
-        auto shape = ptr->get_shape_vector();
+    if(obj == nullptr || obj == Py_None)
+        report_problem_from_dptensor(": nullptr or Py_None passed");
 
-        const bool is_c_ordered = ptr->is_c_contiguous();
-        const bool is_f_ordered = ptr->is_f_contiguous();
+    std::printf("At the beggining of conversion function\n\n\n");
 
+    auto* const ptr = reinterpret_cast<dpctl::tensor::usm_ndarray*>(obj);
+    const auto type = ptr->get_typenum();
 
-        return dal::table{};
-    }
+    dal::table res{};
+
+#define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(ptr);
+    SET_NPY_FEATURE(type, MAKE_HOMOGEN_TABLE, //
+        report_problem_from_dptensor(": unknown data type"));
+#undef MAKE_HOMOGEN_TABLE
+
+    std::printf("\n\n\nConvert from dptendor call\n\n\n");
+    
+    return res;
 }
 
 void report_problem_to_dptensor(const char* clarification) {
-    std::string message{ "Unable to convert to dptensor: " };
+    constexpr const char* const base_message = "Unable to convert to dptensor";
+
+    std::string message{ base_message };
     message += std::string{ clarification };
     throw std::runtime_error{ message };
 }
@@ -88,3 +125,5 @@ PyObject *convert_to_dptensor(const dal::table &input) {
 }
 
 } // namespace oneapi::dal::python
+
+#endif // ONEDAL_DPCTL_INTEGRATION

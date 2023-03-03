@@ -17,6 +17,13 @@
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
 
+try:
+    import dpctl
+    import dpctl.tensor as dpt
+    dpctl_available = dpctl.__version__ >= '0.14'
+except ImportError:
+    dpctl_available = False
+
 
 def from_table(*args):
     if len(args) == 1:
@@ -25,6 +32,13 @@ def from_table(*args):
 
 
 def convert_one_to_table(arg):
+    print(f"dpctl_available {str(dpctl_available)}")
+    if dpctl_available:
+        print("Convert 1", str(type(arg)), str(arg.dtype))
+        ndarr = dpt.usm_ndarray
+        if isinstance(arg, ndarr):
+            print("Convert 2")
+            return _backend.dpctl_to_table(arg)
     arg = make2d(arg)
     return _backend.to_table(arg)
 

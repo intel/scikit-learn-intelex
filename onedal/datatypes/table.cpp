@@ -17,6 +17,10 @@
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/csr.hpp"
 
+#ifdef ONEDAL_DPCTL_INTEGRATION
+#include "onedal/datatypes/data_conversion_dpctl.hpp"
+#endif // ONEDAL_DPCTL_INTEGRATION
+
 #include "onedal/datatypes/data_conversion.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 
@@ -59,6 +63,17 @@ ONEDAL_PY_INIT_MODULE(table) {
         auto* obj_ptr = convert_to_pyobject(t);
         return obj_ptr;
     });
+
+#ifdef ONEDAL_DPCTL_INTEGRATION
+    m.def("dpctl_to_table", [](py::object obj) {
+        return convert_from_dptensor(obj.ptr());
+    });
+
+    m.def("dpctl_from_table", [](dal::table& t) -> py::handle {
+        return convert_to_dptensor(t);
+    });
+#endif // ONEDAL_DPCTL_INTEGRATION
+
 }
 
 } // namespace oneapi::dal::python
