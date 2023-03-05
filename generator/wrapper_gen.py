@@ -1038,6 +1038,12 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         self.c_ptr = mk_{{algo}}(
             {{params_all|fmt('{}', 'arg_cyext', sep=',\n')|indent(25+(algo|length))}}
         )
+    # Add __reduce__ method to customize pickling and unpickling
+    def __reduce__(self):
+        return (self.__class__, (
+            # Pass in the same parameters used in __cinit__ to recreate the object
+            {{params_all|fmt('{}', 'name', sep=',\n')|indent(25)}},
+        ))
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)
