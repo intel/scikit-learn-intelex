@@ -36,23 +36,23 @@ static void* init_numpy() {
 ONEDAL_PY_INIT_MODULE(table) {
     init_numpy();
 
-    py::class_<table>(m, "table")
-        .def(py::init())
-        .def_property_readonly("has_data", &table::has_data)
-        .def_property_readonly("column_count", &table::get_column_count)
-        .def_property_readonly("row_count", &table::get_row_count)
-        .def_property_readonly("kind", [](const table& t) {
-            if (t.get_kind() == 0) { // TODO: expose empty table kind
-                return "empty";
-            }
-            if (t.get_kind() == homogen_table::kind()) {
-                return "homogen";
-            }
-            if (t.get_kind() == detail::csr_table::kind()) {
-                return "csr";
-            }
-            return "unknown";
-        });
+    py::class_<table> table_obj(m, "table");
+    table_obj.def(py::init());
+    table_obj.def_property_readonly("has_data", &table::has_data);
+    table_obj.def_property_readonly("column_count", &table::get_column_count);
+    table_obj.def_property_readonly("row_count", &table::get_row_count);
+    table_obj.def_property_readonly("kind", [](const table& t) {
+        if (t.get_kind() == 0) { // TODO: expose empty table kind
+            return "empty";
+        }
+        if (t.get_kind() == homogen_table::kind()) {
+            return "homogen";
+        }
+        if (t.get_kind() == detail::csr_table::kind()) {
+            return "csr";
+        }
+        return "unknown";
+    });
 
     m.def("to_table", [](py::object obj) {
         auto* obj_ptr = obj.ptr();

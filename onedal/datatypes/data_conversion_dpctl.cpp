@@ -15,7 +15,6 @@
 *******************************************************************************/
 
 #ifdef ONEDAL_DPCTL_INTEGRATION
-#include <cstdio>
 #define NO_IMPORT_ARRAY
 
 #include <stdexcept>
@@ -59,7 +58,7 @@ auto get_dptensor_shape(const dpctl::tensor::usm_ndarray& tensor) {
         row_count = dal::detail::integral_cast<std::int64_t>(tensor.get_shape(0));
         col_count = dal::detail::integral_cast<std::int64_t>(tensor.get_shape(1));
     }
-    std::printf("Row count: %d, Col count: %d \n", int(row_count), int(col_count));
+
     return std::make_pair(row_count, col_count);
 }
 
@@ -87,8 +86,6 @@ dal::table convert_to_homogen_impl(py::object obj, dpctl::tensor::usm_ndarray& t
     const auto layout = get_dptensor_layout(tensor);
     const auto* data = tensor.get_data<Type>();
     const auto queue = tensor.get_queue();
-
-    std::printf("Ready for table creation\n\n\n");
 
     auto res = dal::homogen_table(queue, data, r_count, c_count, //
                         deleter, std::vector<sycl::event>{}, layout);
@@ -127,6 +124,15 @@ void report_problem_to_dptensor(const char* clarification) {
 
 PyObject *convert_to_dptensor(const dal::table &input) {
     return nullptr;
+}
+
+py::dict construct_sua(const dal::table& input) {
+    const auto kind = input.get_kind();
+    if (kind != dal::homogen_table::kind())
+        report_problem_to_dptensor(": only homogen tables are supported");
+
+    const auto& inp = reinterpret_cast<const dal::homogen_table&>(input);
+
 }
 
 } // namespace oneapi::dal::python

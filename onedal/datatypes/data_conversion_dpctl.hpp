@@ -27,7 +27,8 @@ namespace oneapi::dal::python {
 
 namespace py = pybind11;
 
-PyObject *convert_to_dptensor(const dal::table &input);
+PyObject *convert_to_dptensor(const dal::table& input);
 dal::table convert_from_dptensor(py::object obj);
+py::dict construct_sua(const dal::table& input);
 
 } // namespace oneapi::dal::python
