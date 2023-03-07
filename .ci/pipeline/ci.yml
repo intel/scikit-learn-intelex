@@ -100,7 +100,7 @@ jobs:
     displayName: 'System info'
   - script: |
       conda update -y -q conda
-      if [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCTL_PACKAGE=; else export DPCTL_PACKAGE=; fi
+      if [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCTL_PACKAGE=; else export DPCTL_PACKAGE="dpctl>=0.14"; fi
       conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCTL_PACKAGE
     displayName: 'Conda create'
   - script: |
