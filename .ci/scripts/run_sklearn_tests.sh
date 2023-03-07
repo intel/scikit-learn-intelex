@@ -15,11 +15,13 @@
 # limitations under the License.
 #===============================================================================
 
+# Args:
+# 1 - device name (optional)
+
 ci_dir=$( dirname $( dirname "${BASH_SOURCE[0]}" ) )
 cd $ci_dir
 
 export SELECTED_TESTS=$(python scripts/select_sklearn_tests.py)
 export DESELECTED_TESTS=$(python ../.circleci/deselect_tests.py ../deselected_tests.yaml)
-cd $(python -c "import sklearn, os; print(os.path.dirname(sklearn.__file__))")
-export SKLEARNEX_VERBOSE=DEBUG
-python -m sklearnex -m pytest --verbose --pyargs --durations=100 --durations-min=0.01 $DESELECTED_TESTS $SELECTED_TESTS
+
+python scripts/run_sklearn_tests.py -d ${1:-none}
