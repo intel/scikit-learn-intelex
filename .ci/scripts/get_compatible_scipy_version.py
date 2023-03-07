@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 #===============================================================================
-# Copyright 2021 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #===============================================================================
+from daal4py.sklearn._utils import sklearn_check_version
 
-from .knn_classification import KNeighborsClassifier
-from .knn_unsupervised import NearestNeighbors
-from .knn_regression import KNeighborsRegressor
-from .lof import LocalOutlierFactor
 
-__all__ = ['KNeighborsClassifier', 'KNeighborsRegressor', 'LocalOutlierFactor',
-           'NearestNeighbors']
+if sklearn_check_version('1.2'):
+    print('scipy==1.9')
+elif sklearn_check_version('1.1'):
+    print('scipy==1.8')
+elif sklearn_check_version('1.0'):
+    print('scipy==1.7')
+elif sklearn_check_version('0.24'):
+    print('scipy==1.6')
+else:
+    print('scipy')

@@ -82,7 +82,7 @@ try:
 except ImportError:
     dpctl_available = False
 
-build_distribute = dpcpp and dpctl_available and not no_dist
+build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
 
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(

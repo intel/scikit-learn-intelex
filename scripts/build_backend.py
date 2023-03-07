@@ -22,6 +22,8 @@ import numpy as np
 import subprocess
 from distutils import log
 from distutils.sysconfig import get_python_inc, get_config_var
+import multiprocessing
+from math import floor
 
 IS_WIN = False
 IS_MAC = False
@@ -177,8 +179,16 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
             "-DONEDAL_DIST_SPMD:BOOL=ON"
         ]
 
-    import multiprocessing
     cpu_count = multiprocessing.cpu_count()
+    # limit parallel cmake jobs if memory size is insufficient
+    # TODO: add on all platforms
+    if IS_LIN:
+        with open('/proc/meminfo', 'r') as meminfo_file_obj:
+            memfree = meminfo_file_obj.read().split('\n')[1].split(' ')
+            while '' in memfree:
+                memfree.remove('')
+            memfree = int(memfree[1])  # total memory in kB
+        cpu_count = min(cpu_count, floor(max(1, memfree / 2 ** 20)))
 
     make_args = [
         "cmake",

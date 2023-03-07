@@ -21,7 +21,8 @@ from sklearn.ensemble import (RandomForestClassifier, RandomForestRegressor)
 from sklearn.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
-    NearestNeighbors)
+    NearestNeighbors,
+    LocalOutlierFactor)
 from sklearn.linear_model import (
     LogisticRegression,
     LogisticRegressionCV,
@@ -47,6 +48,16 @@ MODELS_INFO = [
     {
         'model': NearestNeighbors(algorithm='brute'),
         'methods': ['kneighbors'],
+        'dataset': 'blobs',
+    },
+    {
+        'model': LocalOutlierFactor(novelty=False),
+        'methods': ['fit_predict'],
+        'dataset': 'blobs',
+    },
+    {
+        'model': LocalOutlierFactor(novelty=True),
+        'methods': ['predict'],
         'dataset': 'blobs',
     },
     {

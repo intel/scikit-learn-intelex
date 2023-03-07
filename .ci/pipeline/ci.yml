@@ -24,6 +24,7 @@ trigger:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - .circleci/config.yml
 
 pr:
   branches:
@@ -35,6 +36,7 @@ pr:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - .circleci/config.yml
 
 variables:
   - name: MACOSX_DEPLOYMENT_TARGET
@@ -99,7 +101,7 @@ jobs:
   - script: |
       conda update -y -q conda
       if [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCTL_PACKAGE=; else export DPCTL_PACKAGE=; fi
-      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich $DPCTL_PACKAGE
+      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCTL_PACKAGE
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -126,8 +128,8 @@ jobs:
       conda activate CB
       sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt
-      pip install -r requirements-test-optional.txt
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
+      pip install $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
     displayName: 'Install testing requirements'
   - script: |
@@ -135,7 +137,12 @@ jobs:
       conda activate CB
       cd ..
       ./s/conda-recipe/run_test.sh
-    displayName: 'Testing'
+    displayName: 'Sklearnex testing'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      bash .ci/scripts/run_sklearn_tests.sh
+    displayName: 'Sklearn testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -168,7 +175,7 @@ jobs:
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
       conda update -q conda
-      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich clang-format
+      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich clang-format pyyaml
     displayName: Create Anaconda environment
   - script: |
       source activate CB
@@ -190,15 +197,19 @@ jobs:
       source activate CB
       sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt
-      pip install -r requirements-test-optional.txt
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
+      pip install $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
     displayName: 'Install testing requirements'
   - script: |
       source activate CB
       cd ..
       ./s/conda-recipe/run_test.sh
-    displayName: Testing
+    displayName: 'Sklearnex testing'
+  - script: |
+      source activate CB
+      bash .ci/scripts/run_sklearn_tests.sh
+    displayName: 'Sklearn testing'
   - script: |
       source activate CB
       cd ..
@@ -227,7 +238,7 @@ jobs:
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format
+  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format pyyaml
     displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
@@ -255,15 +266,21 @@ jobs:
       call activate CB
       sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt
-      pip install -r requirements-test-optional.txt
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
+      cd ..
+      for /f "delims=" %%c in ('python s\.ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
+      pip install %SCIPY_VERSION%
       pip list
     displayName: 'Install testing requirements'
   - script: |
       call activate CB
       cd ..
       call s\conda-recipe\run_test.bat s
-    displayName: daal4py/sklearnex testing
+    displayName: 'Sklearnex testing'
+  - script: |
+      call activate CB
+      bash .ci/scripts/run_sklearn_tests.sh
+    displayName: 'Sklearn testing'
   - script: |
       call activate CB
       cd ..
