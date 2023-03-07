@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+import numpy as np
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
 
@@ -34,6 +35,21 @@ def to_table(*args):
         return convert_one_to_table(args[0])
     return (convert_one_to_table(item) for item in args)
 
+
+# TODO: add dpctl support
+def one_to_dataframe(arg):
+    if arg is None:
+        return None
+
+    is_numpy = isinstance(arg, np.ndarray)
+    #is_dpctl = isinstance(arg, dpt.tensor)
+    if not is_numpy:
+        return np.asarray(arg)
+    else:
+        return arg
+        
+def to_dataframe(*args):
+    
 
 from onedal import _is_dpc_backend
 
