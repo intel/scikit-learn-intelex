@@ -40,7 +40,8 @@ from ..datatypes import (
     _check_X_y,
     _check_array,
     _column_or_1d,
-    _check_n_features
+    _check_n_features,
+    _convert_to_supported
 )
 
 from ..common._mixin import ClassifierMixin, RegressorMixin
@@ -204,7 +205,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                     self.min_samples_split * n_samples)))
 
         onedal_params = {
-            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'fptype': 'float' if data.dtype == np.float32 else 'double',
             'method': self.algorithm,
             'infer_mode': self.infer_mode,
             'voting_mode': self.voting_mode,
@@ -350,6 +351,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         if not sklearn_check_version('1.0'):
             self.n_features_ = self.n_features_in_
         policy = self._get_policy(queue, X, y, sample_weight)
+
+        X, y, sample_weight = _convert_to_supported(policy, X, y, sample_weight)
         params = self._get_onedal_params(X)
         train_result = module.train(
             policy, params, *to_table(X, y, sample_weight))
@@ -380,9 +383,10 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                          force_all_finite=True, accept_sparse=False)
         _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
-        params = self._get_onedal_params(X)
 
         model = self._onedal_model
+        X = _convert_to_supported(policy, X)
+        params = self._get_onedal_params(X)
         result = module.infer(policy, params, model, to_table(X))
         y = from_table(result.responses)
         return y
@@ -393,6 +397,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                          force_all_finite=True, accept_sparse=False)
         _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
+        X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
         params['infer_mode'] = 'class_probabilities'
 
