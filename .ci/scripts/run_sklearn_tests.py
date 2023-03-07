@@ -18,6 +18,7 @@ from sklearnex import patch_sklearn
 patch_sklearn()
 
 import os
+import sys
 import argparse
 import pytest
 import sklearn
@@ -41,6 +42,7 @@ if __name__ == '__main__':
 
     if args.device != 'none':
         with sklearn.config_context(target_offload=args.device):
-            pytest.main(pytest_args)
+            return_code = pytest.main(pytest_args)
     else:
-        pytest.main(pytest_args)
+        return_code = pytest.main(pytest_args)
+    sys.exit(int(return_code))

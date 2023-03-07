@@ -25,3 +25,4 @@ export SELECTED_TESTS=$(python scripts/select_sklearn_tests.py)
 export DESELECTED_TESTS=$(python ../.circleci/deselect_tests.py ../deselected_tests.yaml)
 
 python scripts/run_sklearn_tests.py -d ${1:-none}
+exit $?
