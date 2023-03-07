@@ -48,12 +48,11 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
     def _get_onedal_params(self, dtype=np.float32):
         intercept = 'intercept|' if self.fit_intercept else ''
-        res = {
+        return {
             'fptype': 'float' if dtype == np.float32 else 'double',
             'method': self.algorithm, 'intercept': self.fit_intercept,
             'result_option': (intercept + 'coefficients'),
         }
-        return res
 
     def _fit(self, X, y, module, queue):
         policy = self._get_policy(queue, X, y)

@@ -45,7 +45,7 @@ if _is_dpc_backend:
 
     from ..common._policy import _HostInteropPolicy
 
-    def _convert_to_supported_impl(policy, *data):
+    def _convert_to_supported(policy, *data):
         def func(x):
             return x
 
@@ -71,12 +71,8 @@ if _is_dpc_backend:
         return _apply_and_pass(func, *data)
 
 else:
-    def _convert_to_supported_impl(policy, *data):
+    def _convert_to_supported(policy, *data):
         def func(x):
             return x
 
         return _apply_and_pass(func, *data)
-
-
-def _convert_to_supported(policy, *data):
-    return _convert_to_supported_impl(policy, *data)

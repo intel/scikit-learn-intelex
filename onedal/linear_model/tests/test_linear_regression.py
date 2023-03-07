@@ -19,7 +19,7 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 if daal_check_version((2023, 'P', 100)):
     import pytest
     import numpy as np
-    from numpy.testing import assert_allclose
+    from numpy.testing import assert_allclose, assert_array_equal
 
     from onedal.linear_model import LinearRegression
     from onedal.tests.utils._device_selection import get_queues
@@ -57,7 +57,7 @@ if daal_check_version((2023, 'P', 100)):
         assert isinstance(model2, model.__class__)
         result = model2.predict(X, queue=queue)
 
-        assert_allclose(expected, result, rtol=1e-5)
+        assert_array_equal(expected, result)
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])
