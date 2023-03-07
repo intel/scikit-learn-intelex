@@ -310,7 +310,7 @@ PyObject *convert_to_pyobject(const dal::table &input) {
             dtype,
             MAKE_PY_FROM_CSR,
             throw std::invalid_argument("Not avalible to convert a scipy.csr"));
-#undef MAKE_NYMPY_FROM_HOMOGEN
+#undef MAKE_PY_FROM_CSR
     }
     else {
         throw std::invalid_argument("Output oneDAL table doesn't have homogen or csr format");
