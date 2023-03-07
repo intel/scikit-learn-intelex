@@ -146,6 +146,11 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      bash .ci/scripts/run_sklearn_tests.sh cpu
+    displayName: 'Sklearn testing [device=cpu]'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
       cd ..
       python s/.ci/scripts/test_global_patch.py
     displayName: global patching testing
