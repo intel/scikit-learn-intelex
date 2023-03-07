@@ -18,7 +18,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from sklearn.base import BaseEstimator
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from numbers import Number, Real
+from numbers import Number
 
 import numpy as np
 from scipy import sparse as sp
@@ -86,24 +86,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     "'auto'. Got '{}' instead.".format(gamma)
                 )
         else:
-            if sklearn_check_version('1.1') and not sklearn_check_version('1.2'):
-                if isinstance(gamma, Real):
-                    if gamma <= 0:
-                        msg = (
-                            f"gamma value must be > 0; {gamma!r} is invalid. Use"
-                            " a positive number or use 'auto' to set gamma to a"
-                            " value of 1 / n_features."
-                        )
-                        raise ValueError(msg)
-                    _gamma = gamma
-                else:
-                    msg = (
-                        "The gamma value should be set to 'scale', 'auto' or a"
-                        f" positive float value. {gamma!r} is not a valid option"
-                    )
-                    raise ValueError(msg)
-            else:
-                _gamma = gamma
+            _gamma = gamma
         return _gamma, np.sqrt(0.5 / _gamma)
 
     def _validate_targets(self, y, dtype):

@@ -37,7 +37,7 @@ def convert_one_to_table(arg):
 
 def to_table(*args):
     return _apply_and_pass(convert_one_to_table, *args)
-
+    
 
 from onedal import _is_dpc_backend
 
