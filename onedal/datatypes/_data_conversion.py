@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import warnings
+import numpy as np
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
 
@@ -41,8 +42,6 @@ def to_table(*args):
 from onedal import _is_dpc_backend
 
 if _is_dpc_backend:
-    import numpy as np
-
     from ..common._policy import _HostInteropPolicy
 
     def _convert_to_supported(policy, *data):
@@ -76,3 +75,20 @@ else:
             return x
 
         return _apply_and_pass(func, *data)
+
+
+#TODO: Update with dpctl
+#For now it will fall back to numpy 
+def _convert_one_to_dataframe(policy, x):
+    is_numpy = isinstance(x, np.ndarray)
+    if (x is None) or is_numpy:
+        return x
+    else:
+        return np.asarray(x)
+
+
+def _convert_to_dataframe(policy, *data):
+    def _convert_one(x):
+        return _convert_one_to_dataframe(policy, x)
+    return _apply_and_pass(_convert_one, *data)
+
