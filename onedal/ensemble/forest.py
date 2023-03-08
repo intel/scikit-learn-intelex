@@ -302,7 +302,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
     def _get_sample_weight(self, X, y, sample_weight):
-        n_samples, _ = X.shape
+        n_samples = X.shape[0]
         dtype = X.dtype
         if n_samples == 1:
             raise ValueError("n_samples=1")
