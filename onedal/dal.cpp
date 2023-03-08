@@ -39,10 +39,10 @@ ONEDAL_PY_INIT_MODULE(polynomial_kernel);
 ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 
 /* algorithms */
-ONEDAL_PY_INIT_MODULE(basic_statistics);
 ONEDAL_PY_INIT_MODULE(ensemble);
 ONEDAL_PY_INIT_MODULE(decomposition);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+ONEDAL_PY_INIT_MODULE(basic_statistics);
 ONEDAL_PY_INIT_MODULE(linear_model);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 ONEDAL_PY_INIT_MODULE(neighbors);
@@ -66,10 +66,10 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_sigmoid_kernel(m);
     init_get_tree(m);
 
-    init_basic_statistics(m);
     init_decomposition(m);
     init_ensemble(m);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    init_basic_statistics(m);
     init_linear_model(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     init_neighbors(m);
