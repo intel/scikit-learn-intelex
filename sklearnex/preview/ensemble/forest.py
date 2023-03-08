@@ -446,6 +446,10 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                     (f'X has {num_features} features, '
                      f'but RandomForestClassifier is expecting '
                      f'{self.n_features_in_} features as input'))
+        X = check_array(X, dtype=[np.float64, np.float32])
+        check_is_fitted(self)
+        if sklearn_check_version('0.23'):
+            self._check_n_features(X, reset=False)
         return dispatch(self, 'ensemble.RandomForestClassifier.predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_RandomForestClassifier.predict_proba,
