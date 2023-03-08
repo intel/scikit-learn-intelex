@@ -620,7 +620,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 "Training data only contain information about one class.")
 
         if self.oob_score:
-            err = 'out_of_bag_error|out_of_bag_error_per_observation'
+            err = 'out_of_bag_error_accuracy|out_of_bag_error_decision_function'
         else:
             err = 'none'
 
@@ -949,7 +949,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         rs_ = check_random_state(self.random_state)
 
         if self.oob_score:
-            err = 'out_of_bag_error|out_of_bag_error_per_observation'
+            err = 'out_of_bag_error_r2|out_of_bag_error_prediction'
         else:
             err = 'none'
 
