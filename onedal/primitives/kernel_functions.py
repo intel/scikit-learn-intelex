@@ -19,7 +19,7 @@ from onedal.datatypes import _check_array
 from onedal import _backend
 
 from ..common._policy import _get_policy
-from ..datatypes._data_conversion import from_table, to_table
+from ..datatypes._data_conversion import from_table, to_table, _convert_to_supported
 
 
 def _check_inputs(X, Y):
@@ -27,12 +27,13 @@ def _check_inputs(X, Y):
         return _check_array(data, dtype=[np.float64, np.float32], force_all_finite=False)
     X = check_input(X)
     Y = X if Y is None else check_input(Y)
-    fptype = 'float' if X.dtype is np.dtype('float32') else 'double'
-    return X, Y, fptype
+    return X, Y
 
 
 def _compute_kernel(params, submodule, X, Y, queue):
     policy = _get_policy(queue, X, Y)
+    X, Y = _convert_to_supported(policy, X, Y)
+    params['fptype'] = 'float' if X.dtype == np.float32 else 'double'
     X, Y = to_table(X, Y)
     result = submodule.compute(policy, params, X, Y)
     return from_table(result.values)
@@ -55,8 +56,8 @@ def linear_kernel(X, Y=None, scale=1.0, shift=0.0, queue=None):
     -------
     kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
     """
-    X, Y, fptype = _check_inputs(X, Y)
-    return _compute_kernel({'fptype': fptype, 'method': 'dense',
+    X, Y = _check_inputs(X, Y)
+    return _compute_kernel({'method': 'dense',
                             'scale': scale, 'shift': shift},
                            _backend.linear_kernel, X, Y, queue)
 
@@ -79,12 +80,12 @@ def rbf_kernel(X, Y=None, gamma=None, queue=None):
     kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
     """
 
-    X, Y, fptype = _check_inputs(X, Y)
+    X, Y = _check_inputs(X, Y)
 
     gamma = 1.0 / X.shape[1] if gamma is None else gamma
     sigma = np.sqrt(0.5 / gamma)
 
-    return _compute_kernel({'fptype': fptype, 'method': 'dense', 'sigma': sigma},
+    return _compute_kernel({'method': 'dense', 'sigma': sigma},
                            _backend.rbf_kernel, X, Y, queue)
 
 
@@ -107,8 +108,8 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3, queue=None):
     kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
     """
 
-    X, Y, fptype = _check_inputs(X, Y)
-    return _compute_kernel({'fptype': fptype, 'method': 'dense',
+    X, Y = _check_inputs(X, Y)
+    return _compute_kernel({'method': 'dense',
                             'scale': gamma, 'shift': coef0, 'degree': degree},
                            _backend.polynomial_kernel, X, Y, queue)
 
@@ -131,7 +132,7 @@ def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0, queue=None):
     kernel_matrix : ndarray of shape (n_samples_X, n_samples_Y)
     """
 
-    X, Y, fptype = _check_inputs(X, Y)
-    return _compute_kernel({'fptype': fptype, 'method': 'dense',
+    X, Y = _check_inputs(X, Y)
+    return _compute_kernel({'method': 'dense',
                             'scale': gamma, 'shift': coef0},
                            _backend.sigmoid_kernel, X, Y, queue)

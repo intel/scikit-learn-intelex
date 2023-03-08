@@ -25,6 +25,8 @@ from daal4py.sklearn._utils import (
     make2d, getFPType, get_patch_message, sklearn_check_version, PatchingConditionsChain)
 if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
     from sklearn.linear_model._base import _deprecate_normalize
+if sklearn_check_version('1.1') and not sklearn_check_version('1.2'):
+    from sklearn.utils import check_scalar
 
 import logging
 
@@ -394,6 +396,37 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         self._check_feature_names(X, reset=True)
     if sklearn_check_version("1.2"):
         self._validate_params()
+    elif sklearn_check_version('1.1'):
+        check_scalar(
+            self.alpha,
+            "alpha",
+            target_type=numbers.Real,
+            min_val=0.0,
+        )
+        if self.alpha == 0:
+            warnings.warn(
+                "With alpha=0, this algorithm does not converge "
+                "well. You are advised to use the LinearRegression "
+                "estimator",
+                stacklevel=2,
+            )
+        if isinstance(self.precompute, str):
+            raise ValueError(
+                "precompute should be one of True, False or array-like. Got %r"
+                % self.precompute
+            )
+        check_scalar(
+            self.l1_ratio,
+            "l1_ratio",
+            target_type=numbers.Real,
+            min_val=0.0,
+            max_val=1.0,
+        )
+        if self.max_iter is not None:
+            check_scalar(
+                self.max_iter, "max_iter", target_type=numbers.Integral, min_val=1
+            )
+        check_scalar(self.tol, "tol", target_type=numbers.Real, min_val=0.0)
     # check X and y
     if check_input:
         X, y = check_X_y(
