@@ -25,6 +25,7 @@ from ..datatypes import (
     _column_or_1d,
     _check_n_features,
     _check_classification_targets,
+    _convert_to_supported,
     _num_samples
 )
 
@@ -122,7 +123,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, 'weights', 'uniform')
         return {
-            'fptype': 'float' if X.dtype is np.dtype('float32') else 'double',
+            'fptype': 'float' if X.dtype == np.float32 else 'double',
             'vote_weights': 'uniform' if weights == 'uniform' else 'distance',
             'method': self._fit_method,
             'radius': self.radius,
@@ -138,7 +139,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, 'weights', 'uniform')
         params = {
-            'fptype': 'float' if data.dtype is np.dtype('float32') else 'double',
+            'fptype': 'float' if data.dtype == np.float32 else 'double',
             'method': 'defaultDense',
             'k': self.n_neighbors,
             'voteWeights': 'voteUniform' if weights == 'uniform' else 'voteDistance',
@@ -402,6 +403,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             return train_alg(**params).compute(X, y).model
 
         policy = _get_policy(queue, X, y)
+        X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(X, y)
         train_alg = _backend.neighbors.classification.train(policy, params,
                                                             *to_table(X, y))
@@ -420,12 +422,14 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             return predict_alg(**params).compute(X, model)
 
         policy = _get_policy(queue, X)
+        X = _convert_to_supported(policy, X)
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:
             model = self._create_model(_backend.neighbors.classification)
         if 'responses' not in params['result_option']:
             params['result_option'] += '|responses'
+        params['fptype'] = 'float' if X.dtype == np.float32 else 'double'
         result = _backend.neighbors.classification.infer(
             policy, params, model, to_table(X))
 

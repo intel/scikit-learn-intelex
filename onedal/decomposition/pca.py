@@ -14,12 +14,12 @@
 # limitations under the License.
 #===============================================================================
 
+import numpy as np
+
 from onedal import _backend
 from ..common._policy import _get_policy
-from ..datatypes._data_conversion import from_table, to_table
+from ..datatypes._data_conversion import from_table, to_table, _convert_to_supported
 from daal4py.sklearn._utils import sklearn_check_version
-
-import numpy as np
 
 
 class PCA():
@@ -37,7 +37,7 @@ class PCA():
     def get_onedal_params(self, data):
         return {
             'fptype':
-                'float' if data.dtype is np.dtype('float32') else 'double',
+                'float' if data.dtype == np.float32 else 'double',
             'method': self.method,
             'n_components': self.n_components,
             'is_deterministic': self.is_deterministic
@@ -48,6 +48,8 @@ class PCA():
         n_sf_min = min(n_samples, n_features)
 
         policy = _get_policy(queue, X, y)
+
+        X, y = _convert_to_supported(policy, X, y)
         params = self.get_onedal_params(X)
         cov_result = _backend.covariance.compute(
             policy,
@@ -97,8 +99,10 @@ class PCA():
 
     def predict(self, X, queue):
         policy = _get_policy(queue, X)
-        params = self.get_onedal_params(X)
         model = self._create_model()
+
+        X = _convert_to_supported(policy, X)
+        params = self.get_onedal_params(X)
         result = _backend.decomposition.dim_reduction.infer(policy,
                                                             params,
                                                             model,
