@@ -15,14 +15,26 @@
 *******************************************************************************/
 
 #include "oneapi/dal/table/homogen.hpp"
-#include "oneapi/dal/table/csr.hpp"
 
 #include "onedal/datatypes/data_conversion.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
+#include "onedal/version.hpp"
+
+#if ONEDAL_VERSION <= 20230100
+    #include "oneapi/dal/table/detail/csr.hpp"
+#else
+    #include "oneapi/dal/table/csr.hpp"
+#endif
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
+
+#if ONEDAL_VERSION <= 20230100
+typedef oneapi::dal::detail::csr_table csr_table_t;
+#else
+typedef oneapi::dal::csr_table csr_table_t;
+#endif
 
 static void* init_numpy() {
     import_array();
@@ -44,7 +56,7 @@ ONEDAL_PY_INIT_MODULE(table) {
             if (t.get_kind() == homogen_table::kind()) {
                 return "homogen";
             }
-            if (t.get_kind() == csr_table::kind()) {
+            if (t.get_kind() == csr_table_t::kind()) {
                 return "csr";
             }
             return "unknown";
