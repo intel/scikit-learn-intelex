@@ -859,6 +859,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
             X, y, sample_weight = data
+            if sample_weight is not None:
+                sample_weight = _check_sample_weight(sample_weight, X)
             if not (self.oob_score and daal_check_version(
                     (2021, 'P', 500)) or not self.oob_score):
                 return False
@@ -900,6 +902,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_gpu_supported(self, method_name, *data):
         X, y, sample_weight = data
         if method_name == 'ensemble.RandomForestRegressor.fit':
+            if sample_weight is not None:
+                sample_weight = _check_sample_weight(sample_weight, X)
             if not (self.oob_score and daal_check_version(
                     (2021, 'P', 500)) or not self.oob_score):
                 return False
