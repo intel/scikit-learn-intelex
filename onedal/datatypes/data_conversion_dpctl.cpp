@@ -135,7 +135,9 @@ py::dict construct_sua_iface(const dal::table& input)
     const auto& homogen_input = reinterpret_cast<const dal::homogen_table&>(input);
 
     // need "version", "data", "shape", "typestr", "syclobj"
-    py::tuple shape = py::make_tuple(static_cast<npy_intp>(homogen_input.get_row_count()), static_cast<npy_intp>(homogen_input.get_column_count()));
+    py::tuple shape = py::make_tuple(
+        static_cast<npy_intp>(homogen_input.get_row_count()), 
+        static_cast<npy_intp>(homogen_input.get_column_count()));
     py::list data_entry(2);
 
     auto bytes_array = dal::detail::get_original_data(homogen_input);
