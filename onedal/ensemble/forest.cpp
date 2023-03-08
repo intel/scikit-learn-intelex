@@ -73,6 +73,14 @@ auto get_error_metric_mode(const py::dict& params) {
             result_mode |= error_metric_mode::out_of_bag_error;
         else if (modes[i] == "out_of_bag_error_per_observation")
             result_mode |= error_metric_mode::out_of_bag_error_per_observation;
+        else if (modes[i] == "out_of_bag_error_accuracy")
+            result_mode |= error_metric_mode::out_of_bag_error_accuracy;
+        else if (modes[i] == "out_of_bag_error_r2")
+            result_mode |= error_metric_mode::out_of_bag_error_r2;
+        else if (modes[i] == "out_of_bag_error_decision_function")
+            result_mode |= error_metric_mode::out_of_bag_error_decision_function;
+        else if (modes[i] == "out_of_bag_error_prediction")
+            result_mode |= error_metric_mode::out_of_bag_error_prediction;
         else
             ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(mode);
     }
@@ -238,6 +246,10 @@ void init_train_result(py::module_& m) {
         .DEF_ONEDAL_PY_PROPERTY(model, result_t)
         .DEF_ONEDAL_PY_PROPERTY(oob_err, result_t)
         .DEF_ONEDAL_PY_PROPERTY(oob_err_per_observation, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(oob_err_accuracy, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(oob_err_r2, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(oob_err_decision_function, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(oob_err_prediction, result_t)
         .DEF_ONEDAL_PY_PROPERTY(var_importance, result_t);
 }
 

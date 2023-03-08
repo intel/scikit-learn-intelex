@@ -359,9 +359,14 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self._onedal_model = train_result.model
 
         if self.oob_score:
-            self.oob_score_ = from_table(train_result.oob_err)[0, 0]
-            self.oob_prediction_ = from_table(
-                train_result.oob_err_per_observation)
+            if self.is_classification:
+                self.oob_score_ = from_table(train_result.oob_err_accuracy)[0, 0]
+                self.oob_prediction_ = from_table(
+                    train_result.oob_err_decision_function)
+            else:
+                self.oob_score_ = from_table(train_result.oob_err_r2)[0, 0]
+                self.oob_prediction_ = from_table(
+                    train_result.oob_err_prediction)
             if np.any(self.oob_prediction_ == 0):
                 warnings.warn(
                     "Some inputs do not have OOB scores. This probably means "
