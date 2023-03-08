@@ -697,6 +697,13 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     __doc__ = sklearn_RandomForestRegressor.__doc__
 
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **sklearn_RandomForestRegressor._parameter_constraints,
+            "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
+        }
+
     if sklearn_check_version('1.0'):
         def __init__(
                 self,
