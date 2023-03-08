@@ -39,8 +39,8 @@ if daal_check_version((2023, 'P', 100)):
         s_count, f_count = 70000, 29
 
         gen = np.random.default_rng(seed)
-        data = gen.uniform(low=-0.5, high=+0.6, 
-                        size=(s_count, f_count))
+        data = gen.uniform(low=-0.5, high=+0.6,
+                           size=(s_count, f_count))
         data = data.astype(dtype=dtype)
 
         alg = BasicStatistics(result_options="mean")
@@ -50,7 +50,6 @@ if daal_check_version((2023, 'P', 100)):
         gtr_mean = np.mean(data, axis=0)
         tol = 1e-5 if res_mean.dtype == np.float32 else 1e-7
         assert_allclose(gtr_mean, res_mean, rtol=tol)
-
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('option', options_and_tests)
@@ -63,8 +62,8 @@ if daal_check_version((2023, 'P', 100)):
         fp32tol, fp64tol = tols
 
         gen = np.random.default_rng(seed)
-        data = gen.uniform(low=-0.3, high=+0.7, 
-                        size=(s_count, f_count))
+        data = gen.uniform(low=-0.3, high=+0.7,
+                           size=(s_count, f_count))
         data = data.astype(dtype=dtype)
 
         alg = BasicStatistics(result_options=result_option)
@@ -75,11 +74,10 @@ if daal_check_version((2023, 'P', 100)):
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, rtol=tol)
 
-
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('option', options_and_tests)
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    def test_option_uniform(queue, option, dtype):
+    def test_option_weighted(queue, option, dtype):
         seed = 999
         s_count, f_count = 1024, 127
 
@@ -88,10 +86,10 @@ if daal_check_version((2023, 'P', 100)):
         fp32tol, fp64tol = 30 * fp32tol, 50 * fp64tol
 
         gen = np.random.default_rng(seed)
-        data = gen.uniform(low=-5.0, high=+9.0, 
-                        size=(s_count, f_count))
+        data = gen.uniform(low=-5.0, high=+9.0,
+                           size=(s_count, f_count))
         weights = gen.uniform(low=-0.5, high=+1.0,
-                                    size=s_count)
+                              size=s_count)
 
         data = data.astype(dtype=dtype)
         weights = weights.astype(dtype=dtype)

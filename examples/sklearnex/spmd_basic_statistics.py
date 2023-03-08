@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import numpy as np
 from mpi4py import MPI
@@ -29,8 +29,8 @@ def generate_data(par, size, seed=777):
     rng = np.random.default_rng(seed)
 
     for b in range(size):
-        data = rng.uniform(b, (b + 1) * (b + 1), 
-                                    size=(ns, nf))
+        data = rng.uniform(b, (b + 1) * (b + 1),
+                           size=(ns, nf))
         weights = rng.uniform(1, (b + 1), size=ns)
         weight_blocks.append(weights)
         data_blocks.append(data)

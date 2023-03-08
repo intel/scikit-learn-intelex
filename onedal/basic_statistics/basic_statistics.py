@@ -23,11 +23,12 @@ from numbers import Number
 from ..common._policy import _get_policy
 
 from ..datatypes._data_conversion import (
-    from_table, 
-    to_table, 
-    _convert_to_supported, 
+    from_table,
+    to_table,
+    _convert_to_supported,
     _convert_to_dataframe)
 from onedal import _backend
+
 
 class BaseBasicStatistics(metaclass=ABCMeta):
     @abstractmethod
@@ -37,10 +38,10 @@ class BaseBasicStatistics(metaclass=ABCMeta):
 
     @staticmethod
     def get_all_result_options():
-        return [ "min", "max", "sum", "mean",
-                 "variance", "variation", "sum_squares",
-                 "standard_deviation", "sum_squares_centered",
-                 "second_order_raw_moment"] 
+        return ["min", "max", "sum", "mean",
+                "variance", "variation", "sum_squares",
+                "standard_deviation", "sum_squares_centered",
+                "second_order_raw_moment"]
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
@@ -66,7 +67,7 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         data_loc, weights_loc = _convert_to_dataframe(policy, data, weights)
 
         data_loc, weights_loc = _convert_to_supported(
-                        policy, data_loc, weights_loc)
+            policy, data_loc, weights_loc)
 
         params = self._get_onedal_params(data_loc.dtype)
         data_table, weights_table = to_table(data_loc, weights_loc)
@@ -76,9 +77,9 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         options = self._get_result_options(self.options)
         options = options.split("|")
 
-        res = {opt : getattr(result, opt) for opt in options}
+        res = {opt: getattr(result, opt) for opt in options}
 
-        return {k : from_table(v).ravel() for k, v in res.items()}
+        return {k: from_table(v).ravel() for k, v in res.items()}
 
 
 class BasicStatistics(BaseBasicStatistics):

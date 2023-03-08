@@ -37,7 +37,7 @@ def convert_one_to_table(arg):
 
 def to_table(*args):
     return _apply_and_pass(convert_one_to_table, *args)
-    
+
 
 from onedal import _is_dpc_backend
 
@@ -78,7 +78,7 @@ else:
 
 
 #TODO: Update with dpctl
-#For now it will fall back to numpy 
+#For now it will fall back to numpy
 def _convert_one_to_dataframe(policy, x):
     is_numpy = isinstance(x, np.ndarray)
     if (x is None) or is_numpy:
@@ -91,4 +91,3 @@ def _convert_to_dataframe(policy, *data):
     def _convert_one(x):
         return _convert_one_to_dataframe(policy, x)
     return _apply_and_pass(_convert_one, *data)
-
