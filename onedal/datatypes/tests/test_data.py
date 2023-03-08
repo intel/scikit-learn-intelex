@@ -139,11 +139,10 @@ def test_input_format_f_contiguous_pandas(queue, dtype):
 
 # TODO:
 # update if dpctl is not available
+@pytest.mark.parametrize('queue', get_queues('gpu'))
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-def test_input_format_c_contiguous_dpctl(dtype):
-    import dpctl
+def test_input_format_c_contiguous_dpctl(queue, dtype):
     import dpctl.tensor as dpt
-    queue = dpctl.SyclQueue("gpu")
 
     rng = np.random.RandomState(0)
     x_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
@@ -157,7 +156,7 @@ def test_input_format_c_contiguous_dpctl(dtype):
 
     x_table = _backend.dpctl_to_table(x_dpt)
     sua_iface_from_table = _backend.get_sua_iface_from_table(x_table)
-    x_dpt_from_table = dpctl.tensor.asarray(sua_iface_from_table)
+    x_dpt_from_table = dpt.asarray(sua_iface_from_table)
 
     assert x_dpt.__sycl_usm_array_interface__['data'][0] == x_dpt_from_table.__sycl_usm_array_interface__['data'][0]
     assert x_dpt.shape == x_dpt_from_table.shape
