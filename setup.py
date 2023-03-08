@@ -463,7 +463,6 @@ setup(
         'daal4py.sklearn.utils',
         'daal4py.sklearn.model_selection',
         'onedal',
-        'onedal.basic_statistics',
         'onedal.ensemble',
         'onedal.decomposition',
         'onedal.svm',
@@ -471,7 +470,10 @@ setup(
         'onedal.primitives',
         'onedal.datatypes',
         'onedal.common'
-    ] + (['onedal.linear_model'] if ONEDAL_VERSION >= 20230100 else []) + (
+    ] + (['onedal.basic_statistics',
+          'onedal.linear_model'
+          ] if ONEDAL_VERSION >= 20230100 else []
+         ) + (
         ['onedal.spmd',
          'onedal.spmd.linear_model',
          'onedal.spmd.basic_statistics'

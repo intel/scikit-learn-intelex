@@ -27,6 +27,8 @@ namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+
 namespace basic_statistics {
 
 template <typename Task, typename Ops>
@@ -166,5 +168,7 @@ ONEDAL_PY_INIT_MODULE(basic_statistics) {
 }
 
 ONEDAL_PY_TYPE2STR(dal::basic_statistics::task::compute, "compute");
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 
 } // namespace oneapi::dal::python
