@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -15,6 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-from .basic_statistics import BasicStatistics
-
-__all__ = ['BasicStatistics']
+from onedal.basic_statistics import BasicStatistics

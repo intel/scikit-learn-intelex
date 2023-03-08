@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-from onedal.spmd.BasicStatistics import BasicStatistics
+from onedal.spmd.basic_statistics import BasicStatistics
 
 # TODO:
 # Currently it uses `onedal` module interface.
