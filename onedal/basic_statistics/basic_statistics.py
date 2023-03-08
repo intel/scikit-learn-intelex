@@ -29,9 +29,6 @@ from ..datatypes._data_conversion import (
     _convert_to_dataframe)
 from onedal import _backend
 
-
-
-
 class BaseBasicStatistics(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, result_options, algorithm):
@@ -59,43 +56,43 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def _get_onedal_params(self, dtype=np.float32):
         options = self._get_result_options(self.options)
         return {
-            'fptype': 'float' if dtype is np.float32 else 'double',
+            'fptype': 'float' if dtype == np.float32 else 'double',
             'method': self.algorithm, 'result_option': options,
         }
 
-    def _compute(self, data, weights, queue):
+    def _compute(self, data, weights, module, queue):
         policy = self._get_policy(queue, data, weights)
 
         data_loc, weights_loc = _convert_to_dataframe(policy, data, weights)
-        
-        dtype = data_loc.dtype
-        params = self._get_onedal_params(dtype)
 
         data_loc, weights_loc = _convert_to_supported(
                         policy, data_loc, weights_loc)
+
+        params = self._get_onedal_params(data_loc.dtype)
         data_table, weights_table = to_table(data_loc, weights_loc)
 
         result = module.train(policy, params, data_table, weights_table)
 
         options = self._get_result_options(self.options)
-        options = options.split(separator="|")
+        options = options.split("|")
 
-        return {opt : result[opt] for opt in options} 
+        res = {opt : getattr(result, opt) for opt in options}
+
+        return {k : from_table(v).ravel() for k, v in res.items()}
 
 
 class BasicStatistics(BaseBasicStatistics):
     """
-    Linear Regression oneDAL implementation.
+    Basic Statistics oneDAL implementation.
     """
 
     def __init__(
             self,
             result_options="all",
             *,
-            algorithm="by_default'
-        "",
+            algorithm="by_default",
             **kwargs):
         super().__init__(result_options, algorithm)
 
     def compute(self, data, weights=None, queue=None):
-        return super()._compute(data, weights, queue)
+        return super()._compute(data, weights, _backend.basic_statistics.compute, queue)
