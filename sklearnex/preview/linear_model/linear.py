@@ -244,11 +244,10 @@ if daal_check_version((2023, 'P', 100)):
 
             if sklearn_check_version('0.23'):
                 X, y = self._validate_data(
-                    X, y, accept_sparse=accept_sparse, y_numeric=True, multi_output=True
+                    X, y, accept_sparse=False, y_numeric=True, multi_output=True
                 )
             else:
-                X, y = check_X_y(X, y, accept_sparse=['csr', 'csc', 'coo'],
-                         y_numeric=True, multi_output=True)
+                X, y = check_X_y(X, y, accept_sparse=False, y_numeric=True, multi_output=True)
 
             self._initialize_onedal_estimator()
             self._onedal_estimator.fit(X, y, queue=queue)
