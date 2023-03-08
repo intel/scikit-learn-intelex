@@ -100,8 +100,8 @@ jobs:
     displayName: 'System info'
   - script: |
       conda update -y -q conda
-      if [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCTL_PACKAGE=; else export DPCTL_PACKAGE=; fi
-      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCTL_PACKAGE
+      if [ $(echo $(PYTHON_VERSION) | grep '3.7') ] || [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCPP_PACKAGE="dpcpp-cpp-rt>=2023.0.0"; else export DPCPP_PACKAGE="dpctl>=0.14"; fi
+      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCPP_PACKAGE
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -143,6 +143,11 @@ jobs:
       conda activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      bash .ci/scripts/run_sklearn_tests.sh cpu
+    displayName: 'Sklearn testing [device=cpu]'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
