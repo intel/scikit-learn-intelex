@@ -529,6 +529,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if not ready:
                 return False
+            elif sp.issparse(X):
+                return False
             elif sp.issparse(y):
                 return False
             elif sp.issparse(sample_weight):
@@ -566,7 +568,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if not ready:
                 return False
+            elif sp.issparse(X):
+                return False
             elif sp.issparse(y):
+                return False
+            elif sp.issparse(sample_weight):
                 return False
             elif not sample_weight:  # `sample_weight` is not supported.
                 return False

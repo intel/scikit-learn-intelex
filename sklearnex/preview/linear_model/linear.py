@@ -30,6 +30,7 @@ if daal_check_version((2023, 'P', 100)):
     if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
         from sklearn.linear_model._base import _deprecate_normalize
 
+    from sklearn.utils import check_X_y
     from sklearn.utils.validation import _deprecate_positional_args
     from sklearn.exceptions import NotFittedError
     from scipy.sparse import issparse
@@ -240,6 +241,14 @@ if daal_check_version((2023, 'P', 100)):
                     default=False,
                     estimator_name=self.__class__.__name__,
                 )
+
+            if sklearn_check_version('0.23'):
+                X, y = self._validate_data(
+                    X, y, accept_sparse=accept_sparse, y_numeric=True, multi_output=True
+                )
+            else:
+                X, y = check_X_y(X, y, accept_sparse=['csr', 'csc', 'coo'],
+                         y_numeric=True, multi_output=True)
 
             self._initialize_onedal_estimator()
             self._onedal_estimator.fit(X, y, queue=queue)
