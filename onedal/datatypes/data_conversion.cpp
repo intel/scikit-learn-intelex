@@ -20,13 +20,25 @@
 #include <string>
 
 #include "oneapi/dal/table/homogen.hpp"
-#include "oneapi/dal/table/csr.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
+
+#if ONEDAL_VERSION <= 20230100
+#include "oneapi/dal/table/detail/csr.hpp"
+#else
+#include "oneapi/dal/table/csr.hpp"
+#endif
 
 #include "onedal/datatypes/data_conversion.hpp"
 #include "onedal/datatypes/numpy_helpers.hpp"
+#include "onedal/version.hpp"
 
 namespace oneapi::dal::python {
+
+#if ONEDAL_VERSION <= 20230100
+typedef oneapi::dal::detail::csr_table csr_table_t;
+#else
+typedef oneapi::dal::csr_table csr_table_t;
+#endif
 
 template <typename T>
 static dal::array<T> transfer_to_host(const dal::array<T> &array) {
@@ -85,11 +97,11 @@ inline dal::homogen_table convert_to_homogen_impl(PyArrayObject *np_data) {
 }
 
 template <typename T>
-inline dal::csr_table convert_to_csr_impl(PyObject *py_data,
-                                          PyObject *py_column_indices,
-                                          PyObject *py_row_indices,
-                                          std::int64_t row_count,
-                                          std::int64_t column_count) {
+inline csr_table_t convert_to_csr_impl(PyObject *py_data,
+                                       PyObject *py_column_indices,
+                                       PyObject *py_row_indices,
+                                       std::int64_t row_count,
+                                       std::int64_t column_count) {
     PyArrayObject *np_data = reinterpret_cast<PyArrayObject *>(py_data);
     PyArrayObject *np_column_indices = reinterpret_cast<PyArrayObject *>(py_column_indices);
     PyArrayObject *np_row_indices = reinterpret_cast<PyArrayObject *>(py_row_indices);
@@ -118,6 +130,19 @@ inline dal::csr_table convert_to_csr_impl(PyObject *py_data,
     const T *data_pointer = static_cast<T *>(array_data(np_data));
     const std::int64_t data_count = static_cast<std::int64_t>(array_size(np_data, 0));
 
+#if ONEDAL_VERSION <= 20230100
+    // dal::detail::csr_table class is valid
+    auto res_table = dal::detail::csr_table(dal::array<T>(data_pointer,
+                                                          data_count,
+                                                          [np_data](const T *data) {
+                                                              Py_DECREF(np_data);
+                                                          }),
+                                            column_indices_one_based,
+                                            row_indices_one_based,
+                                            row_count,
+                                            column_count);
+#else // ONEDAL_VERSION > 20230100
+    // dal::csr_table class is valid
     auto res_table = dal::csr_table(dal::array<T>(data_pointer,
                                                   data_count,
                                                   [np_data](const T *data) {
@@ -126,6 +151,7 @@ inline dal::csr_table convert_to_csr_impl(PyObject *py_data,
                                     column_indices_one_based,
                                     row_indices_one_based,
                                     column_count);
+#endif // if ONEDAL_VERSION <= 20230100
 
     // we need to increment the ref-count as we use the input array in-place
     Py_INCREF(np_data);
@@ -234,43 +260,41 @@ static PyObject *convert_to_numpy_impl(const dal::array<T> &array,
     return obj;
 }
 
+#if ONEDAL_VERSION <= 20230100
+
+// dal::detail::csr_table class is valid
+// only one-based indeices are supported
 template <int NpType, typename T>
-static PyObject *convert_to_py_from_csr_impl(const csr_table &table) {
+static PyObject *convert_to_py_from_csr_impl(const detail::csr_table &table) {
     PyObject *result = PyTuple_New(3);
     const std::int64_t rows_indices_count = table.get_row_count() + 1;
 
-    const std::int64_t *row_offsets_one_based = table.get_row_offsets();
-    std::uint64_t *row_offsets_zero_based_data =
+    const std::int64_t *row_indices_one_based = table.get_row_indices();
+    std::uint64_t *row_indices_zero_based_data =
         detail::host_allocator<std::uint64_t>().allocate(rows_indices_count);
     for (std::int64_t i = 0; i < rows_indices_count; ++i)
-        row_offsets_zero_based_data[i] = row_offsets_one_based[i] - 1;
+        row_indices_zero_based_data[i] = row_indices_one_based[i] - 1;
 
     auto row_indices_zero_based_array =
-        dal::array<std::uint64_t>::wrap(row_offsets_zero_based_data, rows_indices_count);
+        dal::array<std::uint64_t>::wrap(row_indices_zero_based_data, rows_indices_count);
     PyObject *py_row =
         convert_to_numpy_impl<NPY_UINT64, std::uint64_t>(row_indices_zero_based_array,
                                                          rows_indices_count);
     PyTuple_SetItem(result, 2, py_row);
 
-    const std::int64_t non_zero_count = table.get_non_zero_count();
-    const T *data = table.get_data<T>();
+    const std::int64_t non_zero_count = row_indices_zero_based_data[rows_indices_count - 1];
+    const T *data = reinterpret_cast<const T *>(table.get_data());
     auto data_array = dal::array<T>::wrap(data, non_zero_count);
 
     PyObject *py_data = convert_to_numpy_impl<NpType, T>(data_array, non_zero_count);
     PyTuple_SetItem(result, 0, py_data);
 
-    std::uint64_t *column_indices_zero_based_data = nullptr;
-    const std::int64_t *column_indices = table.get_column_indices();
-    if (table.get_indexing() == sparse_indexing::zero_based) {
-        column_indices_zero_based_data =
-            const_cast<std::uint64_t *>(reinterpret_cast<const std::uint64_t *>(column_indices));
-    }
-    else { // table.get_indexing() == sparse_indexing::one_based
-        column_indices_zero_based_data =
-            detail::host_allocator<std::uint64_t>().allocate(non_zero_count);
-        for (std::int64_t i = 0; i < non_zero_count; ++i)
-            column_indices_zero_based_data[i] = column_indices[i] - 1;
-    }
+    const std::int64_t *column_indices_one_based = table.get_column_indices();
+    std::uint64_t *column_indices_zero_based_data =
+        detail::host_allocator<std::uint64_t>().allocate(non_zero_count);
+    for (std::int64_t i = 0; i < non_zero_count; ++i)
+        column_indices_zero_based_data[i] = column_indices_one_based[i] - 1;
+
     auto column_indices_zero_based_array =
         dal::array<std::uint64_t>::wrap(column_indices_zero_based_data, non_zero_count);
     PyObject *py_col =
@@ -279,6 +303,63 @@ static PyObject *convert_to_py_from_csr_impl(const csr_table &table) {
     PyTuple_SetItem(result, 1, py_col);
     return result;
 }
+
+#else // ONEDAL_VERSION > 20230100
+
+// dal::csr_table class is valid
+// zero- and one-based indeices are supported
+template <int NpType, typename T>
+static PyObject *convert_to_py_from_csr_impl(const csr_table &table) {
+    PyObject *result = PyTuple_New(3);
+    const std::int64_t rows_indices_count = table.get_row_count() + 1;
+    const std::int64_t non_zero_count = table.get_non_zero_count();
+    const std::int64_t *row_offsets = table.get_row_offsets();
+    const std::int64_t *column_indices = table.get_column_indices();
+
+    std::uint64_t *column_indices_zero_based_data = nullptr;
+    std::uint64_t *row_offsets_zero_based_data = nullptr;
+    
+    if (table.get_indexing() == sparse_indexing::zero_based) {
+        column_indices_zero_based_data =
+            const_cast<std::uint64_t *>(reinterpret_cast<const std::uint64_t *>(column_indices));
+        row_offsets_zero_based_data =
+            const_cast<std::uint64_t *>(reinterpret_cast<const std::uint64_t *>(row_offsets));
+    }
+    else { // table.get_indexing() == sparse_indexing::one_based
+        column_indices_zero_based_data =
+            detail::host_allocator<std::uint64_t>().allocate(non_zero_count);
+        row_offsets_zero_based_data =
+            detail::host_allocator<std::uint64_t>().allocate(rows_indices_count);
+
+        for (std::int64_t i = 0; i < non_zero_count; ++i)
+            column_indices_zero_based_data[i] = column_indices[i] - 1;
+
+        for (std::int64_t i = 0; i < rows_indices_count; ++i)
+            row_offsets_zero_based_data[i] = row_offsets[i] - 1;
+    }
+
+    const T *data = table.get_data<T>();
+    auto data_array = dal::array<T>::wrap(data, non_zero_count);
+
+    PyObject *py_data = convert_to_numpy_impl<NpType, T>(data_array, non_zero_count);
+    PyTuple_SetItem(result, 0, py_data);
+
+    auto column_indices_zero_based_array =
+        dal::array<std::uint64_t>::wrap(column_indices_zero_based_data, non_zero_count);
+    PyObject *py_col =
+        convert_to_numpy_impl<NPY_UINT64, std::uint64_t>(column_indices_zero_based_array,
+                                                         non_zero_count);
+    PyTuple_SetItem(result, 1, py_col);
+        auto row_indices_zero_based_array =
+        dal::array<std::uint64_t>::wrap(row_offsets_zero_based_data, rows_indices_count);
+    PyObject *py_row =
+        convert_to_numpy_impl<NPY_UINT64, std::uint64_t>(row_indices_zero_based_array,
+                                                         rows_indices_count);
+    PyTuple_SetItem(result, 2, py_row);
+    return result;
+}
+
+#endif // ONEDAL_VERSION <= 20230100
 
 PyObject *convert_to_pyobject(const dal::table &input) {
     PyObject *res = nullptr;
@@ -309,8 +390,8 @@ PyObject *convert_to_pyobject(const dal::table &input) {
                 "Output oneDAL table doesn't have row major format for homogen table");
         }
     }
-    else if (input.get_kind() == dal::csr_table::kind()) {
-        const auto &csr_input = static_cast<const csr_table &>(input);
+    else if (input.get_kind() == csr_table_t::kind()) {
+        const auto &csr_input = static_cast<const csr_table_t &>(input);
         const dal::data_type dtype = csr_input.get_metadata().get_data_type(0);
 #define MAKE_PY_FROM_CSR(NpType, T) \
     { res = convert_to_py_from_csr_impl<NpType, T>(csr_input); }
