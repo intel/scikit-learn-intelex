@@ -17,4 +17,7 @@
 
 from onedal.basic_statistics import BasicStatistics
 
-__all__ = ['BasicStatistics']
+if daal_check_version((2023, 'P', 100)):
+    __all__ = ['BasicStatistics']
+else:
+    __all__ = []
