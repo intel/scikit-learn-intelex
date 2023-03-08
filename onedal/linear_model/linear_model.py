@@ -35,13 +35,6 @@ from ..common._estimator_checks import _check_is_fitted
 from ..datatypes._data_conversion import from_table, to_table
 from onedal import _backend
 
-try:
-    import dpctl
-    import dpctl.tensor as dpt
-    dpctl_available = dpctl.__version__ >= '0.14'
-except ImportError:
-    dpctl_available = False
-
 
 class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
@@ -62,29 +55,22 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         }
 
     def _fit(self, X, y, module, queue):
-        print(str(type(X)), str(type(y)))
-
         policy = self._get_policy(queue, X, y)
 
         X_loc, y_loc = X, y
-
-        do_checks = True
-        if dpctl_available:
-            if isinstance(X_loc, dpt.usm_ndarray):
-                do_checks = False
-            if isinstance(y_loc, dpt.usm_ndarray):
-                do_checks = False
+        if not isinstance(X, np.ndarray):
+            X_loc = np.asarray(X)
 
         dtype = get_dtype(X_loc)
         if dtype not in [np.float32, np.float64]:
             dtype = np.float64
             X_loc = X_loc.astype(dtype, copy=self.copy_X)
 
-            if dtype not in [np.float32, np.float64]:
-                X_loc = X_loc.astype(np.float64, copy=self.copy_X)
-                dtype = np.float64
+        y_loc = np.asarray(y_loc).astype(dtype=dtype)
 
-            y_loc = np.asarray(y_loc).astype(dtype=dtype)
+        # Finiteness is checked in the sklearnex wrapper
+        X_loc, y_loc = _check_X_y(
+            X_loc, y_loc, force_all_finite=False, accept_2d_y=True)
 
         self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
 
@@ -92,10 +78,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         params = self._get_onedal_params(get_dtype(X_loc))
         X_table, y_table = to_table(X_loc, y_loc)
 
-        params = self._get_onedal_params(dtype)
-        X_table, y_table = to_table(X_loc, y_loc)
         result = module.train(policy, params, X_table, y_table)
-        self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
 
         self._onedal_model = result.model
 
