@@ -36,4 +36,6 @@ struct sua_iface_from_table {
     sua_iface_from_table(py::dict input) : __sycl_usm_array_interface__(input) {}
 };
 
+void define_sycl_usm_array_property(py::class_<dal::table>& t);
+
 } // namespace oneapi::dal::python

@@ -54,6 +54,11 @@ ONEDAL_PY_INIT_MODULE(table) {
         return "unknown";
     });
 
+#ifdef ONEDAL_DPCTL_INTEGRATION
+    define_sycl_usm_array_property(table_obj);
+#endif // ONEDAL_DPCTL_INTEGRATION
+
+
     m.def("to_table", [](py::object obj) {
         auto* obj_ptr = obj.ptr();
         return convert_to_table(obj_ptr);

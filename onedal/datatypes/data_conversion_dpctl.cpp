@@ -146,20 +146,6 @@ py::dict construct_sua_iface(const dal::table& input)
     data_entry[0] = reinterpret_cast<size_t>(bytes_array.get_data());
     data_entry[1] = true;
 
-    // TODO:
-    // check sycl queue
-    auto syclobj = py::capsule(
-        reinterpret_cast<void *>(new sycl::queue(queue)),
-        "SyclQueueRef", [](PyObject *cap) {
-            if (cap) {
-                auto name = PyCapsule_GetName(cap);
-                std::string name_s(name);
-                if (name_s == "SyclQueueRef" or name_s == "used_SyclQueueRef") {
-                    void *p = PyCapsule_GetPointer(cap, name);
-                    delete reinterpret_cast<sycl::queue *>(p);
-                }
-            }
-        });
     py::dict iface;
     iface["data"] = data_entry;
     iface["shape"] = shape;
@@ -172,9 +158,14 @@ py::dict construct_sua_iface(const dal::table& input)
     // typestr
     iface["typestr"] = "<f4";
     // TODO:
-    iface["syclobj"] = syclobj;
+    iface["syclobj"] = py::cast(queue);
 
     return iface;
+}
+
+void define_sycl_usm_array_property(py::class_<dal::table>& table_obj) {
+    table_obj.def_property_readonly("__sycl_usm_array_interface__", 
+                                    &construct_sua_iface);
 }
 
 } // namespace oneapi::dal::python
