@@ -19,7 +19,7 @@ from mpi4py import MPI
 
 import dpctl
 from numpy.testing import assert_allclose
-from onedal.spmd.basic_statistics import BasicStatistics as BasicStatisticsSpmd
+from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatisticsSpmd
 
 
 def generate_data(par, size, seed=777):

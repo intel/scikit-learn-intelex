@@ -18,7 +18,7 @@ import numpy as np
 from mpi4py import MPI
 import dpctl
 from numpy.testing import assert_allclose
-from onedal.spmd.linear_model import LinearRegression as LinRegSpmd
+from sklearnex.spmd.linear_model import LinearRegression as LinRegSpmd
 
 
 def generate_X_y(par, coef_seed, data_seed):
