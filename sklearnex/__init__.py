@@ -24,7 +24,7 @@ from ._config import get_config, set_config, config_context
 
 __all__ = [
     'cluster', 'config_context', 'basic_statistics', 'decomposition', 'ensemble',
-    'get_config','get_patch_names', 'linear_model', 'manifold', 'metrics',
+    'get_config', 'get_patch_names', 'linear_model', 'manifold', 'metrics',
     'neighbors', 'patch_sklearn', 'set_config', 'svm', 'unpatch_sklearn',
     'utils', 'sklearn_is_patchedget_patch_map'
 ]
