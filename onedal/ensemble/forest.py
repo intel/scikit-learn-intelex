@@ -366,7 +366,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             else:
                 self.oob_score_ = from_table(train_result.oob_err_r2)[0, 0]
                 self.oob_prediction_ = from_table(
-                    train_result.oob_err_prediction)
+                    train_result.oob_err_prediction).reshape(-1)
             if np.any(self.oob_prediction_ == 0):
                 warnings.warn(
                     "Some inputs do not have OOB scores. This probably means "
