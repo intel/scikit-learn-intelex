@@ -69,9 +69,12 @@ ONEDAL_PY_INIT_MODULE(table) {
         return convert_from_dptensor(obj);
     });
 
-    m.def("dpctl_from_table", [](dal::table& t) -> py::handle {
-        return convert_to_dptensor(t);
-    });
+    // We using __sycl_usm_array_interface__ attribute for constructing dpctl
+    // tensor on python level.
+    py::class_<sua_iface_from_table>(m, "get_sua_iface_from_table")
+    .def(py::init([](dal::table& t) { return sua_iface_from_table(construct_sua_iface(t));}))
+    .def_readwrite("__sycl_usm_array_interface__", &sua_iface_from_table::__sycl_usm_array_interface__, py::return_value_policy::take_ownership);
+
 #endif // ONEDAL_DPCTL_INTEGRATION
 
 }

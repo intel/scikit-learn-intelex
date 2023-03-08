@@ -126,13 +126,55 @@ PyObject *convert_to_dptensor(const dal::table &input) {
     return nullptr;
 }
 
-py::dict construct_sua(const dal::table& input) {
+py::dict construct_sua_iface(const dal::table& input)
+{
     const auto kind = input.get_kind();
     if (kind != dal::homogen_table::kind())
         report_problem_to_dptensor(": only homogen tables are supported");
 
-    const auto& inp = reinterpret_cast<const dal::homogen_table&>(input);
+    const auto& homogen_input = reinterpret_cast<const dal::homogen_table&>(input);
 
+    // need "version", "data", "shape", "typestr", "syclobj"
+    py::tuple shape = py::make_tuple(static_cast<npy_intp>(homogen_input.get_row_count()), static_cast<npy_intp>(homogen_input.get_column_count()));
+    py::list data_entry(2);
+
+    auto bytes_array = dal::detail::get_original_data(homogen_input);
+    auto queue = bytes_array.get_queue().value();
+
+    // TODO:
+    // size_t
+    data_entry[0] = reinterpret_cast<size_t>(bytes_array.get_data());
+    data_entry[1] = true;
+
+    // TODO:
+    // check sycl queue
+    auto syclobj = py::capsule(
+        reinterpret_cast<void *>(new sycl::queue(queue)),
+        "SyclQueueRef", [](PyObject *cap) {
+            if (cap) {
+                auto name = PyCapsule_GetName(cap);
+                std::string name_s(name);
+                if (name_s == "SyclQueueRef" or name_s == "used_SyclQueueRef") {
+                    void *p = PyCapsule_GetPointer(cap, name);
+                    delete reinterpret_cast<sycl::queue *>(p);
+                }
+            }
+        });
+    py::dict iface;
+    iface["data"] = data_entry;
+    iface["shape"] = shape;
+    // TODO:
+    // strides
+    iface["strides"] = py::none();
+    // TODO:
+    iface["version"] = 1;
+    // TODO:
+    // typestr
+    iface["typestr"] = "<f4";
+    // TODO:
+    iface["syclobj"] = syclobj;
+
+    return iface;
 }
 
 } // namespace oneapi::dal::python

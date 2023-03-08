@@ -30,7 +30,8 @@ def from_table(*args):
         return _backend.from_table(args[0])
     return (_backend.from_table(item) for item in args)
 
-
+# TODO:
+# refactoring.
 def convert_one_to_table(arg):
     if dpctl_available:
         ndarr = dpt.usm_ndarray

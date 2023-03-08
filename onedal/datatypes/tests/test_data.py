@@ -19,6 +19,8 @@ import numpy as np
 from numpy.testing import assert_allclose
 from onedal.primitives import linear_kernel
 
+from onedal import _backend
+
 from onedal.tests.utils._device_selection import get_queues
 
 
@@ -133,3 +135,31 @@ def _test_input_format_f_contiguous_pandas(queue, dtype):
 @pytest.mark.parametrize('dtype', [np.float32, np.float64])
 def test_input_format_f_contiguous_pandas(queue, dtype):
     _test_input_format_f_contiguous_pandas(queue, dtype)
+
+
+# TODO:
+# update if dpctl is not available
+@pytest.mark.parametrize('dtype', [np.float32, np.float64])
+def test_input_format_c_contiguous_dpctl(dtype):
+    import dpctl
+    import dpctl.tensor as dpt
+    queue = dpctl.SyclQueue("gpu")
+
+    rng = np.random.RandomState(0)
+    x_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
+
+    x_numpy = np.asanyarray(x_default, dtype=dtype, order='C')
+    x_dpt = dpt.asarray(x_numpy, usm_type="device", sycl_queue=queue)
+    assert x_dpt.flags.c_contiguous
+    assert not x_dpt.flags.f_contiguous
+    # assert not x_dpt.flags.fnc
+    assert isinstance(x_dpt, dpt.usm_ndarray)
+
+    x_table = _backend.dpctl_to_table(x_dpt)
+    sua_iface_from_table = _backend.get_sua_iface_from_table(x_table)
+    x_dpt_from_table = dpctl.tensor.asarray(sua_iface_from_table)
+
+    assert x_dpt.__sycl_usm_array_interface__['data'][0] == x_dpt_from_table.__sycl_usm_array_interface__['data'][0]
+    assert x_dpt.shape == x_dpt_from_table.shape
+    assert x_dpt.strides == x_dpt_from_table.strides
+    assert x_dpt.dtype == x_dpt_from_table.dtype

@@ -29,6 +29,11 @@ namespace py = pybind11;
 
 PyObject *convert_to_dptensor(const dal::table& input);
 dal::table convert_from_dptensor(py::object obj);
-py::dict construct_sua(const dal::table& input);
+py::dict construct_sua_iface(const dal::table& input);
+
+struct sua_iface_from_table {
+    py::dict __sycl_usm_array_interface__;
+    sua_iface_from_table(py::dict input) : __sycl_usm_array_interface__(input) {}
+};
 
 } // namespace oneapi::dal::python
