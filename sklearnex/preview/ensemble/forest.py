@@ -39,7 +39,8 @@ from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegres
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
-    check_array)
+    check_array,
+    _check_sample_weight)
 
 from onedal.datatypes import _check_array, _num_features, _num_samples
 
@@ -340,7 +341,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         else:
             self._check_parameters()
         if sample_weight is not None:
-            sample_weight = self.check_sample_weight(sample_weight, X)
+            sample_weight = _check_sample_weight(sample_weight, X)
 
         correct_sparsity = not sp.issparse(X)
         correct_ccp_alpha = self.ccp_alpha == 0.0
@@ -947,7 +948,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         else:
             self._check_parameters()
         if sample_weight is not None:
-            sample_weight = self.check_sample_weight(sample_weight, X)
+            sample_weight = _check_sample_weight(sample_weight, X)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float64, np.float32])
