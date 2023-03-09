@@ -39,8 +39,7 @@ from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegres
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
-    check_array,
-    _check_sample_weight)
+    check_array)
 
 from onedal.datatypes import _check_array, _num_features, _num_samples
 
@@ -445,8 +444,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                     (f'X has {num_features} features, '
                      f'but RandomForestClassifier is expecting '
                      f'{self.n_features_in_} features as input'))
-        X = check_array(X, dtype=[np.float64, np.float32])
-        check_is_fitted(self)
         if sklearn_check_version('0.23'):
             self._check_n_features(X, reset=False)
         return dispatch(self, 'ensemble.RandomForestClassifier.predict_proba', {
@@ -614,7 +611,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         y = check_array(y, ensure_2d=False)
 
         if sample_weight is not None:
-            sample_weight = _check_sample_weight(sample_weight, X)
+            sample_weight = self.check_sample_weight(sample_weight, X)
 
         y, expanded_class_weight = self._validate_y_class_weight(y)
 
@@ -963,7 +960,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         else:
             self._check_parameters()
         if sample_weight is not None:
-            sample_weight = _check_sample_weight(sample_weight, X)
+            sample_weight = self.check_sample_weight(sample_weight, X)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float64, np.float32])

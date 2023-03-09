@@ -107,13 +107,6 @@ class PCA(sklearn_PCA):
                 "TruncatedSVD for a possible alternative."
             )
 
-        if sklearn_check_version('0.23'):
-            X = self._validate_data(X, dtype=[np.float64, np.float32],
-                                    ensure_2d=True, copy=False)
-        else:
-            X = check_array(X, dtype=[np.float64, np.float32],
-                            ensure_2d=True, copy=False)
-
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
