@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import warnings
+from onedal import _is_dpc_backend
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
 
@@ -37,6 +38,8 @@ def from_table(*args):
 
 # TODO:
 # refactoring.
+
+
 def convert_one_to_table(arg):
     if dpctl_available:
         ndarr = dpt.usm_ndarray
@@ -49,8 +52,6 @@ def convert_one_to_table(arg):
 def to_table(*args):
     return _apply_and_pass(convert_one_to_table, *args)
 
-
-from onedal import _is_dpc_backend
 
 if _is_dpc_backend:
     import numpy as np

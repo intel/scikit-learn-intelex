@@ -33,7 +33,7 @@
 namespace oneapi::dal::python {
 
 void report_problem_from_dptensor(const char* clarification) {
-    constexpr const char* const base_message = "Unable to convert from dptensor"; 
+    constexpr const char* const base_message = "Unable to convert from dptensor";
 
     std::string message{ base_message };
     message += std::string{ clarification };
@@ -44,7 +44,8 @@ std::int64_t get_and_check_dptensor_ndim(const dpctl::tensor::usm_ndarray& tenso
     constexpr const char* const err_message = ": only 1D & 2D tensors are allowed";
 
     const auto ndim = dal::detail::integral_cast<std::int64_t>(tensor.get_ndim());
-    if ((ndim != 1) && (ndim != 2)) report_problem_from_dptensor(err_message);
+    if ((ndim != 1) && (ndim != 2))
+        report_problem_from_dptensor(err_message);
     return ndim;
 }
 
@@ -54,7 +55,8 @@ auto get_dptensor_shape(const dpctl::tensor::usm_ndarray& tensor) {
     if (ndim == 1l) {
         row_count = dal::detail::integral_cast<std::int64_t>(tensor.get_shape(0));
         col_count = 1l;
-    } else {
+    }
+    else {
         row_count = dal::detail::integral_cast<std::int64_t>(tensor.get_shape(0));
         col_count = dal::detail::integral_cast<std::int64_t>(tensor.get_shape(1));
     }
@@ -71,25 +73,32 @@ auto get_dptensor_layout(const dpctl::tensor::usm_ndarray& tensor) {
         //if (!is_c_cont || !is_f_cont) report_problem_from_dptensor(
         //    ": 1D array should be contiguous both as C-order and F-order");
         return dal::data_layout::row_major;
-    } else {
+    }
+    else {
         //if (!is_c_cont || !is_f_cont) report_problem_from_dptensor(
         //    ": 2D array should be contiguous at least by one axis");
         return is_c_cont ? dal::data_layout::row_major : dal::data_layout::column_major;
     }
 }
 
-template<typename Type>
+template <typename Type>
 dal::table convert_to_homogen_impl(py::object obj, dpctl::tensor::usm_ndarray& tensor) {
     const dpctl::tensor::usm_ndarray* const ptr = &tensor;
-    const auto deleter = [obj](const Type*) { obj.dec_ref(); };
+    const auto deleter = [obj](const Type*) {
+        obj.dec_ref();
+    };
     const auto [r_count, c_count] = get_dptensor_shape(tensor);
     const auto layout = get_dptensor_layout(tensor);
     const auto* data = tensor.get_data<Type>();
     const auto queue = tensor.get_queue();
 
-    auto res = dal::homogen_table(queue, data, r_count, c_count, //
-                        deleter, std::vector<sycl::event>{}, layout);
-
+    auto res = dal::homogen_table(queue,
+                                  data,
+                                  r_count,
+                                  c_count, //
+                                  deleter,
+                                  std::vector<sycl::event>{},
+                                  layout);
 
     obj.inc_ref();
 
@@ -106,8 +115,9 @@ dal::table convert_from_dptensor(py::object obj) {
 #define MAKE_HOMOGEN_TABLE(CType) \
     res = convert_to_homogen_impl<CType>(obj, tensor);
 
-    SET_NPY_FEATURE(type, MAKE_HOMOGEN_TABLE, //
-        report_problem_from_dptensor(": unknown data type"));
+    SET_NPY_FEATURE(type,
+                    MAKE_HOMOGEN_TABLE, //
+                    report_problem_from_dptensor(": unknown data type"));
 
 #undef MAKE_HOMOGEN_TABLE
 
@@ -122,52 +132,93 @@ void report_problem_to_dptensor(const char* clarification) {
     throw std::runtime_error{ message };
 }
 
-PyObject *convert_to_dptensor(const dal::table &input) {
-    return nullptr;
+// TODO:
+// return type.
+std::string get_npy_typestr(const dal::data_type dtype) {
+    switch (dtype) {
+        case dal::data_type::float32: {
+            return "<f4";
+            break;
+        }
+        case dal::data_type::float64: {
+            return "<f8";
+            break;
+        }
+        case dal::data_type::int32: {
+            return "<i4";
+            break;
+        }
+        case dal::data_type::int64: {
+            return "<i8";
+            break;
+        }
+        default: report_problem_to_dptensor(": unknown data type");
+    };
 }
 
-py::dict construct_sua_iface(const dal::table& input)
-{
+py::tuple get_npy_strides(const dal::data_layout& data_layout,
+                          npy_intp row_count,
+                          npy_intp column_count) {
+    if (data_layout == dal::data_layout::unknown) {
+        report_problem_to_dptensor(": unknown data layout");
+    }
+    py::tuple strides;
+    if (data_layout == dal::data_layout::row_major) {
+        strides = py::make_tuple(column_count, 1l);
+    }
+    else {
+        strides = py::make_tuple(1l, row_count);
+    }
+    return strides;
+}
+
+py::dict construct_sua_iface(const dal::table& input) {
     const auto kind = input.get_kind();
     if (kind != dal::homogen_table::kind())
         report_problem_to_dptensor(": only homogen tables are supported");
 
     const auto& homogen_input = reinterpret_cast<const dal::homogen_table&>(input);
+    const dal::data_type dtype = homogen_input.get_metadata().get_data_type(0);
+    const dal::data_layout data_layout = homogen_input.get_data_layout();
+
+    npy_intp row_count = dal::detail::integral_cast<npy_intp>(
+        homogen_input.get_row_count());
+    npy_intp column_count = dal::detail::integral_cast<npy_intp>(
+        homogen_input.get_column_count());
 
     // need "version", "data", "shape", "typestr", "syclobj"
-    py::tuple shape = py::make_tuple(
-        static_cast<npy_intp>(homogen_input.get_row_count()), 
-        static_cast<npy_intp>(homogen_input.get_column_count()));
+    py::tuple shape = py::make_tuple(row_count, column_count);
     py::list data_entry(2);
 
     auto bytes_array = dal::detail::get_original_data(homogen_input);
+    if (!bytes_array.get_queue().has_value()) {
+        report_problem_to_dptensor(": table has no queue");
+    }
     auto queue = bytes_array.get_queue().value();
 
-    // TODO:
-    // size_t
-    data_entry[0] = reinterpret_cast<size_t>(bytes_array.get_data());
-    data_entry[1] = true;
+    const bool is_mutable = bytes_array.has_mutable_data();
+
+    static_assert(sizeof(std::size_t) == sizeof(void*));
+    data_entry[0] = is_mutable ? reinterpret_cast<std::size_t>(bytes_array.get_mutable_data())
+                               : reinterpret_cast<std::size_t>(bytes_array.get_data());
+    data_entry[1] = is_mutable;
 
     py::dict iface;
     iface["data"] = data_entry;
     iface["shape"] = shape;
-    // TODO:
-    // strides
-    iface["strides"] = py::none();
-    // TODO:
+    iface["strides"] = get_npy_strides(data_layout, row_count, column_count);
+    // dpctl supports only version 1.
     iface["version"] = 1;
-    // TODO:
-    // typestr
-    iface["typestr"] = "<f4";
-    // TODO:
+    iface["typestr"] = get_npy_typestr(dtype);
     iface["syclobj"] = py::cast(queue);
 
     return iface;
 }
 
+// We are using `__sycl_usm_array_interface__` attribute for constructing
+// dpctl tensor on python level.
 void define_sycl_usm_array_property(py::class_<dal::table>& table_obj) {
-    table_obj.def_property_readonly("__sycl_usm_array_interface__", 
-                                    &construct_sua_iface);
+    table_obj.def_property_readonly("__sycl_usm_array_interface__", &construct_sua_iface);
 }
 
 } // namespace oneapi::dal::python
