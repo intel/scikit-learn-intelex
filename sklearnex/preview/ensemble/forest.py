@@ -539,6 +539,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return False
             elif self.warm_start:
                 return False
+            elif self.oob_score and not daal_check_version((2023, 'P', 101)):
+                return False
             elif not self.n_outputs_ == 1:
                 return False
             elif hasattr(self, 'estimators_'):
@@ -579,6 +581,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             elif not self.ccp_alpha == 0.0:
                 return False
             elif self.warm_start:
+                return False
+            elif self.oob_score:
                 return False
             elif not self.n_outputs_ == 1:
                 return False
@@ -881,6 +885,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif self.warm_start:
                 return False
+            elif self.oob_score and not daal_check_version((2023, 'P', 101)):
+                return False
             elif not self.n_outputs_ == 1:
                 return False
             elif hasattr(self, 'estimators_'):
@@ -921,6 +927,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             elif not self.ccp_alpha == 0.0:
                 return False
             elif self.warm_start:
+                return False
+            elif self.oob_score:
                 return False
             elif not self.n_outputs_ == 1:
                 return False
