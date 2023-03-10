@@ -701,11 +701,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = check_array(
-            X,
-            accept_sparse=False,  # is not supported
-            dtype=[np.float64, np.float32]
-        )
+        X = self._validate_X_predict(X)
 
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_,
@@ -717,11 +713,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             self._check_n_features(X, reset=False)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = check_array(
-            X,
-            accept_sparse=False,  # is not supported
-            dtype=[np.float64, np.float32]
-        )
+        X = self._validate_X_predict(X)
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
 
@@ -1032,11 +1024,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = check_array(
-            X,
-            accept_sparse=False,
-            dtype=[np.float64, np.float32]
-        )
+        X = self._validate_X_predict(X)
         return self._onedal_estimator.predict(X, queue=queue)
 
     @wrap_output_data
