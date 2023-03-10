@@ -233,16 +233,19 @@ if daal_check_version((2023, 'P', 100)):
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             assert sample_weight is None
 
+            check_params = {
+                'X': X,
+                'y': y,
+                'dtype': [np.float64, np.float32],
+                'accept_sparse': ['csr', 'csc', 'coo'],
+                'y_numeric': True,
+                'multi_output': True,
+                'force_all_finite': False
+            }
             if sklearn_check_version('1.2'):
-                X, y = self._validate_data(
-                    X, y, accept_sparse=False, y_numeric=True,
-                    multi_output=False, force_all_finite=False
-                )
+                X, y = self._validate_data(**check_params)
             else:
-                X, y = check_X_y(
-                    X, y, accept_sparse=False, dtype=[np.float64, np.float32],
-                    multi_output=False, y_numeric=True
-                )
+                X, y = check_X_y(**check_params)
 
             if sklearn_check_version(
                     '1.0') and not sklearn_check_version('1.2'):
