@@ -14,14 +14,17 @@
 # limitations under the License.
 #===============================================================================
 
-from abc import ABC
-from ...common._spmd_policy import _get_spmd_policy
-from onedal.linear_model import LinearRegression as LinearRegression_Batch
 
-class BaseLinearRegressionSPMD(ABC):
+from ...common._spmd_policy import _get_spmd_policy
+from onedal.decomposition.pca import PCA as PCA_Batch
+from onedal import _backend, _is_dpc_backend
+print("---------------########-------")
+print(_is_dpc_backend)
+class BasePcaSPMD():
+           
     def _get_policy(self, queue, *data):
         return _get_spmd_policy(queue)
 
 
-class LinearRegression(BaseLinearRegressionSPMD, LinearRegression_Batch):
+class PCA(BasePcaSPMD, PCA_Batch):
     pass

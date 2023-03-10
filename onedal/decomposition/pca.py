@@ -42,12 +42,14 @@ class PCA():
             'n_components': self.n_components,
             'is_deterministic': self.is_deterministic
         }
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
 
     def fit(self, X, y, queue):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
-        policy = _get_policy(queue, X, y)
+        policy = self._get_policy(queue, X, y)
 
         X, y = _convert_to_supported(policy, X, y)
         params = self.get_onedal_params(X)
@@ -95,10 +97,11 @@ class PCA():
     def _create_model(self):
         m = _backend.decomposition.dim_reduction.model()
         m.eigenvectors = to_table(self.components_)
+        self._onedal_model = m
         return m
 
     def predict(self, X, queue):
-        policy = _get_policy(queue, X)
+        policy = self._get_policy(queue, X)
         model = self._create_model()
 
         X = _convert_to_supported(policy, X)
