@@ -18,6 +18,7 @@ import numpy as np
 import warnings
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
+from onedal import _is_dpc_backend
 
 
 def _apply_and_pass(func, *args):
@@ -43,11 +44,7 @@ def to_table(*args):
     return _apply_and_pass(convert_one_to_table, *args)
 
 
-from onedal import _is_dpc_backend
-
 if _is_dpc_backend:
-    import numpy as np
-
     from ..common._policy import _HostInteropPolicy
 
     def _convert_to_supported(policy, *data):
