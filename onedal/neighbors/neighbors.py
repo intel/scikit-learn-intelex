@@ -25,6 +25,7 @@ from ..datatypes import (
     _column_or_1d,
     _check_n_features,
     _check_classification_targets,
+    _convert_to_supported,
     _num_samples
 )
 
@@ -43,6 +44,9 @@ from ..datatypes._data_conversion import from_table, to_table
 
 
 class NeighborsCommonBase(metaclass=ABCMeta):
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
+
     def _parse_auto_method(self, method, n_samples, n_features):
         result_method = method
 
@@ -401,8 +405,9 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
             return train_alg(**params).compute(X, y).model
 
-        policy = _get_policy(queue, X, y)
+        policy = self._get_policy(queue, X, y)
         params = self._get_onedal_params(X, y)
+        X, y = _convert_to_supported(policy, X, y)
         train_alg = _backend.neighbors.classification.train(policy, params,
                                                             *to_table(X, y))
 
@@ -419,7 +424,8 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
             return predict_alg(**params).compute(X, model)
 
-        policy = _get_policy(queue, X)
+        policy = self._get_policy(queue, X)
+        X = _convert_to_supported(policy, X)
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:
@@ -545,8 +551,9 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
             return train_alg(**params).compute(X, y).model
 
-        policy = _get_policy(queue, X, y)
+        policy = self._get_policy(queue, X, y)
         params = self._get_onedal_params(X, y)
+        X, y = _convert_to_supported(policy, X, y)
         train_alg_regr = _backend.neighbors.regression.train
         train_alg_srch = _backend.neighbors.search.train
         if gpu_device:
@@ -564,7 +571,8 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
             return predict_alg(**params).compute(X, model)
 
-        policy = _get_policy(queue, X)
+        policy = self._get_policy(queue, X)
+        X = _convert_to_supported(policy, X)
         backend = _backend.neighbors.regression if gpu_device \
             else _backend.neighbors.search
 
@@ -572,6 +580,8 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
             model = self._onedal_model
         else:
             model = self._create_model(backend)
+        if "responses" not in params["result_option"]:
+            params["result_option"] += "|responses"
         result = backend.infer(policy, params, model, to_table(X))
 
         return result
@@ -674,8 +684,9 @@ class NearestNeighbors(NeighborsBase):
 
             return train_alg(**params).compute(X, y).model
 
-        policy = _get_policy(queue, X, y)
+        policy = self._get_policy(queue, X, y)
         params = self._get_onedal_params(X, y)
+        X, y = _convert_to_supported(policy, X, y)
         train_alg = _backend.neighbors.search.train(policy, params,
                                                     to_table(X))
 
@@ -692,7 +703,8 @@ class NearestNeighbors(NeighborsBase):
 
             return predict_alg(**params).compute(X, model)
 
-        policy = _get_policy(queue, X)
+        policy = self._get_policy(queue, X)
+        X = _convert_to_supported(policy, X)
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:
