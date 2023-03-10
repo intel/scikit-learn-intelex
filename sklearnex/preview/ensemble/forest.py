@@ -621,6 +621,20 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if sample_weight is not None:
             sample_weight = self.check_sample_weight(sample_weight, X)
 
+        y = np.atleast_1d(y)
+        if y.ndim == 2 and y.shape[1] == 1:
+            warn(
+                "A column-vector y was passed when a 1d array was"
+                " expected. Please change the shape of y to "
+                "(n_samples,), for example using ravel().",
+                DataConversionWarning,
+                stacklevel=2,
+            )
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
+
         y, expanded_class_weight = self._validate_y_class_weight(y)
 
         n_classes_ = self.n_classes_[0]
