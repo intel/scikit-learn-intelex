@@ -621,7 +621,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
         y = np.atleast_1d(y)
         if y.ndim == 2 and y.shape[1] == 1:
-            warn(
+            warnings.warn(
                 "A column-vector y was passed when a 1d array was"
                 " expected. Please change the shape of y to "
                 "(n_samples,), for example using ravel().",
