@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+import numpy as np
 import warnings
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
@@ -31,6 +32,10 @@ def from_table(*args):
 
 def convert_one_to_table(arg):
     arg = make2d(arg)
+    # TODO: investigate why np.ndarray with OWNDATA=FALSE flag
+    # fails to be converted to oneDAL table
+    if isinstance(arg, np.ndarray) and not arg.flags['OWNDATA']:
+        arg = arg.copy()
     return _backend.to_table(arg)
 
 
