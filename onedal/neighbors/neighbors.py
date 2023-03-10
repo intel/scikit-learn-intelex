@@ -406,8 +406,8 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             return train_alg(**params).compute(X, y).model
 
         policy = self._get_policy(queue, X, y)
-        params = self._get_onedal_params(X, y)
         X, y = _convert_to_supported(policy, X, y)
+        params = self._get_onedal_params(X, y)
         train_alg = _backend.neighbors.classification.train(policy, params,
                                                             *to_table(X, y))
 
@@ -553,8 +553,8 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
             return train_alg(**params).compute(X, y).model
 
         policy = self._get_policy(queue, X, y)
-        params = self._get_onedal_params(X, y)
         X, y = _convert_to_supported(policy, X, y)
+        params = self._get_onedal_params(X, y)
         train_alg_regr = _backend.neighbors.regression.train
         train_alg_srch = _backend.neighbors.search.train
         if gpu_device:
@@ -581,7 +581,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
             model = self._onedal_model
         else:
             model = self._create_model(backend)
-        if "responses" not in params["result_option"]:
+        if gpu_device and "responses" not in params["result_option"]:
             params["result_option"] += "|responses"
         result = backend.infer(policy, params, model, to_table(X))
 
@@ -686,8 +686,8 @@ class NearestNeighbors(NeighborsBase):
             return train_alg(**params).compute(X, y).model
 
         policy = self._get_policy(queue, X, y)
-        params = self._get_onedal_params(X, y)
         X, y = _convert_to_supported(policy, X, y)
+        params = self._get_onedal_params(X, y)
         train_alg = _backend.neighbors.search.train(policy, params,
                                                     to_table(X))
 
