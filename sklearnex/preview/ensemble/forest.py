@@ -445,8 +445,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                     (f'X has {num_features} features, '
                      f'but RandomForestClassifier is expecting '
                      f'{self.n_features_in_} features as input'))
-        if sklearn_check_version('0.23'):
-            self._check_n_features(X, reset=False)
         return dispatch(self, 'ensemble.RandomForestClassifier.predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_RandomForestClassifier.predict_proba,
@@ -699,21 +697,22 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         return self
 
     def _onedal_predict(self, X, queue=None):
+        X = check_array(X, dtype=[np.float32, np.float64])
+        check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = self._validate_X_predict(X)
 
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_,
                        res.ravel().astype(np.int64, casting='unsafe'))
 
     def _onedal_predict_proba(self, X, queue=None):
+        X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self)
         if sklearn_check_version('0.23'):
             self._check_n_features(X, reset=False)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = self._validate_X_predict(X)
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
 
