@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ===============================================================================
+#===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,6 +51,7 @@ def get_patch_map():
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
+        from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
 
         # Preview classes for patching
 
@@ -129,6 +130,12 @@ def get_patch_map():
         mapping['kneighborsclassifier'] = mapping['knn_classifier']
         mapping['kneighborsregressor'] = mapping['knn_regressor']
         mapping['nearestneighbors'] = mapping['nearest_neighbors']
+
+        # LocalOutlierFactor
+        mapping['lof'] = [[(neighbors_module,
+                            'LocalOutlierFactor',
+                            LocalOutlierFactor_sklearnex), None]]
+        mapping['localoutlierfactor'] = mapping['lof']
 
         # Configs
         mapping['set_config'] = [[(base_module,

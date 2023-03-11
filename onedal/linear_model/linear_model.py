@@ -49,7 +49,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     def _get_onedal_params(self, dtype=np.float32):
         intercept = 'intercept|' if self.fit_intercept else ''
         return {
-            'fptype': 'float' if dtype is np.float32 else 'double',
+            'fptype': 'float' if dtype == np.float32 else 'double',
             'method': self.algorithm, 'intercept': self.fit_intercept,
             'result_option': (intercept + 'coefficients'),
         }
@@ -63,8 +63,8 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         dtype = get_dtype(X_loc)
         if dtype not in [np.float32, np.float64]:
-            X_loc = X_loc.astype(np.float64, copy=self.copy_X)
             dtype = np.float64
+            X_loc = X_loc.astype(dtype, copy=self.copy_X)
 
         y_loc = np.asarray(y_loc).astype(dtype=dtype)
 
@@ -72,11 +72,10 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         X_loc, y_loc = _check_X_y(
             X_loc, y_loc, force_all_finite=False, accept_2d_y=True)
 
-        params = self._get_onedal_params(dtype)
-
         self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
 
         X_loc, y_loc = _convert_to_supported(policy, X_loc, y_loc)
+        params = self._get_onedal_params(get_dtype(X_loc))
         X_table, y_table = to_table(X_loc, y_loc)
 
         result = module.train(policy, params, X_table, y_table)
@@ -92,7 +91,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         return self
 
-    def _create_model(self, module):
+    def _create_model(self, module, policy):
         m = module.model()
 
         coefficients = self.coef_
@@ -137,6 +136,8 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         if self.fit_intercept:
             packed_coefficients[:, 0][:, np.newaxis] = intercept
 
+        packed_coefficients = _convert_to_supported(policy, packed_coefficients)
+
         m.packed_coefficients = to_table(packed_coefficients)
 
         self._onedal_model = m
@@ -158,15 +159,14 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
                              force_all_finite=False, ensure_2d=False)
         _check_n_features(self, X_loc, False)
 
-        params = self._get_onedal_params(X_loc)
-
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
         else:
-            model = self._create_model(module)
+            model = self._create_model(module, policy)
 
         X_loc = make2d(X_loc)
         X_loc = _convert_to_supported(policy, X_loc)
+        params = self._get_onedal_params(get_dtype(X_loc))
 
         X_table = to_table(X_loc)
         result = module.infer(policy, params, model, X_table)

@@ -14,6 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
+import numbers
 import numpy as np
 from scipy import sparse as sp
 from sklearn.utils import check_array, check_X_y
@@ -29,6 +30,8 @@ import logging
 
 if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
     from sklearn.linear_model._base import _deprecate_normalize
+if sklearn_check_version('1.1') and not sklearn_check_version('1.2'):
+    from sklearn.utils import check_scalar
 
 
 def _daal4py_fit(self, X, y_):
@@ -119,6 +122,20 @@ def _fit_ridge(self, X, y, sample_weight=None):
         self._check_feature_names(X, reset=True)
     if sklearn_check_version("1.2"):
         self._validate_params()
+    elif sklearn_check_version('1.1'):
+        if self.max_iter is not None:
+            self.max_iter = check_scalar(
+                self.max_iter, "max_iter", target_type=numbers.Integral, min_val=1
+            )
+        self.tol = check_scalar(self.tol, "tol", target_type=numbers.Real, min_val=0.0)
+        if self.alpha is not None and not isinstance(self.alpha, (np.ndarray, tuple)):
+            self.alpha = check_scalar(
+                self.alpha,
+                "alpha",
+                target_type=numbers.Real,
+                min_val=0.0,
+                include_boundaries="left",
+            )
 
     X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=[np.float64, np.float32],
                      multi_output=True, y_numeric=True)
