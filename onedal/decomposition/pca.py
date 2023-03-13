@@ -43,6 +43,7 @@ class PCA():
             'n_components': self.n_components,
             'is_deterministic': self.is_deterministic
         }
+
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
 
