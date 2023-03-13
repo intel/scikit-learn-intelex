@@ -44,6 +44,9 @@ from ..datatypes._data_conversion import from_table, to_table
 
 
 class NeighborsCommonBase(metaclass=ABCMeta):
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
+
     def _parse_auto_method(self, method, n_samples, n_features):
         result_method = method
 
@@ -163,9 +166,6 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         self.metric = metric
         self.p = p
         self.metric_params = metric_params
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
 
     def _validate_targets(self, y, dtype):
         arr = _column_or_1d(y, warn=True)

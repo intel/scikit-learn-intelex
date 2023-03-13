@@ -21,12 +21,12 @@ from onedal.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
 
 
 class NeighborsCommonBaseSPMD(ABC):
-    pass
+    def _get_policy(self, queue, *data):
+        return _get_spmd_policy(queue)
 
 
 class NeighborsBaseSPMD(NeighborsCommonBaseSPMD, ABC):
-    def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
+    pass
 
 
 class KNeighborsClassifier(NeighborsBaseSPMD, KNeighborsClassifier_Batch):
