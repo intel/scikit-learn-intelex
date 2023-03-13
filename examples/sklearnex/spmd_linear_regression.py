@@ -15,16 +15,16 @@
 #===============================================================================
 
 import numpy as np
+
 from mpi4py import MPI
-import dpctl
-from numpy.testing import assert_allclose
-from sklearnex.spmd.linear_model import LinearRegression as LinRegSpmd
+from dpctl import SyclQueue
+from sklearnex.spmd.linear_model import LinearRegression
 
 
-def generate_X_y(par, coef_seed, data_seed):
-    ns, nf, nr = par['ns'], par['nf'], par['nr']
+def generate_X_y(ns, data_seed):
+    nf, nr = 8, 4
 
-    crng = np.random.default_rng(coef_seed)
+    crng = np.random.default_rng(777)
     coef = crng.uniform(-4, 1, size=(nr, nf)).T
     intp = crng.uniform(-1, 9, size=(nr, ))
 
@@ -32,34 +32,31 @@ def generate_X_y(par, coef_seed, data_seed):
     data = drng.uniform(-7, 7, size=(ns, nf))
     resp = data @ coef + intp[np.newaxis, :]
 
-    return data, resp, coef, intp
+    return data, resp
 
 
-if __name__ == "__main__":
-    q = dpctl.SyclQueue("gpu")
+def get_train_data(rank):
+    return generate_X_y(128, rank)
 
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
 
-    params_spmd = {'ns': 15, 'nf': 21, 'nr': 23}
-    params_grtr = {'ns': 77, 'nf': 21, 'nr': 23}
+def get_test_data(rank):
+    return generate_X_y(1024, rank)
 
-    Xsp, ysp, csp, isp = generate_X_y(params_spmd, size, size + rank - 1)
-    Xgt, ygt, cgt, igt = generate_X_y(params_grtr, size, size + rank + 1)
 
-    assert_allclose(csp, cgt)
-    assert_allclose(isp, igt)
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
 
-    lrsp = LinRegSpmd(copy_X=True, fit_intercept=True)
-    lrsp.fit(Xsp, ysp, queue=q)
+X, y = get_train_data(rank)
 
-    assert_allclose(lrsp.coef_, csp.T)
-    assert_allclose(lrsp.intercept_, isp)
+queue = SyclQueue("gpu")
 
-    ypr = lrsp.predict(Xgt, queue=q)
+model = LinearRegression().fit(X, y, queue)
 
-    assert_allclose(ypr, ygt)
+print(f"Coefficients on rank {rank}:\n", model.coef_)
+print(f"Intercept on rank {rank}:\n", model.intercept_)
 
-    print("Groundtruth responses:\n", ygt)
-    print("Computed responses:\n", ypr)
+X_test, _ = get_test_data(rank)
+
+result = model.predict(X_test, queue)
+
+print(f"Result on rank {rank}:\n", result)
