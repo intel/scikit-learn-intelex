@@ -20,21 +20,7 @@ from mpi4py import MPI
 import dpctl
 from numpy.testing import assert_allclose
 from onedal.spmd.decomposition import PCA as PCASpmd
-
-def generate_X_y(par, coef_seed, data_seed):
-    ns, nf, nr = par['ns'], par['nf'], par['nr']
-
-    crng = np.random.default_rng(coef_seed)
-    coef = crng.uniform(-4, 1, size=(nr, nf)).T
-    intp = crng.uniform(-1, 9, size=(nr, ))
-
-    drng = np.random.default_rng(data_seed)
-    data = drng.uniform(-7, 7, size=(ns, nf))
-    resp = data @ coef + intp[np.newaxis, :]
-
-    return data, resp, coef, intp
-
-
+from sklearn.decomposition import PCA as PCAstock
 if __name__ == "__main__":
     q = dpctl.SyclQueue("gpu")
 
@@ -43,29 +29,17 @@ if __name__ == "__main__":
     size = comm.Get_size()
 
     params_spmd = {'ns': 15, 'nf': 21, 'nr': 23}
-    params_grtr = {'ns': 77, 'nf': 21, 'nr': 23}
 
-    Xsp, ysp, csp, isp = generate_X_y(params_spmd, size, size + rank - 1)
-    Xgt, ygt, cgt, igt = generate_X_y(params_grtr, size, size + rank + 1)
-
-    # assert_allclose(csp, cgt)
-    # assert_allclose(isp, igt)
-
-    # lrsp = LinRegSpmd(copy_X=True, fit_intercept=True)
-    # lrsp.fit(Xsp, ysp, queue=q)
-
-    # assert_allclose(lrsp.coef_, csp.T)
-    # assert_allclose(lrsp.intercept_, isp)
-
-    # ypr = lrsp.predict(Xgt, queue=q)
-
-    # assert_allclose(ypr, ygt)
-
-    # print("Groundtruth responses:\n", ygt)
-    # print("Computed responses:\n", ypr)
+    drng = np.random.default_rng(0)
+    Xsp = drng.uniform(-7, 7, size=(15, 12))
+    ysp = drng.uniform(-7, 7, size=(15, 23))      
     
+    pcaspmd = PCASpmd(n_components=2).fit(Xsp, ysp,q)
     
-    # X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
-    pca = PCASpmd(n_components=2).fit(Xsp, ysp,q)
+    pcastock = PCAstock(n_components=2).fit(Xsp)
+    assert_allclose(pcaspmd.singular_values_,pcastock.singular_values_)
     
-    # assert_allclose(pca.singular_values_, [6.30061232, 0.54980396])
+
+
+
+

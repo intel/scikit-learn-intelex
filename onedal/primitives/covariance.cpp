@@ -78,7 +78,11 @@ ONEDAL_PY_INIT_MODULE(covariance) {
     using namespace dal::covariance;
 
     auto sub = m.def_submodule("covariance");
-    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task::compute);
+    #ifdef ONEDAL_DATA_PARALLEL_SPMD
+        ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list_spmd, task::compute);
+    #else    
+        ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task::compute);
+    #endif
     ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task::compute);
 }
 

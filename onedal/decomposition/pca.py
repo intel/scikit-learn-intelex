@@ -18,7 +18,8 @@ import numpy as np
 
 from onedal import _backend
 from ..common._policy import _get_policy
-from ..datatypes._data_conversion import from_table, to_table, _convert_to_supported
+from ..datatypes._data_conversion import from_table, to_table
+from ..datatypes import _convert_to_supported
 from daal4py.sklearn._utils import sklearn_check_version
 
 
