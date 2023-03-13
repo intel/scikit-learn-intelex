@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import numpy as np
+from warnings import warn
 
 from mpi4py import MPI
 from dpctl import SyclQueue
@@ -22,7 +23,7 @@ from sklearnex.spmd.linear_model import LinearRegression
 
 
 def generate_X_y(ns, data_seed):
-    nf, nr = 8, 4
+    nf, nr = 129, 131
 
     crng = np.random.default_rng(777)
     coef = crng.uniform(-4, 1, size=(nr, nf)).T
@@ -36,7 +37,7 @@ def generate_X_y(ns, data_seed):
 
 
 def get_train_data(rank):
-    return generate_X_y(128, rank)
+    return generate_X_y(101, rank)
 
 
 def get_test_data(rank):
@@ -45,6 +46,11 @@ def get_test_data(rank):
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
+size = comm.Get_size()
+
+if size < 2:
+    warn("This example was intentionally "
+         "designed to run in distributed mode only", RuntimeWarning)
 
 X, y = get_train_data(rank)
 

@@ -17,8 +17,7 @@
 import numpy as np
 from mpi4py import MPI
 
-import dpctl
-from numpy.testing import assert_allclose
+from dpctl import SyclQueue
 from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatisticsSpmd
 
 
@@ -41,34 +40,22 @@ def generate_data(par, size, seed=777):
     return (data, weights)
 
 
-if __name__ == "__main__":
-    q = dpctl.SyclQueue("gpu")
+q = SyclQueue("gpu")
 
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
 
-    params_spmd = {'ns': 19, 'nf': 31}
+params_spmd = {'ns': 19, 'nf': 31}
 
-    data, weights = generate_data(params_spmd, size)
+data, weights = generate_data(params_spmd, size)
+weighted_data = np.diag(weights) @ data
 
-    weighted_data = np.diag(weights) @ data
+gtr_mean = np.mean(weighted_data, axis=0)
+gtr_std = np.std(weighted_data, axis=0)
 
-    gtr_mean = np.mean(weighted_data, axis=0)
-    gtr_std = np.std(weighted_data, axis=0)
+bss = BasicStatisticsSpmd(["mean", "standard_deviation"])
+res = bss.compute(data, weights, queue=q)
 
-    bss = BasicStatisticsSpmd(["mean", "standard_deviation"])
-    res = bss.compute(data, weights, queue=q)
-
-    dtype = res["mean"].dtype
-    std_tol = 1e-2 if dtype == np.float32 else 1e-7
-    mean_tol = 1e-5 if dtype == np.float32 else 1e-7
-
-    assert_allclose(res["mean"], gtr_mean, rtol=mean_tol)
-    assert_allclose(res["standard_deviation"], gtr_std, rtol=std_tol)
-
-    print("Groundtruth mean:\n", gtr_mean)
-    print("Computed mean:\n", res["mean"])
-
-    print("Groundtruth std:\n", gtr_std)
-    print("Computed std:\n", res["standard_deviation"])
+print(f"Computed mean on rank {rank}:\n", res["mean"])
+print(f"Computed std on rank {rank}:\n", res["standard_deviation"])
