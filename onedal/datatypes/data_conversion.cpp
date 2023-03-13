@@ -20,11 +20,17 @@
 #include <string>
 
 #include "oneapi/dal/table/homogen.hpp"
-#include "oneapi/dal/table/detail/csr.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
 #include "onedal/datatypes/data_conversion.hpp"
 #include "onedal/datatypes/numpy_helpers.hpp"
+#include "onedal/version.hpp"
+
+#if ONEDAL_VERSION <= 20230100
+    #include "oneapi/dal/table/detail/csr.hpp"
+#else
+    #include "oneapi/dal/table/csr.hpp"
+#endif
 
 namespace oneapi::dal::python {
 
