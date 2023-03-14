@@ -67,6 +67,6 @@ model_spmd, y_predict, y_test = run_example(rank, 100000, 100, 8, n_neighbors=20
 print("Brute Force Distributed kNN classification results:")
 print("Ground truth (first 5 observations on rank {}):\n{}".format(rank, y_test[:5]))
 print("Classification results (first 5 observations on rank {}):\n{}"
-        .format(rank, y_predict[:5]))
+      .format(rank, y_predict[:5]))
 print("Accuracy for entire rank {} (256 classes): {}"
-        .format(rank, np.mean(np.equal(y_test, y_predict))))
+      .format(rank, np.mean(np.equal(y_test, y_predict))))
