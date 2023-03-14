@@ -14,6 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-from .decomposition import PCA
+from .pca import PCA
 
 __all__ = ['PCA']

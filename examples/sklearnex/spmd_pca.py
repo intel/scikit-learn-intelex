@@ -17,7 +17,7 @@
 import numpy as np
 from mpi4py import MPI
 import dpctl
-from onedal.spmd.decomposition import PCA as PCASpmd
+from sklearnex.spmd.decomposition import PCA as PCASpmd
 
 
 def get_data(data_seed, params_spmd):
