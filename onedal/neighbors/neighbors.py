@@ -44,10 +44,7 @@ from ..datatypes._data_conversion import from_table, to_table
 
 
 class NeighborsCommonBase(metaclass=ABCMeta):
-    def _get_train_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
-    def _get_infer_policy(self, queue, *data):
+    def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
 
     def _parse_auto_method(self, method, n_samples, n_features):
@@ -408,7 +405,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
             return train_alg(**params).compute(X, y).model
 
-        policy = self._get_train_policy(queue, X, y)
+        policy = self._get_policy(queue, X, y)
         X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(X, y)
         train_alg = _backend.neighbors.classification.train(policy, params,
@@ -427,7 +424,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
             return predict_alg(**params).compute(X, model)
 
-        policy = self._get_infer_policy(queue, X)
+        policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
@@ -555,7 +552,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
             return train_alg(**params).compute(X, y).model
 
-        policy = self._get_train_policy(queue, X, y)
+        policy = self._get_policy(queue, X, y)
         X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(X, y)
         train_alg_regr = _backend.neighbors.regression.train
@@ -575,7 +572,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
             return predict_alg(**params).compute(X, model)
 
-        policy = self._get_infer_policy(queue, X)
+        policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
         backend = _backend.neighbors.regression if gpu_device \
             else _backend.neighbors.search
@@ -688,7 +685,7 @@ class NearestNeighbors(NeighborsBase):
 
             return train_alg(**params).compute(X, y).model
 
-        policy = self._get_train_policy(queue, X, y)
+        policy = self._get_policy(queue, X, y)
         X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(X, y)
         train_alg = _backend.neighbors.search.train(policy, params,
@@ -707,7 +704,7 @@ class NearestNeighbors(NeighborsBase):
 
             return predict_alg(**params).compute(X, model)
 
-        policy = self._get_infer_policy(queue, X)
+        policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
         if hasattr(self, '_onedal_model'):
             model = self._onedal_model
