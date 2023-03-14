@@ -38,9 +38,6 @@ def _apply_and_pass(func, *args):
 def from_table(*args):
     return _apply_and_pass(_backend.from_table, *args)
 
-# TODO:
-# refactoring.
-
 
 def convert_one_to_table(arg):
     if dpctl_available:

@@ -145,7 +145,7 @@ def test_input_format_f_contiguous_pandas(queue, dtype):
 
 
 @pytest.mark.skipif(not dpctl_available,
-                    reason="requires dpctl=0.14")
+                    reason="requires dpctl>=0.14")
 @pytest.mark.parametrize('queue', get_queues('cpu,gpu'))
 @pytest.mark.parametrize('dtype', [np.float32, np.float64, np.int32, np.int64])
 def test_input_format_c_contiguous_dpctl(queue, dtype):
@@ -171,7 +171,7 @@ def test_input_format_c_contiguous_dpctl(queue, dtype):
 
 
 @pytest.mark.skipif(not dpctl_available,
-                    reason="requires dpctl=0.14")
+                    reason="requires dpctl>=0.14")
 @pytest.mark.parametrize('queue', get_queues('cpu,gpu'))
 @pytest.mark.parametrize('dtype', [np.float32, np.float64, np.int32, np.int64])
 def test_input_format_f_contiguous_dpctl(queue, dtype):
