@@ -75,17 +75,14 @@ no_stream = 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
-print("DPCPP 1", dpcpp)
 
 try:
     import dpctl
     dpctl_available = dpctl.__version__ >= '0.14'
 except ImportError:
     dpctl_available = False
-print("DPCTL", dpctl_available)
 
 build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
-print("DISTR", build_distribute)
 
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(
@@ -353,7 +350,6 @@ class custom_build():
             build_backend.custom_build_cmake_clib(
                 'host', cxx, ONEDAL_MAJOR_BINARY_VERSION, no_dist=no_dist)
         if dpcpp:
-            print("DPCPP", dpcpp)
             build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib(
