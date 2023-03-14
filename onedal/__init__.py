@@ -49,5 +49,4 @@ if daal_check_version((2023, 'P', 100)):
     __all__.append('linear_model')
 
     if _is_dpc_backend:
-        __all__.append('spmd.linear_model')
-        __all__.append('spmd.neighbors')
+         __all__ += ['spmd.linear_model', 'spmd.neighbors']

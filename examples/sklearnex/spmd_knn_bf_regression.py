@@ -64,15 +64,14 @@ def run_example(rank,
     return model_spmd, y_predict, y_test
 
 
-if __name__ == "__main__":
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
 
-    model_spmd, y_predict, y_test = run_example(rank, 1000000, 100, 3, n_neighbors=5)
+model_spmd, y_predict, y_test = run_example(rank, 1000000, 100, 3, n_neighbors=5)
 
-    print("Brute Force Distributed kNN regression results:")
-    print("Ground truth (first 5 observations on rank {}):\n{}".format(rank, y_test[:5]))
-    print("Regression results (first 5 observations on rank {}):\n{}"
-          .format(rank, y_predict[:5]))
-    print("RMSE:", rank, np.sqrt(np.mean((y_test - y_predict) ** 2)))
+print("Brute Force Distributed kNN regression results:")
+print("Ground truth (first 5 observations on rank {}):\n{}".format(rank, y_test[:5]))
+print("Regression results (first 5 observations on rank {}):\n{}"
+        .format(rank, y_predict[:5]))
+print("RMSE:", rank, np.sqrt(np.mean((y_test - y_predict) ** 2)))
