@@ -401,6 +401,43 @@ project_urls = {
 with open('README.md', 'r', encoding='utf8') as f:
     long_description = f.read()
 
+packages_with_tests = [
+    'daal4py',
+    'daal4py.oneapi',
+    'daal4py.sklearn',
+    'daal4py.sklearn.cluster',
+    'daal4py.sklearn.decomposition',
+    'daal4py.sklearn.ensemble',
+    'daal4py.sklearn.linear_model',
+    'daal4py.sklearn.manifold',
+    'daal4py.sklearn.metrics',
+    'daal4py.sklearn.neighbors',
+    'daal4py.sklearn.monkeypatch',
+    'daal4py.sklearn.svm',
+    'daal4py.sklearn.utils',
+    'daal4py.sklearn.model_selection',
+    'onedal',
+    'onedal.basic_statistics',
+    'onedal.common'
+    'onedal.datatypes'
+    'onedal.decomposition',
+    'onedal.ensemble',
+    'onedal.neighbors',
+    'onedal.primitives',
+    'onedal.svm'
+    ]
+
+if ONEDAL_VERSION >= 20230100:
+    packages_with_tests += ['onedal.linear_model']
+
+if build_distribute:
+    packages_with_tests += [
+        'onedal.spmd',
+        'onedal.spmd.basic_statistics',
+        'onedal.spmd.ensemble',
+        'onedal.spmd.linear_model'
+    ]
+
 setup(
     name="daal4py",
     description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
@@ -447,37 +484,7 @@ setup(
         'data science',
         'data analytics'
     ],
-    packages=get_packages_with_tests([
-        'daal4py',
-        'daal4py.oneapi',
-        'daal4py.sklearn',
-        'daal4py.sklearn.cluster',
-        'daal4py.sklearn.decomposition',
-        'daal4py.sklearn.ensemble',
-        'daal4py.sklearn.linear_model',
-        'daal4py.sklearn.manifold',
-        'daal4py.sklearn.metrics',
-        'daal4py.sklearn.neighbors',
-        'daal4py.sklearn.monkeypatch',
-        'daal4py.sklearn.svm',
-        'daal4py.sklearn.utils',
-        'daal4py.sklearn.model_selection',
-        'onedal',
-        'onedal.ensemble',
-        'onedal.decomposition',
-        'onedal.svm',
-        'onedal.neighbors',
-        'onedal.primitives',
-        'onedal.datatypes',
-        'onedal.common'
-    ] + (['onedal.basic_statistics',
-          'onedal.linear_model'
-          ] if ONEDAL_VERSION >= 20230100 else []
-         ) + (
-        ['onedal.spmd',
-         'onedal.spmd.linear_model',
-         'onedal.spmd.basic_statistics'
-         ] if build_distribute else [])),
+    packages=get_packages_with_tests(packages_with_tests),
     package_data={
         'daal4py.oneapi': [
             'liboneapi_backend.so',

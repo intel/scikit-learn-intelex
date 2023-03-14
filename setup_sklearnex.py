@@ -68,6 +68,32 @@ project_urls = {
 with open("README.md", "r", encoding="utf8") as f:
     long_description = f.read()
 
+packages_with_tests = [
+    "sklearnex",
+    'sklearnex.cluster',
+    'sklearnex.decomposition',
+    'sklearnex.ensemble',
+    'sklearnex.glob',
+    'sklearnex.linear_model',
+    'sklearnex.manifold',
+    'sklearnex.metrics',
+    'sklearnex.model_selection',
+    'sklearnex.neighbors',
+    'sklearnex.preview',
+    'sklearnex.preview.decomposition',
+    'sklearnex.preview.ensemble',
+    'sklearnex.preview.linear_model',
+    'sklearnex.svm',
+    'sklearnex.utils'
+    ]
+
+if build_distribute:
+    packages_with_tests += [
+        'sklearnex.spmd',
+        'sklearnex.spmd.ensemble',
+        'sklearnex.spmd.linear_model'
+        ]
+
 # sklearnex setup
 setup(name="scikit-learn-intelex",
       description="Intel(R) Extension for Scikit-learn is a "
@@ -112,22 +138,5 @@ setup(name="scikit-learn-intelex",
           "data science",
           "data analytics",
       ],
-      packages=get_packages_with_tests([
-          "sklearnex",
-          'sklearnex.cluster',
-          'sklearnex.decomposition',
-          'sklearnex.ensemble',
-          'sklearnex.glob',
-          'sklearnex.linear_model',
-          'sklearnex.manifold',
-          'sklearnex.metrics',
-          'sklearnex.model_selection',
-          'sklearnex.neighbors',
-          'sklearnex.preview',
-          'sklearnex.preview.ensemble',
-          'sklearnex.preview.decomposition',
-          'sklearnex.preview.linear_model',
-          'sklearnex.svm',
-          'sklearnex.utils'
-      ] + (['sklearnex.spmd'] if build_distribute else [])),
+      packages=get_packages_with_tests(packages_with_tests),
       )

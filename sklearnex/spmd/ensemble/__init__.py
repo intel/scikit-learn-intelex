@@ -14,4 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['basic_statistics', 'ensemble', 'linear_model']
+from .forest import RandomForestClassifier, RandomForestRegressor
+
+__all__ = ['RandomForestClassifier', 'RandomForestRegressor']

@@ -14,4 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['basic_statistics', 'ensemble', 'linear_model']
+from onedal.spmd.ensemble import RandomForestClassifier, RandomForestRegressor
+
+# TODO:
+# Currently it uses `onedal` module interface.
+# Add sklearnex dispatching.
