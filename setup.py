@@ -476,9 +476,10 @@ setup(
          ) + (
         ['onedal.spmd',
          'onedal.spmd.basic_statistics',
-         'onedal.spmd.linear_model',
-         'onedal.spmd.neighbors'
-         ] if build_distribute else [])),
+         'onedal.spmd.linear_model'
+         ] + (['onedal.spmd.neighbors']
+              if ONEDAL_VERSION >= 20230100 else [])
+        if build_distribute else [])),
     package_data={
         'daal4py.oneapi': [
             'liboneapi_backend.so',

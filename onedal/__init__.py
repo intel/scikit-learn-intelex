@@ -35,12 +35,9 @@ if "Windows" in platform.system():
 try:
     import onedal._onedal_py_dpc as _backend
     _is_dpc_backend = True
-except ImportError as e:
-    print("IMPORTERROR", e)
+except ImportError:
     import onedal._onedal_py_host as _backend
     _is_dpc_backend = False
-
-print("IS DPC BACKEND", _is_dpc_backend)
 
 
 __all__ = ['decomposition', 'ensemble', 'neighbors', 'primitives', 'svm']
