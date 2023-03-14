@@ -25,19 +25,15 @@ class NeighborsCommonBaseSPMD(ABC):
         return _get_spmd_policy(queue)
 
 
-class NeighborsBaseSPMD(NeighborsCommonBaseSPMD, ABC):
-    pass
-
-
-class KNeighborsClassifier(NeighborsBaseSPMD, KNeighborsClassifier_Batch):
+class KNeighborsClassifier(NeighborsCommonBaseSPMD, KNeighborsClassifier_Batch):
     def predict_proba(self, X, queue=None):
         raise NotImplementedError("predict_proba not supported in distributed mode.")
 
 
-class KNeighborsRegressor(NeighborsBaseSPMD, KNeighborsRegressor_Batch):
+class KNeighborsRegressor(NeighborsCommonBaseSPMD, KNeighborsRegressor_Batch):
     def predict(self, X, queue=None):
         return self._predict_gpu(X, queue=queue)
 
 
-class NearestNeighbors(NeighborsBaseSPMD):
+class NearestNeighbors(NeighborsCommonBaseSPMD):
     pass

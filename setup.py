@@ -475,8 +475,8 @@ setup(
           ] if ONEDAL_VERSION >= 20230100 else []
          ) + (
         ['onedal.spmd',
-         'onedal.spmd.linear_model',
          'onedal.spmd.basic_statistics',
+         'onedal.spmd.linear_model',
          'onedal.spmd.neighbors'
          ] if build_distribute else [])),
     package_data={

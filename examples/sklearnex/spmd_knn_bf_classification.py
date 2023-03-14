@@ -30,39 +30,30 @@ def generate_X_y(par, seed):
     return data, resp
 
 
-def run_example(rank,
-                n_train,
-                n_infer,
-                n_features,
-                n_neighbors=1,
-                weights='uniform',
-                p=2,
-                metric='minkowski'):
-    q = dpctl.SyclQueue("gpu")
-
-    params_train = {'ns': n_train, 'nf': n_features}
-    params_test = {'ns': n_infer, 'nf': n_features}
-
-    X_train, y_train = generate_X_y(params_train, rank)
-    X_test, y_test = generate_X_y(params_test, rank + 99)
-
-    model_spmd = KNeighborsClassifier(algorithm='brute',
-                                      n_neighbors=n_neighbors,
-                                      weights=weights,
-                                      p=p,
-                                      metric=metric)
-    model_spmd.fit(X_train, y_train, queue=q)
-
-    y_predict = model_spmd.predict(X_test, queue=q)
-
-    return model_spmd, y_predict, y_test
-
-
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-model_spmd, y_predict, y_test = run_example(rank, 100000, 100, 8, n_neighbors=20)
+if size < 2:
+    warn("This example was intentionally "
+         "designed to run in distributed mode only", RuntimeWarning)
+
+q = dpctl.SyclQueue("gpu")
+
+params_train = {'ns': 100000, 'nf': 8}
+params_test = {'ns': 100, 'nf': 8}
+
+X_train, y_train = generate_X_y(params_train, rank)
+X_test, y_test = generate_X_y(params_test, rank + 99)
+
+model_spmd = KNeighborsClassifier(algorithm='brute',
+                                    n_neighbors=20,
+                                    weights='uniform',
+                                    p=2,
+                                    metric='minkowski')
+model_spmd.fit(X_train, y_train, queue=q)
+
+y_predict = model_spmd.predict(X_test, queue=q)
 
 print("Brute Force Distributed kNN classification results:")
 print("Ground truth (first 5 observations on rank {}):\n{}".format(rank, y_test[:5]))
