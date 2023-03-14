@@ -42,8 +42,7 @@ def from_table(*args):
 
 def convert_one_to_table(arg):
     if dpctl_available:
-        ndarr = dpt.usm_ndarray
-        if isinstance(arg, ndarr):
+        if isinstance(arg, dpt.usm_ndarray):
             return _backend.dpctl_to_table(arg)
     arg = make2d(arg)
     return _backend.to_table(arg)
