@@ -110,6 +110,11 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
     except ImportError:
         dpctl_available = False
 
+    log.info(f"Is DPCTL available: {str(dpctl_available)}")
+
+    if dpctl_available:
+        dpctl_include = dpctl.get_include()
+
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")
 
@@ -135,8 +140,9 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
 
     build_distribute = iface == 'dpc' and dpctl_available and not no_dist
 
+    log.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
+
     if build_distribute:
-        dpctl_include = dpctl.get_include()
         mpi_root = os.environ['MPIROOT']
         MPI_INCDIRS = jp(mpi_root, 'include')
         MPI_LIBDIRS = jp(mpi_root, 'lib')
@@ -170,9 +176,14 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
 
-    if build_distribute:
+    if dpctl_available:
         cmake_args += [
             "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
+            "-DONEDAL_DPCTL_INTEGRATION:BOOL=ON"
+        ]
+
+    if build_distribute:
+        cmake_args += [
             "-DMPI_INCLUDE_DIRS=" + MPI_INCDIRS,
             "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,
             "-DMPI_LIBS=" + MPI_LIBS,
