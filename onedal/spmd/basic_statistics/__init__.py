@@ -14,4 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['linear_model', 'basic_statistics', 'neighbors']
+from .basic_statistics import BasicStatistics
+
+__all__ = ['BasicStatistics']

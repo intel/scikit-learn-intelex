@@ -14,4 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['linear_model', 'neighbors']
+__all__ = ['linear_model', 'basic_statistics', 'neighbors']
