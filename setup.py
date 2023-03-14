@@ -417,26 +417,27 @@ packages_with_tests = [
     'daal4py.sklearn.utils',
     'daal4py.sklearn.model_selection',
     'onedal',
-    'onedal.basic_statistics',
-    'onedal.common'
-    'onedal.datatypes'
+    'onedal.common',
+    'onedal.datatypes',
     'onedal.decomposition',
     'onedal.ensemble',
     'onedal.neighbors',
     'onedal.primitives',
-    'onedal.svm'
-    ]
+    'onedal.svm']
 
 if ONEDAL_VERSION >= 20230100:
-    packages_with_tests += ['onedal.linear_model']
+    packages_with_tests += [
+        'onedal.basic_statistics',
+        'onedal.linear_model']
 
 if build_distribute:
     packages_with_tests += [
         'onedal.spmd',
-        'onedal.spmd.basic_statistics',
-        'onedal.spmd.ensemble',
-        'onedal.spmd.linear_model'
-    ]
+        'onedal.spmd.ensemble']
+    if ONEDAL_VERSION >= 20230100:
+        packages_with_tests += [
+            'onedal.spmd.basic_statistics',
+            'onedal.spmd.linear_model']
 
 setup(
     name="daal4py",

@@ -84,15 +84,13 @@ packages_with_tests = [
     'sklearnex.preview.ensemble',
     'sklearnex.preview.linear_model',
     'sklearnex.svm',
-    'sklearnex.utils'
-    ]
+    'sklearnex.utils']
 
 if build_distribute:
     packages_with_tests += [
         'sklearnex.spmd',
         'sklearnex.spmd.ensemble',
-        'sklearnex.spmd.linear_model'
-        ]
+        'sklearnex.spmd.linear_model']
 
 # sklearnex setup
 setup(name="scikit-learn-intelex",
