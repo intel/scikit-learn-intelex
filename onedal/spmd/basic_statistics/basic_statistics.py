@@ -14,4 +14,15 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['linear_model', 'basic_statistics']
+from abc import ABC
+from ...common._spmd_policy import _get_spmd_policy
+from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
+
+
+class BaseBasicStatisticsSPMD(ABC):
+    def _get_policy(self, queue, *data):
+        return _get_spmd_policy(queue)
+
+
+class BasicStatistics(BaseBasicStatisticsSPMD, BasicStatistics_Batch):
+    pass
