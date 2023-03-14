@@ -15,6 +15,7 @@
 #===============================================================================
 
 import numpy as np
+from warnings import warn
 from mpi4py import MPI
 import dpctl
 from numpy.testing import assert_allclose

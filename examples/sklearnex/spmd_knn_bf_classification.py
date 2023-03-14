@@ -15,6 +15,7 @@
 #===============================================================================
 
 import numpy as np
+from warnings import warn
 from mpi4py import MPI
 import dpctl
 from sklearnex.spmd.neighbors import KNeighborsClassifier
@@ -47,10 +48,10 @@ X_train, y_train = generate_X_y(params_train, rank)
 X_test, y_test = generate_X_y(params_test, rank + 99)
 
 model_spmd = KNeighborsClassifier(algorithm='brute',
-                                    n_neighbors=20,
-                                    weights='uniform',
-                                    p=2,
-                                    metric='minkowski')
+                                  n_neighbors=20,
+                                  weights='uniform',
+                                  p=2,
+                                  metric='minkowski')
 model_spmd.fit(X_train, y_train, queue=q)
 
 y_predict = model_spmd.predict(X_test, queue=q)
