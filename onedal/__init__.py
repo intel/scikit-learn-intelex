@@ -46,7 +46,7 @@ if _is_dpc_backend:
     __all__.append('spmd')
 
 if daal_check_version((2023, 'P', 100)):
-    __all__.append('linear_model')
+    __all__ += ['basic_statistics', 'linear_model']
 
     if _is_dpc_backend:
-        __all__.append('spmd.linear_model')
+        __all__ += ['spmd.basic_statistics', 'spmd.linear_model']
