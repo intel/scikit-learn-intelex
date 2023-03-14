@@ -17,6 +17,7 @@
 #include "oneapi/dal/algo/knn.hpp"
 
 #include "onedal/common.hpp"
+#include "onedal/version.hpp"
 #include "onedal/primitives/pairwise_distances.hpp"
 #include <regex>
 
