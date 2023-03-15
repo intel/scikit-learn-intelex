@@ -302,7 +302,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
     def _get_sample_weight(self, X, y, sample_weight):
-        n_samples, _ = X.shape
+        n_samples = X.shape[0]
         dtype = X.dtype
         if n_samples == 1:
             raise ValueError("n_samples=1")
@@ -359,9 +359,14 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self._onedal_model = train_result.model
 
         if self.oob_score:
-            self.oob_score_ = from_table(train_result.oob_err)[0, 0]
-            self.oob_prediction_ = from_table(
-                train_result.oob_err_per_observation)
+            if self.is_classification:
+                self.oob_score_ = from_table(train_result.oob_err_accuracy)[0, 0]
+                self.oob_prediction_ = from_table(
+                    train_result.oob_err_decision_function)
+            else:
+                self.oob_score_ = from_table(train_result.oob_err_r2)[0, 0]
+                self.oob_prediction_ = from_table(
+                    train_result.oob_err_prediction).reshape(-1)
             if np.any(self.oob_prediction_ == 0):
                 warnings.warn(
                     "Some inputs do not have OOB scores. This probably means "
