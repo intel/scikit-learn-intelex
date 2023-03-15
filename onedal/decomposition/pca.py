@@ -47,13 +47,13 @@ class PCA():
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
 
-    def fit(self, X, y, queue):
+    def fit(self, X, queue):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
-        policy = self._get_policy(queue, X, y)
+        policy = self._get_policy(queue, X)
 
-        X, y = _convert_to_supported(policy, X, y)
+        X = _convert_to_supported(policy, X)
         params = self.get_onedal_params(X)
         cov_result = _backend.covariance.compute(
             policy,

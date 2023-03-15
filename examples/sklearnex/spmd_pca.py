@@ -20,10 +20,11 @@ import dpctl
 from sklearnex.spmd.decomposition import PCA as PCASpmd
 
 
-def get_data(data_seed, params_spmd):
+def get_data(data_seed):
+    ns, nf, nr = 15, 21, 23
     drng = np.random.default_rng(data_seed)
-    X = drng.uniform(-7, 7, size=(params_spmd["ns"], params_spmd["nf"]))
-    y = drng.uniform(-7, 7, size=(params_spmd["ns"], params_spmd["nr"]))
+    X = drng.uniform(-7, 7, size=(ns, nf))
+    y = drng.uniform(-7, 7, size=(ns, nr))
     return X, y
 
 
@@ -32,11 +33,9 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
+X_spmd, y_spmd = get_data(rank)
 
-params_spmd = {"ns": 15, "nf": 21, "nr": 23}
-X_spmd, y_spmd = get_data(0, params_spmd)
-
-pcaspmd = PCASpmd(n_components=2).fit(X_spmd, y_spmd, q)
+pcaspmd = PCASpmd(n_components=2).fit(X_spmd, q)
 
 print(f"Singular values on rank {rank}:\n", pcaspmd.singular_values_)
 print(f"Explained variance Ratio on rank {rank}:\n", pcaspmd.explained_variance_ratio_)
