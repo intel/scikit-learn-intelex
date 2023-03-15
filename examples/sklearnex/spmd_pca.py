@@ -24,8 +24,7 @@ def get_data(data_seed):
     ns, nf, nr = 15, 21, 23
     drng = np.random.default_rng(data_seed)
     X = drng.uniform(-7, 7, size=(ns, nf))
-    y = drng.uniform(-7, 7, size=(ns, nr))
-    return X, y
+    return X
 
 
 q = dpctl.SyclQueue("gpu")
@@ -33,7 +32,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-X_spmd, y_spmd = get_data(rank)
+X_spmd = get_data(rank)
 
 pcaspmd = PCASpmd(n_components=2).fit(X_spmd, q)
 
