@@ -46,13 +46,13 @@ def test_rf_classifier(queue):
 # when dpctl available
 @pytest.mark.skipif(not dpctl_available,
                     reason="requires dpctl")
-def test_rf_classifier_dpctl():
+@pytest.mark.parametrize('queue', get_queues("gpu"))
+def test_rf_classifier_dpctl(queue):
     X, y = make_classification(n_samples=100, n_features=4,
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
-    q = dpctl.SyclQueue("gpu") # GPU
-    dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=q)
-    dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=q)
+    dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=queue)
+    dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=queue)
     rf = RandomForestClassifier(
         max_depth=2, random_state=0).fit(dpt_X, dpt_y)
     # TODO:

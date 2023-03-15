@@ -48,6 +48,7 @@ from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted
 from ..datatypes._data_conversion import from_table, to_table
+from .._device_offload import support_usm_ndarray
 from onedal import _backend
 
 from sklearn.tree import DecisionTreeClassifier
@@ -472,6 +473,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         #    self.n_classes_ = self.classes_
         return y
 
+    @support_usm_ndarray
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(X, y, sample_weight,
                          _backend.decision_forest.classification, queue)
