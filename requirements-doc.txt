@@ -21,7 +21,7 @@ ipython-genutils==0.2.0
 jedi==0.18.2
 Jinja2==3.0.3
 jsonschema==4.17.3
-jupyter-client==7.4.8
+jupyter-client==7.4.9
 jupyter-core==5.1.2
 jupyterlab-pygments==0.2.2
 MarkupSafe==2.1.1
