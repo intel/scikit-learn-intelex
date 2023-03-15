@@ -31,8 +31,9 @@ print('Starting examples validation')
 # third item is status - B
 print('DAAL version:', get_daal_version())
 
-rootdir = os.path.dirname(os.path.abspath(os.path.join(os.path.realpath(__file__), os.pardir)))
-exdirs = [jp(rootdir, 'daal4py'), jp(rootdir, 'sklearnex')] 
+rootdir = os.path.dirname(os.path.abspath(os.path.join(os.path.realpath(__file__),
+                                                       os.pardir)))
+exdirs = [jp(rootdir, 'daal4py'), jp(rootdir, 'sklearnex')]
 
 IS_WIN = False
 IS_MAC = False
@@ -199,7 +200,8 @@ def run_all(nodist=False, nostream=False):
                     logfn = jp(logdir, script.replace('.py', '.res'))
                     with open(logfn, 'w') as logfile:
                         print('\n##### ' + jp(dirpath, script))
-                        execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
+                        execute_string = get_exe_cmd(jp(dirpath, script),
+                                                     nodist, nostream)
                         if execute_string:
                             os.chdir(dirpath)
                             proc = subprocess.Popen(
@@ -216,11 +218,13 @@ def run_all(nodist=False, nostream=False):
                                 print(out)
                                 print(
                                     strftime("%H:%M:%S", gmtime()) + '\tFAILED'
-                                    '\t' + script + '\twith errno\t' + str(proc.returncode)
+                                    '\t' + script + '\twith errno\t' + \
+                                    str(proc.returncode)
                                 )
                             else:
                                 success += 1
-                                print(strftime("%H:%M:%S", gmtime()) + '\tPASSED\t' + script)
+                                print(strftime("%H:%M:%S", gmtime()) + '\tPASSED\t' + \
+                                      script)
                         else:
                             success += 1
                             print(strftime("%H:%M:%S", gmtime()) + '\tSKIPPED\t' + script)
