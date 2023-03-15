@@ -31,7 +31,8 @@ print('Starting examples validation')
 # third item is status - B
 print('DAAL version:', get_daal_version())
 
-exdir = os.path.dirname(os.path.realpath(__file__))
+rootdir = os.path.dirname(os.path.abspath(os.path.join(os.path.realpath(__file__), os.pardir)))
+exdirs = [jp(rootdir, 'daal4py'), jp(rootdir, 'sklearnex')] 
 
 IS_WIN = False
 IS_MAC = False
@@ -52,9 +53,9 @@ else:
 assert 8 * struct.calcsize('P') in [32, 64]
 
 if 8 * struct.calcsize('P') == 32:
-    logdir = jp(exdir, '_results', 'ia32')
+    logdir = jp(exdirs[0], '_results', 'ia32')
 else:
-    logdir = jp(exdir, '_results', 'intel64')
+    logdir = jp(exdirs[0], '_results', 'intel64')
 
 availabe_devices = []
 
@@ -129,14 +130,20 @@ req_version['decision_forest_classification_hist_batch.py'] = (2023, 'P', 1)
 req_version['decision_forest_classification_default_dense_batch.py'] = (2023, 'P', 1)
 req_version['decision_forest_classification_traverse_batch.py'] = (2023, 'P', 1)
 req_version['decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
+req_version['basic_statistics_spmd.py'] = (2023, 'P', 1)
+req_version['linear_regression_spmd.py'] = (2023, 'P', 1)
 
 req_device = defaultdict(lambda: [])
+req_device['basic_statistics_spmd.py'] = ["gpu"]
+req_device['linear_regression_spmd.py'] = ["gpu"]
 req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
 
 req_library = defaultdict(lambda: [])
+req_library['basic_statistics_spmd.py'] = ['dpctl', 'mpi4py']
 req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
 req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
 req_library['gbt_cls_model_create_from_catboost_batch.py'] = ['catboost']
+req_library['linear_regression_spmd.py'] = ['dpctl', 'mpi4py']
 
 req_os = defaultdict(lambda: [])
 
@@ -158,6 +165,13 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
+    if os.path.dirname(ex).endswith("sklearnex"):
+        if not check_device(req_device[os.path.basename(ex)], availabe_devices):
+            return None
+        if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
+            return None
+        if not check_library(req_library[os.path.basename(ex)]):
+            return None
     if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
         return '"' + sys.executable + '" "' + ex + '"'
     if not nostream and ex.endswith('streaming.py'):
@@ -174,41 +188,42 @@ def run_all(nodist=False, nostream=False):
     n = 0
     if not os.path.exists(logdir):
         os.makedirs(logdir)
-    for (dirpath, dirnames, filenames) in os.walk(exdir):
-        for script in filenames:
-            if any(script.endswith(x) for x in ['spmd.py',
-                                                'streaming.py',
-                                                'stream.py',
-                                                'batch.py']):
-                n += 1
-                logfn = jp(logdir, script.replace('.py', '.res'))
-                with open(logfn, 'w') as logfile:
-                    print('\n##### ' + jp(dirpath, script))
-                    execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
-                    if execute_string:
-                        os.chdir(dirpath)
-                        proc = subprocess.Popen(
-                            execute_string if IS_WIN else ['/bin/bash',
-                                                           '-c',
-                                                           execute_string],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT,
-                            shell=False
-                        )
-                        out = proc.communicate()[0]
-                        logfile.write(out.decode('ascii'))
-                        if proc.returncode:
-                            print(out)
-                            print(
-                                strftime("%H:%M:%S", gmtime()) + '\tFAILED'
-                                '\t' + script + '\twith errno\t' + str(proc.returncode)
+    for exdir in exdirs:
+        for (dirpath, dirnames, filenames) in os.walk(exdir):
+            for script in filenames:
+                if any(script.endswith(x) for x in ['spmd.py',
+                                                    'streaming.py',
+                                                    'stream.py',
+                                                    'batch.py']):
+                    n += 1
+                    logfn = jp(logdir, script.replace('.py', '.res'))
+                    with open(logfn, 'w') as logfile:
+                        print('\n##### ' + jp(dirpath, script))
+                        execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
+                        if execute_string:
+                            os.chdir(dirpath)
+                            proc = subprocess.Popen(
+                                execute_string if IS_WIN else ['/bin/bash',
+                                                               '-c',
+                                                               execute_string],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT,
+                                shell=False
                             )
+                            out = proc.communicate()[0]
+                            logfile.write(out.decode('ascii'))
+                            if proc.returncode:
+                                print(out)
+                                print(
+                                    strftime("%H:%M:%S", gmtime()) + '\tFAILED'
+                                    '\t' + script + '\twith errno\t' + str(proc.returncode)
+                                )
+                            else:
+                                success += 1
+                                print(strftime("%H:%M:%S", gmtime()) + '\tPASSED\t' + script)
                         else:
                             success += 1
-                            print(strftime("%H:%M:%S", gmtime()) + '\tPASSED\t' + script)
-                    else:
-                        success += 1
-                        print(strftime("%H:%M:%S", gmtime()) + '\tSKIPPED\t' + script)
+                            print(strftime("%H:%M:%S", gmtime()) + '\tSKIPPED\t' + script)
 
     if success != n:
         print('{}/{} examples passed/skipped, {} failed'.format(success, n, n - success))
