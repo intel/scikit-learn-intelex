@@ -15,6 +15,7 @@
 #===============================================================================
 
 import numpy as np
+from sklearn.metrics import accuracy_score
 from warnings import warn
 from mpi4py import MPI
 import dpctl
@@ -39,7 +40,10 @@ if size < 2:
     warn("This example was intentionally "
          "designed to run in distributed mode only", RuntimeWarning)
 
-q = dpctl.SyclQueue("gpu")
+if dpctl.has_gpu_devices:
+    q = dpctl.SyclQueue("gpu")
+else:
+    raise RuntimeError("GPU devices unavailable.")
 
 params_train = {'ns': 100000, 'nf': 8}
 params_test = {'ns': 100, 'nf': 8}
@@ -61,4 +65,4 @@ print("Ground truth (first 5 observations on rank {}):\n{}".format(rank, y_test[
 print("Classification results (first 5 observations on rank {}):\n{}"
       .format(rank, y_predict[:5]))
 print("Accuracy for entire rank {} (256 classes): {}"
-      .format(rank, np.mean(np.equal(y_test, y_predict))))
+      .format(rank, accuracy_score(y_test, y_predict)))

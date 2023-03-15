@@ -581,8 +581,6 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
             model = self._onedal_model
         else:
             model = self._create_model(backend)
-        if gpu_device and "responses" not in params["result_option"]:
-            params["result_option"] += "|responses"
         result = backend.infer(policy, params, model, to_table(X))
 
         return result

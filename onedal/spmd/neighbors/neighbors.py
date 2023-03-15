@@ -34,6 +34,12 @@ class KNeighborsRegressor(NeighborsCommonBaseSPMD, KNeighborsRegressor_Batch):
     def predict(self, X, queue=None):
         return self._predict_gpu(X, queue=queue)
 
+    def _get_onedal_params(self, X, y=None):
+        params = super()._get_onedal_params(X, y)
+        if 'responses' not in params['result_option']:
+            params['result_option'] += '|responses'
+        return params
+
 
 class NearestNeighbors(NeighborsCommonBaseSPMD):
     pass

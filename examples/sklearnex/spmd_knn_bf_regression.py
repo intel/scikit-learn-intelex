@@ -43,7 +43,10 @@ if size < 2:
     warn("This example was intentionally "
          "designed to run in distributed mode only", RuntimeWarning)
 
-q = dpctl.SyclQueue("gpu")
+if dpctl.has_gpu_devices:
+    q = dpctl.SyclQueue("gpu")
+else:
+    raise RuntimeError("GPU devices unavailable.")
 
 params_train = {'ns': 1000000, 'nf': 3}
 params_test = {'ns': 100, 'nf': 3}
