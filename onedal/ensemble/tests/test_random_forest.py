@@ -23,6 +23,15 @@ from onedal.tests.utils._device_selection import get_queues
 
 from sklearn.datasets import make_classification, make_regression
 
+# TODO:
+# will be replaced with common check.
+try:
+    import dpctl
+    import dpctl.tensor as dpt
+    dpctl_available = True
+except ImportError:
+    dpctl_available = False
+
 
 @pytest.mark.parametrize('queue', get_queues())
 def test_rf_classifier(queue):
@@ -32,6 +41,24 @@ def test_rf_classifier(queue):
     rf = RandomForestClassifier(
         max_depth=2, random_state=0).fit(X, y, queue=queue)
     assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
+
+# TODO:
+# when dpctl available
+@pytest.mark.skipif(not dpctl_available,
+                    reason="requires dpctl")
+def test_rf_classifier_dpctl():
+    X, y = make_classification(n_samples=100, n_features=4,
+                               n_informative=2, n_redundant=0,
+                               random_state=0, shuffle=False)
+    q = dpctl.SyclQueue("gpu") # GPU
+    dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=q)
+    dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=q)
+    rf = RandomForestClassifier(
+        max_depth=2, random_state=0).fit(dpt_X, dpt_y)
+    # TODO:
+    # assert_allclose for dpctl tensor
+    # or copy to host for the check.
+    assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=q))
 
 
 @pytest.mark.parametrize('queue', get_queues())
