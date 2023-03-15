@@ -218,12 +218,12 @@ def run_all(nodist=False, nostream=False):
                                 print(out)
                                 print(
                                     strftime("%H:%M:%S", gmtime()) + '\tFAILED'
-                                    '\t' + script + '\twith errno\t' + \
+                                    '\t' + script + '\twith errno\t' +\
                                     str(proc.returncode)
                                 )
                             else:
                                 success += 1
-                                print(strftime("%H:%M:%S", gmtime()) + '\tPASSED\t' + \
+                                print(strftime("%H:%M:%S", gmtime()) + '\tPASSED\t' +\
                                       script)
                         else:
                             success += 1
