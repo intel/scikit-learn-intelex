@@ -21,7 +21,7 @@ from sklearnex.spmd.decomposition import PCA as PCASpmd
 
 
 def get_data(data_seed):
-    ns, nf, nr = 15, 21, 23
+    ns, nf = 15, 21
     drng = np.random.default_rng(data_seed)
     X = drng.uniform(-7, 7, size=(ns, nf))
     return X
