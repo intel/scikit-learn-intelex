@@ -19,7 +19,7 @@ importlib-resources==5.10.2
 ipython==8.10.0
 ipython-genutils==0.2.0
 jedi==0.18.2
-Jinja2==3.0.3
+Jinja2==3.1.2
 jsonschema==4.17.3
 jupyter-client==7.4.8
 jupyter-core==5.1.2
