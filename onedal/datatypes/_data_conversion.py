@@ -14,10 +14,21 @@
 # limitations under the License.
 # ===============================================================================
 
+import numpy as np
 import warnings
 import numpy as np
+
+from onedal import _is_dpc_backend
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
+from onedal import _is_dpc_backend
+
+try:
+    import dpctl
+    import dpctl.tensor as dpt
+    dpctl_available = dpctl.__version__ >= '0.14'
+except ImportError:
+    dpctl_available = False
 
 
 def _apply_and_pass(func, *args):
@@ -31,6 +42,9 @@ def from_table(*args):
 
 
 def convert_one_to_table(arg):
+    if dpctl_available:
+        if isinstance(arg, dpt.usm_ndarray):
+            return _backend.dpctl_to_table(arg)
     arg = make2d(arg)
     return _backend.to_table(arg)
 
@@ -38,8 +52,6 @@ def convert_one_to_table(arg):
 def to_table(*args):
     return _apply_and_pass(convert_one_to_table, *args)
 
-
-from onedal import _is_dpc_backend
 
 if _is_dpc_backend:
     from ..common._policy import _HostInteropPolicy
