@@ -49,6 +49,10 @@ class PCA():
 
         policy = _get_policy(queue, X, y)
 
+        # TODO: investigate why np.ndarray with OWNDATA=FALSE flag
+        # fails to be converted to oneDAL table
+        if isinstance(X, np.ndarray) and not X.flags['OWNDATA']:
+            X = X.copy()
         X, y = _convert_to_supported(policy, X, y)
         params = self.get_onedal_params(X)
         cov_result = _backend.covariance.compute(

@@ -30,7 +30,7 @@ if daal_check_version((2023, 'P', 100)):
     if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
         from sklearn.linear_model._base import _deprecate_normalize
 
-    from sklearn.utils.validation import _deprecate_positional_args
+    from sklearn.utils.validation import _deprecate_positional_args, check_X_y
     from sklearn.exceptions import NotFittedError
     from scipy.sparse import issparse
 
@@ -233,6 +233,20 @@ if daal_check_version((2023, 'P', 100)):
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             assert sample_weight is None
 
+            check_params = {
+                'X': X,
+                'y': y,
+                'dtype': [np.float64, np.float32],
+                'accept_sparse': ['csr', 'csc', 'coo'],
+                'y_numeric': True,
+                'multi_output': True,
+                'force_all_finite': False
+            }
+            if sklearn_check_version('1.2'):
+                X, y = self._validate_data(**check_params)
+            else:
+                X, y = check_X_y(**check_params)
+
             if sklearn_check_version(
                     '1.0') and not sklearn_check_version('1.2'):
                 self._normalize = _deprecate_normalize(
@@ -247,6 +261,7 @@ if daal_check_version((2023, 'P', 100)):
             self._save_attributes()
 
         def _onedal_predict(self, X, queue=None):
+            X = self._validate_data(X, accept_sparse=False, reset=False)
             if not hasattr(self, '_onedal_estimator'):
                 self._initialize_onedal_estimator()
                 self._onedal_estimator.coef_ = self.coef_
