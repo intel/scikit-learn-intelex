@@ -18,7 +18,7 @@
 daal4py_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 count=3
 while [[ count -ne 0 ]]; do
-    if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/tests/ && -d $daal4py_dir/examples/daal4py ]]; then
+    if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/tests/ && -d $daal4py_dir/examples/scripts/daal4py ]]; then
         break
     fi
     daal4py_dir="$( dirname "${daal4py_dir}" )"
