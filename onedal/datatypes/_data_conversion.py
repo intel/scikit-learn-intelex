@@ -14,8 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
-import warnings
 import numpy as np
+import warnings
 
 from onedal import _is_dpc_backend
 from onedal import _backend

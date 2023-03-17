@@ -17,6 +17,7 @@
 #include "oneapi/dal/algo/decision_forest.hpp"
 
 #include "onedal/common.hpp"
+#include "onedal/version.hpp"
 
 namespace py = pybind11;
 
@@ -73,6 +74,16 @@ auto get_error_metric_mode(const py::dict& params) {
             result_mode |= error_metric_mode::out_of_bag_error;
         else if (modes[i] == "out_of_bag_error_per_observation")
             result_mode |= error_metric_mode::out_of_bag_error_per_observation;
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
+        else if (modes[i] == "out_of_bag_error_accuracy")
+            result_mode |= error_metric_mode::out_of_bag_error_accuracy;
+        else if (modes[i] == "out_of_bag_error_r2")
+            result_mode |= error_metric_mode::out_of_bag_error_r2;
+        else if (modes[i] == "out_of_bag_error_decision_function")
+            result_mode |= error_metric_mode::out_of_bag_error_decision_function;
+        else if (modes[i] == "out_of_bag_error_prediction")
+            result_mode |= error_metric_mode::out_of_bag_error_prediction;
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20230101
         else
             ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(mode);
     }
@@ -238,6 +249,12 @@ void init_train_result(py::module_& m) {
         .DEF_ONEDAL_PY_PROPERTY(model, result_t)
         .DEF_ONEDAL_PY_PROPERTY(oob_err, result_t)
         .DEF_ONEDAL_PY_PROPERTY(oob_err_per_observation, result_t)
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
+        .DEF_ONEDAL_PY_PROPERTY(oob_err_accuracy, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(oob_err_r2, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(oob_err_decision_function, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(oob_err_prediction, result_t)
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20230101
         .DEF_ONEDAL_PY_PROPERTY(var_importance, result_t);
 }
 
