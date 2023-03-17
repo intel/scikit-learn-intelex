@@ -241,7 +241,8 @@ def run_all(nodist=False, nostream=False):
         success += s
         num += n
     if success != num:
-        print('{}/{} examples passed/skipped, {} failed'.format(success, num, num - success))
+        print('{}/{} examples passed/skipped, '
+              '{} failed'.format(success, num, num - success))
         print('Error(s) occured. Logs can be found in ' + logdir)
         return 4711
     print('{}/{} examples passed/skipped'.format(success, num))
