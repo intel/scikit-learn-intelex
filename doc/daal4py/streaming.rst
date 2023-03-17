@@ -45,7 +45,7 @@ daal4py's streaming mode is as easy as follows:
 The streaming algorithms also accept arrays and DataFrames as input, e.g. the
 data can come from a stream rather than from multiple files. Here is an example
 which simulates a data stream using a generator which reads a file in chunks:
-`SVD reading stream of data <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/stream.py>`_
+`SVD reading stream of data <https://github.com/intel/scikit-learn-intelex/tree/master/examples/scripts/daal4py/stream.py>`_
 
 Supported Algorithms and Examples
 ---------------------------------
@@ -53,20 +53,20 @@ The following algorithms support streaming:
 
 - SVD (svd)
 
-  - `SVD <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/svd_streaming.py>`_
+  - `SVD <https://github.com/intel/scikit-learn-intelex/tree/master/examples/scripts/daal4py/svd_streaming.py>`_
 
 - Linear Regression Training (linear_regression_training)
 
-  - `Linear Regression <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/linear_regression_streaming.py>`_
+  - `Linear Regression <https://github.com/intel/scikit-learn-intelex/tree/master/examples/scripts/daal4py/linear_regression_streaming.py>`_
 
 - Ridge Regression Training (ridge_regression_training)
 
-  - `Ridge Regression <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/ridge_regression_streaming.py>`_
+  - `Ridge Regression <https://github.com/intel/scikit-learn-intelex/tree/master/examples/scripts/daal4py/ridge_regression_streaming.py>`_
 
 - Multinomial Naive Bayes Training (multinomial_naive_bayes_training)
 
-  - `Naive Bayes <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/naive_bayes_streaming.py>`_
+  - `Naive Bayes <https://github.com/intel/scikit-learn-intelex/tree/master/examples/scripts/daal4py/naive_bayes_streaming.py>`_
 
 - Moments of Low Order
 
-  - `Low Order Moments <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/low_order_moms_streaming.py>`_
+  - `Low Order Moments <https://github.com/intel/scikit-learn-intelex/tree/master/examples/scripts/daal4py/low_order_moms_streaming.py>`_
