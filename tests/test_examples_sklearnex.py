@@ -21,7 +21,7 @@ from daal4py.sklearn._utils import get_daal_version
 test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
 examples_path = os.path.join(
-    os.path.dirname(test_path), "examples", "scripts", "sklearnex")
+    os.path.dirname(test_path), "examples", "sklearnex")
 
 print('Testing examples_sklearnex')
 # First item is major version - 2021,

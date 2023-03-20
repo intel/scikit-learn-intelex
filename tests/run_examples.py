@@ -31,7 +31,12 @@ print('Starting examples validation')
 # third item is status - B
 print('DAAL version:', get_daal_version())
 
-rootdir = os.path.dirname(os.path.realpath(__file__))
+runner_path = os.path.realpath(__file__)
+runner_dir = os.path.dirname(runner_path)
+examples_rootdir = jp(
+    os.path.dirname(os.path.abspath(os.path.join(runner_path,
+                                                 os.pardir))),
+    'examples')
 
 IS_WIN = False
 IS_MAC = False
@@ -52,13 +57,13 @@ else:
 assert 8 * struct.calcsize('P') in [32, 64]
 
 if 8 * struct.calcsize('P') == 32:
-    logdir = jp(rootdir, '_results', 'ia32')
+    logdir = jp(runner_dir, '_results', 'ia32')
 else:
-    logdir = jp(rootdir, '_results', 'intel64')
+    logdir = jp(runner_dir, '_results', 'intel64')
 
 ex_log_dirs = [
-    (jp(rootdir, 'scripts', 'daal4py'), jp(logdir, 'daal4py')),
-    (jp(rootdir, 'scripts', 'sklearnex'), jp(logdir, 'sklearnex'))]
+    (jp(examples_rootdir, 'daal4py'), jp(logdir, 'daal4py')),
+    (jp(examples_rootdir, 'sklearnex'), jp(logdir, 'sklearnex'))]
 
 availabe_devices = []
 
@@ -77,8 +82,8 @@ if sycl_extention_available:
     except RuntimeError:
         gpu_available = False
     availabe_devices.append("cpu")
-    #validate that host and cpu devices avaialbe for logging reasons. Examples and
-    #vaidaton logic assumes that host and cpu devices are always available
+    # validate that host and cpu devices avaialbe for logging reasons. Examples and
+    # vaidaton logic assumes that host and cpu devices are always available
     print('Sycl gpu device: {}'.format(gpu_available))
 
 
@@ -158,7 +163,8 @@ def get_exe_cmd(ex, nodist, nostream):
         if not check_version(req_version["sycl/" + os.path.basename(ex)],
                              get_daal_version()):
             return None
-        if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
+        if not check_device(
+                req_device["sycl/" + os.path.basename(ex)], availabe_devices):
             return None
         if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
             return None

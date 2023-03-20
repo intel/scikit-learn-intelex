@@ -18,8 +18,7 @@ import os
 import sys
 test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
-examples_path = os.path.join(os.path.dirname(test_path),
-                             "examples", "scripts", "daal4py")
+examples_path = os.path.join(os.path.dirname(test_path), "examples", "daal4py")
 sys.path.insert(0, examples_path)
 os.chdir(examples_path)
 
