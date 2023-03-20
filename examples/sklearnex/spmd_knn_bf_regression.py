@@ -15,6 +15,7 @@
 #===============================================================================
 
 import numpy as np
+from sklearn.metrics import mean_squared_error
 from warnings import warn
 from mpi4py import MPI
 import dpctl
@@ -38,10 +39,6 @@ def generate_X_y(par, coef_seed, data_seed):
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
-
-if size < 2:
-    warn("This example was intentionally "
-         "designed to run in distributed mode only", RuntimeWarning)
 
 if dpctl.has_gpu_devices:
     q = dpctl.SyclQueue("gpu")
@@ -69,4 +66,5 @@ print("Brute Force Distributed kNN regression results:")
 print("Ground truth (first 5 observations on rank {}):\n{}".format(rank, y_test[:5]))
 print("Regression results (first 5 observations on rank {}):\n{}"
       .format(rank, y_predict[:5]))
-print("RMSE:", rank, np.sqrt(np.mean((y_test - y_predict) ** 2)))
+print("RMSE for entire rank {}: {}\n"
+      .format(rank, mean_squared_error(y_test, y_predict, squared=False)))

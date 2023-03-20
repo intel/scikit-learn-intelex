@@ -36,10 +36,6 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-if size < 2:
-    warn("This example was intentionally "
-         "designed to run in distributed mode only", RuntimeWarning)
-
 if dpctl.has_gpu_devices:
     q = dpctl.SyclQueue("gpu")
 else:
@@ -64,5 +60,5 @@ print("Brute Force Distributed kNN classification results:")
 print("Ground truth (first 5 observations on rank {}):\n{}".format(rank, y_test[:5]))
 print("Classification results (first 5 observations on rank {}):\n{}"
       .format(rank, y_predict[:5]))
-print("Accuracy for entire rank {} (256 classes): {}"
+print("Accuracy for entire rank {} (256 classes): {}\n"
       .format(rank, accuracy_score(y_test, y_predict)))
