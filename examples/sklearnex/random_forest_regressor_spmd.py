@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-# sklearnex RF example for distributed memory systems; SPMD mode
+# sklearnex RF example for distributed systems; SPMD mode
 # run like this:
 #    mpirun -n 4 python ./spmd_random_forest_regressor.py
 
@@ -25,19 +25,34 @@ import dpctl.tensor as dpt
 
 from mpi4py import MPI
 from sklearnex.spmd.ensemble import RandomForestRegressor
-from sklearn.datasets import make_regression
-from sklearn.model_selection import train_test_split
+
+from numpy.testing import assert_allclose
+
+
+def generate_X_y(par, coef_seed, data_seed):
+    ns, nf = par['ns'], par['nf']
+
+    crng = np.random.default_rng(coef_seed)
+    coef = crng.uniform(-10, 10, size=(nf,))
+
+    drng = np.random.default_rng(data_seed)
+    data = drng.uniform(-100, 100, size=(ns, nf))
+    resp = data @ coef
+
+    return data, resp, coef
 
 
 comm = MPI.COMM_WORLD
 mpi_size = comm.Get_size()
 mpi_rank = comm.Get_rank()
 
-X, y = make_regression(n_samples=100, n_features=4, n_informative=2,
-                       random_state=mpi_rank, shuffle=False)
+params_train = {'ns': 1000000, 'nf': 3}
+params_test = {'ns': 100, 'nf': 3}
 
-X_train, X_test, y_train, y_test = train_test_split(X, y,
-    test_size=0.2, random_state=mpi_rank)
+X_train, y_train, coef_train = generate_X_y(params_train, 10, mpi_rank)
+X_test, y_test, coef_test = generate_X_y(params_test, 10, mpi_rank + 99)
+
+assert_allclose(coef_train, coef_test)
 
 q = dpctl.SyclQueue("gpu") # GPU
 
@@ -46,7 +61,7 @@ q = dpctl.SyclQueue("gpu") # GPU
 # dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=q)
 # dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=q)
 
-rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X_train,y_train, queue=q)
+rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X_train, y_train, queue=q)
 
 result = rf.score(X_test, y_test, queue=q)
 
@@ -57,3 +72,10 @@ y_predict = rf.predict(X_test, queue=q)
 print(np.mean(np.equal(y_test, y_predict)))
 print(y_test[:5])
 print(y_predict[:5])
+
+y_predict = rf.predict(X_test, queue=q)
+
+print("Ground truth (first 5 observations on rank {}):\n{}".format(mpi_rank, y_test[:5]))
+print("Regression results (first 5 observations on rank {}):\n{}"
+      .format(mpi_rank, y_predict[:5]))
+print("RMSE:", mpi_rank, np.sqrt(np.mean((y_test - y_predict) ** 2)))
