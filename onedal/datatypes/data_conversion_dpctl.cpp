@@ -22,7 +22,6 @@
 #include <string>
 
 #include "oneapi/dal/table/homogen.hpp"
-#include "oneapi/dal/table/detail/csr.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
 #include "onedal/datatypes/data_conversion_dpctl.hpp"
