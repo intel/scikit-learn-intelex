@@ -16,13 +16,13 @@
 
 
 from ...common._spmd_policy import _get_spmd_policy
-from onedal.decomposition.pca import PCA as PCA_Batch
+from onedal.decomposition.pca import PCA as PCABatch
 
 
-class BasePcaSPMD:
+class BasePCASPMD:
     def _get_policy(self, queue, *data):
         return _get_spmd_policy(queue)
 
 
-class PCA(BasePcaSPMD, PCA_Batch):
+class PCA(BasePCASPMD, PCABatch):
     pass

@@ -17,13 +17,13 @@
 import numpy as np
 from mpi4py import MPI
 import dpctl
-from sklearnex.spmd.decomposition import PCA as PCASpmd
+from sklearnex.spmd.decomposition import PCA
 
 
 def get_data(data_seed):
     ns, nf = 15, 21
     drng = np.random.default_rng(data_seed)
-    X = drng.uniform(-7, 7, size=(ns, nf))
+    X = drng.random(size=(ns, nf))
     return X
 
 
@@ -32,9 +32,9 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-X_spmd = get_data(rank)
+X = get_data(rank)
 
-pcaspmd = PCASpmd(n_components=2).fit(X_spmd, q)
+pca = PCA(n_components=2).fit(X, q)
 
-print(f"Singular values on rank {rank}:\n", pcaspmd.singular_values_)
-print(f"Explained variance Ratio on rank {rank}:\n", pcaspmd.explained_variance_ratio_)
+print(f"Singular values on rank {rank}:\n", pca.singular_values_)
+print(f"Explained variance Ratio on rank {rank}:\n", pca.explained_variance_ratio_)
