@@ -20,7 +20,7 @@ from warnings import warn
 from mpi4py import MPI
 import dpctl
 from numpy.testing import assert_allclose
-from sklearnex.spmd.neighbors import KNeighborsRegressor as KnnRegSpmd
+from sklearnex.spmd.neighbors import KNeighborsRegressor
 
 
 def generate_X_y(par, coef_seed, data_seed):
@@ -43,7 +43,7 @@ size = comm.Get_size()
 if dpctl.has_gpu_devices:
     q = dpctl.SyclQueue("gpu")
 else:
-    raise RuntimeError("GPU devices unavailable.")
+    raise RuntimeError("GPU devices unavailable. Currently, SPMD execution mode is implemented only for this device type.")
 
 params_train = {'ns': 1000000, 'nf': 3}
 params_test = {'ns': 100, 'nf': 3}
@@ -53,11 +53,11 @@ X_test, y_test, coef_test = generate_X_y(params_test, 10, rank + 99)
 
 assert_allclose(coef_train, coef_test)
 
-model_spmd = KnnRegSpmd(algorithm='brute',
-                        n_neighbors=5,
-                        weights='uniform',
-                        p=2,
-                        metric='minkowski')
+model_spmd = KNeighborsRegressor(algorithm='brute',
+                                 n_neighbors=5,
+                                 weights='uniform',
+                                 p=2,
+                                 metric='minkowski')
 model_spmd.fit(X_train, y_train, queue=q)
 
 y_predict = model_spmd.predict(X_test, queue=q)
