@@ -23,7 +23,7 @@ cd $DAAL4PY_ROOT/.circleci
 touch ~/$OUT_FILE.out
 export DESELECTED_TESTS=$(python deselect_tests.py ../deselected_tests.yaml --absolute --reduced --public)
 echo "-m ${PACKAGE} -m pytest ${DESELECTED_TESTS} -q -ra --disable-warnings --pyargs sklearn"
-cd && ((python -m ${PACKAGE} -m pytest ${DESELECTED_TESTS} -ra --disable-warnings --pyargs sklearn | tee ~/${OUT_FILE}.out) || true)
+cd && ((python -m ${PACKAGE} -m pytest ${DESELECTED_TESTS} -ra --disable-warnings --verbose --log-cli-level=DEBUG --pyargs sklearn | tee ~/${OUT_FILE}.out) || true)
 # extract status strings
 export D4P=$(grep -E "=(\s\d*\w*,?)+ in .*\s=" ~/${OUT_FILE}.out)
 echo "Summary of patched run: " $D4P

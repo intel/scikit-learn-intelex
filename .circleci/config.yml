@@ -51,7 +51,7 @@ jobs:
             python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       - run:
           name: Testing sklearn patches with sklearnex
-          no_output_timeout: 40m
+          no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
@@ -89,7 +89,7 @@ jobs:
             CC=gcc-10 CXX=g++-10 python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Testing sklearn patches
-          no_output_timeout: 40m
+          no_output_timeout: 20m
           command: |
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
