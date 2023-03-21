@@ -40,6 +40,7 @@ jobs:
             conda activate bld
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
+            export SKLEARNEX_CMAKE_N_JOBS=1
             CC=gcc-10 CXX=g++-10 python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Building sklearnex
@@ -50,7 +51,7 @@ jobs:
             python setup_sklearnex.py install --single-version-externally-managed --record=record1.txt
       - run:
           name: Testing sklearn patches with sklearnex
-          no_output_timeout: 20m
+          no_output_timeout: 40m
           command: |
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
@@ -84,10 +85,11 @@ jobs:
             conda activate bld
             export DALROOT=$CONDA_PREFIX
             export NO_DIST=1
+            export SKLEARNEX_CMAKE_N_JOBS=1
             CC=gcc-10 CXX=g++-10 python setup.py install --single-version-externally-managed --record=record.txt
       - run:
           name: Testing sklearn patches
-          no_output_timeout: 20m
+          no_output_timeout: 40m
           command: |
             export PATH=~/miniconda/bin:$PATH
             . ~/miniconda/etc/profile.d/conda.sh
