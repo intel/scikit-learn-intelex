@@ -22,8 +22,7 @@ import numpy as np
 import subprocess
 from distutils import log
 from distutils.sysconfig import get_python_inc, get_config_var
-import multiprocessing
-from math import floor
+from multiprocessing import cpu_count
 
 IS_WIN = False
 IS_MAC = False
@@ -102,7 +101,8 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     os.chdir(d4p_dir)
 
 
-def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_dist=True):
+def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1,
+                            no_dist=True, n_jobs=cpu_count()):
     import pybind11
     try:
         import dpctl
@@ -190,22 +190,11 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
             "-DONEDAL_DIST_SPMD:BOOL=ON"
         ]
 
-    cpu_count = multiprocessing.cpu_count()
-    # limit parallel cmake jobs if memory size is insufficient
-    # TODO: add on all platforms
-    if IS_LIN:
-        with open('/proc/meminfo', 'r') as meminfo_file_obj:
-            memfree = meminfo_file_obj.read().split('\n')[1].split(' ')
-            while '' in memfree:
-                memfree.remove('')
-            memfree = int(memfree[1])  # total memory in kB
-        cpu_count = min(cpu_count, floor(max(1, memfree / 2 ** 20)))
-
     make_args = [
         "cmake",
         "--build",
         abs_build_temp_path,
-        "-j " + str(cpu_count)
+        "-j " + str(n_jobs)
     ]
 
     make_install_args = [

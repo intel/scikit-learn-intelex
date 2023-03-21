@@ -31,6 +31,7 @@ import numpy as np
 from scripts.version import get_onedal_version
 import scripts.build_backend as build_backend
 from scripts.package_helpers import get_packages_with_tests
+from multiprocessing import cpu_count
 
 try:
     from ctypes.utils import find_library
@@ -75,6 +76,9 @@ no_stream = 'NO_STREAM' in os.environ and os.environ['NO_STREAM'] in trues
 mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
+
+cmake_n_jobs = os.environ.get('SKLEARNEX_CMAKE_N_JOBS')
+cmake_n_jobs = int(cmake_n_jobs) if cmake_n_jobs is not None else cpu_count()
 
 try:
     import dpctl
@@ -348,12 +352,14 @@ class custom_build():
         if is_onedal_iface:
             cxx = os.getenv('CXX', 'cl' if IS_WIN else 'g++')
             build_backend.custom_build_cmake_clib(
-                'host', cxx, ONEDAL_MAJOR_BINARY_VERSION, no_dist=no_dist)
+                'host', cxx, ONEDAL_MAJOR_BINARY_VERSION,
+                no_dist=no_dist, n_jobs=cmake_n_jobs)
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib(
-                    'dpc', ONEDAL_MAJOR_BINARY_VERSION, no_dist=no_dist)
+                    'dpc', ONEDAL_MAJOR_BINARY_VERSION,
+                    no_dist=no_dist, n_jobs=cmake_n_jobs)
 
     def post_build(self):
         if IS_MAC:
