@@ -155,7 +155,7 @@ req_library['basic_statistics_spmd.py'] = ['dpctl', 'mpi4py']
 req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
 req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
 req_library['gbt_cls_model_create_from_catboost_batch.py'] = ['catboost']
-req_library['knn_bf_classification_spmd.py'] =  ['dpctl', 'mpi4py']
+req_library['knn_bf_classification_spmd.py'] = ['dpctl', 'mpi4py']
 req_library['knn_bf_regression_spmd.py'] = ['dpctl', 'mpi4py']
 req_library['linear_regression_spmd.py'] = ['dpctl', 'mpi4py']
 
