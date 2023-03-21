@@ -144,6 +144,8 @@ req_version['linear_regression_spmd.py'] = (2023, 'P', 1)
 req_device = defaultdict(lambda: [])
 req_device['basic_statistics_spmd.py'] = ["gpu"]
 req_device['linear_regression_spmd.py'] = ["gpu"]
+req_device['random_forest_classifier_spmd.py'] = ["gpu"]
+req_device['random_forest_regressor_spmd.py'] = ["gpu"]
 req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
 
 req_library = defaultdict(lambda: [])
@@ -152,6 +154,8 @@ req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
 req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
 req_library['gbt_cls_model_create_from_catboost_batch.py'] = ['catboost']
 req_library['linear_regression_spmd.py'] = ['dpctl', 'mpi4py']
+req_library['random_forest_classifier_spmd.py'] = ['dpctl', 'mpi4py']
+req_library['random_forest_regressor_spmd.py'] = ['dpctl', 'mpi4py']
 
 req_os = defaultdict(lambda: [])
 
