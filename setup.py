@@ -479,7 +479,6 @@ setup(
          'onedal.spmd.decomposition',
          'onedal.spmd.linear_model'
          ] if build_distribute else [])),
-
     package_data={
         'daal4py.oneapi': [
             'liboneapi_backend.so',
