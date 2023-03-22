@@ -18,10 +18,12 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
+from daal4py.sklearn._utils import daal_check_version
 from onedal.ensemble import RandomForestClassifier, RandomForestRegressor
 from onedal.tests.utils._device_selection import get_queues
 
 from sklearn.datasets import make_classification, make_regression
+from sklearn.model_selection import train_test_split
 
 
 @pytest.mark.parametrize('queue', get_queues())
@@ -42,3 +44,42 @@ def test_rf_regression(queue):
         max_depth=2, random_state=0).fit(X, y, queue=queue)
     assert_allclose(
         [-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+
+
+@pytest.mark.skipif(not daal_check_version((2023, 'P', 101)),
+                    reason='requires OneDAL 2023.1.1')
+def test_sklearnex_rf_classifier_splitter_mode():
+    X, y = make_classification(n_samples=100, n_features=4,
+                               n_informative=2, n_redundant=0,
+                               random_state=0, shuffle=False)
+    X_train, X_test, y_train, _ = train_test_split(X, y,
+                                                        test_size=0.33,
+                                                        random_state=0)
+    rf_b = RandomForestClassifier(max_depth=2,
+                                  random_state=0,
+                                  splitter_mode='best').fit(X_train, y_train)
+    rf_r = RandomForestClassifier(max_depth=2,
+                                  random_state=0,
+                                  splitter_mode='random').fit(X_train, y_train)
+    pred_b = rf_b.predict(X_test)
+    pred_r = rf_r.predict(X_test)
+    assert_allclose(pred_b, pred_r)
+
+
+@pytest.mark.skipif(not daal_check_version((2023, 'P', 101)),
+                    reason='requires OneDAL 2023.1.1')
+def test_sklearnex_rf_regressor_splitter_mode():
+    X, y = make_regression(n_samples=1000, n_features=4, n_informative=2,
+                           random_state=0, shuffle=False)
+    X_train, X_test, y_train, _ = train_test_split(X, y,
+                                                        test_size=0.33,
+                                                        random_state=42)
+    rf_b = RandomForestRegressor(max_depth=2,
+                                 random_state=0,
+                                 splitter_mode='best').fit(X_train, y_train)
+    rf_r = RandomForestRegressor(max_depth=2,
+                                 random_state=0,
+                                 splitter_mode='random').fit(X_train, y_train)
+    pred_b = rf_b.predict(X_test)
+    pred_r = rf_r.predict(X_test)
+    assert_allclose(pred_b, pred_r)

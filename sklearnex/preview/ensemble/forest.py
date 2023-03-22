@@ -212,7 +212,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 ccp_alpha=0.0,
                 max_samples=None,
                 max_bins=256,
-                min_bin_size=1):
+                min_bin_size=1,
+                splitter_mode='best'):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -237,6 +238,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
             # self._estimator = DecisionTreeClassifier()
     else:
         def __init__(self,
@@ -260,7 +262,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1):
+                     min_bin_size=1,
+                     splitter_mode='best'):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -288,6 +291,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
             # self._estimator = DecisionTreeClassifier()
 
     def fit(self, X, y, sample_weight=None):
@@ -681,6 +685,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'min_bin_size': self.min_bin_size,
             'max_samples': self.max_samples
         }
+        if daal_check_version((2023, 'P', 101)):
+            onedal_params['splitter_mode'] = self.splitter_mode
         self._cached_estimators_ = None
 
         # Compute
@@ -748,7 +754,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 ccp_alpha=0.0,
                 max_samples=None,
                 max_bins=256,
-                min_bin_size=1):
+                min_bin_size=1,
+                splitter_mode='best'):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -772,6 +779,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -793,7 +801,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1):
+                     min_bin_size=1,
+                     splitter_mode='best'):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -820,6 +829,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
 
     @property
     def _estimators_(self):
@@ -1010,6 +1020,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'variable_importance_mode': 'mdi',
             'max_samples': self.max_samples
         }
+        if daal_check_version((2023, 'P', 101)):
+            onedal_params['splitter_mode'] = self.splitter_mode
         self._cached_estimators_ = None
         self._onedal_estimator = onedal_RandomForestRegressor(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
