@@ -214,7 +214,7 @@ class PCA(sklearn_PCA):
             'method': "precomputed",
         }
         self._onedal_estimator = onedal_PCA(**onedal_params)
-        self._onedal_estimator.fit(X, y, queue=queue)
+        self._onedal_estimator.fit(X, queue=queue)
         self._save_attributes()
 
         U = None

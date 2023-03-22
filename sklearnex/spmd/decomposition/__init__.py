@@ -14,4 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['basic_statistics', 'decomposition', 'linear_model', 'neighbors']
+from .pca import PCA
+
+__all__ = ['PCA']

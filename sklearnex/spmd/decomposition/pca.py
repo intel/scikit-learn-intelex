@@ -14,4 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['basic_statistics', 'decomposition', 'linear_model', 'neighbors']
+from onedal.spmd.decomposition import PCA
+
+# TODO:
+# Currently it uses `onedal` module interface.
+# Add sklearnex dispatching.

@@ -148,6 +148,7 @@ req_device['basic_statistics_spmd.py'] = ["gpu"]
 req_device['knn_bf_classification_spmd.py'] = ["gpu"]
 req_device['knn_bf_regression_spmd.py'] = ["gpu"]
 req_device['linear_regression_spmd.py'] = ["gpu"]
+req_device['pca_spmd.py'] = ["gpu"]
 req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
 
 req_library = defaultdict(lambda: [])
@@ -158,6 +159,7 @@ req_library['gbt_cls_model_create_from_catboost_batch.py'] = ['catboost']
 req_library['knn_bf_classification_spmd.py'] = ['dpctl', 'mpi4py']
 req_library['knn_bf_regression_spmd.py'] = ['dpctl', 'mpi4py']
 req_library['linear_regression_spmd.py'] = ['dpctl', 'mpi4py']
+req_library['pca_spmd.py'] = ['dpctl', 'mpi4py']
 
 req_os = defaultdict(lambda: [])
 

@@ -476,6 +476,7 @@ setup(
          ) + (
         ['onedal.spmd',
          'onedal.spmd.basic_statistics',
+         'onedal.spmd.decomposition',
          'onedal.spmd.linear_model'
          ] + (['onedal.spmd.neighbors']
               if ONEDAL_VERSION >= 20230100 else [])
