@@ -80,6 +80,12 @@ class BaseRandomForest(ABC):
             self.oob_prediction_ = self._onedal_estimator.oob_prediction_
         return self
 
+    def onedal_classifier(self, **onedal_params):
+        return onedal_RandomForestClassifier(**onedal_params)
+
+    def onedal_regressor(self, **onedal_params):
+        return onedal_RandomForestRegressor(**onedal_params)
+
     # TODO:
     # move to onedal modul.
     def _check_parameters(self):
@@ -684,7 +690,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self._cached_estimators_ = None
 
         # Compute
-        self._onedal_estimator = onedal_RandomForestClassifier(**onedal_params)
+        self._onedal_estimator = self.onedal_classifier(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
@@ -1011,7 +1017,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'max_samples': self.max_samples
         }
         self._cached_estimators_ = None
-        self._onedal_estimator = onedal_RandomForestRegressor(**onedal_params)
+        self._onedal_estimator = self.onedal_regressor(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()

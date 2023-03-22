@@ -16,7 +16,7 @@
 
 # sklearnex RF example for distributed systems; SPMD mode
 # run like this:
-#    mpirun -n 4 python ./spmd_random_forest_regressor.py
+#    mpirun -n 4 python ./random_forest_regressor_spmd.py
 
 import numpy as np
 
@@ -56,26 +56,20 @@ assert_allclose(coef_train, coef_test)
 
 q = dpctl.SyclQueue("gpu") # GPU
 
-# TODO:
-# sklearnex level
-# dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=q)
-# dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=q)
+dpt_X_train = dpt.asarray(X_train, usm_type="device", sycl_queue=q)
+dpt_y_train = dpt.asarray(y_train, usm_type="device", sycl_queue=q)
+dpt_X_test = dpt.asarray(X_test, usm_type="device", sycl_queue=q)
+# dpt_y_test = dpt.asarray(y_test, usm_type="device", sycl_queue=q)
 
-rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X_train, y_train, queue=q)
+rf = RandomForestRegressor(max_depth=2, random_state=0).fit(dpt_X_train, dpt_y_train)
 
-result = rf.score(X_test, y_test, queue=q)
+# result = rf.score(X_test, y_test)
 
-print(f"Result on rank {mpi_rank}:\n", result)
+# print(f"Result on rank {mpi_rank}:\n", result)
 
-y_predict = rf.predict(X_test, queue=q)
-
-print(np.mean(np.equal(y_test, y_predict)))
-print(y_test[:5])
-print(y_predict[:5])
-
-y_predict = rf.predict(X_test, queue=q)
+y_predict = rf.predict(dpt_X_test)
 
 print("Ground truth (first 5 observations on rank {}):\n{}".format(mpi_rank, y_test[:5]))
 print("Regression results (first 5 observations on rank {}):\n{}"
-      .format(mpi_rank, y_predict[:5]))
-print("RMSE:", mpi_rank, np.sqrt(np.mean((y_test - y_predict) ** 2)))
+      .format(mpi_rank, dpt.to_numpy(y_predict)[:5]))
+print("RMSE:", mpi_rank, np.sqrt(np.mean((y_test - dpt.to_numpy(y_predict)) ** 2)))
