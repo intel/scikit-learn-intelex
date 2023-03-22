@@ -51,9 +51,9 @@ def test_sklearnex_rf_classifier_splitter_mode():
     X, y = make_classification(n_samples=100, n_features=4,
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
-    X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                        test_size=0.33,
-                                                        random_state=0)
+    X_train, X_test, y_train, _ = train_test_split(X, y,
+                                                   test_size=0.33,
+                                                   random_state=0)
     rf_b = RandomForestClassifier(max_depth=2,
                                   random_state=0,
                                   splitter_mode='best').fit(X_train, y_train)
@@ -71,9 +71,9 @@ def test_sklearnex_rf_regressor_splitter_mode():
     from sklearnex.preview.ensemble import RandomForestRegressor
     X, y = make_regression(n_samples=1000, n_features=4, n_informative=2,
                            random_state=0, shuffle=False)
-    X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                        test_size=0.33,
-                                                        random_state=0)
+    X_train, X_test, y_train, _ = train_test_split(X, y,
+                                                   test_size=0.33,
+                                                   random_state=0)
     rf_b = RandomForestRegressor(max_depth=2,
                                  random_state=0,
                                  splitter_mode='best').fit(X_train, y_train)
