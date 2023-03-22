@@ -39,8 +39,8 @@ size = comm.Get_size()
 if dpctl.has_gpu_devices:
     q = dpctl.SyclQueue("gpu")
 else:
-    raise RuntimeError("""GPU devices unavailable. Currently,
-           SPMD execution mode is implemented only for this device type.""")
+    raise RuntimeError('GPU devices unavailable. Currently, '
+          'SPMD execution mode is implemented only for this device type.')
 
 params_train = {'ns': 100000, 'nf': 8}
 params_test = {'ns': 100, 'nf': 8}

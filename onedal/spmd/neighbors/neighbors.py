@@ -31,6 +31,13 @@ class KNeighborsClassifier(NeighborsCommonBaseSPMD, KNeighborsClassifier_Batch):
 
 
 class KNeighborsRegressor(NeighborsCommonBaseSPMD, KNeighborsRegressor_Batch):
+    def fit(self, X, y, queue=None):
+        if queue is not None and queue.sycl_device.is_gpu:
+            return super()._fit(X, y, queue=queue)
+        else:
+            raise ValueError('SPMD version of kNN is not implemented for '
+                  'CPU. Consider running on it on GPU.')
+
     def predict(self, X, queue=None):
         return self._predict_gpu(X, queue=queue)
 
