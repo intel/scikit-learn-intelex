@@ -578,7 +578,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return False
             elif sp.issparse(sample_weight):
                 return False
-            elif not sample_weight:  # `sample_weight` is not supported.
+            elif sample_weight:  # `sample_weight` is not supported.
                 return False
             elif not self.ccp_alpha == 0.0:
                 return False
@@ -958,7 +958,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif sp.issparse(y):
                 return False
-            elif not sample_weight:  # `sample_weight` is not supported.
+            elif sample_weight:  # `sample_weight` is not supported.
                 return False
             elif not self.ccp_alpha == 0.0:
                 return False
