@@ -26,10 +26,10 @@ from ...preview.ensemble.forest import RandomForestRegressor as \
 
 
 class BaseForestSPMD(ABC):
-    def onedal_classifier(self, **onedal_params):
+    def _onedal_classifier(self, **onedal_params):
         return onedal_RandomForestClassifier(**onedal_params)
 
-    def onedal_regressor(self, **onedal_params):
+    def _onedal_regressor(self, **onedal_params):
         return onedal_RandomForestRegressor(**onedal_params)
 
 
@@ -75,7 +75,3 @@ class RandomForestRegressor(BaseForestSPMD, RandomForestRegressor_Batch):
                 f'Method {method_name} in {self.__class__.__name__} '
                 'is not supported with given inputs.')
         return ready
-
-    # TODO:
-    # simplify checks for `_onedal_gpu_supported` and
-    # `_onedal_cpu_supported`.

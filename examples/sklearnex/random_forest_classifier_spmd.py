@@ -27,8 +27,6 @@ from mpi4py import MPI
 
 from sklearnex.spmd.ensemble import RandomForestClassifier
 
-from sklearn.metrics import accuracy_score
-
 
 def generate_X_y(par, seed):
     ns, nf = par['ns'], par['nf']
@@ -40,7 +38,7 @@ def generate_X_y(par, seed):
     return data, resp
 
 
-params_train = {'ns': 1000000, 'nf': 8}
+params_train = {'ns': 10000, 'nf': 8}
 params_test = {'ns': 100, 'nf': 8}
 
 comm = MPI.COMM_WORLD
@@ -65,5 +63,3 @@ print("Random Forest classification results:")
 print("Ground truth (first 5 observations on rank {}):\n{}".format(mpi_rank, y_test[:5]))
 print("Classification results (first 5 observations on rank {}):\n{}"
       .format(mpi_rank, dpt.to_numpy(pred)[:5]))
-print("Accuracy for entire rank {} (256 classes): {}"
-      .format(mpi_rank, accuracy_score(y_test, dpt.to_numpy(pred))))
