@@ -896,7 +896,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             # [:, np.newaxis] that does not.
             y = np.reshape(y, (-1, 1))
         self.n_outputs_ = y.shape[1]
-        ready =  self.n_outputs_ == 1
+        ready = self.n_outputs_ == 1
         return ready, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
@@ -1077,11 +1077,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         self : object
         """
         if not self.bootstrap and self.max_samples is not None:
-              raise ValueError(
-                  "`max_sample` cannot be set if `bootstrap=False`. "
-                  "Either switch to `bootstrap=True` or set "
-                  "`max_sample=None`."
-              )
+            raise ValueError(
+                "`max_sample` cannot be set if `bootstrap=False`. "
+                "Either switch to `bootstrap=True` or set "
+                "`max_sample=None`."
+            )
         dispatch(self, 'ensemble.RandomForestRegressor.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_RandomForestRegressor.fit,

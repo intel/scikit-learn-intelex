@@ -19,8 +19,10 @@ from abc import ABC
 from onedal.spmd.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.spmd.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 
-from ...preview.ensemble.forest import RandomForestClassifier as RandomForestClassifier_Batch
-from ...preview.ensemble.forest import RandomForestRegressor as RandomForestRegressor_Batch
+from ...preview.ensemble.forest import RandomForestClassifier as \
+    RandomForestClassifier_Batch
+from ...preview.ensemble.forest import RandomForestRegressor as \
+    RandomForestRegressor_Batch
 
 
 class BaseForestSPMD(ABC):
@@ -33,6 +35,7 @@ class BaseForestSPMD(ABC):
 
 class RandomForestClassifier(BaseForestSPMD, RandomForestClassifier_Batch):
     __doc__ = RandomForestClassifier_Batch.__doc__
+
     # TODO:
     # update cpu/gpu support. Add error raise if not supported.
     def _onedal_cpu_supported(self, method_name, *data):
@@ -55,8 +58,10 @@ class RandomForestClassifier(BaseForestSPMD, RandomForestClassifier_Batch):
                 f'Method {method_name} in {self.__class__.__name__}')
         return ready
 
+
 class RandomForestRegressor(BaseForestSPMD, RandomForestRegressor_Batch):
     __doc__ = RandomForestRegressor_Batch.__doc__
+
     # TODO:
     # update cpu/gpu support. Add error raise if not supported.
     def _onedal_cpu_supported(self, method_name, *data):

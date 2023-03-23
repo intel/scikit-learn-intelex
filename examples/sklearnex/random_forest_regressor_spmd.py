@@ -54,7 +54,7 @@ X_test, y_test, coef_test = generate_X_y(params_test, 10, mpi_rank + 99)
 
 assert_allclose(coef_train, coef_test)
 
-q = dpctl.SyclQueue("gpu") # GPU
+q = dpctl.SyclQueue("gpu")  # GPU
 
 dpt_X_train = dpt.asarray(X_train, usm_type="device", sycl_queue=q)
 dpt_y_train = dpt.asarray(y_train, usm_type="device", sycl_queue=q)
@@ -62,10 +62,6 @@ dpt_X_test = dpt.asarray(X_test, usm_type="device", sycl_queue=q)
 # dpt_y_test = dpt.asarray(y_test, usm_type="device", sycl_queue=q)
 
 rf = RandomForestRegressor(max_depth=2, random_state=0).fit(dpt_X_train, dpt_y_train)
-
-# result = rf.score(X_test, y_test)
-
-# print(f"Result on rank {mpi_rank}:\n", result)
 
 y_predict = rf.predict(dpt_X_test)
 
