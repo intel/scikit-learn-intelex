@@ -974,7 +974,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                            'ensemble.RandomForestRegressor.predict_proba']:
             if not hasattr(self, '_onedal_model'):
                 return False
-            elif sp.issparse(X):
+            elif sp.issparse(data[0]):
                 return False
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
                 return False
@@ -1050,7 +1050,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         X = self._validate_X_predict(X)
         return self._onedal_estimator.predict(X, queue=queue)
 
-    @wrap_output_data
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).

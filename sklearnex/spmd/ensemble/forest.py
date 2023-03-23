@@ -71,8 +71,6 @@ class RandomForestRegressor(BaseForestSPMD, RandomForestRegressor_Batch):
         return ready
 
     def _onedal_gpu_supported(self, method_name, *data):
-        # FIXME:
-        # bug when wrapping usm_ndarray.
         ready = super()._onedal_gpu_supported(method_name, *data)
         if not ready:
             # TODO:
