@@ -710,6 +710,8 @@ class NearestNeighbors(NeighborsBase):
             model = self._onedal_model
         else:
             model = self._create_model(_backend.neighbors.search)
+
+        params['fptype'] = 'float' if X.dtype == np.float32 else 'double'
         result = _backend.neighbors.search.infer(policy, params, model, to_table(X))
 
         return result
