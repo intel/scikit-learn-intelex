@@ -47,7 +47,6 @@ def test_rf_classifier(queue):
                     reason="requires dpctl")
 @pytest.mark.parametrize('queue', get_queues())
 def test_rf_classifier_dpctl(queue):
-    queue = dpctl.SyclQueue('gpu')
     X, y = make_classification(n_samples=100, n_features=4,
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
@@ -65,7 +64,6 @@ def test_rf_classifier_dpctl(queue):
                     reason="requires dpctl")
 @pytest.mark.parametrize('queue', get_queues())
 def test_rf_classifier_dpctl_w_explicit_queue(queue):
-    queue = dpctl.SyclQueue('gpu')
     X, y = make_classification(n_samples=100, n_features=4,
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
