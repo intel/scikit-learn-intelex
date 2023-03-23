@@ -27,6 +27,7 @@ from mpi4py import MPI
 from sklearnex.spmd.ensemble import RandomForestRegressor
 
 from numpy.testing import assert_allclose
+from sklearn.metrics import mean_squared_error
 
 
 def generate_X_y(par, coef_seed, data_seed):
@@ -46,7 +47,7 @@ comm = MPI.COMM_WORLD
 mpi_size = comm.Get_size()
 mpi_rank = comm.Get_rank()
 
-params_train = {'ns': 100000, 'nf': 3}
+params_train = {'ns': 1000000, 'nf': 3}
 params_test = {'ns': 100, 'nf': 3}
 
 X_train, y_train, coef_train = generate_X_y(params_train, 10, mpi_rank)
@@ -68,4 +69,5 @@ y_predict = rf.predict(dpt_X_test)
 print("Ground truth (first 5 observations on rank {}):\n{}".format(mpi_rank, y_test[:5]))
 print("Regression results (first 5 observations on rank {}):\n{}"
       .format(mpi_rank, dpt.to_numpy(y_predict)[:5]))
-print("RMSE:", mpi_rank, np.sqrt(np.mean((y_test - dpt.to_numpy(y_predict)) ** 2)))
+print("RMSE:", mpi_rank, mean_squared_error(y_test, dpt.to_numpy(y_predict),
+                                            squared=False))

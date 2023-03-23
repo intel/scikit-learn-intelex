@@ -40,7 +40,7 @@ def generate_X_y(par, seed):
     return data, resp
 
 
-params_train = {'ns': 100000, 'nf': 8}
+params_train = {'ns': 1000000, 'nf': 8}
 params_test = {'ns': 100, 'nf': 8}
 
 comm = MPI.COMM_WORLD
@@ -57,12 +57,10 @@ dpt_y_train = dpt.asarray(y_train, usm_type="device", sycl_queue=q)
 dpt_X_test = dpt.asarray(X_test, usm_type="device", sycl_queue=q)
 dpt_y_test = dpt.asarray(y_test, usm_type="device", sycl_queue=q)
 
-
 rf = RandomForestClassifier(max_depth=2, random_state=0).fit(dpt_X_train, dpt_y_train)
 
 pred = rf.predict(dpt_X_test)
 
-print(accuracy_score(dpt.to_numpy(pred), dpt.to_numpy(dpt_y_test)))
 print("Random Forest classification results:")
 print("Ground truth (first 5 observations on rank {}):\n{}".format(mpi_rank, y_test[:5]))
 print("Classification results (first 5 observations on rank {}):\n{}"
