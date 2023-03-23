@@ -883,10 +883,28 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
 
         return estimators_
 
+    def _onedal_ready(self, X, y, sample_weight):
+        # TODO:
+        # move some common checks for both devices here.
+
+        # We have to get `n_outputs_` before dispatching
+        # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
+        y = np.asarray(y)
+
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
+        self.n_outputs_ = y.shape[1]
+        ready =  self.n_outputs_ == 1
+        return ready, X, y, sample_weight
+
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
-            X, y, sample_weight = data
-            if not (self.oob_score and daal_check_version(
+            ready, X, y, sample_weight = self._onedal_ready(*data)
+            if not ready:
+                return False
+            elif not (self.oob_score and daal_check_version(
                     (2021, 'P', 500)) or not self.oob_score):
                 return False
             elif self.criterion not in ["mse", "squared_error"]:
@@ -927,9 +945,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        X, y, sample_weight = data
         if method_name == 'ensemble.RandomForestRegressor.fit':
-            if not (self.oob_score and daal_check_version(
+            ready, X, y, sample_weight = self._onedal_ready(*data)
+            if not ready:
+                return False
+            elif not (self.oob_score and daal_check_version(
                     (2021, 'P', 500)) or not self.oob_score):
                 return False
             elif self.criterion not in ["mse", "squared_error"]:
@@ -945,8 +965,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             elif self.warm_start:
                 return False
             elif self.oob_score:
-                return False
-            elif not self.n_outputs_ == 1:
                 return False
             elif hasattr(self, 'estimators_'):
                 return False
@@ -1060,21 +1078,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         self : object
         """
         if not self.bootstrap and self.max_samples is not None:
-            raise ValueError(
-                "`max_sample` cannot be set if `bootstrap=False`. "
-                "Either switch to `bootstrap=True` or set "
-                "`max_sample=None`."
-            )
-        # We have to get `n_outputs_` before dispatching
-        # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
-        y = np.asarray(y)
-
-        if y.ndim == 1:
-            # reshape is necessary to preserve the data contiguity against vs
-            # [:, np.newaxis] that does not.
-            y = np.reshape(y, (-1, 1))
-        self.n_outputs_ = y.shape[1]
-
+              raise ValueError(
+                  "`max_sample` cannot be set if `bootstrap=False`. "
+                  "Either switch to `bootstrap=True` or set "
+                  "`max_sample=None`."
+              )
         dispatch(self, 'ensemble.RandomForestRegressor.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_RandomForestRegressor.fit,

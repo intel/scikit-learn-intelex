@@ -32,22 +32,39 @@ class BaseForestSPMD(ABC):
 
 
 class RandomForestClassifier(BaseForestSPMD, RandomForestClassifier_Batch):
-
+    __doc__ = RandomForestClassifier_Batch.__doc__
     # TODO:
     # update cpu/gpu support. Add error raise if not supported.
     def _onedal_cpu_supported(self, method_name, *data):
-        return True
+        ready = super()._onedal_cpu_supported(method_name, *data)
+        if not ready:
+            raise RuntimeError(
+                f'Method {method_name} in {self.__class__.__name__}')
+
 
     def _onedal_gpu_supported(self, method_name, *data):
-        return True
+        ready = super()._onedal_gpu_supported(method_name, *data)
+        if not ready:
+            raise RuntimeError(
+                f'Method {method_name} in {self.__class__.__name__}')
 
 
 class RandomForestRegressor(BaseForestSPMD, RandomForestRegressor_Batch):
-
+    __doc__ = RandomForestRegressor_Batch.__doc__
     # TODO:
     # update cpu/gpu support. Add error raise if not supported.
     def _onedal_cpu_supported(self, method_name, *data):
-        return True
+        ready = super()._onedal_cpu_supported(method_name, *data)
+        if not ready:
+            raise RuntimeError(
+                f'Method {method_name} in {self.__class__.__name__}')
+
 
     def _onedal_gpu_supported(self, method_name, *data):
-        return True
+        ready = super()._onedal_gpu_supported(method_name, *data)
+        if not ready:
+            raise RuntimeError(
+                f'Method {method_name} in {self.__class__.__name__}')
+    # TODO:
+    # simplify checks for `_onedal_gpu_supported` and
+    # `_onedal_cpu_supported`.
