@@ -478,11 +478,12 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         #    self.n_classes_ = self.classes_
         return y
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(X, y, sample_weight,
                          _backend.decision_forest.classification, queue)
 
+    @support_usm_ndarray()
     def predict(self, X, queue=None):
         pred = super()._predict(X, _backend.decision_forest.classification, queue)
 
@@ -492,6 +493,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
                 np.int64,
                 casting='unsafe'))
 
+    @support_usm_ndarray()
     def predict_proba(self, X, queue=None):
         return super()._predict_proba(X, _backend.decision_forest.classification, queue)
 
@@ -550,6 +552,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
             algorithm=algorithm)
         self.is_classification = False
 
+    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None, queue=None):
         if sample_weight is not None:
             if hasattr(sample_weight, '__array__'):
@@ -558,5 +561,6 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         return super()._fit(X, y, sample_weight,
                             _backend.decision_forest.regression, queue)
 
+    @support_usm_ndarray()
     def predict(self, X, queue=None):
         return super()._predict(X, _backend.decision_forest.regression, queue).ravel()

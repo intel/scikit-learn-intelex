@@ -42,12 +42,12 @@ def test_rf_classifier(queue):
         max_depth=2, random_state=0).fit(X, y, queue=queue)
     assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
 
-# TODO:
-# when dpctl available
+
 @pytest.mark.skipif(not dpctl_available,
                     reason="requires dpctl")
-@pytest.mark.parametrize('queue', get_queues("gpu"))
+@pytest.mark.parametrize('queue', get_queues())
 def test_rf_classifier_dpctl(queue):
+    queue = dpctl.SyclQueue('gpu')
     X, y = make_classification(n_samples=100, n_features=4,
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
@@ -55,10 +55,28 @@ def test_rf_classifier_dpctl(queue):
     dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=queue)
     rf = RandomForestClassifier(
         max_depth=2, random_state=0).fit(dpt_X, dpt_y)
-    # TODO:
-    # assert_allclose for dpctl tensor
-    # or copy to host for the check.
-    assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=q))
+    dpt_X_test = dpt.asarray([[0, 0, 0, 0]], usm_type="device", sycl_queue=queue)
+    # For assert_allclose check
+    # copy dpctl tensor data to host.
+    assert_allclose([1], dpt.to_numpy(rf.predict(dpt_X_test)))
+
+
+@pytest.mark.skipif(not dpctl_available,
+                    reason="requires dpctl")
+@pytest.mark.parametrize('queue', get_queues())
+def test_rf_classifier_dpctl_w_explicit_queue(queue):
+    queue = dpctl.SyclQueue('gpu')
+    X, y = make_classification(n_samples=100, n_features=4,
+                               n_informative=2, n_redundant=0,
+                               random_state=0, shuffle=False)
+    dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=queue)
+    dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=queue)
+    rf = RandomForestClassifier(
+        max_depth=2, random_state=0).fit(dpt_X, dpt_y, queue=queue)
+    dpt_X_test = dpt.asarray([[0, 0, 0, 0]], usm_type="device", sycl_queue=queue)
+    # For assert_allclose check
+    # copy dpctl tensor data to host.
+    assert_allclose([1], dpt.to_numpy(rf.predict(dpt_X_test, queue=queue)))
 
 
 @pytest.mark.parametrize('queue', get_queues())
