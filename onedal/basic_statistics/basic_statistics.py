@@ -27,6 +27,7 @@ from ..datatypes._data_conversion import (
     to_table,
     _convert_to_supported,
     _convert_to_dataframe)
+from .._device_offload import support_usm_ndarray
 from onedal import _backend
 
 
@@ -95,5 +96,6 @@ class BasicStatistics(BaseBasicStatistics):
             **kwargs):
         super().__init__(result_options, algorithm)
 
+    @support_usm_ndarray()
     def compute(self, data, weights=None, queue=None):
         return super()._compute(data, weights, _backend.basic_statistics.compute, queue)

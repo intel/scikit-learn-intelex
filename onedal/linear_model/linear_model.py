@@ -33,6 +33,7 @@ from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted
 from ..datatypes._data_conversion import from_table, to_table
+from .._device_offload import support_usm_ndarray
 from onedal import _backend
 
 
@@ -197,9 +198,11 @@ class LinearRegression(RegressorMixin, BaseLinearRegression):
             **kwargs):
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
 
+    @support_usm_ndarray()
     def fit(self, X, y, queue=None):
         return super()._fit(X, y, _backend.linear_model.regression, queue)
 
+    @support_usm_ndarray()
     def predict(self, X, queue=None):
         y = super()._predict(X, _backend.linear_model.regression, queue)
         return y

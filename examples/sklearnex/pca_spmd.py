@@ -17,6 +17,7 @@
 import numpy as np
 from mpi4py import MPI
 import dpctl
+import dpctl.tensor as dpt
 from sklearnex.spmd.decomposition import PCA
 
 
@@ -33,8 +34,9 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 
 X = get_data(rank)
+dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=q)
 
-pca = PCA(n_components=2).fit(X, q)
+pca = PCA(n_components=2).fit(dpt_X)
 
 print(f"Singular values on rank {rank}:\n", pca.singular_values_)
 print(f"Explained variance Ratio on rank {rank}:\n", pca.explained_variance_ratio_)

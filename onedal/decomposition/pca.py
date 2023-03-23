@@ -20,6 +20,7 @@ from onedal import _backend
 from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
 from ..datatypes import _convert_to_supported
+from .._device_offload import support_usm_ndarray
 from daal4py.sklearn._utils import sklearn_check_version
 
 
@@ -47,6 +48,7 @@ class PCA():
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
 
+    @support_usm_ndarray()
     def fit(self, X, queue):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -106,6 +108,7 @@ class PCA():
         self._onedal_model = m
         return m
 
+    @support_usm_ndarray()
     def predict(self, X, queue):
         policy = self._get_policy(queue, X)
         model = self._create_model()
