@@ -14,4 +14,15 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['basic_statistics', 'decomposition', 'ensemble', 'linear_model']
+
+from ...common._spmd_policy import _get_spmd_policy
+from onedal.decomposition.pca import PCA as PCABatch
+
+
+class BasePCASPMD:
+    def _get_policy(self, queue, *data):
+        return _get_spmd_policy(queue)
+
+
+class PCA(BasePCASPMD, PCABatch):
+    pass

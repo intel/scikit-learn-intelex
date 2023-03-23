@@ -433,6 +433,7 @@ if ONEDAL_VERSION >= 20230100:
 if build_distribute:
     packages_with_tests += [
         'onedal.spmd',
+        'onedal.spmd.decomposition',
         'onedal.spmd.ensemble']
     if ONEDAL_VERSION >= 20230100:
         packages_with_tests += [
