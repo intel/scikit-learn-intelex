@@ -479,7 +479,6 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
         return result
 
-    @support_usm_ndarray()
     def predict_proba(self, X, queue=None):
         neigh_dist, neigh_ind = self.kneighbors(X, queue=queue)
 
@@ -590,7 +589,6 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
         return result
 
-    @support_usm_ndarray()
     def fit(self, X, y, queue=None):
         return super()._fit(X, y, queue=queue)
 
@@ -648,7 +646,6 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
         return y_pred
 
-    @support_usm_ndarray()
     def predict(self, X, queue=None):
         gpu_device = queue is not None and queue.sycl_device.is_gpu
         is_uniform_weights = getattr(self, 'weights', 'uniform') == 'uniform'
