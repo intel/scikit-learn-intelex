@@ -14,4 +14,4 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['basic_statistics', 'decomposition', 'ensemble', 'linear_model']
+__all__ = ['basic_statistics', 'decomposition', 'ensemble', 'linear_model', 'neighbors']

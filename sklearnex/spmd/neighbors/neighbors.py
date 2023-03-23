@@ -14,4 +14,12 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['basic_statistics', 'decomposition', 'ensemble', 'linear_model', 'neighbors']
+from onedal.spmd.neighbors import (
+    KNeighborsClassifier,
+    KNeighborsRegressor,
+    NearestNeighbors
+)
+
+# TODO:
+# Currently it uses `onedal` module interface.
+# Add sklearnex dispatching.
