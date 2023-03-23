@@ -557,7 +557,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         params = self._get_onedal_params(X, y)
         train_alg_regr = _backend.neighbors.regression.train
         train_alg_srch = _backend.neighbors.search.train
-        
+
         if gpu_device:
             return train_alg_regr(policy, params, *to_table(X, y)).model
         return train_alg_srch(policy, params, to_table(X)).model
