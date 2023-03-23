@@ -210,7 +210,6 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             'fptype': 'float' if data.dtype == np.float32 else 'double',
             'method': self.algorithm,
             'infer_mode': self.infer_mode,
-            'splitter_mode': self.splitter_mode,
             'voting_mode': self.voting_mode,
             'observations_per_tree_fraction': observations_per_tree_fraction,
             'impurity_threshold': float(
@@ -233,6 +232,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         if self.is_classification:
             onedal_params['class_count'] = 0 if self.classes_ is None else len(
                 self.classes_)
+        if daal_check_version((2023, 'P', 101)):
+            onedal_params['splitter_mode'] = self.splitter_mode
         return onedal_params
 
     def _check_parameters(self):
