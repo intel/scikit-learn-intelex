@@ -46,7 +46,7 @@ comm = MPI.COMM_WORLD
 mpi_size = comm.Get_size()
 mpi_rank = comm.Get_rank()
 
-params_train = {'ns': 1000000, 'nf': 3}
+params_train = {'ns': 100000, 'nf': 3}
 params_test = {'ns': 100, 'nf': 3}
 
 X_train, y_train, coef_train = generate_X_y(params_train, 10, mpi_rank)

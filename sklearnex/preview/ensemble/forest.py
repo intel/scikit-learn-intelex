@@ -578,7 +578,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return False
             elif sp.issparse(sample_weight):
                 return False
-            elif sample_weight:  # `sample_weight` is not supported.
+            elif sample_weight is not None:  # `sample_weight` is not supported.
                 return False
             elif not self.ccp_alpha == 0.0:
                 return False
@@ -958,7 +958,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif sp.issparse(y):
                 return False
-            elif sample_weight:  # `sample_weight` is not supported.
+            elif sample_weight is not None:  # `sample_weight` is not supported.
                 return False
             elif not self.ccp_alpha == 0.0:
                 return False
@@ -972,9 +972,10 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return True
         if method_name in ['ensemble.RandomForestRegressor.predict',
                            'ensemble.RandomForestRegressor.predict_proba']:
+            X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
-            elif sp.issparse(data[0]):
+            elif sp.issparse(X):
                 return False
             elif not (hasattr(self, 'n_outputs_') and self.n_outputs_ == 1):
                 return False
