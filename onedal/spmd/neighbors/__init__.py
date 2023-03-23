@@ -14,4 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['basic_statistics', 'decomposition', 'linear_model', 'neighbors']
+from .neighbors import KNeighborsClassifier, KNeighborsRegressor, NearestNeighbors
+
+__all__ = ['KNeighborsClassifier', 'KNeighborsRegressor', 'NearestNeighbors']
