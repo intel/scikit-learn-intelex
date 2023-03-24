@@ -21,7 +21,7 @@ from sys import exit, stderr
 
 if sklearn_check_version('1.3') or python_version[1] > 11:
     print('Scipy version is not specified for this sklearn/python version.', file=stderr)
-    exit(1)
+    print('scipy')
 elif sklearn_check_version('1.2') or python_version[1] > 10:
     print('scipy==1.9.*')
 elif sklearn_check_version('1.1'):

@@ -77,6 +77,9 @@ jobs:
       Python3.11_Sklearn1.2:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.2'
+      Python3.11_SklearnMain:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
@@ -100,6 +103,11 @@ jobs:
       pip list
     displayName: 'Install develop requirements'
   - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate CB
+      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
+    displayName: 'Setup sklearn version'
+  - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -116,8 +124,6 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
       pip install $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
@@ -133,11 +139,13 @@ jobs:
       conda activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
+    continueOnError: eq(variables['SKLEARN_VERSION'], 'main')
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       bash .ci/scripts/run_sklearn_tests.sh cpu
     displayName: 'Sklearn testing [device=cpu]'
+    continueOnError: eq(variables['SKLEARN_VERSION'], 'main')
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -162,6 +170,9 @@ jobs:
       Python3.11_Sklearn1.2:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.2'
+      Python3.11_SklearnMain:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'macos-12'
   steps:
@@ -184,14 +195,16 @@ jobs:
     displayName: 'Install develop requirements'
   - script: |
       source activate CB
+      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
+    displayName: 'Setup sklearn version'
+  - script: |
+      source activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: Conda build
   - script: |
       source activate CB
-      sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
       pip install $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
@@ -205,6 +218,7 @@ jobs:
       source activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
+    continueOnError: eq(variables['SKLEARN_VERSION'], 'main')
   - script: |
       source activate CB
       cd ..
@@ -228,6 +242,9 @@ jobs:
       Python3.11_Sklearn1.2:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.2'
+      Python3.11_SklearnMain:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'windows-latest'
   steps:
@@ -241,7 +258,11 @@ jobs:
       pip install cpufeature
       pip install -r requirements-dev.txt
       pip list
-    displayName: 'Install requirements'
+    displayName: 'Install develop requirements'
+  - script: |
+      call activate CB
+      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
+    displayName: 'Setup sklearn version'
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB
@@ -259,8 +280,6 @@ jobs:
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB
-      sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
       pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
       cd ..
       for /f "delims=" %%c in ('python s\.ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
@@ -276,6 +295,7 @@ jobs:
       call activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
+    continueOnError: eq(variables['SKLEARN_VERSION'], 'main')
   - script: |
       call activate CB
       cd ..
