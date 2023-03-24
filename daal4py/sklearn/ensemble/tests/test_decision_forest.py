@@ -33,7 +33,7 @@ from daal4py.sklearn._utils import daal_check_version
 
 ACCURACY_RATIO = 0.95 if daal_check_version((2021, 'P', 400)) else 0.85
 MSE_RATIO = 1.07
-if daal_check_version((2023, 'P', 100)):
+if daal_check_version((2023, 'P', 101)):
     LOG_LOSS_RATIO = 1.5
 elif daal_check_version((2021, 'P', 400)):
     LOG_LOSS_RATIO = 1.4
