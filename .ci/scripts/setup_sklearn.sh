@@ -34,8 +34,6 @@ if [ "$sklearn_version" == "main" ]; then
 	cd scikit-learn
 	git log -n 1
 	python setup.py install --single-version-externally-managed --record=record.txt
-	cd ..
-	rm -rf scikit-learn
 else
 	sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==${sklearn_version}.*/" requirements-test.txt
     sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn==${sklearn_version}.*/" requirements-test.txt
