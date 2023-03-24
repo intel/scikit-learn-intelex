@@ -18,6 +18,7 @@ import numpy as np
 from mpi4py import MPI
 
 from dpctl import SyclQueue
+import dpctl.tensor as dpt
 from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatisticsSpmd
 
 
@@ -51,11 +52,14 @@ params_spmd = {'ns': 19, 'nf': 31}
 data, weights = generate_data(params_spmd, size)
 weighted_data = np.diag(weights) @ data
 
+dpt_data = dpt.asarray(data, usm_type="device", sycl_queue=q)
+dpt_weights = dpt.asarray(weights, usm_type="device", sycl_queue=q)
+
 gtr_mean = np.mean(weighted_data, axis=0)
 gtr_std = np.std(weighted_data, axis=0)
 
 bss = BasicStatisticsSpmd(["mean", "standard_deviation"])
-res = bss.compute(data, weights, queue=q)
+res = bss.compute(dpt_data, dpt_weights)
 
 print(f"Computed mean on rank {rank}:\n", res["mean"])
 print(f"Computed std on rank {rank}:\n", res["standard_deviation"])

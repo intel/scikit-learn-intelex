@@ -16,6 +16,7 @@
 
 from abc import ABC
 from ...common._spmd_policy import _get_spmd_policy
+from ..._device_offload import support_usm_ndarray
 from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
 
 
@@ -25,4 +26,7 @@ class BaseBasicStatisticsSPMD(ABC):
 
 
 class BasicStatistics(BaseBasicStatisticsSPMD, BasicStatistics_Batch):
-    pass
+
+    @support_usm_ndarray()
+    def compute(self, data, weights=None, queue=None):
+        return super().compute(data, weights, queue)

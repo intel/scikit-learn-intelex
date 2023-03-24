@@ -19,6 +19,7 @@ from warnings import warn
 
 from mpi4py import MPI
 from dpctl import SyclQueue
+import dpctl.tensor as dpt
 from sklearnex.spmd.linear_model import LinearRegression
 
 
@@ -56,13 +57,17 @@ X, y = get_train_data(rank)
 
 queue = SyclQueue("gpu")
 
-model = LinearRegression().fit(X, y, queue)
+dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=queue)
+dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=queue)
+
+model = LinearRegression().fit(dpt_X, dpt_y)
 
 print(f"Coefficients on rank {rank}:\n", model.coef_)
 print(f"Intercept on rank {rank}:\n", model.intercept_)
 
 X_test, _ = get_test_data(rank)
+dpt_X_test = dpt.asarray(X_test, usm_type="device", sycl_queue=queue)
 
-result = model.predict(X_test, queue)
+result = model.predict(dpt_X_test)
 
-print(f"Result on rank {rank}:\n", result)
+print(f"Result on rank {rank}:\n", dpt.to_numpy(result))
