@@ -80,6 +80,12 @@ class BaseRandomForest(ABC):
             self.oob_prediction_ = self._onedal_estimator.oob_prediction_
         return self
 
+    def _onedal_classifier(self, **onedal_params):
+        return onedal_RandomForestClassifier(**onedal_params)
+
+    def _onedal_regressor(self, **onedal_params):
+        return onedal_RandomForestRegressor(**onedal_params)
+
     # TODO:
     # move to onedal modul.
     def _check_parameters(self):
@@ -572,7 +578,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return False
             elif sp.issparse(sample_weight):
                 return False
-            elif not sample_weight:  # `sample_weight` is not supported.
+            elif sample_weight is not None:  # `sample_weight` is not supported.
                 return False
             elif not self.ccp_alpha == 0.0:
                 return False
@@ -684,7 +690,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self._cached_estimators_ = None
 
         # Compute
-        self._onedal_estimator = onedal_RandomForestClassifier(**onedal_params)
+        self._onedal_estimator = self._onedal_classifier(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
@@ -877,10 +883,28 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
 
         return estimators_
 
+    def _onedal_ready(self, X, y, sample_weight):
+        # TODO:
+        # move some common checks for both devices here.
+
+        # We have to get `n_outputs_` before dispatching
+        # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
+        y = np.asarray(y)
+
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
+        self.n_outputs_ = y.shape[1]
+        ready = self.n_outputs_ == 1
+        return ready, X, y, sample_weight
+
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
-            X, y, sample_weight = data
-            if not (self.oob_score and daal_check_version(
+            ready, X, y, sample_weight = self._onedal_ready(*data)
+            if not ready:
+                return False
+            elif not (self.oob_score and daal_check_version(
                     (2021, 'P', 500)) or not self.oob_score):
                 return False
             elif self.criterion not in ["mse", "squared_error"]:
@@ -921,9 +945,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        X, y, sample_weight = data
         if method_name == 'ensemble.RandomForestRegressor.fit':
-            if not (self.oob_score and daal_check_version(
+            ready, X, y, sample_weight = self._onedal_ready(*data)
+            if not ready:
+                return False
+            elif not (self.oob_score and daal_check_version(
                     (2021, 'P', 500)) or not self.oob_score):
                 return False
             elif self.criterion not in ["mse", "squared_error"]:
@@ -932,7 +958,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif sp.issparse(y):
                 return False
-            elif not sample_weight:  # `sample_weight` is not supported.
+            elif sample_weight is not None:  # `sample_weight` is not supported.
                 return False
             elif not self.ccp_alpha == 0.0:
                 return False
@@ -940,14 +966,13 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif self.oob_score:
                 return False
-            elif not self.n_outputs_ == 1:
-                return False
             elif hasattr(self, 'estimators_'):
                 return False
             else:
                 return True
         if method_name in ['ensemble.RandomForestRegressor.predict',
                            'ensemble.RandomForestRegressor.predict_proba']:
+            X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
             elif sp.issparse(X):
@@ -1011,7 +1036,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'max_samples': self.max_samples
         }
         self._cached_estimators_ = None
-        self._onedal_estimator = onedal_RandomForestRegressor(**onedal_params)
+        self._onedal_estimator = self._onedal_regressor(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
@@ -1026,7 +1051,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         X = self._validate_X_predict(X)
         return self._onedal_estimator.predict(X, queue=queue)
 
-    @wrap_output_data
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
@@ -1059,16 +1083,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 "Either switch to `bootstrap=True` or set "
                 "`max_sample=None`."
             )
-        # We have to get `n_outputs_` before dispatching
-        # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
-        y = np.asarray(y)
-
-        if y.ndim == 1:
-            # reshape is necessary to preserve the data contiguity against vs
-            # [:, np.newaxis] that does not.
-            y = np.reshape(y, (-1, 1))
-        self.n_outputs_ = y.shape[1]
-
         dispatch(self, 'ensemble.RandomForestRegressor.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_RandomForestRegressor.fit,
