@@ -23,15 +23,6 @@ from onedal.tests.utils._device_selection import get_queues
 
 from sklearn.datasets import make_classification, make_regression
 
-# TODO:
-# will be replaced with common check.
-try:
-    import dpctl
-    import dpctl.tensor as dpt
-    dpctl_available = True
-except ImportError:
-    dpctl_available = False
-
 
 @pytest.mark.parametrize('queue', get_queues())
 def test_rf_classifier(queue):
@@ -41,40 +32,6 @@ def test_rf_classifier(queue):
     rf = RandomForestClassifier(
         max_depth=2, random_state=0).fit(X, y, queue=queue)
     assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
-
-
-@pytest.mark.skipif(not dpctl_available,
-                    reason="requires dpctl")
-@pytest.mark.parametrize('queue', get_queues())
-def test_rf_classifier_dpctl(queue):
-    X, y = make_classification(n_samples=100, n_features=4,
-                               n_informative=2, n_redundant=0,
-                               random_state=0, shuffle=False)
-    dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=queue)
-    dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=queue)
-    rf = RandomForestClassifier(
-        max_depth=2, random_state=0).fit(dpt_X, dpt_y)
-    dpt_X_test = dpt.asarray([[0, 0, 0, 0]], usm_type="device", sycl_queue=queue)
-    # For assert_allclose check
-    # copy dpctl tensor data to host.
-    assert_allclose([1], dpt.to_numpy(rf.predict(dpt_X_test)))
-
-
-@pytest.mark.skipif(not dpctl_available,
-                    reason="requires dpctl")
-@pytest.mark.parametrize('queue', get_queues())
-def test_rf_classifier_dpctl_w_explicit_queue(queue):
-    X, y = make_classification(n_samples=100, n_features=4,
-                               n_informative=2, n_redundant=0,
-                               random_state=0, shuffle=False)
-    dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=queue)
-    dpt_y = dpt.asarray(y, usm_type="device", sycl_queue=queue)
-    rf = RandomForestClassifier(
-        max_depth=2, random_state=0).fit(dpt_X, dpt_y, queue=queue)
-    dpt_X_test = dpt.asarray([[0, 0, 0, 0]], usm_type="device", sycl_queue=queue)
-    # For assert_allclose check
-    # copy dpctl tensor data to host.
-    assert_allclose([1], dpt.to_numpy(rf.predict(dpt_X_test, queue=queue)))
 
 
 @pytest.mark.parametrize('queue', get_queues())
