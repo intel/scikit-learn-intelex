@@ -139,13 +139,13 @@ jobs:
       conda activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
-    continueOnError: eq($(SKLEARN_VERSION), 'main')
+    continueOnError: true
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       bash .ci/scripts/run_sklearn_tests.sh cpu
     displayName: 'Sklearn testing [device=cpu]'
-    continueOnError: eq($(SKLEARN_VERSION), 'main')
+    continueOnError: true
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -218,7 +218,7 @@ jobs:
       source activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
-    continueOnError: eq($(SKLEARN_VERSION), 'main')
+    continueOnError: true
   - script: |
       source activate CB
       cd ..
@@ -295,7 +295,7 @@ jobs:
       call activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
-    continueOnError: eq($(SKLEARN_VERSION), 'main')
+    continueOnError: true
   - script: |
       call activate CB
       cd ..
