@@ -14,17 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-trigger:
-  branches:
-    include:
-    - master
-    - rls/*
-pr:
-  branches:
-    include:
-    - master
-    - rls/*
-
 variables:
   COVERITY_TOOL_HOME: $(Agent.BuildDirectory)/cov-analysis
   DESCRIPTION: Nightly
