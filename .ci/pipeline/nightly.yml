@@ -17,14 +17,14 @@
 variables:
   COVERITY_TOOL_HOME: $(Agent.BuildDirectory)/cov-analysis
   DESCRIPTION: Nightly
-  python.version: '3.9'
+  python.version: '3.10'
   PYTHON: 'python'
   ARGS: '1'
 
 jobs:
 - job: Coverity
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - script: |
       cd $(Agent.BuildDirectory)
@@ -48,7 +48,7 @@ jobs:
 - job: Jupyter
   timeoutInMinutes: 0
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-22.04'
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
