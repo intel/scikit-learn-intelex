@@ -93,6 +93,7 @@ if build_distribute:
     if ONEDAL_VERSION >= 20230100:
         packages_with_tests += [
             'sklearnex.spmd.basic_statistics',
+            'sklearnex.spmd.ensemble',
             'sklearnex.spmd.linear_model',
             'sklearnex.spmd.neighbors']
 
