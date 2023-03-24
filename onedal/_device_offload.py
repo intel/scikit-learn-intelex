@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,11 +23,8 @@ try:
     _sklearnex_available = True
 except ImportError:
     import logging
-    # TODO:
-    # update log message.
-    logging.warning('Device support is limited in daal4py patching. '
-                    'Use Intel(R) Extension for Scikit-learn* '
-                    'for full experience.')
+    logging.warning('Device support requires '
+                    'Intel(R) Extension for Scikit-learn*.')
     _sklearnex_available = False
 
 
