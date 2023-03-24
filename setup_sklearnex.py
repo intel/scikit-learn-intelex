@@ -89,11 +89,11 @@ packages_with_tests = [
 if build_distribute:
     packages_with_tests += [
         'sklearnex.spmd',
-        'sklearnex.spmd.decomposition']
+        'sklearnex.spmd.decomposition',
+        'sklearnex.spmd.ensemble']
     if ONEDAL_VERSION >= 20230100:
         packages_with_tests += [
             'sklearnex.spmd.basic_statistics',
-            'sklearnex.spmd.ensemble',
             'sklearnex.spmd.linear_model',
             'sklearnex.spmd.neighbors']
 
