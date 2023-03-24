@@ -41,7 +41,6 @@ from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted, _is_classifier, _is_regressor
 from ..datatypes._data_conversion import from_table, to_table
-from .._device_offload import support_usm_ndarray
 
 
 class NeighborsCommonBase(metaclass=ABCMeta):
@@ -439,11 +438,9 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
         return result
 
-    @support_usm_ndarray()
     def fit(self, X, y, queue=None):
         return super()._fit(X, y, queue=queue)
 
-    @support_usm_ndarray()
     def predict(self, X, queue=None):
         X = _check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
         onedal_model = getattr(self, '_onedal_model', None)
@@ -516,7 +513,6 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
         return probabilities
 
-    @support_usm_ndarray()
     def kneighbors(self, X=None, n_neighbors=None,
                    return_distance=True, queue=None):
         return super()._kneighbors(X, n_neighbors, return_distance, queue=queue)
@@ -592,7 +588,6 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
     def fit(self, X, y, queue=None):
         return super()._fit(X, y, queue=queue)
 
-    @support_usm_ndarray()
     def kneighbors(self, X=None, n_neighbors=None,
                    return_distance=True, queue=None):
         return super()._kneighbors(X, n_neighbors, return_distance, queue=queue)
@@ -717,11 +712,9 @@ class NearestNeighbors(NeighborsBase):
 
         return result
 
-    @support_usm_ndarray()
     def fit(self, X, y, queue=None):
         return super()._fit(X, y, queue=queue)
 
-    @support_usm_ndarray()
     def kneighbors(self, X=None, n_neighbors=None,
                    return_distance=True, queue=None):
         return super()._kneighbors(X, n_neighbors, return_distance, queue=queue)

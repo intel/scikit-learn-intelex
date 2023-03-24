@@ -16,6 +16,7 @@
 
 
 from ...common._spmd_policy import _get_spmd_policy
+from ..._device_offload import support_usm_ndarray
 from onedal.decomposition.pca import PCA as PCABatch
 
 
@@ -25,4 +26,11 @@ class BasePCASPMD:
 
 
 class PCA(BasePCASPMD, PCABatch):
-    pass
+
+    @support_usm_ndarray()
+    def fit(self, X, queue):
+        return super().fit(X, queue)
+
+    @support_usm_ndarray()
+    def predict(self, X, queue):
+        return super().predict(X, queue)

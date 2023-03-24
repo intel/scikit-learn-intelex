@@ -17,7 +17,6 @@
 from functools import wraps
 
 try:
-    from sklearnex._config import get_config
     from sklearnex._device_offload import (_get_global_queue,
                                            _transfer_to_host,
                                            _copy_to_usm)
@@ -49,22 +48,10 @@ def _extract_usm_iface(*args, **kwargs):
                    None)
 
 
-def _run_on_device(func, data_queue, obj=None, *args, **kwargs):
-    def dispatch_by_obj(obj, func, *args, **kwargs):
-        if obj is not None:
-            return func(obj, *args, **kwargs)
-        return func(*args, **kwargs)
-
-    if data_queue is not None:
-        from daal4py.oneapi import sycl_context, _get_in_sycl_ctxt
-
-        if _get_in_sycl_ctxt() is False:
-            host_offload = get_config()['allow_fallback_to_host']
-
-            with sycl_context('gpu' if data_queue.sycl_device.is_gpu else 'cpu',
-                              host_offload_on_fail=host_offload):
-                return dispatch_by_obj(obj, func, *args, **kwargs)
-    return dispatch_by_obj(obj, func, *args, **kwargs)
+def _run_on_device(func, obj=None, *args, **kwargs):
+    if obj is not None:
+        return func(obj, *args, **kwargs)
+    return func(*args, **kwargs)
 
 
 def support_usm_ndarray(freefunc=False):
@@ -73,19 +60,12 @@ def support_usm_ndarray(freefunc=False):
             if _sklearnex_available:
                 usm_iface = _extract_usm_iface(*args, **kwargs)
                 data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-                # TODO:
-                # if  and hostkwargs['queue'] is not None
-                if 'queue' in hostkwargs:
-                    result = _run_on_device(func, None, obj, *hostargs, **hostkwargs)
-                    if usm_iface is not None and hasattr(result, '__array_interface__'):
-                        return _copy_to_usm(hostkwargs['queue'], result)
-                else:
-                    result = _run_on_device(func, data_queue, obj,
-                                            *hostargs, **hostkwargs)
-                    if usm_iface is not None and hasattr(result, '__array_interface__'):
-                        return _copy_to_usm(data_queue, result)
+                hostkwargs['queue'] = data_queue
+                result = _run_on_device(func, obj, *hostargs, **hostkwargs)
+                if usm_iface is not None and hasattr(result, '__array_interface__'):
+                    return _copy_to_usm(data_queue, result)
                 return result
-            return _run_on_device(func, None, obj, *args, **kwargs)
+            return _run_on_device(func, obj, *args, **kwargs)
 
         if freefunc:
             @wraps(func)
