@@ -533,6 +533,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random':
+                warnings.warn("splitter_mode = 'random' supported on GPU device "
+                              "and requires OneDAL >= 2023.1.1. Using 'best' "
+                              "instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
                 return False
             elif sp.issparse(X):
@@ -574,6 +579,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random' and \
+                    not daal_check_version((2023, 'P', 101)):
+                warnings.warn("splitter_mode = 'random' requires OneDAL >= "
+                              "2023.1.1. Using 'best' instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
                 return False
             elif sp.issparse(X):
@@ -912,6 +922,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random':
+                warnings.warn("splitter_mode = 'random' supported on GPU device "
+                              "and requires OneDAL >= 2023.1.1. Using 'best' "
+                              "instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
                 return False
             elif not (self.oob_score and daal_check_version(
@@ -957,6 +972,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random' and \
+                    not daal_check_version((2023, 'P', 101)):
+                warnings.warn("splitter_mode = 'random' requires OneDAL >= "
+                              "2023.1.1. Using 'best' instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
                 return False
             elif not (self.oob_score and daal_check_version(

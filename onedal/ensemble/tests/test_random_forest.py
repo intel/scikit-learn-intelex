@@ -48,38 +48,23 @@ def test_rf_regression(queue):
 
 @pytest.mark.skipif(not daal_check_version((2023, 'P', 101)),
                     reason='requires OneDAL 2023.1.1')
-def test_sklearnex_rf_classifier_splitter_mode():
+@pytest.mark.parametrize('queue', get_queues('gpu'))
+def test_rf_classifier_random_splitter(queue):
     X, y = make_classification(n_samples=100, n_features=4,
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
-    X_train, X_test, y_train, _ = train_test_split(X, y,
-                                                   test_size=0.33,
-                                                   random_state=0)
-    rf_b = RandomForestClassifier(max_depth=2,
-                                  random_state=0,
-                                  splitter_mode='best').fit(X_train, y_train)
-    rf_r = RandomForestClassifier(max_depth=2,
-                                  random_state=0,
-                                  splitter_mode='random').fit(X_train, y_train)
-    pred_b = rf_b.predict(X_test)
-    pred_r = rf_r.predict(X_test)
-    assert_allclose(pred_b, pred_r)
+    rf = RandomForestClassifier(
+        max_depth=2, random_state=0,
+        splitter_mode='random').fit(X, y, queue=queue)
+    assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
 
 
-@pytest.mark.skipif(not daal_check_version((2023, 'P', 101)),
-                    reason='requires OneDAL 2023.1.1')
-def test_sklearnex_rf_regressor_splitter_mode():
-    X, y = make_regression(n_samples=1000, n_features=4, n_informative=2,
+@pytest.mark.parametrize('queue', get_queues('gpu'))
+def test_rf_regression_random_splitter(queue):
+    X, y = make_regression(n_samples=100, n_features=4, n_informative=2,
                            random_state=0, shuffle=False)
-    X_train, X_test, y_train, _ = train_test_split(X, y,
-                                                   test_size=0.33,
-                                                   random_state=0)
-    rf_b = RandomForestRegressor(max_depth=2,
-                                 random_state=0,
-                                 splitter_mode='best').fit(X_train, y_train)
-    rf_r = RandomForestRegressor(max_depth=2,
-                                 random_state=0,
-                                 splitter_mode='random').fit(X_train, y_train)
-    pred_b = rf_b.predict(X_test)
-    pred_r = rf_r.predict(X_test)
-    assert_allclose(pred_b, pred_r)
+    rf = RandomForestRegressor(
+        max_depth=2, random_state=0,
+        splitter_mode='random').fit(X, y, queue=queue)
+    assert_allclose(
+        [-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
