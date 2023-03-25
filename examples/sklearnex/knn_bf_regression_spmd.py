@@ -19,6 +19,7 @@ from sklearn.metrics import mean_squared_error
 from warnings import warn
 from mpi4py import MPI
 import dpctl
+import dpctl.tensor as dpt
 from numpy.testing import assert_allclose
 from sklearnex.spmd.neighbors import KNeighborsRegressor
 
@@ -52,6 +53,11 @@ params_test = {'ns': 100, 'nf': 3}
 X_train, y_train, coef_train = generate_X_y(params_train, 10, rank)
 X_test, y_test, coef_test = generate_X_y(params_test, 10, rank + 99)
 
+dpt_X_train = dpt.asarray(X_train, usm_type="device", sycl_queue=q)
+dpt_y_train = dpt.asarray(y_train, usm_type="device", sycl_queue=q)
+dpt_X_test = dpt.asarray(X_test, usm_type="device", sycl_queue=q)
+# dpt_y_test = dpt.asarray(y_test, usm_type="device", sycl_queue=q)
+
 assert_allclose(coef_train, coef_test)
 
 model_spmd = KNeighborsRegressor(algorithm='brute',
@@ -59,13 +65,13 @@ model_spmd = KNeighborsRegressor(algorithm='brute',
                                  weights='uniform',
                                  p=2,
                                  metric='minkowski')
-model_spmd.fit(X_train, y_train, queue=q)
+model_spmd.fit(dpt_X_train, dpt_y_train)
 
-y_predict = model_spmd.predict(X_test, queue=q)
+y_predict = model_spmd.predict(dpt_X_test)
 
 print("Brute Force Distributed kNN regression results:")
 print("Ground truth (first 5 observations on rank {}):\n{}".format(rank, y_test[:5]))
 print("Regression results (first 5 observations on rank {}):\n{}"
-      .format(rank, y_predict[:5]))
+      .format(rank, dpt.to_numpy(y_predict)[:5]))
 print("RMSE for entire rank {}: {}\n"
-      .format(rank, mean_squared_error(y_test, y_predict, squared=False)))
+      .format(rank, mean_squared_error(y_test, dpt.to_numpy(y_predict), squared=False)))

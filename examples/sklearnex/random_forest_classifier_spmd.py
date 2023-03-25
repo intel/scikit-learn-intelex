@@ -53,7 +53,6 @@ q = dpctl.SyclQueue("gpu")  # GPU
 dpt_X_train = dpt.asarray(X_train, usm_type="device", sycl_queue=q)
 dpt_y_train = dpt.asarray(y_train, usm_type="device", sycl_queue=q)
 dpt_X_test = dpt.asarray(X_test, usm_type="device", sycl_queue=q)
-dpt_y_test = dpt.asarray(y_test, usm_type="device", sycl_queue=q)
 
 rf = RandomForestClassifier(max_depth=2, random_state=0).fit(dpt_X_train, dpt_y_train)
 
