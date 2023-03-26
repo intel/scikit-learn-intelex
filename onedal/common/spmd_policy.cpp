@@ -17,6 +17,9 @@
 #include "oneapi/dal/detail/spmd_policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #include "oneapi/dal/spmd/mpi/communicator.hpp"
+#ifdef ONEDAL_DATA_PARALLEL_CCL_SPMD
+#include "oneapi/dal/spmd/ccl/communicator.hpp"
+#endif
 #include "dpctl4pybind11.hpp"
 
 namespace py = pybind11;
@@ -25,15 +28,23 @@ namespace oneapi::dal::python {
 
 ONEDAL_PY_INIT_MODULE(spmd_policy) {
     import_dpctl();
-    py::class_<dal::detail::spmd_policy<detail::data_parallel_policy>>(m, "spmd_data_parallel_policy")
+#ifdef ONEDAL_DATA_PARALLEL_CCL_SPMD
+    py::class_<dal::detail::spmd_policy<detail::data_parallel_policy>>(m, "spmd_data_parallel_policy_ccl")
         .def(py::init([](sycl::queue &q) {
             detail::data_parallel_policy local_policy = detail::data_parallel_policy(q);
-            // TODO:
-            // Communicator hardcoded. Implement passing spmd communicator.
+            ccl::init();
+            spmd::communicator<spmd::device_memory_access::usm> comm = dal::preview::spmd::make_communicator<dal::preview::spmd::backend::ccl>(q);
+            detail::spmd_policy<detail::data_parallel_policy> spmd_policy{ local_policy, comm };
+            return spmd_policy;
+        }));
+#endif // ONEDAL_DATA_PARALLEL_CCL_SPMD
+    py::class_<dal::detail::spmd_policy<detail::data_parallel_policy>>(m, "spmd_data_parallel_policy_mpi")
+        .def(py::init([](sycl::queue &q) {
+            detail::data_parallel_policy local_policy = detail::data_parallel_policy(q);
             spmd::communicator<spmd::device_memory_access::usm> comm = dal::preview::spmd::make_communicator<dal::preview::spmd::backend::mpi>(q);
             detail::spmd_policy<detail::data_parallel_policy> spmd_policy{ local_policy, comm };
             return spmd_policy;
         }));
 }
 } // namespace oneapi::dal::python
-#endif
+#endif // ONEDAL_DATA_PARALLEL_SPMD

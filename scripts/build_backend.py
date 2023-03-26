@@ -144,6 +144,14 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
 
     if build_distribute:
         mpi_root = os.environ['MPIROOT']
+        oneccl = True if 'CCLROOT' in os.environ else False
+        ccl_root = None if not oneccl else os.environ['CCLROOT']
+        if oneccl:
+            # CCL_INCDIRS = [jp(ccl_root, 'include', 'cpu_gpu_dpcpp', 'oneapi'),
+            #                jp(ccl_root, 'include', 'cpu_gpu_dpcpp')]
+            CCL_INCDIRS = jp(ccl_root, 'include', 'cpu_gpu_dpcpp')
+            CCL_LIBDIRS = jp(ccl_root, 'lib', 'cpu_gpu_dpcpp')
+            CCL_LIB = 'ccl'
         MPI_INCDIRS = jp(mpi_root, 'include')
         MPI_LIBDIRS = jp(mpi_root, 'lib')
         MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
@@ -189,6 +197,13 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
             "-DMPI_LIBS=" + MPI_LIBS,
             "-DONEDAL_DIST_SPMD:BOOL=ON"
         ]
+        if oneccl:
+            cmake_args += [
+                "-DCCL_INCDIRS=" + CCL_INCDIRS,
+                "-DCCL_LIBRARY_DIR=" + CCL_LIBDIRS,
+                "-DCCL_LIB=" + CCL_LIB,
+                "-DONEDAL_DIST_CCL_SPMD:BOOL=ON"
+            ]
 
     cpu_count = multiprocessing.cpu_count()
     # limit parallel cmake jobs if memory size is insufficient

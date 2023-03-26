@@ -18,7 +18,9 @@ from onedal import _backend, _is_dpc_backend
 import sys
 
 if _is_dpc_backend:
-    class _SPMDDataParallelInteropPolicy(_backend.spmd_data_parallel_policy):
+    # TODO:
+    # implements spmd.set_backend
+    class _SPMDDataParallelInteropPolicy(_backend.spmd_data_parallel_policy_mpi):
         def __init__(self, queue):
             self._queue = queue
             super().__init__(self._queue)
