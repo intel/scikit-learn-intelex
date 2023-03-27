@@ -534,9 +534,9 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         if method_name == 'ensemble.RandomForestClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random':
-                warnings.warn("splitter_mode = 'random' supported on GPU device "
-                              "and requires OneDAL >= 2023.1.1. Using 'best' "
-                              "instead.", RuntimeWarning)
+                warnings.warn("'random' splitter mode supports GPU devices only "
+                              "and requires oneDAL version >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
                 self.splitter_mode = 'best'
             if not ready:
                 return False
@@ -581,8 +581,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 101)):
-                warnings.warn("splitter_mode = 'random' requires OneDAL >= "
-                              "2023.1.1. Using 'best' instead.", RuntimeWarning)
+                warnings.warn("'random' splitter mode requires OneDAL >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
                 self.splitter_mode = 'best'
             if not ready:
                 return False
@@ -923,9 +923,9 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         if method_name == 'ensemble.RandomForestRegressor.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random':
-                warnings.warn("splitter_mode = 'random' supported on GPU device "
-                              "and requires OneDAL >= 2023.1.1. Using 'best' "
-                              "instead.", RuntimeWarning)
+                warnings.warn("'random' splitter mode supports GPU devices only "
+                              "and requires oneDAL version >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
                 self.splitter_mode = 'best'
             if not ready:
                 return False
@@ -974,8 +974,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 101)):
-                warnings.warn("splitter_mode = 'random' requires OneDAL >= "
-                              "2023.1.1. Using 'best' instead.", RuntimeWarning)
+                warnings.warn("'random' splitter mode requires OneDAL >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
                 self.splitter_mode = 'best'
             if not ready:
                 return False
