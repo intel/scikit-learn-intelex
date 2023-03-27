@@ -127,6 +127,7 @@ jobs:
       conda activate CB
       cd ..
       ./s/conda-recipe/run_test.sh
+      python s/.ci/scripts/test_global_patch.py
     displayName: 'Sklearnex testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -140,12 +141,6 @@ jobs:
       bash .ci/scripts/run_sklearn_tests.sh cpu
     displayName: 'Sklearn testing [device=cpu]'
     continueOnError: true
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      cd ..
-      python s/.ci/scripts/test_global_patch.py
-    displayName: global patching testing
 - job: MacOS
   strategy:
     matrix:
@@ -207,17 +202,13 @@ jobs:
       source activate CB
       cd ..
       ./s/conda-recipe/run_test.sh
+      s/.ci/scripts/test_global_patch.py
     displayName: 'Sklearnex testing'
   - script: |
       source activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
     continueOnError: true
-  - script: |
-      source activate CB
-      cd ..
-      python s/.ci/scripts/test_global_patch.py
-    displayName: global patching testing
 - job: Windows
   strategy:
     matrix:
@@ -284,14 +275,10 @@ jobs:
       call activate CB
       cd ..
       call s\conda-recipe\run_test.bat s
+      python s\.ci\scripts\test_global_patch.py
     displayName: 'Sklearnex testing'
   - script: |
       call activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
     continueOnError: true
-  - script: |
-      call activate CB
-      cd ..
-      python s\.ci\scripts\test_global_patch.py
-    displayName: global patching testing
