@@ -29,7 +29,8 @@ elif sklearn_check_version('1.1'):
 elif sklearn_check_version('1.0'):
     print('scipy==1.7.*')
 elif sklearn_check_version('0.24'):
-    print('scipy==1.6.*')
+    # scipy 1.6 is compatible with pandas versions lower than 1.4
+    print('scipy==1.6.* "pandas<1.4"')
 else:
     print('Scipy version defaults to not specified '
           'for this outdated sklearn/python version.', file=stderr)
