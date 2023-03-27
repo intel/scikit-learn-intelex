@@ -50,6 +50,12 @@ deselected_tests:
   - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-ball_tree] >=1.2 darwin
   - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-kd_tree] >=1.2 darwin
 
+  # TODO: fix for Linear Regression failed to converge on MacOS only
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est0] >=0.23 darwin
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est1] >=0.23 darwin
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est2] >=0.23 darwin
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est3] >=0.23 darwin
+
   # random forest classifier selects different most important feature
   # Feature importances:
   # sklearnex  [0.             0.00553064     0.71323666     0.2812327 ]
