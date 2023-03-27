@@ -109,6 +109,21 @@ auto get_infer_mode(const py::dict& params) {
     return result_mode;
 }
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
+auto get_splitter_mode(const py::dict& params) {
+    using namespace decision_forest;
+    auto mode = params["splitter_mode"].cast<std::string>();
+    if (mode == "best") {
+        return splitter_mode::best;
+    }
+    else if (mode == "random") {
+        return splitter_mode::random;
+    }
+    else
+        ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(mode);
+}
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20230101
+
 auto get_variable_importance_mode(const py::dict& params) {
     using namespace decision_forest;
 
@@ -171,6 +186,9 @@ struct params2desc {
                         .set_min_bin_size(params["min_bin_size"].cast<std::int64_t>())
                         .set_memory_saving_mode(params["memory_saving_mode"].cast<bool>())
                         .set_bootstrap(params["bootstrap"].cast<bool>())
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
+                        .set_splitter_mode(get_splitter_mode(params))
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20230101
                         .set_error_metric_mode(get_error_metric_mode(params))
                         .set_variable_importance_mode(get_variable_importance_mode(params));
 

@@ -77,6 +77,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             max_bins,
             min_bin_size,
             infer_mode,
+            splitter_mode,
             voting_mode,
             error_metric_mode,
             variable_importance_mode,
@@ -102,6 +103,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.max_bins = max_bins
         self.min_bin_size = min_bin_size
         self.infer_mode = infer_mode
+        self.splitter_mode = splitter_mode
         self.voting_mode = voting_mode
         self.error_metric_mode = error_metric_mode
         self.variable_importance_mode = variable_importance_mode
@@ -230,6 +232,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         if self.is_classification:
             onedal_params['class_count'] = 0 if self.classes_ is None else len(
                 self.classes_)
+        if daal_check_version((2023, 'P', 101)):
+            onedal_params['splitter_mode'] = self.splitter_mode
         return onedal_params
 
     def _check_parameters(self):
@@ -434,6 +438,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
                  max_bins=256,
                  min_bin_size=1,
                  infer_mode='class_responses',
+                 splitter_mode='best',
                  voting_mode='weighted',
                  error_metric_mode='none',
                  variable_importance_mode='none',
@@ -460,6 +465,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             max_bins=max_bins,
             min_bin_size=min_bin_size,
             infer_mode=infer_mode,
+            splitter_mode=splitter_mode,
             voting_mode=voting_mode,
             error_metric_mode=error_metric_mode,
             variable_importance_mode=variable_importance_mode,
@@ -516,6 +522,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
                  max_bins=256,
                  min_bin_size=1,
                  infer_mode='class_responses',
+                 splitter_mode='best',
                  voting_mode='weighted',
                  error_metric_mode='none',
                  variable_importance_mode='none',
@@ -542,6 +549,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
             max_bins=max_bins,
             min_bin_size=min_bin_size,
             infer_mode=infer_mode,
+            splitter_mode=splitter_mode,
             voting_mode=voting_mode,
             error_metric_mode=error_metric_mode,
             variable_importance_mode=variable_importance_mode,

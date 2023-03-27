@@ -58,7 +58,7 @@ from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from scipy import sparse as sp
 
 if sklearn_check_version('1.2'):
-    from sklearn.utils._param_validation import Interval
+    from sklearn.utils._param_validation import Interval, StrOptions
 
 
 class BaseRandomForest(ABC):
@@ -193,7 +193,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         _parameter_constraints: dict = {
             **sklearn_RandomForestClassifier._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+            "splitter_mode": [StrOptions({"best", "random"})]
         }
 
     if sklearn_check_version('1.0'):
@@ -218,7 +219,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 ccp_alpha=0.0,
                 max_samples=None,
                 max_bins=256,
-                min_bin_size=1):
+                min_bin_size=1,
+                splitter_mode='best'):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -243,6 +245,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
             # self._estimator = DecisionTreeClassifier()
     else:
         def __init__(self,
@@ -266,7 +269,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1):
+                     min_bin_size=1,
+                     splitter_mode='best'):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -294,6 +298,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
             # self._estimator = DecisionTreeClassifier()
 
     def fit(self, X, y, sample_weight=None):
@@ -529,6 +534,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random':
+                warnings.warn("'random' splitter mode supports GPU devices only "
+                              "and requires oneDAL version >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
                 return False
             elif sp.issparse(X):
@@ -570,6 +580,11 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random' and \
+                    not daal_check_version((2023, 'P', 101)):
+                warnings.warn("'random' splitter mode requires OneDAL >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
                 return False
             elif sp.issparse(X):
@@ -687,6 +702,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'min_bin_size': self.min_bin_size,
             'max_samples': self.max_samples
         }
+        if daal_check_version((2023, 'P', 101)):
+            onedal_params['splitter_mode'] = self.splitter_mode
         self._cached_estimators_ = None
 
         # Compute
@@ -729,7 +746,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         _parameter_constraints: dict = {
             **sklearn_RandomForestRegressor._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+            "splitter_mode": [StrOptions({"best", "random"})]
         }
 
     if sklearn_check_version('1.0'):
@@ -754,7 +772,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 ccp_alpha=0.0,
                 max_samples=None,
                 max_bins=256,
-                min_bin_size=1):
+                min_bin_size=1,
+                splitter_mode='best'):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -778,6 +797,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -799,7 +819,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1):
+                     min_bin_size=1,
+                     splitter_mode='best'):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -826,6 +847,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
 
     @property
     def _estimators_(self):
@@ -902,6 +924,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random':
+                warnings.warn("'random' splitter mode supports GPU devices only "
+                              "and requires oneDAL version >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
                 return False
             elif not (self.oob_score and daal_check_version(
@@ -947,6 +974,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random' and \
+                    not daal_check_version((2023, 'P', 101)):
+                warnings.warn("'random' splitter mode requires OneDAL >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
                 return False
             elif not (self.oob_score and daal_check_version(
@@ -1035,6 +1067,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'variable_importance_mode': 'mdi',
             'max_samples': self.max_samples
         }
+        if daal_check_version((2023, 'P', 101)):
+            onedal_params['splitter_mode'] = self.splitter_mode
         self._cached_estimators_ = None
         self._onedal_estimator = self._onedal_regressor(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
