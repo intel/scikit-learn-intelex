@@ -127,12 +127,14 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      export SELECTED_TESTS=all
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
     continueOnError: true
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      export SELECTED_TESTS=all
       bash .ci/scripts/run_sklearn_tests.sh cpu
     displayName: 'Sklearn testing [device=cpu]'
     continueOnError: true
@@ -197,6 +199,7 @@ jobs:
     displayName: 'Sklearnex testing'
   - script: |
       source activate CB
+      export SELECTED_TESTS=all
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
     continueOnError: true
@@ -266,6 +269,7 @@ jobs:
     displayName: 'Sklearnex testing'
   - script: |
       call activate CB
+      set SELECTED_TESTS=all
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
     continueOnError: true
