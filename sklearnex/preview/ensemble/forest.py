@@ -58,7 +58,7 @@ from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from scipy import sparse as sp
 
 if sklearn_check_version('1.2'):
-    from sklearn.utils._param_validation import Interval
+    from sklearn.utils._param_validation import Interval, StrOptions
 
 
 class BaseRandomForest(ABC):
@@ -193,7 +193,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         _parameter_constraints: dict = {
             **sklearn_RandomForestClassifier._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+            "splitter_mode": [StrOptions({"best", "random"})]
         }
 
     if sklearn_check_version('1.0'):
@@ -745,7 +746,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         _parameter_constraints: dict = {
             **sklearn_RandomForestRegressor._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+            "splitter_mode": [StrOptions({"best", "random"})]
         }
 
     if sklearn_check_version('1.0'):
