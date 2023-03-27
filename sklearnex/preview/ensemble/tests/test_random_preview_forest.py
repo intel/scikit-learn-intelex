@@ -15,8 +15,6 @@
 # limitations under the License.
 #===============================================================================
 
-import pytest
-
 import numpy as np
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_classification, make_regression
