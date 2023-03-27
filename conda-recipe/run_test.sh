@@ -64,4 +64,8 @@ echo "Pytest of onedal running ..."
 pytest --verbose --pyargs ${daal4py_dir}/onedal
 return_code=$(($return_code + $?))
 
+echo "Global patching test running ..."
+python --verbose --pyargs ${daal4py_dir}/.ci/scripts/test_global_patch.py
+return_code=$(($return_code + $?))
+
 exit $return_code

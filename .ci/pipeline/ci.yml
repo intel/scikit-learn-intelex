@@ -127,7 +127,6 @@ jobs:
       conda activate CB
       cd ..
       ./s/conda-recipe/run_test.sh
-      python s/.ci/scripts/test_global_patch.py
     displayName: 'Sklearnex testing'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -202,7 +201,6 @@ jobs:
       source activate CB
       cd ..
       ./s/conda-recipe/run_test.sh
-      s/.ci/scripts/test_global_patch.py
     displayName: 'Sklearnex testing'
   - script: |
       source activate CB
@@ -275,7 +273,6 @@ jobs:
       call activate CB
       cd ..
       call s\conda-recipe\run_test.bat s
-      python s\.ci\scripts\test_global_patch.py
     displayName: 'Sklearnex testing'
   - script: |
       call activate CB
