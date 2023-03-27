@@ -103,11 +103,6 @@ jobs:
       pip list
     displayName: 'Install develop requirements'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
-    displayName: 'Setup sklearn version'
-  - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
@@ -118,6 +113,7 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
       pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
       pip install $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
@@ -183,16 +179,13 @@ jobs:
     displayName: 'Install develop requirements'
   - script: |
       source activate CB
-      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
-    displayName: 'Setup sklearn version'
-  - script: |
-      source activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: Conda build
   - script: |
       source activate CB
+      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
       pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
       pip install $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
@@ -243,10 +236,6 @@ jobs:
       pip list
     displayName: 'Install develop requirements'
   - script: |
-      call activate CB
-      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
-    displayName: 'Setup sklearn version'
-  - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB
       bash .ci/scripts/describe_system.sh
@@ -263,6 +252,7 @@ jobs:
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB
+      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
       pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
       cd ..
       for /f "delims=" %%c in ('python s\.ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
