@@ -50,10 +50,7 @@ python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
 return_code=$(($return_code + $?))
 
 echo "Pytest of daal4py running ..."
-# TODO: remove deselect after fix
-pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn \
-    --deselect="daal4py/sklearn/ensemble/tests/test_decision_forest.py::test_classifier_big_estimators_iris[8000]" \
-    --deselect="daal4py/sklearn/ensemble/tests/test_decision_forest.py::test_mse_regressor_big_estimators_iris[8000]"
+pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn
 return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
