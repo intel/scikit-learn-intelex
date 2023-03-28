@@ -62,9 +62,21 @@ jobs:
 - job: Linux
   strategy:
     matrix:
+      Python3.7_Sklearn1.0:
+        PYTHON_VERSION: '3.7'
+        SKLEARN_VERSION: '1.0'
       Python3.8_Sklearn0.24:
         PYTHON_VERSION: '3.8'
         SKLEARN_VERSION: '0.24'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
+        SKLEARN_VERSION: '1.0'
+      Python3.10_Sklearn1.1:
+        PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.1'
+      Python3.11_Sklearn1.2:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
@@ -72,105 +84,44 @@ jobs:
 - job: MacOS
   strategy:
     matrix:
+      Python3.7_Sklearn1.0:
+        PYTHON_VERSION: '3.7'
+        SKLEARN_VERSION: '1.0'
       Python3.8_Sklearn0.24:
         PYTHON_VERSION: '3.8'
         SKLEARN_VERSION: '0.24'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
+        SKLEARN_VERSION: '1.0'
+      Python3.10_Sklearn1.1:
+        PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.1'
+      Python3.11_Sklearn1.2:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'macos-12'
   steps:
-  - script: |
-      echo "##vso[task.prependpath]$CONDA/bin"
-      sudo chown -R $USER $CONDA
-      conda config --set always_yes yes --set changeps1 no
-      conda update -q conda
-      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich clang-format pyyaml
-    displayName: Create Anaconda environment
-  - script: |
-      source activate CB
-      pip install -q cpufeature
-      bash .ci/scripts/describe_system.sh
-    displayName: "System info"
-  - script: |
-      source activate CB
-      pip install -r requirements-dev.txt
-      pip list
-    displayName: 'Install develop requirements'
-  - script: |
-      source activate CB
-      export DALROOT=$CONDA_PREFIX
-      ./conda-recipe/build.sh
-      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
-    displayName: Conda build
-  - script: |
-      source activate CB
-      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
-      pip install $(python .ci/scripts/get_compatible_scipy_version.py)
-      pip list
-    displayName: 'Install testing requirements'
-  - script: |
-      source activate CB
-      cd ..
-      ./s/conda-recipe/run_test.sh
-    displayName: 'Sklearnex testing'
-  - script: |
-      source activate CB
-      export SELECTED_TESTS=all
-      bash .ci/scripts/run_sklearn_tests.sh
-    displayName: 'Sklearn testing'
-    continueOnError: true
+  - template: build-and-test-mac.yml
 - job: Windows
   strategy:
     matrix:
+      Python3.7_Sklearn1.0:
+        PYTHON_VERSION: '3.7'
+        SKLEARN_VERSION: '1.0'
       Python3.8_Sklearn0.24:
         PYTHON_VERSION: '3.8'
         SKLEARN_VERSION: '0.24'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
+        SKLEARN_VERSION: '1.0'
+      Python3.10_Sklearn1.1:
+        PYTHON_VERSION: '3.10'
+        SKLEARN_VERSION: '1.1'
+      Python3.11_Sklearn1.2:
+        PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.2'
   pool:
     vmImage: 'windows-latest'
   steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format pyyaml
-    displayName: 'Create Anaconda environment'
-  - script: |
-      call activate CB
-      pip install --upgrade setuptools
-      pip install cpufeature
-      pip install -r requirements-dev.txt
-      pip list
-    displayName: 'Install develop requirements'
-  - script: |
-      set PATH=C:\msys64\usr\bin;%PATH%
-      call activate CB
-      bash .ci/scripts/describe_system.sh
-    displayName: 'System info'
-  - script: |
-      call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
-      call activate CB
-      set PREFIX=%CONDA_PREFIX%
-      set PYTHON=python
-      call conda-recipe\bld.bat
-      set DALROOT=%CONDA_PREFIX%
-      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
-    displayName: 'Build daal4py/sklearnex'
-  - script: |
-      set PATH=C:\msys64\usr\bin;%PATH%
-      call activate CB
-      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
-      cd ..
-      for /f "delims=" %%c in ('python s\.ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
-      pip install %SCIPY_VERSION%
-      pip list
-    displayName: 'Install testing requirements'
-  - script: |
-      call activate CB
-      cd ..
-      call s\conda-recipe\run_test.bat s
-    displayName: 'Sklearnex testing'
-  - script: |
-      call activate CB
-      set SELECTED_TESTS=all
-      bash .ci/scripts/run_sklearn_tests.sh
-    displayName: 'Sklearn testing'
-    continueOnError: true
+  - template: build-and-test-win.yml
