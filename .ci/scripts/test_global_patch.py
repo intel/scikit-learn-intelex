@@ -38,8 +38,8 @@ err_code = subprocess.call([sys.executable, "-m",
 assert not err_code
 unpatch_sklearn()
 from sklearn.svm import SVC, SVR
-assert not SVR.__module__.startswith('daal4py') and \
-       not SVR.__module__.startswith('sklearnex')
+assert not SVC.__module__.startswith('daal4py') and \
+       not SVC.__module__.startswith('sklearnex')
 assert not SVR.__module__.startswith('daal4py') and \
        not SVR.__module__.startswith('sklearnex')
 
@@ -56,7 +56,7 @@ assert not SVR.__module__.startswith('daal4py') and \
 # test unpatching from function
 unpatch_sklearn(global_unpatch=True)
 from sklearn.svm import SVC, SVR
-assert not SVR.__module__.startswith('daal4py') and \
-       not SVR.__module__.startswith('sklearnex')
+assert not SVC.__module__.startswith('daal4py') and \
+       not SVC.__module__.startswith('sklearnex')
 assert not SVR.__module__.startswith('daal4py') and \
        not SVR.__module__.startswith('sklearnex')

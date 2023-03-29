@@ -24,7 +24,6 @@ trigger:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
-    - .circleci/config.yml
 
 pr:
   branches:
@@ -36,7 +35,6 @@ pr:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
-    - .circleci/config.yml
 
 variables:
   - name: MACOSX_DEPLOYMENT_TARGET
@@ -82,78 +80,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
-  - script: sudo apt-get update && sudo apt-get install -y clang-format
-    displayName: 'apt-get'
-  - script: |
-      wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-      sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-      rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-      echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-      sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
-      sudo apt-get update
-      sudo apt-get install -y intel-dpcpp-cpp-compiler-2023.0.0
-      sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
-      sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
-    displayName: 'dpcpp installation'
-  - script: |
-      bash .ci/scripts/describe_system.sh
-    displayName: 'System info'
-  - script: |
-      conda update -y -q conda
-      if [ $(echo $(PYTHON_VERSION) | grep '3.7') ] || [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCPP_PACKAGE="dpcpp-cpp-rt>=2023.0.0"; else export DPCPP_PACKAGE="dpctl>=0.14"; fi
-      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCPP_PACKAGE
-    displayName: 'Conda create'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      pip install -r requirements-dev.txt
-      pip list
-    displayName: 'Install develop requirements'
-  - script: |
-      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      export DALROOT=$CONDA_PREFIX
-      ./conda-recipe/build.sh
-      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
-    displayName: 'Build daal4py/sklearnex'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      export DALROOT=$CONDA_PREFIX
-      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
-    displayName: 'Build sklearnex'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
-      pip install $(python .ci/scripts/get_compatible_scipy_version.py)
-      pip list
-    displayName: 'Install testing requirements'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      cd ..
-      ./s/conda-recipe/run_test.sh
-    displayName: 'Sklearnex testing'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      bash .ci/scripts/run_sklearn_tests.sh
-    displayName: 'Sklearn testing'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      bash .ci/scripts/run_sklearn_tests.sh cpu
-    displayName: 'Sklearn testing [device=cpu]'
-  - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      cd ..
-      python s/.ci/scripts/test_global_patch.py
-    displayName: global patching testing
+  - template: build-and-test-lnx.yml
 - job: MacOS
   strategy:
     matrix:
@@ -175,51 +102,7 @@ jobs:
   pool:
     vmImage: 'macos-12'
   steps:
-  - script: |
-      echo "##vso[task.prependpath]$CONDA/bin"
-      sudo chown -R $USER $CONDA
-      conda config --set always_yes yes --set changeps1 no
-      conda update -q conda
-      conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal dal-include mpich clang-format pyyaml
-    displayName: Create Anaconda environment
-  - script: |
-      source activate CB
-      pip install -q cpufeature
-      bash .ci/scripts/describe_system.sh
-    displayName: "System info"
-  - script: |
-      source activate CB
-      pip install -r requirements-dev.txt
-      pip list
-    displayName: 'Install develop requirements'
-  - script: |
-      source activate CB
-      export DALROOT=$CONDA_PREFIX
-      ./conda-recipe/build.sh
-      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
-    displayName: Conda build
-  - script: |
-      source activate CB
-      sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
-      pip install $(python .ci/scripts/get_compatible_scipy_version.py)
-      pip list
-    displayName: 'Install testing requirements'
-  - script: |
-      source activate CB
-      cd ..
-      ./s/conda-recipe/run_test.sh
-    displayName: 'Sklearnex testing'
-  - script: |
-      source activate CB
-      bash .ci/scripts/run_sklearn_tests.sh
-    displayName: 'Sklearn testing'
-  - script: |
-      source activate CB
-      cd ..
-      python s/.ci/scripts/test_global_patch.py
-    displayName: global patching testing
+  - template: build-and-test-mac.yml
 - job: Windows
   strategy:
     matrix:
@@ -241,53 +124,4 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format pyyaml
-    displayName: 'Create Anaconda environment'
-  - script: |
-      call activate CB
-      pip install --upgrade setuptools
-      pip install cpufeature
-      pip install -r requirements-dev.txt
-      pip list
-    displayName: 'Install requirements'
-  - script: |
-      set PATH=C:\msys64\usr\bin;%PATH%
-      call activate CB
-      bash .ci/scripts/describe_system.sh
-    displayName: 'System info'
-  - script: |
-      call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
-      call activate CB
-      set PREFIX=%CONDA_PREFIX%
-      set PYTHON=python
-      call conda-recipe\bld.bat
-      set DALROOT=%CONDA_PREFIX%
-      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
-    displayName: 'Build daal4py/sklearnex'
-  - script: |
-      set PATH=C:\msys64\usr\bin;%PATH%
-      call activate CB
-      sed -i -e "s/scikit-learn==1.2.0/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      sed -i -e "s/scikit-learn==1.0.2/scikit-learn==$(SKLEARN_VERSION).*/" requirements-test.txt
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
-      cd ..
-      for /f "delims=" %%c in ('python s\.ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
-      pip install %SCIPY_VERSION%
-      pip list
-    displayName: 'Install testing requirements'
-  - script: |
-      call activate CB
-      cd ..
-      call s\conda-recipe\run_test.bat s
-    displayName: 'Sklearnex testing'
-  - script: |
-      call activate CB
-      bash .ci/scripts/run_sklearn_tests.sh
-    displayName: 'Sklearn testing'
-  - script: |
-      call activate CB
-      cd ..
-      python s\.ci\scripts\test_global_patch.py
-    displayName: global patching testing
+  - template: build-and-test-win.yml
