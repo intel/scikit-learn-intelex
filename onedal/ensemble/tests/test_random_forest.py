@@ -18,6 +18,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_allclose
 
+from daal4py.sklearn._utils import daal_check_version
 from onedal.ensemble import RandomForestClassifier, RandomForestRegressor
 from onedal.tests.utils._device_selection import get_queues
 
@@ -40,5 +41,29 @@ def test_rf_regression(queue):
                            random_state=0, shuffle=False)
     rf = RandomForestRegressor(
         max_depth=2, random_state=0).fit(X, y, queue=queue)
+    assert_allclose(
+        [-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+
+
+@pytest.mark.skipif(not daal_check_version((2023, 'P', 101)),
+                    reason='requires OneDAL 2023.1.1')
+@pytest.mark.parametrize('queue', get_queues('gpu'))
+def test_rf_classifier_random_splitter(queue):
+    X, y = make_classification(n_samples=100, n_features=4,
+                               n_informative=2, n_redundant=0,
+                               random_state=0, shuffle=False)
+    rf = RandomForestClassifier(
+        max_depth=2, random_state=0,
+        splitter_mode='random').fit(X, y, queue=queue)
+    assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
+
+
+@pytest.mark.parametrize('queue', get_queues('gpu'))
+def test_rf_regression_random_splitter(queue):
+    X, y = make_regression(n_samples=100, n_features=4, n_informative=2,
+                           random_state=0, shuffle=False)
+    rf = RandomForestRegressor(
+        max_depth=2, random_state=0,
+        splitter_mode='random').fit(X, y, queue=queue)
     assert_allclose(
         [-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)

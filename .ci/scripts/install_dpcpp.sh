@@ -15,16 +15,12 @@
 # limitations under the License.
 #===============================================================================
 
-# Args:
-# 1 - device name (optional)
-
-ci_dir=$( dirname $( dirname "${BASH_SOURCE[0]}" ) )
-cd $ci_dir
-
-# selected tests might be set externally
-# ('all' - special value to run all tests)
-export SELECTED_TESTS=${SELECTED_TESTS:-$(python scripts/select_sklearn_tests.py)}
-export DESELECTED_TESTS=$(python ../.circleci/deselect_tests.py ../deselected_tests.yaml)
-
-python scripts/run_sklearn_tests.py -d ${1:-none}
-exit $?
+wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
+sudo apt-get update
+sudo apt-get install -y intel-dpcpp-cpp-compiler-2023.0.0
+sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
+sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_
