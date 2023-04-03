@@ -21,6 +21,7 @@ import os
 import pathlib
 import pytest
 from _models_info import TO_SKIP
+from sklearnex import is_patched_instance
 
 
 def get_branch(s):
@@ -88,3 +89,67 @@ def test_patching(configuration):
         if re.search(skip, configuration) is not None:
             pytest.skip("SKIPPED", allow_module_level=False)
     raise ValueError('Test patching failed: ' + configuration)
+
+
+
+def _load_all_models(patched):
+    if patched:
+        patch_sklearn()
+
+    from sklearn.cluster import DBSCAN, KMeans
+    from sklearn.decomposition import PCA
+    from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+    from sklearn.linear_model import (
+        ElasticNet,
+        Lasso,
+        LinearRegression,
+        LogisticRegression,
+        Ridge,
+    )
+    from sklearn.manifold import TSNE
+    from sklearn.neighbors import (
+        KNeighborsClassifier,
+        KNeighborsRegressor,
+        LocalOutlierFactor,
+        NearestNeighbors,
+    )
+    from sklearn.svm import SVC, SVR, NuSVC, NuSVR
+
+    models = [
+        DBSCAN(),
+        ElasticNet(),
+        KMeans(),
+        KNeighborsClassifier(),
+        KNeighborsRegressor(),
+        Lasso(),
+        LinearRegression(),
+        LocalOutlierFactor(),
+        LogisticRegression(),
+        NearestNeighbors(),
+        NuSVC(),
+        NuSVR(),
+        PCA(),
+        RandomForestClassifier(),
+        RandomForestRegressor(),
+        Ridge(),
+        SVC(),
+        SVR(),
+        TSNE(),
+    ]
+
+    if patched:
+        unpatch_sklearn()
+
+    return models
+
+
+PATCHED_MODELS = _load_all_models(patched=True)
+UNPATCHED_MODELS = _load_all_models(patched=False)
+
+
+@pytest.mark.parametrize(
+    ("patched", "unpatched"), zip(PATCHED_MODELS, UNPATCHED_MODELS)
+)
+def test_is_patched_instance(patched, unpatched):
+    assert is_patched_instance(patched), f"{patched} is a patched instance"
+    assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"

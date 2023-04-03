@@ -223,3 +223,9 @@ def sklearn_is_patched(name=None, return_map=False):
     else:
         return sklearn_is_patched_orig(
             name, get_map=get_patch_map, return_map=return_map)
+
+
+def is_patched_instance(instance: object) -> bool:
+    """Returns True if the `instance` is patched with scikit-learn-intelex"""
+    module = getattr(instance, "__module__", "")
+    return ("daal4py" in module) or ("sklearnex" in module)
