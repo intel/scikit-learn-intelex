@@ -56,6 +56,9 @@ jobs:
       conda create -y -q -n CB -c intel python=$(python.version) dal-devel impi-devel
     displayName: 'Conda create'
   - script: |
+      bash .ci/scripts/describe_system.sh
+    displayName: 'System info'
+  - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       pip install -r requirements-dev.txt
