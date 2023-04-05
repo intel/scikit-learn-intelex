@@ -23,7 +23,7 @@ import sys
 import pytest
 from _models_info import TO_SKIP
 
-from sklearnex import is_patched_instance, patch_sklearn, unpatch_sklearn
+from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
 
 
 def get_branch(s):
@@ -94,45 +94,20 @@ def _load_all_models(patched):
     if patched:
         patch_sklearn()
 
-    from sklearn.cluster import DBSCAN, KMeans
-    from sklearn.decomposition import PCA
-    from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-    from sklearn.linear_model import (
-        ElasticNet,
-        Lasso,
-        LinearRegression,
-        LogisticRegression,
-        Ridge,
-    )
-    from sklearn.manifold import TSNE
-    from sklearn.neighbors import (
-        KNeighborsClassifier,
-        KNeighborsRegressor,
-        LocalOutlierFactor,
-        NearestNeighbors,
-    )
-    from sklearn.svm import SVC, SVR, NuSVC, NuSVR
-
     models = [
-        DBSCAN(),
-        ElasticNet(),
-        KMeans(),
-        KNeighborsClassifier(),
-        KNeighborsRegressor(),
-        Lasso(),
-        LinearRegression(),
-        LocalOutlierFactor(),
-        LogisticRegression(),
-        NearestNeighbors(),
-        NuSVC(),
-        NuSVR(),
-        PCA(),
-        RandomForestClassifier(),
-        RandomForestRegressor(),
-        Ridge(),
-        SVC(),
-        SVR(),
-        TSNE(),
+        getattr(patch_infos[0][0][0], patch_infos[0][0][1])()
+        for key, patch_infos in get_patch_map().items()
+        if key
+        not in (
+            "distances",
+            "logistic",
+            "train_test_split",
+            "fin_check",
+            "roc_auc_score",
+            "set_config",
+            "get_config",
+            "config_context",
+        )
     ]
 
     if patched:
