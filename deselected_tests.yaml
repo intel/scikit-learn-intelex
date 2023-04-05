@@ -77,7 +77,7 @@ deselected_tests:
   # Cache directory is not accessible on some systems
   - utils/tests/test_validation.py::test_check_memory
 
-  # OneDAL doesn't throw error if resulting coeffs are not finite
+  # oneDAL doesn't throw error if resulting coeffs are not finite
   - linear_model/tests/test_coordinate_descent.py::test_enet_nonfinite_params
   - svm/tests/test_svm.py::test_svc_nonfinite_params
 
@@ -131,7 +131,7 @@ deselected_tests:
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
 
-  # Sklearn expects an exception for sparse matrices with 64-bit integer indices,
+  # sklearn expects an exception for sparse matrices with 64-bit integer indices,
   # sklearnex works correctly with 64-bit integer indices
   - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
   - utils/tests/test_estimator_checks.py::test_xfail_ignored_in_check_estimator
@@ -186,7 +186,7 @@ deselected_tests:
   # https://github.com/oneapi-src/oneDAL/issues/495
   - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement <0.24
 
-  # OneAPI Data Analytics Library (oneDAL) doesn't support sample_weight (back to sklearn),
+  # oneAPI Data Analytics Library (oneDAL) doesn't support sample_weight (back to sklearn),
   # sufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
 
@@ -203,14 +203,14 @@ deselected_tests:
   # The result is depend on random state, for random_state=777 in RandomForestClassifier the test is passed
   - ensemble/tests/test_voting.py::test_majority_label_iris
 
-  # Sklearnex RF threads are used internally and are not explicitly specified
+  # sklearnex RF threads are used internally and are not explicitly specified
   - ensemble/tests/test_forest.py::test_backend_respected
 
-  # Sklearnex does not support accessing trees through the result variable
+  # sklearnex does not support accessing trees through the result variable
   - ensemble/tests/test_forest.py::test_warm_start
   - inspection/tests/test_partial_dependence.py::test_recursion_decision_tree_vs_forest_and_gbdt[0] >=0.23
 
-  # Sklearnex implementation builds different trees compared to sklearn
+  # sklearnex implementation builds different trees compared to sklearn
   # Comparison of tree forest will fail
   - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_poisson_vs_mse
