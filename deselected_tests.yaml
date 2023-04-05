@@ -164,7 +164,7 @@ deselected_tests:
   - tests/test_common.py::test_transformers_get_feature_names_out[KMeans()] >=1.0
   - tests/test_common.py::test_transformers_get_feature_names_out[PCA()] >=1.0
 
-  # OneAPI Data Analytics Library (oneDAL) does not check convergence for tol == 0.0 for ease of benchmarking
+  # oneAPI Data Analytics Library (oneDAL) does not check convergence for tol == 0.0 for ease of benchmarking
   - cluster/tests/test_k_means.py::test_kmeans_convergence >=0.23
   - cluster/tests/test_k_means.py::test_kmeans_verbose >=0.23
 
