@@ -102,7 +102,7 @@ def get_patch_map():
                     None,
                 ]
             ]
-            mapping["randomrorestclassifier"] = mapping["random_forest_classifier"]
+            mapping["randomforestclassifier"] = mapping["random_forest_classifier"]
             mapping["randomforestregressor"] = mapping["random_forest_regressor"]
 
             # PCA
