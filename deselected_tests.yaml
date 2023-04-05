@@ -213,7 +213,6 @@ deselected_tests:
   # sklearnex implementation builds different trees compared to sklearn
   # Comparison of tree forest will fail
   - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_poisson_vs_mse
   - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
