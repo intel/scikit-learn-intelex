@@ -19,9 +19,11 @@ import pathlib
 import re
 import subprocess
 import sys
+from inspect import isclass
 
 import pytest
 from _models_info import TO_SKIP
+from sklearn.base import BaseEstimator
 
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
 
@@ -94,21 +96,15 @@ def _load_all_models(patched):
     if patched:
         patch_sklearn()
 
-    models = [
-        getattr(patch_infos[0][0][0], patch_infos[0][0][1])()
-        for key, patch_infos in get_patch_map().items()
-        if key
-        not in (
-            "distances",
-            "logistic",
-            "train_test_split",
-            "fin_check",
-            "roc_auc_score",
-            "set_config",
-            "get_config",
-            "config_context",
-        )
-    ]
+    models = []
+    for patch_infos in get_patch_map().values():
+        maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
+        if (
+            maybe_class is not None
+            and isclass(maybe_class)
+            and issubclass(maybe_class, BaseEstimator)
+        ):
+            models.append(maybe_class())
 
     if patched:
         unpatch_sklearn()
