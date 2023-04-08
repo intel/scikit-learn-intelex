@@ -41,8 +41,6 @@ def get_patch_map():
     mapping = _get_map_of_algorithms().copy()
 
     if _is_new_patching_available():
-        # Classes for patching
-
         # Scikit-learn* modules
         import sklearn as base_module
         import sklearn.decomposition as decomposition_module
@@ -51,6 +49,7 @@ def get_patch_map():
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
 
+        # Classes and functions for patching
         from ._config import config_context as config_context_sklearnex
         from ._config import get_config as get_config_sklearnex
         from ._config import set_config as set_config_sklearnex
@@ -58,6 +57,10 @@ def get_patch_map():
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
+        from .svm import SVC as SVC_sklearnex
+        from .svm import SVR as SVR_sklearnex
+        from .svm import NuSVC as NuSVC_sklearnex
+        from .svm import NuSVR as NuSVR_sklearnex
 
         # Preview classes for patching
         from .preview.decomposition import PCA as PCA_sklearnex
@@ -68,14 +71,8 @@ def get_patch_map():
             RandomForestRegressor as RandomForestRegressor_sklearnex,
         )
         from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
-        from .svm import SVC as SVC_sklearnex
-        from .svm import SVR as SVR_sklearnex
-        from .svm import NuSVC as NuSVC_sklearnex
-        from .svm import NuSVR as NuSVR_sklearnex
 
         # Patch for mapping
-        # Algorithms
-
         if _is_preview_enabled():
             # Ensemble
             mapping.pop("random_forest_classifier")
