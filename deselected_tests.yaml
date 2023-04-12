@@ -99,7 +99,7 @@ deselected_tests:
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-False-True-newton-cg]
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-False-True-lbfgs]
 
-  # Base scikit-learn estimator is N/A for sklearnex ensembles
+  # Base scikit-learn estimator is N/A for scikit-learn-intelex ensembles
   - ensemble/tests/test_forest.py::test_base_estimator_property_deprecated
 
   # Difference of assigned dtype: int64 (scikit-learn) vs. int32 (oneDAL/scikit-learn-intelex)
@@ -127,7 +127,7 @@ deselected_tests:
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[SVC]
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[NuSVC]
 
-  # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with custom and precompute kernel
+  # Different models between oneAPI Data Analytics Library (oneDAL) and stock scikit-learn with custom and precompute kernel
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
 
@@ -391,7 +391,7 @@ reduced_tests:
 
 public:
   - tests/test_common.py::test_estimators
-  # Failed in stock sklearn
+  # Failed in stock scikit-learn
   - metrics/tests/test_common.py::test_not_symmetric_metric[precision_recall_curve]
   - metrics/tests/test_common.py::test_binary_sample_weight_invariance[precision_recall_curve]
 
