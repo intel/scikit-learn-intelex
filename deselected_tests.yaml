@@ -186,7 +186,7 @@ deselected_tests:
   # https://github.com/oneapi-src/oneDAL/issues/495
   - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement <0.24
 
-  # oneAPI Data Analytics Library (oneDAL) doesn't support sample_weight (back to sklearn),
+  # oneAPI Data Analytics Library (oneDAL) doesn't support sample_weight (back to scikit-learn),
   # sufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
 
