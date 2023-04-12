@@ -81,11 +81,11 @@ deselected_tests:
   - linear_model/tests/test_coordinate_descent.py::test_enet_nonfinite_params
   - svm/tests/test_svm.py::test_svc_nonfinite_params
 
-  # Different exception types in sklearnex and sklearn
+  # Different exception types in scikit-learn-intelex and scikit-learn
   - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[asarray-X]
   - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[csr_matrix-X]
 
-  # Extra warning from sklearnex fails sklearn warning check
+  # Extra warning from scikit-learn-intelex fails scikit-learn warning check
   # TODO: investigate - is this warning expected?
   - linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-ElasticNet] >=1.1,<1.2
   - linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-Lasso] >=1.1,<1.2
@@ -102,11 +102,11 @@ deselected_tests:
   # Base sklearn estimator is N/A for sklearnex ensembles
   - ensemble/tests/test_forest.py::test_base_estimator_property_deprecated
 
-  # Difference of assigned dtype: int64 (sklearn) vs. int32 (oneDAL/sklearnex)
+  # Difference of assigned dtype: int64 (scikit-learn) vs. int32 (oneDAL/scikit-learn-intelex)
   - cluster/_dbscan.py::sklearn.cluster._dbscan.DBSCAN
   - neighbors/_base.py::sklearn.neighbors._base.KNeighborsMixin.kneighbors
 
-  # Difference between sklearn and sklearnex methods of kNN
+  # Difference between scikit-learn and scikit-learn-intelex methods of kNN
   - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-euclidean-True-1000-5-100-1]
   - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-minkowski-True-1000-5-100-1]
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-euclidean-1000-5-100]
@@ -123,7 +123,7 @@ deselected_tests:
   - ensemble/tests/test_bagging.py::test_sparse_classification
   - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
 
-  # Same results as in sklearn, but in a different order
+  # Same results as in scikit-learn, but in a different order
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[SVC]
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[NuSVC]
 
@@ -131,8 +131,8 @@ deselected_tests:
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
 
-  # sklearn expects an exception for sparse matrices with 64-bit integer indices,
-  # sklearnex works correctly with 64-bit integer indices
+  # scikit-learn expects an exception for sparse matrices with 64-bit integer indices,
+  # scikit-learn-intelex works correctly with 64-bit integer indices
   - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
   - utils/tests/test_estimator_checks.py::test_xfail_ignored_in_check_estimator
 
@@ -142,7 +142,7 @@ deselected_tests:
   # Bitwise comparison of SVR score using a print (diff = 2.220446049250313e-16)
   - svm/tests/test_svm.py::test_custom_kernel_not_array_input[SVR]
 
-  # This test needs a warning from sklearn. sklearnex raises the same warning
+  # This test needs a warning from scikit-learn. scikit-learn-intelex raises the same warning
   - tests/test_common.py::test_estimators[SVC()-check_supervised_y_2d]
   - tests/test_common.py::test_estimators[SVR()-check_supervised_y_2d]
   - tests/test_common.py::test_estimators[NuSVC()-check_supervised_y_2d]
@@ -159,8 +159,8 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_relocated_clusters >=0.23,<0.24
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters >=0.24
 
-  # In sklearn, these algorithms are not included in this test. However, sklearnex does and throws
-  # an error. This is due to the different structure of the transformer.__module__.split(".").
+  # In scikit-learn, these algorithms are not included in this test. However, scikit-learn-intelex 
+  # does and throws an error. This is due to the different structure of the transformer.__module__.split(".").
   - tests/test_common.py::test_transformers_get_feature_names_out[KMeans()] >=1.0
   - tests/test_common.py::test_transformers_get_feature_names_out[PCA()] >=1.0
 
@@ -195,22 +195,22 @@ deselected_tests:
   # See: https://github.com/IntelPython/daal4py/issues/275
   - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties >=0.24
 
-  # Different interpretation of trees compared to sklearn
+  # Different interpretation of trees compared to scikit-learn
   # Looks like we need to align tree traversal. This problem will be fixed
   - ensemble/tests/test_forest.py::test_min_samples_leaf
 
-  # Different random number generation engine in oneDAL and sklearn
+  # Different random number generation engine in oneDAL and scikit-learn
   # The result is depend on random state, for random_state=777 in RandomForestClassifier the test is passed
   - ensemble/tests/test_voting.py::test_majority_label_iris
 
-  # sklearnex RF threads are used internally and are not explicitly specified
+  # scikit-learn-intelex RF threads are used internally and are not explicitly specified
   - ensemble/tests/test_forest.py::test_backend_respected
 
-  # sklearnex does not support accessing trees through the result variable
+  # scikit-learn-intelex does not support accessing trees through the result variable
   - ensemble/tests/test_forest.py::test_warm_start
   - inspection/tests/test_partial_dependence.py::test_recursion_decision_tree_vs_forest_and_gbdt[0] >=0.23
 
-  # sklearnex implementation builds different trees compared to sklearn
+  # scikit-learn-intelex implementation builds different trees compared to scikit-learn
   # Comparison of tree forest will fail
   - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_poisson_vs_mse
@@ -238,17 +238,17 @@ deselected_tests:
   - model_selection/tests/test_search.py::test_grid_search_pipeline_steps
   - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
 
-  # Different results sklearnex and sklearn linear regression with weights. Need to investigate.
+  # Different results scikit-learn-intelex and scikit-learn linear regression with weights. Need to investigate.
   - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=1.0
 
   # Patched and unpatched kmeans set same values to different clusters. Need to investigate.
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0
 
-  # OOB scores in sklearn and oneDAL are different because of different random number generators
+  # OOB scores in scikit-learn and oneDAL are different because of different random number generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
 
-  # Need a warning from sklearn if some samples do not have OOB scores that can not be raised from oneDAL
+  # Need a warning from scikit-learn if some samples do not have OOB scores that can not be raised from oneDAL
   - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestRegressor]
   - ensemble/tests/test_forest.py::test_oob_score_classifiers[RandomForestClassifier]
@@ -275,7 +275,7 @@ deselected_tests:
   # We use similar statements, but with different words
   - ensemble/tests/test_gradient_boosting.py::test_gradient_boosting_with_init_pipeline >=1.0
 
-  # Data for the tests is generated by using SVC. It is not equal to stock sklearn
+  # Data for the tests is generated by using SVC. It is not equal to stock scikit-learn
   - metrics/tests/test_ranking.py::test_precision_recall_curve >=0.22,<0.24
 
   # Some values in PCA.components_ (in the last component) aren't equal (0.6 on average
@@ -290,7 +290,7 @@ deselected_tests:
   # 'randomized' PCA expected, but 'full' is given.
   - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
 
-  # Sklearn logistic regression predict depends from decision_function while d4p is not.
+  # Scikit-learn logistic regression predict depends from decision_function while d4p is not.
   # Assertion error in check_estimator (PoorScoreLogisticRegression())
   - utils/tests/test_estimator_checks.py::test_check_estimator >=0.24
 
@@ -300,7 +300,7 @@ deselected_tests:
   # RandomForestRegressor sum(y_pred)!=sum(y_true)
   - ensemble/tests/test_forest.py::test_balance_property_random_forest[squared_error] >=1.0
 
-  # This tests fail on mac mini 8.1 with stock sklearn
+  # This tests fail on mac mini 8.1 with stock scikit-learn
   - semi_supervised/tests/test_label_propagation.py
 
   # This test fails because with patch config_context with new options, but the
@@ -310,10 +310,10 @@ deselected_tests:
   # HalvingGridSearchCV with Ridge and PCA didn't have feature_name_in. Need to fix.
   - tests/test_common.py::test_pandas_column_name_consistency >=1.0.1
 
-  # Some sklearnex docstrings differ from sklearn.
+  # Some scikit-learn-intelex docstrings differ from scikit-learn.
   - tests/test_docstrings.py >=1.0.2
 
-  # Accuracy of sklearnex and sklearn may differ due to different approaches
+  # Accuracy of scikit-learn-intelex and scikit-learn may differ due to different approaches
   - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately_with_precomputed_distances
   - manifold/tests/test_t_sne.py::test_bh_match_exact
   - manifold/tests/test_t_sne.py::test_uniform_grid[barnes_hut]
