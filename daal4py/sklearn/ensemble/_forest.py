@@ -641,6 +641,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
+            self.splitterMode = splitterMode
     else:
         def __init__(self,
                      n_estimators=100,
@@ -688,6 +689,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
+            self.splitterMode = splitterMode
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
@@ -959,6 +961,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
+            self.splitterMode = splitterMode
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -1004,6 +1007,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
+            self.splitterMode = splitterMode
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
