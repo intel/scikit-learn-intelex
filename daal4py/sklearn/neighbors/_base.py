@@ -78,7 +78,9 @@ def parse_auto_method(estimator, method, n_samples, n_features):
         if estimator.metric == 'precomputed' or n_features > 11 or condition:
             result_method = 'brute'
         else:
-            if estimator.effective_metric_ in KDTree.valid_metrics:
+            kdtree_valid_metrics = KDTree.valid_metrics() \
+                if sklearn_check_version('1.3') else KDTree.valid_metrics
+            if estimator.effective_metric_ in kdtree_valid_metrics:
                 result_method = 'kd_tree'
             else:
                 result_method = 'brute'

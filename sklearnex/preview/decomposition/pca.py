@@ -28,6 +28,8 @@ from onedal.datatypes import _check_array
 from sklearn.utils.validation import check_array
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
+if sklearn_check_version('1.1') and not sklearn_check_version('1.2'):
+    from sklearn.utils import check_scalar
 if sklearn_check_version('0.23'):
     from sklearn.decomposition._pca import _infer_dimension
 else:
@@ -38,6 +40,9 @@ from sklearn.decomposition import PCA as sklearn_PCA
 
 
 class PCA(sklearn_PCA):
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
+
     def __init__(
         self,
         n_components=None,
@@ -83,6 +88,15 @@ class PCA(sklearn_PCA):
                                  % (n_components, type(n_components)))
 
     def fit(self, X, y=None):
+        if sklearn_check_version('1.2'):
+            self._validate_params()
+        elif sklearn_check_version('1.1'):
+            check_scalar(
+                self.n_oversamples,
+                "n_oversamples",
+                min_val=1,
+                target_type=numbers.Integral,
+            )
         self._fit(X)
         return self
 
@@ -93,12 +107,12 @@ class PCA(sklearn_PCA):
                 "TruncatedSVD for a possible alternative."
             )
 
-        X = _check_array(
-            X,
-            dtype=[np.float64, np.float32],
-            ensure_2d=True,
-            copy=False
-        )
+        if sklearn_check_version('0.23'):
+            X = self._validate_data(X, dtype=[np.float64, np.float32],
+                                    ensure_2d=True, copy=False)
+        else:
+            X = _check_array(X, dtype=[np.float64, np.float32],
+                             ensure_2d=True, copy=False)
 
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -200,7 +214,7 @@ class PCA(sklearn_PCA):
             'method': "precomputed",
         }
         self._onedal_estimator = onedal_PCA(**onedal_params)
-        self._onedal_estimator.fit(X, y, queue=queue)
+        self._onedal_estimator.fit(X, queue=queue)
         self._save_attributes()
 
         U = None

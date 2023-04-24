@@ -31,7 +31,12 @@ print('Starting examples validation')
 # third item is status - B
 print('DAAL version:', get_daal_version())
 
-exdir = os.path.dirname(os.path.realpath(__file__))
+runner_path = os.path.realpath(__file__)
+runner_dir = os.path.dirname(runner_path)
+examples_rootdir = jp(
+    os.path.dirname(os.path.abspath(os.path.join(runner_path,
+                                                 os.pardir))),
+    'examples')
 
 IS_WIN = False
 IS_MAC = False
@@ -52,9 +57,13 @@ else:
 assert 8 * struct.calcsize('P') in [32, 64]
 
 if 8 * struct.calcsize('P') == 32:
-    logdir = jp(exdir, '_results', 'ia32')
+    logdir = jp(runner_dir, '_results', 'ia32')
 else:
-    logdir = jp(exdir, '_results', 'intel64')
+    logdir = jp(runner_dir, '_results', 'intel64')
+
+ex_log_dirs = [
+    (jp(examples_rootdir, 'daal4py'), jp(logdir, 'daal4py')),
+    (jp(examples_rootdir, 'sklearnex'), jp(logdir, 'sklearnex'))]
 
 availabe_devices = []
 
@@ -73,8 +82,8 @@ if sycl_extention_available:
     except RuntimeError:
         gpu_available = False
     availabe_devices.append("cpu")
-    #validate that host and cpu devices avaialbe for logging reasons. Examples and
-    #vaidaton logic assumes that host and cpu devices are always available
+    # validate that host and cpu devices avaialbe for logging reasons. Examples and
+    # vaidaton logic assumes that host and cpu devices are always available
     print('Sycl gpu device: {}'.format(gpu_available))
 
 
@@ -129,14 +138,32 @@ req_version['decision_forest_classification_hist_batch.py'] = (2023, 'P', 1)
 req_version['decision_forest_classification_default_dense_batch.py'] = (2023, 'P', 1)
 req_version['decision_forest_classification_traverse_batch.py'] = (2023, 'P', 1)
 req_version['decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
+req_version['basic_statistics_spmd.py'] = (2023, 'P', 1)
+req_version['knn_bf_classification_spmd.py'] = (2023, 'P', 1)
+req_version['knn_bf_regression_spmd.py'] = (2023, 'P', 1)
+req_version['linear_regression_spmd.py'] = (2023, 'P', 1)
 
 req_device = defaultdict(lambda: [])
+req_device['basic_statistics_spmd.py'] = ["gpu"]
+req_device['knn_bf_classification_spmd.py'] = ["gpu"]
+req_device['knn_bf_regression_spmd.py'] = ["gpu"]
+req_device['linear_regression_spmd.py'] = ["gpu"]
+req_device['pca_spmd.py'] = ["gpu"]
+req_device['random_forest_classifier_spmd.py'] = ["gpu"]
+req_device['random_forest_regressor_spmd.py'] = ["gpu"]
 req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
 
 req_library = defaultdict(lambda: [])
+req_library['basic_statistics_spmd.py'] = ['dpctl', 'mpi4py']
 req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
 req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
 req_library['gbt_cls_model_create_from_catboost_batch.py'] = ['catboost']
+req_library['knn_bf_classification_spmd.py'] = ['dpctl', 'mpi4py']
+req_library['knn_bf_regression_spmd.py'] = ['dpctl', 'mpi4py']
+req_library['linear_regression_spmd.py'] = ['dpctl', 'mpi4py']
+req_library['pca_spmd.py'] = ['dpctl', 'mpi4py']
+req_library['random_forest_classifier_spmd.py'] = ['dpctl', 'mpi4py']
+req_library['random_forest_regressor_spmd.py'] = ['dpctl', 'mpi4py']
 
 req_os = defaultdict(lambda: [])
 
@@ -148,12 +175,21 @@ def get_exe_cmd(ex, nodist, nostream):
         if not check_version(req_version["sycl/" + os.path.basename(ex)],
                              get_daal_version()):
             return None
-        if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
+        if not check_device(
+                req_device["sycl/" + os.path.basename(ex)], availabe_devices):
             return None
         if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
             return None
 
     if os.path.dirname(ex).endswith("daal4py"):
+        if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
+            return None
+        if not check_library(req_library[os.path.basename(ex)]):
+            return None
+    if os.path.dirname(ex).endswith("sklearnex") and not nodist and \
+            ex.endswith('spmd.py'):
+        if not check_device(req_device[os.path.basename(ex)], availabe_devices):
+            return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
@@ -169,7 +205,7 @@ def get_exe_cmd(ex, nodist, nostream):
     return None
 
 
-def run_all(nodist=False, nostream=False):
+def run(exdir, logdir, nodist=False, nostream=False):
     success = 0
     n = 0
     if not os.path.exists(logdir):
@@ -184,7 +220,8 @@ def run_all(nodist=False, nostream=False):
                 logfn = jp(logdir, script.replace('.py', '.res'))
                 with open(logfn, 'w') as logfile:
                     print('\n##### ' + jp(dirpath, script))
-                    execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
+                    execute_string = get_exe_cmd(jp(dirpath, script),
+                                                 nodist, nostream)
                     if execute_string:
                         os.chdir(dirpath)
                         proc = subprocess.Popen(
@@ -201,20 +238,32 @@ def run_all(nodist=False, nostream=False):
                             print(out)
                             print(
                                 strftime("%H:%M:%S", gmtime()) + '\tFAILED'
-                                '\t' + script + '\twith errno\t' + str(proc.returncode)
+                                '\t' + script + '\twith errno'
+                                '\t' + str(proc.returncode)
                             )
                         else:
                             success += 1
-                            print(strftime("%H:%M:%S", gmtime()) + '\tPASSED\t' + script)
+                            print(strftime("%H:%M:%S", gmtime()) + '\t'
+                                  'PASSED\t' + script)
                     else:
                         success += 1
                         print(strftime("%H:%M:%S", gmtime()) + '\tSKIPPED\t' + script)
+    return success, n
 
-    if success != n:
-        print('{}/{} examples passed/skipped, {} failed'.format(success, n, n - success))
+
+def run_all(nodist=False, nostream=False):
+    success = 0
+    num = 0
+    for edir, ldir in ex_log_dirs:
+        s, n = run(edir, ldir, nodist, nostream)
+        success += s
+        num += n
+    if success != num:
+        print('{}/{} examples passed/skipped, '
+              '{} failed'.format(success, num, num - success))
         print('Error(s) occured. Logs can be found in ' + logdir)
         return 4711
-    print('{}/{} examples passed/skipped'.format(success, n))
+    print('{}/{} examples passed/skipped'.format(success, num))
     return 0
 
 

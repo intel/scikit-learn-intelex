@@ -16,6 +16,7 @@
 
 from abc import ABC
 from ...common._spmd_policy import _get_spmd_policy
+from ..._device_offload import support_usm_ndarray
 from onedal.linear_model import LinearRegression as LinearRegression_Batch
 
 
@@ -25,4 +26,11 @@ class BaseLinearRegressionSPMD(ABC):
 
 
 class LinearRegression(BaseLinearRegressionSPMD, LinearRegression_Batch):
-    pass
+
+    @support_usm_ndarray()
+    def fit(self, X, y, queue=None):
+        return super().fit(X, y, queue)
+
+    @support_usm_ndarray()
+    def predict(self, X, queue=None):
+        return super().predict(X, queue)

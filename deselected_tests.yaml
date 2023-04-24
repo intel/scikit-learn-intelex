@@ -14,23 +14,23 @@
 # limitations under the License.
 #===============================================================================
 
-# This file lists node ids (in pytest sense) of sklearn tests that
-# are to be deselected during test discovery step.
+# This file lists node ids (following pytest format) of scikit-learn tests
+# that are to be deselected during the test discovery step.
 #
 # Deselection can be predicated on the version of scikit-learn used.
 # Use - node_id cond, or - node_id cond1,cond2  where cond is OPver.
 # Supported OPs are >=, <=, ==, !=, >, <
 # For example,
 #    - tests/test_isotonic.py::test_permutation_invariance >0.18,<=0.19
-#  will exclude deselection in versions 0.18.1, and 0.18.2 only
+#  will exclude deselection in versions 0.18.1, and 0.18.2 only.
 
 deselected_tests:
-  # Non-critical but significant numerical difference in doctest results
+  # Non-critical, but there are significant numerical differences in doctest results
   - pipeline.py::sklearn.pipeline.FeatureUnion
   - ensemble/_forest.py::sklearn.ensemble._forest.RandomForestRegressor
   - ensemble/_voting.py::sklearn.ensemble._voting.VotingRegressor
 
-  # Non-critical but significant difference because of different implementations
+  # Non-critical, but there are significant differences due to different implementations
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[True-X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[oob_score1-X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_importances[RandomForestClassifier-gini-float64]
@@ -42,16 +42,53 @@ deselected_tests:
   - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-brute]
   - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-brute]
 
-  # cache directory is not accessible on some systems
+  # Same as above but for macOS only
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-auto] >=1.2 darwin
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-ball_tree] >=1.2 darwin
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-kd_tree] >=1.2 darwin
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-auto] >=1.2 darwin
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-ball_tree] >=1.2 darwin
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-kd_tree] >=1.2 darwin
+
+  # TODO: fix for Linear Regression failed to converge on macOS only
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est0] >=0.23 darwin
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est1] >=0.23 darwin
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est2] >=0.23 darwin
+  - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est3] >=0.23 darwin
+
+  # Random forest classifier selects a different most-important feature
+  # Feature importances:
+  # scikit-learn-intelex  [0.             0.00553064     0.71323666     0.2812327 ]
+  # scikit-learn          [1.59232288e-04 2.65131818e-02 2.63581110e-01 7.09746476e-01]
+  - feature_selection/tests/test_from_model.py::test_prefit_get_feature_names_out
+
+  # TODO: add support of subset invariance to SVM
+  - tests/test_common.py::test_estimators[SVC()-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[NuSVC()-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[SVR()-check_methods_subset_invariance]
+  - tests/test_common.py::test_estimators[NuSVR()-check_methods_subset_invariance]
+
+  # SVR.fit fails when input is two samples of one class
+  - preprocessing/tests/test_data.py::test_cv_pipeline_precomputed
+
+  # KDtree kNN rarely misses 0-distance points when kneighbors is used on same-fitting data
+  - manifold/tests/test_spectral_embedding.py::test_precomputed_nearest_neighbors_filtering
+
+  # Cache directory is not accessible on some systems
   - utils/tests/test_validation.py::test_check_memory
 
   # oneDAL doesn't throw error if resulting coeffs are not finite
   - linear_model/tests/test_coordinate_descent.py::test_enet_nonfinite_params
   - svm/tests/test_svm.py::test_svc_nonfinite_params
 
-  # Different exception types in sklearnex and sklearn
+  # Different exception types in scikit-learn-intelex and scikit-learn
   - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[asarray-X]
   - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[csr_matrix-X]
+
+  # Extra warning from scikit-learn-intelex fails scikit-learn warning check
+  # TODO: investigate - is this warning expected?
+  - linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-ElasticNet] >=1.1,<1.2
+  - linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-Lasso] >=1.1,<1.2
 
   # TODO: investigate copy failure of read-only buffer
   - linear_model/tests/test_coordinate_descent.py::test_read_only_buffer
@@ -62,14 +99,14 @@ deselected_tests:
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-False-True-newton-cg]
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-False-True-lbfgs]
 
-  # Base sklearn estimator is N/A for sklearnex ensembles
+  # Base scikit-learn estimator is N/A for scikit-learn-intelex ensembles
   - ensemble/tests/test_forest.py::test_base_estimator_property_deprecated
 
-  # Difference of assigined dtype: int64 (sklearn) vs. int32 (oneDAL/sklearnex)
+  # Difference of assigned dtype: int64 (scikit-learn) vs. int32 (oneDAL/scikit-learn-intelex)
   - cluster/_dbscan.py::sklearn.cluster._dbscan.DBSCAN
   - neighbors/_base.py::sklearn.neighbors._base.KNeighborsMixin.kneighbors
 
-  # Difference between sklearn and sklearnex methods of kNN
+  # Difference between scikit-learn and scikit-learn-intelex methods of kNN
   - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-euclidean-True-1000-5-100-1]
   - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-minkowski-True-1000-5-100-1]
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-euclidean-1000-5-100]
@@ -77,35 +114,35 @@ deselected_tests:
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-1-100-minkowski-1000-5-100]
   - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
 
-  # Model with sparse data are different between oneAPI Data Analytics Library (oneDAL) and stock sklearn
+  # Models with sparse data are different between oneAPI Data Analytics Library (oneDAL) and stock scikit-learn
   - svm/tests/test_sparse.py::test_svc
   - svm/tests/test_sparse.py::test_svc_iris
   - svm/tests/test_sparse.py::test_sparse_realdata
 
-  # decision function different 1.83697605e-06
+  # Decision function is different, 1.83697605e-06
   - ensemble/tests/test_bagging.py::test_sparse_classification
   - ensemble/tests/test_bagging.py::test_sparse_regression <0.23
 
-  # Same results as in scikit-learn, but in a different order.
+  # Same results as in scikit-learn, but in a different order
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[SVC]
   - svm/tests/test_svm.py::test_svc_ovr_tie_breaking[NuSVC]
 
-  # Different models between oneAPI Data Analytics Library (oneDAL) and stock sklearn with custom and precompute kernel
+  # Different models between oneAPI Data Analytics Library (oneDAL) and stock scikit-learn with custom and precompute kernel
   - svm/tests/test_svm.py::test_svc_clone_with_callable_kernel
   - svm/tests/test_svm.py::test_precomputed
 
-  # sklearn expects an exception for sparce matrices with 64-bit integer indices.
-  # sklearnex works correctly with 64-bit integer indices
+  # scikit-learn expects an exception for sparse matrices with 64-bit integer indices,
+  # scikit-learn-intelex works correctly with 64-bit integer indices
   - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
   - utils/tests/test_estimator_checks.py::test_xfail_ignored_in_check_estimator
 
-  # SVC._dual_coef_ is changing after fitting but result of prediction is still the same
+  # SVC._dual_coef_ is changing after fitting, but the result of prediction is still the same
   - svm/tests/test_svm.py::test_tweak_params
 
   # Bitwise comparison of SVR score using a print (diff = 2.220446049250313e-16)
   - svm/tests/test_svm.py::test_custom_kernel_not_array_input[SVR]
 
-  # This test needs a warning from sklearn. sklearnex raises the same warning
+  # This test needs a warning from scikit-learn. scikit-learn-intelex raises the same warning
   - tests/test_common.py::test_estimators[SVC()-check_supervised_y_2d]
   - tests/test_common.py::test_estimators[SVR()-check_supervised_y_2d]
   - tests/test_common.py::test_estimators[NuSVC()-check_supervised_y_2d]
@@ -122,7 +159,8 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_relocated_clusters >=0.23,<0.24
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters >=0.24
 
-  # In sklearn, these algorithms are not included in this test, but we do, and they give an error. This is due to the different structure of the transformer.__module__.split(".").
+  # In scikit-learn, these algorithms are not included in this test. However, scikit-learn-intelex
+  # does and throws an error. This is due to the different structure of the transformer.__module__.split(".").
   - tests/test_common.py::test_transformers_get_feature_names_out[KMeans()] >=1.0
   - tests/test_common.py::test_transformers_get_feature_names_out[PCA()] >=1.0
 
@@ -130,29 +168,30 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_kmeans_convergence >=0.23
   - cluster/tests/test_k_means.py::test_kmeans_verbose >=0.23
 
-  # For Newton-CG solver, solution computed in float32 disagrees with that of float64 a little more than
-  # the test expects, see https://github.com/scikit-learn/scikit-learn/pull/13645
+  # The Newton-CG solver solution computed in float32 disagrees with that of float64 by a small
+  # margin above the test threshold, see https://github.com/scikit-learn/scikit-learn/pull/13645
   - linear_model/tests/test_logistic.py::test_dtype_match
 
-  # This fails on certain platforms. Weighted data do not go through DAAL,
-  # unweighted do. Since convergence is not accomplished (comment in te test
-  # suggests that), coefficients are slightly different, resulting in 1 prediction
-  # disagreement.
+  # This fails on certain platforms. While weighted data does not go through DAAL,
+  # unweighted does. Since convergence does not occur (comment in the test
+  # suggests that) and because coefficients are slightly different,
+  # it results in a prediction disagreement in 1 case.
   - ensemble/tests/test_stacking.py::test_stacking_with_sample_weight[StackingClassifier]
 
-  # Insufficient accuracy of "coefs" and "intercept" in Elastic Net for multi-target problem
+  # Insufficient accuracy of "coefs" and "intercept" in Elastic Net for multi-target problems
   # https://github.com/oneapi-src/oneDAL/issues/494
   - linear_model/tests/test_coordinate_descent.py::test_enet_multitarget
 
-  # Insufficient accuracy of objective function in Elastic Net in case warm_start
+  # Insufficient accuracy of objective function in Elastic Net in case of warm_start
   # https://github.com/oneapi-src/oneDAL/issues/495
   - linear_model/tests/test_coordinate_descent.py::test_warm_start_convergence_with_regularizer_decrement <0.24
 
-  # oneAPI Data Analytics Library (oneDAL) doesn't support sample_weight (back to Sklearn), insufficient accuracy (similar to previous cases)
+  # oneAPI Data Analytics Library (oneDAL) doesn't support sample_weight (back to scikit-learn),
+  # sufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
 
-  # On small datasets, the regression coefficients for multi-target problem differ from scikit-learn. Coefficients matches for first label only.
-  # For big data the coefficients are close.
+  # The regression coefficients for multi-target problem differ from scikit-learn for small datasets.
+  # Coefficients matches for first label only and the coefficients are close for larger datasets.
   # See: https://github.com/IntelPython/daal4py/issues/275
   - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties >=0.24
 
@@ -164,16 +203,17 @@ deselected_tests:
   # The result is depend on random state, for random_state=777 in RandomForestClassifier the test is passed
   - ensemble/tests/test_voting.py::test_majority_label_iris
 
-  # Our threads are used internally and are not explicitly specified
+  # scikit-learn-intelex RF threads are used internally and are not explicitly specified
   - ensemble/tests/test_forest.py::test_backend_respected
 
-  # We do not support accessing trees through the result variable
+  # scikit-learn-intelex does not support accessing trees through the result variable
   - ensemble/tests/test_forest.py::test_warm_start
   - inspection/tests/test_partial_dependence.py::test_recursion_decision_tree_vs_forest_and_gbdt[0] >=0.23
 
-  # Our implementation builds different trees compared to skikit-learn
-  # Comparison of tree forest will be failed
+  # scikit-learn-intelex implementation builds different trees compared to scikit-learn
+  # Comparison of tree forest will fail
   - ensemble/tests/test_forest.py::test_class_weights[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_poisson_vs_mse
   - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
@@ -198,17 +238,17 @@ deselected_tests:
   - model_selection/tests/test_search.py::test_grid_search_pipeline_steps
   - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
 
-  # Different results sklearnex and sklearn linear regression with weights. Need to investigate.
+  # Different results scikit-learn-intelex and scikit-learn linear regression with weights. Need to investigate.
   - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=1.0
 
-  # Patched and unpatched kmeans belong same values to different clusters. Need to investigate.
-  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0,<=1.1
+  # Patched and unpatched kmeans set same values to different clusters. Need to investigate.
+  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0
 
-  # OOB scores in sklearn and oneDAL are different because of different random nuber generators
+  # OOB scores in scikit-learn and oneDAL are different because of different random number generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
 
-  # Need a warning from sklearn if some samples do not have OOB scores that can not be raised from oneDAL
+  # Need a warning from scikit-learn if some samples do not have OOB scores that can not be raised from oneDAL
   - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestRegressor]
   - ensemble/tests/test_forest.py::test_oob_score_classifiers[RandomForestClassifier]
@@ -218,7 +258,7 @@ deselected_tests:
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
   # The bugs are fixed in 2021.2 release
-  - ensemble/tests/test_forest.py::test_regression >=0.24 # pass for defaultDence method only
+  - ensemble/tests/test_forest.py::test_regression >=0.24 # pass for defaultDense method only
   - ensemble/tests/test_forest.py::test_boston <0.24
   - ensemble/tests/test_stacking.py::test_stacking_cv_influence
   - utils/tests/test_estimator_checks.py::test_check_estimator_clones
@@ -235,11 +275,12 @@ deselected_tests:
   # We use similar statements, but with different words
   - ensemble/tests/test_gradient_boosting.py::test_gradient_boosting_with_init_pipeline >=1.0
 
-  # Data for the tests is generated by using SVC. And it's not equal to stock sklearn
+  # Data for the tests is generated by using SVC. It is not equal to stock scikit-learn
   - metrics/tests/test_ranking.py::test_precision_recall_curve >=0.22,<0.24
 
-  # Some values in PCA.components_ (in the last component) aren't equal (0.6 on average for absolute error in this test)
-  # because of different implementations of PCA. Also, results are not stable.
+  # Some values in PCA.components_ (in the last component) aren't equal (0.6 on average
+  # for absolute error in this test) because of different implementations of PCA.
+  # The results are also not stable.
   - decomposition/tests/test_incremental_pca.py::test_whitening
 
   # Stability issue with max absolute difference: 0.00015992. Remove in the next release.
@@ -250,7 +291,7 @@ deselected_tests:
   - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
 
   # Scikit-learn logistic regression predict depends from decision_function while d4p is not.
-  # Assertion error in check_estimator(PoorScoreLogisticRegression())
+  # Assertion error in check_estimator (PoorScoreLogisticRegression())
   - utils/tests/test_estimator_checks.py::test_check_estimator >=0.24
 
   # Need to fix for next release
@@ -263,16 +304,16 @@ deselected_tests:
   - semi_supervised/tests/test_label_propagation.py
 
   # This test fails because with patch config_context with new options, but the
-  # test checks that only exact number of options is used
+  # test checks only the exact number of options that are used
   - tests/test_config.py::test_config_context
 
   # HalvingGridSearchCV with Ridge and PCA didn't have feature_name_in. Need to fix.
   - tests/test_common.py::test_pandas_column_name_consistency >=1.0.1
 
-  # Some sklearnex docstrings differ from scikit-learn.
+  # Some scikit-learn-intelex docstrings differ from scikit-learn.
   - tests/test_docstrings.py >=1.0.2
 
-  # Accuracy of sklearnex and sklearn may differ due to different approaches
+  # Accuracy of scikit-learn-intelex and scikit-learn may differ due to different approaches
   - manifold/tests/test_t_sne.py::test_preserve_trustworthiness_approximately_with_precomputed_distances
   - manifold/tests/test_t_sne.py::test_bh_match_exact
   - manifold/tests/test_t_sne.py::test_uniform_grid[barnes_hut]
@@ -283,7 +324,7 @@ deselected_tests:
   - ensemble/tests/test_bagging.py::test_classification
 
   # --------------------------------------------------------
-  # Not need of testing for daal4py patching
+  # No need to test daal4py patching
 reduced_tests:
   - cluster/tests/test_affinity_propagation.py
   - cluster/tests/test_bicluster.py
@@ -350,7 +391,7 @@ reduced_tests:
 
 public:
   - tests/test_common.py::test_estimators
-  # Failed in stock sklearn
+  # Failed in stock scikit-learn
   - metrics/tests/test_common.py::test_not_symmetric_metric[precision_recall_curve]
   - metrics/tests/test_common.py::test_binary_sample_weight_invariance[precision_recall_curve]
 

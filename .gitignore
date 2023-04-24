@@ -29,4 +29,4 @@ scikit_learn_intelex.egg-info
 record*
 
 # example .res files
-examples/daal4py/_results*
+tests/_results*
