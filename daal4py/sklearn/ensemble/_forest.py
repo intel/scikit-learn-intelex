@@ -262,7 +262,8 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
         minImpurityDecreaseInSplitNode=self.min_impurity_decrease,
         maxLeafNodes=0 if self.max_leaf_nodes is None else self.max_leaf_nodes,
         maxBins=self.maxBins,
-        minBinSize=self.minBinSize
+        minBinSize=self.minBinSize,
+        splitterMode=self.splitterMode
     )
     self._cached_estimators_ = None
     # compute
@@ -449,7 +450,8 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
         minImpurityDecreaseInSplitNode=self.min_impurity_decrease,
         maxLeafNodes=0 if self.max_leaf_nodes is None else self.max_leaf_nodes,
         maxBins=self.maxBins,
-        minBinSize=self.minBinSize
+        minBinSize=self.minBinSize,
+        splitterMode=self.splitterMode
     )
 
     self._cached_estimators_ = None
@@ -614,7 +616,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
                 ccp_alpha=0.0,
                 max_samples=None,
                 maxBins=256,
-                minBinSize=1):
+                minBinSize=1,
+                splitterMode='best'):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -660,7 +663,8 @@ class RandomForestClassifier(RandomForestClassifier_original):
                      ccp_alpha=0.0,
                      max_samples=None,
                      maxBins=256,
-                     minBinSize=1):
+                     minBinSize=1,
+                     splitterMode='best'):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -931,7 +935,8 @@ class RandomForestRegressor(RandomForestRegressor_original):
                 ccp_alpha=0.0,
                 max_samples=None,
                 maxBins=256,
-                minBinSize=1):
+                minBinSize=1,
+                splitterMode='best'):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -975,7 +980,8 @@ class RandomForestRegressor(RandomForestRegressor_original):
                      ccp_alpha=0.0,
                      max_samples=None,
                      maxBins=256,
-                     minBinSize=1):
+                     minBinSize=1,
+                     splitterMode='best'):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
