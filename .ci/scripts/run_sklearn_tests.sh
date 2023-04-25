@@ -24,7 +24,7 @@ cd $ci_dir
 # selected tests might be set externally
 # ('all' - special value to run all tests)
 export SELECTED_TESTS=${SELECTED_TESTS:-$(python scripts/select_sklearn_tests.py)}
-export DESELECTED_TESTS= $(python ../.circleci/deselect_tests.py ../deselected_tests.yaml)
+export DESELECTED_TESTS=$(python ../.circleci/deselect_tests.py ../deselected_tests.yaml)
 
 python scripts/run_sklearn_tests.py -d ${1:-none}
 exit $?
