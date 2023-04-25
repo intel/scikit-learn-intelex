@@ -61,6 +61,8 @@ def get_patch_map():
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
+        from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
+        from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
 
         # Preview classes for patching
         from .preview.decomposition import PCA as PCA_sklearnex
