@@ -53,8 +53,8 @@ from sklearn.base import clone
 from sklearn.tree import ExtraTreeClassifier, ExtraTreeRegressor
 from sklearn.tree._tree import Tree
 
-from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
-from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
+from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
+from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 
 from scipy import sparse as sp
@@ -83,10 +83,10 @@ class BaseForest(ABC):
         return self
 
     def _onedal_classifier(self, **onedal_params):
-        return onedal_RandomForestClassifier(**onedal_params)
+        return onedal_ExtraTreesClassifier(**onedal_params)
 
     def _onedal_regressor(self, **onedal_params):
-        return onedal_RandomForestRegressor(**onedal_params)
+        return onedal_ExtraTreesRegressor(**onedal_params)
 
     # TODO:
     # move to onedal modul.
@@ -329,7 +329,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
         -------
         self : object
         """
-        dispatch(self, 'ensemble.RandomForestClassifier.fit', {
+        dispatch(self, 'ensemble.ExtraTreesClassifier.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_ExtraTreesClassifier.fit,
         }, X, y, sample_weight)
@@ -414,7 +414,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        return dispatch(self, 'ensemble.RandomForestClassifier.predict', {
+        return dispatch(self, 'ensemble.ExtraTreesClassifier.predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_ExtraTreesClassifier.predict,
         }, X)
@@ -458,7 +458,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
                     (f'X has {num_features} features, '
                      f'but ExtraTreesClassifier is expecting '
                      f'{self.n_features_in_} features as input'))
-        return dispatch(self, 'ensemble.RandomForestClassifier.predict_proba', {
+        return dispatch(self, 'ensemble.ExtraTreesClassifier.predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_ExtraTreesClassifier.predict_proba,
         }, X)
@@ -534,7 +534,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
         return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'ensemble.RandomForestClassifier.fit':
+        if method_name == 'ensemble.ExtraTreesClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random':
                 warnings.warn("'random' splitter mode supports GPU devices only "
@@ -561,8 +561,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
                 return False
             else:
                 return True
-        if method_name in ['ensemble.RandomForestClassifier.predict',
-                           'ensemble.RandomForestClassifier.predict_proba']:
+        if method_name in ['ensemble.ExtraTreesClassifier.predict',
+                           'ensemble.ExtraTreesClassifier.predict_proba']:
             X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
@@ -580,7 +580,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        if method_name == 'ensemble.RandomForestClassifier.fit':
+        if method_name == 'ensemble.ExtraTreesClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 101)):
@@ -609,8 +609,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
                 return False
             else:
                 return True
-        if method_name in ['ensemble.RandomForestClassifier.predict',
-                           'ensemble.RandomForestClassifier.predict_proba']:
+        if method_name in ['ensemble.ExtraTreesClassifier.predict',
+                           'ensemble.ExtraTreesClassifier.predict_proba']:
             X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
@@ -924,7 +924,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseForest):
         return ready, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'ensemble.RandomForestRegressor.fit':
+        if method_name == 'ensemble.ExtraTreesRegressor.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 101)):
@@ -956,8 +956,8 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseForest):
                 return False
             else:
                 return True
-        if method_name in ['ensemble.RandomForestRegressor.predict',
-                           'ensemble.RandomForestRegressor.predict_proba']:
+        if method_name in ['ensemble.ExtraTreesRegressor.predict',
+                           'ensemble.ExtraTreesRegressor.predict_proba']:
             if not hasattr(self, '_onedal_model'):
                 return False
             elif sp.issparse(data[0]):
@@ -974,7 +974,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        if method_name == 'ensemble.RandomForestRegressor.fit':
+        if method_name == 'ensemble.ExtraTreesRegressor.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 101)):
@@ -1004,8 +1004,8 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseForest):
                 return False
             else:
                 return True
-        if method_name in ['ensemble.RandomForestRegressor.predict',
-                           'ensemble.RandomForestRegressor.predict_proba']:
+        if method_name in ['ensemble.ExtraTreesRegressor.predict',
+                           'ensemble.ExtraTreesRegressor.predict_proba']:
             X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
@@ -1119,7 +1119,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseForest):
                 "Either switch to `bootstrap=True` or set "
                 "`max_sample=None`."
             )
-        dispatch(self, 'ensemble.RandomForestRegressor.fit', {
+        dispatch(self, 'ensemble.ExtraTreesRegressor.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_ExtraTreesRegressor.fit,
         }, X, y, sample_weight)
@@ -1147,7 +1147,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseForest):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        return dispatch(self, 'ensemble.RandomForestRegressor.predict', {
+        return dispatch(self, 'ensemble.ExtraTreesRegressor.predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_ExtraTreesRegressor.predict,
         }, X)

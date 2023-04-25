@@ -566,3 +566,155 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
 
     def predict(self, X, queue=None):
         return super()._predict(X, _backend.decision_forest.regression, queue).ravel()
+
+
+class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
+    def __init__(self,
+                 n_estimators=100,
+                 criterion="gini",
+                 max_depth=None,
+                 min_samples_split=2,
+                 min_samples_leaf=1,
+                 min_weight_fraction_leaf=0.,
+                 max_features="auto",
+                 max_leaf_nodes=None,
+                 min_impurity_decrease=0.,
+                 min_impurity_split=None,
+                 bootstrap=False,
+                 oob_score=False,
+                 random_state=None,
+                 warm_start=False,
+                 class_weight=None,
+                 ccp_alpha=0.0,
+                 max_samples=None,
+                 max_bins=256,
+                 min_bin_size=1,
+                 infer_mode='class_responses',
+                 splitter_mode='random',
+                 voting_mode='weighted',
+                 error_metric_mode='none',
+                 variable_importance_mode='none',
+                 algorithm='dense',
+                 **kwargs):
+        super().__init__(
+            n_estimators=n_estimators,
+            criterion=criterion,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_weight_fraction_leaf=min_weight_fraction_leaf,
+            max_features=max_features,
+            max_leaf_nodes=max_leaf_nodes,
+            min_impurity_decrease=min_impurity_decrease,
+            min_impurity_split=min_impurity_split,
+            bootstrap=bootstrap,
+            oob_score=oob_score,
+            random_state=random_state,
+            warm_start=warm_start,
+            class_weight=class_weight,
+            ccp_alpha=ccp_alpha,
+            max_samples=max_samples,
+            max_bins=max_bins,
+            min_bin_size=min_bin_size,
+            infer_mode=infer_mode,
+            splitter_mode=splitter_mode,
+            voting_mode=voting_mode,
+            error_metric_mode=error_metric_mode,
+            variable_importance_mode=variable_importance_mode,
+            algorithm=algorithm)
+        self.is_classification = True
+
+    def _validate_targets(self, y, dtype):
+        y, self.class_weight_, self.classes_ = _validate_targets(
+            y, self.class_weight, dtype)
+
+        # Decapsulate classes_ attributes
+        # TODO:
+        # align with `n_classes_` and `classes_` attr with daal4py implementations.
+        # if hasattr(self, "classes_"):
+        #    self.n_classes_ = self.classes_
+        return y
+
+    def fit(self, X, y, sample_weight=None, queue=None):
+        return self._fit(X, y, sample_weight,
+                         _backend.decision_forest.classification, queue)
+
+    def predict(self, X, queue=None):
+        pred = super()._predict(X, _backend.decision_forest.classification, queue)
+
+        return np.take(
+            self.classes_,
+            pred.ravel().astype(
+                np.int64,
+                casting='unsafe'))
+
+    def predict_proba(self, X, queue=None):
+        return super()._predict_proba(X, _backend.decision_forest.classification, queue)
+
+
+class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
+    def __init__(self,
+                 n_estimators=100,
+                 criterion="squared_error",
+                 max_depth=None,
+                 min_samples_split=2,
+                 min_samples_leaf=1,
+                 min_weight_fraction_leaf=0.,
+                 max_features="auto",
+                 max_leaf_nodes=None,
+                 min_impurity_decrease=0.,
+                 min_impurity_split=None,
+                 bootstrap=False,
+                 oob_score=False,
+                 random_state=None,
+                 warm_start=False,
+                 class_weight=None,
+                 ccp_alpha=0.0,
+                 max_samples=None,
+                 max_bins=256,
+                 min_bin_size=1,
+                 infer_mode='class_responses',
+                 splitter_mode='random',
+                 voting_mode='weighted',
+                 error_metric_mode='none',
+                 variable_importance_mode='none',
+                 algorithm='dense',
+                 **kwargs):
+        super().__init__(
+            n_estimators=n_estimators,
+            criterion=criterion,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_weight_fraction_leaf=min_weight_fraction_leaf,
+            max_features=max_features,
+            max_leaf_nodes=max_leaf_nodes,
+            min_impurity_decrease=min_impurity_decrease,
+            min_impurity_split=min_impurity_split,
+            bootstrap=bootstrap,
+            oob_score=oob_score,
+            random_state=random_state,
+            warm_start=warm_start,
+            class_weight=class_weight,
+            ccp_alpha=ccp_alpha,
+            max_samples=max_samples,
+            max_bins=max_bins,
+            min_bin_size=min_bin_size,
+            infer_mode=infer_mode,
+            splitter_mode=splitter_mode,
+            voting_mode=voting_mode,
+            error_metric_mode=error_metric_mode,
+            variable_importance_mode=variable_importance_mode,
+            algorithm=algorithm)
+        self.is_classification = False
+
+    def fit(self, X, y, sample_weight=None, queue=None):
+        if sample_weight is not None:
+            if hasattr(sample_weight, '__array__'):
+                sample_weight[sample_weight == 0.0] = 1.0
+            sample_weight = [sample_weight]
+        return super()._fit(X, y, sample_weight,
+                            _backend.decision_forest.regression, queue)
+
+    def predict(self, X, queue=None):
+        return super()._predict(X, _backend.decision_forest.regression, queue).ravel()
