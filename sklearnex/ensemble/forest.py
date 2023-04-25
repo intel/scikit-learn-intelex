@@ -32,8 +32,8 @@ from abc import ABC
 
 from sklearn.exceptions import DataConversionWarning
 
-from ..._config import get_config, config_context
-from ..._device_offload import dispatch, wrap_output_data
+from .._config import get_config, config_context
+from .._device_offload import dispatch, wrap_output_data
 
 from sklearn.ensemble import ExtraTreesClassifier as sklearn_ExtraTreesClassifier
 from sklearn.ensemble import ExtraTreesRegressor as sklearn_ExtraTreesRegressor
