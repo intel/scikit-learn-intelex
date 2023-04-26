@@ -15,6 +15,6 @@
 # limitations under the License.
 #===============================================================================
 
-from .forest import RandomForestClassifier, RandomForestRegressor
+from .forest import RandomForestClassifier, RandomForestRegressor, ExtraTreesClassifier, ExtraTreesRegressor
 
-__all__ = ['RandomForestClassifier', 'RandomForestRegressor']
+__all__ = ['RandomForestClassifier', 'RandomForestRegressor', 'ExtraTreesClassifier', 'ExtraTreesRegressor']
