@@ -58,3 +58,4 @@ steps:
       call activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
+    condition: succeededOrFailed()
