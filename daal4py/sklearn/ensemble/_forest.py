@@ -1175,7 +1175,7 @@ class ExtraTreesClassifier(ExtraTreesClassifier_original):
                 max_features='sqrt' if sklearn_check_version('1.1') else 'auto',
                 max_leaf_nodes=None,
                 min_impurity_decrease=0.,
-                bootstrap=True,
+                bootstrap=False,
                 oob_score=False,
                 n_jobs=None,
                 random_state=None,
