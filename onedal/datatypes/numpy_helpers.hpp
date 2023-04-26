@@ -63,18 +63,18 @@
 
 #define SET_NPY_FEATURE(_T, _FUNCT, _EXCEPTION) \
     switch (_T) {                               \
-        case NPY_DOUBLE:                        \
-        case NPY_CDOUBLE:                       \
-        case NPY_DOUBLELTR:                     \
-        case NPY_CDOUBLELTR: {                  \
-            _FUNCT(double);                     \
-            break;                              \
-        }                                       \
         case NPY_FLOAT:                         \
         case NPY_CFLOAT:                        \
         case NPY_FLOATLTR:                      \
         case NPY_CFLOATLTR: {                   \
             _FUNCT(float);                      \
+            break;                              \
+        }                                       \
+        case NPY_DOUBLE:                        \
+        case NPY_CDOUBLE:                       \
+        case NPY_DOUBLELTR:                     \
+        case NPY_CDOUBLELTR: {                  \
+            _FUNCT(double);                     \
             break;                              \
         }                                       \
         case NPY_INT32: {                       \

@@ -39,7 +39,8 @@ from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegres
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
-    check_array)
+    check_array,
+    check_X_y)
 
 from onedal.datatypes import _check_array, _num_features, _num_samples
 
@@ -57,7 +58,7 @@ from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from scipy import sparse as sp
 
 if sklearn_check_version('1.2'):
-    from sklearn.utils._param_validation import Interval
+    from sklearn.utils._param_validation import Interval, StrOptions
 
 
 class BaseRandomForest(ABC):
@@ -78,6 +79,12 @@ class BaseRandomForest(ABC):
             self.oob_score_ = self._onedal_estimator.oob_score_
             self.oob_prediction_ = self._onedal_estimator.oob_prediction_
         return self
+
+    def _onedal_classifier(self, **onedal_params):
+        return onedal_RandomForestClassifier(**onedal_params)
+
+    def _onedal_regressor(self, **onedal_params):
+        return onedal_RandomForestRegressor(**onedal_params)
 
     # TODO:
     # move to onedal modul.
@@ -186,7 +193,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         _parameter_constraints: dict = {
             **sklearn_RandomForestClassifier._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+            "splitter_mode": [StrOptions({"best", "random"})]
         }
 
     if sklearn_check_version('1.0'):
@@ -211,7 +219,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 ccp_alpha=0.0,
                 max_samples=None,
                 max_bins=256,
-                min_bin_size=1):
+                min_bin_size=1,
+                splitter_mode='best'):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -236,6 +245,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
             # self._estimator = DecisionTreeClassifier()
     else:
         def __init__(self,
@@ -259,7 +269,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1):
+                     min_bin_size=1,
+                     splitter_mode='best'):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -287,6 +298,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
             # self._estimator = DecisionTreeClassifier()
 
     def fit(self, X, y, sample_weight=None):
@@ -339,8 +351,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             self._validate_params()
         else:
             self._check_parameters()
-        if sample_weight is not None:
-            sample_weight = self.check_sample_weight(sample_weight, X)
 
         correct_sparsity = not sp.issparse(X)
         correct_ccp_alpha = self.ccp_alpha == 0.0
@@ -524,7 +534,14 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random':
+                warnings.warn("'random' splitter mode supports GPU devices only "
+                              "and requires oneDAL version >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
+                return False
+            elif sp.issparse(X):
                 return False
             elif sp.issparse(y):
                 return False
@@ -533,6 +550,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             elif not self.ccp_alpha == 0.0:
                 return False
             elif self.warm_start:
+                return False
+            elif self.oob_score and not daal_check_version((2023, 'P', 101)):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
@@ -561,15 +580,26 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random' and \
+                    not daal_check_version((2023, 'P', 101)):
+                warnings.warn("'random' splitter mode requires OneDAL >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
             if not ready:
+                return False
+            elif sp.issparse(X):
                 return False
             elif sp.issparse(y):
                 return False
-            elif not sample_weight:  # `sample_weight` is not supported.
+            elif sp.issparse(sample_weight):
+                return False
+            elif sample_weight is not None:  # `sample_weight` is not supported.
                 return False
             elif not self.ccp_alpha == 0.0:
                 return False
             elif self.warm_start:
+                return False
+            elif self.oob_score:
                 return False
             elif not self.n_outputs_ == 1:
                 return False
@@ -596,9 +626,33 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        X, y = make2d(np.asarray(X)), make2d(np.asarray(y))
+        if sklearn_check_version('1.2'):
+            X, y = self._validate_data(
+                X, y, multi_output=False, accept_sparse=False,
+                dtype=[np.float64, np.float32]
+            )
+        else:
+            X, y = check_X_y(
+                X, y, accept_sparse=False, dtype=[np.float64, np.float32],
+                multi_output=False
+            )
 
-        y = check_array(y, ensure_2d=False)
+        if sample_weight is not None:
+            sample_weight = self.check_sample_weight(sample_weight, X)
+
+        y = np.atleast_1d(y)
+        if y.ndim == 2 and y.shape[1] == 1:
+            warnings.warn(
+                "A column-vector y was passed when a 1d array was"
+                " expected. Please change the shape of y to "
+                "(n_samples,), for example using ravel().",
+                DataConversionWarning,
+                stacklevel=2,
+            )
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
 
         y, expanded_class_weight = self._validate_y_class_weight(y)
 
@@ -620,7 +674,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 "Training data only contain information about one class.")
 
         if self.oob_score:
-            err = 'out_of_bag_error|out_of_bag_error_per_observation'
+            err = 'out_of_bag_error_accuracy|out_of_bag_error_decision_function'
         else:
             err = 'none'
 
@@ -648,10 +702,12 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             'min_bin_size': self.min_bin_size,
             'max_samples': self.max_samples
         }
+        if daal_check_version((2023, 'P', 101)):
+            onedal_params['splitter_mode'] = self.splitter_mode
         self._cached_estimators_ = None
 
         # Compute
-        self._onedal_estimator = onedal_RandomForestClassifier(**onedal_params)
+        self._onedal_estimator = self._onedal_classifier(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
@@ -664,34 +720,35 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         return self
 
     def _onedal_predict(self, X, queue=None):
+        X = check_array(X, dtype=[np.float32, np.float64])
+        check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = check_array(
-            X,
-            accept_sparse=False,  # is not supported
-            dtype=[np.float64, np.float32]
-        )
 
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_,
                        res.ravel().astype(np.int64, casting='unsafe'))
 
     def _onedal_predict_proba(self, X, queue=None):
+        X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self)
         if sklearn_check_version('0.23'):
             self._check_n_features(X, reset=False)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = check_array(
-            X,
-            accept_sparse=False,  # is not supported
-            dtype=[np.float64, np.float32]
-        )
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
 
 class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     __doc__ = sklearn_RandomForestRegressor.__doc__
+
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **sklearn_RandomForestRegressor._parameter_constraints,
+            "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+            "splitter_mode": [StrOptions({"best", "random"})]
+        }
 
     if sklearn_check_version('1.0'):
         def __init__(
@@ -715,7 +772,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 ccp_alpha=0.0,
                 max_samples=None,
                 max_bins=256,
-                min_bin_size=1):
+                min_bin_size=1,
+                splitter_mode='best'):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -739,6 +797,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -760,7 +819,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1):
+                     min_bin_size=1,
+                     splitter_mode='best'):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -787,6 +847,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
 
     @property
     def _estimators_(self):
@@ -844,10 +905,33 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
 
         return estimators_
 
+    def _onedal_ready(self, X, y, sample_weight):
+        # TODO:
+        # move some common checks for both devices here.
+
+        # We have to get `n_outputs_` before dispatching
+        # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
+        y = np.asarray(y)
+
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
+        self.n_outputs_ = y.shape[1]
+        ready = self.n_outputs_ == 1
+        return ready, X, y, sample_weight
+
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.RandomForestRegressor.fit':
-            X, y, sample_weight = data
-            if not (self.oob_score and daal_check_version(
+            ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random':
+                warnings.warn("'random' splitter mode supports GPU devices only "
+                              "and requires oneDAL version >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
+            if not ready:
+                return False
+            elif not (self.oob_score and daal_check_version(
                     (2021, 'P', 500)) or not self.oob_score):
                 return False
             elif self.criterion not in ["mse", "squared_error"]:
@@ -861,6 +945,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             elif not self.ccp_alpha == 0.0:
                 return False
             elif self.warm_start:
+                return False
+            elif self.oob_score and not daal_check_version((2023, 'P', 101)):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
@@ -886,9 +972,16 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        X, y, sample_weight = data
         if method_name == 'ensemble.RandomForestRegressor.fit':
-            if not (self.oob_score and daal_check_version(
+            ready, X, y, sample_weight = self._onedal_ready(*data)
+            if self.splitter_mode == 'random' and \
+                    not daal_check_version((2023, 'P', 101)):
+                warnings.warn("'random' splitter mode requires OneDAL >= 2023.1.1. "
+                              "Using 'best' mode instead.", RuntimeWarning)
+                self.splitter_mode = 'best'
+            if not ready:
+                return False
+            elif not (self.oob_score and daal_check_version(
                     (2021, 'P', 500)) or not self.oob_score):
                 return False
             elif self.criterion not in ["mse", "squared_error"]:
@@ -897,13 +990,13 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif sp.issparse(y):
                 return False
-            elif not sample_weight:  # `sample_weight` is not supported.
+            elif sample_weight is not None:  # `sample_weight` is not supported.
                 return False
             elif not self.ccp_alpha == 0.0:
                 return False
             elif self.warm_start:
                 return False
-            elif not self.n_outputs_ == 1:
+            elif self.oob_score:
                 return False
             elif hasattr(self, 'estimators_'):
                 return False
@@ -911,6 +1004,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return True
         if method_name in ['ensemble.RandomForestRegressor.predict',
                            'ensemble.RandomForestRegressor.predict_proba']:
+            X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
             elif sp.issparse(X):
@@ -949,7 +1043,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         rs_ = check_random_state(self.random_state)
 
         if self.oob_score:
-            err = 'out_of_bag_error|out_of_bag_error_per_observation'
+            err = 'out_of_bag_error_r2|out_of_bag_error_prediction'
         else:
             err = 'none'
 
@@ -973,8 +1067,10 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             'variable_importance_mode': 'mdi',
             'max_samples': self.max_samples
         }
+        if daal_check_version((2023, 'P', 101)):
+            onedal_params['splitter_mode'] = self.splitter_mode
         self._cached_estimators_ = None
-        self._onedal_estimator = onedal_RandomForestRegressor(**onedal_params)
+        self._onedal_estimator = self._onedal_regressor(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
@@ -986,14 +1082,9 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = check_array(
-            X,
-            accept_sparse=False,
-            dtype=[np.float64, np.float32]
-        )
+        X = self._validate_X_predict(X)
         return self._onedal_estimator.predict(X, queue=queue)
 
-    @wrap_output_data
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
@@ -1026,16 +1117,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 "Either switch to `bootstrap=True` or set "
                 "`max_sample=None`."
             )
-        # We have to get `n_outputs_` before dispatching
-        # oneDAL requirements: Number of outputs `n_outputs_` should be 1.
-        y = np.asarray(y)
-
-        if y.ndim == 1:
-            # reshape is necessary to preserve the data contiguity against vs
-            # [:, np.newaxis] that does not.
-            y = np.reshape(y, (-1, 1))
-        self.n_outputs_ = y.shape[1]
-
         dispatch(self, 'ensemble.RandomForestRegressor.fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_RandomForestRegressor.fit,

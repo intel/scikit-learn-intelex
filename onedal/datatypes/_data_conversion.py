@@ -14,61 +14,90 @@
 # limitations under the License.
 # ===============================================================================
 
+import numpy as np
+import warnings
+
+from onedal import _is_dpc_backend
 from onedal import _backend
 from daal4py.sklearn._utils import make2d
 
+try:
+    import dpctl
+    import dpctl.tensor as dpt
+    dpctl_available = dpctl.__version__ >= '0.14'
+except ImportError:
+    dpctl_available = False
+
+
+def _apply_and_pass(func, *args):
+    if len(args) == 1:
+        return func(args[0])
+    return tuple(map(func, args))
+
 
 def from_table(*args):
-    if len(args) == 1:
-        return _backend.from_table(args[0])
-    return (_backend.from_table(item) for item in args)
+    return _apply_and_pass(_backend.from_table, *args)
 
 
 def convert_one_to_table(arg):
+    if dpctl_available:
+        if isinstance(arg, dpt.usm_ndarray):
+            return _backend.dpctl_to_table(arg)
     arg = make2d(arg)
     return _backend.to_table(arg)
 
 
 def to_table(*args):
-    if len(args) == 1:
-        return convert_one_to_table(args[0])
-    return (convert_one_to_table(item) for item in args)
+    return _apply_and_pass(convert_one_to_table, *args)
 
-
-from onedal import _is_dpc_backend
 
 if _is_dpc_backend:
-    import numpy as np
-
     from ..common._policy import _HostInteropPolicy
 
-    def _convert_to_supported_impl(policy, *data):
+    def _convert_to_supported(policy, *data):
+        def func(x):
+            return x
+
         # CPUs support FP64 by default
         if isinstance(policy, _HostInteropPolicy):
-            return data
+            return _apply_and_pass(func, *data)
 
         # It can be either SPMD or DPCPP policy
         device = policy._queue.sycl_device
 
         def convert_or_pass(x):
-            if x.dtype is np.float64:
+            if (x is not None) and (x.dtype == np.float64):
+                warnings.warn("Data will be converted into float32 from "
+                              "float64 because device does not support it",
+                              RuntimeWarning, )
                 return x.astype(np.float32)
             else:
                 return x
 
         if not device.has_aspect_fp64:
-            return (convert_or_pass(x) for x in data)
-        else:
-            return data
+            func = convert_or_pass
+
+        return _apply_and_pass(func, *data)
+
 else:
-    def _convert_to_supported_impl(policy, *data):
-        return data
+    def _convert_to_supported(policy, *data):
+        def func(x):
+            return x
+
+        return _apply_and_pass(func, *data)
 
 
-def _convert_to_supported(policy, *data):
-    res = _convert_to_supported_impl(policy, *data)
-
-    if len(data) == 1:
-        return res[0]
+#TODO: Update with dpctl
+#For now it will fall back to numpy
+def _convert_one_to_dataframe(policy, x):
+    is_numpy = isinstance(x, np.ndarray)
+    if (x is None) or is_numpy:
+        return x
     else:
-        return res
+        return np.asarray(x)
+
+
+def _convert_to_dataframe(policy, *data):
+    def _convert_one(x):
+        return _convert_one_to_dataframe(policy, x)
+    return _apply_and_pass(_convert_one, *data)

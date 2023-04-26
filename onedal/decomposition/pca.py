@@ -14,12 +14,13 @@
 # limitations under the License.
 #===============================================================================
 
+import numpy as np
+
 from onedal import _backend
 from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
+from ..datatypes import _convert_to_supported
 from daal4py.sklearn._utils import sklearn_check_version
-
-import numpy as np
 
 
 class PCA():
@@ -37,17 +38,26 @@ class PCA():
     def get_onedal_params(self, data):
         return {
             'fptype':
-                'float' if data.dtype is np.dtype('float32') else 'double',
+                'float' if data.dtype == np.float32 else 'double',
             'method': self.method,
             'n_components': self.n_components,
             'is_deterministic': self.is_deterministic
         }
 
-    def fit(self, X, y, queue):
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
+
+    def fit(self, X, queue):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
-        policy = _get_policy(queue, X, y)
+        policy = self._get_policy(queue, X)
+        # TODO: investigate why np.ndarray with OWNDATA=FALSE flag
+        # fails to be converted to oneDAL table
+        if isinstance(X, np.ndarray) and not X.flags['OWNDATA']:
+            X = X.copy()
+        X = _convert_to_supported(policy, X)
+
         params = self.get_onedal_params(X)
         cov_result = _backend.covariance.compute(
             policy,
@@ -93,12 +103,15 @@ class PCA():
     def _create_model(self):
         m = _backend.decomposition.dim_reduction.model()
         m.eigenvectors = to_table(self.components_)
+        self._onedal_model = m
         return m
 
     def predict(self, X, queue):
-        policy = _get_policy(queue, X)
-        params = self.get_onedal_params(X)
+        policy = self._get_policy(queue, X)
         model = self._create_model()
+
+        X = _convert_to_supported(policy, X)
+        params = self.get_onedal_params(X)
         result = _backend.decomposition.dim_reduction.infer(policy,
                                                             params,
                                                             model,

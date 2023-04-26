@@ -1,6 +1,6 @@
 #!/bin/bash
 #===============================================================================
-# Copyright 2018 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #===============================================================================
-if [ -z $1 ]; then
-   python_version=$1
-else
-   python_version=3.7
-fi
-wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-bash miniconda.sh -b -p ~/miniconda
-export PATH=~/miniconda/bin:$PATH
-hash -r
-conda config --set always_yes yes --set changeps1 no
-conda update -q conda
-conda create -n bld python=${python_version} conda-build
-source activate bld
-conda install -q  python=${python_version} scipy pytest pandas pyyaml joblib numpydoc cython jinja2 numpy clang-tools pybind11 cmake
-conda install -q --override-channels -c conda-forge python=${python_version} dal dal-include
-python --version
-gcc -v
-g++ -v
-head /proc/cpuinfo
+
+wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
+sudo apt-get update
+sudo apt-get install -y intel-dpcpp-cpp-compiler-2023.1.0
+sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
+sudo mv -f /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga /opt/intel/oneapi/compiler/latest/linux/lib/oclfpga_

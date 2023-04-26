@@ -17,6 +17,7 @@
 #include "oneapi/dal/algo/knn.hpp"
 
 #include "onedal/common.hpp"
+#include "onedal/version.hpp"
 #include "onedal/primitives/pairwise_distances.hpp"
 #include <regex>
 
@@ -313,8 +314,13 @@ ONEDAL_PY_INIT_MODULE(neighbors) {
     using task_list = types<task::classification, task::regression, task::search>;
     auto sub = m.def_submodule("neighbors");
 
+#if defined(ONEDAL_DATA_PARALLEL_SPMD) && defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list_spmd, task_list);
+#else // defined(ONEDAL_DATA_PARALLEL_SPMD) && defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
+#endif // defined(ONEDAL_DATA_PARALLEL_SPMD) && defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 
     ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);

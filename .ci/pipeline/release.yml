@@ -16,8 +16,6 @@
 
 variables:
   DESCRIPTION: ReleaseTesting
-  DESELECT: --deselect ::test_svc_clone_with_callable_kernel --deselect ::test_precomputed --deselect ::test_tweak_params --deselect ::test_custom_kernel_not_array_input --deselect ::test_svc_raises_error_internal_representation --deselect ::test_svc_ovr_tie_breaking[SVC] --deselect ::test_svc_ovr_tie_breaking[NuSVC] --deselect ::test_gamma_auto --deselect ::test_gamma_scale
-  TEST_COMMAND: python -m sklearnex -m pytest -ra --disable-warnings --pyargs sklearn.svm.tests.test_svm $(DESELECT)
 
 jobs:
 - job: GeneratorPyPi
@@ -37,16 +35,14 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
   - script: |
-      pip install scikit-learn-intelex pandas pytest
+      pip install scikit-learn-intelex pandas pytest pyyaml cpufeature
     displayName: 'Install scikit-learn-intelex'
   - script: |
-      cd ..
-      python -c "import sklearnex"
-    displayName: 'Testing of import'
+      bash .ci/scripts/describe_system.sh
+    displayName: 'System info'
   - script: |
-      cd ..
-      $(TEST_COMMAND)
-    displayName: 'Testing of scikit-learn-intelex'
+      bash .ci/scripts/run_sklearn_tests.sh
+    displayName: 'Sklearn testing'
 - job: GeneratorConda
   steps:
   - bash: python .ci/scripts/gen_release_jobs.py --channels main conda-forge
@@ -73,17 +69,15 @@ jobs:
     displayName: Add sudo access
   - script: |
       conda update -y -q conda
-      conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest
+      conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest pyyaml
     displayName: 'Install scikit-learn-intelex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       $(conda.activate) CB
-      cd ..
-      python -c "import sklearnex"
-    displayName: 'Testing of import'
+      bash .ci/scripts/describe_system.sh
+    displayName: 'System info'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       $(conda.activate) CB
-      cd ..
-      $(TEST_COMMAND)
-    displayName: 'Testing of scikit-learn-intelex'
+      bash .ci/scripts/run_sklearn_tests.sh
+    displayName: 'Sklearn testing'
