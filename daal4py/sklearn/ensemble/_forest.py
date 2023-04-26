@@ -27,10 +27,12 @@ from daal4py.sklearn._utils import (
     PatchingConditionsChain)
 import logging
 
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, ExtraTreeClassifier, ExtraTreeRegressor
 from sklearn.tree._tree import Tree
 from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_original
 from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
+from sklearn.ensemble import ExtraTreesClassifier as ExtraTreesClassifier_original
+from sklearn.ensemble import ExtraTreesRegressor as ExtraTreesRegressor_original
 from sklearn.utils import (check_random_state, check_array, deprecated)
 from sklearn.utils.validation import (
     check_is_fitted,
@@ -232,7 +234,7 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     dfc_algorithm = daal4py.decision_forest_classification_training(
         nClasses=int(n_classes_),
         fptype=X_fptype,
-        method='hist',
+        method=self.method,
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap_
         if self.bootstrap is True else 1.,
@@ -293,7 +295,7 @@ def _daal_predict_classifier(self, X):
     if X.shape[1] != self.n_features_in_:
         raise ValueError(
             (f'X has {X.shape[1]} features, '
-             f'but RandomForestClassifier is expecting '
+             f'but {self.__class__.__name__} is expecting '
              f'{self.n_features_in_} features as input'))
     dfc_predictionResult = dfc_algorithm.compute(X, self.daal_model_)
 
@@ -330,7 +332,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         sample_weight = check_sample_weight(sample_weight, X)
 
     _patching_status = PatchingConditionsChain(
-        "sklearn.ensemble.RandomForestClassifier.fit")
+        f'sklearn.ensemble.{self.__class__.__name__}.fit')
     _dal_ready = _patching_status.and_conditions([
         (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
             "OOB score is only supported starting from 2021.5 version of oneDAL."),
@@ -379,7 +381,7 @@ def _fit_classifier(self, X, y, sample_weight=None):
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
         return self
-    return super(RandomForestClassifier, self).fit(
+    return super(self.__class__, self).fit(
         X, y, sample_weight=sample_weight)
 
 
@@ -422,7 +424,7 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     # create algorithm
     dfr_algorithm = daal4py.decision_forest_regression_training(
         fptype=getFPType(X),
-        method='hist',
+        method=self.method,
         nTrees=int(self.n_estimators),
         observationsPerTreeFraction=n_samples_bootstrap if self.bootstrap is True else 1.,
         featuresPerNode=int(_featuresPerNode),
@@ -493,7 +495,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
         )
 
     _patching_status = PatchingConditionsChain(
-        "sklearn.ensemble.RandomForestRegressor.fit")
+        f"sklearn.ensemble.'{self.__class__.__name__}'.fit")
     _dal_ready = _patching_status.and_conditions([
         (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
             "OOB score is only supported starting from 2021.5 version of oneDAL."),
@@ -539,7 +541,7 @@ def _fit_regressor(self, X, y, sample_weight=None):
             self._estimator = DecisionTreeRegressor()
         self.estimators_ = self._estimators_
         return self
-    return super(RandomForestRegressor, self).fit(
+    return super(self.__class__, self).fit(
         X, y, sample_weight=sample_weight)
 
 
@@ -547,7 +549,7 @@ def _daal_predict_regressor(self, X):
     if X.shape[1] != self.n_features_in_:
         raise ValueError(
             (f'X has {X.shape[1]} features, '
-             f'but RandomForestRegressor is expecting '
+             f'but {self.__class__.__name__} is expecting '
              f'{self.n_features_in_} features as input'))
     X_fptype = getFPType(X)
     dfr_alg = daal4py.decision_forest_regression_prediction(fptype=X_fptype)
@@ -642,6 +644,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             self.minBinSize = minBinSize
             self.min_impurity_split = None
             self.splitter = splitter
+            self.method = "hist"
     else:
         def __init__(self,
                      n_estimators=100,
@@ -690,6 +693,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.splitter = splitter
+            self.method = "hist"
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
@@ -962,6 +966,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             self.minBinSize = minBinSize
             self.min_impurity_split = None
             self.splitter = splitter
+            self.method = "hist"
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -1008,6 +1013,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.splitter = splitter
+            self.method = "hist"
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
@@ -1115,6 +1121,568 @@ class RandomForestRegressor(RandomForestRegressor_original):
         if not sklearn_check_version('1.0'):
             params['min_impurity_split'] = self.min_impurity_split
         est = DecisionTreeRegressor(**params)
+
+        # we need to set est.tree_ field with Trees constructed from Intel(R)
+        # oneAPI Data Analytics Library solution
+        estimators_ = []
+        random_state_checked = check_random_state(self.random_state)
+        for i in range(self.n_estimators):
+            est_i = clone(est)
+            est_i.set_params(
+                random_state=random_state_checked.randint(
+                    np.iinfo(
+                        np.int32).max))
+            if sklearn_check_version('1.0'):
+                est_i.n_features_in_ = self.n_features_in_
+            else:
+                est_i.n_features_ = self.n_features_in_
+            est_i.n_outputs_ = self.n_outputs_
+
+            tree_i_state_class = daal4py.getTreeState(self.daal_model_, i)
+            tree_i_state_dict = {
+                'max_depth': tree_i_state_class.max_depth,
+                'node_count': tree_i_state_class.node_count,
+                'nodes': tree_i_state_class.node_ar,
+                'values': tree_i_state_class.value_ar}
+
+            est_i.tree_ = Tree(
+                self.n_features_in_, np.array(
+                    [1], dtype=np.intp), self.n_outputs_)
+            est_i.tree_.__setstate__(tree_i_state_dict)
+            estimators_.append(est_i)
+
+        return estimators_
+
+class ExtraTreesClassifier(ExtraTreesClassifier_original):
+    __doc__ = ExtraTreesClassifier_original.__doc__
+
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **ExtraTreesClassifier_original._parameter_constraints,
+            "maxBins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "minBinSize": [Interval(numbers.Integral, 1, None, closed="left")]
+        }
+
+    if sklearn_check_version('1.0'):
+        def __init__(
+                self,
+                n_estimators=100,
+                criterion="gini",
+                max_depth=None,
+                min_samples_split=2,
+                min_samples_leaf=1,
+                min_weight_fraction_leaf=0.,
+                max_features='sqrt' if sklearn_check_version('1.1') else 'auto',
+                max_leaf_nodes=None,
+                min_impurity_decrease=0.,
+                bootstrap=True,
+                oob_score=False,
+                n_jobs=None,
+                random_state=None,
+                verbose=0,
+                warm_start=False,
+                class_weight=None,
+                ccp_alpha=0.0,
+                max_samples=None,
+                maxBins=256,
+                minBinSize=1,
+                splitter="random"):
+            super(ExtraTreesClassifier, self).__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight
+            )
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+            self.splitter = splitter
+            self.method = "defaultDense"
+    else:
+        def __init__(self,
+                     n_estimators=100,
+                     criterion="gini",
+                     max_depth=None,
+                     min_samples_split=2,
+                     min_samples_leaf=1,
+                     min_weight_fraction_leaf=0.,
+                     max_features="auto",
+                     max_leaf_nodes=None,
+                     min_impurity_decrease=0.,
+                     min_impurity_split=None,
+                     bootstrap=False,
+                     oob_score=False,
+                     n_jobs=None,
+                     random_state=None,
+                     verbose=0,
+                     warm_start=False,
+                     class_weight=None,
+                     ccp_alpha=0.0,
+                     max_samples=None,
+                     maxBins=256,
+                     minBinSize=1,
+                     splitter="random"):
+            super(ExtraTreesClassifier, self).__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                min_impurity_split=min_impurity_split,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight,
+                ccp_alpha=ccp_alpha,
+                max_samples=max_samples
+            )
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.splitter = splitter
+            self.method = "defaultDense"
+
+    def fit(self, X, y, sample_weight=None):
+        """
+        Build a forest of trees from the training set (X, y).
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The training input samples. Internally, its dtype will be converted
+            to ``dtype=np.float32``. If a sparse matrix is provided, it will be
+            converted into a sparse ``csc_matrix``.
+
+        y : array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The target values (class labels in classification, real numbers in
+            regression).
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights. If None, then samples are equally weighted. Splits
+            that would create child nodes with net zero or negative weight are
+            ignored while searching for a split in each node. In the case of
+            classification, splits are also ignored if they would result in any
+            single class carrying a negative weight in either child node.
+
+        Returns
+        -------
+        self : object
+        """
+        return _fit_classifier(self, X, y, sample_weight=sample_weight)
+
+    def predict(self, X):
+        """
+        Predict class for X.
+
+        The predicted class of an input sample is a vote by the trees in
+        the forest, weighted by their probability estimates. That is,
+        the predicted class is the one with highest mean probability
+        estimate across the trees.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples. Internally, its dtype will be converted to
+            ``dtype=np.float32``. If a sparse matrix is provided, it will be
+            converted into a sparse ``csr_matrix``.
+
+        Returns
+        -------
+        y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
+            The predicted classes.
+        """
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.ExtraTreesClassifier.predict")
+        _dal_ready = _patching_status.and_conditions([
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")])
+        if hasattr(self, 'n_outputs_'):
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")])
+
+        _patching_status.write_log()
+        if not _dal_ready:
+            return super(ExtraTreesClassifier, self).predict(X)
+
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        X = check_array(
+            X,
+            accept_sparse=['csr', 'csc', 'coo'],
+            dtype=[np.float64, np.float32]
+        )
+        return _daal_predict_classifier(self, X)
+
+    def predict_proba(self, X):
+        """
+        Predict class probabilities for X.
+
+        The predicted class probabilities of an input sample are computed as
+        the mean predicted class probabilities of the trees in the forest.
+        The class probability of a single tree is the fraction of samples of
+        the same class in a leaf.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples. Internally, its dtype will be converted to
+            ``dtype=np.float32``. If a sparse matrix is provided, it will be
+            converted into a sparse ``csr_matrix``.
+
+        Returns
+        -------
+        p : ndarray of shape (n_samples, n_classes), or a list of n_outputs
+            such arrays if n_outputs > 1.
+            The class probabilities of the input samples. The order of the
+            classes corresponds to that in the attribute :term:`classes_`.
+        """
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        if hasattr(self, 'n_features_in_'):
+            try:
+                num_features = _daal_num_features(X)
+            except TypeError:
+                num_features = _num_samples(X)
+            if num_features != self.n_features_in_:
+                raise ValueError(
+                    (f'X has {num_features} features, '
+                     f'but ExtraTreesClassifier is expecting '
+                     f'{self.n_features_in_} features as input'))
+
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.ExtraTreesClassifier.predict_proba")
+        _dal_ready = _patching_status.and_conditions([
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            (daal_check_version((2021, 'P', 400)),
+                "oneDAL version is lower than 2021.4.")])
+        if hasattr(self, 'n_outputs_'):
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")])
+        _patching_status.write_log()
+
+        if not _dal_ready:
+            return super(ExtraTreesClassifier, self).predict_proba(X)
+        X = check_array(X, dtype=[np.float64, np.float32])
+        check_is_fitted(self)
+        if sklearn_check_version('0.23'):
+            self._check_n_features(X, reset=False)
+        return _daal_predict_proba(self, X)
+
+    if sklearn_check_version('1.0'):
+        @deprecated(
+            "Attribute `n_features_` was deprecated in version 1.0 and will be "
+            "removed in 1.2. Use `n_features_in_` instead.")
+        @property
+        def n_features_(self):
+            return self.n_features_in_
+
+    @property
+    def _estimators_(self):
+        if hasattr(self, '_cached_estimators_'):
+            if self._cached_estimators_:
+                return self._cached_estimators_
+
+        if sklearn_check_version('0.22'):
+            check_is_fitted(self)
+        else:
+            check_is_fitted(self, 'daal_model_')
+        classes_ = self.classes_[0]
+        n_classes_ = self.n_classes_[0]
+        # convert model to estimators
+        params = {
+            'criterion': self.criterion,
+            'max_depth': self.max_depth,
+            'min_samples_split': self.min_samples_split,
+            'min_samples_leaf': self.min_samples_leaf,
+            'min_weight_fraction_leaf': self.min_weight_fraction_leaf,
+            'max_features': self.max_features,
+            'max_leaf_nodes': self.max_leaf_nodes,
+            'min_impurity_decrease': self.min_impurity_decrease,
+            'random_state': None,
+        }
+        if not sklearn_check_version('1.0'):
+            params['min_impurity_split'] = self.min_impurity_split
+        est = ExtraTreeClassifier(**params)
+        # we need to set est.tree_ field with Trees constructed from Intel(R)
+        # oneAPI Data Analytics Library solution
+        estimators_ = []
+        random_state_checked = check_random_state(self.random_state)
+        for i in range(self.n_estimators):
+            est_i = clone(est)
+            est_i.set_params(
+                random_state=random_state_checked.randint(
+                    np.iinfo(
+                        np.int32).max))
+            if sklearn_check_version('1.0'):
+                est_i.n_features_in_ = self.n_features_in_
+            else:
+                est_i.n_features_ = self.n_features_in_
+            est_i.n_outputs_ = self.n_outputs_
+            est_i.classes_ = classes_
+            est_i.n_classes_ = n_classes_
+            # treeState members: 'class_count', 'leaf_count', 'max_depth',
+            # 'node_ar', 'node_count', 'value_ar'
+            tree_i_state_class = daal4py.getTreeState(
+                self.daal_model_, i, n_classes_)
+
+            # node_ndarray = tree_i_state_class.node_ar
+            # value_ndarray = tree_i_state_class.value_ar
+            # value_shape = (node_ndarray.shape[0], self.n_outputs_,
+            #                n_classes_)
+            # assert np.allclose(
+            #     value_ndarray, value_ndarray.astype(np.intc, casting='unsafe')
+            # ), "Value array is non-integer"
+            tree_i_state_dict = {
+                'max_depth': tree_i_state_class.max_depth,
+                'node_count': tree_i_state_class.node_count,
+                'nodes': tree_i_state_class.node_ar,
+                'values': tree_i_state_class.value_ar}
+            est_i.tree_ = Tree(
+                self.n_features_in_,
+                np.array(
+                    [n_classes_],
+                    dtype=np.intp),
+                self.n_outputs_)
+            est_i.tree_.__setstate__(tree_i_state_dict)
+            estimators_.append(est_i)
+
+        self._cached_estimators_ = estimators_
+        return estimators_
+
+
+class ExtraTreesRegressor(ExtraTreesRegressor_original):
+    __doc__ = ExtraTreesRegressor_original.__doc__
+
+    if sklearn_check_version('1.2'):
+        _parameter_constraints: dict = {
+            **ExtraTreesRegressor_original._parameter_constraints,
+            "maxBins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "minBinSize": [Interval(numbers.Integral, 1, None, closed="left")]
+        }
+
+    if sklearn_check_version('1.0'):
+        def __init__(
+                self,
+                n_estimators=100,
+                *,
+                criterion="squared_error",
+                max_depth=None,
+                min_samples_split=2,
+                min_samples_leaf=1,
+                min_weight_fraction_leaf=0.,
+                max_features=1.0 if sklearn_check_version('1.1') else 'auto',
+                max_leaf_nodes=None,
+                min_impurity_decrease=0.,
+                bootstrap=False,
+                oob_score=False,
+                n_jobs=None,
+                random_state=None,
+                verbose=0,
+                warm_start=False,
+                ccp_alpha=0.0,
+                max_samples=None,
+                maxBins=256,
+                minBinSize=1,
+                splitter="random"):
+            super(ExtraTreesRegressor, self).__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start
+            )
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+            self.splitter = splitter
+            self.method = "defaultDense"
+    else:
+        def __init__(self,
+                     n_estimators=100, *,
+                     criterion="mse",
+                     max_depth=None,
+                     min_samples_split=2,
+                     min_samples_leaf=1,
+                     min_weight_fraction_leaf=0.,
+                     max_features="auto",
+                     max_leaf_nodes=None,
+                     min_impurity_decrease=0.,
+                     min_impurity_split=None,
+                     bootstrap=False,
+                     oob_score=False,
+                     n_jobs=None,
+                     random_state=None,
+                     verbose=0,
+                     warm_start=False,
+                     ccp_alpha=0.0,
+                     max_samples=None,
+                     maxBins=256,
+                     minBinSize=1,
+                     splitter="random"):
+            super(ExtraTreesRegressor, self).__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                min_impurity_split=min_impurity_split,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                ccp_alpha=ccp_alpha,
+                max_samples=max_samples
+            )
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.splitter = splitter
+            self.method = "defaultDense"
+
+    def fit(self, X, y, sample_weight=None):
+        """
+        Build a forest of trees from the training set (X, y).
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The training input samples. Internally, its dtype will be converted
+            to ``dtype=np.float32``. If a sparse matrix is provided, it will be
+            converted into a sparse ``csc_matrix``.
+
+        y : array-like of shape (n_samples,) or (n_samples, n_outputs)
+            The target values (class labels in classification, real numbers in
+            regression).
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights. If None, then samples are equally weighted. Splits
+            that would create child nodes with net zero or negative weight are
+            ignored while searching for a split in each node. In the case of
+            classification, splits are also ignored if they would result in any
+            single class carrying a negative weight in either child node.
+
+        Returns
+        -------
+        self : object
+        """
+        return _fit_regressor(self, X, y, sample_weight=sample_weight)
+
+    def predict(self, X):
+        """
+        Predict class for X.
+
+        The predicted class of an input sample is a vote by the trees in
+        the forest, weighted by their probability estimates. That is,
+        the predicted class is the one with highest mean probability
+        estimate across the trees.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples. Internally, its dtype will be converted to
+            ``dtype=np.float32``. If a sparse matrix is provided, it will be
+            converted into a sparse ``csr_matrix``.
+
+        Returns
+        -------
+        y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
+            The predicted classes.
+        """
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.ExtraTreesRegressor.predict")
+        _dal_ready = _patching_status.and_conditions([
+            (hasattr(self, 'daal_model_'), "oneDAL model was not trained."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")])
+        if hasattr(self, 'n_outputs_'):
+            _dal_ready = _patching_status.and_conditions([
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")])
+
+        _patching_status.write_log()
+        if not _dal_ready:
+            return super(ExtraTreesRegressor, self).predict(X)
+
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        X = check_array(
+            X,
+            accept_sparse=['csr', 'csc', 'coo'],
+            dtype=[np.float64, np.float32]
+        )
+        return _daal_predict_regressor(self, X)
+
+    if sklearn_check_version('1.0'):
+        @deprecated(
+            "Attribute `n_features_` was deprecated in version 1.0 and will be "
+            "removed in 1.2. Use `n_features_in_` instead.")
+        @property
+        def n_features_(self):
+            return self.n_features_in_
+
+    @property
+    def _estimators_(self):
+        if hasattr(self, '_cached_estimators_'):
+            if self._cached_estimators_:
+                return self._cached_estimators_
+        if sklearn_check_version('0.22'):
+            check_is_fitted(self)
+        else:
+            check_is_fitted(self, 'daal_model_')
+        # convert model to estimators
+        params = {
+            'criterion': self.criterion,
+            'max_depth': self.max_depth,
+            'min_samples_split': self.min_samples_split,
+            'min_samples_leaf': self.min_samples_leaf,
+            'min_weight_fraction_leaf': self.min_weight_fraction_leaf,
+            'max_features': self.max_features,
+            'max_leaf_nodes': self.max_leaf_nodes,
+            'min_impurity_decrease': self.min_impurity_decrease,
+            'random_state': None,
+        }
+        if not sklearn_check_version('1.0'):
+            params['min_impurity_split'] = self.min_impurity_split
+        est = ExtraTreeRegressor(**params)
 
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
