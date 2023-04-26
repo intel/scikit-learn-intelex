@@ -23,6 +23,8 @@ from ..utils.validation import _daal_assert_all_finite
 from ..svm.svm import SVC as SVC_daal4py
 from ..ensemble._forest import RandomForestClassifier as RandomForestClassifier_daal4py
 from ..ensemble._forest import RandomForestRegressor as RandomForestRegressor_daal4py
+from ..ensemble._forest import ExtraTreesClassifier as ExtraTreesClassifier_daal4py
+from ..ensemble._forest import ExtraTreesRegressor as ExtraTreesRegressor_daal4py
 from ..metrics import _daal_roc_auc_score
 from ..metrics import daal_pairwise_distances
 from ..cluster.k_means import KMeans as KMeans_daal4py
@@ -81,6 +83,10 @@ def _get_map_of_algorithms():
                                        RandomForestClassifier_daal4py), None]],
         'random_forest_regressor': [[(ensemble_module, 'RandomForestRegressor',
                                       RandomForestRegressor_daal4py), None]],
+        'extra_trees_classifier': [[(ensemble_module, 'ExtraTreesClassifier',
+                                       ExtraTreesClassifier_daal4py), None]],
+        'extra_forest_regressor': [[(ensemble_module, 'ExtraTreesRegressor',
+                                      ExtraTreesRegressor_daal4py), None]],
         'train_test_split': [[(model_selection, 'train_test_split',
                                _daal_train_test_split), None]],
         'fin_check': [[(validation, '_assert_all_finite',
