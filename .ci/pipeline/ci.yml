@@ -77,9 +77,6 @@ jobs:
       Python3.11_Sklearn1.2:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.2'
-      Python3.11_SklearnMain:
-        PYTHON_VERSION: '3.11'
-        SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
@@ -102,9 +99,6 @@ jobs:
       Python3.11_Sklearn1.2:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.2'
-      Python3.11_SklearnMain:
-        PYTHON_VERSION: '3.11'
-        SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'macos-12'
   steps:
@@ -127,9 +121,6 @@ jobs:
       Python3.11_Sklearn1.2:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.2'
-      Python3.11_SklearnMain:
-        PYTHON_VERSION: '3.11'
-        SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'windows-latest'
   steps:
