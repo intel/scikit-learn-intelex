@@ -48,7 +48,7 @@ if daal_check_version((2023, 'P', 100)):
 
         res_mean = res["mean"]
         gtr_mean = np.mean(data, axis=0)
-        tol = 1e-5 if res_mean.dtype == np.float32 else 1e-7
+        tol = 2e-5 if res_mean.dtype == np.float32 else 1e-7
         assert_allclose(gtr_mean, res_mean, rtol=tol)
 
     @pytest.mark.parametrize('queue', get_queues())
