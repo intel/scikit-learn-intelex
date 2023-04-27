@@ -35,8 +35,11 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
   - script: |
-      pip install scikit-learn-intelex pandas pytest pyyaml
+      pip install scikit-learn-intelex pandas pytest pyyaml cpufeature
     displayName: 'Install scikit-learn-intelex'
+  - script: |
+      bash .ci/scripts/describe_system.sh
+    displayName: 'System info'
   - script: |
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
@@ -68,6 +71,11 @@ jobs:
       conda update -y -q conda
       conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest pyyaml
     displayName: 'Install scikit-learn-intelex'
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      $(conda.activate) CB
+      bash .ci/scripts/describe_system.sh
+    displayName: 'System info'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       $(conda.activate) CB

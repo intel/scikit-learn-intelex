@@ -24,7 +24,7 @@ steps:
     displayName: 'System info'
   - script: |
       conda update -y -q conda
-      if [ $(echo $(PYTHON_VERSION) | grep '3.7') ] || [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCPP_PACKAGE="dpcpp-cpp-rt>=2023.0.0"; else export DPCPP_PACKAGE="dpctl>=0.14"; fi
+      if [ $(echo $(PYTHON_VERSION) | grep '3.7') ] || [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCPP_PACKAGE="dpcpp-cpp-rt>=2023.1.0"; else export DPCPP_PACKAGE="dpctl>=0.14 dpcpp-cpp-rt>=2023.1.0"; fi
       conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCPP_PACKAGE
     displayName: 'Conda create'
   - script: |
@@ -60,8 +60,10 @@ steps:
       conda activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
+    condition: succeededOrFailed()
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       bash .ci/scripts/run_sklearn_tests.sh cpu
     displayName: 'Sklearn testing [device=cpu]'
+    condition: succeededOrFailed()
