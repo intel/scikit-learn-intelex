@@ -37,7 +37,7 @@ PyPI channel
 =============
 
 .. list-table::
-   :widths: 25 8 8 8 8
+   :widths: 25 8 8 8 8 8 8
    :header-rows: 1
    :align: left
 
@@ -76,7 +76,7 @@ Anaconda Cloud: Conda-Forge channel
 ===================================
 
 .. list-table::
-   :widths: 25 8 8 8 8
+   :widths: 25 8 8 8 8 8 8
    :header-rows: 1
    :align: left
 
@@ -115,7 +115,7 @@ Anaconda Cloud: Intel channel
 ==============================
 
 .. list-table::
-   :widths: 25 8 8 8 8
+   :widths: 25 8 8 8 8 8
    :header-rows: 1
    :align: left
 
@@ -150,7 +150,7 @@ Anaconda Cloud: Main channel
 ==============================
 
 .. list-table::
-   :widths: 25 8 8 8 8
+   :widths: 25 8 8 8 8 8 8
    :header-rows: 1
    :align: left
 
