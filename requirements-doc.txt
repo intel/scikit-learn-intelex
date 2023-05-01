@@ -50,7 +50,7 @@ requests==2.28.1
 six==1.16.0
 snowballstemmer==2.2.0
 soupsieve==2.3.2.post1
-Sphinx==3.5.4
+Sphinx==7.0.0
 sphinx-book-theme==0.1.6
 sphinx-notfound-page==0.8.3
 sphinx-tabs==3.2.0
