@@ -169,7 +169,7 @@ Intel(R) Extension for Scikit-learn is easily built from sources with the majori
 
 ### Configure the build with environment variables
 * SKLEARNEX_VERSION: sets package version
-* DAALROOT: sets the Intel® Data Analytics Acceleration Library path, i.e. daal4py development
+* DALROOT: sets the oneAPI Data Analytics Library path
 
 ### Build Intel(R) Extension for Scikit-learn
 - To install the package:
