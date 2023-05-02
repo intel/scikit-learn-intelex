@@ -428,7 +428,8 @@ packages_with_tests = [
 if ONEDAL_VERSION >= 20230100:
     packages_with_tests += [
         'onedal.basic_statistics',
-        'onedal.linear_model']
+        'onedal.linear_model',
+        'onedal.objective_function']
 
 if build_distribute:
     packages_with_tests += [

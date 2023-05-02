@@ -14,6 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-from .logloss import LogisticLoss
+from .objective_function import LogisticLoss
 
 __all__ = ['LogisticLoss']

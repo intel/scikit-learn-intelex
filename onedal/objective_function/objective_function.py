@@ -30,11 +30,12 @@ from ..datatypes._data_conversion import (
 from onedal import _backend
 
 
-class LogisticLoss(metaclass=ABCMeta):
+class BaseLogisticLoss(metaclass=ABCMeta):
     @abstractmethod
-    def __init__(self, module = None, queue = None):
-        self.module = module
+    def __init__(self, algorithm, queue, module):
+        self.algorithm = self.algorithm
         self.queue = queue
+        self.module = module
     
     @staticmethod
     def get_all_result_options():
@@ -72,7 +73,7 @@ class LogisticLoss(metaclass=ABCMeta):
         X_table, y_table, coef_table = to_table(X_loc, y_loc, coef_loc)
 
         
-        result = self.module.train(policy, params, X_table, y_table, coef_table)
+        result = self.module.train(policy, params, X_table, coef_table, y_table)
         
         options = self._get_result_options(options)
         options = options.split("|")
@@ -82,22 +83,35 @@ class LogisticLoss(metaclass=ABCMeta):
         return {k: from_table(v).ravel() for k, v in res.items()}
 
 
-    def _loss(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
-        return self._compute(X, y, coef, "value", l2_reg_strength, fit_intercept)["value"]
     
-    def _loss_gradient(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
-        res = self._compute(X, y, coef, ["value", "gradient"], l2_reg_strength, fit_intercept)
+
+
+
+class LogisticLoss(BaseLogisticLoss):
+    def __init__(
+            self,
+            *,
+            algorithm="by_default",
+            queue = None,
+            **kwargs):
+        super().__init__(algorithm, queue, _backend.objective_function)
+
+    def loss(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
+        return super()._compute(X, y, coef, "value", l2_reg_strength, fit_intercept)["value"]
+    
+    def loss_gradient(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
+        res = super()._compute(X, y, coef, ["value", "gradient"], l2_reg_strength, fit_intercept)
         return res["value"], res["gradient"]
 
-    def _gradient(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
-        return self._compute(X, y, coef, "gradient", l2_reg_strength, fit_intercept)["gradient"]
+    def gradient(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
+        return super()._compute(X, y, coef, "gradient", l2_reg_strength, fit_intercept)["gradient"]
 
-    def _gradient_hessian(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
-        res = self._compute(X, y, coef, ["gradient", "hessian"], l2_reg_strength, fit_intercept)
+    def gradient_hessian(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
+        res = super()._compute(X, y, coef, ["gradient", "hessian"], l2_reg_strength, fit_intercept)
         return res["gradient"], res["hessian"]
 
-    def _gradient_hessian_product(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
-        res = self._compute(X, y, coef, ["gradient", "hessian"], l2_reg_strength, fit_intercept)
+    def gradient_hessian_product(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
+        res = super()._compute(X, y, coef, ["gradient", "hessian"], l2_reg_strength, fit_intercept)
         
         H = res["hessian"]
 
@@ -105,4 +119,3 @@ class LogisticLoss(metaclass=ABCMeta):
             return H @ s
         
         return res["gradient"], hessp
-

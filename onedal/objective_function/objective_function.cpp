@@ -40,7 +40,7 @@ struct method2t {
         using namespace dal::objective_function;
 
         const auto method = params["method"].cast<std::string>();
-        ONEDAL_PARAM_DISPATCH_VALUE(method, "dense_batch", ops, Float, method::dense);
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "dense_batch", ops, Float, method::dense_batch);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
@@ -95,7 +95,7 @@ struct descriptor_creator<Float,
                           objective_function::method::dense_batch,
                           objective_function::task::compute> {
     static auto get(double L1, double L2, bool intercept) {
-        auto logloss_desc = logloss_objective::descriptor<Float>(L1, L2, intercept);
+        auto logloss_desc = oneapi::dal::logloss_objective::descriptor<Float>(L1, L2, intercept);
         return objective_function::descriptor<Float,
                                              objective_function::method::dense_batch,
                                              objective_function::task::compute>(logloss_desc);
@@ -105,7 +105,7 @@ struct descriptor_creator<Float,
 struct params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const py::dict& params) {
-        using namespace dal::linear_regression;
+        // using namespace dal::linear_regression;
 
         const auto intercept = params["intercept"].cast<bool>();
         const double L1 = params["l1_coef"].cast<double>();
@@ -159,11 +159,11 @@ void init_compute_result(py::module_& m) {
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_ops);
 
-ONEDAL_PY_INIT_MODULE(logloss_objective) {
+ONEDAL_PY_INIT_MODULE(objective_function) {
     using namespace dal::detail;
     using namespace logloss_objective;
 
-    auto sub = m.def_submodule("logloss_objective");
+    auto sub = m.def_submodule("objective_function");
     using task_list = types<dal::objective_function::task::compute>;
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
@@ -175,11 +175,10 @@ ONEDAL_PY_INIT_MODULE(logloss_objective) {
     ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task_list);
 }
 
+} // namespace logloss_objective
+
 ONEDAL_PY_TYPE2STR(dal::objective_function::task::compute, "compute");
 
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
-
-
-} // namespace logloss_objective
 
 } // namespace oneapi::dal::python

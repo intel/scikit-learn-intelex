@@ -44,6 +44,7 @@ ONEDAL_PY_INIT_MODULE(decomposition);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 ONEDAL_PY_INIT_MODULE(basic_statistics);
 ONEDAL_PY_INIT_MODULE(linear_model);
+ONEDAL_PY_INIT_MODULE(objective_function);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 ONEDAL_PY_INIT_MODULE(neighbors);
 ONEDAL_PY_INIT_MODULE(svm);
@@ -71,6 +72,7 @@ PYBIND11_MODULE(_onedal_py_host, m) {
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     init_basic_statistics(m);
     init_linear_model(m);
+    init_objective_function(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     init_neighbors(m);
     init_svm(m);
