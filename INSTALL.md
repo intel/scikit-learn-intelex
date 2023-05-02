@@ -91,7 +91,7 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
   conda create -n env -c conda-forge python=3.10 scikit-learn-intelex
   ```
 
-  If you do not specify the version of Python (`python=3.10` in the example above), then latest Python is downloaded by default.
+..note:  If you do not specify the version of Python, the latest one is downloaded. 
 
 - Install into your current environment:
 
