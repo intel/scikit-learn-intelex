@@ -137,7 +137,7 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into a newly created environment (recommended):
 
   ```bash
-  conda create -n env python=3.9 scikit-learn-intelex
+  conda create -n env python=3.10 scikit-learn-intelex
   ```
 
   If you do not specify the version of Python (`python=3.9` in the example above), then Python 3.10 is downloaded by default.
