@@ -36,7 +36,7 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
         self.algorithm = algorithm
         self.queue = queue
         self.func = objective_function_method
-    
+
     @staticmethod
     def get_all_result_options():
         return ["value", "gradient", "hessian"]
@@ -52,30 +52,30 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
         assert isinstance(options, str)
         return options
 
-    def _get_onedal_params(self, options, L1 = 0.0, L2 = 0.0, intercept = True, dtype=np.float32):
+    def _get_onedal_params(self, options, L1=0.0, L2=0.0, intercept=True, dtype=np.float32):
         options = self._get_result_options(options)
         return {
             'fptype': 'float' if dtype == np.float32 else 'double',
             'method': self.algorithm, 'result_option': options,
-            'l1_coef' : L1, 'l2_coef' : L2, 'intercept' : intercept
+            'l1_coef': L1, 'l2_coef': L2, 'intercept': intercept
         }
 
-
     def _compute(self, X, y, coef, options, l2_reg_strength=0.0, fit_intercept=True):
-        
+
         policy = self._get_policy(self.queue, X, y, coef)
         ftype = X.dtype
-        params = self._get_onedal_params(options, L2 = l2_reg_strength, intercept = fit_intercept, dtype = ftype)
+        params = self._get_onedal_params(
+            options, L2=l2_reg_strength, intercept=fit_intercept, dtype=ftype)
 
         X_loc, y_loc, coef_loc = _convert_to_dataframe(policy, X, y, coef)
-        X_loc, y_loc, coef_loc = _convert_to_supported(policy, X_loc, y_loc, coef_loc)
+        X_loc, y_loc, coef_loc = _convert_to_supported(
+            policy, X_loc, y_loc, coef_loc)
 
         X_table, coef_table = to_table(X_loc, coef_loc)
         y_table = to_table(y_loc)
 
-        
         result = self.func(policy, params, X_table, coef_table, y_table)
-        
+
         options = self._get_result_options(options)
         options = options.split("|")
 
@@ -89,20 +89,22 @@ class LogisticLoss(BaseObjectiveFunction):
             self,
             *,
             algorithm="by_default",
-            queue = None,
+            queue=None,
             **kwargs):
         super().__init__(algorithm, queue, _backend.objective_function.compute.logloss)
 
     def loss(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
         return super()._compute(X, y, coef, "value", l2_reg_strength, fit_intercept)["value"]
-    
+
     def loss_gradient(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
-        res = super()._compute(X, y, coef, ["value", "gradient"], l2_reg_strength, fit_intercept)
+        res = super()._compute(
+            X, y, coef, ["value", "gradient"], l2_reg_strength, fit_intercept)
         return res["value"], res["gradient"]
 
     def gradient(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
         return super()._compute(X, y, coef, "gradient", l2_reg_strength, fit_intercept)["gradient"]
 
     def gradient_hessian(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
-        res = super()._compute(X, y, coef, ["gradient", "hessian"], l2_reg_strength, fit_intercept)
+        res = super()._compute(
+            X, y, coef, ["gradient", "hessian"], l2_reg_strength, fit_intercept)
         return res["gradient"], res["hessian"]

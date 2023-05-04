@@ -34,13 +34,15 @@ if daal_check_version((2023, 'P', 100)):
         gen = np.random.default_rng(seed)
         data = gen.uniform(low=-0.5, high=+0.6,
                            size=(row_count, col_count))
-        coef = gen.uniform(low =-0.5, high=+0.6, size=(col_count + 1, 1)).astype(dtype=dtype)
+        coef = gen.uniform(low=-0.5, high=+0.6,
+                           size=(col_count + 1, 1)).astype(dtype=dtype)
         y_true = gen.integers(0, 2, (row_count, 1))
         data = data.astype(dtype=dtype)
 
         alg = LogisticLoss(queue=queue)
         logloss_onedal = alg.loss(coef, data, y_true, fit_intercept=True)
-        logloss_onedal_no_intercept = alg.loss(coef, data, y_true, fit_intercept=False)
+        logloss_onedal_no_intercept = alg.loss(
+            coef, data, y_true, fit_intercept=False)
 
         def bind_probs(x):
             eps = 1e-7 if dtype == np.float32 else 1e-15
@@ -48,12 +50,13 @@ if daal_check_version((2023, 'P', 100)):
         probs = 1 / (1 + np.exp(-((data @ coef[1:]) + coef[0])))
         probs = np.array(list(map(bind_probs, probs)))
         probs_no_intercept = 1 / (1 + np.exp(-((data @ coef[1:]))))
-        probs_no_intercept = np.array(list(map(bind_probs, probs_no_intercept)))
-
+        probs_no_intercept = np.array(
+            list(map(bind_probs, probs_no_intercept)))
 
         logloss_gth = log_loss(y_true, probs)
         logloss_gth_no_intercept = log_loss(y_true, probs_no_intercept)
 
         tol = 1e-5 if dtype == np.float32 else 1e-7
         assert_allclose(logloss_onedal, logloss_gth, rtol=tol)
-        assert_allclose(logloss_onedal_no_intercept, logloss_gth_no_intercept, rtol=tol)
+        assert_allclose(logloss_onedal_no_intercept,
+                        logloss_gth_no_intercept, rtol=tol)
