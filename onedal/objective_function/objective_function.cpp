@@ -22,6 +22,7 @@
 #include <string>
 #include <regex>
 #include <map>
+#include <iostream>
 
 namespace py = pybind11;
 
@@ -29,7 +30,7 @@ namespace oneapi::dal::python {
 
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 
-namespace logloss_objective {
+namespace objective_function {
 
 template <typename Task, typename Ops>
 struct method2t {
@@ -47,7 +48,7 @@ struct method2t {
 
     Ops ops;
 };
-
+/*
 #define RESULT_OPTION(option) { #option, dal::objective_function::result_options::option }
 
 const std::map<std::string, dal::objective_function::result_option_id> result_option_registry {
@@ -55,6 +56,13 @@ const std::map<std::string, dal::objective_function::result_option_id> result_op
 };
 
 #undef RESULT_OPTION
+*/
+
+const std::map<std::string, dal::objective_function::result_option_id> result_option_registry {
+    {"value", dal::objective_function::detail::get_value_id()}, 
+    {"gradient", dal::objective_function::detail::get_gradient_id()},
+    {"hessian", dal::objective_function::detail::get_hessian_id()}
+};
 
 auto get_onedal_result_options(const py::dict& params) {
     using namespace dal::objective_function;
@@ -69,7 +77,6 @@ auto get_onedal_result_options(const py::dict& params) {
             result_option.begin(),
             result_option.end(),
             re);
-
         for (std::sregex_iterator it = first; it != last; ++it) {
             const auto str = it->str();
             const auto match = result_option_registry.find(str);
@@ -83,35 +90,35 @@ auto get_onedal_result_options(const py::dict& params) {
     catch (std::regex_error& e) {
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
     }
-
     return onedal_options;
 }
 
-template <typename Float, typename Method, typename Task>
+template <typename Float, typename DescriptorType, typename Method, typename Task>
 struct descriptor_creator;
 
 template <typename Float>
 struct descriptor_creator<Float,
-                          objective_function::method::dense_batch,
-                          objective_function::task::compute> {
+                          dal::logloss_objective::descriptor<Float>,
+                          dal::objective_function::method::dense_batch,
+                          dal::objective_function::task::compute> {
     static auto get(double L1, double L2, bool intercept) {
-        auto logloss_desc = oneapi::dal::logloss_objective::descriptor<Float>(L1, L2, intercept);
-        return objective_function::descriptor<Float,
-                                             objective_function::method::dense_batch,
-                                             objective_function::task::compute>(logloss_desc);
+        auto logloss_desc = dal::logloss_objective::descriptor<Float>(L1, L2, intercept);
+        return dal::objective_function::descriptor<Float,
+                                             dal::objective_function::method::dense_batch,
+                                             dal::objective_function::task::compute>(logloss_desc);
     }
 };
 
-struct params2desc {
+struct logloss_params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const py::dict& params) {
-        // using namespace dal::linear_regression;
+        using namespace dal::objective_function;
 
         const auto intercept = params["intercept"].cast<bool>();
         const double L1 = params["l1_coef"].cast<double>();
         const double L2 = params["l2_coef"].cast<double>();
 
-        auto desc = descriptor_creator<Float, Method, Task>::get(L1, L2, intercept).set_result_options(
+        auto desc = descriptor_creator<Float, dal::logloss_objective::descriptor<Float>, Method, Task>::get(L1, L2, intercept).set_result_options(
             get_onedal_result_options(params));
         return desc;
     }
@@ -124,7 +131,7 @@ template <typename Policy>
 struct init_compute_ops_dispatcher<Policy, dal::objective_function::task::compute> {
     void operator()(py::module_& m) {
         using Task = dal::objective_function::task::compute;
-        m.def("train", // why train?
+        m.def("logloss",
               [](const Policy& policy,
                  const py::dict& params,
                  const table& data,
@@ -132,8 +139,7 @@ struct init_compute_ops_dispatcher<Policy, dal::objective_function::task::comput
                  const table& labels) {
                   using namespace dal::objective_function;
                   using input_t = compute_input<Task>;
-
-                  compute_ops ops(policy, input_t{ data, weights, labels }, params2desc{});
+                  compute_ops ops(policy, input_t{ data, weights, labels }, logloss_params2desc{});
                   return fptype2t{ method2t{ Task{}, ops } }(params);
               });
     }
@@ -159,23 +165,19 @@ void init_compute_result(py::module_& m) {
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_ops);
 
+} // namespace objective_function
+
 ONEDAL_PY_INIT_MODULE(objective_function) {
     using namespace dal::detail;
-    using namespace logloss_objective;
+    using namespace dal::objective_function;
+    using namespace objective_function;
 
     auto sub = m.def_submodule("objective_function");
     using task_list = types<dal::objective_function::task::compute>;
 
-#ifdef ONEDAL_DATA_PARALLEL_SPMD
-    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list_spmd, task_list);
-#else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task_list);
-#endif // ONEDAL_DATA_PARALLEL_SPMD
-
     ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task_list);
 }
-
-} // namespace logloss_objective
 
 ONEDAL_PY_TYPE2STR(dal::objective_function::task::compute, "compute");
 

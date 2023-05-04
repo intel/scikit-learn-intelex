@@ -30,12 +30,12 @@ from ..datatypes._data_conversion import (
 from onedal import _backend
 
 
-class BaseLogisticLoss(metaclass=ABCMeta):
+class BaseObjectiveFunction(metaclass=ABCMeta):
     @abstractmethod
-    def __init__(self, algorithm, queue, module):
-        self.algorithm = self.algorithm
+    def __init__(self, algorithm, queue, objective_function_method):
+        self.algorithm = algorithm
         self.queue = queue
-        self.module = module
+        self.func = objective_function_method
     
     @staticmethod
     def get_all_result_options():
@@ -65,15 +65,16 @@ class BaseLogisticLoss(metaclass=ABCMeta):
         
         policy = self._get_policy(self.queue, X, y, coef)
         ftype = X.dtype
-        params = self._get_onedal_params(options, L2 = l2_reg_strength, intercept = fit_intercept, dtype = self.ftype)
+        params = self._get_onedal_params(options, L2 = l2_reg_strength, intercept = fit_intercept, dtype = ftype)
 
-        X_loc, y_loc, coef_loc = _convert_to_dataframe(self.policy, X, y, coef)
-        X_loc, y_loc, coef_loc = _convert_to_supported(self.policy, X_loc, y_loc, coef_loc)
+        X_loc, y_loc, coef_loc = _convert_to_dataframe(policy, X, y, coef)
+        X_loc, y_loc, coef_loc = _convert_to_supported(policy, X_loc, y_loc, coef_loc)
 
-        X_table, y_table, coef_table = to_table(X_loc, y_loc, coef_loc)
+        X_table, coef_table = to_table(X_loc, coef_loc)
+        y_table = to_table(y_loc)
 
         
-        result = self.module.train(policy, params, X_table, coef_table, y_table)
+        result = self.func(policy, params, X_table, coef_table, y_table)
         
         options = self._get_result_options(options)
         options = options.split("|")
@@ -83,18 +84,14 @@ class BaseLogisticLoss(metaclass=ABCMeta):
         return {k: from_table(v).ravel() for k, v in res.items()}
 
 
-    
-
-
-
-class LogisticLoss(BaseLogisticLoss):
+class LogisticLoss(BaseObjectiveFunction):
     def __init__(
             self,
             *,
             algorithm="by_default",
             queue = None,
             **kwargs):
-        super().__init__(algorithm, queue, _backend.objective_function)
+        super().__init__(algorithm, queue, _backend.objective_function.compute.logloss)
 
     def loss(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
         return super()._compute(X, y, coef, "value", l2_reg_strength, fit_intercept)["value"]
@@ -109,13 +106,3 @@ class LogisticLoss(BaseLogisticLoss):
     def gradient_hessian(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
         res = super()._compute(X, y, coef, ["gradient", "hessian"], l2_reg_strength, fit_intercept)
         return res["gradient"], res["hessian"]
-
-    def gradient_hessian_product(self, coef, X, y, l2_reg_strength=0.0, fit_intercept=True):
-        res = super()._compute(X, y, coef, ["gradient", "hessian"], l2_reg_strength, fit_intercept)
-        
-        H = res["hessian"]
-
-        def hessp(s):
-            return H @ s
-        
-        return res["gradient"], hessp
