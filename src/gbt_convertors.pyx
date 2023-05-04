@@ -75,9 +75,10 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
         if isinstance(feat_val, str):
             raise NotImplementedError(
                 "Categorical features are not supported in daal4py Gradient Boosting Trees")
+        yes_if_missing = int(sub_tree["missing_direction"] == "left")
         parent_id = mb.add_split(
             tree_id=tree_id, feature_index=sub_tree["split_feature"],
-            feature_value=feat_val)
+            feature_value=feat_val, yes_if_missing=yes_if_missing)
 
         # create stack
         node_stack: List[Node] = [Node(sub_tree["left_child"], parent_id, 0),
@@ -102,9 +103,11 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
             if isinstance(feat_val, str):
                 raise NotImplementedError(
                     "Categorical features are not supported in daal4py Gradient Boosting Trees")
+            yes_if_missing = int(sub_tree["missing_direction"] == "left")
             parent_id = mb.add_split(
                 tree_id=tree_id, feature_index=sub_tree["split_feature"],
                 feature_value=feat_val,
+                yes_if_missing=yes_if_missing,
                 parent_id=parent_id, position=position)
 
             # append children
