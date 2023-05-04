@@ -75,7 +75,7 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
         if isinstance(feat_val, str):
             raise NotImplementedError(
                 "Categorical features are not supported in daal4py Gradient Boosting Trees")
-        yes_if_missing = int(sub_tree["missing_direction"] == "left")
+        yes_if_missing = int(sub_tree["default_left"])
         parent_id = mb.add_split(
             tree_id=tree_id, feature_index=sub_tree["split_feature"],
             feature_value=feat_val, yes_if_missing=yes_if_missing)
@@ -103,7 +103,7 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
             if isinstance(feat_val, str):
                 raise NotImplementedError(
                     "Categorical features are not supported in daal4py Gradient Boosting Trees")
-            yes_if_missing = int(sub_tree["missing_direction"] == "left")
+            yes_if_missing = int(sub_tree["default_left"])
             parent_id = mb.add_split(
                 tree_id=tree_id, feature_index=sub_tree["split_feature"],
                 feature_value=feat_val,
@@ -298,6 +298,11 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
     trees_explicit = []
     tree_symmetric = []
 
+    if model_data['model_info']['params']['data_processing_options']['float_features_binarization']['nan_mode'] == 'Min':
+        yes_if_missing = 1
+    else:
+        yes_if_missing = 0
+
     for tree_num in range(n_iterations):
         if is_symmetric_tree:
             
@@ -403,7 +408,8 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                     cur_level_split = splits[cur_tree_info['splits']
                                              [cur_tree_depth - 1]['split_index']]
                     root_id = mb.add_split(
-                        tree_id=cur_tree_id, feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'])
+                        tree_id=cur_tree_id, feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'],
+                        yes_if_missing=yes_if_missing)
                     prev_level_nodes = [root_id]
 
                     # Iterate over levels, splits in json are reversed (root split is the last)
@@ -413,9 +419,11 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                             cur_level_split = splits[cur_tree_info['splits']
                                                      [cur_level]['split_index']]
                             cur_left_node = mb.add_split(tree_id=cur_tree_id, parent_id=cur_parent, position=0,
-                                                         feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'])
+                                                         feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'],
+                                                         yes_if_missing=yes_if_missing)
                             cur_right_node = mb.add_split(tree_id=cur_tree_id, parent_id=cur_parent, position=1,
-                                                          feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'])
+                                                          feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'],
+                                                          yes_if_missing=yes_if_missing)
                             cur_level_nodes.append(cur_left_node)
                             cur_level_nodes.append(cur_right_node)
                         prev_level_nodes = cur_level_nodes
@@ -445,7 +453,8 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                 # Traverse tree via BFS and build tree with modelbuilder
                 if root_node.value is None:
                     root_id = mb.add_split(
-                        tree_id=cur_tree_id, feature_index=root_node.split['feature_index'], feature_value=root_node.split['value'])
+                        tree_id=cur_tree_id, feature_index=root_node.split['feature_index'], feature_value=root_node.split['value'],
+                        yes_if_missing=yes_if_missing)
                     nodes_queue = [(root_node, root_id)]
                     while nodes_queue:
                         cur_node, cur_node_id = nodes_queue.pop(0)
@@ -453,7 +462,8 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                         # Check if node is a leaf
                         if left_node.value is None:
                             left_node_id = mb.add_split(tree_id=cur_tree_id, parent_id=cur_node_id, position=0,
-                                                        feature_index=left_node.split['feature_index'], feature_value=left_node.split['value'])
+                                                        feature_index=left_node.split['feature_index'], feature_value=left_node.split['value'],
+                                                        yes_if_missing=yes_if_missing)
                             nodes_queue.append((left_node, left_node_id))
                         else:
                             mb.add_leaf(
@@ -462,7 +472,8 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                         # Check if node is a leaf
                         if right_node.value is None:
                             right_node_id = mb.add_split(tree_id=cur_tree_id, parent_id=cur_node_id, position=1,
-                                                         feature_index=right_node.split['feature_index'], feature_value=right_node.split['value'])
+                                                         feature_index=right_node.split['feature_index'], feature_value=right_node.split['value'],
+                                                         yes_if_missing=yes_if_missing)
                             nodes_queue.append((right_node, right_node_id))
                         else:
                             mb.add_leaf(
