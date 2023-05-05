@@ -16,6 +16,8 @@
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from sklearn.metrics import log_loss
+from sklearn._loss.loss import HalfBinomialLoss
+from sklearn.linear_model import _linear_loss
 
 if daal_check_version((2023, 'P', 100)):
     import pytest
@@ -25,9 +27,15 @@ if daal_check_version((2023, 'P', 100)):
     from onedal.objective_function import LogisticLoss
     from onedal.tests.utils._device_selection import get_queues
 
+    
+
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    def test_logloss(queue, dtype):
+    @pytest.mark.parametrize('fit_intercept', [True, False])
+    def test_logloss(queue, dtype, fit_intercept):
+
+        tol = 1e-5 if dtype == np.float32 else 1e-7
+
         seed = 42
         row_count, col_count = 1000, 29
 
@@ -35,28 +43,121 @@ if daal_check_version((2023, 'P', 100)):
         data = gen.uniform(low=-0.5, high=+0.6,
                            size=(row_count, col_count))
         coef = gen.uniform(low=-0.5, high=+0.6,
-                           size=(col_count + 1, 1)).astype(dtype=dtype)
-        y_true = gen.integers(0, 2, (row_count, 1))
+                           size=(col_count + 1, 1)).astype(dtype=dtype).reshape(-1)
+        y_true = gen.integers(0, 2, (row_count, 1)).astype(dtype=dtype).reshape(-1)
         data = data.astype(dtype=dtype)
 
-        alg = LogisticLoss(queue=queue)
-        logloss_onedal = alg.loss(coef, data, y_true, fit_intercept=True)
-        logloss_onedal_no_intercept = alg.loss(
-            coef, data, y_true, fit_intercept=False)
+        if (not fit_intercept):
+            coef = coef[:-1]
 
-        def bind_probs(x):
-            eps = 1e-7 if dtype == np.float32 else 1e-15
-            return 0.0 if x < eps else 1.0 if x > (1 - eps) else x
-        probs = 1 / (1 + np.exp(-((data @ coef[1:]) + coef[0])))
-        probs = np.array(list(map(bind_probs, probs)))
-        probs_no_intercept = 1 / (1 + np.exp(-((data @ coef[1:]))))
-        probs_no_intercept = np.array(
-            list(map(bind_probs, probs_no_intercept)))
+        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        logloss_onedal = alg.loss(coef, data, y_true)
 
-        logloss_gth = log_loss(y_true, probs)
-        logloss_gth_no_intercept = log_loss(y_true, probs_no_intercept)
+        alg_internal = _linear_loss.LinearModelLoss(base_loss = HalfBinomialLoss(), fit_intercept=fit_intercept)
+        
+        logloss_gth = alg_internal.loss(coef, data, y_true) / row_count
+
+        assert_allclose(logloss_onedal, logloss_gth, rtol=tol)
+
+
+    @pytest.mark.parametrize('queue', get_queues())
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
+    @pytest.mark.parametrize('fit_intercept', [True, False])
+    def test_gradient(queue, dtype, fit_intercept):
 
         tol = 1e-5 if dtype == np.float32 else 1e-7
+
+        seed = 42
+        row_count, col_count = 1000, 29
+
+        gen = np.random.default_rng(seed)
+        data = gen.uniform(low=-0.5, high=+0.6,
+                            size=(row_count, col_count))
+        coef = gen.uniform(low=-0.5, high=+0.6,
+                            size=(col_count + 1, 1)).astype(dtype=dtype).reshape(-1)
+        y_true = gen.integers(0, 2, (row_count, 1)).astype(dtype=dtype).reshape(-1)
+        data = data.astype(dtype=dtype)
+
+        if (not fit_intercept):
+            coef = coef[:-1]
+
+        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        gradient_onedal = alg.gradient(coef, data, y_true)
+
+
+        alg_internal = _linear_loss.LinearModelLoss(base_loss = HalfBinomialLoss(), fit_intercept=fit_intercept)
+        gradient_gth = alg_internal.gradient(coef, data, y_true) / row_count
+        
+        assert_allclose(gradient_onedal, gradient_gth, rtol=tol)
+
+
+
+    @pytest.mark.parametrize('queue', get_queues())
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
+    @pytest.mark.parametrize('fit_intercept', [True, False])
+    def test_loss_gradient(queue, dtype, fit_intercept):
+
+        tol = 1e-5 if dtype == np.float32 else 1e-7
+
+        seed = 42
+        row_count, col_count = 1000, 29
+
+        gen = np.random.default_rng(seed)
+        data = gen.uniform(low=-0.5, high=+0.6,
+                            size=(row_count, col_count))
+        coef = gen.uniform(low=-0.5, high=+0.6,
+                            size=(col_count + 1, 1)).astype(dtype=dtype).reshape(-1)
+        y_true = gen.integers(0, 2, (row_count, 1)).astype(dtype=dtype).reshape(-1)
+        data = data.astype(dtype=dtype)
+
+        if (not fit_intercept):
+            coef = coef[:-1]
+
+        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        logloss_onedal, gradient_onedal = alg.loss_gradient(coef, data, y_true)
+
+        alg_internal = _linear_loss.LinearModelLoss(base_loss = HalfBinomialLoss(), fit_intercept=fit_intercept)
+        
+        logloss_gth, gradient_gth = alg_internal.loss_gradient(coef, data, y_true)
+        logloss_gth /= row_count
+        gradient_gth /= row_count
+    
         assert_allclose(logloss_onedal, logloss_gth, rtol=tol)
-        assert_allclose(logloss_onedal_no_intercept,
-                        logloss_gth_no_intercept, rtol=tol)
+        assert_allclose(gradient_onedal, gradient_gth, rtol=tol)
+
+
+    @pytest.mark.parametrize('queue', get_queues())
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
+    @pytest.mark.parametrize('fit_intercept', [True, False])
+    def test_gradient_hessian(queue, dtype, fit_intercept):
+
+        tol = 1e-4 if dtype == np.float32 else 1e-7
+
+        seed = 42
+        row_count, col_count = 1000, 29
+
+        gen = np.random.default_rng(seed)
+        data = gen.uniform(low=-0.5, high=+0.6,
+                            size=(row_count, col_count))
+        coef = gen.uniform(low=-0.5, high=+0.6,
+                            size=(col_count + 1, 1)).astype(dtype=dtype).reshape(-1)
+        y_true = gen.integers(0, 2, (row_count, 1)).astype(dtype=dtype).reshape(-1)
+        data = data.astype(dtype=dtype)
+
+        if (not fit_intercept):
+            coef = coef[:-1]
+
+        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        gradient_onedal, hessian_onedal, status_onedal = alg.gradient_hessian(coef, data, y_true)
+
+        alg_internal = _linear_loss.LinearModelLoss(base_loss = HalfBinomialLoss(), fit_intercept=fit_intercept)
+        
+        gradient_gth, hessian_gth, status_gth = alg_internal.gradient_hessian(coef, data, y_true)
+
+        gradient_gth /= row_count
+        hessian_gth /= row_count
+    
+        assert_allclose(gradient_onedal, gradient_gth, rtol=tol)
+        assert_allclose(hessian_onedal, hessian_gth, rtol=tol)
+        assert(status_onedal == status_gth)
+
