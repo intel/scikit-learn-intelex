@@ -109,5 +109,5 @@ An example on how to patch your code with Intel CPU/GPU optimizations:
       clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 
 Note: Current offloading behavior restricts fitting and inference of any models to be
-in the same context or absence of context. For example, model trained in context with
+in the same context or absence of context. For example, a model trained in the GPU context with
 target_offload="gpu:0" will throw error if inference is done outside of context.
