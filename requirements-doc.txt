@@ -55,7 +55,7 @@ sphinx-book-theme==0.1.6
 sphinx-notfound-page==0.8.3
 sphinx-tabs==3.2.0
 sphinx_rtd_theme
-sphinxcontrib-applehelp==1.0.2
+sphinxcontrib-applehelp==1.0.4
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==2.0.0
 sphinxcontrib-jsmath==1.0.1
