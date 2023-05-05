@@ -33,7 +33,7 @@
 Kaggle Kernels that use AutoML and |intelex|
 --------------------------------------------
 
-The following Kaggle kernels show how to patch autoML framewokrs with |intelex|.
+The following Kaggle kernels show how to patch autoML frameworks with |intelex|.
 
 .. include:: /kaggle/note-about-tps.rst
 
@@ -59,7 +59,7 @@ The following Kaggle kernels show how to patch autoML framewokrs with |intelex|.
    * - |automl_with_intelex_tps_nov|_
 
        **Data:** [TPS Nov 2021] Synthetic spam emails data
-     - Identify spam emails via features extraced from the email
+     - Identify spam emails via features extracted from the email
    * - |automl_with_intelex_tps_jan|_
 
        **Data:** [TPS Jan 2022] Fictional Sales data
