@@ -55,7 +55,7 @@ if daal_check_version((2023, 'P', 100)):
 
         alg_internal = _linear_loss.LinearModelLoss(base_loss = HalfBinomialLoss(), fit_intercept=fit_intercept)
         
-        logloss_gth = alg_internal.loss(coef, data, y_true) / row_count
+        logloss_gth = alg_internal.loss(coef, data, y_true)
 
         assert_allclose(logloss_onedal, logloss_gth, rtol=tol)
 
@@ -86,7 +86,7 @@ if daal_check_version((2023, 'P', 100)):
 
 
         alg_internal = _linear_loss.LinearModelLoss(base_loss = HalfBinomialLoss(), fit_intercept=fit_intercept)
-        gradient_gth = alg_internal.gradient(coef, data, y_true) / row_count
+        gradient_gth = alg_internal.gradient(coef, data, y_true)
         
         assert_allclose(gradient_onedal, gradient_gth, rtol=tol)
 
@@ -119,8 +119,8 @@ if daal_check_version((2023, 'P', 100)):
         alg_internal = _linear_loss.LinearModelLoss(base_loss = HalfBinomialLoss(), fit_intercept=fit_intercept)
         
         logloss_gth, gradient_gth = alg_internal.loss_gradient(coef, data, y_true)
-        logloss_gth /= row_count
-        gradient_gth /= row_count
+        # logloss_gth /= row_count
+        # gradient_gth /= row_count
     
         assert_allclose(logloss_onedal, logloss_gth, rtol=tol)
         assert_allclose(gradient_onedal, gradient_gth, rtol=tol)
@@ -154,8 +154,8 @@ if daal_check_version((2023, 'P', 100)):
         
         gradient_gth, hessian_gth, status_gth = alg_internal.gradient_hessian(coef, data, y_true)
 
-        gradient_gth /= row_count
-        hessian_gth /= row_count
+        # gradient_gth /= row_count
+        # hessian_gth /= row_count
     
         assert_allclose(gradient_onedal, gradient_gth, rtol=tol)
         assert_allclose(hessian_onedal, hessian_gth, rtol=tol)

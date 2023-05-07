@@ -94,7 +94,9 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
 
         res = {opt: getattr(result, opt) for opt in options}
 
-        return {k: from_table(v).ravel() for k, v in res.items()}
+        n = X.shape[0]
+
+        return {k: from_table(v).ravel() * n for k, v in res.items()}
 
 
 class LogisticLoss(BaseObjectiveFunction):

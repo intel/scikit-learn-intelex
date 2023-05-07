@@ -48,21 +48,14 @@ struct method2t {
 
     Ops ops;
 };
-/*
-#define RESULT_OPTION(option) { #option, dal::objective_function::result_options::option }
 
-const std::map<std::string, dal::objective_function::result_option_id> result_option_registry {
-    RESULT_OPTION(value), RESULT_OPTION(gradient), RESULT_OPTION(hessian)
-};
-
-#undef RESULT_OPTION
-*/
 
 const std::map<std::string, dal::objective_function::result_option_id> result_option_registry {
     {"value", dal::objective_function::detail::get_value_id()}, 
     {"gradient", dal::objective_function::detail::get_gradient_id()},
     {"hessian", dal::objective_function::detail::get_hessian_id()}
 };
+
 
 auto get_onedal_result_options(const py::dict& params) {
     using namespace dal::objective_function;
