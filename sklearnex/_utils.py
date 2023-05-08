@@ -15,25 +15,32 @@
 # limitations under the License.
 #===============================================================================
 
+import logging
+import warnings
+import os
+import sys
+from daal4py.sklearn._utils import daal_check_version
+
+
 def set_sklearn_ex_verbose():
-    import logging
-    import warnings
-    import os
-    import sys
-    logLevel = os.environ.get("SKLEARNEX_VERBOSE")
+    log_level = os.environ.get("SKLEARNEX_VERBOSE")
+
+    logger = logging.getLogger('sklearnex')
+    logging_channel = logging.StreamHandler()
+    logging_formatter = logging.Formatter('%(levelname)s:%(name)s: %(message)s')
+    logging_channel.setFormatter(logging_formatter)
+    logger.addHandler(logging_channel)
+
     try:
-        if logLevel is not None:
-            logging.basicConfig(
-                stream=sys.stdout,
-                format='SKLEARNEX %(levelname)s: %(message)s', level=logLevel.upper())
+        if log_level is not None:
+            logger.setLevel(log_level)
     except Exception:
         warnings.warn('Unknown level "{}" for logging.\n'
                       'Please, use one of "CRITICAL", "ERROR", '
-                      '"WARNING", "INFO", "DEBUG".'.format(logLevel))
+                      '"WARNING", "INFO", "DEBUG".'.format(log_level))
 
 
 def get_patch_message(s, queue=None, cpu_fallback=False):
-    import sys
     if s == "onedal":
         message = "running accelerated version on "
         if queue is not None:
@@ -72,5 +79,4 @@ def get_patch_message(s, queue=None, cpu_fallback=False):
 
 
 def get_sklearnex_version(rule):
-    from daal4py.sklearn._utils import daal_check_version
     return daal_check_version(rule)

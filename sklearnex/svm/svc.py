@@ -14,7 +14,10 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn._utils import sklearn_check_version
+import numpy as np
+from scipy import sparse as sp
+
+from daal4py.sklearn._utils import sklearn_check_version, PatchingConditionsChain
 from ._common import BaseSVC
 from .._device_offload import dispatch, wrap_output_data
 
@@ -167,29 +170,28 @@ class SVC(sklearn_SVC, BaseSVC):
     def _onedal_gpu_supported(self, method_name, *data):
         if method_name == 'svm.SVC.fit':
             if len(data) > 1:
-                import numpy as np
-                from scipy import sparse as sp
-
                 self._class_count = len(np.unique(data[1]))
-                self._is_sparse = sp.isspmatrix(data[0])
-            return self.kernel in ['linear', 'rbf'] and \
-                self.class_weight is None and \
-                hasattr(self, '_class_count') and self._class_count == 2 and \
-                hasattr(self, '_is_sparse') and not self._is_sparse
+            self._is_sparse = sp.isspmatrix(data[0])
+            patching_status = PatchingConditionsChain('sklearn.svm.SVC.fit')
+            patching_status.and_conditions([
+                (self.kernel in ['linear', 'rbf'],
+                 f'Kernel is "{self.kernel}" while '
+                 '"linear" and "rbf" are only supported on GPU.'),
+                (self.class_weight is None, 'Class weight is not supported on GPU.'),
+                (self._class_count == 2, 'Multiclassification is not supported on GPU.'),
+                (not self._is_sparse, 'Sparse input is not supported on GPU.')
+            ])
+            return patching_status.get_status(logs=True)
         if method_name in ['svm.SVC.predict',
                            'svm.SVC.predict_proba',
                            'svm.SVC.decision_function']:
-            return hasattr(self, '_onedal_estimator') and \
-                self._onedal_gpu_supported('svm.SVC.fit', *data)
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
-
-    def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'svm.SVC.fit':
-            return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
-        if method_name in ['svm.SVC.predict',
-                           'svm.SVC.predict_proba',
-                           'svm.SVC.decision_function']:
-            return hasattr(self, '_onedal_estimator')
+            patching_status = PatchingConditionsChain(f'sklearn.{method_name}')
+            patching_status.and_conditions([
+                (hasattr(self, '_onedal_estimator') and self._onedal_gpu_supported(
+                    'svm.SVC.fit', *data),
+                 'oneDAL model was not trained on GPU.')
+            ])
+            return patching_status.get_status(logs=True)
         raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):

@@ -167,17 +167,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             'sklearn': sklearn_NuSVC.decision_function,
         }, X)
 
-    def _onedal_gpu_supported(self, method_name, *data):
-        return False
-
-    def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'svm.NuSVC.fit':
-            return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
-        if method_name in ['svm.NuSVC.predict',
-                           'svm.NuSVC.predict_proba',
-                           'svm.NuSVC.decision_function']:
-            return hasattr(self, '_onedal_estimator')
-
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
             'nu': self.nu,

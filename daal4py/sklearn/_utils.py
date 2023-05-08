@@ -181,6 +181,7 @@ class PatchingConditionsChain:
         self.scope_name = scope_name
         self.patching_is_enabled = True
         self.messages = []
+        self.logger = logging.getLogger('sklearnex')
 
     def _iter_conditions(self, conditions_and_messages):
         result = []
@@ -200,17 +201,19 @@ class PatchingConditionsChain:
             self._iter_conditions(conditions_and_messages))
         return self.patching_is_enabled
 
-    def get_status(self):
-        return self.patching_is_enabled
-
     def write_log(self):
         if self.patching_is_enabled:
-            logging.info(f"{self.scope_name}: {get_patch_message('daal')}")
+            self.logger.info(f"{self.scope_name}: {get_patch_message('daal')}")
         else:
-            logging.debug(
+            self.logger.debug(
                 f'{self.scope_name}: debugging for the patch is enabled to track'
                 ' the usage of Intel® oneAPI Data Analytics Library (oneDAL)')
             for message in self.messages:
-                logging.debug(
+                self.logger.debug(
                     f'{self.scope_name}: patching failed with cause - {message}')
-            logging.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
+            self.logger.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
+
+    def get_status(self, logs=False):
+        if logs:
+            self.write_log()
+        return self.patching_is_enabled

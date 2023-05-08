@@ -158,7 +158,6 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
 
     backend, q, cpu_fallback = _get_backend(obj, q, method_name, *hostargs)
 
-    logging.info(f"sklearn.{method_name}: {get_patch_message(backend, q, cpu_fallback)}")
     if backend == 'onedal':
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == 'sklearn':

@@ -108,15 +108,6 @@ class SVR(sklearn_SVR, BaseSVR):
             'sklearn': sklearn_SVR.predict,
         }, X)
 
-    def _onedal_gpu_supported(self, method_name, *data):
-        return False
-
-    def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'svm.SVR.fit':
-            return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
-        if method_name == 'svm.SVR.predict':
-            return hasattr(self, '_onedal_estimator')
-
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
             'C': self.C,

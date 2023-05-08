@@ -16,7 +16,7 @@
 
 from abc import ABC
 import numpy as np
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import sklearn_check_version, PatchingConditionsChain
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
@@ -49,7 +49,39 @@ def set_intercept(self, value):
             del self._onedal_estimator._onedal_model
 
 
-class BaseSVC(ABC):
+class BaseSVM(ABC):
+    def _onedal_gpu_supported(self, method_name, *data):
+        patching_status = PatchingConditionsChain(f'sklearn.{method_name}')
+        patching_status.and_conditions([
+            (False, 'GPU offloading is not supported.')
+        ])
+        return patching_status.get_status(logs=True)
+
+    def _onedal_cpu_supported(self, method_name, *data):
+        class_name = self.__class__.__name__
+        if method_name == f'svm.{class_name}.fit':
+            patching_status = PatchingConditionsChain(f'sklearn.{method_name}')
+            patching_status.and_conditions([
+                (self.kernel in ['linear', 'rbf', 'poly', 'sigmoid'],
+                 f'Kernel is "{self.kernel}" while '
+                 '"linear", "rbf", "poly" and "sigmoid" are only supported.')
+            ])
+            return patching_status.get_status(logs=True)
+        inference_methods = [f'svm.{class_name}.predict'] if class_name.endswith('R') \
+            else [
+                f'svm.{class_name}.predict',
+                f'svm.{class_name}.predict_proba',
+                f'svm.{class_name}.decision_function']
+        if method_name in inference_methods:
+            patching_status = PatchingConditionsChain(f'sklearn.{method_name}')
+            patching_status.and_conditions([
+                (hasattr(self, '_onedal_estimator'), 'oneDAL model was not trained.')
+            ])
+            return patching_status.get_status(logs=True)
+        raise RuntimeError(f'Unknown method {method_name} in {class_name}')
+
+
+class BaseSVC(BaseSVM):
     def _compute_balanced_class_weight(self, y):
         y_ = _column_or_1d(y)
         classes, _ = np.unique(y_, return_inverse=True)
@@ -131,7 +163,7 @@ class BaseSVC(ABC):
             self.n_iter_ = np.full((length, ), self._onedal_estimator.n_iter_)
 
 
-class BaseSVR(ABC):
+class BaseSVR(BaseSVM):
     def _save_attributes(self):
         self.support_vectors_ = self._onedal_estimator.support_vectors_
         self.n_features_in_ = self._onedal_estimator.n_features_in_

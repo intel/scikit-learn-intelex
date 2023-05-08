@@ -20,24 +20,17 @@ import warnings
 
 from sklearn.neighbors._lof import LocalOutlierFactor as \
     sklearn_LocalOutlierFactor
-
 from .knn_unsupervised import NearestNeighbors
 
 try:
     from sklearn.utils.metaestimators import available_if
-    from packaging.version import Version
 except ImportError:
-    from distutils.version import LooseVersion as Version
-
-from sklearn import __version__ as sklearn_version
-
-from daal4py.sklearn._utils import sklearn_check_version
+    pass
 
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_array
 
-import logging
-from .._utils import get_patch_message
+from daal4py.sklearn._utils import sklearn_check_version
 from .._device_offload import dispatch, wrap_output_data
 from .._config import config_context
 
