@@ -187,7 +187,10 @@ if daal_check_version((2023, 'P', 100)):
         row_count = dimensions[0]
         col_count = dimensions[1]
         coef, data, y_true = gen_test(
-            row_count=row_count, col_count=col_count, dtype=dtype, fit_intercept=fit_intercept)
+            row_count=row_count,
+            col_count=col_count,
+            dtype=dtype,
+            fit_intercept=fit_intercept)
         alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
         logloss_onedal, gradient_onedal = alg.loss_gradient(
             coef, data, y_true, l2_reg_strength=l2_reg_strength)

@@ -137,8 +137,10 @@ class LogisticLoss(BaseObjectiveFunction):
             num_params += 1
         hess = hess.reshape(num_params, num_params)
         if (self.fit_intercept):
-            hess = np.hstack((np.vstack([hess[1:, 1:] + np.diag([l2_reg_strength] * (
-                num_params - 1)), hess[0, 1:]]), np.hstack([hess[0, 1:], hess[0][0]]).reshape(-1, 1)))
+            hess = np.hstack((
+                np.vstack([hess[1:, 1:] +
+                           np.diag([l2_reg_strength] * (num_params - 1)), hess[0, 1:]]),
+                np.hstack([hess[0, 1:], hess[0][0]]).reshape(-1, 1)))
         else:
             hess = hess[1:, 1:] + np.diag([l2_reg_strength] * (num_params - 1))
         return hess
