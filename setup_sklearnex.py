@@ -84,8 +84,7 @@ packages_with_tests = [
     'sklearnex.preview.ensemble',
     'sklearnex.preview.linear_model',
     'sklearnex.svm',
-    'sklearnex.utils',
-    'sklearnex.objective_function']
+    'sklearnex.utils']
 
 if build_distribute:
     packages_with_tests += [
