@@ -38,7 +38,7 @@ Binary Classification
      
        **Data:** [TPS Nov 2021] Synthetic spam emails data
 
-     - Identify spam emails via features extraced from the email
+     - Identify spam emails via features extracted from the email
      - 
 
        - data preprocessing (normalization)
@@ -50,7 +50,7 @@ Binary Classification
      
        **Data:** [TPS Nov 2021] Synthetic spam emails data
 
-     - Identify spam emails via features extraced from the email
+     - Identify spam emails via features extracted from the email
      - 
       
        - reducing DataFrame memory usage

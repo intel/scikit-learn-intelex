@@ -18,7 +18,7 @@
 Acceleration Details
 ####################
 
-The performance of some algorithms changes based on the parameters that were used.
+The performance of some algorithms changes based on the parameters that are used.
 This section denotes the details of such cases.
 
 Refer to :ref:`sklearn_algorithms` to see the full list of algorithms, parameters, and data formats supported in |intelex|.
